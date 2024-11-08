@@ -1,0 +1,33 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <ValueFilter v-model="value" label="Default Value"
+                     :hideFilterMode="hideFilterMode" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="hideFilterMode" text="Hide Filter Mode" label="" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import ValueFilter from "@Obsidian/Controls/valueFilter.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { CompoundFilterExpression } from "@Obsidian/ViewModels/Controls/valueFilter.d";
+
+    const value = ref<CompoundFilterExpression>();
+    const hideFilterMode = ref(false);
+
+    const importCode = getSfcControlImportPath("valueFilter");
+    const exampleCode = computed(() => {
+        const hideFilterModeProp = hideFilterMode.value ? " hideFilterMode" : "";
+        return `<ValueFilter v-model="value"${hideFilterModeProp} />`;
+    });
+</script>

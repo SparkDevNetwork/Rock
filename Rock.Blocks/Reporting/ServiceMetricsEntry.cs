@@ -66,28 +66,35 @@ namespace Rock.Blocks.Reporting
         DefaultIntegerValue = 0,
         Order = 2 )]
 
+    [BooleanField(
+        "Default to Current Week",
+        Key = AttributeKey.DefaultToCurrentWeek,
+        Description = "When enabled, the block will bypass the step to select a week from a list and will instead skip right to the entry page with the current week selected.",
+        DefaultBooleanValue = false,
+        Order = 3 )]
+
     [MetricCategoriesField(
         "Metric Categories",
         Key = AttributeKey.MetricCategories,
         Description = "Select the metric categories to display (note: only metrics in those categories with a campus and schedule partition will displayed).",
         IsRequired = true,
-        Order = 3 )]
+        Order = 4 )]
 
-    [CampusesField( "Campuses", "Select the campuses you want to limit this block to.", false, "", "", 4, AttributeKey.Campuses )]
+    [CampusesField( "Campuses", "Select the campuses you want to limit this block to.", false, "", "", 5, AttributeKey.Campuses )]
 
     [BooleanField(
         "Insert 0 for Blank Items",
         Key = AttributeKey.DefaultToZero,
         Description = "If enabled, a zero will be added to any metrics that are left empty when entering data. This will override \"Remove Values When Deleted\".",
         DefaultBooleanValue = false,
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField(
         "Remove Values When Deleted",
         Key = AttributeKey.RemoveValuesWhenDeleted,
         Description = "If enabled, metrics that are left empty will be deleted. This will have no effect when \"Insert 0 for Blank Items\" is enabled.",
         DefaultBooleanValue = false,
-        Order = 6 )]
+        Order = 7 )]
 
     [CustomDropdownListField(
         "Metric Date Determined By",
@@ -95,14 +102,14 @@ namespace Rock.Blocks.Reporting
         Description = "This setting determines what date to use when entering the metric. 'Sunday Date' would use the selected Sunday date. 'Day from Schedule' will use the first day configured from the selected schedule.",
         DefaultValue = "0",
         ListSource = "0^Sunday Date,1^Day from Schedule",
-        Order = 7 )]
+        Order = 8 )]
 
     [BooleanField(
         "Limit Campus Selection to Campus Team Membership",
         Key = AttributeKey.LimitCampusByCampusTeam,
         Description = "If enabled, this would limit the campuses shown to only those where the individual was on the Campus Team.",
         DefaultBooleanValue = false,
-        Order = 8 )]
+        Order = 9 )]
 
     [DefinedValueField(
         "Campus Types",
@@ -111,7 +118,7 @@ namespace Rock.Blocks.Reporting
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_TYPE,
         AllowMultiple = true,
         IsRequired = false,
-        Order = 9 )]
+        Order = 10 )]
 
     [DefinedValueField(
         "Campus Status",
@@ -120,35 +127,35 @@ namespace Rock.Blocks.Reporting
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.CAMPUS_STATUS,
         AllowMultiple = true,
         IsRequired = false,
-        Order = 10 )]
+        Order = 11 )]
 
     [BooleanField(
         "Filter Schedules by Campus",
         Key = AttributeKey.FilterByCampus,
         Description = "When enabled, only schedules that are included in the Campus Schedules will be included.",
         DefaultBooleanValue = false,
-        Order = 11 )]
+        Order = 12 )]
 
     [BooleanField(
         "Show Metric Category Subtotals",
         Key = AttributeKey.ShowMetricCategorySubtotals,
         Description = "When enabled, shows the metric category subtotals.",
         DefaultBooleanValue = false,
-        Order = 12 )]
+        Order = 13 )]
 
     [IntegerField(
         "Roll-up Category Depth",
         Key = AttributeKey.RollupCategoryDepth,
         Description = "Determines how many levels of parent categories to show. (1 = parent, 2 = grandparent, etc.)",
         DefaultIntegerValue = 0,
-        Order = 13 )]
+        Order = 14 )]
 
     [BooleanField(
         "Include Duplicate Metrics in Category Subtotals",
         Key = AttributeKey.IncludeDuplicateMetricsInCategorySubtotals,
         Description = "When enabled, category subtotals will include the same metric multiple times if that metric is in multiple subcategories.",
         DefaultBooleanValue = true,
-        Order = 14 )]
+        Order = 15 )]
 
     #endregion Block Attributes
 
@@ -175,6 +182,7 @@ namespace Rock.Blocks.Reporting
             public const string ShowMetricCategorySubtotals = "ShowMetricCategorySubtotals";
             public const string RollupCategoryDepth = "RollupCategoryDepth";
             public const string IncludeDuplicateMetricsInCategorySubtotals = "IncludeDuplicateMetricsInCategorySubtotals";
+            public const string DefaultToCurrentWeek = "DefaultToCurrentWeek";  
         }
 
         private static class PageParameterKey
@@ -235,54 +243,7 @@ namespace Rock.Blocks.Reporting
         [BlockAction( "GetCampuses" )]
         public BlockActionResult GetCampuses()
         {
-            var campuses = new List<CampusCache>();
-            var allowedCampuses = GetAttributeValue( AttributeKey.Campuses ).SplitDelimitedValues().AsGuidList();
-            var limitCampusByCampusTeam = GetAttributeValue( AttributeKey.LimitCampusByCampusTeam ).AsBoolean();
-            var selectedCampusTypes = GetAttributeValue( AttributeKey.CampusTypes ).SplitDelimitedValues().AsGuidList();
-            var selectedCampusStatuses = GetAttributeValue( AttributeKey.CampusStatus ).SplitDelimitedValues().AsGuidList();
-
-            var campusQuery = CampusCache.All().Where( c => c.IsActive.HasValue && c.IsActive.Value );
-            var currentPersonId = this.GetCurrentPerson().Id;
-
-            // If specific campuses are selected, filter by those campuses.
-            if ( allowedCampuses.Any() )
-            {
-                campusQuery = campusQuery.Where( c => allowedCampuses.Contains( c.Guid ) );
-            }
-
-            if ( limitCampusByCampusTeam )
-            {
-                var campusTeamGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CAMPUS_TEAM.AsGuid() );
-                var teamGroupIds = new GroupService( new RockContext() ).Queryable().AsNoTracking()
-                    .Where( g => g.GroupTypeId == campusTeamGroupTypeId )
-                    .Where( g => g.Members.Where( gm => gm.PersonId == currentPersonId ).Any() )
-                    .Select( g => g.Id ).ToList();
-
-                campusQuery = campusQuery.Where( c => c.TeamGroupId.HasValue && teamGroupIds.Contains( c.TeamGroupId.Value ) );
-            }
-
-            // If campus types are selected, filter by those.
-            if ( selectedCampusTypes.Any() )
-            {
-                var campusTypes = DefinedValueCache.All().Where( d => selectedCampusTypes.Contains( d.Guid ) ).Select( d => d.Id ).ToList();
-                campusQuery = campusQuery.Where( c => c.CampusTypeValueId.HasValue && campusTypes.Contains( c.CampusTypeValueId.Value ) );
-            }
-
-            // If campus statuses are selected, filter by those.
-            if ( selectedCampusStatuses.Any() )
-            {
-                var campusStatuses = DefinedValueCache.All().Where( d => selectedCampusStatuses.Contains( d.Guid ) ).Select( d => d.Id ).ToList();
-                campusQuery = campusQuery.Where( c => c.CampusStatusValueId.HasValue && campusStatuses.Contains( c.CampusStatusValueId.Value ) );
-            }
-
-            // Sort by name.
-            campusQuery = campusQuery.OrderBy( c => c.Name );
-
-            foreach ( var campus in campusQuery )
-            {
-                campuses.Add( campus );
-            }
-
+            var campuses = GetFilteredCampuses();
             return ActionOk( campuses.ToListItemBagList() );
         }
 
@@ -311,10 +272,10 @@ namespace Rock.Blocks.Reporting
                 weeksAhead = bag.WeeksAhead.Value;
             }
 
-            var dates = new List<DateTime>();
+            var dates = new List<DateTimeOffset>();
 
             // Load Weeks
-            var sundayDate = RockDateTime.Today.SundayDate();
+            var sundayDate = RockDateTime.Today.SundayDate().ToRockDateTimeOffset();
             var daysBack = weeksBack * 7;
             var daysAhead = weeksAhead * 7;
             var startDate = sundayDate.AddDays( 0 - daysBack );
@@ -327,8 +288,8 @@ namespace Rock.Blocks.Reporting
 
             return ActionOk( dates.Select( weekend => new ListItemBag
             {
-                Value = weekend.ToISO8601DateString(),
-                Text = $"Sunday {weekend.ToShortDateString()}"
+                Value = weekend.ToString( "o" ),
+                Text = $"Sunday {weekend.DateTime.ToShortDateString()}"
             } ).ToList() );
         }
 
@@ -725,14 +686,18 @@ namespace Rock.Blocks.Reporting
         /// </summary>
         private ServiceMetricsEntryInitializationBox GetInitializationBox()
         {
-            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull() ?? this.PersonPreferences.GetValue( UserPreferenceKey.CampusId ).AsIntegerOrNull();
+            var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull() ?? this.PersonPreferences.GetValue( UserPreferenceKey.CampusId ).AsIntegerOrNull() ?? GetDefaultCampusId();
             var campusGuid = campusId.HasValue ? CampusCache.GetGuid( campusId.Value ) : null;
             var scheduleId = this.PersonPreferences.GetValue( UserPreferenceKey.ScheduleId ).AsIntegerOrNull();
             var scheduleGuid = scheduleId.HasValue ? new ScheduleService( new RockContext() ).GetGuid( scheduleId.Value ) : null;
+            var defaultToCurrentWeek = GetAttributeValue( AttributeKey.DefaultToCurrentWeek ).AsBoolean();
 
-            // If the Campus and Schedule both have initial values,
+            // If configured to default to current week or the Campus and Schedule both have initial values,
             // then we will assume the current weekend.
-            var weekendDate = campusGuid.HasValue && scheduleGuid.HasValue ? RockDateTime.Today.SundayDate() : ( DateTime? )null;
+            var weekendDate =
+                defaultToCurrentWeek || ( campusGuid.HasValue && scheduleGuid.HasValue ) ?
+                RockDateTime.Today.SundayDate().ToRockDateTimeOffset() :
+                ( DateTimeOffset? ) null;
 
             return new ServiceMetricsEntryInitializationBox
             {
@@ -743,6 +708,7 @@ namespace Rock.Blocks.Reporting
                 WeekendDate = weekendDate,
                 WeeksAhead = GetAttributeValue( AttributeKey.WeeksAhead ).AsInteger(),
                 WeeksBack = GetAttributeValue( AttributeKey.WeeksBack ).AsInteger(),
+                ActiveCampusesCount = CampusCache.All( false ).Count
             };
         }
 
@@ -780,6 +746,89 @@ namespace Rock.Blocks.Reporting
             }
 
             return weekend;
+        }
+
+        /// <summary>
+        /// Gets the list of available campuses after applying the block settings.
+        /// </summary>
+        /// <returns></returns>
+        private List<CampusCache> GetFilteredCampuses()
+        {
+            var campuses = new List<CampusCache>();
+            var allowedCampuses = GetAttributeValue( AttributeKey.Campuses ).SplitDelimitedValues().AsGuidList();
+            var limitCampusByCampusTeam = GetAttributeValue( AttributeKey.LimitCampusByCampusTeam ).AsBoolean();
+            var selectedCampusTypes = GetAttributeValue( AttributeKey.CampusTypes ).SplitDelimitedValues().AsGuidList();
+            var selectedCampusStatuses = GetAttributeValue( AttributeKey.CampusStatus ).SplitDelimitedValues().AsGuidList();
+
+            var campusQuery = CampusCache.All().Where( c => c.IsActive.HasValue && c.IsActive.Value );
+            var currentPersonId = this.GetCurrentPerson().Id;
+
+            // If specific campuses are selected, filter by those campuses.
+            if ( allowedCampuses.Any() )
+            {
+                campusQuery = campusQuery.Where( c => allowedCampuses.Contains( c.Guid ) );
+            }
+
+            if ( limitCampusByCampusTeam )
+            {
+                var campusTeamGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CAMPUS_TEAM.AsGuid() );
+                var teamGroupIds = new GroupService( new RockContext() ).Queryable().AsNoTracking()
+                    .Where( g => g.GroupTypeId == campusTeamGroupTypeId )
+                    .Where( g => g.Members.Where( gm => gm.PersonId == currentPersonId ).Any() )
+                    .Select( g => g.Id ).ToList();
+
+                campusQuery = campusQuery.Where( c => c.TeamGroupId.HasValue && teamGroupIds.Contains( c.TeamGroupId.Value ) );
+            }
+
+            // If campus types are selected, filter by those.
+            if ( selectedCampusTypes.Any() )
+            {
+                var campusTypes = DefinedValueCache.All().Where( d => selectedCampusTypes.Contains( d.Guid ) ).Select( d => d.Id ).ToList();
+                campusQuery = campusQuery.Where( c => c.CampusTypeValueId.HasValue && campusTypes.Contains( c.CampusTypeValueId.Value ) );
+            }
+
+            // If campus statuses are selected, filter by those.
+            if ( selectedCampusStatuses.Any() )
+            {
+                var campusStatuses = DefinedValueCache.All().Where( d => selectedCampusStatuses.Contains( d.Guid ) ).Select( d => d.Id ).ToList();
+                campusQuery = campusQuery.Where( c => c.CampusStatusValueId.HasValue && campusStatuses.Contains( c.CampusStatusValueId.Value ) );
+            }
+
+            // Sort by name.
+            campusQuery = campusQuery.OrderBy( c => c.Name );
+
+            foreach ( var campus in campusQuery )
+            {
+                campuses.Add( campus );
+            }
+
+            return campuses;
+        }
+
+        /// <summary>
+        /// Gets the default campus id, a default id is returned if we have just one campus left after filtering
+        /// or we have just one active campus.
+        /// </summary>
+        /// <returns></returns>
+        private int? GetDefaultCampusId()
+        {
+            int? defaultCampusId = null;
+            var filteredCampuses = GetFilteredCampuses();
+            var activeCampuses = CampusCache.All( false );
+
+            // If a single campus is left after filtering or we have a single active campus
+            // return that campus Id as the default campus, this way we can skip the campus
+            // selection screen.
+            if ( filteredCampuses.Count == 1 )
+            {
+                defaultCampusId = filteredCampuses[0].Id;
+            }
+            else if ( activeCampuses.Count == 1 )
+            {
+                defaultCampusId = activeCampuses[0].Id;
+            }
+
+            return defaultCampusId;
         }
 
         #endregion

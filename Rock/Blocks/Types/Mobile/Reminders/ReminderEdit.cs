@@ -54,6 +54,13 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         Key = AttributeKey.SaveNavigationAction,
         Order = 1 )]
 
+    [BooleanField( "Show Assigned To",
+        Description = "Whether to show the assigned to field. Otherwise defaults to the Current Person.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Key = AttributeKey.ShowAssignedTo,
+        Order = 2 )]
+
     #endregion
 
     [SystemGuid.EntityTypeGuid( SystemGuid.EntityType.MOBILE_REMINDERS_REMINDER_EDIT )]
@@ -76,6 +83,27 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             /// The save navigation action.
             /// </summary>
             public const string SaveNavigationAction = "SaveNavigationAction";
+
+            /// <summary>
+            /// Whether to show the assigned to field.
+            /// </summary>
+            public const string ShowAssignedTo = "ShowAssignedTo";
+        }
+
+        /// <summary>
+        /// The page parameter keys for this block.
+        /// </summary>
+        private static class PageParameterKey
+        {
+            /// <summary>
+            /// The linked note guid page parameter key.
+            /// </summary>
+            public const string LinkedNoteGuid = "LinkedNoteGuid";
+
+            /// <summary>
+            /// The linked note type guid page parameter key.
+            /// </summary>
+            public const string LinkedNoteTypeGuid = "LinkedNoteTypeGuid";
         }
 
         #endregion
@@ -85,77 +113,78 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <summary>
         /// The default header XAML.
         /// </summary>
-        private const string _defaultHeaderXaml = @"<StackLayout>
-    <StackLayout.Resources>
-        <Rock:AllTrueMultiValueConverter x:Key=""AllTrueConverter"" /> 
-    </StackLayout.Resources>
-
-    <!-- If this is a person entity and no entity is selected -->
-    <Grid RowDefinitions=""*""
-        ColumnDefinitions=""64, *"">
-        <Grid.IsVisible>
-            <MultiBinding Converter=""{StaticResource AllTrueConverter}"">
-                <Binding Path=""Reminder.IsPersonEntityType"" />
-                <Binding Path=""Reminder.IsEntitySelected""
-                    Converter=""{Rock:InverseBooleanConverter}"" />
-            </MultiBinding>
-        </Grid.IsVisible>
-
-        <!-- The add icon -->
-        <Frame WidthRequest=""64""
-            HeightRequest=""64""
-            CornerRadius=""32""
-            HasShadow=""false""
-            StyleClass=""bg-light, p-0""
-            Grid.Column=""0"">
-            <Rock:Icon IconClass=""fa-plus""
-                IconFamily=""FontAwesomeSolid""
-                FontSize=""24""
-                VerticalTextAlignment=""Center""
-                HorizontalTextAlignment=""Center"" />
-        </Frame>
-
-        <!-- Our select individual label -->
-        <Label Text=""Select Individual""
-            Grid.Column=""1""
-            VerticalOptions=""Center""
-            StyleClass=""title"" />
-
-        <Grid.GestureRecognizers>
-            <TapGestureRecognizer Command=""{Binding ShowPersonSearch}"" />
-        </Grid.GestureRecognizers>
-    </Grid>
-
-    <!-- If an entity is selected -->
-    <Grid RowDefinitions=""*""
-        ColumnDefinitions=""64, *""
-        IsVisible=""{Binding Reminder.IsEntitySelected}"">
-
-        <!-- The bell icon -->
-        <Frame WidthRequest=""64""
-            HeightRequest=""64""
-            CornerRadius=""32""
-            HasShadow=""false""
-            StyleClass=""bg-light, p-0""
-            Grid.Column=""0"">
-            <Rock:Icon IconClass=""fa-bell""
-                IconFamily=""FontAwesomeSolid""
-                FontSize=""24""
-                VerticalTextAlignment=""Center""
-                HorizontalTextAlignment=""Center"" />
-        </Frame>
-
-        <!-- The person information -->
-        <StackLayout Grid.Column=""1"" 
-            Spacing=""0""
-            VerticalOptions=""Center"">
-            <Label Text=""New Reminder""
-                StyleClass=""text-gray-600, text-sm"" />
-            <Label Text=""{Binding Reminder.Name}""
-                StyleClass=""title"" />
-        </StackLayout>
-    </Grid>
-</StackLayout>";
+        private const string _defaultHeaderXaml = @"<Rock:StyledBorder StyleClass=""p-16, rounded, border, border-interface-soft, bg-interface-softest"">
+    <StackLayout>
+        <StackLayout.Resources>
+            <Rock:AllTrueMultiValueConverter x:Key=""AllTrueConverter"" /> 
+        </StackLayout.Resources>
+    
+        <!-- If this is a person entity and no entity is selected -->
+        <Grid RowDefinitions=""*""
+            ColumnDefinitions=""64, *"">
+            <Grid.IsVisible>
+                <MultiBinding Converter=""{StaticResource AllTrueConverter}"">
+                    <Binding Path=""Reminder.IsPersonEntityType"" />
+                    <Binding Path=""Reminder.IsEntitySelected""
+                        Converter=""{Rock:InverseBooleanConverter}"" />
+                </MultiBinding>
+            </Grid.IsVisible>
+    
+            <!-- The add icon -->
+            <Rock:StyledBorder WidthRequest=""48""
+                HeightRequest=""48""
+                CornerRadius=""24""
+                StyleClass=""bg-light, bg-primary-soft""
+                Grid.Column=""0"">
+                <Rock:Icon IconClass=""fa-plus""
+                    IconFamily=""FontAwesomeSolid""
+                    FontSize=""24""
+                    StyleClass=""text-primary-strong""
+                    VerticalTextAlignment=""Center""
+                    HorizontalTextAlignment=""Center"" />
+            </Rock:StyledBorder>
+    
+            <!-- Our select individual label -->
+            <Label Text=""Select Individual""
+                Grid.Column=""1""
+                VerticalOptions=""Center""
+                StyleClass=""title, text-interface-stronger, body, bold"" />
+    
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Command=""{Binding ShowPersonSearch}"" />
+            </Grid.GestureRecognizers>
+        </Grid>
+    
+        <!-- If an entity is selected -->
+        <Grid RowDefinitions=""*""
+            ColumnDefinitions=""64, *""
+            IsVisible=""{Binding Reminder.IsEntitySelected}"">
+    
+            <!-- The bell icon -->
+            <Rock:StyledBorder WidthRequest=""48""
+                HeightRequest=""48""
+                CornerRadius=""24""
+                StyleClass=""bg-light, bg-primary-soft""
+                Grid.Column=""0"">
+                <Rock:Icon IconClass=""fa-bell""
+                    IconFamily=""FontAwesomeSolid""
+                    FontSize=""24""
+                    StyleClass=""text-primary-strong""
+                    VerticalTextAlignment=""Center""
+                    HorizontalTextAlignment=""Center"" />
+            </Rock:StyledBorder>
+    
+            <!-- The person information -->
+            <StackLayout Grid.Column=""1"" 
+                VerticalOptions=""Center"">
+                <Label Text=""New Reminder""
+                    StyleClass=""text-gray-600, text-sm, text-interface-strong, callout"" />
+                <Label Text=""{Binding Reminder.Name}""
+                    StyleClass=""title, text-interface-stronger, body, bold"" />
+            </StackLayout>
+        </Grid>
+    </StackLayout>
+</Rock:StyledBorder>";
 
         #endregion
 
@@ -173,7 +202,8 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             return new Rock.Common.Mobile.Blocks.Reminders.ReminderEdit.Configuration
             {
                 HeaderTemplate = GetAttributeValue( AttributeKey.HeaderTemplate ),
-                SaveNavigationAction = GetAttributeValue( AttributeKey.SaveNavigationAction ).FromJsonOrNull<MobileNavigationActionViewModel>() ?? new MobileNavigationActionViewModel()
+                SaveNavigationAction = GetAttributeValue( AttributeKey.SaveNavigationAction ).FromJsonOrNull<MobileNavigationActionViewModel>() ?? new MobileNavigationActionViewModel(),
+                ShowAssignTo = GetAttributeValue( AttributeKey.ShowAssignedTo ).AsBoolean()
             };
         }
 
@@ -190,27 +220,26 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <param name="note">The note.</param>
         /// <param name="renewPeriodDays">The renew period days.</param>
         /// <param name="renewMaxCount">The renew maximum count.</param>
+        /// <param name="assignedToPrimaryAliasGuid">The person this reminder should be assigned to.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <remarks>This method should only be called when there is a Current Person in the request.</remarks>
-        private void CreateReminder( Guid reminderTypeGuid, Guid entityGuid, DateTime reminderDate, string note, int? renewPeriodDays, int? renewMaxCount, RockContext rockContext )
+        private int? CreateReminder( Guid reminderTypeGuid, Guid entityGuid, DateTime reminderDate, string note, int? renewPeriodDays, int? renewMaxCount, Guid? assignedToPrimaryAliasGuid, RockContext rockContext )
         {
             var reminderService = new ReminderService( rockContext );
             var reminderType = new ReminderTypeService( rockContext ).Get( reminderTypeGuid );
 
             if ( reminderType == null )
             {
-                return;
+                return null;
             }
 
             var entityId = Reflection.GetEntityIdForEntityType( reminderType.EntityType.Id, entityGuid, rockContext );
             if ( entityId == null )
             {
-                return;
+                return null;
             }
 
-            //
             // Create a new reminder.
-            //
             var reminder = new Reminder
             {
                 EntityId = entityId.Value,
@@ -223,11 +252,25 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 RenewCurrentCount = 0
             };
 
-            var person = RequestContext.CurrentPerson;
-            reminder.PersonAliasId = person.PrimaryAliasId.Value;
-            reminderService.Add( reminder );
+            if ( GetAttributeValue( AttributeKey.ShowAssignedTo ).AsBoolean() )
+            {
+                var assignedToPersonAlias = new PersonAliasService( rockContext ).GetId( assignedToPrimaryAliasGuid.Value );
 
+                if ( assignedToPersonAlias.HasValue )
+                {
+                    reminder.PersonAliasId = assignedToPersonAlias.Value;
+                }
+            }
+            else
+            {
+                var person = RequestContext.CurrentPerson;
+                reminder.PersonAliasId = person.PrimaryAliasId.Value;
+            }
+
+            reminderService.Add( reminder );
             rockContext.SaveChanges();
+
+            return reminder.Id;
         }
 
         /// <summary>
@@ -239,12 +282,18 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <param name="note">The note.</param>
         /// <param name="renewPeriodDays">The renew period days.</param>
         /// <param name="renewMaxCount">The renew maximum count.</param>
+        /// <param name="assignedToPersonAliasGuid">The person this reminder should be assigned to.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <remarks>This method should only be called when there is a Current Person in the request.</remarks>
-        private void UpdateReminder( Guid reminderGuid, Guid reminderTypeGuid, DateTime reminderDate, string note, int? renewPeriodDays, int? renewMaxCount, RockContext rockContext )
+        private int? UpdateReminder( Guid reminderGuid, Guid reminderTypeGuid, DateTime reminderDate, string note, int? renewPeriodDays, int? renewMaxCount, Guid? assignedToPersonAliasGuid, RockContext rockContext )
         {
             var reminderService = new ReminderService( rockContext );
             var reminder = reminderService.Get( reminderGuid );
+
+            if ( reminder == null )
+            {
+                return null;
+            }
 
             var reminderTypeId = new ReminderTypeService( rockContext ).GetId( reminderTypeGuid );
             reminder.ReminderTypeId = reminderTypeId.Value;
@@ -253,8 +302,45 @@ namespace Rock.Blocks.Types.Mobile.Reminders
             reminder.RenewPeriodDays = renewPeriodDays;
             reminder.RenewMaxCount = renewMaxCount;
 
-            var person = RequestContext.CurrentPerson;
-            reminder.PersonAliasId = person.PrimaryAliasId.Value;
+            if ( GetAttributeValue( AttributeKey.ShowAssignedTo ).AsBoolean() )
+            {
+                var assignedToPersonAlias = new PersonAliasService( rockContext ).GetId( assignedToPersonAliasGuid.Value );
+
+                if ( assignedToPersonAlias.HasValue )
+                {
+                    reminder.PersonAliasId = assignedToPersonAlias.Value;
+                }
+            }
+            else
+            {
+                var person = RequestContext.CurrentPerson;
+                reminder.PersonAliasId = person.PrimaryAliasId.Value;
+            }
+
+            rockContext.SaveChanges();
+            return reminder.Id;
+        }
+
+        /// <summary>
+        /// Links a reminder to a note.
+        /// </summary>
+        /// <param name="linkedNoteGuid">The GUID of the note to link the reminder to.</param>
+        /// <param name="linkedNoteTypeGuid">The Note Type to update the note to.</param>
+        /// <param name="reminderId">The reminder to link the note to.</param>
+        /// <param name="rockContext">The Rock Context.</param>
+        private void LinkReminderToNote( Guid linkedNoteGuid, Guid linkedNoteTypeGuid, int reminderId, RockContext rockContext )
+        {
+            var noteService = new NoteService( rockContext );
+            var note = noteService.Get( linkedNoteGuid );
+            var noteType = NoteTypeCache.Get( linkedNoteTypeGuid );
+
+            if ( note == null || noteType == null )
+            {
+                return;
+            }
+
+            note.EntityId = reminderId;
+            note.NoteTypeId = noteType.Id;
 
             rockContext.SaveChanges();
         }
@@ -266,7 +352,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
         /// <param name="personAliasService">The person service.</param>
         private void PopulateAdditionalPropertiesForReminderInfoBag( ReminderInfoBag bag, PersonAliasService personAliasService )
         {
-            if( bag == null )
+            if ( bag == null )
             {
                 return;
             }
@@ -281,13 +367,13 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 var personAlias = personAliasService.Get( bag.EntityGuid );
                 name = personAlias.Person.FullName;
             }
-            else if( entityType != null && entityType.Guid == Rock.SystemGuid.EntityType.CONNECTION_REQUEST.AsGuid() )
+            else if ( entityType != null && entityType.Guid == Rock.SystemGuid.EntityType.CONNECTION_REQUEST.AsGuid() )
             {
                 var connectionRequest = new ConnectionRequestService( new RockContext() ).Get( bag.EntityGuid );
 
                 var connectionRequestText = connectionRequest.ConnectionOpportunity?.Name ?? string.Empty;
 
-                if( connectionRequest.PersonAlias.Person.FullName.IsNotNullOrWhiteSpace() )
+                if ( connectionRequest.PersonAlias.Person.FullName.IsNotNullOrWhiteSpace() )
                 {
                     connectionRequestText += $" - {connectionRequest.PersonAlias.Person.FullName}";
                 }
@@ -430,15 +516,30 @@ namespace Rock.Blocks.Types.Mobile.Reminders
 
             using ( var rockContext = new RockContext() )
             {
+                var linkedNoteGuid = RequestContext.GetPageParameter( PageParameterKey.LinkedNoteGuid ).AsGuidOrNull();
+                var linkedNoteTypeGuid = RequestContext.GetPageParameter( PageParameterKey.LinkedNoteTypeGuid ).AsGuidOrNull();
+                int? reminderId;
+
                 // If we have an existing reminder, update that.
                 if ( reminderGuid.HasValue )
                 {
-                    UpdateReminder( reminderGuid.Value, reminderBag.ReminderTypeGuid, reminderBag.ReminderDate.DateTime, reminderBag.Note, reminderBag.RenewPeriodDays, reminderBag.RenewMaxCount, rockContext );
+                    reminderId = UpdateReminder( reminderGuid.Value, reminderBag.ReminderTypeGuid, reminderBag.ReminderDate.DateTime, reminderBag.Note, reminderBag.RenewPeriodDays, reminderBag.RenewMaxCount, reminderBag.AssignedToPrimaryAliasGuid, rockContext );
                 }
                 // Otherwise, create a new reminder.
                 else
                 {
-                    CreateReminder( reminderBag.ReminderTypeGuid, reminderBag.EntityGuid, reminderBag.ReminderDate.DateTime, reminderBag.Note, reminderBag.RenewPeriodDays, reminderBag.RenewMaxCount, rockContext );
+                    reminderId = CreateReminder( reminderBag.ReminderTypeGuid, reminderBag.EntityGuid, reminderBag.ReminderDate.DateTime, reminderBag.Note, reminderBag.RenewPeriodDays, reminderBag.RenewMaxCount, reminderBag.AssignedToPrimaryAliasGuid, rockContext );
+                }
+
+                if ( reminderId == null )
+                {
+                    return ActionBadRequest( "Failed to create or update your reminder." );
+                }
+
+                // If we have a linked note, link it to the reminder.
+                if ( linkedNoteGuid.HasValue && linkedNoteTypeGuid.HasValue )
+                {
+                    LinkReminderToNote( linkedNoteGuid.Value, linkedNoteTypeGuid.Value, reminderId.Value, rockContext );
                 }
 
                 return ActionOk();

@@ -18,6 +18,8 @@ namespace Rock.Mobile.JsonFields
 {
     /// <summary>
     /// The source of the data for the field. The two types are properties on the item model and an attribute expression.
+    /// This is copied to Rock.Enums/Controls/FieldSource.cs. If any changes are made here,
+    /// they may need to be copied there as well.
     /// </summary>
     public enum FieldSource
     {

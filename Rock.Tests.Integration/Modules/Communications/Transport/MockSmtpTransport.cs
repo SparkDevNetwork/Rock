@@ -14,24 +14,63 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Mail;
 using Rock.Communication;
 using Rock.Communication.Transport;
 using Rock.Model;
 
-namespace Rock.Tests.Integration.Communications.Transport
+namespace Rock.Tests.Integration.Modules.Communications.Transport
 {
     /// <summary>
     /// A mock transport component useful for testing communications involving the SMTP protocol.
     /// </summary>
     public class MockSmtpTransport : SMTPComponent
     {
+        private ConcurrentQueue<MockSmtpSendResult> _sentEmails = new ConcurrentQueue<MockSmtpSendResult>();
+
         protected override EmailSendResponse SendEmail( RockEmailMessage rockEmailMessage )
         {
+            // Create the message and set the default body text.
+            var mailMessage = GetMailMessageFromRockEmailMessage( rockEmailMessage );
+            mailMessage.Body = rockEmailMessage.Message;
+
+            // Add the message to the queue of processed items.
+            var processedItem = new MockSmtpSendResult
+            {
+                ProcessedDateTime = RockDateTime.Now,
+                RockMessage = rockEmailMessage,
+                EmailMessage = mailMessage
+            };
+
+            _sentEmails.Enqueue( processedItem );
+
             return new EmailSendResponse
             {
                 Status = CommunicationRecipientStatus.Delivered,
                 StatusNote = StatusNote
             };
         }
+
+        public IReadOnlyList<MockSmtpSendResult> ProcessedItems
+        {
+            get
+            {
+                return _sentEmails.ToList().AsReadOnly();
+            }
+        }
+    }
+
+    /// <summary>
+    /// The result of a send message action performed by the MockSmtpTransport.
+    /// </summary>
+    public class MockSmtpSendResult
+    {
+        public DateTime ProcessedDateTime { get; set; }
+        public RockEmailMessage RockMessage { get; set; }
+        public MailMessage EmailMessage { get; set; }
     }
 }

@@ -27,7 +27,7 @@ export type HttpResult<T> = {
     errorMessage: string | null;
 };
 
-export type HttpDoApiCallFunc = <T>(method: HttpMethod, url: string, params?: HttpUrlParams , data?: HttpBodyData) => Promise<HttpResult<T>>;
+export type HttpDoApiCallFunc = <T>(method: HttpMethod, url: string, params?: HttpUrlParams, data?: HttpBodyData) => Promise<HttpResult<T>>;
 
 export type HttpGetFunc = <T>(url: string, params?: HttpUrlParams) => Promise<HttpResult<T>>;
 

@@ -20,6 +20,9 @@ using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
 using Rock.Logging;
 using Rock.Model;
 
@@ -155,7 +158,7 @@ namespace Rock.Communication.Transport
             var mailMessage = GetMailMessageFromRockEmailMessage( rockEmailMessage );
             var smtpClient = GetSmtpClient();
 
-            RockLogger.Log.Debug( RockLogDomains.Communications, "{0}: Starting to send {1} to {2}.", nameof( SendEmailAsync ), rockEmailMessage.Subject, rockEmailMessage.GetRecipients().FirstOrDefault()?.To );
+            Logger.LogDebug( "{0}: Starting to send {1} to {2}.", nameof( SendEmailAsync ), rockEmailMessage.Subject, rockEmailMessage.GetRecipients().FirstOrDefault()?.To );
             await smtpClient.SendMailAsync( mailMessage ).ConfigureAwait( false );
 
             return new EmailSendResponse
@@ -165,7 +168,7 @@ namespace Rock.Communication.Transport
             };
         }
 
-        private MailMessage GetMailMessageFromRockEmailMessage( RockEmailMessage rockEmailMessage )
+        internal MailMessage GetMailMessageFromRockEmailMessage( RockEmailMessage rockEmailMessage )
         {
             var mailMessage = new MailMessage
             {
@@ -183,7 +186,10 @@ namespace Rock.Communication.Transport
             {
                 if ( rockEmailMessage.ReplyToEmail.IsNotNullOrWhiteSpace() )
                 {
-                    mailMessage.ReplyToList.Add( new MailAddress( rockEmailMessage.ReplyToEmail ) );
+                    foreach ( var replyToEmail in rockEmailMessage.ReplyToEmail.Split( ',' ).Where( e => e.IsNotNullOrWhiteSpace() ) )
+                    {
+                        mailMessage.ReplyToList.Add( new MailAddress( replyToEmail ) );
+                    }
                 }
             }
             catch
@@ -245,7 +251,9 @@ namespace Rock.Communication.Transport
                 }
             }
 
+            // Headers
             AddAdditionalHeaders( mailMessage, rockEmailMessage.MessageMetaData );
+            AddAdditionalHeaders( mailMessage, rockEmailMessage.EmailHeaders );
 
             return mailMessage;
         }

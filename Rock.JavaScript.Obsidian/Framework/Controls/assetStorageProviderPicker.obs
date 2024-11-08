@@ -53,8 +53,7 @@
      * Loads the items from the server.
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
-        const options: Partial<AssetStorageProviderPickerGetAssetStorageProvidersOptionsBag> = {
-        };
+        const options: AssetStorageProviderPickerGetAssetStorageProvidersOptionsBag = {};
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/AssetStorageProviderPickerGetAssetStorageProviders", undefined, options);
 
         if (result.isSuccess && result.data) {

@@ -120,6 +120,7 @@ namespace Rock.Model
             target.IsSystem = source.IsSystem;
             target.Name = source.Name;
             target.Path = source.Path;
+            target.SiteTypeFlags = source.SiteTypeFlags;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

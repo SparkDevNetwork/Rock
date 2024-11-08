@@ -94,7 +94,7 @@
                             <asp:Literal ID="lActiveLabel" runat="server" /><br />
                         </ItemTemplate>
                     </Rock:RockTemplateField>
-                    <Rock:RockLiteralField ID="lChevronRight" Text="<i class='fa fa-chevron-right'></i>" ItemStyle-HorizontalAlign="Right" />
+                    <Rock:RockLiteralField ID="lChevronRight" Text="<i class='fa fa-chevron-right'></i>" ItemStyle-HorizontalAlign="Right" ItemStyle-CssClass="align-middle" />
                 </Columns>
             </Rock:Grid>
         </asp:Panel>

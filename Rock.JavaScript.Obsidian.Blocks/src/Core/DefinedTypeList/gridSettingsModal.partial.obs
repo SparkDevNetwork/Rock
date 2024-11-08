@@ -1,0 +1,73 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <CategoryPicker label="Category"
+                            v-model="category"
+                            :multiple="false"
+                            :entityTypeGuid="entityTypeGuid" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const entityTypeGuid = EntityType.DefinedType;
+    const category = ref(props.modelValue.category);
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            category: category.value
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.modelValue, () => {
+        category.value = props.modelValue.category;
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

@@ -1,7 +1,8 @@
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="isVisible"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="id"
+          keyField="idKey"
           itemTerm="Clicks"
           stickyHeader
           liveUpdates
@@ -11,6 +12,7 @@
                         title="Date / Time"
                         field="interactionDateTime"
                         :filter="textValueFilter"
+                        :itemClass="'align-right justify-content-end'"
                         visiblePriority="xs" />
 
         <PersonColumn name="person"
@@ -52,7 +54,8 @@
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PageShortLinkClickListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkClickList/pageShortLinkClickListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { reactive, ref } from "vue";
+    import { reactive, ref, computed } from "vue";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<PageShortLinkClickListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -62,6 +65,14 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
 
     let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isVisible = computed((): boolean => {
+        return useStore().state.areSecondaryBlocksShown;
+    });
 
     // #endregion
 

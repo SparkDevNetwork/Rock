@@ -17,10 +17,13 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Text;
 
 using Newtonsoft.Json;
 
+using Rock.Attribute;
 using Rock.Model;
 using Rock.Utility.ExtensionMethods;
 
@@ -35,10 +38,12 @@ namespace Rock.Logging
     /// point in time.
     /// </summary>
     /// <seealso cref="Rock.Logging.IRockLogReader" />
-    internal class RockSerilogReader : IRockLogReader
+    [RockInternal( "1.17", true )]
+    public class RockSerilogReader : IRockLogReader
     {
-        private readonly IRockLogger _rockLogger;
         private readonly JsonSerializer _jsonSerializer;
+        private readonly string _rockLogDirectory;
+        private readonly string _searchPattern;
 
         private int _malformedLogEventCount = 0;
 
@@ -59,16 +64,61 @@ namespace Rock.Logging
         /// <summary>
         /// Initializes a new instance of the <see cref="RockSerilogReader"/> class.
         /// </summary>
-        /// <param name="logger">The logger.</param>
-        public RockSerilogReader( IRockLogger logger )
+        /// <param name="configuration">The configuration for Serilog.</param>
+        internal RockSerilogReader( SerilogConfiguration configuration )
         {
-            _rockLogger = logger;
-
             _jsonSerializer = JsonSerializer.Create( new JsonSerializerSettings
             {
                 DateParseHandling = DateParseHandling.None,
                 Culture = CultureInfo.InvariantCulture
             } );
+
+            _rockLogDirectory = Path.GetFullPath( Path.GetDirectoryName( configuration.LogPath ) );
+
+            _searchPattern = Path.GetFileNameWithoutExtension( configuration.LogPath ) +
+                                "*" +
+                                Path.GetExtension( configuration.LogPath );
+        }
+
+        /// <summary>
+        /// Gets the log files.
+        /// </summary>
+        /// <value>
+        /// The log files.
+        /// </value>
+        public List<string> GetLogFiles()
+        {
+            if ( !Directory.Exists( _rockLogDirectory ) )
+            {
+                return new List<string>();
+            }
+
+            return Directory.GetFiles( _rockLogDirectory, _searchPattern ).OrderByDescending( s => s ).ToList();
+        }
+
+        /// <summary>
+        /// Deletes all of the log files.
+        /// </summary>
+        public void Delete()
+        {
+            if ( !Directory.Exists( _rockLogDirectory ) )
+            {
+                return;
+            }
+
+            foreach ( var file in GetLogFiles() )
+            {
+                try
+                {
+                    System.IO.File.Delete( file );
+                }
+                catch ( Exception ex )
+                {
+                    // If you get an exception it is probably because the file is in use
+                    // and we can't delete it. So just move on.
+                    ExceptionLogService.LogException( ex );
+                }
+            }
         }
 
         /// <summary>
@@ -79,8 +129,6 @@ namespace Rock.Logging
         /// <returns></returns>
         public List<RockLogEvent> GetEvents( int startIndex, int count )
         {
-            _rockLogger.Close();
-
             var logs = GetLogLines( startIndex, count );
 
             return GetRockLogEventsFromLogLines( startIndex, count, logs );
@@ -108,7 +156,7 @@ namespace Rock.Logging
 
         private string[] GetLogLines( int startIndex, int count )
         {
-            var rockLogFiles = _rockLogger.LogFiles;
+            var rockLogFiles = GetLogFiles();
             if ( rockLogFiles.Count == 0 )
             {
                 return new string[] { };
@@ -117,12 +165,12 @@ namespace Rock.Logging
             var currentFileIndex = 0;
             try
             {
-                var logs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
+                var logs = ReadAllLinesSharedAccess( rockLogFiles[currentFileIndex] );
 
                 while ( ( startIndex >= logs.Length || startIndex + count >= logs.Length ) && currentFileIndex < ( rockLogFiles.Count - 1 ) )
                 {
                     currentFileIndex++;
-                    var additionalLogs = System.IO.File.ReadAllLines( rockLogFiles[currentFileIndex] );
+                    var additionalLogs = ReadAllLinesSharedAccess( rockLogFiles[currentFileIndex] );
                     var temp = new string[additionalLogs.Length + logs.Length];
                     additionalLogs.CopyTo( temp, 0 );
                     logs.CopyTo( temp, additionalLogs.Length );
@@ -139,9 +187,29 @@ namespace Rock.Logging
             }
         }
 
+        private string[] ReadAllLinesSharedAccess( string filename )
+        {
+            using ( var fs = File.Open( filename, FileMode.Open, FileAccess.Read, FileShare.ReadWrite ) )
+            {
+                var list = new List<string>();
+
+                using ( StreamReader streamReader = new StreamReader( fs, Encoding.UTF8 ) )
+                {
+                    string item;
+
+                    while ( ( item = streamReader.ReadLine() ) != null )
+                    {
+                        list.Add( item );
+                    }
+                }
+
+                return list.ToArray();
+            }
+        }
+
         private int GetRockLogRecordCount()
         {
-            var rockLogFiles = _rockLogger.LogFiles;
+            var rockLogFiles = GetLogFiles();
             if ( rockLogFiles.Count == 0 )
             {
                 return 0;
@@ -153,18 +221,15 @@ namespace Rock.Logging
             {
                 foreach ( var filePath in rockLogFiles )
                 {
-                    _rockLogger.Close();
                     var logFileInfo = new System.IO.FileInfo( filePath );
 
                     // if the logFile is zero-length, we'll get an i/o error when reading it, so skip it
                     if ( logFileInfo.Exists && logFileInfo.Length > 0 )
                     {
-
-                        using ( var file = logFileInfo.OpenRead() )
+                        using ( var file = logFileInfo.Open( FileMode.Open, FileAccess.Read, FileShare.ReadWrite ) )
                         {
                             lines += file.CountLines();
                         }
-
                     }
                 }
             }
@@ -186,22 +251,24 @@ namespace Rock.Logging
             return Convert.ToInt32( lines );
         }
 
-        private RockLogLevel GetRockLogLevelFromSerilogLevel( LogEventLevel logLevel )
+        private Microsoft.Extensions.Logging.LogLevel GetRockLogLevelFromSerilogLevel( LogEventLevel logLevel )
         {
             switch ( logLevel )
             {
+                case ( LogEventLevel.Fatal ):
+                    return Microsoft.Extensions.Logging.LogLevel.Critical;
                 case ( LogEventLevel.Error ):
-                    return RockLogLevel.Error;
+                    return Microsoft.Extensions.Logging.LogLevel.Error;
                 case ( LogEventLevel.Warning ):
-                    return RockLogLevel.Warning;
+                    return Microsoft.Extensions.Logging.LogLevel.Warning;
                 case ( LogEventLevel.Information ):
-                    return RockLogLevel.Info;
+                    return Microsoft.Extensions.Logging.LogLevel.Information;
                 case ( LogEventLevel.Debug ):
-                    return RockLogLevel.Debug;
+                    return Microsoft.Extensions.Logging.LogLevel.Debug;
                 case ( LogEventLevel.Verbose ):
-                    return RockLogLevel.All;
+                    return Microsoft.Extensions.Logging.LogLevel.Trace;
                 default:
-                    return RockLogLevel.Fatal;
+                    return Microsoft.Extensions.Logging.LogLevel.None;
             }
         }
 
@@ -211,18 +278,18 @@ namespace Rock.Logging
             {
                 var evt = LogEventReader.ReadFromString( logLine, _jsonSerializer );
 
-                var domain = evt.Properties["domain"].ToString();
-                evt.RemovePropertyIfPresent( "domain" );
+                var category = evt.Properties["SourceContext"].ToString();
+                evt.RemovePropertyIfPresent( "SourceContext" );
 
-                var message = evt.RenderMessage().Replace( "{domain}", "" ).Trim();
-                domain = domain.Replace( "\"", "" );
+                var message = evt.RenderMessage();
+                category = category.Replace( "\"", "" );
 
                 return new RockLogEvent
                 {
                     DateTime = evt.Timestamp.DateTime.ToLocalTime(),
                     Exception = evt.Exception,
-                    Level = GetRockLogLevelFromSerilogLevel( evt.Level ),
-                    Domain = domain,
+                    LogLevel = GetRockLogLevelFromSerilogLevel( evt.Level ),
+                    Category = category,
                     Message = message
                 };
             }

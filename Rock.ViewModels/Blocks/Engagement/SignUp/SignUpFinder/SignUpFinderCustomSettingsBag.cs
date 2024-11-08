@@ -115,6 +115,14 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpFinder
         public bool EnableCampusContext { get; set; }
 
         /// <summary>
+        /// Gets or sets whether to hide campuses with no opportunities.
+        /// </summary>
+        /// <value>
+        /// Whether to hide campuses with no opportunities.
+        /// </value>
+        public bool HideCampusesWithNoOpportunities { get; set; }
+
+        /// <summary>
         /// Gets or sets the types of campuses to include in the campus list.
         /// </summary>
         /// <value>
@@ -129,6 +137,14 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpFinder
         /// The statuses of the campuses to include in the campus list.
         /// </value>
         public List<ListItemBag> CampusStatuses { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campuses to include in the campus list.
+        /// </summary>
+        /// <value>
+        /// The campuses to include in the campus list.
+        /// </value>
+        public List<string> Campuses { get; set; }
 
         #endregion
 

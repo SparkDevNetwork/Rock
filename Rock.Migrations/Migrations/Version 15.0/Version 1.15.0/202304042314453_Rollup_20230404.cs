@@ -114,7 +114,9 @@ namespace Rock.Migrations
         /// </summary>
         private void AddPageRouteAndUpdateInsightsMetricsCalculationsUp()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             RockMigrationHelper.AddPageRoute( "721C8E32-CAAD-4670-AD1B-04FC42A26BB2", "reporting/insights", "308B3E0D-CE23-4590-ACDB-0A95C4E9C330" );
+#pragma warning restore CS0618 // Type or member is obsolete
             Sql( @"
                 -- ACTIVE EMAIL
                 UPDATE Metric 

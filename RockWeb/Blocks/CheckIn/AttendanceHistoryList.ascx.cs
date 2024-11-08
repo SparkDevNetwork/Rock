@@ -71,7 +71,6 @@ namespace RockWeb.Blocks.Checkin
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             var contextEntity = this.ContextEntity();
             if ( contextEntity != null )
             {
@@ -113,6 +112,8 @@ namespace RockWeb.Blocks.Checkin
                     gHistory.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -448,7 +449,7 @@ namespace RockWeb.Blocks.Checkin
                     locationPath = locationNames.AsDelimited( " > " );
                 }
 
-                _locationPaths.AddOrIgnore( location.Id, locationPath );
+                _locationPaths.TryAdd( location.Id, locationPath );
             }
 
             gHistory.EntityTypeId = EntityTypeCache.Get<Attendance>().Id;

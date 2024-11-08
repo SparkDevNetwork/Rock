@@ -42,7 +42,7 @@ namespace Rock.Blocks.Tv
     [Category( "TV > TV Apps" )]
     [Description( "Allows a person to edit an Apple TV application.." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -183,13 +183,12 @@ namespace Rock.Blocks.Tv
                 IsSystem = entity.IsSystem,
                 Name = entity.Name,
                 Description = entity.Description,
-                EnablePageViews = entity.EnablePageViews,
+                EnablePageViews = entity.Id != 0 && entity.EnablePageViews,
                 LoginPage = new ViewModels.Rest.Controls.PageRouteValueBag()
                 {
                     Page = entity.LoginPage.ToListItemBag(),
                     Route = entity.LoginPageRoute.ToListItemBag(),
-                },
-                EnablePageViewGeoTracking = entity.EnablePageViewGeoTracking
+                }
             };
 
             var additionalSettings = entity.AdditionalSettings.FromJsonOrNull<AppleTvApplicationSettings>() ?? new AppleTvApplicationSettings();
@@ -209,7 +208,7 @@ namespace Rock.Blocks.Tv
             bag.PageViewRetentionPeriod = new InteractionChannelService( new RockContext() ).Queryable()
                     .Where( c => c.ChannelTypeMediumValueId == channelMediumWebsiteValueId && c.ChannelEntityId == entity.Id )
                     .Select( c => c.RetentionDuration )
-                    .FirstOrDefault();
+                    .FirstOrDefault()?.ToString();
 
             return bag;
         }
@@ -253,7 +252,7 @@ namespace Rock.Blocks.Tv
 
             if ( entity.Id == 0 )
             {
-                var stream = typeof( RockBlockType ).Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
+                var stream = GetType().Assembly.GetManifestResourceStream( "Rock.Blocks.DefaultTvApplication.js" );
 
                 if ( stream != null )
                 {
@@ -292,9 +291,6 @@ namespace Rock.Blocks.Tv
 
             box.IfValidProperty( nameof( box.Entity.EnablePageViews ),
                 () => entity.EnablePageViews = box.Entity.EnablePageViews );
-
-            box.IfValidProperty( nameof( box.Entity.EnablePageViewGeoTracking ),
-                () => entity.EnablePageViewGeoTracking = box.Entity.EnablePageViewGeoTracking );
 
             box.IfValidProperty( nameof( box.Entity.LoginPage ),
                 () =>
@@ -567,7 +563,7 @@ namespace Rock.Blocks.Tv
                 }
 
                 interactionChannelForSite.Name = entity.Name;
-                interactionChannelForSite.RetentionDuration = entity.EnablePageViews ? box.Entity.PageViewRetentionPeriod : null;
+                interactionChannelForSite.RetentionDuration = entity.EnablePageViews ? box.Entity.PageViewRetentionPeriod.AsIntegerOrNull() : null;
                 interactionChannelForSite.ComponentEntityTypeId = EntityTypeCache.Get<Page>().Id;
 
                 rockContext.SaveChanges();

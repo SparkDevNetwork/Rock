@@ -19,7 +19,7 @@
                                   label="Entity Type"
                                   :multiple="false"
                                   showBlankItem
-                                  :includeGlobalOption="false" />
+                                  :includeGlobalOption="true" />
             </div>
         </div>
         <div class="row">

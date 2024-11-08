@@ -1,0 +1,115 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Web Farm Node Log"
+          :entityTypeGuid="EntityType.WebFarmNodeLog"
+          stickyHeader
+          liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true"
+          :showLaunchWorkflow="false">
+
+          <DateTimeColumn name="logDate" title="Date" field="logDate" :filter="dateValueFilter" visiblePriority="sm" width="15%" />
+
+          <TextColumn name="writerNodeName" title="Writer Node Name" field="writerNodeName" :filter="textValueFilter" visiblePriority="sm" width="17%" /> />
+
+          <TextColumn name="nodeName" title="Node Name" field="nodeName" :filter="textValueFilter" visiblePriority="xs" width="17%" /> />
+
+          <LabelColumn name="severity" title="Severity" field="severity" :filter="pickExistingValueFilter" :textSource="LogSeverityDescription" :classSource="logSeverityColors" width="120" visiblePriority="xs" />
+
+          <LabelColumn name="type" title="Type" field="type" :filter="pickExistingValueFilter" :textSource="LogTypeDescription" :classSource="logTypeColors" width="120" visiblePriority="xs" />
+
+          <TextColumn name="details" title="Details" field="details" :filter="textValueFilter" visiblePriority="sm" width="40%" /> />
+
+          <TextColumn name="id" title="Id" field="id" :hideOnScreen="true" />
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings" v-model:visible="isGridSettingsVisible" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { DateTimeColumn, TextColumn, LabelColumn, dateValueFilter, textValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { WebFarmNodeLogListOptionsBag } from "@Obsidian/ViewModels/Blocks/WebFarm/WebFarmNodeLogList/webFarmNodeLogListOptionsBag";
+    import { LogSeverity, LogSeverityDescription } from "@Obsidian/Enums/WebFarm/logSeverity";
+    import { LogType, LogTypeDescription } from "@Obsidian/Enums/WebFarm/logType";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { reactive, ref, computed, watch } from "vue";
+    import GridSettingsModal from "./WebFarmNodeLogList/gridSettingsModal.partial.obs";
+    import { GridSettingsOptions, PreferenceKey } from "./WebFarmNodeLogList/types.partial";
+
+    const config = useConfigurationValues<ListBlockBox<WebFarmNodeLogListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+
+    const gridSettings = ref<GridSettingsOptions>({
+        dateRange: preferences.getValue(PreferenceKey.FilterDateRange),
+    });
+
+    const logSeverityColors: Record<string, string> = {
+        [LogSeverityDescription[LogSeverity.Info]]: "info",
+        [LogSeverityDescription[LogSeverity.Warning]]: "warning",
+        [LogSeverityDescription[LogSeverity.Critical]]: "danger"
+    };
+
+    const logTypeColors: Record<string, string> = {
+        [LogTypeDescription[LogType.Availability]]: "info",
+        [LogTypeDescription[LogType.Ping]]: "info",
+        [LogTypeDescription[LogType.Pong]]: "info",
+        [LogTypeDescription[LogType.Startup]]: "info",
+        [LogTypeDescription[LogType.Shutdown]]: "warning",
+        [LogTypeDescription[LogType.Error]]: "danger"
+    };
+
+    // #endregion
+
+    // #region Computed Values
+
+        /** `true` if the grid settings is performing any filtering. */
+        const hasSettingsFilters = computed((): boolean => {
+        return !!gridSettings.value.dateRange;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterDateRange, gridSettings.value.dateRange ?? "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    gridDataSource.value = loadGridData();
+</script>

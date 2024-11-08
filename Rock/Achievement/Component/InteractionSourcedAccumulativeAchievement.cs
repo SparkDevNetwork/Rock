@@ -492,6 +492,12 @@ namespace Rock.Achievement.Component
             return attempts;
         }
 
+        /// <inheritdoc/>
+        protected internal override int? GetTargetCount( AchievementType achievementType )
+        {
+            return achievementType.GetAttributeValue( AttributeKey.NumberToAccumulate ).AsIntegerOrNull();
+        }
+
         #region Helpers
 
         /// <summary>

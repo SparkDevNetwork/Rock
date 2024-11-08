@@ -94,7 +94,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "The Lava template to use to render the results.",
         IsRequired = true,
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUPS_GROUP_FINDER,
-        DefaultValue = "CC117DBB-5C3C-4A32-8ABA-88A7493C7F70",
+        DefaultValue = "4EA2A456-8164-48DA-851A-1F8979EB8B8E",
         Key = AttributeKey.Template,
         Order = 5 )]
 

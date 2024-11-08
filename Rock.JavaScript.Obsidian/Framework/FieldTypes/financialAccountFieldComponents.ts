@@ -145,10 +145,10 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <div>
-    <CheckBox v-model="displayPublicName" label="Display Public Name" text="Yes" help="When set, public name will be displayed." />
-    <CheckBox v-model="displayChildItemCounts" label="Display Child Item Counts" text="Yes" help="When set, child item counts will be displayed." />
-    <CheckBox v-model="displayActiveItemsOnly" label="Display Active Items Only" text="Yes" help="When set, only active item will be displayed." />
-    <CheckBox v-model="enhanceForLongLists" label="Enhance For Long Lists" text="Yes" help="When set, allows a searching for items." />
+    <CheckBox v-model="displayPublicName" label="Display Public Name" help="When set, public name will be displayed." />
+    <CheckBox v-model="displayChildItemCounts" label="Display Child Item Counts" help="When set, child item counts will be displayed." />
+    <CheckBox v-model="displayActiveItemsOnly" label="Display Active Items Only" help="When set, only active item will be displayed." />
+    <CheckBox v-model="enhanceForLongLists" label="Enhance For Long Lists" help="When set, allows a searching for items." />
 </div>
 `
 });

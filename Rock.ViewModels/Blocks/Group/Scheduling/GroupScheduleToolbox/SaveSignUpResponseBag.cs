@@ -28,7 +28,7 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox
         public string SaveError { get; set; }
 
         /// <summary>
-        /// Gets or sets the current sign-ups; will only be provided if the save failed.
+        /// Gets or sets the updated sign-ups after the save attempt.
         /// </summary>
         public SignUpsBag SignUps { get; set; }
     }

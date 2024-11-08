@@ -30,6 +30,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Model;
+using Rock.Model.Groups.Group.Options;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Utility.Enums;
@@ -475,8 +476,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             int? groupId = 0;
             if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.GroupId ) ) )
             {
@@ -485,6 +484,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !Page.IsPostBack )
             {
+                btnCopy.Visible = GetAttributeValue( AttributeKey.ShowCopyButton ).AsBoolean();
                 if ( groupId.HasValue )
                 {
                     ShowDetail( groupId.Value, PageParameter( PageParameterKey.ParentGroupId ).AsIntegerOrNull() );
@@ -493,8 +493,6 @@ namespace RockWeb.Blocks.Groups
                 {
                     pnlDetails.Visible = false;
                 }
-
-                btnCopy.Visible = GetAttributeValue( AttributeKey.ShowCopyButton ).AsBoolean();
             }
             else
             {
@@ -532,6 +530,8 @@ namespace RockWeb.Blocks.Groups
                     FollowingsHelper.SetFollowing( group, pnlFollowing, this.CurrentPerson );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -558,6 +558,7 @@ namespace RockWeb.Blocks.Groups
             ViewState["AllowMultipleLocations"] = AllowMultipleLocations;
             ViewState["GroupSyncState"] = JsonConvert.SerializeObject( GroupSyncState, Formatting.None, jsonSetting );
             ViewState["MemberWorkflowTriggersState"] = JsonConvert.SerializeObject( MemberWorkflowTriggersState, Formatting.None, jsonSetting );
+            ViewState["ScheduleCoordinatorNotificationTypes"] = cblScheduleCoordinatorNotificationTypes.SelectedValuesAsInt;
 
             return base.SaveViewState();
         }
@@ -1065,11 +1066,35 @@ namespace RockWeb.Blocks.Groups
             // Save Scheduling settings.
             group.SchedulingMustMeetRequirements = cbSchedulingMustMeetRequirements.Checked;
             group.AttendanceRecordRequiredForCheckIn = ddlAttendanceRecordRequiredForCheckIn.SelectedValueAsEnum<AttendanceRecordRequiredForCheckIn>();
-            group.ScheduleCancellationPersonAliasId = ppScheduleCancellationPerson.PersonAliasId;
+            group.ScheduleCoordinatorPersonAliasId = ppScheduleCoordinatorPerson.PersonAliasId;
             group.DisableScheduling = cbDisableGroupScheduling.Checked;
             group.DisableScheduleToolboxAccess = cbDisableScheduleToolboxAccess.Checked;
             group.ScheduleConfirmationLogic = ddlScheduleConfirmationLogic.SelectedValueAsEnumOrNull<ScheduleConfirmationLogic>();
             string iCalendarContent = string.Empty;
+
+            ScheduleCoordinatorNotificationType? notificationTypes = null;
+            foreach ( var li in cblScheduleCoordinatorNotificationTypes.Items.Cast<ListItem>() )
+            {
+                if ( !li.Selected )
+                {
+                    continue;
+                }
+
+                var selectedType = ( ScheduleCoordinatorNotificationType ) li.Value.AsInteger();
+                if ( selectedType == ScheduleCoordinatorNotificationType.None )
+                {
+                    // Ensure that if "None" is selected, it's the only value that can be saved.
+                    notificationTypes = ScheduleCoordinatorNotificationType.None;
+                    break;
+                }
+
+                // Otherwise save all selected values.
+                notificationTypes = notificationTypes.HasValue
+                    ? notificationTypes | selectedType
+                    : selectedType;
+            }
+
+            group.ScheduleCoordinatorNotificationTypes = notificationTypes;
 
             // If unique schedule option was selected, but a schedule was not defined, set option to 'None'
             var scheduleType = rblScheduleSelect.SelectedValueAsEnum<ScheduleType>( ScheduleType.None );
@@ -1357,101 +1382,42 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCopy_Click( object sender, EventArgs e )
         {
-            var rockContext = new RockContext();
-            var groupService = new GroupService( rockContext );
-            var authService = new AuthService( rockContext );
-            var attributeService = new AttributeService( rockContext );
+            mdCopyGroup.Show();
+        }
 
+        /// <summary>
+        /// Handles the SaveClick event of the mdCopyGroup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdCopyGroup_SaveClick( object sender, EventArgs e )
+        {
             int groupId = hfGroupId.ValueAsInt();
-            var group = groupService.Queryable( "GroupType" )
-                    .Where( g => g.Id == groupId )
-                    .FirstOrDefault();
+            bool includeChildGroups = cbCopyGroupIncludeChildGroups.Checked;
+            int? newGroupId = null;
 
-            if ( group != null )
+            if ( groupId > 0 )
             {
-                group.LoadAttributes( rockContext );
-
-                // Clone the group
-                var newGroup = group.CloneWithoutIdentity();
-                newGroup.IsSystem = false;
-                newGroup.Name = group.Name + " - Copy";
-
-                if ( group.ScheduleId.HasValue && group.Schedule.ScheduleType != ScheduleType.Named )
+                var currentGroup = GetGroup( hfGroupId.Value.AsInteger() );
+                if ( currentGroup != null && !currentGroup.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
                 {
-                    newGroup.Schedule = new Schedule();
-
-                    // NOTE: Schedule Name should be set to string.Empty to indicate that it is a Custom or Weekly schedule and not a "Named" schedule.
-                    newGroup.Schedule.Name = string.Empty;
-                    newGroup.Schedule.iCalendarContent = group.Schedule.iCalendarContent;
-                    newGroup.Schedule.WeeklyDayOfWeek = group.Schedule.WeeklyDayOfWeek;
-                    newGroup.Schedule.WeeklyTimeOfDay = group.Schedule.WeeklyTimeOfDay;
+                    nbEditModeMessage.Visible = true;
+                    nbEditModeMessage.Text = "You are not authorized to copy the group";
+                    return;
                 }
-
-                var auths = authService.GetByGroup( group.Id );
-                rockContext.WrapTransaction( () =>
+                var copyGroupOptions = new CopyGroupOptions
                 {
-                    groupService.Add( newGroup );
-                    rockContext.SaveChanges();
-
-                    newGroup.LoadAttributes( rockContext );
-
-                    Rock.Attribute.Helper.CopyAttributes( group, newGroup, rockContext );
-
-                    newGroup.SaveAttributeValues( rockContext );
-
-                    /* Take care of Group Member Attributes */
-                    var entityTypeId = EntityTypeCache.Get( typeof( GroupMember ) ).Id;
-                    string qualifierColumn = "GroupId";
-                    string qualifierValue = group.Id.ToString();
-
-                    // Get the existing attributes for this entity type and qualifier value
-                    var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
-
-                    foreach ( var attribute in attributes )
-                    {
-                        var newAttribute = attribute.Clone( false );
-                        newAttribute.Id = 0;
-                        newAttribute.Guid = Guid.NewGuid();
-                        newAttribute.IsSystem = false;
-                        newAttribute.EntityTypeQualifierValue = newGroup.Id.ToString();
-
-                        foreach ( var qualifier in attribute.AttributeQualifiers )
-                        {
-                            var newQualifier = qualifier.Clone( false );
-                            newQualifier.Id = 0;
-                            newQualifier.Guid = Guid.NewGuid();
-                            newQualifier.IsSystem = false;
-
-                            newAttribute.AttributeQualifiers.Add( newQualifier );
-                        }
-
-                        attributeService.Add( newAttribute );
-                    }
-
-                    rockContext.SaveChanges();
-
-                    foreach ( var auth in auths )
-                    {
-                        var newAuth = auth.CloneWithoutIdentity();
-                        newAuth.GroupId = newGroup.Id;
-                        authService.Add( newAuth );
-                    }
-
-                    rockContext.SaveChanges();
-                    Rock.Security.Authorization.Clear();
-
-                    // Copy the group-specific requirements.
-                    foreach ( var groupRequirement in group.GroupRequirements )
-                    {
-                        GroupRequirement newGroupRequirement = groupRequirement.CloneWithoutIdentity();
-                        newGroup.GroupRequirements.Add( newGroupRequirement );
-                    }
-
-                    rockContext.SaveChanges();
-                } );
-
-                NavigateToCurrentPage( new Dictionary<string, string> { { PageParameterKey.GroupId, newGroup.Id.ToString() } } );
+                    GroupId = groupId,
+                    IncludeChildGroups = includeChildGroups,
+                    CreatedByPersonAliasId = CurrentPersonAliasId
+                };
+                newGroupId = GroupService.CopyGroup( copyGroupOptions );
             }
+
+            var qryParams = new Dictionary<string, string>();
+            qryParams[PageParameterKey.GroupId] = newGroupId.HasValue && newGroupId > 0 ? newGroupId.Value.ToString() : groupId.ToString();
+            qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+            NavigateToPage( RockPage.Guid, qryParams );
         }
 
         #endregion
@@ -1559,8 +1525,8 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            btnCopy.Visible = GetAttributeValue( AttributeKey.ShowCopyButton ).AsBoolean();
             var currentGroup = GetGroup( hfGroupId.Value.AsInteger() );
+            btnCopy.Visible = GetAttributeValue( AttributeKey.ShowCopyButton ).AsBoolean() && currentGroup.IsAuthorized( Authorization.EDIT, CurrentPerson );
             if ( currentGroup != null )
             {
                 ShowReadonlyDetails( currentGroup );
@@ -1587,6 +1553,53 @@ namespace RockWeb.Blocks.Groups
         protected void rblScheduleSelect_SelectedIndexChanged( object sender, EventArgs e )
         {
             SetScheduleDisplay();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the cblScheduleCoordinatorNotificationTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cblScheduleCoordinatorNotificationTypes_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            // Retrieve the previously-selected values before this postback.
+            var previouslySelectedValues = ( List<int> ) ViewState["ScheduleCoordinatorNotificationTypes"] ?? new List<int>();
+
+            // Was "None" selected before this postback?
+            var wasNoneSelected = previouslySelectedValues.Any( v =>
+                ( ScheduleCoordinatorNotificationType ) v == ScheduleCoordinatorNotificationType.None
+            );
+
+            // Get the currently-selected values.
+            var selectedValues = cblScheduleCoordinatorNotificationTypes.SelectedValuesAsInt ?? new List<int>();
+
+            // Is "None" selected now?
+            var isNoneSelected = selectedValues.Any( v =>
+                ( ScheduleCoordinatorNotificationType ) v == ScheduleCoordinatorNotificationType.None
+            );
+
+            // Are any other options selected now?
+            var anyOthersSelected = selectedValues.Any( v =>
+                ( ScheduleCoordinatorNotificationType ) v != ScheduleCoordinatorNotificationType.None
+            );
+
+            foreach ( var li in cblScheduleCoordinatorNotificationTypes.Items.Cast<ListItem>() )
+            {
+                var notificationType = ( ScheduleCoordinatorNotificationType ) li.Value.AsInteger();
+
+                // If "None" wasn't selected, but is now, deselect all other options.
+                if ( !wasNoneSelected && isNoneSelected )
+                {
+                    li.Selected = notificationType == ScheduleCoordinatorNotificationType.None;
+                    continue;
+                }
+
+                // If "None" was (and still is) selected, but other options have now been selected, deselect "None".
+                if ( isNoneSelected && anyOthersSelected && notificationType == ScheduleCoordinatorNotificationType.None )
+                {
+                    li.Selected = false;
+                }
+            }
         }
 
         #endregion
@@ -1715,6 +1728,7 @@ namespace RockWeb.Blocks.Groups
                 btnEdit.Visible = false;
                 btnDelete.Visible = false;
                 btnArchive.Visible = false;
+                btnCopy.Visible = false;
                 ShowReadonlyDetails( group );
             }
             else
@@ -1932,13 +1946,27 @@ namespace RockWeb.Blocks.Groups
             ddlAttendanceRecordRequiredForCheckIn.SetValue( group.AttendanceRecordRequiredForCheckIn.ConvertToInt() );
             ddlScheduleConfirmationLogic.SetValue( group.ScheduleConfirmationLogic.HasValue ? group.ScheduleConfirmationLogic.ConvertToInt().ToString() : null );
 
-            if ( group.ScheduleCancellationPersonAlias != null )
+            foreach ( var li in cblScheduleCoordinatorNotificationTypes.Items.Cast<ListItem>() )
             {
-                ppScheduleCancellationPerson.SetValue( group.ScheduleCancellationPersonAlias.Person );
+                var notificationType = ( ScheduleCoordinatorNotificationType ) li.Value.AsInteger();
+                if ( notificationType == ScheduleCoordinatorNotificationType.None )
+                {
+                    // "None" must be explicitly evaluated, otherwise the bitwise operator could return false positives.
+                    li.Selected = group.ScheduleCoordinatorNotificationTypes == ScheduleCoordinatorNotificationType.None;
+                }
+                else
+                {
+                    li.Selected = ( group.ScheduleCoordinatorNotificationTypes & notificationType ) == notificationType;
+                }
+            }
+
+            if ( group.ScheduleCoordinatorPersonAlias != null )
+            {
+                ppScheduleCoordinatorPerson.SetValue( group.ScheduleCoordinatorPersonAlias.Person );
             }
             else
             {
-                ppScheduleCancellationPerson.SetValue( null );
+                ppScheduleCoordinatorPerson.SetValue( null );
             }
 
             // If this block's attribute limit group to SecurityRoleGroups, don't let them edit the SecurityRole checkbox value
@@ -3569,7 +3597,7 @@ namespace RockWeb.Blocks.Groups
                 {
                     dpDueDate.Visible = true;
                     dpDueDate.Required = true;
-                    dpDueDate.SelectedDate = selectedGroupRequirement.DueDateStaticDate.Value;
+                    dpDueDate.SelectedDate = selectedGroupRequirement.DueDateStaticDate;
                 }
             }
             else
@@ -4550,24 +4578,21 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void cbIsSecurityRole_CheckedChanged( object sender, EventArgs e )
         {
-            // Grouptype changed, so load up the new attributes and set controls to the default attribute values
-            if ( ddlGroupType.Visible )
+            var groupId = PageParameter( PageParameterKey.GroupId ).AsIntegerOrNull();
+            if ( !groupId.HasValue )
             {
-                CurrentGroupTypeId = ddlGroupType.SelectedValueAsInt() ?? 0;
+                return;
             }
 
-            if ( CurrentGroupTypeId > 0 )
+            var groupType = CurrentGroupTypeCache;
+            var group = GetGroup( groupId.Value );
+            if ( group == null || groupType == null)
             {
-                var groupType = CurrentGroupTypeCache;
-
-                var group = new Group
-                {
-                    GroupTypeId = CurrentGroupTypeId,
-                    IsSecurityRole = cbIsSecurityRole.Checked || groupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid()
-                };
-
-                ShowGroupTypeEditDetails( groupType, group, true );
+                return;
             }
+
+            group.IsSecurityRole = cbIsSecurityRole.Checked || groupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid();
+            ShowGroupTypeEditDetails( groupType, group, true );
         }
 
         /// <summary>

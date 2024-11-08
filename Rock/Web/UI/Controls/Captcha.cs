@@ -25,8 +25,6 @@ using Newtonsoft.Json;
 
 using RestSharp;
 
-using Rock.Web.Cache;
-
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
@@ -36,7 +34,7 @@ namespace Rock.Web.UI.Controls
     {
         #region Fields
 
-        private HiddenFieldWithClass _hfToken;
+        private HiddenField _hfToken;
 
         #endregion
 
@@ -51,26 +49,12 @@ namespace Rock.Web.UI.Controls
         protected CustomValidator CustomValidator { get; set; }
 
         /// <summary>
-        /// Cached value to contain if the user response is valid.
-        /// </summary>
-        [Obsolete( "Use ValidatedResult instead." )]
-        [RockObsolete( "1.12.5" )]
-        protected bool? _isResponseValid { get; set; }
-
-        /// <summary>
         /// Gets or sets the cached response result.
         /// </summary>
         /// <value>
         /// The cached response result.
         /// </value>
-        protected bool? ValidatedResult
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            // When _isResponseValid is removed, this can be changed to a simple get;set;
-            get => _isResponseValid;
-            set => _isResponseValid = value;
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
+        protected bool? ValidatedResult { get; set; }
 
         #endregion
 
@@ -246,7 +230,18 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ViewState["RequiredErrorMessage"] as string ?? string.Empty;
+                var errorMessage = ViewState["RequiredErrorMessage"] as string ?? string.Empty;
+                if ( errorMessage.IsNotNullOrWhiteSpace() )
+                {
+                    return errorMessage;
+                }
+
+                if ( Label.IsNotNullOrWhiteSpace() )
+                {
+                    return $"{Label} is required.";
+                }
+
+                return "Please complete the captcha.";
             }
 
             set
@@ -293,7 +288,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || !string.IsNullOrWhiteSpace( HttpContext.Current.Request.Params["g-recaptcha-response"] );
+                return !Required || CustomValidator.IsValid;
             }
         }
 
@@ -333,7 +328,7 @@ namespace Rock.Web.UI.Controls
             CustomValidator = new CustomValidator();
             SiteKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
             SecretKey = SystemSettings.GetValue( SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
-            _hfToken = new HiddenFieldWithClass();
+            _hfToken = new HiddenField();
         }
 
         #endregion
@@ -347,17 +342,20 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            CustomValidator.ID = ID + "_cfv";
+            CustomValidator.ID = $"{ID}_cfv";
             CustomValidator.CssClass = "validation-error help-inline js-captcha-validator";
             CustomValidator.ClientValidationFunction = "Rock.controls.captcha.clientValidate";
             CustomValidator.ErrorMessage = RequiredErrorMessage;
             CustomValidator.Enabled = true;
             CustomValidator.Display = ValidatorDisplay.Dynamic;
             CustomValidator.ValidationGroup = ValidationGroup;
+
+            CustomValidator.Attributes.Add( "data-required", Required.ToString().ToLower() );
+            CustomValidator.Attributes.Add( "data-captcha-id", ClientID );
+
             Controls.Add( CustomValidator );
 
-            _hfToken.ID = ID + "_hfToken";
-            _hfToken.CssClass = "js-captcha-token";
+            _hfToken.ID = $"{ID}_hfToken";
             Controls.Add( _hfToken );
         }
 
@@ -369,55 +367,32 @@ namespace Rock.Web.UI.Controls
         {
             base.OnPreRender( e );
 
-            var rockPage = Page as RockPage;
-            var postBackScript = string.Empty;
+            var postBackScript = this.TokenReceived != null
+                ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "TokenReceived" ), false ).Replace( '\'', '"' )
+                : "";
 
-            if ( rockPage != null && SiteKey.IsNotNullOrWhiteSpace() )
+            if ( SiteKey.IsNotNullOrWhiteSpace() && postBackScript.IsNotNullOrWhiteSpace() )
             {
-                postBackScript = this.TokenReceived != null ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "TokenReceived" ), false ) : "";
-                postBackScript = postBackScript.Replace( '\'', '"' );
+                // Add the cloudflare script tag to head.
+                var additionalAttributes = new Dictionary<string, string> { { "defer", null } };
+                RockPage.AddScriptSrcToHead(
+                    this.Page,
+                    "rockCloudflareTurnstile",
+                    "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit",
+                    additionalAttributes
+                );
 
-                string script = $@"
-function onloadTurnstileCallback(token) {{
-    $( document ).ready(function() {{
-
-        const hfToken = document.querySelector('.js-captcha-token');
-        hfToken.value = token;
-        // Hide control after captcha is solved and we get the token so it is not re-rendered for every post back.
-        // Give it a 1 sec delay so success message is displayed to the user.
-        const captcha = document.querySelector('.js-captcha');
-        if(captcha && token) {{
-            setTimeout(() => {{
-                captcha.style.display = 'none';  
-            }}, 1000);       
-        }}
-
-        const postbackScript = '{postBackScript}';
-
-        if (token && postbackScript) {{
-            window.location = ""javascript:"" + postbackScript;
-        }}
-    }});
-}}
-";
-                // Add a script src tag to head. Note that if this is a Partial Postback, we'll have to load it manually in our captcha.js script
-                rockPage.AddScriptSrcToHead( "captchaScriptId", "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" );
-                RockPage.AddScriptToHead( rockPage, script, true );
-            }
-
-            if ( SiteKey.IsNotNullOrWhiteSpace() )
-            {
                 string script = $@"
 ;(function () {{
     Rock.controls.captcha.initialize({{
         id: '{ClientID}',
         key: '{SiteKey}',
-        postbackScript: '{postBackScript}'
+        postBackScript: '{postBackScript}'
     }});
 }})();
 ";
 
-                ScriptManager.RegisterStartupScript( this, GetType(), "captcha-" + ClientID, script, true );
+                ScriptManager.RegisterStartupScript( this, GetType(), $"captcha-{ClientID}", script, true );
             }
         }
 
@@ -496,7 +471,7 @@ function onloadTurnstileCallback(token) {{
 
                 ValidatedResult = response.Data.Success;
             }
-            catch (Exception e)
+            catch ( Exception e )
             {
                 Rock.Model.ExceptionLogService.LogException( e );
                 ValidatedResult = false;
@@ -512,27 +487,9 @@ function onloadTurnstileCallback(token) {{
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            string errorMessage;
-
-            if ( !string.IsNullOrWhiteSpace( RequiredErrorMessage ) )
-            {
-                errorMessage = RequiredErrorMessage;
-            }
-            else if ( !string.IsNullOrWhiteSpace( Label ) )
-            {
-                errorMessage = Label + " Is Required";
-            }
-            else
-            {
-                errorMessage = "Please complete the captcha";
-            }
-
             writer.AddAttribute( HtmlTextWriterAttribute.Id, ClientID );
-            writer.AddAttribute( "data-required", Required.ToString().ToLower() );
-            writer.AddAttribute( "data-required-error-message", errorMessage );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, $"cf-turnstile js-captcha {CssClass}" );
             writer.AddAttribute( "data-sitekey", SiteKey );
-            writer.AddAttribute( "data-callback", "onloadTurnstileCallback" );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "cf-turnstile js-captcha " + CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
 
@@ -544,21 +501,6 @@ function onloadTurnstileCallback(token) {{
         #endregion
 
         #region Support Classes
-
-        /// <summary>
-        /// Support class to handle the response from the recaptcha verification.
-        /// </summary>
-        private class ReCaptchaResponse
-        {
-            [JsonProperty( "success" )]
-            public bool Success { get; set; }
-
-            [JsonProperty( "hostname" )]
-            public string Hostname { get; set; }
-
-            [JsonProperty( "error-codes" )]
-            public string[] ErrorCodes { get; set; }
-        }
 
         /// <summary>
         /// Support class to handle the response Cloudflares captcha reponse

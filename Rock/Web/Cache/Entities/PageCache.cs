@@ -20,14 +20,17 @@ using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Xml.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Web.Cache.Entities;
 
 namespace Rock.Web.Cache
 {
@@ -37,7 +40,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    public class PageCache : ModelCache<PageCache, Page>
+    public class PageCache : ModelCache<PageCache, Page>, IHasReadOnlyAdditionalSettings
     {
         #region Properties
 
@@ -224,32 +227,6 @@ namespace Rock.Web.Cache
         public int Order { get; private set; }
 
         /// <summary>
-        /// Gets or sets the duration (in seconds) of the output cache.
-        /// </summary>
-        /// <value>
-        /// The duration (in seconds) of the output cache.
-        /// </value>
-        [Obsolete( "You should use the new cache control header property." )]
-        [RockObsolete( "1.12" )]
-        [DataMember]
-        public int OutputCacheDuration
-        {
-            get
-            {
-                if ( CacheControlHeader == null || CacheControlHeader.MaxAge == null )
-                {
-                    return 0;
-                }
-
-                return this.CacheControlHeader.MaxAge.ToSeconds();
-            }
-
-            private set
-            {
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -327,8 +304,16 @@ namespace Rock.Web.Cache
         /// <value>
         /// The additional settings.
         /// </value>
+        [Obsolete( "Use AdditionalSettingsJson instead." )]
+        [RockObsolete( "1.16" )]
         [DataMember]
         public string AdditionalSettings { get; private set; }
+
+
+        /// <inheritdoc/>
+        [RockInternal( "1.16.4" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; private set; }
 
         /// <summary>
         /// Gets or sets the median page load time in seconds. Typically calculated from a set of
@@ -395,13 +380,34 @@ namespace Rock.Web.Cache
         public int? RateLimitRequestPerPeriod { get; set; }
 
         /// <summary>
-        /// Gets or sets the rate limit period.
+        /// Gets or sets the rate limit period (in seconds).
         /// </summary>
         /// <value>
-        /// The rate limit period.
+        /// The rate limit period (in seconds).
+        /// </value>
+        [Obsolete( "Use RateLimitPeriodDuration instead." )]
+        [RockObsolete( "1.16.7" )]
+        [DataMember]
+        public virtual int? RateLimitPeriod
+        {
+            get
+            {
+                return this.RateLimitPeriodDuration;
+            }
+            set
+            {
+                this.RateLimitPeriodDuration = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the rate limit period (in seconds).
+        /// </summary>
+        /// <value>
+        /// The rate limit period (in seconds).
         /// </value>
         [DataMember]
-        public int? RateLimitPeriod { get; set; }
+        public int? RateLimitPeriodDuration { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is rate limited.
@@ -414,7 +420,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                return RateLimitPeriod != null && RateLimitRequestPerPeriod != null;
+                return RateLimitPeriodDuration != null && RateLimitRequestPerPeriod != null;
             }
         }
 
@@ -450,6 +456,24 @@ namespace Rock.Web.Cache
         /// The site identifier.
         /// </value>
         public virtual int SiteId => Layout?.SiteId ?? 0;
+
+        
+        /// <summary>
+        /// Gets the child pages.
+        /// </summary>
+        public List<PageCache> ChildPages
+        {
+            get
+            {
+                if ( _childPagesCache == null )
+                {
+                    _childPagesCache = GetPages( new RockContext() );
+                }
+                return _childPagesCache;
+            }
+        }
+
+        private List<PageCache> _childPagesCache;
 
         /// <summary>
         /// Gets a List of child <see cref="PageCache" /> objects.
@@ -696,6 +720,34 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the interaction intent defined value identifiers.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.4" )]
+        [DataMember]
+        public List<int> InteractionIntentValueIds
+        {
+            get
+            {
+                if ( _interactionIntentValueIds == null )
+                {
+                    _interactionIntentValueIds = EntityIntentCache.GetIntentValueIds<Page>( this.Id );
+                }
+
+                return _interactionIntentValueIds;
+            }
+        }
+
+        private List<int> _interactionIntentValueIds;
+
         #endregion
 
         #region Additional Properties 
@@ -773,9 +825,12 @@ namespace Rock.Web.Cache
             AllowIndexing = page.AllowIndexing;
             BodyCssClass = page.BodyCssClass;
             IconBinaryFileId = page.IconBinaryFileId;
+#pragma warning disable CS0618
             AdditionalSettings = page.AdditionalSettings;
+#pragma warning restore CS0618
+            AdditionalSettingsJson = page.AdditionalSettingsJson;
             MedianPageLoadTimeDurationSeconds = page.MedianPageLoadTimeDurationSeconds;
-            RateLimitPeriod = page.RateLimitPeriod;
+            RateLimitPeriodDuration = page.RateLimitPeriodDuration;
             RateLimitRequestPerPeriod = page.RateLimitRequestPerPeriod;
 
             PageContexts = new Dictionary<string, string>();
@@ -815,26 +870,6 @@ namespace Rock.Web.Cache
             ParentPage?.GetPageHierarchy().ForEach( p => pages.Add( p ) );
 
             return pages;
-        }
-
-        /// <summary>
-        /// Flushes the cached block instances.
-        /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. Remove the page from the cache so it can safely reload all its properties on Get().", true )]
-        [RockObsolete( "1.10" )]
-        public void RemoveBlocks()
-        {
-            _blockIds = null;
-        }
-
-        /// <summary>
-        /// Flushes the cached child pages.
-        /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. Remove the page from the cache so it can safely reload all its properties on Get().", true )]
-        [RockObsolete( "1.10" )]
-        public void RemoveChildPages()
-        {
-            _pageIds = null;
         }
 
         /// <summary>
@@ -948,11 +983,7 @@ namespace Rock.Web.Cache
             var iconUrl = string.Empty;
             if ( IconFileId.HasValue )
             {
-#if REVIEW_WEBFORMS
-                iconUrl = $"{HttpContext.Current.Request.ApplicationPath}/GetImage.ashx?{IconFileId.Value}";
-#else
-                iconUrl = $"/GetImage.ashx?{IconFileId.Value}";
-#endif
+                iconUrl = FileUrlHelper.GetImageUrl( IconFileId.Value );
             }
 
             var isCurrentPage = currentPage != null && currentPage.Id == Id;
@@ -1026,11 +1057,7 @@ namespace Rock.Web.Cache
             var iconUrl = string.Empty;
             if ( IconFileId.HasValue )
             {
-#if REVIEW_WEBFORMS
-                iconUrl = $"{HttpContext.Current.Request.ApplicationPath}/GetImage.ashx?{IconFileId.Value}";
-#else
-                iconUrl = $"/GetImage.ashx?{IconFileId.Value}";
-#endif
+                iconUrl = FileUrlHelper.GetImageUrl( IconFileId.Value );
             }
 
             var isCurrentPage = false;
@@ -1083,6 +1110,51 @@ namespace Rock.Web.Cache
             return properties;
         }
 
+        /// <summary>
+        /// Gets the URL of the Page along with the BreadCrumbs
+        /// This method does not honor the page routes.
+        /// </summary>
+        /// <returns></returns>
+        [RockInternal( "1.16.3" )]
+        public string GetHyperLinkedPageBreadCrumbs()
+        {
+            var pageHyperLinkFormat = "<a href='{0}'>{1}</a>";
+            var result = new StringBuilder( string.Format( pageHyperLinkFormat, $"/page/{this.Id}", HttpUtility.HtmlEncode( this.InternalName ) ) );
+
+            var parentPageId = this.ParentPageId;
+            while ( parentPageId.HasValue )
+            {
+                var parentPage = Get( parentPageId.Value );
+                result.Insert( 0, " / " );
+                result.Insert( 0, string.Format( pageHyperLinkFormat, $"/page/{parentPage.Id}", HttpUtility.HtmlEncode( parentPage.InternalName ) ) );
+                parentPageId = parentPage.ParentPageId;
+            }
+
+            return result.ToString();
+        }
+
+        /// <summary>
+        /// Gets the name of the fully qualified page.
+        /// </summary>
+        /// <returns>A string which would have the bread crumbs of the page with the routes hyper-linked</returns>
+        [RockInternal( "1.16.3" )]
+        public string GetFullyQualifiedPageName()
+        {
+            var pageHyperLinkFormat = "<a href='{0}'>{1}</a>";
+            var result = new StringBuilder( string.Format( pageHyperLinkFormat, new PageReference( this.Id ).BuildUrl(), HttpUtility.HtmlEncode( this.InternalName ) ) );
+
+            var parentPageId = this.ParentPageId;
+            while ( parentPageId.HasValue )
+            {
+                var parentPage = Get( parentPageId.Value );
+                result.Insert( 0, " / " );
+                result.Insert( 0, string.Format( pageHyperLinkFormat, new PageReference( parentPage.Id ).BuildUrl(), HttpUtility.HtmlEncode( parentPage.InternalName ) ) );
+                parentPageId = parentPage.ParentPageId;
+            }
+
+            return string.Format( "<li>{0}</li>", result );
+        }
+
         #endregion
 
         #endregion
@@ -1110,38 +1182,6 @@ namespace Rock.Web.Cache
                 if ( page != null && page.LayoutId == layoutId )
                 {
                     Remove( page.Id );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Flushes the block instances for all the pages that use a specific layout.
-        /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. In order to refresh the list of blocks in the PageCache obj we need to flush the page. Use FlushPagesForLayout( int ) instead.", true )]
-        [RockObsolete( "1.10" )]
-        public static void RemoveLayoutBlocks( int layoutId )
-        {
-            foreach ( var page in All() )
-            {
-                if ( page != null && page.LayoutId == layoutId )
-                {
-                    page.RemoveBlocks();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Flushes the block instances for all the pages that use a specific site.
-        /// </summary>
-        [Obsolete( "This will not work with a distributed cache system such as Redis. In order to refresh the list of blocks in the PageCache obj we need to flush the page. Use FlushPagesForSite( int ) instead.", true )]
-        [RockObsolete( "1.10" )]
-        public static void RemoveSiteBlocks( int siteId )
-        {
-            foreach ( var page in All() )
-            {
-                if ( page != null && page.SiteId == siteId )
-                {
-                    page.RemoveBlocks();
                 }
             }
         }

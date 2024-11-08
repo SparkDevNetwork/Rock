@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalSettingsJson { get; set; }
+
+        /// <summary />
         public int? ApprovedByPersonAliasId { get; set; }
 
         /// <summary />
@@ -141,6 +144,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( ContentChannelItem source )
         {
             this.Id = source.Id;
+            this.AdditionalSettingsJson = source.AdditionalSettingsJson;
             this.ApprovedByPersonAliasId = source.ApprovedByPersonAliasId;
             this.ApprovedDateTime = source.ApprovedDateTime;
             this.Content = source.Content;

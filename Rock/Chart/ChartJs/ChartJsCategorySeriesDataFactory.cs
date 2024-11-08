@@ -29,7 +29,8 @@ namespace Rock.Chart
     /// * A JSON object compatible with the ChartJs constructor 'data' parameter: new Chart([chartContainer], [data]);
     /// 
     /// NOTE: For future development, this factory should be superseded by new factories that are style-specific - ChartJsLineChartDataFactory and ChartJsBarChartDataFactory.
-    /// See the ChartJsPieChartDataFactory for an example of the preferred implementation.
+    /// Each chart style may need to process specific data types in a different way.
+    /// Refer to the ChartJsPieChartDataFactory for an example of the preferred implementation - it handles both category and time series data.
     /// </remarks>
     public class ChartJsCategorySeriesDataFactory<TDataPoint> : ChartJsDataFactory
         where TDataPoint : IChartJsCategorySeriesDataPoint
@@ -237,6 +238,17 @@ namespace Rock.Chart
             var chartData = new { datasets = jsDatasets, labels = categoryNames };
 
             return chartData;
+        }
+
+        /// <summary>
+        /// Gets the chart data json.
+        /// </summary>
+        /// <param name="args">The arguments.</param>
+        /// <returns></returns>
+        public string GetChartDataJson( ChartJsCategorySeriesDataFactory.GetJsonArgs args )
+        {
+            var chartData = GetChartDataJsonObjectForSpecificCategoryScale( args );
+            return SerializeJsonObject( chartData );
         }
 
         #endregion

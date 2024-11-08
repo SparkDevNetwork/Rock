@@ -3,15 +3,15 @@
     <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="warningMessage" alertType="warning">{{ warningMessage }}</NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
-                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="UserLogin"
+                 entityTypeName="RESTKey"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="false"
@@ -41,36 +41,28 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./RestKeyDetail/editPanel.partial.obs";
     import ViewPanel from "./RestKeyDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./RestKeyDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { RestKeyBag } from "@Obsidian/ViewModels/Blocks/Security/RestKeyDetail/restKeyBag";
     import { RestKeyDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/RestKeyDetail/restKeyDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<RestKeyBag, RestKeyDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
     const blockError = ref("");
     const errorMessage = ref("");
+    const warningMessage = ref("");
 
     const restKeyViewBag = ref(config.entity);
-    const restKeyEditBag = ref<RestKeyBag>({} as RestKeyBag);
+    const restKeyEditBag = ref<ValidPropertiesBox<RestKeyBag>>({ bag: {} as RestKeyBag});
 
     const entityTypeGuid = EntityType.UserLogin;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
-
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "name",
-        "description",
-        "isActive",
-        "apiKey"
-    ];
 
     // #endregion
 
@@ -80,7 +72,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return restKeyViewBag.value?.idKey ? "Edit REST Key" : "Add REST Key";
+        return restKeyViewBag.value?.name ?? "";
     });
 
     /**
@@ -128,10 +120,6 @@
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
-
     // #region Event Handlers
 
     /**
@@ -141,7 +129,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!restKeyEditBag.value?.idKey) {
+        if (!restKeyEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -182,12 +170,15 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<RestKeyBag, RestKeyDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<RestKeyBag>>("Edit", {
             key: restKeyViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            restKeyEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            restKeyEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
 
             return true;
         }
@@ -205,19 +196,13 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<RestKeyBag, RestKeyDetailOptionsBag> = {
-            entity: restKeyEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<RestKeyBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<RestKeyBag> | string>("Save", {
+            box: restKeyEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                restKeyViewBag.value = result.data;
+                restKeyViewBag.value = result.data.bag;
 
                 return true;
             }
@@ -226,14 +211,12 @@
             }
         }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save Rest Key.";
+        warningMessage.value = result.errorMessage ?? "Unknown error while trying to save Rest Key.";
 
         return false;
     }
 
     // #endregion
-
-    provideSecurityGrant(securityGrant);
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
@@ -243,7 +226,7 @@
         blockError.value = "The specified Rest Key could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        restKeyEditBag.value = config.entity;
+        restKeyEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

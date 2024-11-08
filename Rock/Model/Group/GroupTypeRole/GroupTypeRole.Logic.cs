@@ -30,8 +30,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            // doesn't apply
-            return null;
+            return GroupTypeRoleCache.Get( Id );
         }
 
         /// <summary>
@@ -45,6 +44,8 @@ namespace Rock.Model
             {
                 GroupTypeCache.UpdateCachedEntity( this.GroupTypeId.Value, EntityState.Modified );
             }
+
+            GroupTypeRoleCache.UpdateCachedEntity( Id, entityState );
         }
 
         #endregion

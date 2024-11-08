@@ -99,7 +99,7 @@
 
         valueBuilder.addTextValue("Watching", asTrueOrFalseString(props.modelValue.isWatching));
 
-        valueBuilder.addTextValue("Allow Overrides", asTrueOrFalseString(props.modelValue.watcherPersonAlias?.text));
+        valueBuilder.addTextValue("Allow Override", asTrueOrFalseString(props.modelValue.allowOverride));
 
         return valueBuilder.build();
     });

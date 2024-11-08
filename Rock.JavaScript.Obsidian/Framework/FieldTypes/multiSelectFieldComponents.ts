@@ -120,8 +120,8 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<ListBox v-if="isListBox" v-model="internalValue" v-bind="listBoxConfigAttributes" :items="options" />
-<CheckBoxList v-else v-model="internalValue" v-bind="checkBoxListConfigAttributes" :items="options" />
+<ListBox v-if="isListBox && options.length > 0" v-model="internalValue" v-bind="listBoxConfigAttributes" :items="options" />
+<CheckBoxList v-else-if="options.length > 0" v-model="internalValue" v-bind="checkBoxListConfigAttributes" :items="options" />
 `
 });
 

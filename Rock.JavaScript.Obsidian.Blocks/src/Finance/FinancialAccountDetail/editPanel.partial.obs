@@ -50,6 +50,12 @@
 
                 <TextBox v-model="url"
                          label="URL" />
+
+                <ImageUploader v-model="imageBinaryFile"
+                               label="Image"
+                               :uploadAsTemporary="true"
+                               uploadButtonText="Upload"
+                               :showDeleteButton="true" />
             </div>
             <div class="col-md-6">
                 <TextBox v-model="glCode" label="GL Code" />
@@ -72,7 +78,7 @@
             </div>
 
 
-            <Modal v-model="isModalOpen" title="Page Attributes" @save="onSaveAccount">
+            <Modal v-model="isModalOpen" title="Page Attributes" @save="onSaveAccount" saveText="Save">
 
                 <fieldset>
                     <PersonPicker v-model="personAlias"
@@ -106,6 +112,7 @@
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import Grid, { DeleteColumn, TextColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
@@ -151,6 +158,7 @@
     const parentAccount = propertyRef(props.modelValue.parentAccount ?? {}, "ParentAccount");
     const accountTypeValue = propertyRef(props.modelValue.accountTypeValue ?? {}, "AccountTypeValue");
     const campus = propertyRef(props.modelValue.campus ?? {}, "Campus");
+    const imageBinaryFile = propertyRef(props.modelValue.imageBinaryFile ?? {}, "ImageBinaryFileId");
     const accountParticipants = ref(props.modelValue.accountParticipants ?? []);
     const purposeKeyOptions = ref(props.options.purposeKeyOptions ?? []);
     const isModalOpen = ref(false);
@@ -159,7 +167,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, isPublic, isTaxDeductible, name, publicDescription, glCode, publicName, url, startDate, endDate, parentAccount, accountTypeValue, campus];
+    const propRefs = [description, isActive, isPublic, isTaxDeductible, name, publicDescription, glCode, publicName, url, startDate, endDate, parentAccount, accountTypeValue, campus, imageBinaryFile];
 
     // #endregion
 
@@ -244,6 +252,7 @@
         updateRefValue(accountTypeValue, props.modelValue.accountTypeValue ?? {});
         updateRefValue(campus, props.modelValue.campus ?? {});
         updateRefValue(accountParticipants, props.modelValue.accountParticipants ?? []);
+        updateRefValue(imageBinaryFile, props.modelValue.imageBinaryFile ?? {});
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -266,7 +275,8 @@
             parentAccount: parentAccount.value,
             accountTypeValue: accountTypeValue.value,
             campus: campus.value,
-            accountParticipants: accountParticipants.value
+            accountParticipants: accountParticipants.value,
+            imageBinaryFile: imageBinaryFile.value
         };
 
         emit("update:modelValue", newValue);

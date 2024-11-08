@@ -19,6 +19,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -26,17 +27,18 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Trace;
+
 using Rock;
+using Rock.Blocks;
 using Rock.Communication;
+using Rock.Configuration;
 using Rock.Data;
-using Rock.Logging;
+using Rock.Enums.Cms;
 using Rock.Model;
 using Rock.Observability;
+using Rock.Security;
 using Rock.Transactions;
 using Rock.Utility;
-using Rock.Utility.Settings;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.WebStartup;
@@ -126,9 +128,6 @@ namespace RockWeb
             Rock.Bus.RockMessageBus.IsRockStarted = false;
             QueueInUse = false;
 
-            // Start-up the observability features
-            ObservabilityHelper.ConfigureObservability( true );
-
             /* 2020-05-20 MDP
                 * Prior to Application_Start, Rock.WebStartup has an AssemblyInitializer class that runs as a PreApplicationStartMethod.
                 *
@@ -195,7 +194,7 @@ namespace RockWeb
                 RockApplicationStartupHelper.LogStartupMessage( "Application Started Successfully" );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
-                    System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} ms] Total Startup Time", ( RockDateTime.Now - RockApplicationStartupHelper.StartDateTime ).TotalMilliseconds ) );
+                    System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} ms] Total Startup Time", ( RockDateTime.Now - RockApp.Current.HostingSettings.ApplicationStartDateTime ).TotalMilliseconds ) );
                 }
 
                 ExceptionLogService.AlwaysLogToFile = false;
@@ -280,9 +279,27 @@ namespace RockWeb
             CompileThemesThread = new Thread( () =>
             {
                 /* Set to background thread so that this thread doesn't prevent Rock from shutting down. */
+                Thread.CurrentThread.IsBackground = true;
+
+                // Compile the next-generation themes.
+                var stopwatchCompileTheme = Stopwatch.StartNew();
+                var compileMessages = ThemeService.CompileAll( _threadCancellationTokenSource.Token );
+                stopwatchCompileTheme.Stop();
+
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    Debug.WriteLine( string.Format( "[{0,5:#} ms] Themes Compiled", stopwatchCompileTheme.Elapsed.TotalMilliseconds ) );
+
+                    if ( compileMessages.Any() )
+                    {
+                        Debug.WriteLine( "ThemeService.CompileAll messages:" );
+                        compileMessages.ForEach( m => Debug.WriteLine( $"> {m}" ) );
+                    }
+                }
+
+                // Start compiling the legacy themes.
                 var stopwatchCompileLess = Stopwatch.StartNew();
 
-                Thread.CurrentThread.IsBackground = true;
                 string messages = string.Empty;
                 bool onlyCompileIfNeeded = true;
 
@@ -369,10 +386,64 @@ namespace RockWeb
                 // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
                 BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
 
+                // This methods updates the SiteTypeFlags property on the BlockType Table for each block. This logic was introduce to improve performance.
+                // The SiteTypeFlags column stores the flags related to the SiteTypes associated with the Block Types which otherwise needs to be fetched using Reflection.
+                UpdateSiteTypeFlagsOnBlockTypes();
+
                 Debug.WriteLine( string.Format( "[{0,5:#} seconds] Block Types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
             } );
 
             BlockTypeCompilationThread.Start();
+        }
+
+        private static void UpdateSiteTypeFlagsOnBlockTypes()
+        {
+            var blockTypesWithSiteTypes = BlockTypeCache.All()
+               .Where( bt => string.IsNullOrEmpty( bt.Path ) )
+               .Select( bt => new
+               {
+                   bt.Id,
+                   compiledType = bt.GetCompiledType(),
+                   bt.SiteTypeFlags
+               } );
+
+
+            foreach ( var blockTypeWithSiteType in blockTypesWithSiteTypes )
+            {
+                var type = blockTypeWithSiteType.compiledType;
+                SiteTypeFlags? siteTypes = SiteTypeFlags.None;
+                if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
+                {
+                    siteTypes = type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes
+                        .Select( s => s.ToString().ConvertToEnum<SiteTypeFlags>() )
+                        .Aggregate( SiteTypeFlags.None, ( a, s ) => a | s );
+                }
+                else if ( typeof( IRockObsidianBlockType ).IsAssignableFrom( type ) )
+                {
+                    siteTypes |= SiteTypeFlags.Web;
+                }
+                else if ( typeof( IRockMobileBlockType ).IsAssignableFrom( type ) )
+                {
+                    siteTypes |= SiteTypeFlags.Mobile;
+                }
+
+                if ( blockTypeWithSiteType.SiteTypeFlags != siteTypes )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var blockTypeService = new BlockTypeService( rockContext );
+                        var blockType = blockTypeService.Queryable()
+                            .Where( bt => bt.Id == blockTypeWithSiteType.Id )
+                            .FirstOrDefault();
+                        if ( blockType == null )
+                        {
+                            continue;
+                        }
+                        blockType.SiteTypeFlags = siteTypes ?? SiteTypeFlags.None;
+                        rockContext.SaveChanges();
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -474,6 +545,42 @@ namespace RockWeb
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
             Context.AddOrReplaceItem( "Request_Start_Time", RockDateTime.Now );
+
+            try
+            {
+                var cookie = Request.Cookies[System.Web.Security.FormsAuthentication.FormsCookieName];
+
+                if ( cookie != null )
+                {
+                    var rejectAuthenticationCookiesIssuedBefore = new SecuritySettingsService()
+                        .SecuritySettings?
+                        .RejectAuthenticationCookiesIssuedBefore;
+
+                    // Ensure the rejection date and time are not set in the future, 
+                    // as this will block all logins until the date is in the past.
+                    if ( rejectAuthenticationCookiesIssuedBefore.HasValue
+                         && rejectAuthenticationCookiesIssuedBefore.Value <= RockDateTime.Now )
+                    {
+                        var ticket = System.Web.Security.FormsAuthentication.Decrypt( cookie.Value );
+
+                        if ( ticket != null && ticket.IssueDate < rejectAuthenticationCookiesIssuedBefore.Value )
+                        {
+                            // This runs before the person is authenticated, so removing the cookie
+                            // prevents them from being authenticated.
+                            this.Request.Cookies.Remove( System.Web.Security.FormsAuthentication.FormsCookieName );
+                        }
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                // If invalid cookie data is received, write the exception to the
+                // debug console for developers to see during testing.
+                // Otherwise, ignore this exception and avoid logging it to keep the logs clean.
+                Debug.WriteLine( ex.Message );
+            }
+
+            WebRequestHelper.SetThreadCultureFromRequest( HttpContext.Current?.Request );
         }
 
         /// <summary>
@@ -499,10 +606,10 @@ namespace RockWeb
                 if ( context != null )
                 {
                     var ex = context.Server.GetLastError();
+                    HttpException httpEx = ex as HttpException;
 
                     try
                     {
-                        HttpException httpEx = ex as HttpException;
                         if ( httpEx != null )
                         {
                             int statusCode = httpEx.GetHttpCode();
@@ -515,7 +622,7 @@ namespace RockWeb
 
                             // Check for client\remote host disconnection error specifically SignalR or web-socket connections
                             // Ignore this error as it indicates the server it trying to write a response to a disconnected client.
-                            if( httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
+                            if ( httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
                                 httpEx.Message.Contains( "The remote host closed the connection." ) &&
                                 httpEx.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
                             {
@@ -527,7 +634,13 @@ namespace RockWeb
                     }
                     catch
                     {
-                        // ignore exception
+                        // Check again, but don't access the context.
+                        if ( httpEx != null && httpEx.Message.IsNotNullOrWhiteSpace() && httpEx.StackTrace.IsNotNullOrWhiteSpace() &&
+                        httpEx.Message.Contains( "The remote host closed the connection." ) &&
+                        httpEx.StackTrace.Contains( "Microsoft.AspNet.SignalR.Owin.ServerResponse.Write" ) )
+                        {
+                            return;
+                        }
                     }
 
                     while ( ex is HttpUnhandledException && ex.InnerException != null )
@@ -547,10 +660,10 @@ namespace RockWeb
                             ex = newEx;
                         }
                     }
-                                      
+
                     if ( !( ex is HttpRequestValidationException ) )
                     {
-                        SendNotification( ex );
+                        LogAndSendNotification( ex );
                     }
 
                     object siteId = context.Items["Rock:SiteId"];
@@ -628,8 +741,6 @@ namespace RockWeb
                 // https://weblog.west-wind.com/posts/2013/oct/02/use-iis-application-initialization-for-keeping-aspnet-apps-alive
                 var client = new WebClient();
                 client.DownloadString( GetKeepAliveUrl() );
-
-                RockLogger.Log.Close();
             }
             catch
             {
@@ -652,7 +763,7 @@ namespace RockWeb
                 foreach ( var startupType in Rock.Reflection.FindTypes( typeof( IRockStartup ) ).Select( a => a.Value ).ToList() )
                 {
                     var startup = Activator.CreateInstance( startupType ) as IRockStartup;
-                    startups.AddOrIgnore( startup.StartupOrder, new List<IRockStartup>() );
+                    startups.TryAdd( startup.StartupOrder, new List<IRockStartup>() );
                     startups[startup.StartupOrder].Add( startup );
                 }
 
@@ -708,17 +819,93 @@ namespace RockWeb
             }
         }
 
+        private bool ServerVariablesContainFilterSettings( string filterSettings, Exception ex )
+        {
+            if ( !string.IsNullOrWhiteSpace( filterSettings ) )
+            {
+                // Get the current request's list of server variables
+                var serverVarList = Context.Request.ServerVariables;
+
+                string[] nameValues = filterSettings.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+                foreach ( string nameValue in nameValues )
+                {
+                    string[] nameAndValue = nameValue.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                    {
+                        if ( nameAndValue.Length == 2 )
+                        {
+                            switch ( nameAndValue[0].ToLower() )
+                            {
+                                case "type":
+                                    {
+                                        if ( ex.GetType().Name.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                        {
+                                            return true;
+                                        }
+
+                                        break;
+                                    }
+
+                                case "source":
+                                    {
+                                        if ( ex.Source.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                        {
+                                            return true;
+                                        }
+
+                                        break;
+                                    }
+
+                                case "message":
+                                    {
+                                        if ( ex.Message.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                        {
+                                            return true;
+                                        }
+
+                                        break;
+                                    }
+
+                                case "stacktrace":
+                                    {
+                                        if ( ex.StackTrace.ToLower().Contains( nameAndValue[1].ToLower() ) )
+                                        {
+                                            return true;
+                                        }
+
+                                        break;
+                                    }
+
+                                default:
+                                    {
+                                        var serverValue = serverVarList[nameAndValue[0]];
+                                        if ( serverValue != null && serverValue.ToUpper().Contains( nameAndValue[1].ToUpper().Trim() ) )
+                                        {
+                                            return true;
+                                        }
+
+                                        break;
+                                    }
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+
         /// <summary>
         /// Sends the notification.
         /// </summary>
         /// <param name="ex">The ex.</param>
-        private void SendNotification( Exception ex )
+        private void LogAndSendNotification( Exception ex )
         {
             int? pageId = ( Context.Items["Rock:PageId"] ?? string.Empty ).ToString().AsIntegerOrNull();
             int? siteId = ( Context.Items["Rock:SiteId"] ?? string.Empty ).ToString().AsIntegerOrNull();
 
             PersonAlias personAlias = null;
             Person person = null;
+            var globalAttributesCache = GlobalAttributesCache.Get();
 
             try
             {
@@ -736,7 +923,11 @@ namespace RockWeb
 
             try
             {
-                ExceptionLogService.LogException( ex, Context, pageId, siteId, personAlias );
+                string filterSettings = globalAttributesCache.GetValue( Rock.SystemKey.GlobalAttributeKey.EXCEPTION_LOG_FILTER );
+                if ( !ServerVariablesContainFilterSettings( filterSettings, ex ) )
+                {
+                    ExceptionLogService.LogException( ex, Context, pageId, siteId, personAlias );
+                }
             }
             catch
             {
@@ -746,8 +937,6 @@ namespace RockWeb
             try
             {
                 bool sendNotification = true;
-
-                var globalAttributesCache = GlobalAttributesCache.Get();
 
                 string filterSettings = globalAttributesCache.GetValue( "EmailExceptionsFilter" );
                 if ( !string.IsNullOrWhiteSpace( filterSettings ) )
@@ -926,7 +1115,7 @@ namespace RockWeb
                     "IISCallBack",
                     60,
                     null,
-                    RockInstanceConfig.SystemDateTime.AddSeconds( 60 ),
+                    RockDateTime.SystemDateTime.AddSeconds( 60 ),
                     Cache.NoSlidingExpiration,
                     CacheItemPriority.NotRemovable,
                     _onCacheRemove );
@@ -1043,7 +1232,7 @@ namespace RockWeb
             Rock.SystemKey.SystemSetting.ENABLE_KEEP_ALIVE can be enabled in Rock's System Settings. 
 
             */
-            
+
             var keepAliveUrl = GetKeepAliveUrl();
 
             // call a page on the site to keep IIS alive

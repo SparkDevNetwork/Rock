@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Web;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Configuration;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Web.Utilities
+namespace Rock.Tests.Integration.Modules.Web.Utilities
 {
     [TestClass]
     public class RockUpdateHelperTests
@@ -18,7 +21,7 @@ namespace Rock.Tests.Integration.Web.Utilities
             var actualResult = data.FromJsonOrNull<Dictionary<string, string>>();
             Assert.That.AreEqual( "test", actualResult["AppRoot"] );
             Assert.That.AreEqual( ( IntPtr.Size == 4 ) ? "32bit" : "64bit", actualResult["Architecture"] );
-            Assert.That.AreEqual( Rock.Web.Utilities.RockUpdateHelper.GetDotNetVersion(), actualResult["AspNetVersion"] );
+            Assert.That.AreEqual( RockApp.Current.HostingSettings.DotNetVersion, actualResult["AspNetVersion"] );
             Assert.That.AreEqual( Environment.OSVersion.ToString(), actualResult["ServerOs"] );
         }
 
@@ -37,7 +40,7 @@ namespace Rock.Tests.Integration.Web.Utilities
         [DataRow( 378388, "Unknown" )]
         public void GetDotNetVersionShouldReturnCorrectString(int releaseNumber, string expectedResult )
         {
-            var actualResult = Rock.Web.Utilities.RockUpdateHelper.GetDotNetVersion( releaseNumber );
+            var actualResult = Configuration.HostingSettings.GetDotNetVersion( releaseNumber );
             Assert.That.AreEqual( expectedResult, actualResult );
         }
     }

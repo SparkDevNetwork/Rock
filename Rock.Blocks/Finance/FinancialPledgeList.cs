@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -28,6 +29,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialPledgeList;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Finance
 {
@@ -42,38 +44,60 @@ namespace Rock.Blocks.Finance
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
-        Description = "The page that will show the financial pledge details.",
-        Key = AttributeKey.DetailPage )]
+        Key = AttributeKey.DetailPage,
+        Description = "",
+        IsRequired = false )]
 
-    [BooleanField( "Show Accounts Column",
-        Description = "Should the accounts column be displayed.",
+    [BooleanField( "Show Account Column",
+        Key = AttributeKey.ShowAccountColumn,
+        Description = "Allows the account column to be hidden.",
         DefaultBooleanValue = true,
-        Key = AttributeKey.ShowAccountsColumn,
-        Order = 2 )]
+        Category = "",
+        Order = 1 )]
 
     [BooleanField( "Show Last Modified Date Column",
+        Key = AttributeKey.ShowLastModifiedDateColumn,
         Description = "Allows the Last Modified Date column to be hidden.",
         DefaultBooleanValue = true,
-        Key = AttributeKey.ShowLastModifiedDateColumn,
+        Category = "",
         Order = 2 )]
 
     [BooleanField( "Show Group Column",
+        Key = AttributeKey.ShowGroupColumn,
         Description = "Allows the group column to be hidden.",
         DefaultBooleanValue = false,
-        Key = AttributeKey.ShowGroupColumn,
+        Category = "",
         Order = 3 )]
 
     [BooleanField( "Limit Pledges To Current Person",
+        Key = AttributeKey.LimitPledgesToCurrentPerson,
         Description = "Limit the results to pledges for the current person.",
         DefaultBooleanValue = false,
-        Key = AttributeKey.LimitPledgesToCurrentPerson,
+        Category = "",
         Order = 4 )]
 
     [BooleanField( "Show Account Summary",
-        Description = "Should the account summary be displayed at the bottom of the list?",
-        DefaultBooleanValue = false,
         Key = AttributeKey.ShowAccountSummary,
+        Description = "Should the account summary be displayed at the bottom of the list?",
+        DefaultBooleanValue = true,
         Order = 5 )]
+
+    [AccountsField( "Accounts",
+        Key = AttributeKey.Accounts,
+        Description = "Limit the results to pledges that match the selected accounts.",
+        IsRequired = false,
+        DefaultValue = "",
+        Category = "",
+        Order = 5 )]
+
+    [BooleanField( "Hide Amount",
+        Key = AttributeKey.HideAmount,
+        Description = "Allows the amount column to be hidden.",
+        DefaultBooleanValue = false,
+        Category = "",
+        Order = 6 )]
+
+    [ContextAware]
 
     [Rock.SystemGuid.EntityTypeGuid( "8b1663eb-b5cb-4c78-b0c6-ed14e173e4c0" )]
     [Rock.SystemGuid.BlockTypeGuid( "31fb8c39-80bd-4ea9-a1cb-bf6c4667929b" )]
@@ -85,12 +109,13 @@ namespace Rock.Blocks.Finance
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
-            public const string ShowAccountsColumn = "ShowAccountsColumn";
+            public const string ShowAccountColumn = "ShowAccountsColumn";
             public const string ShowLastModifiedDateColumn = "ShowLastModifiedDateColumn";
             public const string ShowGroupColumn = "ShowGroupColumn";
             public const string LimitPledgesToCurrentPerson = "LimitPledgesToCurrentPerson";
             public const string ShowAccountSummary = "ShowAccountSummary";
             public const string Accounts = "Accounts";
+            public const string HideAmount = "HideAmount";
         }
 
         private static class NavigationUrlKey
@@ -98,7 +123,25 @@ namespace Rock.Blocks.Finance
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PreferenceKey
+        {
+            public const string FilterActiveOnly = "filter-active-only";
+        }
+
         #endregion Keys
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the filter indicating whether verified photos should be included in the results.
+        /// </summary>
+        /// <value>
+        /// The filter show verified photos.
+        /// </value>
+        protected string FilterActiveOnly => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterActiveOnly );
+
+        #endregion
 
         #region Methods
 
@@ -126,11 +169,12 @@ namespace Rock.Blocks.Finance
         {
             var options = new FinancialPledgeListOptionsBag()
             {
-                ShowAccountsColumn = GetAttributeValue(AttributeKey.ShowAccountsColumn).AsBoolean(),
-                ShowLastModifiedDateColumn = GetAttributeValue(AttributeKey.ShowLastModifiedDateColumn).AsBoolean(),
-                ShowGroupColumn = GetAttributeValue(AttributeKey.ShowGroupColumn).AsBoolean(),
-                LimitPledgesToCurrentPerson = GetAttributeValue(AttributeKey.LimitPledgesToCurrentPerson).AsBoolean(),
-                ShowAccountSummary = GetAttributeValue(AttributeKey.ShowAccountSummary).AsBoolean(),
+                ShowAccountColumn = GetAttributeValue( AttributeKey.ShowAccountColumn ).AsBoolean(),
+                ShowLastModifiedDateColumn = GetAttributeValue( AttributeKey.ShowLastModifiedDateColumn ).AsBoolean(),
+                ShowGroupColumn = GetAttributeValue( AttributeKey.ShowGroupColumn ).AsBoolean(),
+                LimitPledgesToCurrentPerson = GetAttributeValue( AttributeKey.LimitPledgesToCurrentPerson ).AsBoolean(),
+                ShowAccountSummary = GetAttributeValue( AttributeKey.ShowAccountSummary ).AsBoolean(),
+                HideAmount = GetAttributeValue( AttributeKey.HideAmount ).AsBoolean()
             };
             return options;
         }
@@ -169,15 +213,29 @@ namespace Rock.Blocks.Finance
                     .Include( a => a.PledgeFrequencyValue )
                     .Include( a => a.Group );
 
-            /// If the 'LimitPledgesToCurrentPerson' option is enabled, filter by current person
+            // If the 'LimitPledgesToCurrentPerson' option is enabled, filter by current person
             if ( GetAttributeValue( AttributeKey.LimitPledgesToCurrentPerson ).AsBoolean() )
             {
                 var currentPersonId = RequestContext.CurrentPerson?.Id;
 
                 if ( currentPersonId.HasValue )
                 {
-                    query = query.Where(a => a.PersonAlias.PersonId == currentPersonId.Value);
+                    query = query.Where( a => a.PersonAlias.PersonId == currentPersonId.Value );
                 }
+            }
+
+            // Filter by configured limit accounts if specified
+            var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
+            if ( accountGuids.Any() )
+            {
+                query = query.Where( p => accountGuids.Contains( p.Account.Guid ) );
+            }
+
+            // Filter by active pledges only
+            var showActiveOnly = FilterActiveOnly.AsBooleanOrNull() ?? false;
+            if ( showActiveOnly )
+            {
+                query = query.Where( p => p.StartDate <= RockDateTime.Now && p.EndDate >= RockDateTime.Now );
             }
 
             return query;
@@ -195,8 +253,8 @@ namespace Rock.Blocks.Finance
                 .AddTextField( "group", a => a.Group?.Name ?? "" )
                 .AddField( "totalAmount", a => a.TotalAmount )
                 .AddTextField( "pledgeFrequency", a => a.PledgeFrequencyValue?.Value )
-                .AddField( "startDate", a => a.StartDate )
-                .AddField( "endDate", a => a.EndDate )
+                .AddField( "startDate", a => a.StartDate == DateTime.MinValue.Date ? ( DateTime? ) null : a.StartDate )
+                .AddField( "endDate", a => a.EndDate == DateTime.MaxValue.Date ? ( DateTime? ) null : a.EndDate )
                 .AddField( "modifiedDate", a => a.ModifiedDateTime )
                 .AddAttributeFields( GetGridAttributes() );
         }
@@ -225,7 +283,7 @@ namespace Rock.Blocks.Finance
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${FinancialPledge.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {FinancialPledge.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -254,7 +312,6 @@ namespace Rock.Blocks.Finance
                 return ActionOk( count );
             }
         }
-
         #endregion
     }
 }

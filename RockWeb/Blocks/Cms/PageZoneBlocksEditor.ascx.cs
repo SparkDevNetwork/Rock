@@ -16,25 +16,26 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
-using System.Web.UI.WebControls;
 using System.ComponentModel;
+using System.Data.Entity;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using HtmlAgilityPack;
+
 using Rock;
+using Rock.Blocks;
+using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Model;
+using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.Web.Compilation;
-using System.Text.RegularExpressions;
-using System.IO;
-using System.Text;
-using Rock.Web.Cache;
-using Rock.Data;
-using Rock.Web;
-using Rock.Blocks;
 
 /// <summary>
 ///
@@ -77,8 +78,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             int pageId;
             string zoneName;
 
@@ -115,6 +114,8 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -281,7 +282,7 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                rptSiteBlocks.DataSource = zoneBlocks.Where(a => a.BlockLocation == BlockLocation.Site).ToList();
+                rptSiteBlocks.DataSource = zoneBlocks.Where( a => a.BlockLocation == BlockLocation.Site ).ToList();
                 rptSiteBlocks.DataBind();
 
                 rptLayoutBlocks.DataSource = zoneBlocks.Where( a => a.BlockLocation == BlockLocation.Layout ).ToList();
@@ -345,7 +346,7 @@ namespace RockWeb.Blocks.Cms
                     ddlMoveToZoneList.SelectedValue = selectedMoveValue;
                 }
                 else
-                { 
+                {
                     // default to Main Zone (if there is one)
                     ddlZones.SetValue( "Main" );
                 }
@@ -474,6 +475,32 @@ namespace RockWeb.Blocks.Cms
         private void AddAdminControls( BlockCache block, Panel pnlLayoutItem )
         {
             Panel pnlAdminButtons = new Panel { ID = "pnlBlockConfigButtons", CssClass = "pull-right control-actions" };
+            var blockCompiledType = block.BlockType.GetCompiledType();
+
+            // Add in any custom actions from next generation blocks.
+            if ( typeof( IHasCustomActions ).IsAssignableFrom( blockCompiledType ) )
+            {
+                var customActionsBlock = ( IHasCustomActions ) Activator.CreateInstance( blockCompiledType );
+                var canEdit = BlockCache.IsAuthorized( Authorization.EDIT, CurrentPerson );
+                var canAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
+                var page = PageCache.Get( hfPageId.Value.AsInteger() );
+
+                var configActions = customActionsBlock.GetCustomActions( canEdit, canAdministrate );
+
+                foreach ( var action in configActions )
+                {
+                    var script = $@"Obsidian.onReady(() => {{
+    System.import('@Obsidian/Templates/rockPage.js').then(module => {{
+        module.showCustomBlockAction('{action.ComponentFileUrl}', '{page.Guid}', '{block.Guid}');
+    }});
+}});";
+
+                    pnlAdminButtons.Controls.Add( new Literal
+                    {
+                        Text = $"<a href=\"#\" onclick=\"event.preventDefault(); {script.EncodeXml( true )}\" title=\"{action.Tooltip.EncodeXml( true )}\" class=\"btn btn-sm btn-default btn-square\"><i class=\"{action.IconCssClass}\"></i></a>"
+                    } );
+                }
+            }
 
             // Block Properties
             Literal btnBlockProperties = new Literal();
@@ -525,7 +552,7 @@ namespace RockWeb.Blocks.Cms
                     customAdminControls = adminControls.OfType<WebControl>().Where( a => !baseAdminControlClasses.Any( b => a.CssClass.Contains( b ) ) );
                 }
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 // if the block doesn't compile, just ignore it since we are just trying to get the admin controls
                 Literal lblBlockError = new Literal();
@@ -556,7 +583,7 @@ namespace RockWeb.Blocks.Cms
                 pnlLayoutItem.Controls.Add( customAdminControl );
             }
 
-            if ( customAdminControls.Any() && blockControl != null)
+            if ( customAdminControls.Any() && blockControl != null )
             {
                 // Set a flag to indicate that the block should only render the necessary elements to allow configuration.
                 // Rendering the block content here may disrupt the formatting of the page.
@@ -688,8 +715,9 @@ namespace RockWeb.Blocks.Cms
         /// <returns></returns>
         private string AddIconIfObsidian( BlockTypeCache blockType )
         {
-            var entityType = blockType?.EntityType?.GetEntityType();
-            if ( entityType != null && typeof( IRockObsidianBlockType ).IsAssignableFrom( entityType ) )
+            if ( string.IsNullOrEmpty( blockType.Path )
+                && ( blockType.SiteTypeFlags.HasFlag( SiteTypeFlags.Web )
+                || blockType.SiteTypeFlags.HasFlag( SiteTypeFlags.None ) ) )
             {
                 return blockType.Name + " \U0001f389";
             }
@@ -714,16 +742,24 @@ namespace RockWeb.Blocks.Cms
             {
                 try
                 {
-                    BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page );
+                    BlockTypeService.RegisterBlockTypes( Request.MapPath( "~" ) );
                 }
                 catch
                 {
                     // ignore
                 }
 
-                var blockTypes = BlockTypeService.BlockTypesToDisplay( siteType )
-                    .Select( b => new { b.Id, b.Name, b.Category, b.Description,
-                        IsObsidian = typeof( IRockObsidianBlockType ).IsAssignableFrom( b.EntityType?.GetEntityType() ) } )
+                // If the IsDebuggingEnabled happens to be true, show all the obsidian blocks. This is done for testing purposes.
+                // This flag needs to be removed once all the blocks are migrated to obsidian.
+                var blockTypes = BlockTypeService.BlockTypesToDisplay( siteType, HttpContext.Current.IsDebuggingEnabled )
+                    .Select( b => new
+                    {
+                        b.Id,
+                        b.Name,
+                        b.Category,
+                        b.Description,
+                        IsObsidian = ( string.IsNullOrEmpty( b.Path ) && b.SiteTypeFlags == 0 ) || b.SiteTypeFlags.HasFlag( SiteTypeFlags.Web )
+                    } )
                     .ToList();
 
                 ddlBlockType.Items.Clear();
@@ -895,7 +931,7 @@ namespace RockWeb.Blocks.Cms
         {
             LinkButton btnNewBlockQuickSetting = sender as LinkButton;
 
-            BlockTypeCache quickSettingBlockType = BlockTypeCache.Get( btnNewBlockQuickSetting.CommandArgument.AsInteger()) ;
+            BlockTypeCache quickSettingBlockType = BlockTypeCache.Get( btnNewBlockQuickSetting.CommandArgument.AsInteger() );
 
             if ( quickSettingBlockType != null )
             {

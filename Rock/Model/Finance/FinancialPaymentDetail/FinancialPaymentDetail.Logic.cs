@@ -94,14 +94,15 @@ namespace Rock.Model
 
         #endregion Virtual Properties
 
-        #region Private Methods
+        #region Private/Internal Methods
 
         /// <summary>
         /// Get a four digit year value.
         /// </summary>
+        /// <remarks>Changed to 'internal' to be able to test this with Rock.Test.</remarks>
         /// <param name="year">The year.</param>
         /// <returns></returns>
-        private int? ToFourDigitYear( int? year )
+        internal int? ToFourDigitYear( int? year )
         {
             int? fourDigitYear;
             if ( year == null || year >= 100 )
@@ -110,7 +111,7 @@ namespace Rock.Model
             }
             else
             {
-                fourDigitYear = System.Globalization.CultureInfo.CurrentCulture.Calendar.ToFourDigitYear( year.Value );
+                fourDigitYear = RockDateTime.ToFourDigitYearForCreditCardExpiration( year.Value );
             }
 
             // make sure it is a valid year (between 1753 and 9999)
@@ -125,7 +126,7 @@ namespace Rock.Model
             }
         }
 
-        #endregion Private Methods
+        #endregion Private/Internal Methods
 
         #region Public Methods
 

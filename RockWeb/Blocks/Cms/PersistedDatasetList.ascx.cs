@@ -112,12 +112,12 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -268,7 +268,7 @@ namespace RockWeb.Blocks.Cms
         protected void btnRefresh_DataBound( object sender, RowEventArgs e )
         {
             var button = sender as LinkButton;
-            var persistedDataSet = e.Row.DataItem as PersistedDataset;
+            var persistedDataSet = e.Row.DataItem as GridRowItem;
             if ( button != null && persistedDataSet != null )
             {
                 button.Enabled = persistedDataSet.AllowManualRefresh;
@@ -301,18 +301,37 @@ namespace RockWeb.Blocks.Cms
             }
 
             // Get data. We need to do this so we can get the size of the return set. Confirmed that the anonymous type below does a SQL LEN() function.
-            var persistedDataSet = qry.Select( d => new
+            var persistedDataSet = qry.Select( d => new GridRowItem()
             {
-                d.Name,
-                d.Id,
+                Name = d.Name,
+                Id = d.Id,
                 Size = d.ResultData != null ? d.ResultData.Length / 1024 : 0,
-                d.AccessKey,
-                d.TimeToBuildMS,
-                d.LastRefreshDateTime,
+                AccessKey = d.AccessKey,
+                TimeToBuildMS = d.TimeToBuildMS,
+                LastRefreshDateTime = d.LastRefreshDateTime,
+                AllowManualRefresh = d.AllowManualRefresh
             } ).ToList();
 
             gList.DataSource = persistedDataSet;
             gList.DataBind();
+        }
+
+        #endregion
+
+        #region Helper Classes
+
+        /// <summary>
+        /// ViewModel for PersistedDatasetList grid items.
+        /// </summary>
+        private sealed class GridRowItem
+        {
+            public string Name { get; set; }
+            public int Id { get; set; }
+            public int Size { get; set; }
+            public string AccessKey { get; set; }
+            public double? TimeToBuildMS { get; set; }
+            public DateTime? LastRefreshDateTime { get; set; }
+            public bool AllowManualRefresh { get; set; }
         }
 
         #endregion

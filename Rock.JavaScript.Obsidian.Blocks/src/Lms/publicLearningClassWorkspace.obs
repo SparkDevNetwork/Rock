@@ -1,0 +1,632 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="workspace-page-container">
+        <div v-html="headerHtml"></div>
+
+        <div class="workspace-block-error-notification">
+            <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+            <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+        </div>
+
+        <div class="workspace-block-container">
+            <div class="workspace-tab-bar" v-if="isAcademicCalendarMode">
+                <ul class="nav nav-pills">
+                    <li v-for="tab in tabs" role="presentation" :class="{ 'active': tab === selectedTab }">
+                        <a href="#" @click.prevent="onSelectTab(tab)">{{ tab }}</a>
+                    </li>
+                </ul>
+
+                <div class="facilitator-portal" v-if="isFacilitator">
+                    <a :href="facilitatorPortalUrl">Facilitator Portal</a>
+                </div>
+            </div>
+
+            <div class="content-page-section" v-if="selectedContentTab">
+                <div class="content-page-container">
+                    <h3 class="mt-0">
+                        {{ selectedContentTab.title }}
+                    </h3>
+                    <div class="content-page-content">
+                        <span v-html="selectedContentTab.content"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="workspace-class-overview row" v-if="selectedTab === overviewTab">
+                <div class="col-md-8">
+                    <div class="notification-section">
+                        <h3 class="title">
+                            Notifications
+                        </h3>
+
+                        <div class="notification-cards row">
+                            <template v-for="notification in notifications" ::key="notification.idKey">
+                                <div class="col-md-4">
+                                    <div class="card card-notification">
+                                        <div class="card-body">
+                                            <span :class="'badge badge-' + notification.labelType">
+                                                {{ notification.labelText }}
+                                            </span>
+
+                                            <h5 class="notification-title">{{ notification.title }}</h5>
+
+                                            <div class="notification-content">
+                                                {{ notification.content }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="announcements-section">
+                        <h3 class="title">
+                            Announcements
+                        </h3>
+                        <template v-for="announcement in announcements" :key="announcement.idKey">
+                            <div class="announcement-container">
+                                <small>
+                                    {{ formattedDate(announcement.publishDateTime) }}
+                                </small>
+                                <h5 class="announcement-title">
+                                    {{ announcement.title }}
+                                </h5>
+                                <div class="announcement-content">
+                                    <span v-html="announcement.description"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <div class="col-md-4 workspace-class-sidebar">
+
+                    <div class="section section-facilitators" v-if="showFacilitators()">
+                        <h4 class="mt-0" >{{ facilitatorsLabel }}</h4>
+
+                        <div class="facilitators-list d-flex flex-column">
+                            <span v-for="f in facilitators" :key="f.idKey ?? ''" class="facilitator-list-item">
+                                <a v-if="f.facilitatorEmail" :href="'mailto:' + f.facilitatorEmail"> {{f.facilitatorEmail}}</a>
+                                {{ f.facilitatorName }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="section section-progress">
+                        <h4 class="mt-0">Class Progress</h4>
+
+                        <div class="class-progress-bar">
+                            <ProgressBar :percent="percentComplete" />
+                        </div>
+                        <div class="class-progress-tasks">
+                            {{ completedActivitiesCount }} out of {{ activities.length }} {{ pluralize('task', activities.length) }} completed
+                        </div>
+                    </div>
+
+                    <div class="section section-progress" v-if="showGrades">
+                        <h4 class="mt-0">Current Grade</h4>
+
+                        <div class="current-grade" v-if="showGrades && currentGrade">
+                            <span v-if="showGrades && currentGrade"
+                                :class="['label', currentGrade.isPassing ? 'label-success' : 'label-warning']">
+                                {{ currentGrade.name ?? '' }}
+                            </span>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="workspace-block-content" v-if="selectedTab === activitiesTab">
+                <CustomSelect
+                    v-model="viewingCompletionBag"
+                    :items="activities"
+                    wrapperClass="workspace-navigation-pane"
+                    itemKey="learningActivityIdKey"
+                    :itemClass="getActivityContainerClasses"
+                    :disabledKey="isActivityUnavailable"
+                    :mobileThreshold="767"
+                    selectedClass="is-selected"
+                >
+                    <template #placeholder>
+                        <p class="text-muted">Tap here to select an activity</p>
+                    </template>
+                    <template #default="{ item }">
+                        <div class="activity-item-content">
+                            <span class="activity-item-icon icon-stack-container fa-stack">
+                                <i :class="activityIconStackClasses(item)"></i>
+                                <i class="icon fa-stack-1x" :class="item.activityBag?.activityComponent?.iconCssClass"></i>
+                            </span>
+
+                            <div class="activity-item-details">
+                                <h5>{{ item?.activityBag?.name }}</h5>
+                                <div class="activity-item-time" :class="{'text-warning' : isDueSoonAndIncomplete(item) }">
+                                    <div class="text-muted">{{ getActivityTimeText(item) }}</div>
+                                    <div v-if="item.facilitatorComment" class="label label-default"><i class="fa fa-comment"></i>Comments</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="activity-item-status text-right">
+                            <span v-if="item.isStudentCompleted" class="badge badge-grade" :style="getGradeBageStyles(item)">
+                                {{ getBadgeText(item) }}
+                            </span>
+                        </div>
+                    </template>
+                </CustomSelect>
+                <div class="workspace-main-content">
+                    <h1 class="mt-0">
+                        {{ viewingCompletionBag.activityBag?.name ?? "" }}
+                    </h1>
+                    <div class="activity-time">
+                        {{ getActivityTimeText(viewingCompletionBag) }}
+                    </div>
+                    <activityTypeComponent
+                                           v-model:activityBag="viewingCompletionBag.activityBag"
+                                           v-model:completionBag="viewingCompletionBag"
+                                           :screenToShow="screenToShow"
+                                           @closed="onClosed"
+                                           @completed="onCompleted" />
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<style>
+
+/* Workspace Tabbar */
+.workspace-tab-bar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-large);
+    align-items: center;
+}
+
+/* Workspace Class Overview */
+.workspace-class-sidebar .section {
+    margin: var(--spacing-large) 0;
+    padding: var(--spacing-medium);
+}
+
+.notification-section,
+.announcment-section {
+    margin-bottom: var(--spacing-large);
+}
+
+.notification-section .title,
+.announcment-section .title {
+    margin-bottom: var(--spacing-medium);
+    margin-top: 0;
+}
+
+.notification-title,
+.announcement-title {
+    margin: var(--spacing-tiny) 0;
+}
+
+/* Workspace Activities */
+@media (min-width: 768px) {
+    .workspace-block-content {
+        display: flex;
+    }
+
+    .workspace-navigation-pane {
+        width: 33%;
+        min-width: 300px;
+        margin-right: var(--spacing-xlarge);
+        align-self: baseline;
+    }
+
+    .workspace-main-content {
+        width: 67%;
+    }
+}
+
+/* Activity List */
+.custom-select-item-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.activity-item-content {
+    display: flex;
+    align-items: center;
+}
+
+.activity-item-content .activity-item-icon {
+    margin-right: var(--spacing-small);
+}
+
+.activity-item-content h5 {
+    margin: 0;
+}
+
+.activity-item-content .activity-item-icon .icon {
+    color: #fff;
+}
+
+.custom-select-mobile-wrapper {
+    margin-bottom: var(--spacing-large); /* add spacing below the activity selector on mobile */
+}
+
+.available {
+    background-color: var(--color-interface-softer);
+}
+
+.not-available {
+    background-color: var(--color-interface-softer);
+}
+
+.is-completed {
+    background-color: var(--color-interface-softer);
+}
+
+.is-selected {
+    background-color: var(--color-interface-soft);
+}
+</style>
+
+<script setup lang="ts">
+    import { Component, computed, defineAsyncComponent, nextTick, onMounted, ref, toValue, watch } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+    import CustomSelect from "@Obsidian/Controls/customSelect.obs";
+    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
+    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { PublicLearningClassWorkspaceBox } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningClassWorkspace/publicLearningClassWorkspaceBox";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+    import { NavigationUrlKey } from "./PublicLearningClassWorkspace/types.partial";
+    import { AvailabilityCriteria } from "@Obsidian/Enums/Lms/availabilityCriteria";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+
+    const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const backButtonClicked = ref(false);
+    const headerHtml = config.headerHtml ?? "";
+    const screenToShow = ref(ComponentScreen.Completion);
+
+    /** Whether the activity's onClosed event was called. */
+    const wasClosedCalled = ref(false);
+    /** Whether the activity's onCompleted event was called. */
+    const isCompleting = ref(false);
+
+    const params = new URLSearchParams(window.location.search);
+    const selectedActivityIdKey = params.get("activity") ?? "";
+
+    const activities = ref<LearningActivityCompletionBag[]>(config.activities ?? []);
+
+    const viewingCompletionBag = ref((
+        selectedActivityIdKey.length > 0 ?
+            activities.value?.find(a => a.learningActivityIdKey === selectedActivityIdKey && a.isAvailable) :
+            activities.value?.find(a => a.isAvailable)
+    ) ?? {} as LearningActivityCompletionBag);
+
+    const announcements = ref(config.announcements ?? []);
+    const isAcademicCalendarMode = ref(config.programConfigurationMode === ConfigurationMode.AcademicCalendar);
+    // const isAcademicCalendarMode = ref(true);  // uncomment this for testing a on-demand course in an academic calendar
+    const isFacilitator = ref(config.isCurrentPersonFacilitator ?? false);
+    const facilitatorPortalUrl = ref(config.navigationUrls?.[NavigationUrlKey.FacilitatorPortalPage] ?? "");
+    const facilitators = ref(config.facilitators ?? []);
+    const notificationsToShow = ref(config.numberOfNotificationsToShow);
+    const notifications = ref(config.notifications?.filter((_, i) => i < notificationsToShow.value) ?? []);
+    const showGrades = ref(config.showGrades);
+    const currentGrade = ref(config.currentGrade);
+
+    const overviewTab = ref("Class Overview");
+    const activitiesTab = ref("Activities / Assignments");
+    const contentTabs = ref(config.contentPages ?? []);
+
+    const activityTypeComponent = ref<Component | null>(null);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** An array of completed activities. */
+    const completedActivitiesCount = computed(() => activities.value.filter(a => !!a.completedDate).length);
+
+    /** The activityComponent.componentUrl from the ActivityBag or an empty string. */
+    const componentUrl = computed(() => viewingCompletionBag.value?.activityBag?.activityComponent?.componentUrl ?? "");
+
+    /** The properly pluralized text for the Facilitator(s). */
+    const facilitatorsLabel = computed(() => facilitators.value.length > 1 ? "Facilitators" : "Facilitator");
+
+    /** The percentage (0 - 100) of completed activities. */
+    const percentComplete = computed(() => activities.value.length > 0 ? (completedActivitiesCount.value / activities.value.length * 100) : 0);
+
+    /** The name of the currently selected content tab (or null). */
+    const selectedContentTab = computed(() => contentTabs.value.find(t => t.title?.toLowerCase() === selectedTab.value?.toLowerCase()));
+
+    /** The list of all tab names (overview, activities and all content pages). */
+    const tabs = computed(() =>
+        [overviewTab.value, activitiesTab.value]
+            .concat(contentTabs.value.map(t => t.title ?? "")
+                .filter(t => t.length > 0))
+    );
+
+    // #endregion
+
+    // #region Functions
+
+    function getBadgeText(activity: LearningActivityCompletionBag): string | undefined {
+        if (activity.isStudentCompleted && activity.gradeName) {
+            return activity.gradeName;
+        }
+    }
+
+    function getGradeBageStyles(activity: LearningActivityCompletionBag): string | undefined {
+        if (!activity.gradeColor){
+            return;
+        }
+
+        const pair = RockColor.calculateColorPair(new RockColor(activity.gradeColor as string));
+        const backgroundColor = pair.backgroundColor.toRgba();
+        const foreColor = pair.foregroundColor.toRgba();
+
+        if (activity.isStudentCompleted && activity.gradeName) {
+            return `background-color: ${backgroundColor}; color: ${foreColor};`;
+        }
+    }
+
+    function isDueSoonAndIncomplete(activity: LearningActivityCompletionBag): boolean {
+        return !activity.isStudentCompleted && (activity.isDueSoon || activity.isPastDue);
+    }
+
+    /** The CSS classes to apply to the activity container. */
+    function getActivityContainerClasses(activity: LearningActivityCompletionBag): string {
+        const classes = activity.isAvailable === true ? ["available"] : ["not-available"];
+
+        classes.push("activity-navigation-item-container");
+
+        if (activity.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey) {
+            classes.push("is-selected");
+        }
+
+        if (activity.completedDate) {
+            classes.push("is-completed");
+        }
+
+        return classes.join(" ");
+    }
+
+    function showFacilitators(): boolean {
+        if (facilitators.value.length > 0){
+            return true;
+        }
+
+        return false;
+    }
+
+    /** Classes to apply to the activity icon stack. */
+    function activityIconStackClasses(activity: LearningActivityCompletionBag): string[] {
+        const completionStatusClass = activity.isStudentCompleted ? "text-success" : "text-muted";
+        return ["fa", "fa-circle", "fa-stack-2x", completionStatusClass];
+    }
+
+    /** Gets the text for the activity's relevant time (e.g. completed when, due when etc.). */
+    function getActivityTimeText(activity: LearningActivityCompletionBag): string {
+        if (activity.isStudentCompleted) {
+            return `Completed: ${getElapsedTime(activity.completedDate?.toString() ?? "")}`;
+        }
+        else if (activity.isDueSoon || activity.isPastDue) {
+            return `Due: ${getElapsedTime(activity.dueDate?.toString() ?? "")}`;
+        }
+        else if (!activity.isAvailable) {
+            return activity.availableDate == null ?
+                "Prerequisite Step Not Met" :
+                `Available: ${getElapsedTime(activity.availableDate?.toString() ?? "")}`;
+        }
+
+        return "";
+    }
+
+    /** The function that formats the date for display. */
+    function formattedDate(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.localDateTime?.toASPString("MMMM d, yyyy") ?? "";
+    }
+
+    /** The time elapsed since the specified date in a human-readable format. */
+    function getElapsedTime(date: string): string {
+        return RockDateTime.parseISO(date)?.localDateTime.toElapsedString() ?? "";
+    }
+
+    function isActivityUnavailable(activity: LearningActivityCompletionBag | null): boolean {
+        return !activity?.isAvailable;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the activity component's closed emit is fired. Because completed
+     *  and closed may be called together - when this event handler is aware
+     * that the onCompleted event is being handled it will not process.
+     * In that scenario the onCompleted event handler will call onClosed when ready.
+     */
+    async function onClosed(): Promise<void> {
+        wasClosedCalled.value = true;
+
+        // If we're also awaiting a completeActivity request then don't look for
+        // another activity. Expect the onCompleted event handler to call onClosed
+        // once it's completed.
+        if (!isCompleting.value){
+            const currentIndex = activities.value.findIndex(a => a.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey);
+            const nextAvailableActivity = activities.value?.find((a, i) => i > currentIndex && a.isAvailable);
+            if (nextAvailableActivity){
+                viewingCompletionBag.value = nextAvailableActivity;
+                wasClosedCalled.value = false;
+            }
+        }
+    }
+
+    /**
+     * Called when activity component's completed emit is fired.
+     * If the closed emit was also fired onCompleted will call
+     * that method once completed.
+     *
+     * @param wasSuccessful True if the complete button was clicked; false otherwise.
+     *
+     * @returns `true` if the operation succeeded; otherwise `false`.
+     */
+    async function onCompleted(wasSuccessful: boolean): Promise<boolean> {
+        isCompleting.value = true;
+
+        if (wasSuccessful) {
+            var result = await invokeBlockAction<LearningActivityCompletionBag>("CompleteActivity", {
+                activityCompletionBag: viewingCompletionBag.value
+            });
+
+            if (result.statusCode === 200 && result.data) {
+                // If the result was successful, update the activity with the new values.
+                const index = activities.value?.findIndex(a => a.learningActivityIdKey === result.data?.learningActivityIdKey) ?? -1;
+
+                if (activities.value && index >= 0) {
+                    activities.value[index] = result.data;
+
+                    // Only set the viewing completion bag to the returned data if it matches.
+                    // It's possible the another available activity was selected between submission and response.
+                    if (viewingCompletionBag.value.learningActivityIdKey === result.data.learningActivityIdKey){
+                        viewingCompletionBag.value = result.data;
+                    }
+
+                    // If there's a subsequent activity and it becomes available upon completion of the previous
+                    // then mark it available.
+                    const nextActivityIndex = index + 1;
+                    const hasNextActivity = nextActivityIndex < activities.value?.length ?? -1;
+                    const nextActivity = hasNextActivity ? activities.value[nextActivityIndex] : null;
+
+                    if (nextActivity != null && nextActivity.activityBag?.availabilityCriteria === AvailabilityCriteria.AfterPreviousCompleted) {
+                        nextActivity.availableDate = result.data.completedDate;
+                        nextActivity.isAvailable = true;
+                    }
+
+                }
+
+                // Reload the activity component.
+                activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
+
+                isCompleting.value = false;
+
+                // If the onClosed handler didn't find another available activity
+                // check again now that the response from the completion came back
+                // and another activity has possibly been made available.
+                if (wasClosedCalled.value){
+                    onClosed();
+                }
+
+                return true;
+            }
+            else if ((result.errorMessage ?? "").length > 0) {
+                blockError.value = result.errorMessage ?? "";
+            }
+
+            isCompleting.value = false;
+        }
+
+        return false;
+    }
+
+    /** Called when a new tab is selected by the individual.  */
+    function onSelectTab(tabName: string): void {
+        const queryParams = new URLSearchParams(window.location.search);
+        const currentTab = queryParams.get("tab");
+
+        selectedTab.value = tabName;
+
+        if (backButtonClicked.value || tabName === currentTab) {
+            return;
+        }
+
+        queryParams.set("tab", tabName ?? "");
+        history.pushState(null, "", "?" + queryParams.toString());
+    }
+
+    // #endregion
+
+    /**
+     * Watch for the selected activity changing and ensure the query params and
+     * activityType component are in-sync.
+     */
+    watch(viewingCompletionBag, (cur, prev) => {
+        const previousIdKey = toValue(prev)?.learningActivityIdKey;
+        const currentIdKey = toValue(cur)?.learningActivityIdKey;
+
+        if (previousIdKey === currentIdKey) {
+            return;
+        }
+
+        const previousSelectedIndex = activities.value.findIndex(a => a.learningActivityIdKey === previousIdKey);
+
+        // Update the current selection before moving to the new selection.
+        // This ensures that any work completed by the student isn't lost when clicking to another task.
+        if (previousSelectedIndex >= 0 && prev) {
+            activities.value[previousSelectedIndex] = prev;
+        }
+
+        // Update the activity component.
+        activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
+
+        if (!backButtonClicked.value){
+            const queryParams = new URLSearchParams(window.location.search);
+            queryParams.set("activity", currentIdKey ?? "");
+            history.pushState(null, "", "?" + queryParams.toString());
+        }
+    });
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+
+    onMounted(() => {
+        if (componentUrl.value.length > 0) {
+            activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
+        }
+    });
+
+    // Set the initially selected tab.
+    const queryParams = new URLSearchParams(window.location.search);
+    const tab = queryParams.has("tab") ? queryParams.get("tab") : "";
+
+    // If this is not academic calendar mode then we only have access to the Activities tab.
+    const selectedTab = isAcademicCalendarMode.value === true ?
+        ref(tabs.value.find(t => t.toLowerCase() === tab?.toLowerCase()) ?? overviewTab.value) :
+        activitiesTab;
+
+    // Listen for the browser back button click and update the selected tab if necessary.
+    window.addEventListener("popstate", function () {
+        backButtonClicked.value = true;
+        const queryParams = new URLSearchParams(window.location.search);
+
+        const idKey = queryParams.has("activity") ? queryParams.get("activity") : "";
+        const tab = queryParams.has("tab") ? queryParams.get("tab") : "";
+
+        if (tab) {
+            onSelectTab(tab);
+        }
+
+        if (idKey) {
+            const newActivitySelection = activities.value.find(a => a.learningActivityIdKey === idKey);
+
+            if (newActivitySelection){
+                viewingCompletionBag.value = newActivitySelection;
+            }
+        }
+
+        void nextTick(() => backButtonClicked.value = false);
+    });
+</script>

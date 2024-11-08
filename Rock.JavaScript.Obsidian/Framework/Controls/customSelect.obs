@@ -1,0 +1,204 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="custom-select-field">
+        <!-- MOBILE VERSION -->
+        <div v-if="isMobile" class="custom-select-mobile-wrapper">
+            <div :class="`custom-select-wrapper ${wrapperClass} ${openStateCssClass()}`">
+                <TransitionVerticalCollapse speed="fast">
+                    <div v-if="!internalValue && !isExpanded" :class="`custom-select-item ${itemClasses(null)}`" @click="onItemClick(null)">
+                        <slot name="placeholder">
+                            <p class="text-muted">Select an item</p>
+                        </slot>
+                    </div>
+                </TransitionVerticalCollapse>
+                <TransitionVerticalCollapse v-for="item in items" :key="(item[itemKey as keyof TItem] as string | number)">
+                    <div v-if="isExpanded || item[itemKey as keyof TItem] === internalValue?.[itemKey as keyof TItem]" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
+                        <div class="custom-select-item-content">
+                            <slot v-bind="{ item }">
+                                {{ item }}
+                            </slot>
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
+            </div>
+            <Transition name="fade">
+                <div class="custom-select-expand-icon" v-if="!isExpanded" @click="onItemClick(null)">
+                    <i class="fa fa-angle-up"></i><br>
+                    <i class="fa fa-angle-down"></i>
+                </div>
+            </Transition>
+        </div>
+        <!-- DESKTOP VERSION -->
+        <div v-else :class="`custom-select-wrapper ${wrapperClass}`">
+            <template v-for="item in items" :key="(item[itemKey as keyof TItem] as string | number)">
+                <div v-if="!isMobile || isExpanded || item[itemKey as keyof TItem] === internalValue?.[itemKey as keyof TItem]" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
+                    <div class="custom-select-item-content">
+                        <slot v-bind="{ item }">
+                            {{ item }}
+                        </slot>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </RockFormField>
+</template>
+
+<script setup lang="ts" generic="TItem, TKey extends keyof TItem">
+    import { PropType, Ref, ref, watch } from "vue";
+    import { useViewportWidth } from "@Obsidian/Utility/screenSize";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        /** V-model of the currently selected item */
+        modelValue: {
+            type: Object as PropType<TItem | null>,
+            default: null
+        },
+
+        /** List of items to display in the control */
+        items: {
+            type: Array as PropType<TItem[]>,
+            required: true
+        },
+
+        /** property name of the item to use as the unique key (used to control rendering) */
+        itemKey: {
+            type: String as unknown as PropType<TKey>,
+            default: "id"
+        },
+
+        /** CSS class(es) to apply to the wrapper element */
+        wrapperClass: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * CSS class(es) to apply to the item element. If you supply a string,
+         * will apply that directly. You can also use a function that takes the
+         * item object and returns a string, which allows you to apply different
+         * classes to different items depending on the item data.
+         */
+        itemClass: {
+            type: [String, Function] as PropType<string | ((item: TItem | null) => string)>,
+            default: ""
+        },
+
+        /** CSS class(es) to apply to the selected item. Default: "selected" */
+        selectedClass: {
+            type: String,
+            default: "selected"
+        },
+
+        mobileThreshold: {
+            type: Number as PropType<number>,
+            default: 480
+        },
+
+        /**
+         * property name of the item to use to determine if the item is disabled.
+         * If you supply a string, will apply that directly. You can also use a
+         * function that takes the item object and returns a boolean, which
+         * allows you to use complex logic depending on the item data.
+         */
+        disabledKey: {
+            type: [String, Function] as PropType<string | ((item: TItem | null) => boolean)>,
+            default: "isDisabled"
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: TItem | null): void
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit) as Ref<TItem | null>;
+    const fieldProps = useStandardRockFormFieldProps(props);
+    const { isMobile } = useViewportWidth(props.mobileThreshold);
+    const isExpanded = ref(false);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Determine if the item should be disabled.
+     */
+    function isItemDisabled(item: TItem | null): boolean {
+        if (typeof props.disabledKey === "string") {
+            return !!item?.[props.disabledKey as keyof TItem];
+        }
+
+        if (typeof props.disabledKey === "function") {
+            return props.disabledKey(item);
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine the class to apply to each item.
+     */
+    function getItemClass(item: TItem | null): string | undefined {
+        if (typeof props.itemClass === "string") {
+            return props.itemClass;
+        }
+
+        if (typeof props.itemClass === "function") {
+            return props.itemClass(item);
+        }
+
+        return undefined;
+    }
+
+    function itemClasses(item: TItem | null): string {
+        const classes = [
+            getItemClass(item)
+        ];
+
+        if (item === internalValue.value || item === null) {
+            classes.push(props.selectedClass);
+        }
+
+        if (isItemDisabled(item)) {
+            classes.push("custom-select-item-disabled");
+        }
+
+        return classes.join(" ");
+    }
+
+    function openStateCssClass(): string {
+        if (isExpanded.value == true) {
+            return "is-open";
+        }
+
+        return "is-closed";
+    }
+
+    function onItemClick(item: TItem | null): void {
+        if ((isExpanded.value || !isMobile.value) && item !== null && !isItemDisabled(item)) {
+            internalValue.value = item;
+            isExpanded.value = false;
+        }
+        else if (isMobile.value) {
+            isExpanded.value = true;
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(isMobile, () => {
+        // Whenever we switch back and forth between desktop and mobile, we
+        // want to make sure it isn't expanded.
+        isExpanded.value = false;
+    });
+
+    // #endregion
+</script>

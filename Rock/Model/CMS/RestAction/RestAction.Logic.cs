@@ -96,7 +96,7 @@ namespace Rock.Model
                         {
                             foreach ( var sa in method.GetCustomAttributes<SecurityActionAttribute>() )
                             {
-                                actions.AddOrIgnore( sa.Action, sa.Description );
+                                actions.TryAdd( sa.Action, sa.Description );
                             }
                         }
                     }
@@ -117,7 +117,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            return RestActionCache.Get( this.ApiId );
+            return RestActionCache.Get( this.Id );
         }
 
         /// <summary>
@@ -127,7 +127,10 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             RestActionCache.UpdateCachedEntity( this.ApiId, entityState );
+#pragma warning restore CS0618 // Type or member is obsolete
+            RestActionCache.UpdateCachedEntity( this.Id, entityState );
         }
 
         #endregion

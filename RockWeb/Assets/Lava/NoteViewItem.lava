@@ -82,6 +82,7 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                     {% else %}
                     {{ note.Caption }}
                     {% endif %}
+                    <span v-if="note.ApprovalStatus == 0" class="pull-right mr-1 label label-warning">Pending Approval</span>
                 </span>
 
                 <span class="note-details">

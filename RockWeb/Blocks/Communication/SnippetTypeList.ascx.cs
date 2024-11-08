@@ -113,7 +113,7 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void Block_BlockUpdated(object sender, EventArgs e)
+        protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             InitializeGrid();
             BindGrid();
@@ -221,7 +221,7 @@ namespace RockWeb.Blocks.Communication
             gSnippetTypes.GridRebind += gSnippetTypes_GridRebind;
             gSnippetTypes.RowItemText = "Snippet Type";
 
-            var isUserAuthorized = IsUserAuthorized(Authorization.EDIT);
+            var isUserAuthorized = IsUserAuthorized( Authorization.EDIT );
             var isDetailPageSet = IsDetailPageSet();
 
             var canDelete = isUserAuthorized;
@@ -230,16 +230,16 @@ namespace RockWeb.Blocks.Communication
             gSnippetTypes.Actions.ShowAdd = canAddAndEdit;
             gSnippetTypes.IsDeleteEnabled = canDelete;
 
-            if (canAddAndEdit)
+            if ( canAddAndEdit )
             {
                 gSnippetTypes.Actions.AddClick += gSnippetTypes_Add;
                 gSnippetTypes.RowSelected += gSnippetTypes_Edit;
             }
 
             var securityField = gSnippetTypes.ColumnsOfType<SecurityField>().FirstOrDefault();
-            if (securityField != null)
+            if ( securityField != null )
             {
-                securityField.EntityTypeId = EntityTypeCache.Get(typeof(SnippetType)).Id;
+                securityField.EntityTypeId = EntityTypeCache.Get( typeof( SnippetType ) ).Id;
             }
         }
 
@@ -251,7 +251,7 @@ namespace RockWeb.Blocks.Communication
         /// </returns>
         private bool IsDetailPageSet()
         {
-            return !GetAttributeValue(AttributeKey.DetailPage).IsNullOrWhiteSpace();
+            return !GetAttributeValue( AttributeKey.DetailPage ).IsNullOrWhiteSpace();
         }
 
         #endregion Internal Methods

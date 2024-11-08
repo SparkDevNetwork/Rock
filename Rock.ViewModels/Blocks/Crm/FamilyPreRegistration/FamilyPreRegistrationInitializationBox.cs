@@ -113,6 +113,12 @@ namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration
         public FamilyPreRegistrationSmsOptInFieldBag DisplaySmsOptIn { get; set; }
 
         /// <summary>
+        /// Moves the Child panel above the Adult Information panel and starts
+        /// with one child to be filled in.
+        /// </summary>
+        public bool PrioritizeChildEntry { get; set; }
+
+        /// <summary>
         /// Gets or sets the campus field.
         /// </summary>
         public FamilyPreRegistrationFieldBag CampusField { get; set; }
@@ -239,5 +245,21 @@ namespace Rock.ViewModels.Blocks.Crm.FamilyPreRegistration
         ///   <c>true</c> if [disable captcha support]; otherwise, <c>false</c>.
         /// </value>
         public bool DisableCaptchaSupport { get; set; }
+
+        /// <summary>
+        /// The label that should be used when referring to adults on the form.
+        /// </summary>
+        /// <value>
+        /// The adult label.
+        /// </value>
+        public string AdultLabel { get; set; }
+
+        /// <summary>
+        /// The label that should be used when referring to children on the form.
+        /// </summary>
+        /// <value>
+        /// The adult label.
+        /// </value>
+        public string ChildLabel { get; set; }
     }
 }

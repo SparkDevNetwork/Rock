@@ -14,8 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
-
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 
@@ -38,6 +39,17 @@ namespace Rock.Model
         public decimal TotalAmount 
         {
             get { return ScheduledTransactionDetails.Sum( d => d.Amount ); }
+        }
+
+        /// <inheritdoc cref="FinancialScheduledTransactionExtensionMethods.GetPaymentPlan(FinancialScheduledTransaction)" />
+        [NotMapped]
+        [RockInternal( "1.16.6" )]
+        public virtual PaymentPlan PaymentPlan
+        {
+            get
+            {
+                return this.GetPaymentPlan();
+            }
         }
 
         #endregion Virtual Properties

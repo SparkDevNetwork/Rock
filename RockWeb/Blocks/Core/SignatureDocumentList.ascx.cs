@@ -85,12 +85,17 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
-                BindGrid();
+                // Only bind the grid if we are not setting the page up to create a new template.
+                int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
+                if ( TargetPerson != null || ( documentTypeId.HasValue && documentTypeId != 0 ) )
+                {
+                    BindGrid( documentTypeId );
+                }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -154,9 +159,12 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
-                // delete the binary file associated with the Signature Document
-                var binaryFileService = new BinaryFileService( rockContext );
-                binaryFileService.Delete( document.BinaryFile );
+                // Delete the binary file associated with the Signature Document
+                if(document.BinaryFile != null)
+                {
+                    var binaryFileService = new BinaryFileService( rockContext );
+                    binaryFileService.Delete( document.BinaryFile );
+                }
 
                 signatureDocumentService.Delete( document );
                 rockContext.SaveChanges();
@@ -182,9 +190,11 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Binds the signature documents grid.
         /// </summary>
-        protected void BindGrid()
+        /// <param name="documentTypeId">The SignatureDocumentTemplateId page parameter.</param>
+        protected void BindGrid( int? documentTypeId = null )
         {
-            var qry = new SignatureDocumentService( new RockContext() )
+            var rockContext = new RockContext();
+            var qry = new SignatureDocumentService( rockContext )
                 .Queryable().AsNoTracking();
 
             if ( TargetPerson != null )
@@ -196,15 +206,15 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
-                if ( documentTypeId.HasValue )
+                documentTypeId = documentTypeId ?? PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
+                if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
                 {
                     var signatureDocumentTemplateService = new SignatureDocumentTemplateService( new RockContext() );
                     var signatureDocumentTemplate = signatureDocumentTemplateService.Get( documentTypeId.Value );
 
                     // Following the same logic as the Signature Document Detail to hide the Block if the Current Person is not authorized to view.
-                    bool canEdit = signatureDocumentTemplate.IsAuthorized( Authorization.EDIT, CurrentPerson );
-                    bool canView = canEdit || signatureDocumentTemplate.IsAuthorized( Authorization.VIEW, CurrentPerson );
+                    bool canEdit = signatureDocumentTemplate?.IsAuthorized( Authorization.EDIT, CurrentPerson ) ?? false;
+                    bool canView = canEdit || ( signatureDocumentTemplate?.IsAuthorized( Authorization.VIEW, CurrentPerson ) ?? false );
 
                     if ( !canView )
                     {
@@ -222,17 +232,7 @@ namespace RockWeb.Blocks.Core
                 }
             }
 
-            SortProperty sortProperty = gSignatureDocuments.SortProperty;
-            if ( sortProperty != null )
-            {
-                qry = qry.Sort( sortProperty );
-            }
-            else
-            {
-                qry = qry.OrderByDescending( d => d.LastInviteDate ).ThenByDescending( a => a.SignedDateTime ).ThenByDescending( a => a.CreatedDateTime );
-            }
-
-            gSignatureDocuments.DataSource = qry.Select( d => new
+            var documentListQry = qry.Select( d => new
             {
                 d.Id,
                 d.Name,
@@ -243,12 +243,33 @@ namespace RockWeb.Blocks.Core
                 d.Status,
                 d.LastInviteDate,
                 d.SignedDateTime,
+                d.CreatedDateTime,
                 d.SignatureDocumentTemplate,
-                FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-alt fa-lg'></i>" : "",
-                FileGuid = d.BinaryFile.Guid,
-            } ).ToList();
+                FileText = d.BinaryFileId.HasValue ? "<i class='fa fa-file-alt fa-lg'></i>" : "<i class='fa fa-exclamation-triangle text-danger' title='File deleted'></i>",
+                FileGuid = d.BinaryFile == null ? Guid.Empty : d.BinaryFile.Guid,
+            } )
+                .GroupBy( d => d.SignatureDocumentTemplate ) // grouping by the signature document template to avoid duplicate checks for authorization on the same
+                .ToList()
+                .Where( d => d.Key != null && d.Key.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                .SelectMany( d => d )
+                .AsQueryable();
 
+
+            SortProperty sortProperty = gSignatureDocuments.SortProperty;
+            if ( sortProperty != null )
+            {
+                documentListQry = documentListQry.Sort( sortProperty );
+            }
+            else
+            {
+                documentListQry = documentListQry.OrderByDescending( d => d.LastInviteDate ).ThenByDescending( a => a.SignedDateTime ).ThenByDescending( a => a.CreatedDateTime );
+            }
+
+            rockContext.SqlLogging( true );
+            gSignatureDocuments.DataSource = documentListQry.ToList();
             gSignatureDocuments.DataBind();
+
+            rockContext.SqlLogging( false );
         }
 
         private void NavigateToDetailPage( int documentId )

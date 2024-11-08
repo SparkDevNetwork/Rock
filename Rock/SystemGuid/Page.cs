@@ -363,104 +363,6 @@ namespace Rock.SystemGuid
         public const string CHECK_IN_MANAGER_EN_ROUTE = "F6466964-6593-4B20-A49B-D2386D8A260C";
 
         /// <summary>
-        /// Gets the Check-in Type page guid
-        /// ParentPage: 
-        /// </summary>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use CHECK_IN_MANAGER_SETTINGS instead (same guid)" )]
-        public const string CHECK_IN_TYPE = "62C70118-0A6F-432A-9D84-A5296655CB9E";
-
-        #region Check-In Pages
-
-        /// <summary>
-        /// Gets the Admin page guid
-        /// ParentPage: Check-in
-        /// </summary>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use CHECKIN_ADMIN instead" )]
-        public const string ADMIN_CHECK_IN = "7B7207D0-B905-4836-800E-A24DDC6FE445";
-
-        /// <summary>
-        /// Gets the Check-in Welcome page guid
-        /// ParentPage: Check-in
-        /// </summary>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use CHECKIN_WELCOME instead" )]
-        public const string WELCOME = "432B615A-75FF-4B14-9C99-3E769F866950";
-
-        /// <summary>
-        /// Gets the Search page guid
-        /// ParentPage: Check-in
-        /// </summary>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use CHECKIN_SEARCH instead" )]
-        public const string SEARCH = "D47858C0-0E6E-46DC-AE99-8EC84BA5F45F";
-
-        /// <summary>
-        /// Gets the Family Select page guid
-        /// ParentPage: Check-in
-        /// </summary>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use CHECKIN_FAMILY_SELECT instead" )]
-        public const string FAMILY_SELECT = "10C97379-F719-4ACB-B8C6-651957B660A4";
-
-        /// <summary>
-        /// Gets the Person Select page guid
-        /// ParentPage: Check-in
-        /// </summary>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use CHECKIN_PERSON_SELECT instead" )]
-        public const string PERSON_SELECT = "BB8CF87F-680F-48F9-9147-F4951E033D17";
-
-        /// <summary>
-        /// Gets the Group Type Select page guid
-        /// ParentPage: Check-in
-        /// </summary>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use CHECKIN_GROUP_TYPE_SELECT instead" )]
-        public const string GROUP_TYPE_SELECT = "60E3EA1F-FD6B-4F0E-9C72-A9960E13427C";
-
-        /// <summary>
-        /// Gets the Ability Select page guid
-        /// ParentPage: Check-in
-        /// </summary>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use CHECKIN_ABILITY_SELECT instead" )]
-        public const string ABILITY_SELECT = "A1CBDAA4-94DD-4156-8260-5A3781E39FD0";
-
-        /// <summary>
-        /// Gets the Group Select page guid
-        /// ParentPage: Check-in
-        /// </summary>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use CHECKIN_GROUP_SELECT instead" )]
-        public const string GROUP_SELECT = "6F0CB22B-E05B-42F1-A329-9219E81F6C34";
-
-        /// <summary>
-        /// Gets the Location Select page guid
-        /// ParentPage: Check-in
-        /// </summary>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use CHECKIN_LOCATION_SELECT instead" )]
-        public const string LOCATION_SELECT = "043BB717-5799-446F-B8DA-30E575110B0C";
-
-        /// <summary>
-        /// Gets the Time Select page guid
-        /// ParentPage: Check-in
-        /// </summary>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use CHECKIN_TIME_SELECT instead" )]
-        public const string TIME_SELECT = "C0AFA081-B64E-4006-BFFC-A350A51AE4CC";
-
-        /// <summary>
-        /// Gets the Success page guid
-        /// ParentPage: Check-in
-        /// </summary>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use CHECKIN_SUCCESS instead" )]
-        public const string SUCCESS = "E08230B8-35A4-40D6-A0BB-521418314DA9";
-
-        /// <summary>
         /// Gets the Check-in page guid
         /// ParentPage: 
         /// </summary>
@@ -573,8 +475,6 @@ namespace Rock.SystemGuid
         /// ParentPage: Check-in
         /// </summary>
         public const string CHECKIN_CHECK_OUT_SUCCESS = "21A855BA-6D68-4504-97B4-D787452CEC29";
-
-        #endregion Check-In Pages
 
         /// <summary>
         /// Gets the ChildPages page guid
@@ -1973,22 +1873,6 @@ namespace Rock.SystemGuid
         /// ParentPage: System Emails
         /// </summary>
         public const string SYSTEM_EMAIL_CATEGORIES_SYSTEM_EMAILS = "66FAF7A6-7523-475C-A88D-51C75178A785";
-
-        /// <summary>
-        /// Gets the System Email Details page guid
-        /// ParentPage: System Emails
-        /// </summary>
-        [Obsolete( "Use SYSTEM_COMMUNICATION_DETAIL instead.", true )]
-        [RockObsolete( "1.10" )]
-        public const string SYSTEM_EMAIL_DETAILS = "588C72A8-7DEC-405F-BA4A-FE64F87CB817";
-
-        /// <summary>
-        /// Gets the System Emails page guid
-        /// ParentPage: Communications
-        /// </summary>
-        [Obsolete( "Use SYSTEM_COMMUNICATION_LIST instead.", true )]
-        [RockObsolete( "1.10" )]
-        public const string SYSTEM_EMAILS = "89B7A631-EA6F-4DA3-9380-04EE67B63E9E";
 
         /// <summary>
         /// Gets the System Communications page guid

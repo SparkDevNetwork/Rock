@@ -7,10 +7,10 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
-                 :blockLabels="blockLabels"
+                 :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 :entityTypeName="panelName"
+                 entityTypeName="FollowingEventType"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -106,9 +106,8 @@
      */
     const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
-
         if (panelMode.value !== DetailPanelMode.View) {
-            return undefined;
+            return labels;
         }
 
         if (followingEventTypeViewBag.value?.isActive === true) {

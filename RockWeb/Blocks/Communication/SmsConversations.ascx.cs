@@ -30,6 +30,7 @@ using Rock.Enums.Communication;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -55,7 +56,7 @@ namespace RockWeb.Blocks.Communication
 
     [BooleanField( "Hide personal SMS numbers",
         Key = AttributeKey.HidePersonalSmsNumbers,
-        Description = "Only SMS Numbers that are not associated with a person. The numbers without a 'ResponseRecipient' attribute value.",
+        Description = "When enabled, only SMS Numbers that are not 'Assigned to a person' will be shown.",
         DefaultBooleanValue = false,
         Order = 3
          )]
@@ -171,8 +172,6 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbAddPerson.Visible = false;
 
             if ( ppPersonFilter.PersonId != null )
@@ -194,6 +193,8 @@ namespace RockWeb.Blocks.Communication
                     divMain.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Control Overrides
@@ -223,7 +224,7 @@ namespace RockWeb.Blocks.Communication
             // filter personal numbers (any that have a response recipient) if the hide personal option is enabled
             if ( GetAttributeValue( AttributeKey.HidePersonalSmsNumbers ).AsBoolean() )
             {
-                smsNumbers = smsNumbers.Where( spn => spn.AssignedToPersonAliasId.HasValue ).ToList();
+                smsNumbers = smsNumbers.Where( spn => !spn.AssignedToPersonAliasId.HasValue ).ToList();
             }
 
             // Show only numbers 'tied to the current' individual...unless they have 'Admin rights'.
@@ -901,7 +902,8 @@ namespace RockWeb.Blocks.Communication
                     foreach ( var binaryFileGuid in communicationRecipientResponse.GetBinaryFileGuids( rockContext ) )
                     {
                         // Show the image thumbnail by appending the html to lSMSMessage.Text
-                        string imageElement = $"<a href='{applicationRoot}GetImage.ashx?guid={binaryFileGuid}' target='_blank' rel='noopener noreferrer'><img src='{applicationRoot}GetImage.ashx?guid={binaryFileGuid}&width=200' class='img-responsive sms-image'></a>";
+                        string imageUrl = FileUrlHelper.GetImageUrl( binaryFileGuid, new GetImageUrlOptions{ Width = 200 } );
+                        string imageElement = $"<a href='{imageUrl}' target='_blank' rel='noopener noreferrer'><img src='{imageUrl}' class='img-responsive sms-image'></a>";
 
                         // If there is a text portion or previous image then drop down a line before appending the image element
                         lSMSAttachments.Text += imageElement;

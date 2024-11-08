@@ -228,6 +228,7 @@
     import { LibraryViewerDownloadItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerDownloadItemBag";
     import { LibraryViewerItemBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerItemBag";
     import { LibraryViewerValidationResultsBag } from "@Obsidian/ViewModels/Blocks/Cms/LibraryViewer/libraryViewerValidationResultsBag";
+    import { emptyGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         item: {
@@ -459,7 +460,7 @@
     /** Emits the downloadArticle event and closes the download modal. */
     function emitDownloadArticleEvent(): void {
         emit("downloadArticle", {
-            contentLibraryItemGuid: props.item.guid,
+            contentLibraryItemGuid: props.item.guid || emptyGuid,
             startDate: downloadedItemStartDateTime.value,
             endDate: downloadedItemEndDateTime.value,
             status: downloadedItemStatus.value

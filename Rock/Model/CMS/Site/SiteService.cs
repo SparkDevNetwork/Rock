@@ -19,10 +19,12 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.Mobile;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -114,7 +116,25 @@ namespace Rock.Model
         /// <see cref="DbContext.SaveChanges()"/> is not needed.
         /// </remarks>
         /// <param name="applicationSiteId">The application site identifier representing the application to be built.</param>
+        [Obsolete( "Use BuildMobileApplicationAsync() instead." )]
+        [RockObsolete( "1.16.4" )]
         public void BuildMobileApplication( int applicationSiteId )
+        {
+            var task = Task.Run( async () => await BuildMobileApplicationAsync( applicationSiteId ) );
+
+            task.Wait();
+        }
+
+        /// <summary>
+        /// Builds the mobile application specified and stores it. Mobile shells will
+        /// then retrieve the new bundle the next time they launch.
+        /// </summary>
+        /// <remarks>
+        /// This method will immediately save the changes into the database. A call to
+        /// <see cref="DbContext.SaveChanges()"/> is not needed.
+        /// </remarks>
+        /// <param name="applicationSiteId">The application site identifier representing the application to be built.</param>
+        public async Task BuildMobileApplicationAsync( int applicationSiteId )
         {
             if ( !( Context is RockContext rockContext ) )
             {
@@ -125,8 +145,8 @@ namespace Rock.Model
             var versionId = ( int ) ( deploymentDateTime.ToJavascriptMilliseconds() / 1000 );
 
             // Generate the packages and then encode to JSON.
-            var phonePackage = MobileHelper.BuildMobilePackage( applicationSiteId, DeviceType.Phone, versionId );
-            var tabletPackage = MobileHelper.BuildMobilePackage( applicationSiteId, DeviceType.Tablet, versionId );
+            var phonePackage = await MobileHelper.BuildMobilePackageAsync( applicationSiteId, DeviceType.Phone, versionId );
+            var tabletPackage = await MobileHelper.BuildMobilePackageAsync( applicationSiteId, DeviceType.Tablet, versionId );
             var phoneJson = phonePackage.ToJson();
             var tabletJson = tabletPackage.ToJson();
 
@@ -223,7 +243,7 @@ namespace Rock.Model
             // FileSystem provider currently returns a bad URL.
             if ( file.BinaryFileType.StorageEntityType.Name == "Rock.Storage.Provider.FileSystem" )
             {
-                url = $"/GetFile.ashx?Id={file.Id}";
+                url = FileUrlHelper.GetFileUrl( file.Id );
                 var uri = new Uri( GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) );
 
                 url = uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + url;

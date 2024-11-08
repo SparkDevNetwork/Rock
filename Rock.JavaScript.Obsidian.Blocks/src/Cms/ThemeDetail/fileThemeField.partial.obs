@@ -1,0 +1,86 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="form-group">
+        <RockLabel :help="field.description ?? undefined">
+            {{ field.name }}
+        </RockLabel>
+
+        <div class="d-flex align-items-end" style="gap: 8px;">
+            <FileUploader v-model="value" />
+
+            <button v-if="internalValue !== null"
+                    type="button"
+                    class="btn btn-default btn-sm"
+                    title="Reset to default"
+                    @click="onResetValue">
+                <i class="fa fa-refresh"></i>
+            </button>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { ThemeFieldBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeDetail/themeFieldBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        field: {
+            type: Object as PropType<ThemeFieldBag>,
+            required: true
+        },
+
+        value: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "updateValue", key: string, value: string | null): void;
+    }>();
+
+    const internalValue = ref<string | null>(props.value);
+    const value = computed<ListItemBag | undefined>({
+        get(): ListItemBag | undefined {
+            if (internalValue.value === null && props.field.defaultValue) {
+                return {
+                    value: props.field.defaultValue
+                };
+            }
+            else if (internalValue.value !== null) {
+                return {
+                    value: internalValue.value
+                };
+            }
+            else {
+                return undefined;
+            }
+        },
+        set(v: ListItemBag | undefined) {
+            // Because of how the file uploader works, it will emit an event
+            // with the value it is set with. So this attempts to handle the
+            // case where we set internalValue to null and then the image
+            // uploader emits the default value back to us.
+            if (internalValue.value !== null || v?.value !== props.field.defaultValue) {
+                internalValue.value = v?.value ?? "";
+            }
+        }
+    });
+
+    function onResetValue(): void {
+        internalValue.value = null;
+    }
+
+    watch(internalValue, () => {
+        if (props.field.variable) {
+            emit("updateValue", props.field.variable, internalValue.value);
+        }
+    });
+
+    watch(() => props.value, () => {
+        internalValue.value = props.value;
+    });
+</script>

@@ -2,23 +2,27 @@
 <template>
     <div class="grid-title-heading">
         <div class="grid-title">
-            {{ props.grid.itemTerm }} List
+            <template v-if="!isTitleHidden">{{ internalTitle }}</template>
+            <template v-else>&nbsp;</template>
         </div>
 
         <div class="grid-badges mr-3">
-            <span v-if="countMessage" class="label label-default">{{ countMessage }}</span>
+            <span v-if="countMessage && isCountMessageVisible" class="label label-default">
+                <span class="label-value">{{ countMessage }}</span>
+                <span v-if="selectedRowCount && selectedRowCount > 0" class="badge badge-info">{{ selectedRowCount }}</span>
+            </span>
         </div>
 
         <!-- This causes a break on extra small and small devices. -->
-        <div style="height: 0; border-bottom: 1px solid #dfe0e1; flex-basis: 100%;" class="d-md-none"></div>
-        <div class="flex-grow-1 d-md-none" style="min-width: 1px;"></div>
+        <div style="height: 0; border-bottom: 1px solid #dfe0e1; flex-basis: 100%;" class="d-md-none grid-header-separator"></div>
+        <div class="flex-grow-1 d-md-none grid-header-fill" style="min-width: 1px;"></div>
 
-        <div class="grid-quick-filter grid-actions" :class="{ 'active': isSearchVisible }">
+        <div class="grid-quick-filter grid-actions" v-if="isSearchVisible" :class="{ 'active': isSearchExpanded }">
             <button type="button" class="btn btn-grid-action" title="Search" @click.stop.prevent="onSearchClick">
                 <i class="fa fa-search fa-fw"></i>
             </button>
 
-            <div ref="quickFilterContainerElement" class="grid-quick-filter-search" :class="{ 'open': isSearchVisible }">
+            <div ref="quickFilterContainerElement" class="grid-quick-filter-search" :class="{ 'open': isSearchExpanded }">
                 <TextBox v-model="quickFilterValue" placeholder="Search" />
             </div>
         </div>
@@ -60,6 +64,21 @@
         },
 
         /**
+         * The title of the grid. If not provided and `isTitleHidden` is false,
+         * the default title of `${grid.itemTerm} List` will be shown.
+         */
+        title: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /** When `true`, the grid's title will be hidden. */
+        isTitleHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
          * The number of columns currently visible in the grid. This is used
          * as the colspan for this row so that we span the entire grid width.
          */
@@ -72,7 +91,25 @@
         countMessage: {
             type: String as PropType<string>,
             required: false
-        }
+        },
+
+        /** Determines if the count message is visible. */
+        isCountMessageVisible: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        /** The number of rows currently selected in the grid. */
+        selectedRowCount: {
+            type: Number as PropType<number>,
+            required: false
+        },
+
+        /** Determines if the search box is visible. */
+        isSearchVisible: {
+            type: Boolean,
+            default: true
+        },
     });
 
     const emit = defineEmits<{
@@ -82,12 +119,20 @@
     // #region Values
 
     const quickFilterContainerElement = ref<HTMLElement>();
-    const isSearchVisible = ref(false);
+    const isSearchExpanded = ref(false);
     const quickFilterValue = useVModelPassthrough(props, "quickFilterValue", emit);
 
     // #endregion
 
     // #region Computed Values
+
+    const internalTitle = computed((): string => {
+        if (props.title) {
+            return props.title;
+        }
+
+        return `${props.grid.itemTerm} List`;
+    });
 
     const primaryGridActions = computed((): GridAction[] => {
         return props.gridActions.filter(a => a.isPrimary === true);
@@ -139,14 +184,14 @@
      */
     function onSearchClick(): void {
         // Don't allow hiding the search box if there is content in it.
-        if (isSearchVisible.value && quickFilterValue.value) {
+        if (isSearchExpanded.value && quickFilterValue.value) {
             return;
         }
 
-        isSearchVisible.value = !isSearchVisible.value;
+        isSearchExpanded.value = !isSearchExpanded.value;
 
         // Focus the search box if it is visible.
-        if (isSearchVisible.value) {
+        if (isSearchExpanded.value) {
             nextTick(() => {
                 const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
                 searchBox?.focus();
@@ -165,19 +210,26 @@
             return;
         }
 
-        // If the quick filter has the focus and the escape key is pressed
-        // then clear the search.
+        // If the quick filter has the focus, investigate further.
         if (quickFilterContainerElement.value?.contains(event.target)) {
             if (event.key === "Escape") {
+                // If the escape key is pressed then clear the search.
                 if (quickFilterValue.value === "") {
                     const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
 
                     searchBox?.blur();
-                    isSearchVisible.value = false;
+                    isSearchExpanded.value = false;
                 }
                 else {
                     quickFilterValue.value = "";
                 }
+            }
+            else if (event.key === "Enter") {
+                // If the enter/return key is pressed, it signifies the individual
+                // is done typing and is ready to "search"; if the event is not
+                // cancelled, this can lead to other grid actions (i.e. row delete)
+                // from trying to handle the event.
+                event.preventDefault();
             }
         }
 
@@ -185,7 +237,7 @@
         // for searching, open the search bar and focus the search box.
         if (!isTreeFocusable(event.target)) {
             if (event.key === "F" && event.ctrlKey && event.shiftKey) {
-                isSearchVisible.value = true;
+                isSearchExpanded.value = true;
 
                 nextTick(() => {
                     const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;

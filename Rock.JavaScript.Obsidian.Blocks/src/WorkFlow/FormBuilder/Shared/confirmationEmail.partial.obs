@@ -6,7 +6,7 @@
                       description="The following settings will be used to send an email to the individual who submitted the form.">
         <div class="row">
             <div class="col-md-4">
-                <DropDownList v-model="recipientAttributeGuid"
+                <DropDownList v-model="recipientAttributeGuidOrEmptyString"
                               label="Recipient"
                               rules="required"
                               :items="recipientOptions" />
@@ -26,6 +26,7 @@
     import EmailSource from "./emailSource.partial.obs";
     import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
     import { FormConfirmationEmail, FormEmailSource } from "./types.partial";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -49,22 +50,23 @@
     }>();
 
     const enabled = ref(props.modelValue.enabled ?? false);
-    const recipientAttributeGuid = ref(props.modelValue.recipientAttributeGuid ?? "");
+    /** The workflow confirmation recipient attribute guid (or empty string if not provided). */
+    const recipientAttributeGuidOrEmptyString = ref<string>(props.modelValue.recipientAttributeGuid ?? "");
     const source = ref<FormEmailSource>(props.modelValue.source ?? {});
 
     // Watch for changes in our modelValue and then update all our internal values.
     watch(() => props.modelValue, () => {
         enabled.value = props.modelValue.enabled ?? false;
-        recipientAttributeGuid.value = props.modelValue.recipientAttributeGuid ?? "";
+        recipientAttributeGuidOrEmptyString.value = props.modelValue.recipientAttributeGuid ?? "";
         source.value = props.modelValue.source ?? {};
     });
 
     // Watch for changes on any of our internal values and then update the modelValue.
-    watch([enabled, recipientAttributeGuid, source], () => {
+    watch([enabled, recipientAttributeGuidOrEmptyString, source], () => {
         const newValue: FormConfirmationEmail = {
             ...props.modelValue,
             enabled: enabled.value,
-            recipientAttributeGuid: recipientAttributeGuid.value,
+            recipientAttributeGuid: toGuidOrNull(recipientAttributeGuidOrEmptyString.value),
             source: source.value
         };
 

@@ -49,6 +49,9 @@ export type BlockTypeBag = {
     /** Gets or sets a flag indicating if this BlockType was created by and is a part of the Rock core system/framework. This property is required. */
     isSystem: boolean;
 
+    /** Gets or sets the name of the Layouts having the Block of the given Block Type. */
+    layouts?: string[] | null;
+
     /** Gets or sets the name of the BlockType. */
     name?: string | null;
 
@@ -57,4 +60,7 @@ export type BlockTypeBag = {
 
     /** Gets or sets relative path to the .Net ASCX UserControl that provides the HTML Markup and code for the BlockType. */
     path?: string | null;
+
+    /** Gets or sets the name of the Sites having the Block of the given Block Type. */
+    sites?: string[] | null;
 };

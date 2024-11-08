@@ -151,11 +151,11 @@ namespace RockWeb.Blocks.Cms
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             SetNotificationBox( String.Empty, String.Empty );
 
             LoadFeed();
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods

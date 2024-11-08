@@ -21,6 +21,7 @@ using System.Web;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Collections.Generic;
 using Rock;
 using Rock.Communication.SmsActions;
 using Rock.Communication;
@@ -117,6 +118,39 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
             {
                 message.FromPerson = new PersonService( rockContext ).GetPersonFromMobilePhoneNumber( message.FromNumber, true );
 
+                if ( IsOptOutMessage( body ) )
+                {
+                    var cleanNumber = PhoneNumber.CleanNumber( fromPhone );
+                    var phoneNumbers = new PhoneNumberService( rockContext ).Queryable()
+                        .Where( pn => pn.FullNumber == cleanNumber )
+                        .ToList();
+
+                    foreach( var phoneNumber in phoneNumbers)
+                    {
+                        phoneNumber.IsMessagingEnabled = false;
+                        phoneNumber.IsMessagingOptedOut = true;
+                        phoneNumber.MessagingOptedOutDateTime = RockDateTime.Now;
+                    }
+
+                    rockContext.SaveChanges();
+                }
+                else if ( IsOptInMessage( body ) )
+                {
+                    var cleanNumber = PhoneNumber.CleanNumber( fromPhone );
+                    var phoneNumbers = new PhoneNumberService( rockContext ).Queryable()
+                        .Where( pn => pn.FullNumber == cleanNumber )
+                        .ToList();
+
+                    foreach( var phoneNumber in phoneNumbers)
+                    {
+                        phoneNumber.IsMessagingEnabled = true;
+                        phoneNumber.IsMessagingOptedOut = false;
+                        phoneNumber.MessagingOptedOutDateTime = null;
+                    }
+
+                    rockContext.SaveChanges();
+                }
+
                 var smsPipelineId = request.QueryString["smsPipelineId"].AsIntegerOrNull();
 
                 int? numberOfAttachments = request.Params["NumMedia"].IsNotNullOrWhiteSpace() ? request.Params["NumMedia"].AsIntegerOrNull() : null;
@@ -181,5 +215,41 @@ class TwilioSmsResponseAsync : TwilioDefaultResponseAsync
         }
 
         return null;
+    }
+
+    private bool IsOptOutMessage(string messageBody)
+    {
+        List<string> optOutKeywords = new List<string>
+        {
+            "STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"
+        };
+
+        foreach (var keyword in optOutKeywords)
+        {
+            if (string.Equals(messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsOptInMessage(string messageBody)
+    {
+        List<string> optInKeywords = new List<string>
+        {
+            "START", "YES", "UNSTOP"
+        };
+
+        foreach (var keyword in optInKeywords)
+        {
+            if (string.Equals(messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

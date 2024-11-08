@@ -68,10 +68,12 @@ namespace Rock.Migrations
         /// </summary>
         private void AddFormBuilderRoute()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route
             //   Page:Form Builder
             //   Route:admin/general/form-builder
             RockMigrationHelper.AddPageRoute("4F77819C-8F69-4418-933E-08F63E7FC4F9","admin/general/form-builder","335F2313-7FC1-42B4-AD8E-4C2A965F3380");
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>

@@ -22,12 +22,11 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { SearchKeyBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessDetail/searchKeyBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type BusinessDetailOptionsBag = {
-    /** Gets or sets the search keys. */
-    searchKeys?: SearchKeyBag[] | null;
+    /** Gets or sets a value indicating whether [display tags]. */
+    displayTags: boolean;
 
     /** Gets or sets the search types list. */
     searchTypesList?: ListItemBag[] | null;

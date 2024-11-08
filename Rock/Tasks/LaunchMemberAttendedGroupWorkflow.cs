@@ -105,7 +105,8 @@ namespace Rock.Tasks
                                     var qualifierParts = ( trigger.TypeQualifier ?? string.Empty ).Split( new char[] { '|' } );
 
                                     // Check to see if trigger is only specific to first time visitors
-                                    if ( qualifierParts.Length > 4 && qualifierParts[4].AsBoolean() )
+                                    var isLaunchOnce = qualifierParts.Length > 4 && qualifierParts[4].AsBoolean();
+                                    if ( isLaunchOnce )
                                     {
                                         // Get the person from person alias, must match person because alias used in attendance record might be different
                                         int personId = new PersonAliasService( rockContext )
@@ -123,22 +124,21 @@ namespace Rock.Tasks
                                             continue;
                                         }
 
-                                        // Count earlier attendances for the person/group, do not include this attendance. Match using either StartDateTime or CreatedDateTime in case the record was edited which would update the StartDateTime.
-                                        int count = attendanceService
+                                        // Look for any prior attendances of this group by this person.
+                                        var hasPriorGroupAttendance = attendanceService
                                             .Queryable()
                                             .AsNoTracking()
-                                            .Count( a => a.Id != message.AttendanceId 
-                                                && ( a.StartDateTime < attendance.StartDateTime || a.CreatedDateTime < attendance.CreatedDateTime )
+                                            .Any( a => a.Id < attendance.Id
                                                 && a.Occurrence.GroupId.HasValue
                                                 && a.Occurrence.GroupId.Value == message.GroupId.Value
                                                 && a.PersonAlias != null
                                                 && a.PersonAlias.PersonId == personId
                                                 && a.DidAttend.HasValue
-                                                && a.DidAttend.Value );
+                                                && a.DidAttend.Value);
 
-                                        // Launch the workflow if this is the first attendance for the person/group
-                                        launchIt = count == 0;
-
+                                        // Because the launchOnce config is true
+                                        // Launch the workflow only if this is the first attendance for the person & group.
+                                        launchIt = !hasPriorGroupAttendance;
                                     }
 
                                     // If first time flag was not specified, or this is a first time visit, launch the workflow

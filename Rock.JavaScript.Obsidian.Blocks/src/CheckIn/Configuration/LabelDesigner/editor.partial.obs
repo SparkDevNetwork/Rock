@@ -1,0 +1,161 @@
+<template>
+    <div class="editor">
+        <div class="menu-bar">
+            <div class="left-actions">
+                <RockButton :disabled="!labelManager.canUndo.value"
+                            @click="() => labelManager.undo()">
+                    <i class="fa fa-undo"></i>
+                </RockButton>
+
+                <RockButton :disabled="!labelManager.canRedo.value"
+                            @click="() => labelManager.redo()">
+                    <i class="fa fa-redo"></i>
+                </RockButton>
+            </div>
+
+            <div class="center-actions">
+            </div>
+
+            <div class="right-actions">
+                <RockButton :disabled="isDeleteFieldDisabled"
+                            @click="onDeleteFieldClick">
+                    <i class="fa fa-trash"></i>
+                </RockButton>
+            </div>
+        </div>
+
+        <div class="editor-content">
+            <Worksurface ref="worksurface"
+                         :labelManager="props.labelManager"
+                         :showGrid="isGridVisible"
+                         :snapToGrid="isGridLocked" />
+
+            <div class="editor-features">
+                <Switch v-model="isGridVisible"
+                        text="Show Grid" />
+
+                <Switch v-model="isGridLocked"
+                        text="Snap To Grid" />
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.editor {
+    background-color: var(--theme-lightest);
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-bar {
+    height: var(--menu-bar-height);
+    background-color: var(--theme-white);
+    color: var(--theme-darkest);
+    display: flex;
+    padding-left: 16px;
+    padding-right: 16px;
+}
+
+.left-actions,
+.center-actions,
+.right-actions {
+    flex-grow: 1;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.center-actions {
+    justify-content: center;
+}
+
+.right-actions {
+    justify-content: end;
+}
+
+.menu-bar .btn {
+    padding: 3px 6px;
+    font-size: 16px;
+    color: var(--theme-black);
+    border-width: 0;
+    box-shadow: none;
+}
+
+.editor-content {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.editor-features {
+    display: flex;
+    min-width: 480px;
+}
+
+.editor-features > :deep(*) {
+    flex-grow: 1;
+}
+</style>
+
+<script setup lang="ts">
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import Worksurface from "./worksurface.partial.obs";
+    import { computed, PropType, ref } from "vue";
+    import { LabelUndoManager } from "./undoManager.partial";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    defineExpose({
+        savePreview
+    });
+
+    const isGridVisible = ref(false);
+    const isGridLocked = ref(false);
+    const worksurface = ref<InstanceType<typeof Worksurface>>();
+
+    const isDeleteFieldDisabled = computed((): boolean => {
+        return !props.labelManager.selectedField.value;
+    });
+
+    /**
+     * Creates a preview image of the canvas that will then be saved into
+     * the database label. This provides a quick way to see what the label
+     * will look like without having to print or go into the designer.
+     */
+    function savePreview(): Promise<Blob | undefined> {
+        if (!worksurface.value) {
+            return Promise.resolve(undefined);
+        }
+
+        return worksurface.value.savePreview();
+    }
+
+    /**
+     * Event handler for when the delete field button is clicked in the header.
+     */
+    function onDeleteFieldClick(): void {
+        const selectedGuid = props.labelManager.selectedField.value?.guid;
+
+        if (!selectedGuid) {
+            return;
+        }
+
+        props.labelManager.mutate(label => {
+            const index = label.labelData.fields.findIndex(f => f.guid === selectedGuid);
+
+            if (index >= 0) {
+                label.labelData.fields.splice(index, 1);
+            }
+        });
+    }
+</script>

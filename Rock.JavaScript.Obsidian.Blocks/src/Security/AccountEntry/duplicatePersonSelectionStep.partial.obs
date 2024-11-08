@@ -24,6 +24,8 @@
         </label>
     </div>
 
+    <slot name="captcha" />
+
     <div class="actions">
         <RockButton :btnType="BtnType.Link" :disabled="disabled" @click="onPreviousClicked">Previous</RockButton>
         <RockButton :btnType="BtnType.Primary" :disabled="disabled" @click="onNextClicked">Next</RockButton>

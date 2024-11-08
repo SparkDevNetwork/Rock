@@ -1,0 +1,173 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TabbedContent :tabs="courseDetailTabs">
+        <template #tabpane="{ item }">
+            <template v-if="item === 'Overview'" class="row">
+
+                <div class="col-md-4">
+                    <ImageWithIcon :imageFileGuid="imageGuid"
+                                :highlightColor="highlightColor"
+                                :iconCssClass="iconCssClass" />
+                </div>
+                <div class="col-md-8">
+                    <fieldset>
+                        <ValueDetailList :modelValue="topValues" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ValueDetailList :modelValue="leftSideValues" />
+                            </div>
+
+                            <div class="col-md-6">
+                                <ValueDetailList :modelValue="rightSideValues" />
+                            </div>
+                        </div>
+
+                        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+                    </fieldset>
+                </div>
+            </template>
+            <template v-else-if="item === 'Description'">
+                <span v-html="descriptionAsHtml"></span>
+            </template>
+        </template>
+    </TabbedContent>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
+    import { LearningCourseRequirementBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseRequirement/learningCourseRequirementBag";
+    import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import { RequirementTypeDescription } from "@Obsidian/Enums/Lms/requirementType";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+    import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<LearningCourseBag | null>,
+            required: false
+        },
+
+        options: {
+            type: Object as PropType<LearningCourseDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const courseDetailTabs: Array<string> = ["Overview", "Description"];
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
+    const descriptionAsHtml = ref(props.modelValue?.descriptionAsHtml ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isOnDemandMode = ref(props.options?.configurationMode === ConfigurationMode.OnDemandLearning);
+
+    const imageGuid = computed(() => props.modelValue?.imageBinaryFile?.value ?? "");
+    const iconCssClass = computed(() => props.modelValue?.programIconCssClass ?? "");
+    const highlightColor = computed(() => props.modelValue?.programHighlightColor ?? "");
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.summary) {
+            valueBuilder.addTextValue("", props.modelValue.summary);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        const publicName = props.modelValue.publicName ?? "";
+        if (publicName.length > 0) {
+            valueBuilder.addTextValue("Public Name", publicName);
+        }
+
+        // On-Demand mode doesn't allow  course credits.
+        if (isOnDemandMode.value === false){
+            valueBuilder.addTextValue("Credits", (props.modelValue.credits ?? 0).toString());
+        }
+
+        valueBuilder.addTextValue("Enable Announcements", props.modelValue.enableAnnouncements === true ? "Yes" : "No");
+
+        const completionWorkflowText = props.modelValue.completionWorkflowType?.text ?? "";
+        if (completionWorkflowText.length > 0) {
+            valueBuilder.addTextValue("Completion Workflow Type", completionWorkflowText);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the right side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+        const emptyValue = "<br />";
+
+        const courseCode = props.modelValue.courseCode ?? "";
+        if (courseCode.length > 0){
+            valueBuilder.addTextValue("Course Code", courseCode);
+        }
+
+        valueBuilder.addTextValue("Allow Historical Access", asYesNoOrNull(props.modelValue.allowHistoricalAccess) ?? "No");
+
+        // Create a function for constructing the html that will represent a single requirement.
+        const requirementHtml = (r: LearningCourseRequirementBag): string => {
+            const updatedUrl = window.location.href.replace(r.learningCourseIdKey ?? "", r.requiredLearningCourseIdKey ?? "");
+            const courseCodeElement = r.requiredLearningCourseCode ? ` <span class="text-muted text-sm">${r.requiredLearningCourseCode}</span>` : "";
+            return `<li><a target="_blank" href="${updatedUrl}">${r.requiredLearningCourseName}</a>${courseCodeElement}</li>`;
+        };
+
+        // Get a distinct list of requirement types and build a section for each.
+        const courseRequirements = props.modelValue.courseRequirements ?? [];
+        if (courseRequirements) {
+            const distinctRequirementTypes = courseRequirements.map(r => r.requirementType).filter((v, i, a) => a.indexOf(v) == i);
+
+            if (distinctRequirementTypes) {
+                distinctRequirementTypes.forEach(requirementType => {
+                    const requirements = courseRequirements.filter(r => r.requirementType === requirementType).map(r => requirementHtml(r)).join("");
+                    valueBuilder.addHtmlValue(pluralize(RequirementTypeDescription[requirementType]), `<ul>${requirements ?? emptyValue}</ul>`);
+                });
+
+            }
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+</script>

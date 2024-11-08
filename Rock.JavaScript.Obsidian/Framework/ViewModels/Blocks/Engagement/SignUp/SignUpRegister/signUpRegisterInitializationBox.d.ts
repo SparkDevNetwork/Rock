@@ -24,6 +24,7 @@
 import { RegisterMode } from "@Obsidian/Enums/Blocks/Engagement/SignUp/registerMode";
 import { SignUpRegistrantBag } from "@Obsidian/ViewModels/Blocks/Engagement/SignUp/SignUpRegister/signUpRegistrantBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The box that contains all the initialization information for the Sign-Up Register block. */
 export type SignUpRegisterInitializationBox = {
@@ -35,6 +36,12 @@ export type SignUpRegisterInitializationBox = {
      * an error is preventing the block from being displayed.
      */
     errorMessage?: string | null;
+
+    /** Gets or sets the registrant member attributes. */
+    memberAttributes?: Record<string, PublicAttributeBag> | null;
+
+    /** Gets or sets the registrant member opportunity attributes. */
+    memberOpportunityAttributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the registration mode the block is in. */
     mode: RegisterMode;
@@ -48,7 +55,7 @@ export type SignUpRegisterInitializationBox = {
     /**
      * Gets or sets the list of existing or possible registrants, including the registrar.
      * 
-     * Each <see cref="P:Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister.SignUpRegistrantBag.WillAttend" /> value indicates whether they're already registered (<see langword="true" />) or available to be registered (<see langword="false" />).
+     * Each {@link SignUpRegistrantBag.willAttend} value indicates whether they're already registered (<see langword="true" />) or available to be registered (<see langword="false" />).
      */
     registrants?: SignUpRegistrantBag[] | null;
 

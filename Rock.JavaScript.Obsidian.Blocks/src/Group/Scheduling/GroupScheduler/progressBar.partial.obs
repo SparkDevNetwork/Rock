@@ -1,31 +1,56 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div :class="`progress text-${state} m-0 flex-fill`" role="progressbar" aria-label="Group Scheduler Progress">
+    <div ref="progressBarElement"
+         :class="`progress text-${state} m-0 flex-fill`"
+         role="progressbar"
+         aria-label="Group Scheduler Progress"
+         data-toggle="tooltip"
+         :data-original-title="progressBarTooltip">
+
         <div :class="`progress-bar bg-${state}`" :style="`width:${confirmedPercentage}%`"></div>
         <div :class="`progress-bar bg-${state} o-50`" :style="`width:${pendingPercentage}%`"></div>
 
         <div v-if="showMinimumThreshold"
-             ref="minimumThresholdElement"
              class="indicator"
-             :style="`left:${minimumPercentage}%;`"
-             data-toggle="tooltip"
-             :title="`Minimum: ${minimumCapacity}`"></div>
+             :style="`left:${minimumPercentage}%;`"></div>
 
         <div v-if="showDesiredThreshold"
-             ref="desiredThresholdElement"
              class="indicator"
-             :style="`left:${desiredPercentage}%;`"
-             data-toggle="tooltip"
-             :title="`Desired: ${desiredCapacity}`"></div>
+             :style="`left:${desiredPercentage}%;`"></div>
 
         <div v-if="showMaximumThreshold"
-             ref="maximumThresholdElement"
              class="indicator"
-             :style="`left:${maximumPercentage}%;`"
-             data-toggle="tooltip"
-             :title="`Maximum: ${maximumCapacity}`"></div>
+             :style="`left:${maximumPercentage}%;`"></div>
     </div>
 </template>
+
+<!-- These styles cannot be scoped since they're being used in a tooltip. -->
+<style>
+.group-scheduler-v2 .progress-bar-tooltip {
+    min-width: 130px;
+}
+
+.group-scheduler-v2 .progress-bar-tooltip-label {
+    font-weight: bold;
+}
+
+.group-scheduler-v2 .progress-bar-tooltip-responses {
+    margin-top: 12px;
+}
+
+.group-scheduler-v2 .progress-bar-tooltip-counts {
+    margin-top: 4px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.group-scheduler-v2 .progress-bar-tooltip-counts > span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
@@ -39,37 +64,55 @@
         }
     });
 
-    interface IGetPercentageConfig {
-        isThreshold: boolean;
-        isMax?: boolean;
-    }
-
     // #region Values
 
-    const minimumThresholdElement = ref<HTMLElement | null>(null);
-    const desiredThresholdElement = ref<HTMLElement | null>(null);
-    const maximumThresholdElement = ref<HTMLElement | null>(null);
+    const progressBarElement = ref<HTMLElement | null>(null);
 
     // #endregion
 
     // #region Computed Values
+
+    const progressBarTooltip = computed((): string => {
+        return `
+<div class='progress-bar-tooltip'>
+    <div class='progress-bar-tooltip-configured'>
+        <span class="progress-bar-tooltip-label">Configured</span>
+        <div class='progress-bar-tooltip-counts'>
+            <span>
+                <i class='far fa-minus-square'></i>
+                ${minimumCapacity.value === 0 ? "-" : minimumCapacity.value}
+            </span>
+            <span>
+                <i class='far fa-star'></i>
+                ${desiredCapacity.value === 0 ? "-" : desiredCapacity.value}
+            </span>
+            <span>
+                <i class='far fa-plus-square'></i>
+                ${maximumCapacity.value === 0 ? "-" : maximumCapacity.value}
+            </span>
+        </div>
+    </div>
+    <div class='progress-bar-tooltip-responses'>
+        <span class="progress-bar-tooltip-label">Responses</span>
+        <div class='progress-bar-tooltip-counts'>
+            <span><i class='far fa-calendar-check'></i> ${confirmedCount.value}</span>
+            <span><i class='fa fa-question'></i> ${pendingCount.value}</span>
+            <span><i class='far fa-calendar-times'></i> ${declinedCount.value}</span>
+        </div>
+    </div>
+</div>`;
+    });
 
     const minimumCapacity = computed((): number => {
         return props.progress?.minimumCapacity ?? 0;
     });
 
     const minimumPercentage = computed((): number => {
-        return getPercentageOfWhole(minimumCapacity.value, { isThreshold: true });
+        return getPercentageOfWhole(minimumCapacity.value);
     });
 
     const showMinimumThreshold = computed((): boolean => {
         return minimumPercentage.value > 0 && minimumPercentage.value < 100;
-
-        // Replace the above line with the following if we decide we want to show minimum "ticks" at the 0% position.
-        // Otherwise, when mimimum capacity === 1, the tick will not be shown because:
-        //  1) We have logic below to show threshold "ticks" to the left of the spot that will satisfy a given value.
-        //  2) As a result, minimum percentage will be 0%.
-        // return (minimumCapacity.value > 0 || minimumPercentage.value > 0) && minimumPercentage.value < 100;
     });
 
     const desiredCapacity = computed((): number => {
@@ -77,7 +120,7 @@
     });
 
     const desiredPercentage = computed((): number => {
-        return getPercentageOfWhole(desiredCapacity.value, { isThreshold: true });
+        return getPercentageOfWhole(desiredCapacity.value);
     });
 
     const showDesiredThreshold = computed((): boolean => {
@@ -89,7 +132,7 @@
     });
 
     const maximumPercentage = computed((): number => {
-        return getPercentageOfWhole(maximumCapacity.value, { isThreshold: true, isMax: true });
+        return getPercentageOfWhole(maximumCapacity.value);
     });
 
     const showMaximumThreshold = computed((): boolean => {
@@ -103,7 +146,7 @@
     });
 
     const confirmedPercentage = computed((): number => {
-        return getPercentageOfWhole(confirmedCount.value, { isThreshold: false });
+        return getPercentageOfWhole(confirmedCount.value);
     });
 
     const pendingCount = computed((): number => {
@@ -112,7 +155,11 @@
 
     const pendingPercentage = computed((): number => {
         const pendingCountForPercentage = pendingCount.value + confirmedCount.value;
-        return getPercentageOfWhole(pendingCountForPercentage, { isThreshold: false });
+        return getPercentageOfWhole(pendingCountForPercentage);
+    });
+
+    const declinedCount = computed((): number => {
+        return props.progress?.declinedCount ?? 0;
     });
 
     const totalCount = computed((): number => {
@@ -174,14 +221,19 @@
      * Gets the part's percentage of the whole.
      *
      * @param part The part whose percentage should be calculated.
-     * @param config A config object to help determine how this percentage should be calculated.
      */
-    function getPercentageOfWhole(part: number, config: IGetPercentageConfig): number {
+    function getPercentageOfWhole(part: number): number {
         if (whole.value > 0) {
-            if (config.isThreshold && !config.isMax) {
-                // Show threshold "ticks" to the left of the spot that will satisfy a given value.
-                part--;
-            }
+            /*
+                11/6/2023 - JPH
+
+                Although the original design specified to show min/desired/max threshold "ticks" to
+                the left of the spot that will satisfy a given value, a bug was opened requesting
+                to show them to the right of said value.
+
+                Reason: Clarify min/desired/max threshold "ticks".
+                https://github.com/SparkDevNetwork/Rock/issues/5662
+            */
 
             var percentage = Math.floor(part / whole.value * 100);
             return percentage > 100 ? 100 : percentage;
@@ -191,39 +243,29 @@
     }
 
     /**
-     * Configures the min/desired/max tooltips.
+     * Configures the progress bar tooltip.
      */
-    function configureTooltips(): void {
-        if (minimumThresholdElement.value) {
-            tooltip(minimumThresholdElement.value);
-        }
+    function configureTooltip(): void {
+        nextTick(() => {
+            if (progressBarElement.value) {
+                tooltip(progressBarElement.value, { html: true });
+            }
+        });
 
-        if (desiredThresholdElement.value) {
-            tooltip(desiredThresholdElement.value);
-        }
-
-        if (maximumThresholdElement.value) {
-            tooltip(maximumThresholdElement.value);
-        }
     }
 
     // #endregion
 
     watch([
-        minimumThresholdElement,
-        desiredThresholdElement,
-        maximumThresholdElement
-    ], () => {
-        configureTooltips();
-    });
-
-    watch([
         minimumCapacity,
         desiredCapacity,
-        maximumCapacity
+        maximumCapacity,
+        confirmedCount,
+        pendingCount,
+        declinedCount
     ], () => {
-        nextTick(() => {
-            configureTooltips();
-        });
+        configureTooltip();
     });
+
+    configureTooltip();
 </script>

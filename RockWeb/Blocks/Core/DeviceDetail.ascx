@@ -81,6 +81,8 @@
                             <Rock:RockRadioButtonList ID="rblKioskType" runat="server" Label="Kiosk Type" RepeatDirection="Horizontal" AutoPostBack="true" Required="true" OnSelectedIndexChanged="rblKioskType_SelectedIndexChanged" />
                             <Rock:RockCheckBox ID="cbHasCamera" runat="server" Label="Has Camera" Help="Determines if the device has a camera. This is currently only used for reading barcodes on kiosks." AutoPostBack="true" OnCheckedChanged="cbHasCamera_CheckedChanged" />
                             <Rock:RockDropDownList ID="ddlIPadCameraBarcodeConfigurationType" runat="server" Label="iPad Camera Barcode Configuration" Help="If set, this value will override any block setting for check-in." />
+
+                            <Rock:RockDropDownList ID="ddlProxyDevice" runat="server" Label="Proxy Device" DataTextField="Name" DataValueField="Id" Help="The proxy device that will handle communicating with this printer when performing server based printing." />
                         </div>
                     </div>
 
@@ -101,8 +103,8 @@
                 </fieldset>
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
 
             </div>

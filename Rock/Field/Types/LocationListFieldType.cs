@@ -76,21 +76,24 @@ namespace Rock.Field.Types
             {
                 var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
-                if ( publicConfigurationValues[ConfigurationKey.LocationType].IsNotNullOrWhiteSpace() )
+                if ( usage != ConfigurationValueUsage.View )
                 {
-                    var locationTypeValue = DefinedValueCache.Get( publicConfigurationValues[ConfigurationKey.LocationType].ToIntSafe() );
-                    var locationTypeItemBag = new ListItemBag { Text = locationTypeValue.Value, Value = locationTypeValue.Guid.ToString() };
+                    if ( privateConfigurationValues.ContainsKey( ConfigurationKey.LocationType ) && publicConfigurationValues[ConfigurationKey.LocationType].IsNotNullOrWhiteSpace() )
+                    {
+                        var locationTypeValue = DefinedValueCache.Get( publicConfigurationValues[ConfigurationKey.LocationType].ToIntSafe() );
+                        var locationTypeItemBag = new ListItemBag { Text = locationTypeValue.Value, Value = locationTypeValue.Guid.ToString() };
 
-                    publicConfigurationValues[ConfigurationKey.LocationType] = locationTypeItemBag.ToCamelCaseJson( false, true );
-                }
+                        publicConfigurationValues[ConfigurationKey.LocationType] = locationTypeItemBag.ToCamelCaseJson( false, true );
+                    }
 
-                if ( publicConfigurationValues[ConfigurationKey.ParentLocation].IsNotNullOrWhiteSpace() )
-                {
-                    var locationService = new LocationService(rockContext);
-                    var parentLocation = locationService.Get( publicConfigurationValues[ConfigurationKey.ParentLocation].ToIntSafe() );
-                    var parentLocationItemBag = new ListItemBag { Text = parentLocation.Name, Value = parentLocation.Guid.ToString() };    
+                    if ( privateConfigurationValues.ContainsKey( ConfigurationKey.ParentLocation ) && publicConfigurationValues[ConfigurationKey.ParentLocation].IsNotNullOrWhiteSpace() )
+                    {
+                        var locationService = new LocationService( rockContext );
+                        var parentLocation = locationService.Get( publicConfigurationValues[ConfigurationKey.ParentLocation].ToIntSafe() );
+                        var parentLocationItemBag = new ListItemBag { Text = parentLocation.Name, Value = parentLocation.Guid.ToString() };
 
-                    publicConfigurationValues[ConfigurationKey.ParentLocation] = parentLocationItemBag.ToCamelCaseJson( false, true );
+                        publicConfigurationValues[ConfigurationKey.ParentLocation] = parentLocationItemBag.ToCamelCaseJson( false, true );
+                    }
                 }
 
                 return publicConfigurationValues;
@@ -104,7 +107,7 @@ namespace Rock.Field.Types
             {
                 var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
 
-                if ( privateConfigurationValues[ConfigurationKey.LocationType].IsNotNullOrWhiteSpace() )
+                if ( privateConfigurationValues.ContainsKey( ConfigurationKey.LocationType ) && privateConfigurationValues[ConfigurationKey.LocationType].IsNotNullOrWhiteSpace() )
                 {
                     var guidString = privateConfigurationValues[ConfigurationKey.LocationType].FromJsonOrNull<ListItemBag>().Value;
                     var locationTypeValue = DefinedValueCache.Get( new Guid( guidString ) );
@@ -112,7 +115,7 @@ namespace Rock.Field.Types
                     privateConfigurationValues[ConfigurationKey.LocationType] = locationTypeValue.Id.ToString();
                 }
 
-                if ( privateConfigurationValues[ConfigurationKey.ParentLocation].IsNotNullOrWhiteSpace() )
+                if ( privateConfigurationValues.ContainsKey( ConfigurationKey.ParentLocation ) && privateConfigurationValues[ConfigurationKey.ParentLocation].IsNotNullOrWhiteSpace() )
                 {
                     var locationService = new LocationService( rockContext );
                     var guidString = privateConfigurationValues[ConfigurationKey.ParentLocation].FromJsonOrNull<ListItemBag>().Value;

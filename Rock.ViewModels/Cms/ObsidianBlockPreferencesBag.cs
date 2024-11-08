@@ -43,5 +43,11 @@ namespace Rock.ViewModels.Cms
         /// </summary>
         /// <value>The person preference values.</value>
         public List<PersonPreferenceValueBag> Values { get; set; }
+
+        /// <summary>
+        /// Gets or sets the time stamp at which the preferences were fetched from the database.
+        /// The remote device may use this field to aid caching of the preference.
+        /// </summary>
+        public long TimeStamp { get; set; }
     }
 }

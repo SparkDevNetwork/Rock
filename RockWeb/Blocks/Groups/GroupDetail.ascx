@@ -104,7 +104,7 @@
                                             <Rock:RockLiteral ID="lGroupType" runat="server" Label="Group Type" />
                                         </div>
                                         <div class="col-sm-6">
-                                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbIsSecurityRole_CheckedChanged" />
+                                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Label="Security Role" AutoPostBack="true" OnCheckedChanged="cbIsSecurityRole_CheckedChanged" />
                                         </div>
                                     </div>
                                     <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
@@ -186,22 +186,38 @@
                         <Rock:PanelWidget ID="wpScheduling" runat="server" Title="Scheduling">
                             <div class="row">
                                 <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbDisableGroupScheduling" runat="server" Label="Disable Group Scheduling" Help="Checking this box will opt the group out from the group scheduling system." />
                                     <Rock:RockCheckBox ID="cbSchedulingMustMeetRequirements" runat="server" Label="Scheduling Must Meet Requirements" Help="Indicates whether group members must meet the group member requirements before they can be scheduled." />
-
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbDisableScheduleToolboxAccess" runat="server" Label="Disable Schedule Toolbox Access" Help="Checking this will hide the group from the schedule toolbox." />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlAttendanceRecordRequiredForCheckIn" runat="server" Label="Check-in Requirements" Help="Determines if the person must be scheduled prior to checking in." />
-
-                                    <Rock:PersonPicker ID="ppScheduleCancellationPerson" runat="server" EnableSelfSelection="true" Label="Schedule Cancellation Person to Notify" Help="The person to notify when a person cancels." />
                                 </div>
                                 <div class="col-md-6">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbDisableGroupScheduling" runat="server" Label="Disable Group Scheduling" Help="Checking this box will opt the group out from the group scheduling system." />
                                     <Rock:RockDropDownList ID="ddlScheduleConfirmationLogic" runat="server" Label="Schedule Confirmation Logic" Help="Determines if the individual will be asked to Accept or Decline, or if their request will be auto accepted. This setting overrides the group type's setting." />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbDisableScheduleToolboxAccess" runat="server" Label="Disable Schedule Toolbox Access" Help="Checking this will hide the group from the schedule toolbox." />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:PersonPicker ID="ppScheduleCoordinatorPerson" runat="server" EnableSelfSelection="true" Label="Schedule Coordinator" Help="The person who receives notifications about changes to scheduled individuals." />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBoxList ID="cblScheduleCoordinatorNotificationTypes" runat="server" Label="Schedule Coordinator Notification Options" RepeatDirection="Horizontal" Help='Specifies the types of notifications the coordinator receives about scheduled individuals. Leave blank to use the Group Type settings, or select one or more options to override them.' OnSelectedIndexChanged="cblScheduleCoordinatorNotificationTypes_SelectedIndexChanged" AutoPostBack="true">
+                                        <asp:ListItem Value="0" Text="None" />
+                                        <asp:ListItem Value="1" Text="Accept" />
+                                        <asp:ListItem Value="2" Text="Decline" />
+                                        <asp:ListItem Value="4" Text="Self-Schedule" />
+                                    </Rock:RockCheckBoxList>
                                 </div>
                             </div>
                         </Rock:PanelWidget>
@@ -212,7 +228,7 @@
 
                         <Rock:PanelWidget ID="wpGroupMemberAttributes" runat="server" Title="Member Attributes" CssClass="group-type-attribute-panel">
                             <Rock:NotificationBox ID="nbGroupMemberAttributes" runat="server" NotificationBoxType="Info"
-                                Text="Member Attributes apply to members in this group.  Each member will have their own value for these attributes" />
+                                Text="Member Attributes apply to members in this group. Each member will have their own value for these attributes." />
                             <Rock:RockControlWrapper ID="rcwGroupMemberAttributesInherited" runat="server" Label="Inherited Group Member Attributes">
                                 <div class="grid">
                                     <Rock:Grid ID="gGroupMemberAttributesInherited" runat="server" AllowPaging="false" DisplayType="Light" ShowHeader="true" RowItemText="Inherited Member Attribute">
@@ -314,8 +330,8 @@
                         </Rock:PanelWidget>
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                            <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                            <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                            <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                         </div>
 
                     </div>
@@ -328,7 +344,7 @@
                         <asp:Literal ID="lContent" runat="server"></asp:Literal>
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
+                            <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" AccessKey="m" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" CausesValidation="false" />
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                             <asp:LinkButton ID="btnArchive" runat="server" Text="Archive" CssClass="btn btn-link js-archive-group" OnClick="btnArchive_Click" CausesValidation="false" />
@@ -347,7 +363,39 @@
                     </fieldset>
                 </div>
             </div>
-
+            
+            <Rock:ModalDialog ID="mdCopyGroup" runat="server" ValidationGroup="vgCopyGroup" Title="Copy Group" OnSaveClick="mdCopyGroup_SaveClick" SaveButtonText="Copy" Visible="false">
+                <Content>
+                    <Rock:NotificationBox ID="mdCopyWarning" runat="server" NotificationBoxType="Warning" Text="
+                        This action will copy the selected group and (optionally) it's child groups. Group members will not be copied.<br />
+                        The following items will be included for every copied group:<br />
+                        <ul>
+                            <li>
+                                Group member attributes configuration
+                            </li>
+                            <li>
+                                Group attributes configuration and their values
+                            </li>
+                            <li>
+                                Schedules
+                            </li>
+                            <li>
+                                Authorization (both authorizations to the group and access to other entities based on membership to the group)
+                            </li>
+                            <li>
+                                Locations (except when the location is a group member address)
+                            </li>
+                            <li>
+                                Group requirements
+                            </li>
+                            <li>
+                                Group syncs
+                            </li>
+                        </ul>"
+                        />
+                    <Rock:RockCheckBox ID="cbCopyGroupIncludeChildGroups" runat="server" Text="Include Child Groups" Checked="true" />
+                </Content>
+            </Rock:ModalDialog>
         </asp:Panel>
 
         <asp:HiddenField ID="hfActiveDialog" runat="server" />
@@ -543,11 +591,11 @@
                         <Rock:RockDropDownList ID="ddlTriggerToStatus" runat="server" Label="To Status of" ValidationGroup="Trigger" />
                         <Rock:RockDropDownList ID="ddlTriggerFromRole" runat="server" Label="From Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
                         <Rock:RockDropDownList ID="ddlTriggerToRole" runat="server" Label="To Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
-                        <Rock:RockCheckBox ID="cbTriggerFirstTime" runat="server" Label="First Time" Text="Yes" ValidationGroup="Trigger"
+                        <Rock:RockCheckBox ID="cbTriggerFirstTime" runat="server" Label="First Time" ValidationGroup="Trigger"
                             Help="Select this option if workflow should only be started when person attends the group for the first time. Leave this option unselected if the workflow should be started whenever a person attends the group." />
-                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereShowNote" runat="server" Label="Show Note" Text="Yes" ValidationGroup="Trigger"
+                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereShowNote" runat="server" Label="Show Note" ValidationGroup="Trigger"
                             Help="Select this option if workflow should show UI for entering a note when the member is placed." />
-                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereRequireNote" runat="server" Label="Require Note" Text="Yes" ValidationGroup="Trigger"
+                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereRequireNote" runat="server" Label="Require Note" ValidationGroup="Trigger"
                             Help="Select this option if workflow should show UI for entering a note and make it required when the member is placed." />
                     </div>
                 </div>

@@ -12,7 +12,7 @@
             <div v-for="value in displayedValues" class="checkbox">
                 <label>
                     <input type="checkbox" :checked="value.selected" @change="onSelected(value, $event)" />
-                    <span class="label-text"><component :is="column.condensedComponent" :row="value.row" :column="column" /></span>
+                    <span class="label-text"><component :is="column.condensedComponent" :row="value.row" :column="column" :grid="grid" /></span>
                 </label>
             </div>
     </div>

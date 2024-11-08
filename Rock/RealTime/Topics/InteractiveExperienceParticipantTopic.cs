@@ -65,7 +65,7 @@ namespace Rock.RealTime.Topics
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal( "1.14.1" )]
+    [RockInternal( "1.14.1", true )]
     [RealTimeTopic]
     internal class InteractiveExperienceParticipantTopic : Topic<IInteractiveExperienceParticipant>
     {

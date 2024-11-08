@@ -85,11 +85,30 @@ namespace Rock.Store
         {
             errorResponse = string.Empty;
 
+            // setup REST call
+            var client = new RestClient( _rockStoreUrl );
+            client.Timeout = _clientTimeout;
+
             string organizationKey = GetOrganizationKey();
             string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
             string encodedPassword = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( password ) ) );
 
-            var response = ExecuteRestGetRequest<PurchaseResponse>( $"api/Store/Purchase/{encodedUserName}/{encodedPassword}/{organizationKey}/{packageId}" );
+            string requestUrl = string.Format( $"api/Store/ProcessPurchase" );
+
+            var body = new
+            {
+                organizationKey,
+                username = encodedUserName,
+                password = encodedPassword,
+                packageId
+            };
+
+            var request = new RestRequest( requestUrl, Method.POST );
+            request.RequestFormat = DataFormat.Json;
+            request.AddJsonBody( body );
+
+            // deserialize to list of packages
+            var response = client.Execute<PurchaseResponse>( request );
 
             if ( response.ResponseStatus == ResponseStatus.Completed )
             {

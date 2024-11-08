@@ -24,6 +24,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Cms;
 using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.Crawler;
@@ -454,6 +455,8 @@ namespace Rock.Model
         /// <c>true</c> if [enable page view geo tracking]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Geolocation lookups are now performed on all interactions, regardless of this setting." )]
         public bool EnablePageViewGeoTracking { get; set; }
 
         /// <summary>
@@ -531,6 +534,12 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool EnablePersonalization { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Bot Guardian Level for the Site.
+        /// </summary>
+        [DataMember]
+        public BotGuardianLevel BotGuardianLevel { get; set; } = BotGuardianLevel.Disable;
 
         #endregion
 

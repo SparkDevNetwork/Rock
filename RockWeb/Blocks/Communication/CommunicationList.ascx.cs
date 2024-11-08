@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Observability;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
@@ -618,13 +619,20 @@ namespace RockWeb.Blocks.Communication
             {
                 var communicationService = new CommunicationService( rockContext );
 
-                var newCommunication = communicationService.Copy( e.RowKeyId, CurrentPersonAliasId );
-                if ( newCommunication != null )
+                using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: List > Copy Communication" ) )
                 {
-                    communicationService.Add( newCommunication );
-                    rockContext.SaveChanges();
+                    var newCommunication = communicationService.Copy( e.RowKeyId, CurrentPersonAliasId );
+                    if ( newCommunication != null )
+                    {
+                        activity?.AddTag( "rock.communication_to_copy_id", e.RowKeyId );
 
-                    newCommunicationId = newCommunication.Id;
+                        communicationService.Add( newCommunication );
+                        rockContext.SaveChanges();
+
+                        newCommunicationId = newCommunication.Id;
+
+                        activity?.AddTag( "rock.new_communication_id", newCommunicationId );
+                    }
                 }
             }
 

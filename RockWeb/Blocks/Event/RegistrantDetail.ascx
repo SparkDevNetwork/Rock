@@ -82,20 +82,20 @@
                                     <Rock:CurrencyBox ID="cbCost" runat="server" Label="Cost" />
                                 </div>
                                 <div class="col-xs-6">
-                                    <Rock:RockCheckBox ID="cbDiscountApplies" runat="server" Label="Discount Applies" Text="Yes" Help="If there was a discount code used for the registration, should it apply to this registrant?" />
+                                    <Rock:RockCheckBox ID="cbDiscountApplies" runat="server" Label="Discount Applies" Help="If there was a discount code used for the registration, should it apply to this registrant?" />
                                 </div>
                             </div>
                             <div id="divFees" runat="server" class="well registration-additional-options">
                                 <asp:PlaceHolder ID="phFees" runat="server" />
                             </div>
                             <asp:HiddenField ID="hfSignedDocumentId" runat="server" />
-                            <Rock:FileUploader ID="fuSignedDocument" runat="server" Label="Signed Document" />
+                            <Rock:FileUploader ID="fuSignedDocument" runat="server" Label="Signed Document" ShowDeleteButton="false"/>
                         </div>
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary js-edit-registrant" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary js-edit-registrant" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </div>

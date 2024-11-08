@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -29,6 +30,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -75,7 +77,7 @@ namespace RockWeb.Blocks.Event
     {
         #region Properties
 
-        private const string SIGNATURE_LINK_TEMPLATE = @"<a href='{0}?id={1}' target='_blank' rel='noopener noreferrer' style='color: black;'><i class='fa fa-file-signature'></i></a>";
+        private const string SIGNATURE_LINK_TEMPLATE = @"<a href='{0}' target='_blank' rel='noopener noreferrer' style='color: black;'><i class='fa fa-file-signature'></i></a>";
         private const string SIGNATURE_NOT_SIGNED_INDICATOR = @"<i class='fa fa-edit text-danger' data-toggle='tooltip' data-original-title='{0}'></i>";
 
         #endregion
@@ -231,12 +233,12 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -791,7 +793,7 @@ namespace RockWeb.Blocks.Event
                     var document = _signatureDocuments[registrant.PersonId.Value];
                     if ( document.Status == SignatureDocumentStatus.Signed )
                     {
-                        lSignedDocument.Text = string.Format( SIGNATURE_LINK_TEMPLATE, ResolveRockUrl( "~/GetFile.ashx" ), document.BinaryFileId );
+                        lSignedDocument.Text = string.Format( SIGNATURE_LINK_TEMPLATE, FileUrlHelper.GetFileUrl( document.BinaryFileId ) );
                     }
                     else
                     {
@@ -1109,7 +1111,7 @@ namespace RockWeb.Blocks.Event
                 var parts = mergeField.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 if ( parts.Any() )
                 {
-                    communicationMergeFields.AddOrIgnore( parts.First().Replace( '.', '_' ), parts.Last().Replace( '.', '_' ) );
+                    communicationMergeFields.TryAdd( parts.First().Replace( '.', '_' ), parts.Last().Replace( '.', '_' ) );
                 }
             }
 
@@ -1731,15 +1733,35 @@ namespace RockWeb.Blocks.Event
                     // Filter query by any configured person attribute filters
                     if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
                     {
+                        /*
+                            SK - 07/23/2024
+                            The logic below evaluates if any filter is applied to any group member attribute. If not, it returns all the data irrespective of whether the registrant is part of any group. If a filter is applied, the registrant must be part of a group.
+                        */
                         var groupMemberService = new GroupMemberService( rockContext );
                         var groupMemberQry = groupMemberService.Queryable().AsNoTracking();
+                        bool isFilterModeApplied = false;
                         foreach ( var attribute in groupMemberAttributes )
                         {
                             var filterControl = phRegistrantsRegistrantFormFieldFilters.FindControl( FILTER_ATTRIBUTE_PREFIX + attribute.Id.ToString() );
-                            groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
+                            var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
+                            if ( filterValues.Count > 1 )
+                            {
+                                var comparisionType = filterValues[0].ConvertToEnumOrNull<ComparisonType>();
+                                if ( comparisionType.HasValue && ( comparisionType == ComparisonType.IsBlank || comparisionType == ComparisonType.IsNotBlank || filterValues.Last().IsNotNullOrWhiteSpace() ) )
+                                {
+                                    isFilterModeApplied = true;
+                                }
+                            }
+                            else if ( filterValues.Any( a => a.IsNotNullOrWhiteSpace() ) )
+                            {
+                                isFilterModeApplied = true;
+                            }
                         }
 
-                        qry = qry.Where( r => groupMemberQry.Any( g => g.Id == r.GroupMemberId ) );
+                        if ( isFilterModeApplied )
+                        {
+                            qry = qry.Where( r => groupMemberQry.Any( g => g.Id == r.GroupMemberId ) );
+                        }
                     }
                 }
 
@@ -1793,7 +1815,7 @@ namespace RockWeb.Blocks.Event
                             groupMemberIds.Add( groupMember.Id );
 
                             string linkedPageUrl = LinkedPageUrl( AttributeKey.GroupDetailPage, new Dictionary<string, string> { { "GroupId", groupMember.GroupId.ToString() } } );
-                            GroupLinks.AddOrIgnore(
+                            GroupLinks.TryAdd(
                                 groupMember.GroupId,
                                 isExporting ? groupMember.Group.Name : string.Format( "<a href='{0}'>{1}</a>", linkedPageUrl, groupMember.Group.Name ) );
                         }
@@ -1857,7 +1879,7 @@ namespace RockWeb.Blocks.Event
                                     .Select( f => f.Attribute )
                                     .ToList()
                                 .ForEach( a => attributes
-                                    .AddOrIgnore( a.Id.ToString() + a.Key, a ) );
+                                    .TryAdd( a.Id.ToString() + a.Key, a ) );
 
                             // Initialize the grid's object list
                             gRegistrants.ObjectList = new Dictionary<string, object>();

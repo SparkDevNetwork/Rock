@@ -62,8 +62,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
@@ -77,6 +75,8 @@ namespace RockWeb.Blocks.Groups
                     this.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Groups
             additionalMergeFields.Add( "GroupHistoryGridPage", LinkedPageRoute( "GroupHistoryGridPage" ) );
             additionalMergeFields.Add( "GroupMemberHistoryPage", LinkedPageRoute( "GroupMemberHistoryPage" ) );
 
-            string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, primaryEntityType, entityId, secondaryEntityType, additionalMergeFields );
+            string timelineHtml = historyService.GetTimelineHtml( timelineLavaTemplate, primaryEntityType, entityId, secondaryEntityType, additionalMergeFields, CurrentPerson );
             lTimelineHtml.Text = timelineHtml;
         }
 

@@ -23,6 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -31,9 +32,9 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as a List of RegistrationTemplate Guids
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "F56DED5E-C135-42B2-A529-878CB30436B5" )]
-    public class RegistrationTemplatesFieldType : FieldType, IEntityReferenceFieldType
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REGISTRATION_TEMPLATES )]
+    public class RegistrationTemplatesFieldType : FieldType, IEntityReferenceFieldType, ISplitMultiValueFieldType
     {
         #region Formatting
 
@@ -69,6 +70,61 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var registrationTemplatesValue = publicValue.FromJsonOrNull<List<ListItemBag>>();
+
+            if ( registrationTemplatesValue != null && registrationTemplatesValue.Any() )
+            {
+                return string.Join( ",", registrationTemplatesValue.Select( s => s.Value ) );
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                var registrationTemplateValues = new List<ListItemBag>();
+
+                var registrationTemplateService = new RegistrationTemplateService( new RockContext() );
+                foreach ( string guidValue in privateValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    Guid? guid = guidValue.AsGuidOrNull();
+                    if ( guid.HasValue )
+                    {
+                        var registrationTemplate = registrationTemplateService.Get( guid.Value );
+                        if ( registrationTemplate != null )
+                        {
+                            var scheduleValue = new ListItemBag()
+                            {
+                                Text = registrationTemplate.Name,
+                                Value = registrationTemplate.Guid.ToString(),
+                            };
+
+                            registrationTemplateValues.Add( scheduleValue );
+                        }
+                    }
+                }
+
+                if ( registrationTemplateValues.Any() )
+                {
+                    return registrationTemplateValues.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return string.Empty;
+        }
 
         #endregion
 
@@ -125,6 +181,16 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<RegistrationTemplate>().Value, nameof( RegistrationTemplate.Name ) )
             };
+        }
+
+        #endregion
+
+        #region ISplitMultiValueFieldType
+
+        /// <inheritdoc/>
+        public ICollection<string> SplitMultipleValues( string privateValue )
+        {
+            return privateValue.Split( ',' );
         }
 
         #endregion

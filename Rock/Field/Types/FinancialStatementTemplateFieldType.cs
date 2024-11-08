@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// Stored as FinancialStatementTemplate.Guid
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( "9E0CD807-D69F-4888-A9BE-BCD11DD083FE" )]
     public class FinancialStatementTemplateFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

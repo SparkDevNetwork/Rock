@@ -113,6 +113,6 @@ namespace Rock.ViewModels.Blocks.Core.SignatureDocumentTemplateDetail
         /// Gets or sets a number of days the signature document made form this template be deemed valid.
         /// This property is honored only if the IsValidInFuture property is set.
         /// </summary>
-        public int? ValidityDurationInDays { get; set; }
+        public string ValidityDurationInDays { get; set; }
     }
 }

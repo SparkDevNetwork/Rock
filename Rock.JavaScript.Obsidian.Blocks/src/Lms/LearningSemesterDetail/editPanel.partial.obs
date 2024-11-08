@@ -1,0 +1,100 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+            <div class="col-md-6">
+                <DatePicker v-model="startDate"
+                            label="Start Date"
+                            rules="required" />
+            </div>
+            <div class="col-md-6">
+                <DatePicker v-model="endDate"
+                            label="End Date" />
+            </div>
+            <div class="col-md-6">
+                <DatePicker v-model="enrollmentCloseDate"
+                            label="Enrollment Close Date" />
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { PropType, watch } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { LearningSemesterBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningSemesterDetail/learningSemesterBag";
+    import { LearningSemesterDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningSemesterDetail/learningSemesterDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<LearningSemesterBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<LearningSemesterDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<LearningSemesterBag>): void
+    }>();
+
+    // #region Values
+
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const startDate = propertyRef(props.modelValue.bag?.startDate, "StartDate");
+    const endDate = propertyRef(props.modelValue.bag?.endDate, "EndDate");
+    const enrollmentCloseDate = propertyRef(props.modelValue.bag?.enrollmentCloseDate, "EnrollmentCloseDate");
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [name, startDate, endDate, enrollmentCloseDate];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(startDate, props.modelValue.bag?.startDate);
+        updateRefValue(endDate, props.modelValue.bag?.endDate);
+        updateRefValue(enrollmentCloseDate, props.modelValue.bag?.enrollmentCloseDate);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([...propRefs], () => {
+        const newValue: ValidPropertiesBox<LearningSemesterBag> = {
+            bag: { ...props.modelValue.bag } as LearningSemesterBag
+        };
+
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "startDate", startDate.value);
+        setPropertiesBoxValue(newValue, "endDate", endDate.value);
+        setPropertiesBoxValue(newValue, "enrollmentCloseDate", enrollmentCloseDate.value);
+
+        emit("update:modelValue", newValue);
+    });
+</script>

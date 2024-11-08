@@ -106,6 +106,12 @@ namespace Rock.Client
         /// <summary />
         public bool IsSystem { get; set; }
 
+        /// <summary />
+        public decimal? LeaderToLeaderRelationshipMultiplierOverride { get; set; }
+
+        /// <summary />
+        public decimal? LeaderToNonLeaderRelationshipMultiplierOverride { get; set; }
+
         /// <summary>
         /// If the ModifiedByPersonAliasId is being set manually and should not be overwritten with current user when saved, set this value to true
         /// </summary>
@@ -115,10 +121,22 @@ namespace Rock.Client
         public string Name { get; set; }
 
         /// <summary />
+        public decimal? NonLeaderToLeaderRelationshipMultiplierOverride { get; set; }
+
+        /// <summary />
+        public decimal? NonLeaderToNonLeaderRelationshipMultiplierOverride { get; set; }
+
+        /// <summary />
         public int Order { get; set; }
 
         /// <summary />
         public int? ParentGroupId { get; set; }
+
+        /// <summary />
+        public bool? RelationshipGrowthEnabledOverride { get; set; }
+
+        /// <summary />
+        public int? RelationshipStrengthOverride { get; set; }
 
         /// <summary />
         public string ReminderAdditionalDetails { get; set; }
@@ -210,10 +228,16 @@ namespace Rock.Client
             this.IsPublic = source.IsPublic;
             this.IsSecurityRole = source.IsSecurityRole;
             this.IsSystem = source.IsSystem;
+            this.LeaderToLeaderRelationshipMultiplierOverride = source.LeaderToLeaderRelationshipMultiplierOverride;
+            this.LeaderToNonLeaderRelationshipMultiplierOverride = source.LeaderToNonLeaderRelationshipMultiplierOverride;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
             this.Name = source.Name;
+            this.NonLeaderToLeaderRelationshipMultiplierOverride = source.NonLeaderToLeaderRelationshipMultiplierOverride;
+            this.NonLeaderToNonLeaderRelationshipMultiplierOverride = source.NonLeaderToNonLeaderRelationshipMultiplierOverride;
             this.Order = source.Order;
             this.ParentGroupId = source.ParentGroupId;
+            this.RelationshipGrowthEnabledOverride = source.RelationshipGrowthEnabledOverride;
+            this.RelationshipStrengthOverride = source.RelationshipStrengthOverride;
             this.ReminderAdditionalDetails = source.ReminderAdditionalDetails;
             this.ReminderOffsetDays = source.ReminderOffsetDays;
             this.ReminderSystemCommunicationId = source.ReminderSystemCommunicationId;

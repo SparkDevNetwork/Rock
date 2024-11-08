@@ -122,7 +122,11 @@ namespace Rock.Lava.Blocks
                     person = LavaHelper.GetCurrentVisitorInContext( context )?.Person;
                 }
 
-                var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPerson( person, rockContext );
+#if REVIEW_NET5_0_OR_GREATER
+                var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPersonFromContextCookie( context, null, person );
+#else
+                var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPersonFromContextCookie( context, System.Web.HttpContext.Current, person );
+#endif
                 var adaptiveMessage = AdaptiveMessageCache.All().Where( a => a.Key == key ).FirstOrDefault();
                 var adaptations = adaptiveMessage.Adaptations
                     .Where( a => !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) )

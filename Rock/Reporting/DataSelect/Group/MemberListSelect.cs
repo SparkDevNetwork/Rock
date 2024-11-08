@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -283,6 +283,7 @@ namespace Rock.Reporting.DataSelect.Group
                     .Where( memberWhereGroupType )
                     .Where( memberWhereGroupRoles )
                     .Where( memberWhereStatus )
+                    .Where( m => !m.IsArchived )
                     .Select( m => new MemberInfo
                     {
                         NickName = m.Person.NickName,

@@ -44,7 +44,7 @@
                         <Rock:Lava ID="Header" runat="server">
                         <a class="navbar-brand" href="{{ 'Global' | Attribute:'PublicApplicationRoot' }}">
                         {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId != '' -%}
-                            <img src="{{ '~' | ResolveRockUrl }}GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="logo">
+                            <img src="{{ CurrentPage.Layout.Site.SiteLogoBinaryFileId | ImageUrl }}" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="logo">
                         {%- else -%}
                             {{ 'Global' | Attribute:'OrganizationName' }}
                         {%- endif -%}

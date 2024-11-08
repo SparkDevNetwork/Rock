@@ -1,8 +1,9 @@
 <template>
-    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" :value="gridData">
         <div class="row">
             <div class="col-md-6">
                 <Grid v-if="isVisible" :data="gridData" keyField="key" liveUpdates light @addItem="onAddItem" :showExport="showExport">
+                    <ReorderColumn />
                     <TextColumn name="name"
                                 :title="nameTitle"
                                 field="name" />
@@ -45,7 +46,7 @@
 <script setup lang="ts">
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
-    import Grid, { BooleanColumn, DateColumn, DeleteColumn, EditColumn, NumberColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, DateColumn, DeleteColumn, EditColumn, NumberColumn, TextColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { getControlImportPath } from "./utils.partial";
     import { computed, nextTick, reactive, ref, watch } from "vue";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";

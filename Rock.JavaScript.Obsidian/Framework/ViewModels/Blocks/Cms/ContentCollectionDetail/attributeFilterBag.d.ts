@@ -33,7 +33,7 @@ export type AttributeFilterBag = {
     attributeName?: string | null;
 
     /** Gets or sets the field type unique identifier used by this filter. */
-    fieldTypeGuid?: Guid | null;
+    fieldTypeGuid: Guid;
 
     /** Gets or sets the friendly field type name used by this filter. */
     fieldTypeName?: string | null;

@@ -49,19 +49,19 @@ export type ContentSourceBag = {
     customFields?: ContentCollectionCustomFieldBag[] | null;
 
     /** Gets or sets the unique identifier of the entity this source references. */
-    entityGuid?: Guid | null;
+    entityGuid: Guid;
 
     /**
      * Gets or sets the unique identifier of the entity type this source
      * references.
      */
-    entityTypeGuid?: Guid | null;
+    entityTypeGuid: Guid;
 
     /**
      * Gets or sets the unique identifier of this content collection source
      * record. This is not the unique identifier of the target entity.
      */
-    guid?: Guid | null;
+    guid: Guid;
 
     /**
      * Gets or sets the CSS icon class to use when displaying this

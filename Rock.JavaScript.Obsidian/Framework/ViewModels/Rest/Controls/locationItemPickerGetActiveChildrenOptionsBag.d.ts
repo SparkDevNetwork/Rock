@@ -32,13 +32,13 @@ export type LocationItemPickerGetActiveChildrenOptionsBag = {
      * Gets or sets the unique identifier of the parent location whose
      * children are to be enumerated.
      */
-    guid?: Guid | null;
+    guid: Guid;
 
     /**
      * Gets or sets the root location unique identifier. This is used if Rock.ViewModels.Rest.Controls.LocationItemPickerGetActiveChildrenOptionsBag.Guid
      * is empty to specify the root location to limit the tree to.
      */
-    rootLocationGuid?: Guid | null;
+    rootLocationGuid: Guid;
 
     /**
      * Gets or sets the security grant token to use when performing

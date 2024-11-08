@@ -115,8 +115,14 @@
 
                     <div class="row">
                         <div class="col-md-12">
-                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" NumberOfColumns="2" />
-                            <Rock:AttributeValuesContainer ID="avcAttributesReadOnly" runat="server" NumberOfColumns="2" />
+                            <Rock:AttributeValuesContainer ID="avcGroupMemberAttributes" runat="server" NumberOfColumns="2" />
+                            <Rock:AttributeValuesContainer ID="avcGroupMemberAttributesReadOnly" runat="server" NumberOfColumns="2" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:AttributeValuesContainer ID="avcGroupMemberAssignmentAttributes" runat="server" NumberOfColumns="2" />
+                            <Rock:AttributeValuesContainer ID="avcGroupMemberAssignmentAttributesReadOnly" runat="server" NumberOfColumns="2" />
                         </div>
                     </div>
 
@@ -140,10 +146,10 @@
                     </Rock:ModalDialog>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" Text="Save" ToolTip="Alt+S" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnRefreshRequirements" runat="server" AccessKey="r" ToolTip="Alt+R" Text="Refresh Requirements" CssClass="btn btn-default" OnClick="btnRefreshRequirements_Click" CausesValidation="false" />
-                        <asp:LinkButton ID="btnSaveThenAdd" runat="server" AccessKey="a" ToolTip="Alt+A" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+C" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" Text="Save" ToolTip="Alt+s" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnRefreshRequirements" runat="server" data-shortcut-key="r" ToolTip="Alt+r" Text="Refresh Requirements" CssClass="btn btn-default" OnClick="btnRefreshRequirements_Click" CausesValidation="false" />
+                        <asp:LinkButton ID="btnSaveThenAdd" runat="server" data-shortcut-key="a" ToolTip="Alt+a" Text="Save Then Add" CssClass="btn btn-link" OnClick="btnSaveThenAdd_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
                         <asp:LinkButton ID="btnShowMoveDialog" runat="server" CssClass="btn btn-default btn-square btn-sm pull-right" OnClick="btnShowMoveDialog_Click" ToolTip="Move to another group" CausesValidation="false"><i class="fa fa-external-link"></i></asp:LinkButton>
                         <asp:LinkButton ID="btnShowCommunicationDialog" runat="server" CssClass="btn btn-default btn-square btn-sm pull-right" ToolTip="Quick Communication" OnClick="btnShowCommunicationDialog_Click"><i class="fa fa-envelope-o"></i></asp:LinkButton>
                     </div>

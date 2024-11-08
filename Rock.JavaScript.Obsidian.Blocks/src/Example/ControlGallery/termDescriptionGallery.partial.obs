@@ -1,0 +1,45 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <TermDescription v-if="useSlots">
+            <template #term><strong>{{ term }}</strong></template>
+            <template #description><em>{{ description }}</em></template>
+        </TermDescription>
+        <TermDescription v-else term="Bible" description="The holy book given to us by God so we can know Him and have faith in Him." />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="useSlots" label="Use slots instead of props." />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import TermDescription from "@Obsidian/Controls/termDescription.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const term = ref("Bible");
+    const description = ref("The holy book given to us by God so we can know Him and have faith in Him.");
+
+    const useSlots = ref(false);
+
+    const importCode = getSfcControlImportPath("termDescription");
+    const exampleCode = computed(() => {
+        const termProp = term.value ? ` term="${term.value}"` : "";
+        const descriptionProp = description.value ? ` description="${description.value}"` : "";
+
+        if (useSlots.value) {
+            return `<TermDescription>
+    <template #term><strong>${term.value}</strong></template>
+    <template #description><em>${description.value}</em></template>
+</TermDescription>`;
+        }
+        return `<TermDescription ${termProp}${descriptionProp} />`;
+    });
+</script>

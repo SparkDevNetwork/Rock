@@ -35,6 +35,18 @@ namespace Rock.ViewModels.Event
         public Guid AttendanceGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets the attendance encrypted identifier.
+        /// </summary>
+        /// <value>The attendance encrypted identifier.</value>
+        public string AttendanceIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating if the attendance record was added
+        /// or if this is an update to an existing record.
+        /// </summary>
+        public bool IsNew { get; set; }
+
+        /// <summary>
         /// Gets or sets the unique identifier of the person that attended.
         /// </summary>
         /// <value>The unique identifier of the person that attended.</value>
@@ -71,6 +83,12 @@ namespace Rock.ViewModels.Event
         /// </summary>
         /// <value>The attendance status.</value>
         public AttendanceStatus Status { get; set; }
+
+        /// <summary>
+        /// Gets or sets the check in status of the attendance record.
+        /// </summary>
+        /// <value>The status of the attendance record.</value>
+        public CheckInStatus CheckInStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the RSVP state of this attendance record.

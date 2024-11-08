@@ -51,19 +51,29 @@ export function isNullOrWhiteSpace(val: unknown): boolean {
 }
 
 /**
- * Turns "MyCamelCaseString" into "My Camel Case String"
+ * Turns camelCase or PascalCase strings into separate strings - "MyCamelCaseString" turns into "My Camel Case String"
  * @param val
  */
-export function splitCamelCase(val: string): string {
-    return val.replace(/([a-z])([A-Z])/g, "$1 $2");
+export function splitCase(val: string): string {
+    // First, insert a space before sequences of capital letters followed by a lowercase letter (e.g., "RESTKey" -> "REST Key")
+    val = val.replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
+    // Then, insert a space before sequences of a lowercase letter or number followed by a capital letter (e.g., "myKey" -> "my Key")
+    return val.replace(/([a-z0-9])([A-Z])/g, "$1 $2");
 }
 
 /**
- * Returns an English comma-and fragment.
- * Ex: ['a', 'b', 'c'] => 'a, b, and c'
- * @param strs
+ * Returns a string that has each item comma separated except for the last
+ * which will use the word "and".
+ *
+ * @example
+ * ['a', 'b', 'c'] => 'a, b and c'
+ *
+ * @param strs The strings to be joined.
+ * @param andStr The custom string to use instead of the word "and".
+ *
+ * @returns A string that represents all the strings.
  */
-export function asCommaAnd(strs: string[]): string {
+export function asCommaAnd(strs: string[], andStr?: string): string {
     if (strs.length === 0) {
         return "";
     }
@@ -72,12 +82,16 @@ export function asCommaAnd(strs: string[]): string {
         return strs[0];
     }
 
+    if (!andStr) {
+        andStr = "and";
+    }
+
     if (strs.length === 2) {
-        return `${strs[0]} and ${strs[1]}`;
+        return `${strs[0]} ${andStr} ${strs[1]}`;
     }
 
     const last = strs.pop();
-    return `${strs.join(", ")}, and ${last}`;
+    return `${strs.join(", ")} ${andStr} ${last}`;
 }
 
 /**
@@ -271,18 +285,50 @@ export function defaultControlCompareValue(value: string, itemValue: string): bo
     return value === itemValue;
 }
 
+/**
+ * Determins whether or not a given string contains any HTML tags in.
+ *
+ * @param value The string potentially containing HTML
+ *
+ * @returns true if it contains HTML, otherwise false
+ */
+export function containsHtmlTag(value: string): boolean {
+    return /<[/0-9a-zA-Z]/.test(value);
+}
 
 
+/**
+ * Create a 32-bit integer hash representation of a string.
+ *
+ * @param str The string to be hashed
+ *
+ * @returns The 32-bit integer hash representation of the string.
+ */
+export function createHash(str: string): number {
+    let hash = 0;
+
+    for (let i = 0; i < str.length; i++) {
+        const chr = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        hash |= 0; // Convert to 32bit integer
+    }
+
+    return hash;
+}
 export default {
     asCommaAnd,
+    containsHtmlTag,
     escapeHtml,
-    splitCamelCase,
+    splitCase,
     isNullOrWhiteSpace,
     isWhiteSpace,
     isEmpty,
     toTitleCase,
+    upperCaseFirstCharacter,
+    pluralize,
     pluralConditional,
     padLeft,
     padRight,
-    truncate
+    truncate,
+    createHash
 };

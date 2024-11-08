@@ -10,13 +10,14 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="Prayer Request"
-                 :isAuditHidden="false"
+                 entityTypeName="PrayerRequest"
+                 :isAuditHidden="true"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -115,7 +116,10 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return `${prayerRequestViewBag.value?.fullName ?? ""} Prayer Request`;
+        if(panelMode.value == DetailPanelMode.Edit) {
+            return "Edit Prayer Request";
+        }
+        return `${prayerRequestViewBag.value?.requestedByPersonAlias?.text ?? ""} Prayer Request`;
     });
 
     /**

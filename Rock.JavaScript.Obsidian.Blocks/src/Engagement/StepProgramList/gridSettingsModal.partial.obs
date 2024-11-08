@@ -1,0 +1,98 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="Settings"
+           saveText="Save"
+           @save="onSave">
+        <SectionHeader title="Filters" />
+
+        <div class="row">
+            <div class="col-md-4">
+                <DropDownList v-model="active" :items="activeStatus"
+                         label="Active" />
+            </div>
+
+            <div class="col-md-4">
+                <DropDownList v-model="category" :items="categories"
+                              label="Category" />
+            </div>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { ref, PropType, watch } from "vue";
+    import { GridSettingsOptions } from "./types.partial";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<GridSettingsOptions>,
+            required: true
+        },
+        visible: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        categories: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: GridSettingsOptions): void;
+        (e: "update:visible", value: boolean): void;
+        (e: "close"): void;
+    }>();
+
+    const categories = ref<ListItemBag[]>([]);
+
+    const activeStatus: ListItemBag[] = [
+        {
+            text: "Active",
+            value: "Active"
+        },
+        {
+            text: "Inactive",
+            value: "Inactive"
+        },
+    ];
+
+    const active = ref(props.modelValue.active ?? "");
+    const category = ref(props.modelValue.category ?? "");
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
+    function onSave(): void {
+        const value: GridSettingsOptions = {
+            active: active.value,
+            category: category.value,
+        };
+
+        if (!deepEqual(value, props.modelValue, true)) {
+            emit("update:modelValue", value);
+        }
+
+        isVisible.value = false;
+    }
+
+    watch(() => props.categories, (newCategories) => {
+        categories.value = newCategories ?? [];
+    }, { immediate: true });
+
+    watch(() => props.modelValue, () => {
+        active.value = props.modelValue.active ?? "";
+        category.value = props.modelValue.category ?? "";
+    });
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+</script>

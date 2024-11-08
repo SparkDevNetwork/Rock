@@ -17,9 +17,10 @@
 
 using System;
 using System.Collections.Generic;
+
 using Newtonsoft.Json;
+
 using Rock.AI.Classes.ChatCompletions;
-using Rock.AI.Classes.TextCompletions;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
 {
@@ -74,7 +75,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
 
         #region Methods
         /// <summary>
-        /// Converst the OpenAI completion response to a generic response.
+        /// Converts the OpenAI completion response to a generic response.
         /// </summary>
         /// <returns></returns>
         internal ChatCompletionsResponse AsChatCompletionsResponse()
@@ -95,8 +96,6 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
                     response.Choices.Add( choice.AsChatCompletionResponseChoice() );
                 }
             }
-
-            
 
             return response;
         }

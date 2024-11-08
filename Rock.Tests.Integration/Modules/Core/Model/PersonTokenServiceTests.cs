@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core.Model
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    public class PersonTokenServiceTests
+    public class PersonTokenServiceTests : DatabaseTestsBase
     {
         #region Setup
 
@@ -28,8 +31,6 @@ namespace Rock.Tests.Integration.Core.Model
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {
-            TestDatabaseHelper.ResetDatabase();
-
             CreatePersonWithProtectionProfile( PersonGuid.PersonWithLowAccountProtectionProfileGuid.AsGuid(), AccountProtectionProfile.Low );
             CreatePersonWithProtectionProfile( PersonGuid.PersonWithMediumAccountProtectionProfileGuid.AsGuid(), AccountProtectionProfile.Medium );
             CreatePersonWithProtectionProfile( PersonGuid.PersonWithHighAccountProtectionProfileGuid.AsGuid(), AccountProtectionProfile.High );

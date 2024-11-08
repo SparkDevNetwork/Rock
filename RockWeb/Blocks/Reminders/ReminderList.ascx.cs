@@ -164,8 +164,6 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( CurrentPersonId.HasValue )
             {
                 if ( !Page.IsPostBack )
@@ -178,6 +176,8 @@ namespace RockWeb.Blocks.Reminders
                 pnlNotAuthenticated.Visible = true;
                 pnlView.Visible = false;
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods
@@ -546,7 +546,7 @@ namespace RockWeb.Blocks.Reminders
 
             foreach ( var reminder in reminders.ToList() )
             {
-                var entity = reminderEntities[reminder.Id];
+                var entity = reminderEntities.ContainsKey( reminder.Id ) ? reminderEntities[reminder.Id] : null;
                 if ( entity == null )
                 {
                     invalidReminders.Add( reminder );

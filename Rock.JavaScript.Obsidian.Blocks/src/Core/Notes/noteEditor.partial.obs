@@ -10,6 +10,7 @@
             <RockForm @submit="onFormSubmit">
                 <div class="noteentry-control">
                     <NoteTextEditor v-model="noteText"
+                                    validationTitle="Note"
                                     rules="required"
                                     :formGroupClasses="noteTextEditorFormGroupClasses"
                                     placeholder="Write a note..."

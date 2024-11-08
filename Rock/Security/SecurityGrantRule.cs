@@ -33,7 +33,7 @@ namespace Rock.Security
     /// protocol that all rules must implement.
     /// </summary>
     [JsonConverter( typeof( SecurityGrantRuleConverter ) )]
-    internal abstract class SecurityGrantRule
+    public abstract class SecurityGrantRule
     {
         #region Fields
 

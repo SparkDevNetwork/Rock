@@ -82,10 +82,6 @@ export type ScheduleBag = {
     /** Gets or sets the Name of the Schedule. This property is required. */
     name?: string | null;
 
-    /**
-     * Gets or sets the order.
-     * Use List&lt;Schedule&gt;().OrderByOrderAndNextScheduledDateTime
-     * to get the schedules in the desired order.
-     */
-    order: number;
+    /** Gets the next occurrence date to be displayed on the remote device. */
+    nextOccurrence?: string | null;
 };

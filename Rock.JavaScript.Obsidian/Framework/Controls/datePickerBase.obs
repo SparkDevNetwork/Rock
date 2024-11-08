@@ -1,32 +1,50 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="input-group input-width-md js-date-picker date">
-        <input ref="inputEl" type="text" :id="computedId" class="form-control" v-model.lazy="internalValue" :disabled="disabled" />
-        <span class="input-group-addon">
+        <!-- Switch between Bootstrap and Native Date Picker depending on screen size for better mobile experience -->
+        <input v-show="!isNative"
+               ref="inputEl"
+               type="text"
+               :id="computedId"
+               class="form-control"
+               v-model.lazy="internalValue"
+               :disabled="disabled" />
+        <span v-show="!isNative" class="input-group-addon">
             <i class="fa fa-calendar"></i>
         </span>
+        <input v-if="isNative"
+               type="date"
+               class="form-control native-date-picker"
+               v-model="nativeDatePickerValue"
+               @change="onDateInputChange"
+               :disabled="disabled"
+               :min="dateLimiterOptions.startDate?.toISOString().substring(0, 10)"
+               :max="dateLimiterOptions.endDate?.toISOString().substring(0, 10)" />
     </div>
 </template>
 
-<script lang="ts">
-    declare global {
-        /* eslint-disable @typescript-eslint/naming-convention */
-        interface Window {
-            Rock: {
-                controls: {
-                    datePicker: {
-                        initialize: (args: Record<string, unknown>) => void
-                    }
-                }
-            }
-        }
-        /* eslint-enable @typescript-eslint/naming-convention */
-    }
-</script>
+<style>
+.input-group .native-date-picker.form-control {
+    max-width: 150px;
+    border-radius: 4px;
+    padding-left: 5px;
+    padding-right: 5px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, onMounted, PropType, watch, ref, nextTick } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { useScreenSize } from "@Obsidian/Utility/screenSize";
+    import { LocaleDateFormatter } from "@Obsidian/Utility/localeDateFormatter";
+    import { DateTime } from "luxon";
+
+    type DatePickerActions = {
+        onSetLocalDate: ((localDate: Date | undefined) => void) | null;
+    };
 
     const props = defineProps({
         modelValue: {
@@ -87,6 +105,16 @@
         container: {
             type: HTMLElement as PropType<HTMLElement | null>,
             required: false
+        },
+
+        /**
+         * The horizontal orientation of the popup. Left will attempt to keep
+         * the left edge aligned with the control and right will attempt to
+         * keep the right edge aligned with the control.
+         */
+        horizontalOrientation: {
+            type: String as PropType<"left" | "right">,
+            required: false
         }
     });
 
@@ -94,11 +122,20 @@
         (e: "update:modelValue", val: string | null): void
     }>();
 
+    /** Actions to which the datepicker can handle. */
+    const actions: DatePickerActions = {
+        onSetLocalDate: null
+    };
+
+    const currentLocaleDateFormatter = LocaleDateFormatter.fromCurrent();
+
     // #region Values
 
     const internalValue = ref<string | null>(null);
+    const nativeDatePickerValue = ref("");
     const defaultId = `datepicker-${newGuid()}`;
     const inputEl = ref<HTMLInputElement | null>(null);
+    const { isMobile: isNative } = useScreenSize();
 
     // #endregion
 
@@ -109,10 +146,14 @@
     });
 
     const asRockDateOrNull = computed(() => {
-        const match = /^(\d+)\/(\d+)\/(\d+)/.exec(internalValue.value ?? "");
+        let date: DateTime | undefined = undefined;
 
-        if (match !== null) {
-            return `${match[3]}-${match[1]}-${match[2]}`;
+        if (internalValue.value) {
+            date = DateTime.fromFormat(internalValue.value, currentLocaleDateFormatter.aspDateFormat);
+        }
+
+        if (date?.isValid) {
+            return date.toISODate();
         }
         else {
             return null;
@@ -137,7 +178,6 @@
 
     function initializePopup(): void {
         const input = inputEl.value;
-
         if (!input) {
             return;
         }
@@ -147,14 +187,31 @@
             id: input.id,
             startView: props.startView,
             showOnFocus: !props.disableShowOnFocus,
-            format: "mm/dd/yyyy",
+            format: currentLocaleDateFormatter.datePickerFormat,
             todayHighlight: !props.disableHighlightToday,
             forceParse: !props.disableForceParse,
             onChangeScript: () => {
-                internalValue.value = input.value;
+                // We need to wait for the next tick because if internalValue is set manually,
+                // `input.value` will not have been updated.
+                nextTick(() => {
+                    internalValue.value = input.value;
+                });
             },
-            container: props.container ?? "body"
+            container: props.container ?? "body",
+            orientation: props.horizontalOrientation || "auto",
+            actions
         });
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onDateInputChange(e: Event): void {
+        const newVal = DateTime.fromISO((e.target as HTMLInputElement)?.value ?? "")
+            ?.toFormat(currentLocaleDateFormatter.aspDateFormat);
+
+        internalValue.value = newVal;
     }
 
     // #endregion
@@ -162,16 +219,18 @@
     // #region Watchers
 
     watch(() => props.modelValue, () => {
-        if (!props.modelValue) {
-            internalValue.value = null;
-
-            return;
+        let date: DateTime | undefined = undefined;
+        if (props.modelValue) {
+            date = DateTime.fromISO(props.modelValue, {setZone: true});
         }
 
-        const match = /^(\d+)-(\d+)-(\d+)/.exec(props.modelValue);
+        // Update the underlying datepicker when the props.modelValue changes.
+        if (actions.onSetLocalDate) {
+            actions.onSetLocalDate(date?.isValid ? date.toJSDate() : undefined);
+        }
 
-        if (match !== null) {
-            internalValue.value = `${match[2]}/${match[3]}/${match[1]}`;
+        if (date?.isValid) {
+            internalValue.value = date.toFormat(currentLocaleDateFormatter.aspDateFormat);
         }
         else {
             internalValue.value = null;
@@ -179,6 +238,7 @@
     }, { immediate: true });
 
     watch(asRockDateOrNull, () => {
+        nativeDatePickerValue.value = asRockDateOrNull.value ?? "";
         emit("update:modelValue", asRockDateOrNull.value);
     });
 
@@ -193,6 +253,5 @@
         });
     });
 
-        // #endregion
-
+    // #endregion
 </script>

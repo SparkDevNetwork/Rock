@@ -337,8 +337,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbAddPerson.Visible = false;
 
             if ( Page.IsPostBack )
@@ -426,8 +424,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         }
 
                         // Does the family have any deceased members?
-                        var inactiveStatus = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
-                        if ( _group.Members.Where( m => m.Person.RecordStatusValueId == inactiveStatus ).Any() )
+                        if ( _group.Members.Where( m => m.Person.IsDeceased ).Any() )
                         {
                             HasDeceasedMembers = true;
                         }
@@ -480,6 +477,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     nbRoleLimitWarning.Text = roleLimitWarnings;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -597,7 +596,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var inactiveStatus = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
             if ( HasDeceasedMembers && dvpRecordStatus.SelectedValueAsInt() != inactiveStatus )
             {
-                dvpRecordStatus.Warning = "Note: the status of deceased people will not be changed.";
+                dvpRecordStatus.Warning = "Note: The status of deceased people will not be changed";
             }
 
             dvpReason.Visible = dvpRecordStatus.SelectedValueAsInt() == inactiveStatus;
@@ -1215,8 +1214,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
 	                    rockContext.SaveChanges();
 
-	                    // SAVE GROUP MEMBERS
-	                    var recordStatusInactiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
+                        // SAVE GROUP MEMBERS
+                        var recordStatusActiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ) ).Id;
+                        var recordStatusInactiveId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id;
 	                    var reasonStatusReasonDeceasedId = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_REASON_DECEASED ) ).Id;
 	                    int? recordStatusValueID = dvpRecordStatus.SelectedValueAsInt();
 	                    int? reasonValueId = dvpReason.SelectedValueAsInt();
@@ -1371,6 +1371,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                                 if ( recordStatusValueID.HasValue && recordStatusValueID.Value != 0 )
                                                 {
                                                     groupMember.Person.RecordStatusValueId = recordStatusValueID.Value;
+
+                                                    // If they are active, clear their RecordStatus Reason
+                                                    if ( recordStatusValueID.Value == recordStatusActiveId )
+                                                    {
+                                                        groupMember.Person.RecordStatusReasonValueId = null;
+                                                    }
                                                 }
 
                                                 if ( reasonValueId.HasValue && reasonValueId.Value != 0 )
@@ -1817,7 +1823,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 if ( BirthDate.HasValue )
                 {
-                    return BirthDate.Age();
+                    if ( BirthDate.Value.Year != DateTime.MinValue.Year )
+                    {
+                        return BirthDate.Age();
+                    }
                 }
 
                 return null;

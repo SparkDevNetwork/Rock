@@ -32,7 +32,8 @@ namespace Rock.Migrations
             AddColumn( "dbo.FinancialPaymentDetail", "ExpirationMonth", c => c.Int() );
             AddColumn( "dbo.FinancialPaymentDetail", "ExpirationYear", c => c.Int() );
 
-            AddJobToUpdateUnecryptedFields();
+            // Skipping this job as it is removed.
+            // AddJobToUpdateUnecryptedFields();
         }
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace Rock.Migrations
             DropColumn( "dbo.FinancialPaymentDetail", "ExpirationMonth" );
             DropColumn( "dbo.FinancialPaymentDetail", "ExpirationYear" );
 
-            RemoveJobToUpdateUnecryptedFields();
+            // RemoveJobToUpdateUnecryptedFields();
         }
 
         private void AddJobToUpdateUnecryptedFields()

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -91,6 +91,7 @@
     <Compile Remove="Communication\Transport\Firebase.cs" />
     <Compile Remove="Communication\Transport\RockMobilePush.cs" />
     <Compile Remove="Communication\Transport\Twilio.cs" />
+    <Compile Remove="Configuration\WebFormsInitializationSettings.cs" />
     <Compile Remove="Data\BoundFieldTypeAttribute.cs" />
     <Compile Remove="Data\DecimalPrecisionAttributeConvention.cs" />
     <Compile Remove="Data\IRockStoreModelConvention.cs" />
@@ -111,6 +112,7 @@
     <Compile Remove="Lava\Blocks\JavascriptBlock.cs" />
     <Compile Remove="Lava\Blocks\StylesheetBlock.cs" />
     <Compile Remove="MergeTemplates\WordDocumentMergeTemplateType.cs" />
+    <Compile Remove="Model\CodeGenerated\GroupLocationHistoricalScheduleService.CodeGenerated.cs" />
     <Compile Remove="Reporting\PowerBiUtilities.cs" />
     <Compile Remove="Reporting\ReportOutputBuilder.cs" />
     <Compile Remove="Scripting.evaluator.cs" />
@@ -127,8 +129,6 @@
     <Compile Remove="Storage\AssetStorage\GoogleCloudStorageComponent.cs" />
     <Compile Remove="Storage\Common\GoogleCloudStorage.cs" />
     <Compile Remove="Storage\Provider\GoogleCloudStorageProvider.cs" />
-    <Compile Remove="Tasks\ProcessRunJobNow.cs" />
-    <Compile Remove="Utility\DebugHelper.cs" />
     <Compile Remove="Utility\ExcelHelper.cs" />
     <Compile Remove="Utility\ExtensionMethods\ControlExtensions.cs" />
     <Compile Remove="Utility\ExtensionMethods\GridExtensions.cs" />
@@ -141,7 +141,6 @@
     <Compile Remove="Utility\SparkDataApi\NcoaApi.cs" />
     <Compile Remove="Utility\SparkDataApi\SparkDataApi.cs" />
     <Compile Remove="Utility\TaskActivityMessageHub.cs" />
-    <Compile Remove="Utility\ZebraPrint.cs" />
     <Compile Remove="Workflow\Action\Utility\RunJob.cs" />
     <Compile Remove="Workflow\Action\WorkflowAttributes\SetAttributeToCurrentPerson.cs" />
     <Compile Remove="Workflow\Action\WorkflowControl\Redirect.cs" />
@@ -167,9 +166,11 @@
     <Compile Include="Jobs\RockJobListener.cs" />
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\RockTriggerListener.cs" />
+    <Compile Include="Jobs\RunNowRockJobListener.cs" />
     <Compile Include="Lava\RockLiquid\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
     <Compile Include="Model\Reporting\Report\Report.WebForms.cs" />
+    <Compile Include="Transactions\AddInteractionEntityTransaction.cs" />
     <Compile Include="Transactions\AggregateAsyncTransaction.cs" />
     <Compile Include="Transactions\AggregateTransaction.cs" />
     <Compile Include="Transactions\BenevolenceRequestChangeTransaction.cs" />
@@ -194,94 +195,7 @@
     <Compile Include="Transactions\UpdatePaymentStatusTransaction.cs" />
     <Compile Include="Transactions\UpdatePersonPreferenceLastAccessedTransaction.cs" />
     <Compile Include="Web\BreadCrumbLink.cs" />
-    <Compile Include="Web\Cache\ClearReferencedEntityDependenciesConsumer.cs" />
-    <Compile Include="Web\Cache\Entities\AchievementTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\AchievementTypePrerequisiteCache.cs" />
-    <Compile Include="Web\Cache\Entities\AdaptiveMessageAdaptationCache.cs" />
-    <Compile Include="Web\Cache\Entities\AdaptiveMessageCache.cs" />
-    <Compile Include="Web\Cache\Entities\AssessmentTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\AssetStorageProviderCache.cs" />
-    <Compile Include="Web\Cache\Entities\AttributeCache.cs" />
-    <Compile Include="Web\Cache\Entities\BadgeCache.cs" />
-    <Compile Include="Web\Cache\Entities\BinaryFileTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\BlockCache.cs" />
-    <Compile Include="Web\Cache\Entities\BlockTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\CampusCache.cs" />
-    <Compile Include="Web\Cache\Entities\CategoryCache.cs" />
-    <Compile Include="Web\Cache\Entities\ConnectionTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\ContentChannelCache.cs" />
-    <Compile Include="Web\Cache\Entities\ContentChannelTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\ContentCollectionCache.cs" />
-    <Compile Include="Web\Cache\Entities\ContentCollectionSourceCache.cs" />
-    <Compile Include="Web\Cache\Entities\ContentTopicCache.cs" />
-    <Compile Include="Web\Cache\Entities\ContentTopicDomainCache.cs" />
-    <Compile Include="Web\Cache\Entities\DefinedTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\DefinedValueCache.cs" />
-    <Compile Include="Web\Cache\Entities\DocumentTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\EntityTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\EventCalendarCache.cs" />
-    <Compile Include="Web\Cache\Entities\FieldTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\FinancialAccountCache.cs" />
-    <Compile Include="Web\Cache\Entities\GroupTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\InteractionChannelCache.cs" />
-    <Compile Include="Web\Cache\Entities\InteractionComponentCache.cs" />
-    <Compile Include="Web\Cache\Entities\InteractiveExperienceCache.cs" />
-    <Compile Include="Web\Cache\Entities\InteractiveExperienceScheduleCache.cs" />
-    <Compile Include="Web\Cache\Entities\LavaShortcodeCache.cs" />
-    <Compile Include="Web\Cache\Entities\LayoutCache.cs" />
-    <Compile Include="Web\Cache\Entities\NamedLocationCache.cs" />
-    <Compile Include="Web\Cache\Entities\NamedScheduleCache.cs" />
-    <Compile Include="Web\Cache\Entities\NoteTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\NotificationMessageTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\PageCache.cs" />
-    <Compile Include="Web\Cache\Entities\PersistedDatasetCache.cs" />
-    <Compile Include="Web\Cache\Entities\PersonalizationSegmentCache.cs" />
-    <Compile Include="Web\Cache\Entities\RegistrationTemplateFormFieldCache.cs" />
-    <Compile Include="Web\Cache\Entities\RequestFilterCache.cs" />
-    <Compile Include="Web\Cache\Entities\RestActionCache.cs" />
-    <Compile Include="Web\Cache\Entities\RestControllerCache.cs" />
-    <Compile Include="Web\Cache\Entities\SharedPersonalLinksCache.cs" />
-    <Compile Include="Web\Cache\Entities\SignalTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\SiteCache.cs" />
-    <Compile Include="Web\Cache\Entities\SmsActionCache.cs" />
-    <Compile Include="Web\Cache\Entities\StepProgramCache.cs" />
-    <Compile Include="Web\Cache\Entities\StepTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\StreakTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\StreakTypeExclusionCache.cs" />
-    <Compile Include="Web\Cache\Entities\SystemPhoneNumberCache.cs" />
-    <Compile Include="Web\Cache\Entities\WorkflowActionFormAttributeCache.cs" />
-    <Compile Include="Web\Cache\Entities\WorkflowActionFormCache.cs" />
-    <Compile Include="Web\Cache\Entities\WorkflowActionFormSectionCache.cs" />
-    <Compile Include="Web\Cache\Entities\WorkflowActionTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\WorkflowActivityTypeCache.cs" />
-    <Compile Include="Web\Cache\Entities\WorkflowFormBuilderTemplateCache.cs" />
-    <Compile Include="Web\Cache\Entities\WorkflowTypeCache.cs" />
-    <Compile Include="Web\Cache\EntityCache.cs" />
-    <Compile Include="Web\Cache\EntityItemCache.cs" />
-    <Compile Include="Web\Cache\ICacheable.cs" />
-    <Compile Include="Web\Cache\IEntityCache.cs" />
-    <Compile Include="Web\Cache\IIHasLifespan.cs" />
-    <Compile Include="Web\Cache\IItemCache.cs" />
-    <Compile Include="Web\Cache\IRockCacheManager.cs" />
-    <Compile Include="Web\Cache\ItemCache.cs" />
-    <Compile Include="Web\Cache\ModelCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\AttributeValueCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\DbCommandObservabilityCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\DeepLinkCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\EntityDocumentTypesCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\EntityNoteTypesCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\EntityTypeAttributesCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\GlobalAttributesCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\IdFromGuidCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\PersistedDatasetValueCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\PersonOrVisitorCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\PersonPreferenceCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\RateLimiterCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\RoleCache.cs" />
-    <Compile Include="Web\Cache\NonEntities\WorkflowTriggersCache.cs" />
-    <Compile Include="Web\Cache\RockCache.cs" />
-    <Compile Include="Web\Cache\RockCacheConsumer.cs" />
-    <Compile Include="Web\Cache\RockCacheManager.cs" />
+    <Compile Include="Web\Cache\**\*.cs" />
     <Compile Include="Web\IBreadCrumb.cs" />
     <Compile Include="Web\PageReference.cs" />
     <Compile Include="Web\SystemSettings.cs" />
@@ -301,6 +215,7 @@
     <PackageReference Include="CacheManager.Core" Version="1.2.0" />
     <PackageReference Include="CommonMark.NET" Version="0.15.1" />
     <PackageReference Include="CronExpressionDescriptor" Version="2.16.0" />
+    <PackageReference Include="EPPlus" Version="7.4.2" />
     <PackageReference Include="Hashids.net" Version="1.6.1" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.33" />
     <PackageReference Include="Humanizer" Version="2.1.0" />
@@ -312,23 +227,29 @@
     <PackageReference Include="Lucene.Net.Queries" Version="4.8.0-beta00005" />
     <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00005" />
     <PackageReference Include="Lucene.Net.Sandbox" Version="4.8.0-beta00005" />
-    <PackageReference Include="MassTransit" Version="7.3.1" />
-    <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="7.3.1" />
-    <PackageReference Include="MassTransit.RabbitMQ" Version="7.3.1" />
+    <PackageReference Include="MassTransit" Version="8.2.5" />
+    <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.2.5" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.2.5" />
+    <PackageReference Include="MaxMind.GeoIP2" Version="5.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="5.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
+    <PackageReference Include="Microsoft.SqlServer.Types" Version="160.1000.6" />
+    <PackageReference Include="Microsoft.Web.Xdt" Version="3.1.0" />
     <PackageReference Include="NEST" Version="7.17.4" />
     <PackageReference Include="NEST.JsonNetSerializer" Version="7.17.4" />
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="2.0.4" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.6.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
     <PackageReference Include="PreMailer.Net" Version="2.2.0" />
     <PackageReference Include="PuppeteerSharp" Version="6.2.0" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="Quartz" Version="3.6.0" />
     <PackageReference Include="RestSharp" Version="106.11.7" />
-    <PackageReference Include="RockRMS.Common.Mobile" Version="0.3.40" />
-    <PackageReference Include="Serilog" Version="2.8.0" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
     <PackageReference Include="Serilog.Formatting.Compact.Reader" Version="1.0.3" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
@@ -337,8 +258,9 @@
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
     <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
     <PackageReference Include="System.Data.Odbc" Version="5.0.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.1" />
+    <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.10" />
     <PackageReference Include="System.Runtime.Caching" Version="5.0.0" />
     <PackageReference Include="UAParser" Version="3.1.47" />
@@ -359,9 +281,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Rock.Common.Mobile">
+      <HintPath>..\..\Rock-develop\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
+    </Reference>
     <Reference Include="Rock.Common.Tv">
       <HintPath>..\libs\Rock.Common.Tv\Rock.Common.Tv.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <Import Project="..\Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems" Label="Shared" />
 
 </Project>

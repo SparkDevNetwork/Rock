@@ -31,16 +31,17 @@
     import RockFormField from "./rockFormField.obs";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<ListItemBag | null>,
+            type: Object as PropType<ListItemBag | null | undefined>,
             required: false
         },
 
         /** V-Model of the Step Program */
         stepProgram: {
-            type: Object as PropType<ListItemBag | null>,
+            type: Object as PropType<ListItemBag | null | undefined>,
             required: false
         },
 
@@ -65,8 +66,8 @@
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
     const internalProgramValue = useVModelPassthrough(props, "stepProgram", emit);
 
-    const stepProgramGuid = computed(() => {
-        return (props.defaultStepProgramGuid || internalProgramValue.value?.value) ?? "";
+    const stepProgramGuid = computed<Guid | null>(() => {
+        return toGuidOrNull(props.defaultStepProgramGuid) ?? toGuidOrNull(internalProgramValue.value?.value);
     });
 
     // #endregion
@@ -85,5 +86,5 @@
         }
     });
 
-        // #endregion
+    // #endregion
 </script>

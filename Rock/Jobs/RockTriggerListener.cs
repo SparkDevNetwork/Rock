@@ -18,7 +18,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Quartz;
+
 using Rock.Logging;
 
 namespace Rock.Jobs
@@ -30,8 +33,31 @@ namespace Rock.Jobs
     /// to do it.  This class's VetoJobExecution is the traffic cop that will query all
     /// schedulers to decide if a job should be vetoed from running.
     /// </summary>
+    [RockLoggingCategory]
     public class RockTriggerListener : ITriggerListener
     {
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private ILogger _logger;
+
+        /// <summary>
+        /// Gets the logger for this instance.
+        /// </summary>
+        /// <value>The logger for this instance.</value>
+        protected ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
+            }
+        }
+
         /// <summary>
         /// Get the name of the <see cref="ITriggerListener"/>.
         /// </summary>
@@ -84,13 +110,13 @@ namespace Rock.Jobs
                 {
                     System.Diagnostics.Debug.WriteLine( RockDateTime.Now.ToString() + $" VETOED! Scheduler '{scheduler.SchedulerName}' is already executing job Id '{context.JobDetail.Description}' (key: {context.JobDetail.Key})" );
 
-                    RockLogger.Log.Debug( RockLogDomains.Jobs, $"Job ID: {{jobId}}, Job Key: {{jobKey}}, Job trigger was vetoed because scheduler '{scheduler.SchedulerName}' is already executing job.", jobId, context.JobDetail?.Key );
+                    Logger.LogDebug( $"Job ID: {{jobId}}, Job Key: {{jobKey}}, Job trigger was vetoed because scheduler '{scheduler.SchedulerName}' is already executing job.", jobId, context.JobDetail?.Key );
 
                     return true;
                 }
             }
 
-            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job trigger was not vetoed.", jobId, context.JobDetail?.Key );
+            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job trigger was not vetoed.", jobId, context.JobDetail?.Key );
 
             return false;
         }
@@ -106,7 +132,7 @@ namespace Rock.Jobs
         public void TriggerComplete( ITrigger trigger, IJobExecutionContext context, SchedulerInstruction triggerInstructionCode )
         {
             // Do nothing but log a message.
-            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job trigger completed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
+            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job trigger completed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
         }
 #endif
 
@@ -127,7 +153,7 @@ namespace Rock.Jobs
         public void TriggerFired( ITrigger trigger, IJobExecutionContext context )
         {
             // Do nothing but log a message.
-            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job trigger fired.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
+            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job trigger fired.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
         }
 #endif
 
@@ -147,7 +173,7 @@ namespace Rock.Jobs
         public void TriggerMisfired( ITrigger trigger )
         {
             // Do nothing but log a message.
-            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job Key: {jobKey}, Job trigger misfired.", trigger.Key );
+            Logger.LogDebug( "Job Key: {jobKey}, Job trigger misfired.", trigger.Key );
             return;
         }
 #endif
@@ -166,7 +192,7 @@ namespace Rock.Jobs
         /// <returns>Task.</returns>
         public Task TriggerComplete( ITrigger trigger, IJobExecutionContext context, SchedulerInstruction triggerInstructionCode, CancellationToken cancellationToken = default )
         {
-            RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job trigger completed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
+            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job trigger completed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
             return Task.CompletedTask;
         }
     }

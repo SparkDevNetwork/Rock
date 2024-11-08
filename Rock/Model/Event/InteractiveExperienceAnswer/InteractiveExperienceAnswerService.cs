@@ -89,9 +89,9 @@ namespace Rock.Model
 
                 // Create the answer as a proxy so that navigation properties work below.
 #if REVIEW_NET5_0_OR_GREATER
-                var answer = rockContext.InteractiveExperienceAnswers.CreateProxy();
+                var answer = rockContext.Set<InteractiveExperienceAnswer>().CreateProxy();
 #else
-                var answer = rockContext.InteractiveExperienceAnswers.Create();
+				var answer = rockContext.Set<InteractiveExperienceAnswer>().Create();
 #endif
                 answer.InteractiveExperienceOccurrenceId = occurrenceId;
                 answer.InteractiveExperienceActionId = actionId;

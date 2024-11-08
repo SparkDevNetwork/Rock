@@ -56,6 +56,9 @@ namespace Rock.Client
         public bool IsInternal { get; set; }
 
         /// <summary />
+        public bool IsLockedIfValuesExist { get; set; }
+
+        /// <summary />
         public bool IsRequired { get; set; }
 
         /// <summary />
@@ -127,6 +130,7 @@ namespace Rock.Client
             this.ForeignKey = source.ForeignKey;
             this.IsGridField = source.IsGridField;
             this.IsInternal = source.IsInternal;
+            this.IsLockedIfValuesExist = source.IsLockedIfValuesExist;
             this.IsRequired = source.IsRequired;
             this.IsSharedValue = source.IsSharedValue;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

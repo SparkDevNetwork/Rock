@@ -154,7 +154,7 @@ namespace RockWeb.Blocks.Cms
                 iframeUrl += "&RelativeFilePath=" + HttpUtility.UrlEncode( PageParameter( PageParameterKey.RelativeFilePath ) );
             }
             
-            iframeUrl += "&Theme=" + this.RockPage.Site.Theme;
+            iframeUrl += "&EditorTheme=" + this.RockPage.Site.Theme;
 
             iframeFileBrowser.Src = iframeUrl;
         }

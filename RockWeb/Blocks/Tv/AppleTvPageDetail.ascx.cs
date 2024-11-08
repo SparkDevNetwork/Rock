@@ -28,6 +28,7 @@ using Rock.Web;
 using Newtonsoft.Json;
 using Rock.Utility;
 using Rock.Common.Tv;
+using Rock.Tv;
 
 namespace RockWeb.Blocks.Tv
 {
@@ -86,12 +87,12 @@ namespace RockWeb.Blocks.Tv
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowEdit();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -232,10 +233,10 @@ namespace RockWeb.Blocks.Tv
 
             page.Description = ceTvml.Text;
 
-            var pageResponse = page.AdditionalSettings.IsNotNullOrWhiteSpace() ? JsonConvert.DeserializeObject<ApplePageResponse>( page.AdditionalSettings ) : new ApplePageResponse();
+            var pageResponse = page.GetAdditionalSettings<AppleTvPageSettings>();
             pageResponse.Content = ceTvml.Text;
 
-            page.AdditionalSettings = pageResponse.ToJson();
+            page.SetAdditionalSettings( pageResponse );
 
             page.Description = tbDescription.Text;
 
@@ -264,7 +265,7 @@ namespace RockWeb.Blocks.Tv
                 {
                     tbDescription.Text = page.Description;
 
-                    var pageResponse = page.AdditionalSettings.IsNotNullOrWhiteSpace() ? JsonConvert.DeserializeObject<ApplePageResponse>( page.AdditionalSettings ) : new ApplePageResponse();
+                    var pageResponse = page.GetAdditionalSettings<AppleTvPageSettings>();
 
                     ceTvml.Text = pageResponse.Content;
                     tbPageName.Text = page.InternalName;
@@ -298,6 +299,10 @@ namespace RockWeb.Blocks.Tv
                         RockCacheablityType = RockCacheablityType.Private
                     };
                 }
+            }
+            else
+            {
+                btnCopyToClipboard.Visible = false;
             }
         }
 

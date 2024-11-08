@@ -418,7 +418,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={Guid.NewGuid()}"" }});
                 block.PageCache = PageCache;
                 block.RequestContext = Context;
 
-                var blockInit = block.GetControlMarkup() ?? string.Empty;
+                var blockInit = ( await block.GetControlMarkupAsync() ) ?? string.Empty;
 
                 if ( zoneData.ContainsKey( b.Zone ) )
                 {

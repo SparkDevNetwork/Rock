@@ -162,9 +162,24 @@ namespace Rock.Model
             var discountedRegistrantsRemaining = context.Discount?.RegistrationTemplateDiscount?.MaxRegistrants;
             var discountModel = context.Discount?.RegistrationTemplateDiscount;
 
+            // When we first submit the initial registration, context.Registration
+            // is null so it can never have a value. When returning to an existing
+            // registration, the context.Registration object will exist and may
+            // have an admin-applied discount entered. BUT, the person returning
+            // to this registration might also enter a discount code they got after
+            // registering.
+            //
+            // So, First we take the discount from the code. If that isn't available
+            // then we try to get the discount already applied to the registration.
+            // Finally fall back to 0 - no discount.
+            //
+            // See issue #5691 for more details.
+            var discountPercentage = discountModel?.DiscountPercentage ?? context.Registration?.DiscountPercentage ?? 0.0M;
+            var discountAmount = discountModel?.DiscountAmount ?? context.Registration?.DiscountAmount ?? 0.0M;
+
             foreach ( var registrant in registration.Registrants )
             {
-                var discountApplies = discountModel != null && ( !discountedRegistrantsRemaining.HasValue || discountedRegistrantsRemaining.Value > 0 );
+                var discountApplies = ( discountAmount > 0.0M || discountPercentage > 0.0M ) && ( !discountedRegistrantsRemaining.HasValue || discountedRegistrantsRemaining.Value > 0 );
 
                 if ( discountedRegistrantsRemaining.HasValue )
                 {
@@ -181,7 +196,8 @@ namespace Rock.Model
                 var costSummary = new RegistrationCostSummaryInfo
                 {
                     Type = RegistrationCostSummaryType.Cost,
-                    Description = string.Format( "{0} {1}", firstName, lastName )
+                    Description = string.Format( "{0} {1}", firstName, lastName ),
+                    RegistrationRegistrantGuid = registrant.Guid
                 };
 
                 // If the registrant is on the waitlist then set costs to 0 and add a waitlist indicator to the name for the payment summary grid
@@ -205,24 +221,24 @@ namespace Rock.Model
                     if ( discountApplies )
                     {
                         // Apply the percentage if it exists
-                        if ( discountModel.DiscountPercentage > 0.0m )
+                        if ( discountPercentage > 0.0m )
                         {
                             // If the DiscountPercentage is greater than 100% than set it to 0, otherwise compute the discount and set the DiscountedCost
-                            costSummary.DiscountedCost = discountModel.DiscountPercentage >= 1.0m ? 0.0m : costSummary.Cost - ( costSummary.Cost * discountModel.DiscountPercentage );
+                            costSummary.DiscountedCost = discountPercentage >= 1.0m ? 0.0m : costSummary.Cost - ( costSummary.Cost * discountPercentage );
                         }
-                        else if ( discountModel.DiscountAmount > 0 )
+                        else if ( discountAmount > 0 )
                         {
                             // Apply the discount amount
                             // If the DiscountAmount is greater than the cost then set the DiscountedCost to 0 and store the remaining amount to be applied to eligable fees later.
-                            if ( discountModel.DiscountAmount > costSummary.Cost )
+                            if ( discountAmount > costSummary.Cost )
                             {
-                                discountAmountRemaining = discountModel.DiscountAmount - costSummary.Cost;
+                                discountAmountRemaining = discountAmount - costSummary.Cost;
                                 costSummary.DiscountedCost = 0.0m;
                             }
                             else
                             {
                                 // Compute the DiscountedCost using the DiscountAmount
-                                costSummary.DiscountedCost = costSummary.Cost - discountModel.DiscountAmount;
+                                costSummary.DiscountedCost = costSummary.Cost - discountAmount;
                             }
                         }
                     }
@@ -251,13 +267,14 @@ namespace Rock.Model
                     var templateFeeItem = templateFeeItems.First( f => f.Guid == feeItemGuid );
                     var templateFee = templateFeeItem.RegistrationTemplateFee;
 
-                    decimal cost = templateFeeItem.Cost;
+                    var cost = templateFeeItem.Cost;
                     var desc = GetFeeLineItemDescription( templateFee, templateFeeItem, quantity );
 
                     var feeCostSummary = new RegistrationCostSummaryInfo
                     {
                         Type = RegistrationCostSummaryType.Fee,
                         Description = desc,
+                        RegistrationRegistrantGuid = registrant.Guid,
                         Cost = quantity * cost,
 
                         // Default the DiscountedCost to be the same as the Cost
@@ -266,17 +283,17 @@ namespace Rock.Model
 
                     if ( templateFee != null && templateFee.DiscountApplies && discountApplies )
                     {
-                        if ( discountModel.DiscountPercentage > 0.0m )
+                        if ( discountPercentage > 0.0m )
                         {
-                            feeCostSummary.DiscountedCost = discountModel.DiscountPercentage >= 1.0m ? 0.0m : feeCostSummary.Cost - ( feeCostSummary.Cost * discountModel.DiscountPercentage );
+                            feeCostSummary.DiscountedCost = discountPercentage >= 1.0m ? 0.0m : feeCostSummary.Cost - ( feeCostSummary.Cost * discountPercentage );
                         }
-                        else if ( discountModel.DiscountAmount > 0 && discountAmountRemaining > 0 )
+                        else if ( discountAmount > 0 && discountAmountRemaining > 0 )
                         {
                             // If there is any discount amount remaining after subracting it from the cost then it can be applied here
                             // If the DiscountAmount is greater than the cost then set the DiscountedCost to 0 and store the remaining amount to be applied to eligable fees later.
                             if ( discountAmountRemaining > feeCostSummary.Cost )
                             {
-                                discountAmountRemaining -= feeCostSummary.DiscountedCost;
+                                discountAmountRemaining -= feeCostSummary.Cost;
                                 feeCostSummary.DiscountedCost = 0.0m;
                             }
                             else

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System;
 using System.Text.RegularExpressions;
 using DotLiquid;
@@ -106,3 +107,4 @@ namespace Rock.Web.Cache
         #endregion
     }
 }
+#endif

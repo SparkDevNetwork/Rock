@@ -114,9 +114,9 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             ShowSettings();
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods
@@ -160,14 +160,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
         {
             using ( var rockContext = new RockContext() )
             {
-                var location = new LocationService( rockContext ).Get( CurrentLocationId );
-                if ( location != null )
-                {
-                    location.IsActive = tglRoom.Checked;
-
-                    rockContext.SaveChanges();
-                    Rock.CheckIn.KioskDevice.Clear();
-                }
+                var locationService = new LocationService( rockContext );
+                locationService.SetActiveStatus( CurrentLocationId, tglRoom.Checked );
             }
         }
 

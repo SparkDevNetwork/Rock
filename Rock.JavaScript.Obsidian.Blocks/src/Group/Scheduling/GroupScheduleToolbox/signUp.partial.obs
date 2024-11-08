@@ -9,7 +9,7 @@
     </NotificationBox>
 
     <template v-if="isContentVisible">
-        <TabbedBar v-model="selectedGroupGuid"
+        <TabbedBar v-model="selectedGroupGuidOrEmptyString"
                    class="schedule-toolbox-group-tabs"
                    :tabs="groupList"
                    :disabled="disabled || isLoadingSignUps" />
@@ -38,7 +38,7 @@
                 </div>
 
                 <SignUpOccurrenceDate v-for="[date, occurrences] in immediateOccurrencesByDate"
-                                      :key="`${selectedGroupGuid}-${date}`"
+                                      :key="`${selectedGroupGuidOrEmptyString}-${date}`"
                                       :title="formatToolboxDate(date)"
                                       :occurrences="occurrences"
                                       :disabled="disabled || isLoadingSignUps"
@@ -47,7 +47,7 @@
 
             <div v-if="anyNonImmediateSignups" class="schedule-toolbox-signup-non-immediate-needs">
                 <SignUpOccurrenceDate v-for="[date, occurrences] in nonImmediateOccurrencesByDate"
-                                      :key="`${selectedGroupGuid}-${date}`"
+                                      :key="`${selectedGroupGuidOrEmptyString}-${date}`"
                                       :title="formatToolboxDate(date)"
                                       :occurrences="occurrences"
                                       :disabled="disabled || isLoadingSignUps"
@@ -68,7 +68,7 @@
 <script setup lang="ts">
     import { computed, inject, PropType, provide, ref, watch } from "vue";
     import SignUpOccurrenceDate from "./signUpOccurrenceDate.partial.obs";
-    import { SaveSignUpErrorMessage, SelectedGroup, SelectedPersonGuid } from "./types.partial";
+    import { SaveSignUpErrorMessage, SelectedGroup, SelectedPersonGuid, SelectedSignUpKey } from "./types.partial";
     import { formatToolboxDate } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
@@ -81,6 +81,7 @@
     import { SignUpOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpOccurrenceBag";
     import { SignUpsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -107,12 +108,14 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:isLoadingSignUps"): void
+        (e: "update:isLoadingSignUps"): void;
     }>();
 
     // #region Values
 
-    const selectedPersonGuid = inject(SelectedPersonGuid, ref(""));
+    /** The selected person guid (or empty string if none selected). */
+    const selectedPersonGuidOrEmptyString = inject(SelectedPersonGuid, ref(""));
+
     const selectedGroup = inject(SelectedGroup);
 
     const blockActionErrorMessage = ref("");
@@ -123,6 +126,7 @@
     const schedulableGroups = ref<GroupBag[]>([]);
     const signUpOccurrences = ref<SignUpOccurrenceBag[]>([]);
 
+    const selectedSignUpKey = ref("");
     const saveSignUpErrorMessage = ref("");
 
     // #endregion Values
@@ -142,7 +146,7 @@
             }));
     });
 
-    const selectedGroupGuid = computed<string>({
+    const selectedGroupGuidOrEmptyString = computed<string>({
         get() {
             return selectedGroup?.value?.guid ?? "";
         },
@@ -190,9 +194,9 @@
     /**
      * Gets the additional time sign-ups for the selected person and group.
      *
-     * @param groupGuid The selected group unique identifier.
+     * @param groupGuidOrEmptyString The selected group unique identifier (or empty string if none selected).
      */
-    async function getSignUps(groupGuid: string): Promise<void> {
+    async function getSignUps(groupGuidOrEmptyString: string): Promise<void> {
         if (isLoadingSignUps.value) {
             return;
         }
@@ -202,8 +206,8 @@
         saveSignUpErrorMessage.value = "";
 
         const bag: GetSignUpsRequestBag = {
-            selectedPersonGuid: selectedPersonGuid.value,
-            selectedGroupGuid: groupGuid
+            selectedPersonGuid: toGuidOrNull(selectedPersonGuidOrEmptyString.value) ?? emptyGuid,
+            selectedGroupGuid: toGuidOrNull(groupGuidOrEmptyString)
         };
 
         const result = await invokeBlockAction<SignUpsBag>("GetSignUps", { bag });
@@ -267,16 +271,17 @@
 
     // #region Watchers
 
-    watch(selectedPersonGuid, () => {
-        if (selectedPersonGuid.value) {
+    watch(selectedPersonGuidOrEmptyString, () => {
+        if (selectedPersonGuidOrEmptyString.value) {
             hasCompletedInitialLoad.value = false;
-            getSignUps(selectedGroupGuid.value);
+            getSignUps(selectedGroupGuidOrEmptyString.value);
         }
     });
 
     // #endregion Watchers
 
+    provide(SelectedSignUpKey, selectedSignUpKey);
     provide(SaveSignUpErrorMessage, saveSignUpErrorMessage);
 
-    getSignUps(selectedGroupGuid.value);
+    getSignUps(selectedGroupGuidOrEmptyString.value);
 </script>

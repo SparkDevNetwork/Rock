@@ -22,16 +22,24 @@
 //
 
 import { GroupSchedulerFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerFiltersBag";
+import { GroupSchedulerGroupLocationScheduleNamesBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerGroupLocationScheduleNamesBag";
 import { GroupSchedulerOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerOccurrenceBag";
+import { GroupSchedulerUnassignedResourceCountBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduler/groupSchedulerUnassignedResourceCountBag";
 
 /** The filters that were applied in response to an "ApplyFilters" request, and the resulting occurrences to be scheduled. */
 export type GroupSchedulerAppliedFiltersBag = {
     /** Gets or sets the filters that were applied. */
     filters?: GroupSchedulerFiltersBag | null;
 
+    /** Gets or sets the unique, ordered group, location and schedule name combinations. */
+    groupLocationScheduleNames?: GroupSchedulerGroupLocationScheduleNamesBag[] | null;
+
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
     /** Gets or sets the occurrences to be scheduled, limited by the applied filters. */
     scheduleOccurrences?: GroupSchedulerOccurrenceBag[] | null;
+
+    /** Gets or sets the unassigned resource counts, limited by the applied filters. */
+    unassignedResourceCounts?: GroupSchedulerUnassignedResourceCountBag[] | null;
 };

@@ -120,7 +120,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
 
         /// <summary>
         /// Gets or sets the type name of the source item this document was
-        /// built up from. This is namespace plus class name.
+        /// built up from. This is the namespace plus class name.
         /// </summary>
         /// <value>
         /// The type name of the source item this document was built up from.
@@ -129,7 +129,7 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
         public string ItemType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type name of the source entity this documentis
+        /// Gets or sets the type name of the source entity this document is
         /// associated with. This is namespace plus class name.
         /// </summary>
         /// <value>
@@ -222,6 +222,24 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
         [IndexField( FieldType = IndexFieldType.Integer )]
         public int? Year { get; set; }
 
+        /// <summary>
+        /// Gets or sets the PrimarySlug for the <see cref="Rock.Model.ContentChannelItem"/>.
+        /// </summary>
+        /// <value>
+        /// The primary slug (or first slug if no primary is set) for this item.
+        /// </value>
+        [IndexField]
+        public string PrimarySlug { get; set; }
+
+        /// <summary>
+        /// Gets or sets the item global key for the <see cref="Rock.Model.ContentChannelItem"/>.
+        /// </summary>
+        /// <value>
+        /// The item global key for this item.
+        /// </value>
+        [IndexField]
+        public string ItemGlobalKey { get; set; }
+
         /* 04/04/2022
 
         IndexModelType and IndexModelAssembly are stored as the original type
@@ -240,6 +258,12 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
         /// </value>
         [IndexField]
         public string IndexModelType { get; set; }
+
+        /// <summary>
+        /// Gets whether or not this document is approved.
+        /// </summary>
+        [IndexField]
+        public bool IsApproved { get; set; } = true;
 
         /// <summary>
         /// Gets the IndexModelAssembly name of the IndexModel that this was when it was stored to the Index server.

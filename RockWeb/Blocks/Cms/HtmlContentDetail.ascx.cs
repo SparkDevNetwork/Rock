@@ -222,8 +222,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             /*
              * 2020-06-10 - JH
              *
@@ -251,6 +249,8 @@ namespace RockWeb.Blocks.Cms
             {
                 nbApprovalRequired.Visible = false;
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -332,7 +332,14 @@ namespace RockWeb.Blocks.Cms
             if ( GetAttributeValue( AttributeKey.ValidateMarkup ).AsBoolean() )
             {
                 HtmlDocument doc = new HtmlDocument();
-                doc.LoadHtml( newContent );
+                if ( LavaHelper.IsLavaTemplate( newContent ) )
+                {
+                    doc.LoadHtml( newContent.SanitizeLava() );
+                }
+                else
+                {
+                    doc.LoadHtml( newContent );
+                }
 
                 if ( doc.ParseErrors.Count() > 0 && !nbInvalidHtml.Visible )
                 {
@@ -822,7 +829,7 @@ namespace RockWeb.Blocks.Cms
                             if ( CurrentPerson != null )
                             {
                                 // TODO: When support for "Person" is not supported anymore (should use "CurrentPerson" instead), remove this line
-                                mergeFields.AddOrIgnore( "Person", CurrentPerson );
+                                mergeFields.TryAdd( "Person", CurrentPerson );
                             }
 
                             mergeFields.Add( "CurrentBrowser", this.RockPage.BrowserClient );

@@ -72,8 +72,8 @@ namespace RockWeb.Blocks.Groups
         Category = "Add Group",
         Order = 16,
         Key = AttributeKey.GroupPickerType )]
-    [GroupField( "Root Group",
-        Description = "Select the root group to use as a starting point for the tree view.",
+    [GroupField( "Root Group (for Add Group)",
+        Description = "Select the root group to use as a starting point for the tree view when using the \"Group Picker\" Group Picker Type.",
         IsRequired = false,
         Category = "Add Group",
         Order = 17,
@@ -304,6 +304,8 @@ namespace RockWeb.Blocks.Groups
                     {
                         var buttonIcon = deleteButton.ControlsOfTypeRecursive<HtmlGenericControl>().FirstOrDefault();
 
+                        deleteButton.Enabled = groupInfo.IsAuthorizedToEditOrManageMembers;
+
                         if ( groupInfo.IsSynced )
                         {
                             deleteButton.Enabled = false;
@@ -520,6 +522,12 @@ namespace RockWeb.Blocks.Groups
                     bool archive = false;
                     if ( group.GroupType.EnableGroupHistory == true && groupMemberHistoricalService.Queryable().Any( a => a.GroupMemberId == groupMember.Id ) )
                     {
+                        if ( !( group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || group.IsAuthorized( Authorization.MANAGE_MEMBERS, this.CurrentPerson ) ) )
+                        {
+                            mdGridWarning.Show( "You are not authorized to archive members from this group", ModalAlertType.Information );
+                            return;
+                        }
+
                         // if the group has GroupHistory enabled, and this group member has group member history snapshots, they were prompted to Archive
                         archive = true;
                     }
@@ -781,16 +789,6 @@ namespace RockWeb.Blocks.Groups
             var qryGroups = groupService.AsNoFilter()
                 .Where( g => groupTypeIds.Contains( g.GroupTypeId ) && ( !onlySecurityGroups || g.IsSecurityRole ) );
 
-            var rootGroupGuid = GetAttributeValue( AttributeKey.RootGroup ).AsGuidOrNull();
-            if ( rootGroupGuid.HasValue )
-            {
-                var parentGroup = groupService.Get( rootGroupGuid.Value );
-                if ( parentGroup != null )
-                {
-                    qryGroups = qryGroups.Where( g => g.ParentGroupId == parentGroup.Id );
-                }
-            }
-
             string limitToActiveStatus = GetAttributeValue( AttributeKey.LimittoActiveStatus );
 
             bool showActive = true;
@@ -873,6 +871,7 @@ namespace RockWeb.Blocks.Groups
                             GroupOrder = m.Group.Order,
                             Description = m.Group.Description,
                             IsSystem = m.Group.IsSystem,
+                            IsAuthorizedToEditOrManageMembers = m.Group.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) || m.Group.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, this.CurrentPerson ),
                             GroupRole = m.GroupMember.GroupRole.Name,
                             ElevatedSecurityLevel = m.GroupMember.Group.ElevatedSecurityLevel,
                             IsSecurityRole = m.GroupMember.Group.IsSecurityRole,
@@ -1154,6 +1153,14 @@ namespace RockWeb.Blocks.Groups
             /// The group member identifier.
             /// </value>
             public int? GroupMemberId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the value indicating if the current person can edit or manage members in the specified group.
+            /// </summary>
+            /// <value>
+            /// The boolean value
+            /// </value>
+            public bool IsAuthorizedToEditOrManageMembers { get; set; }
 
             /// <summary>
             /// Gets or sets the path.

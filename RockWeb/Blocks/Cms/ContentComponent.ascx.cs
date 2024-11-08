@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Cms
 
     #endregion Block Attributes
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.CONTENT_COMPONENT )]
-    public partial class ContentComponent : RockBlock
+    public partial class ContentComponent : RockBlockCustomSettings
     {
         #region Attribute Keys
 
@@ -164,12 +164,12 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowView();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -214,32 +214,17 @@ namespace RockWeb.Blocks.Cms
         /// </returns>
         public override List<Control> GetAdministrateControls( bool canConfig, bool canEdit )
         {
-            List<Control> configControls = new List<Control>();
-            if ( canEdit )
+            // don't show the Edit option until the block is configured
+            canEdit = canEdit && this.GetContentChannel() != null;
+
+            List<Control> configControls = base.GetAdministrateControls( canConfig, canEdit );
+
+            // remove the "aBlockProperties" control since we'll be replacing it with "lbConfigure" button
+            // replacing by the index ensures that the position of the Configure Gear in the Block Zone is consistent with that of the other blocks in Rock.
+            var aBlockPropertiesIndex = configControls.FindIndex( a => a.ID == "aBlockProperties" );
+            if ( aBlockPropertiesIndex >= 0 )
             {
-                LinkButton lbEditContent = new LinkButton();
-                lbEditContent.ID = "lbEditContent";
-                lbEditContent.CssClass = "edit";
-                lbEditContent.ToolTip = "Edit Content";
-                lbEditContent.Click += lbEditContent_Click;
-                configControls.Add( lbEditContent );
-
-                HtmlGenericControl iEditContent = new HtmlGenericControl( "i" );
-                iEditContent.Attributes.Add( "class", "fa fa-edit" );
-
-                lbEditContent.Controls.Add( iEditContent );
-                lbEditContent.CausesValidation = false;
-
-                if ( this.GetContentChannel() == null )
-                {
-                    // don't show the Edit option until the block is configured
-                    lbEditContent.Visible = false;
-                }
-
-                // will toggle the block config so they are no longer showing
-                lbEditContent.Attributes["onclick"] = "Rock.admin.pageAdmin.showBlockConfig()";
-
-                ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbEditContent );
+                configControls.RemoveAt( aBlockPropertiesIndex );
             }
 
             if ( canConfig )
@@ -249,7 +234,14 @@ namespace RockWeb.Blocks.Cms
                 lbConfigure.CssClass = "edit";
                 lbConfigure.ToolTip = "Configure";
                 lbConfigure.Click += lbConfigure_Click;
-                configControls.Add( lbConfigure );
+                if ( aBlockPropertiesIndex >= 0 && aBlockPropertiesIndex < configControls.Count )
+                {
+                    configControls.Insert( aBlockPropertiesIndex, lbConfigure );
+                }
+                else
+                {
+                    configControls.Add( lbConfigure );
+                }
                 HtmlGenericControl iConfigure = new HtmlGenericControl( "i" );
                 iConfigure.Attributes.Add( "class", "fa fa-cog" );
 
@@ -262,18 +254,47 @@ namespace RockWeb.Blocks.Cms
                 ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( lbConfigure );
             }
 
-            var baseAdministrateControls = base.GetAdministrateControls( canConfig, canEdit );
+            return configControls;
+        }
 
-            // remove the "aBlockProperties" control since we'll be taking care of all that with our "lbConfigure" button
-            var aBlockProperties = baseAdministrateControls.FirstOrDefault( a => a.ID == "aBlockProperties" );
-            if ( aBlockProperties != null )
+        protected override void ShowSettings()
+        {
+            ContentChannelCache contentChannel = this.GetContentChannel();
+            if ( contentChannel == null )
             {
-                baseAdministrateControls.Remove( aBlockProperties );
+                // shouldn't happen. This button isn't visible unless there is a contentChannel configured
+                return;
             }
 
-            configControls.AddRange( baseAdministrateControls );
+            pnlContentComponentEditContentChannelItems.Visible = true;
+            mdContentComponentEditContentChannelItems.Show();
 
-            return configControls;
+            var allowMultipleContentItems = this.GetAttributeValue( AttributeKey.AllowMultipleContentItems ).AsBoolean();
+            pnlContentChannelItemsList.Visible = allowMultipleContentItems;
+            pnlContentChannelItemEdit.CssClass = allowMultipleContentItems ? "col-md-8" : "col-md-12";
+
+            var rockContext = new RockContext();
+            var contentChannelItemId = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Title ).Select( a => ( int? ) a.Id ).FirstOrDefault();
+
+            EditContentChannelItem( contentChannelItemId );
+
+            if ( allowMultipleContentItems )
+            {
+                // hide the SaveButton
+                mdContentComponentEditContentChannelItems.SaveButtonText = CONTENT_CHANNEL_ITEM_CLOSE_MODAL_TEXT;
+                mdContentComponentEditContentChannelItems.SaveButtonCausesValidation = false;
+                mdContentComponentEditContentChannelItems.CloseLinkVisible = true;
+                mdContentComponentEditContentChannelItems.CancelLinkVisible = false;
+            }
+            else
+            {
+                mdContentComponentEditContentChannelItems.SaveButtonText = CONTENT_CHANNEL_ITEM_SAVE_TEXT;
+                mdContentComponentEditContentChannelItems.SaveButtonCausesValidation = true;
+                mdContentComponentEditContentChannelItems.CloseLinkVisible = false;
+                mdContentComponentEditContentChannelItems.CancelLinkVisible = true;
+            }
+
+            btnSaveItem.Visible = allowMultipleContentItems;
         }
 
         #endregion overrides
@@ -642,51 +663,6 @@ namespace RockWeb.Blocks.Cms
         #region Content Component - Edit Content
 
         /// <summary>
-        /// Handles the Click event of the lbEditContent control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void lbEditContent_Click( object sender, EventArgs e )
-        {
-            ContentChannelCache contentChannel = this.GetContentChannel();
-            if ( contentChannel == null )
-            {
-                // shouldn't happen. This button isn't visible unless there is a contentChannel configured
-                return;
-            }
-
-            pnlContentComponentEditContentChannelItems.Visible = true;
-            mdContentComponentEditContentChannelItems.Show();
-
-            var allowMultipleContentItems = this.GetAttributeValue( AttributeKey.AllowMultipleContentItems ).AsBoolean();
-            pnlContentChannelItemsList.Visible = allowMultipleContentItems;
-            pnlContentChannelItemEdit.CssClass = allowMultipleContentItems ? "col-md-8" : "col-md-12";
-
-            var rockContext = new RockContext();
-            var contentChannelItemId = new ContentChannelItemService( rockContext ).Queryable().Where( a => a.ContentChannelId == contentChannel.Id ).OrderBy( a => a.Order ).ThenBy( a => a.Title ).Select( a => ( int? ) a.Id ).FirstOrDefault();
-
-            EditContentChannelItem( contentChannelItemId );
-
-            if ( allowMultipleContentItems )
-            {
-                // hide the SaveButton
-                mdContentComponentEditContentChannelItems.SaveButtonText = CONTENT_CHANNEL_ITEM_CLOSE_MODAL_TEXT;
-                mdContentComponentEditContentChannelItems.SaveButtonCausesValidation = false;
-                mdContentComponentEditContentChannelItems.CloseLinkVisible = true;
-                mdContentComponentEditContentChannelItems.CancelLinkVisible = false;
-            }
-            else
-            {
-                mdContentComponentEditContentChannelItems.SaveButtonText = CONTENT_CHANNEL_ITEM_SAVE_TEXT;
-                mdContentComponentEditContentChannelItems.SaveButtonCausesValidation = true;
-                mdContentComponentEditContentChannelItems.CloseLinkVisible = false;
-                mdContentComponentEditContentChannelItems.CancelLinkVisible = true;
-            }
-
-            btnSaveItem.Visible = allowMultipleContentItems;
-        }
-
-        /// <summary>
         /// Edits the content channel item.
         /// </summary>
         /// <param name="contentChannelItemId">The content channel item identifier.</param>
@@ -764,7 +740,7 @@ namespace RockWeb.Blocks.Cms
         {
             var currentContentChannelItemId = hfContentChannelItemId.Value.AsInteger();
             ContentChannelItem contentChannelItem = e.Row.DataItem as ContentChannelItem;
-            if (contentChannelItem != null && contentChannelItem.Id == currentContentChannelItemId )
+            if ( contentChannelItem != null && contentChannelItem.Id == currentContentChannelItemId )
             {
                 e.Row.CssClass = "row-highlight";
             }

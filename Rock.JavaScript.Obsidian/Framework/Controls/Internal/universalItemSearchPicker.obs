@@ -1,0 +1,231 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentDropDownPicker formGroupClasses="universal-item-search-picker"
+                           pickerClass="picker-universalitemsearch"
+                           :modelValue="internalValue"
+                           :iconCssClass="pickerIconClass"
+                           :showClear="showClear"
+                           v-model:showPopup="showPopup"
+                           pickerContentBoxHeight="400px"
+                           fullWidth
+                           @primaryButtonClicked="onSelect"
+                           @secondaryButtonClicked="onCancel"
+                           @clearButtonClicked="onClear">
+
+        <template #pickerContentSuperHeader>
+            <div class="picker-search-header">
+                <h4>Search</h4>
+
+                <div class="ml-auto">
+                    <InlineCheckBox v-if="isIncludeInactiveVisible"
+                                    v-model="includeInactive"
+                                    label="Include Inactive"
+                                    class="mt-0 mb-0" />
+                </div>
+            </div>
+
+            <div ref="searchPanel"
+                 class="universalitemsearchpicker-search-panel">
+                <TextBox :modelValue="searchValue"
+                         inputClasses="universalitemsearchpicker-search-field"
+                         @update:modelValue="onSearchValueChanged" />
+            </div>
+
+            <hr>
+        </template>
+
+        <div>
+            <ul class="picker-select-list" style="padding: 0; list-style: none;">
+                <UniversalItemSearchPickerResult v-for="result in searchResults"
+                                                 :result="result"
+                                                 :areDetailsAlwaysVisible="areDetailsAlwaysVisible"
+                                                 @select="onItemSelected(result)" />
+            </ul>
+        </div>
+
+        <template #innerLabel><span class="selected-names">{{ selectedName }}</span></template>
+    </ContentDropDownPicker>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, Ref, ref, watch } from "vue";
+    import { UniversalItemSearchPickerItemBag } from "@Obsidian/ViewModels/Controls/universalItemSearchPickerItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import ContentDropDownPicker from "@Obsidian/Controls/contentDropDownPicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import UniversalItemSearchPickerResult from "./universalItemSearchPickerResult.partial.obs";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { useHttp } from "@Obsidian/Utility/http";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | null>,
+            required: false
+        },
+
+        iconCssClass: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        areDetailsAlwaysVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isIncludeInactiveVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        searchUrl: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "update:modelValue", value: ListItemBag | null): void
+    }>();
+
+    const http = useHttp();
+
+    /**
+     * Our internal selected value. This must be kept seperate because
+     * we don't actually emit the new values until the user clicks the
+     * select button.
+     */
+    const internalValue = ref(props.modelValue ?? null);
+
+    /** Will contain the value true if the popup tree list should be shown. */
+    const showPopup = ref(false);
+
+    const includeInactive = ref(false);
+    const searchPanel = ref<HTMLElement | null>(null);
+    const searchValue = ref("");
+    const searchResults = ref<UniversalItemSearchPickerItemBag[]>([]);
+    const performSearch = debounce(search);
+    let searchCancellationToken: Ref<boolean> = ref(false);
+    let lastSelectedValue: string | null = null;
+
+    /** Determines if the clear button should be shown. */
+    const showClear = computed((): boolean => {
+        return !!props.modelValue?.value;
+    });
+
+    /**
+     * Determines the name of the currently selected item. This shows the
+     * name of the "save safe" items, meaning it is updated after the user
+     * clicks the select button. It does not update on the fly as they are
+     * selecting items.
+     */
+    const selectedName = computed((): string => {
+        return props.modelValue?.text ?? "";
+    });
+
+    /** The CSS class to use for the picker icon. */
+    const pickerIconClass = computed((): string | undefined => {
+        return props.iconCssClass ? props.iconCssClass : undefined;
+    });
+
+    /** Updates the model value from our internal value. */
+    function updateModelValue(): void {
+        emit("update:modelValue", internalValue.value);
+    }
+
+    /**
+     * Event handler for when the clear button is clicked by the user.
+     */
+    function onClear(): void {
+        emit("update:modelValue", null);
+    }
+
+    /**
+     * Event handler for when the user clicks the cancel button. Hide the
+     * popup.
+     */
+    function onCancel(): void {
+        showPopup.value = false;
+    }
+
+    /**
+     * Event handler for when the user clicks the select button. Save the
+     * current selection and close the popup.
+     */
+    function onSelect(): void {
+        updateModelValue();
+        showPopup.value = false;
+    }
+
+    function onItemSelected(item: UniversalItemSearchPickerItemBag): void {
+        if (item.value === lastSelectedValue) {
+            updateModelValue();
+            showPopup.value = false;
+        }
+        else if (item.value) {
+            lastSelectedValue = item.value;
+            internalValue.value = {
+                value: item.value,
+                text: item.title
+            };
+        }
+    }
+
+    function onSearchValueChanged(value: string): void {
+        searchValue.value = value;
+        performSearch();
+    }
+
+    async function search(): Promise<void> {
+        const cancellationToken = ref(false);
+
+        searchCancellationToken.value = true;
+        searchCancellationToken = cancellationToken;
+
+        if (!props.searchUrl || searchValue.value.length < 3) {
+            return;
+        }
+
+        const payload = {
+            value: searchValue.value,
+            isInactiveIncluded: includeInactive.value
+        };
+
+        const result = await http.post<UniversalItemSearchPickerItemBag[]>(props.searchUrl, undefined, payload);
+
+        if (cancellationToken.value) {
+            return;
+        }
+
+        if (result.isSuccess && result.data) {
+            searchResults.value = result.data;
+        }
+    }
+
+    // Watch for changes to the selected value from the parent control and
+    // update our internal value to match.
+    watch(() => props.modelValue, () => {
+        updateRefValue(internalValue, props.modelValue ?? null);
+    });
+
+    // Reset UI when popup becomes visible.
+    watch(showPopup, () => {
+        if (showPopup.value) {
+            searchCancellationToken.value = true;
+            searchValue.value = "";
+            searchResults.value = [];
+            includeInactive.value = false;
+            lastSelectedValue = null;
+
+            nextTick(() => {
+                if (searchPanel.value) {
+                    const input = searchPanel.value.querySelector<HTMLInputElement>(".universalitemsearchpicker-search-field");
+
+                    input?.focus();
+                }
+            });
+        }
+    });
+</script>

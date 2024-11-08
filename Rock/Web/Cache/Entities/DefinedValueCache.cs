@@ -15,11 +15,10 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
 
@@ -58,10 +57,14 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="Rock.Model.DefinedValue.IsActive" />
         [DataMember]
         public bool IsActive { get; private set; }
-        
+
         /// <inheritdoc cref="Rock.Model.DefinedValue.CategoryId" />
         [DataMember]
         public int? CategoryId { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.DefinedValue.CategoryId" />
+        [DataMember]
+        public string CategoryName { get; private set; }
 
         /// <inheritdoc cref="Rock.Model.DefinedValue.DefinedType" />
         public DefinedTypeCache DefinedType => DefinedTypeCache.Get( DefinedTypeId );
@@ -82,7 +85,10 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var definedValue = entity as DefinedValue;
-            if ( definedValue == null ) return;
+            if ( definedValue == null )
+            {
+                return;
+            }
 
             IsSystem = definedValue.IsSystem;
             DefinedTypeId = definedValue.DefinedTypeId;
@@ -91,6 +97,7 @@ namespace Rock.Web.Cache
             Description = definedValue.Description;
             IsActive = definedValue.IsActive;
             CategoryId = definedValue.CategoryId;
+            CategoryName = definedValue.CategoryName;
         }
 
         /// <summary>

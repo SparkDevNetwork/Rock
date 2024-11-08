@@ -15,29 +15,25 @@
 // </copyright>
 //
 
-
+using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using RestSharp;
 using RestSharp.Authenticators;
-using Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions;
-using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
-using Rock.AI.OpenAI.OpenAIApiClient.Enums;
+
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient
 {
     internal class OpenAIApi
     {
-        private const string _openAIApiHost = "https://api.openai.com/v1";
+        private string _openAIApiHost = "https://api.openai.com/v1";
         private const int _apiTimeoutLength = 30000;
 
         private RestClient _client = null;
         private string _organization = string.Empty;
-
-        #region Static Properties
-        public const OpenAIModel OpenAIDefaultTextCompletionsModel = OpenAIModel.DaVinci3;
-        public const OpenAIModel OpenAIDefaultChatCompletionsModel = OpenAIModel.GPT4;
-        #endregion
 
         #region Constructors
 
@@ -49,6 +45,35 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         {
             _client = GetOpenAIClient( secretKey );
             _organization = organization;
+        }
+
+        /// <summary>
+        /// Create a new instance of the client.
+        /// </summary>
+        /// <param name="secretKey"></param>
+        /// <param name="organization"></param>
+        /// <param name="apiHostUrl"></param>
+        public OpenAIApi( string secretKey, string organization, string apiHostUrl )
+        {
+            _openAIApiHost = apiHostUrl;
+            _organization = organization;
+
+            _client = GetOpenAIClient( secretKey );
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// The host address of the OpenAI Api Service.
+        /// </summary>
+        public string ApiHostUrl
+        {
+            get
+            {
+                return _openAIApiHost;
+            }
         }
 
         #endregion
@@ -78,7 +103,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             var request = new RestRequest( resource, method );
             request.AddHeader( "OpenAI-Organization", _organization );
 
-            return request; 
+            return request;
         }
 
         #endregion
@@ -102,10 +127,31 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             {
                 return response.Data;
             }
-            else
+
+            // Process the error response.
+            string message = null;
+
+            var errorResponse = response.Content.FromJsonDynamicOrNull() as IDictionary<string, object>;
+            if ( errorResponse != null && errorResponse.ContainsKey( "error" ) )
             {
-                return new OpenAIChatCompletionsResponse() { IsSuccessful = false, ErrorMessage = response.ErrorMessage };
+                var errorInfo = errorResponse["error"] as IDictionary<string, object>;
+                if ( errorInfo != null && errorInfo.ContainsKey( "message" ) )
+                {
+                    message = errorInfo["message"].ToStringSafe();
+                }
             }
+
+            //  If there is no extended error information, return the response status description.
+            if ( message.IsNullOrWhiteSpace() )
+            {
+                message = response.ErrorMessage;
+                if ( string.IsNullOrWhiteSpace( message ) )
+                {
+                    message = response.StatusDescription;
+                }
+            }
+
+            return new OpenAIChatCompletionsResponse() { IsSuccessful = false, ErrorMessage = message };
         }
 
         /// <summary>
@@ -116,7 +162,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         internal async Task<OpenAITextCompletionsResponse> GetTextCompletions( OpenAITextCompletionsRequest completionRequest )
         {
             var request = GetOpenAIRequest( "completions", Method.POST );
-                                    
+
             request.AddParameter( "application/json", completionRequest.ToJson(), ParameterType.RequestBody );
 
             // Execute request
@@ -156,7 +202,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             }
         }
 
-        
+
         #endregion
 
     }

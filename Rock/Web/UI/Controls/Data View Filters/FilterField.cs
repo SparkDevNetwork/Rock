@@ -257,16 +257,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Set this to a specific Entity to limit Filters that only apply to this Entity
-        /// </summary>
-        /// <value>
-        /// The entity fields override.
-        /// </value>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Not Supported. Could cause inconsistent results." )]
-        public Rock.Data.IEntity Entity { get; set; }
-
-        /// <summary>
         /// Gets or sets the filter mode (Advanced Filter or Simple Filter)
         /// </summary>
         /// <value>

@@ -60,6 +60,10 @@
             valueBuilder.addTextValue("Description", props.modelValue.description);
         }
 
+        if (props.modelValue.content) {
+            valueBuilder.addTextValue("Content", props.modelValue.content);
+        }
+
         return valueBuilder.build();
     });
 

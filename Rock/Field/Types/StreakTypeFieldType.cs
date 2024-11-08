@@ -28,6 +28,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type used to display a dropdown list of streak types and allow a single selection.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.STREAK_TYPE )]
     public class StreakTypeFieldType : EntitySingleSelectionListFieldTypeBase<StreakType>, IEntityReferenceFieldType

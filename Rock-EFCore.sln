@@ -47,6 +47,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Enums.NG", "Rock.Enums
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript.Obsidian.Blocks", "Rock.JavaScript.Obsidian.Blocks\Rock.JavaScript.Obsidian.Blocks.njsproj", "{11ACFF28-4199-450B-8A43-F59ADEF63A99}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.CloudPrint.Shared", "Applications\RockCloudPrint\Rock.CloudPrint.Shared\Rock.CloudPrint.Shared.csproj", "{F37318E7-B269-43D1-83A1-B88CB1D1CB9F}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rock.CloudPrint.Shared.Common", "Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.shproj", "{6519C205-3304-4D09-86BC-16BE8A0D9C41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -121,6 +125,10 @@ Global
 		{11ACFF28-4199-450B-8A43-F59ADEF63A99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11ACFF28-4199-450B-8A43-F59ADEF63A99}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11ACFF28-4199-450B-8A43-F59ADEF63A99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F37318E7-B269-43D1-83A1-B88CB1D1CB9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F37318E7-B269-43D1-83A1-B88CB1D1CB9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F37318E7-B269-43D1-83A1-B88CB1D1CB9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F37318E7-B269-43D1-83A1-B88CB1D1CB9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -130,7 +138,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		TestApp.Shared\TestApp.Shared.projitems*{01911862-ecb1-4f51-af69-cee52a11bbee}*SharedItemsImports = 13
+		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{6519c205-3304-4d09-86bc-16be8a0d9c41}*SharedItemsImports = 13
 		TestApp.Shared\TestApp.Shared.projitems*{7ad1926c-0a4a-4950-a6ce-aefc667144b9}*SharedItemsImports = 5
+		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{8e9cc5a2-0c0c-4a64-9f3b-b4618a31e2f0}*SharedItemsImports = 5
 		TestApp.Shared\TestApp.Shared.projitems*{92f92b58-2623-4dc3-b151-49adf57ef7d7}*SharedItemsImports = 4
+		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{f37318e7-b269-43d1-83a1-b88cb1d1cb9f}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

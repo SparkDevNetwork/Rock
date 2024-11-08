@@ -29,7 +29,7 @@ export type EntityPickerGetFieldTypeConfigurationResultsBag = {
     configurationValues?: Record<string, string> | null;
 
     /** The GUID of the field type that is associated with the given entity */
-    fieldTypeGuid?: Guid | null;
+    fieldTypeGuid: Guid;
 
     /** The anem of the field type that is associated with the given entity */
     fieldTypeName?: string | null;

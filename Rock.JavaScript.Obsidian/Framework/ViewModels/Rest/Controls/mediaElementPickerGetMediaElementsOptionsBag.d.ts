@@ -29,5 +29,5 @@ import { Guid } from "@Obsidian/Types";
  */
 export type MediaElementPickerGetMediaElementsOptionsBag = {
     /** GUID of the media folder that the media elements are part of */
-    mediaFolderGuid?: Guid | null;
+    mediaFolderGuid: Guid;
 };

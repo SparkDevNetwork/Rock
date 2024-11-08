@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -92,6 +92,17 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsMappedLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if the <see cref="Rock.Model.Location"/>
+        /// if used as an overflow location for the group. This is primarily
+        /// used by check-in.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is an overflow location; otherwise <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsOverflowLocation { get; set; }
 
         /// <summary>
         /// Gets or sets the group member <see cref="Rock.Model.PersonAlias"/> identifier.  A GroupLocation can optionally be created by selecting one of the group 

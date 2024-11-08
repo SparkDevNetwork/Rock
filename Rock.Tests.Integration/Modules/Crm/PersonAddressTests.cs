@@ -14,19 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Crm
+namespace Rock.Tests.Integration.Modules.Crm
 {
     [TestClass]
-    public class PersonAddressTests
+    public class PersonAddressTests : DatabaseTestsBase
     {
         private const string _PersonGuidTestPerson1 = "60B92AAD-4053-4DB7-B80F-9D79595B1325";
 

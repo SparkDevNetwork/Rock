@@ -166,8 +166,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             BindGroups();
 
             // handle sort events
@@ -188,6 +186,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods
@@ -541,7 +541,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     group.Members.Add( groupMember );
                     _bindGroupsRockContext.SaveChanges();
 
-                    groups.Add( groupService.Get( group.Id ) );
+                    groups.Add( groupService.GetInclude( group.Id, g => g.GroupType ) );
                 }
 
                 rptrGroups.DataSource = groups;

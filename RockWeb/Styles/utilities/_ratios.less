@@ -1,0 +1,46 @@
+//
+// Utilities for common `css grid` values
+//
+
+.util-mix-ratios(@breakpoint:"base") {
+
+  .setInfix(@bp) when (@bp = "base") {
+    @infix: ~"";
+    .display-breakpoints(@infix);
+  }
+
+  .setInfix(@bp) when (default()) {
+    @infix: ~"-@{breakpoint}";
+
+    .display-breakpoints(@infix);
+  }
+
+  .setInfix(@breakpoint);
+}
+
+.display-breakpoints(@infix) {
+  .ratio@{infix}-thin {
+    aspect-ratio: 3 / 1;
+  }
+  .ratio@{infix}-film {
+    aspect-ratio: 2.35 / 1;
+  }
+  .ratio@{infix}-landscape {
+    aspect-ratio: 2 / 1;
+  }
+  .ratio@{infix}-video {
+    aspect-ratio: 16 / 9;
+  }
+  .ratio@{infix}-short-square {
+    aspect-ratio: 1.25 / 1;
+  }
+  .ratio@{infix}-square {
+    aspect-ratio: 1 / 1;
+  }
+  .ratio@{infix}-portrait {
+    aspect-ratio: 1 / 1.25;
+  }
+  .ratio@{infix}-tall {
+    aspect-ratio: 1 / 1.75;
+  }
+}

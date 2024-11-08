@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.Communication;
 using Rock.Web.Cache;
 
@@ -60,10 +61,10 @@ namespace Rock
             // Initially set the photo URL using the recipient photo ID.
             if ( response.RecipientPhotoId.HasValue )
             {
-                bag.PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Id={response.RecipientPhotoId}&maxwidth=256&maxheight=256" );
+                bag.PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( response.RecipientPhotoId.Value, new GetImageUrlOptions { MaxWidth = 256, MaxHeight = 256 } ) );
             }
 
-            if( response.RecipientPersonGuid.HasValue )
+            if ( response.RecipientPersonGuid.HasValue )
             {
                 using( var rockContext = new RockContext() )
                 {
@@ -114,8 +115,8 @@ namespace Rock
                         bag.Attachments.Add( new ConversationAttachmentBag
                         {
                             FileName = attachment.FileName,
-                            Url = MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Guid={attachment.Guid}" ),
-                            ThumbnailUrl = isImage ? MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Guid={attachment.Guid}&maxwidth=512&maxheight=512" ) : null
+                            Url = MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( attachment.Guid ) ),
+                            ThumbnailUrl = isImage ? MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( attachment.Guid, new GetImageUrlOptions { Width = 512, Height = 512 } ) ) : null
                         } );
                     }
                 }
@@ -196,31 +197,31 @@ namespace Rock
             }
 
             return responses
-                .Select( response =>
-                {
-                    // Convert the response to a message bag without attachments.
-                    var bag = ToMessageBag( response, false );
-
-                    // Use our attachment lookup data to find any attachments.
-                    if ( attachmentsLookup.TryGetValue( bag.MessageKey, out var attachments ) )
+                    .Select( response =>
                     {
-                        foreach ( var attachment in attachments )
+                        // Convert the response to a message bag without attachments.
+                        var bag = ToMessageBag( response, false );
+
+                        // Use our attachment lookup data to find any attachments.
+                        if ( attachmentsLookup.TryGetValue( bag.MessageKey, out var attachments ) )
                         {
-                            var ext = System.IO.Path.GetExtension( attachment.FileName ).ToLower();
-                            var isImage = attachment.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) == true;
-
-                            bag.Attachments.Add( new ConversationAttachmentBag
+                            foreach ( var attachment in attachments )
                             {
-                                FileName = attachment.FileName,
-                                Url = MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Guid={attachment.Guid}" ),
-                                ThumbnailUrl = isImage ? MobileHelper.BuildPublicApplicationRootUrl( $"GetImage.ashx?Guid={attachment.Guid}&maxwidth=512&maxheight=512" ) : null
-                            } );
-                        }
-                    }
+                                var ext = System.IO.Path.GetExtension( attachment.FileName ).ToLower();
+                                var isImage = attachment.MimeType.StartsWith( "image/", StringComparison.OrdinalIgnoreCase ) == true;
 
-                    return bag;
-                } )
-                .ToList();
+                                bag.Attachments.Add( new ConversationAttachmentBag
+                                {
+                                    FileName = attachment.FileName,
+                                    Url = MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( attachment.Guid ) ),
+                                    ThumbnailUrl = isImage ? MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( attachment.Guid, new GetImageUrlOptions { Width = 512, Height = 512 } ) ) : null
+                                } );
+                            }
+                        }
+
+                        return bag;
+                    } )
+                    .ToList();
         }
     }
 }

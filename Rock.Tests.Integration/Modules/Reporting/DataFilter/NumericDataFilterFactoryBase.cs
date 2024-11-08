@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Reporting.DataFilter
+namespace Rock.Tests.Integration.Modules.Reporting.DataFilter
 {
     public class NumericPropertyFilterSettings
     {

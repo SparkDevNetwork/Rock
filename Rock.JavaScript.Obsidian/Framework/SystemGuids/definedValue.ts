@@ -23,6 +23,12 @@
 
 /** Static Guids used by the Rock application */
 export const DefinedValue = {
+    /** The attendance record came from a kiosk. */
+    AttendanceSourceKiosk: "9A21D7EB-BCB5-4466-B62F-70EC5008B6B9",
+    /** The attendance record came from a legacy kiosk. */
+    AttendanceSourceLegacyKiosk: "0B25A627-679B-4B73-AA84-305DEF24815A",
+    /** The attendance record came from a mobile check-in. */
+    AttendanceSourceMobile: "972E8841-A3C9-4DDD-BD24-A414C0290331",
     /** Benevolence Approved */
     BenevolenceApproved: "18D3A2DA-F2BA-49AE-83EB-7E60DCD18A3B",
     /** Benevolence Denied */
@@ -73,6 +79,8 @@ export const DefinedValue = {
     BlockTemplateMobileGroupView: "559346FB-C684-42CF-8F4C-CF4A1C278AD6",
     /** The block template for the mobile group finder. */
     BlockTemplateMobileGroupsGroupFinder: "1B6D540A-2E40-44F6-8AE9-2857DE913459",
+    /** The block template for the mobile my notes block. */
+    BlockTemplateMobileMyNotes: "652A4E12-6C15-407D-9620-ED39190899A5",
     /** The block template for mobile my prayer requests. */
     BlockTemplateMobileMyPrayerRequests: "198F3006-5F0F-48AB-9EA0-2FA56F633753",
     /** The block template for the mobile notes block. */
@@ -181,6 +189,8 @@ export const DefinedValue = {
     DeviceTypeGivingKiosk: "64A1DBE5-10AD-42F1-A9BA-646A781D4112",
     /** Printer device type */
     DeviceTypePrinter: "8284B128-E73B-4863-9FC2-43E6827B65E6",
+    /** Proxy device type */
+    DeviceTypeProxy: "EF5BF148-C9E0-4F96-8152-BB23CD85D845",
     /** Entity Set for the purpose of doing a Person Merge request */
     EntitySetPurposePersonMergeRequest: "214EB26F-5493-4540-B2EF-F0887C8FBB9E",
     /** Amazon External Link Type */
@@ -238,6 +248,8 @@ export const DefinedValue = {
     InteractionchanneltypeCommunication: "55004F5C-A8ED-7CB7-47EE-5988E9F8E0A8",
     /** Interaction Channel Type: Content Channel */
     InteractionchanneltypeContentchannel: "F1A19D09-E010-EEB3-465A-940A6F023CEB",
+    /** Interaction Channel Type: Interaction Intents */
+    InteractionchanneltypeInteractionIntents: "A64DA89B-F634-4D58-ADC7-32243F84224B",
     /** Interaction Channel Type: System Events */
     InteractionchanneltypeSystemEvents: "5919214F-9C59-4913-BE4E-0DFB6A05F528",
     /** Interaction Channel Type: UrlShortener */
@@ -504,6 +516,12 @@ export const DefinedValue = {
     StructureContentEditorDefault: "09B25845-B879-4E69-87E9-003F9380B8DD",
     /** Structure Content Editor Message Notes */
     StructureContentEditorMessageNotes: "31C63FB9-1365-4EEF-851D-8AB9A188A06C",
+    /** Check-in */
+    ThemePurposeCheckin: "2BBB1A44-708E-4469-80DE-4AAE6227BEF8",
+    /** Website Legacy */
+    ThemePurposeWebsiteLegacy: "4E1477FD-B105-4E4B-99BB-E5F1B964DC94",
+    /** Website Nextgen */
+    ThemePurposeWebsiteNextgen: "B177E07F-7E07-4D7B-AFA7-9DE163797659",
     /** Every two weeks */
     TransactionFrequencyBiweekly: "72990023-0D43-4554-8D32-28461CAB8920",
     /** A Frequency of First and Fifteenth */

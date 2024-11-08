@@ -17,20 +17,24 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Reporting
+namespace Rock.Tests.Integration.Modules.Reporting.ReportBuilder
 {
     /// <summary>
     /// Create and manage test data for the Rock CRM module.
     /// </summary>
     [TestClass]
-    public class ReportBuilderTests
+    [TestCategory( TestFeatures.Reporting )]
+    public class ReportBuilderTests : DatabaseTestsBase
     {
         #region Tests
 
@@ -38,8 +42,6 @@ namespace Rock.Tests.Integration.Reporting
         /// Verify the Report Builder can correctly build all Person Attribute columns.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Reporting.Tests" )]
-        [TestProperty( "Feature", TestFeatures.Reporting )]
         public void AllPersonAttributeColumnsCanBuild()
         {
             var dataContext = new RockContext();
@@ -103,8 +105,6 @@ namespace Rock.Tests.Integration.Reporting
         /// Verify the Report Builder returns an empty Attribute column if the user generating the report does not have View permission for the Attribute.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Reporting.Tests" )]
-        [TestProperty( "Feature", TestFeatures.Reporting )]
         public void UnauthorizedUserCannotViewAttributeColumnOutput()
         {
             var dataContext = new RockContext();

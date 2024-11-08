@@ -19,14 +19,17 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.RockLiquid;
 using Rock.Model;
-using Rock.Tests.Integration.Core.Lava;
+using Rock.Tests.Integration.Modules.Core.Lava;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.BugFixes
 {
@@ -114,11 +117,10 @@ namespace Rock.Tests.Integration.BugFixes
 
             var engineOptions = new LavaEngineConfigurationOptions
             {
-                InitializeDynamicShortcodes = false
+                InitializeDynamicShortcodes = false,
+                ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.Throw
             };
-            var engine = global::Rock.Lava.LavaService.NewEngineInstance( typeof( RockLiquidEngine ), engineOptions );
-
-            LavaIntegrationTestHelper.SetEngineInstance( engine );
+            var engine = LavaService.NewEngineInstance( typeof( RockLiquidEngine ), engineOptions );
 
             var mergeFields = new LavaDataDictionary();
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = parallelProcessTotal };
@@ -135,7 +137,7 @@ namespace Rock.Tests.Integration.BugFixes
                     Parallel.For( 0, iterationTotal, parallelOptions, ( i1 ) =>
                     {
                         passCount = i1;
-                        var output = template.ResolveMergeFields( mergeFields, throwExceptionOnErrors: true );
+                        var output = engine.RenderTemplate( template, mergeFields );
                     } );
                 }
             }

@@ -96,19 +96,24 @@ namespace Rock.Model
         }
     }
 
-#if REVIEW_NET5_0_OR_GREATER
+    #region Entity Configuration
+
     /// <summary>
-    /// GroupTypeLocationTypeType EntityTypeConfiguration
+    /// GroupTypeLocationType Configuration Class
     /// </summary>
-    public class GroupTypeLocationTypeConfiguration : EntityTypeConfiguration<GroupTypeLocationType>
+    public partial class GroupTypeLocationTypeConfiguration : EntityTypeConfiguration<GroupTypeLocationType>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypeLocationTypeConfiguration"/> class.
         /// </summary>
         public GroupTypeLocationTypeConfiguration()
         {
+            // Empty constructor. This is required to tell EF that this model exists.
+#if REVIEW_NET5_0_OR_GREATER
             this.HasKey( k => new { k.GroupTypeId, k.LocationTypeValueId } );
+#endif
         }
     }
-#endif
+
+    #endregion Entity Configuration
 }

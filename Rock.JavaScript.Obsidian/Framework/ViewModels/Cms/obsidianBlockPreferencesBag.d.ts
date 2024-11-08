@@ -31,6 +31,12 @@ export type ObsidianBlockPreferencesBag = {
     /** Gets or sets the entity type key that these preferences are scoped to. */
     entityTypeKey?: string | null;
 
+    /**
+     * Gets or sets the time stamp at which the preferences were fetched from the database.
+     * The remote device may use this field to aid caching of the preference.
+     */
+    timeStamp: number;
+
     /** Gets or sets the person preference values. */
     values?: PersonPreferenceValueBag[] | null;
 };

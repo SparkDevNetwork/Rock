@@ -263,10 +263,11 @@ namespace Rock.Web2.Routing
             var routeData = context.GetRouteData();
             int pageId = routeData.Values["PageId"].ToString().AsInteger();
             var pageCache = PageCache.Get( pageId );
+            var adminUser = new UserLoginService( new RockContext() ).Queryable().FirstOrDefault( u => u.UserName == "admin" );
 
             var requestMessage = new HttpRequestWrapper( context.Request );
 
-            var rockRequestContext = new RockRequestContext( requestMessage, new NullRockResponseContext() ); //context.RequestServices.GetRequiredService<RockRequestContext>();
+            var rockRequestContext = new RockRequestContext( requestMessage, new NullRockResponseContext(), adminUser ); //context.RequestServices.GetRequiredService<RockRequestContext>();
 
             var currentPage = new RockPage( pageCache, rockRequestContext );
 
@@ -395,6 +396,10 @@ namespace Rock.Web2.Routing
 
             public IDictionary<string, string> Cookies { get; } = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
 
+            public string Method { get; }
+
+            public bool CookiesValuesAreUrlDecoded { get; }
+
             public HttpRequestWrapper( HttpRequest request )
             {
                 foreach ( var qs in request.Query )
@@ -415,9 +420,10 @@ namespace Rock.Web2.Routing
 
                 foreach ( var c in request.Cookies )
                 {
-                    Cookies.AddOrIgnore( c.Key, c.Value );
+                    Cookies.TryAdd( c.Key, c.Value );
                 }
 
+                Method = request.Method;
                 RequestUri = new Uri( request.GetDisplayUrl() );
             }
         }

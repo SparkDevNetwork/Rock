@@ -147,10 +147,15 @@ export type FormField = {
     guid: Guid;
 
     /**
-     * The unique identifier of the field type used to render the edit control
-     * of this field.
+     * The unique identifier of the field type used to identify this field.
      */
     fieldTypeGuid: Guid;
+
+    /**
+     * The unique identifier of the field type used to render the edit control
+     * of this field if it is a universal type.
+     */
+    universalFieldTypeGuid?: Guid | null;
 
     /** The display name of this field. */
     name: string;
@@ -184,6 +189,9 @@ export type FormField = {
 
     /** The configuration values that have been set for this field. */
     configurationValues?: Record<string, string> | null;
+
+    /** The configuration values that have been set for this field when in edit mode. */
+    editConfigurationValues?: Record<string, string> | null;
 
     /** The rule that controls when this field is visible. */
     visibilityRule?: FieldFilterGroupBag | null;
@@ -448,6 +456,12 @@ export type FormPersonEntry = {
      * The campus picker will always be required if it is visible.
      */
     showCampus?: boolean;
+
+    /**
+     * Indicates if the campus picker on the person entry form should include Inactive Campuses.
+     * Defaulting to true as it was the existing behavior before this option was introduced.
+     */
+    includeInactiveCampus?: boolean;
 
     /**
      * The DefinedValue unique identifier for the campus type used to filter

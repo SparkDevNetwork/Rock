@@ -161,8 +161,6 @@ $(document).ready(function() {
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( PageParameterKey.DataViewId );
@@ -175,6 +173,8 @@ $(document).ready(function() {
                     pnlDetails.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -292,6 +292,8 @@ $(document).ready(function() {
             dataView.CategoryId = cpCategory.SelectedValueAsInt();
             dataView.IncludeDeceased = tglIncludeDeceased.Checked;
             dataView.DisableUseOfReadOnlyContext = cbDisableUseOfReadOnlyContext.Checked;
+            dataView.IconCssClass = tbIconCssClass.Text;
+            dataView.HighlightColor = cpIconColor.Text;
 
             // If the switch is set to "Persistence Schedule", and the Persistence Type radio button list is set to "Interval" then use the schedule interval picker,
             // otherwise set the value as null so that a "Schedule" Persistence Type selection will clear out the interval value.
@@ -783,6 +785,8 @@ $(document).ready(function() {
 
             tbName.Text = dataView.Name;
             tbDescription.Text = dataView.Description;
+            tbIconCssClass.Text = dataView.IconCssClass;
+            cpIconColor.Text = dataView.HighlightColor;
 
             if ( dataView.EntityTypeId.HasValue )
             {
@@ -940,9 +944,11 @@ $(document).ready(function() {
             DataViewService dataViewService = new DataViewService( rockContext );
 
             // Get any related DataViews (using RelatedDataViewId )
-            var relatedDataViews = dataViewService.Queryable().AsNoTracking()
-                .Where( d => d.DataViewFilter.ChildFilters.Any( f => f.RelatedDataViewId.HasValue && f.RelatedDataViewId == dataView.Id ) )
-                .AsNoTracking().ToList();
+            var relatedDataViews = new DataViewFilterService( rockContext ).Queryable()
+                .AsNoTracking()
+                .Where( f => f.RelatedDataViewId == dataView.Id )
+                .Select( f => f.DataView )
+                .ToList();
 
             // get related DataViews that used the pre-v8 OtherDataViewFilter selection format
             var otherDataViewFilterComponentEntityId = EntityTypeCache.Get( typeof( Rock.Reporting.DataFilter.OtherDataViewFilter ) ).Id;
@@ -1269,7 +1275,7 @@ $(document).ready(function() {
                     if ( ex is RockDataViewFilterExpressionException )
                     {
                         RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
-                        nbPreviewError.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( dataView );
+                        nbPreviewError.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( ( IDataViewDefinition ) dataView );
                     }
                     else
                     {

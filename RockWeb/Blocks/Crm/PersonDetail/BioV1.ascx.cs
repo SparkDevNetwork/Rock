@@ -378,8 +378,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 // dont' show if there isn't a person, or if it is a 'Nameless" person record type
@@ -387,6 +385,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     nbInvalidPerson.Visible = true;
                     pnlContent.Visible = false;
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -532,6 +531,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     phCustomContent.Controls.Add( new LiteralControl( resolvedContent ) );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         protected void CreateActionMenu()

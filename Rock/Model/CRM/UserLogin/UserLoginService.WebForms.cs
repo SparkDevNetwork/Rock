@@ -37,8 +37,20 @@ namespace Rock.Model
         /// <returns>The current <see cref="Rock.Model.UserLogin"/></returns>
         public static UserLogin GetCurrentUser( bool userIsOnline )
         {
-            var rockContext = new RockContext();
+            // Don't wrap in using since we are returning an object that needs
+            // its navigation properties to work.
+            return GetCurrentUser( userIsOnline, new RockContext() );
+        }
 
+        /// <summary>
+        /// NOTE: This does much more then is sounds like! It returns the <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in,
+        /// but it also updates their last activity date, and will sign them out if they are not confirmed or are locked out.
+        /// </summary>
+        /// <param name="userIsOnline">A <see cref="System.Boolean"/> value that returns the logged in user if <c>true</c>; otherwise can return the impersonated user</param>
+        /// <param name="rockContext">The database context to use when accessing the database.</param>
+        /// <returns>The current <see cref="Rock.Model.UserLogin"/></returns>
+        internal static UserLogin GetCurrentUser( bool userIsOnline, RockContext rockContext )
+        {
             string userName = UserLogin.GetCurrentUserName();
 
             if ( userName.IsNullOrWhiteSpace() )

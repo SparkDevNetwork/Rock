@@ -18,3 +18,12 @@
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
+
+export const enum PreferenceKey {
+    FilterActiveOnly = "filter-active-only"
+}
+
+export type GridSettingsOptions = {
+    activeOnly: string | null;
+};
+

@@ -16,7 +16,7 @@
 //
 using System;
 using System.Linq;
-
+using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -111,7 +111,30 @@ namespace Rock.Tasks
                     var clientBrowser = client.UA.ToString();
 
                     var interaction = new InteractionService( rockContext ).AddInteraction( interactionComponent.Id, null, "View", message.Url, personAliasId, message.DateViewed, clientBrowser, clientOs, clientType, userAgent, message.IPAddress, message.SessionId?.AsGuidOrNull() );
-                    interaction.Source = message.UtmSource;
+
+                    UtmHelper.GetUtmDefinedValueOrTextFromInputValue( message.UtmSource,
+                        SystemGuid.DefinedType.UTM_SOURCE,
+                        out int? sourceValueId,
+                        out string sourceText );
+
+                    UtmHelper.GetUtmDefinedValueOrTextFromInputValue( message.UtmMedium,
+                        SystemGuid.DefinedType.UTM_MEDIUM,
+                        out int? mediumValueId,
+                        out string mediumText );
+
+                    UtmHelper.GetUtmDefinedValueOrTextFromInputValue( message.UtmCampaign,
+                        SystemGuid.DefinedType.UTM_CAMPAIGN,
+                        out int? campaignValueId,
+                        out string campaignText );
+
+                    interaction.Source = sourceText;
+                    interaction.SourceValueId = sourceValueId;
+                    interaction.Medium = mediumText;
+                    interaction.MediumValueId = mediumValueId;
+                    interaction.Campaign = campaignText;
+                    interaction.CampaignValueId = campaignValueId;
+                    interaction.ChannelCustomIndexed1 = message.PurposeKey.Truncate( 500, false );
+
                     rockContext.SaveChanges();
                 }
             }
@@ -197,6 +220,23 @@ namespace Rock.Tasks
             /// Gets or sets the UTM source of the link
             /// </summary>
             public string UtmSource { get; set; }
+
+            /// <summary>
+            /// Gets or sets the UTM medium of the link
+            /// </summary>
+            public string UtmMedium { get; set; }
+
+            /// <summary>
+            /// Gets or sets the UTM campaign of the link
+            /// </summary>
+            public string UtmCampaign { get; set; }
+
+            /// <summary>
+            /// Gets or sets the purpose of the redirect. This is generic data
+            /// that has no specific meaning. It will be stored in the
+            /// <see cref="Interaction.ChannelCustomIndexed1"/> property.
+            /// </summary>
+            public string PurposeKey { get; set; }
         }
     }
 }

@@ -4,6 +4,13 @@
 
         <h4 class="mt-0">Watched by</h4>
 
+        <NotificationBox v-if="isWatcherMustBeSelectWarningVisible" alertType="warning" dismissible @dismiss="isWatcherMustBeSelectWarningVisible = false">
+            A Person or Group must be specified as the watcher
+        </NotificationBox>
+        <NotificationBox v-if="isUnableToOverrideWarningVisible" alertType="danger" dismissible @dismiss="isUnableToOverrideWarningVisible = false">
+            Unable to set Watching to false. This would override another note watch that doesn't allow overrides.
+        </NotificationBox>
+
         <div class="row">
             <div class="col-md-6">
                 <PersonPicker v-if="!hidePersonPicker"
@@ -31,6 +38,10 @@
 
         <h4>Watch Filter</h4>
 
+        <NotificationBox v-if="isWatchFilterMustBeSeletedWarningVisible" alertType="danger" dismissible @dismiss="isWatchFilterMustBeSeletedWarningVisible = false">
+            A Watch Filter must be specified.
+        </NotificationBox>
+
         <div class="row">
             <div class="col-md-6">
                 <EntityTypePicker v-model="entityType"
@@ -38,6 +49,7 @@
                                   help="Set EntityType to enable watching a specific note type or specific entity."
                                   :disabled="disabledEntityTypePicker"
                                   :showBlankItem="true"
+                                  enhanceForLongLists
                                   :includeGlobalOption="false" />
                 <div>
                     <PersonPicker v-if="showPersonPicker"
@@ -62,6 +74,9 @@
                 </div>
             </div>
             <div class="col-md-6">
+                <NotificationBox v-if="isNoteTypeWarningVisible" alertType="danger" dismissible @dismiss="isNoteTypeWarningVisible = false">
+                    This note type doesn't allow note watches.
+                </NotificationBox>
                 <DropDownList v-if="showNoteTypePicker"
                               v-model="noteTypeValue"
                               :items="noteTypeOptions"
@@ -89,6 +104,7 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { NoteWatchBag } from "@Obsidian/ViewModels/Blocks/Core/NoteWatchDetail/noteWatchBag";
     import { NoteWatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteWatchDetail/noteWatchDetailOptionsBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -104,6 +120,11 @@
             type: Object as PropType<NoteWatchDetailOptionsBag>,
             required: true
         },
+
+        errorDetails: {
+            type: Object as PropType<string>,
+            required: false
+        }
     });
 
     const emit = defineEmits<{
@@ -131,6 +152,10 @@
     const disablePersonPicker = ref(props.options.disablePersonPicker);
     const hideGroupPicker = ref(props.options.hideGroupPicker);
     const hidePersonPicker = ref(props.options.hidePersonPicker);
+    const isWatcherMustBeSelectWarningVisible = ref(false);
+    const isUnableToOverrideWarningVisible = ref(false);
+    const isWatchFilterMustBeSeletedWarningVisible = ref(false);
+    const isNoteTypeWarningVisible = ref(false);
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -163,6 +188,7 @@
         const watchedEntityValue = watchedEntity.value;
         return entityIdValue !== null && entityIdValue !== undefined || watchedEntityValue?.value !== null && watchedEntityValue?.value !== undefined;
     });
+
     // #endregion
 
     // Watch for changes to the entity Id and get the entity's name.
@@ -209,9 +235,17 @@
         updateRefValue(watchedEntity, props.modelValue.watchedEntity ?? {});
     });
 
+    watch(() => props.errorDetails, () => {
+        isWatcherMustBeSelectWarningVisible.value = props.errorDetails === "WatcherMustBeSelected";
+        isUnableToOverrideWarningVisible.value = props.errorDetails === "UnableToOverride";
+        isWatchFilterMustBeSeletedWarningVisible.value = props.errorDetails === "WatchFilterMustBeSelected";
+        isNoteTypeWarningVisible.value = props.errorDetails === "NoteTypeDoesNotAllowWatch";
+    });
+
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, watchedEntity, ...propRefs], () => {
+
         const newValue: NoteWatchBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -219,7 +253,7 @@
             watcherGroup: watcherGroup.value,
             entityType: entityType.value,
             isWatching: isWatching.value,
-            allowOverride: allowOverride.value,
+            allowOverride: (!isWatching.value && allowOverride.value) ? false : allowOverride.value,
             noteType: { value: noteTypeValue?.value },
             entityId: entityId.value,
             watchedEntity: watchedEntity.value,

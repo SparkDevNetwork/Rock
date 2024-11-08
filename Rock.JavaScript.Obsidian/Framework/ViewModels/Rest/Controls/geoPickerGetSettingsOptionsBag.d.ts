@@ -29,5 +29,5 @@ import { Guid } from "@Obsidian/Types";
  */
 export type GeoPickerGetSettingsOptionsBag = {
     /** Identifier for a Map Styles Defined Value */
-    mapStyleValueGuid?: Guid | null;
+    mapStyleValueGuid: Guid;
 };

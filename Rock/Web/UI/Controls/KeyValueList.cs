@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -25,7 +26,6 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Utility;
 
 namespace Rock.Web.UI.Controls
 {
@@ -34,6 +34,10 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class KeyValueList : ValueList
     {
+        /// <summary>
+        /// Regular expression pattern used to encode special characters '^', '|', and ','.
+        /// </summary>
+        private static readonly Regex _encodeExpression = new Regex( "[\\^\\|\\,]" );
 
         #region Properties
 
@@ -336,6 +340,60 @@ namespace Rock.Web.UI.Controls
                     ValueChanged( this, new EventArgs() );
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets the value of the control from the dictionary of key/value
+        /// pairs.
+        /// </summary>
+        /// <param name="values">The dictionary containing the values to set.</param>
+        public void SetValue( IDictionary<string, string> values )
+        {
+            if ( values == null )
+            {
+                Value = null;
+                return;
+            }
+
+            var pairs = values.Select( pair => $"{Encode( pair.Key )}^{Encode( pair.Value )}" );
+
+            Value = string.Join( "|", pairs );
+        }
+
+        /// <summary>
+        /// Retrieves the keys and values from the control and returns them
+        /// as a dictionary.
+        /// </summary>
+        /// <returns>A dictionary containing the values from the list.</returns>
+        public Dictionary<string, string> GetValueAsDictionary()
+        {
+            return Value?.AsDictionary() ?? new Dictionary<string, string>();
+        }
+
+        /// <summary>
+        /// Retrieves the keys and values from the control and returns them
+        /// as a dictionary.
+        /// </summary>
+        /// <returns>A dictionary containing the values from the list or <c>null</c> if there were no items.</returns>
+        public Dictionary<string, string> GetValueAsDictionaryOrNull()
+        {
+            return Value?.AsDictionaryOrNull();
+        }
+
+        /// <summary>
+        /// Encodes the specified string so it can be used as a key or value
+        /// component in the value passed to JavaScript.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns>A new string.</returns>
+        internal static string Encode( string str )
+        {
+            // Replace "^", "|" and "," with an encoded value.
+            return _encodeExpression.Replace( str, m =>
+            {
+                // WebUtility.UrlEncode doesn't encode comma, so do it manually.
+                return $"%{( byte ) m.Value[0]:X2}";
+            } );
         }
     }
 }

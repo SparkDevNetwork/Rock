@@ -119,7 +119,7 @@ namespace RockWeb.Blocks.Groups
             public const string GroupTypesInclude = "GroupTypes";
             public const string GroupTypesExclude = "GroupTypesExclude";
             public const string RootGroup = "RootGroup";
-            public const string LimitToSecurityRoleGroups = "LimitToSecurityRoleGroups";
+            public const string LimitToSecurityRoleGroups = "LimittoSecurityRoleGroups";
             public const string ShowSettingsPanel = "ShowFilterOption";
             public const string DisplayInactiveCampuses = "DisplayInactiveCampuses";
             public const string InitialCountSetting = "InitialCountSetting";
@@ -326,8 +326,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 SetAllowedGroupTypes();
@@ -473,6 +471,8 @@ namespace RockWeb.Blocks.Groups
             hfCountsType.Value = ddlCountsType.SelectedValue;
             hfCampusFilter.Value = ddlCampuses.SelectedValue;
             hfIncludeNoCampus.Value = tglIncludeNoCampus.Checked.ToTrueFalse();
+
+            base.OnLoad( e );
         }
 
         /// <summary>

@@ -29,5 +29,5 @@ import { Guid } from "@Obsidian/Types";
  */
 export type GroupTypeGroupPickerGetGroupsOptionsBag = {
     /** GUID of the group type we want to filter groups by */
-    groupTypeGuid?: Guid | null;
+    groupTypeGuid: Guid;
 };

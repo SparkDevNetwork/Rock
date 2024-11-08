@@ -1,0 +1,33 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NativeViewTransition v-if="hasNativeViewTransitions">
+        <slot />
+    </NativeViewTransition>
+
+    <transition v-else
+                mode="out-in"
+                enterActiveClass="check-in-content-enter-active"
+                leaveActiveClass="check-in-content-leave-active"
+                enterFromClass="check-in-content-enter-from"
+                leaveToClass="check-in-content-leave-to">
+        <slot />
+    </transition>
+</template>
+
+<style>
+.check-in-content-enter-active,
+.check-in-content-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.check-in-content-enter-from,
+.check-in-content-leave-to {
+    opacity: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import NativeViewTransition from "./nativeViewTransition.partial";
+
+    const hasNativeViewTransitions = !!document["startViewTransition"];
+</script>

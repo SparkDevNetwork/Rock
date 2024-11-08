@@ -17,6 +17,7 @@
                             <Rock:AccountPicker ID="apFilterAccount" runat="server" Label="Filter by Account" AllowMultiSelect="True" />
                             <Rock:DateRangePicker ID="drpDates" runat="server" Label="Date Range" />
                             <Rock:DateRangePicker ID="drpLastModifiedDates" runat="server" Label="Last Modified" />
+                            <Rock:RockCheckBox ID="cbFilterActiveOnly" runat="server" Checked="false" Label="Active Only" Help="When checked, this will include only those pledges whose active period encompasses the current date, meaning their start date has passed and their end date has not yet been reached." />
                             <asp:PlaceHolder ID="phAttributeFilters" runat="server" />
                         </Rock:GridFilter>
                         <Rock:Grid ID="gPledges" runat="server" AutoGenerateColumns="False" ExportSource="ColumnOutput" AllowSorting="True" AllowPaging="True">

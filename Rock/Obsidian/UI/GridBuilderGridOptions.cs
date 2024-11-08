@@ -26,7 +26,7 @@ namespace Rock.Obsidian.UI
     /// to provide additional configuration data.
     /// </summary>
     /// <typeparam name="T">The type of the grid builder.</typeparam>
-    internal class GridBuilderGridOptions<T>
+    public class GridBuilderGridOptions<T>
     {
         /// <summary>
         /// Gets or sets the method that will be called to translate the row

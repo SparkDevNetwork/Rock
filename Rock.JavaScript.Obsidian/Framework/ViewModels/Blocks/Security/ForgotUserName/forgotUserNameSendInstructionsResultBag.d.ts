@@ -28,7 +28,7 @@ import { ChangePasswordNotSupportedResultBag } from "@Obsidian/ViewModels/Blocks
 export type ForgotUserNameSendInstructionsResultBag = {
     /**
      * The bag containing the required information to display a "Change Password Not Supported" message.
-     * Only present if <see cref="P:Rock.ViewModels.Blocks.Security.ForgotUserName.ForgotUserNameSendInstructionsResultBag.ResultType" /> == <see cref="F:Rock.Enums.Blocks.Security.ForgotUserName.SendInstructionsResultType.ChangePasswordNotSupported" />.
+     * Only present if {@link ForgotUserNameSendInstructionsResultBag.resultType} == {@link SendInstructionsResultType.ChangePasswordNotSupported}.
      */
     changePasswordNotSupportedResult?: ChangePasswordNotSupportedResultBag | null;
 

@@ -71,7 +71,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
                 <Rock:Lava ID="hlHomeCorner" runat="server">
                     {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId != null -%}
                         <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-corner has-logo">
-                            <img src="{{ '~' | ResolveRockUrl }}GetImage.ashx?id={{ CurrentPage.Layout.Site.SiteLogoBinaryFileId }}&w=42&h=42" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="logo">
+                            <img src="{{ CurrentPage.Layout.Site.SiteLogoBinaryFileId | ImageUrl }}&w=42&h=42" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="logo">
                         </a>
                     {%- else -%}
                         <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-corner no-logo"></a>
@@ -85,10 +85,7 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
             </nav>
 
             <nav class="navbar-default navbar-static-side" role="navigation">
-                <%-- <div class="navbar-toggle-side-left" data-toggle="collapse" data-target=".navbar-static-side">
-                    <i class="fa fa-bars"></i>
-                </div> --%>
-                <Rock:Zone Name="Navigation" runat="server" />
+                <Rock:Zone Name="Navigation" CssClass="zone-navigation" runat="server" />
             </nav>
 
             <div id="content-wrapper">

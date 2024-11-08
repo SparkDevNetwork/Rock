@@ -45,12 +45,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [BlockTemplateField( "Schedule Unavailability Template",
         Description = "The template used to render the scheduling data.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_UNAVAILABILITY,
-        DefaultValue = "1A699B18-AB29-4CD5-BC02-AF55159D5DA6",
+        DefaultValue = "FCFB9F90-9C94-4405-BBF9-DF62DC85DEFD",
         IsRequired = true,
         Key = AttributeKey.TypeTemplate,
         Order = 0 )]
 
-    [BooleanField( "Description required?",
+    [BooleanField( "Require Description",
         Description = "Whether or not the user is required to input a description.",
         Key = AttributeKey.IsDescriptionRequired,
         IsRequired = true,

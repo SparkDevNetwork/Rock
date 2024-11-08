@@ -60,6 +60,12 @@ export type GroupAttendanceDetailInitializationBox = {
     /** Gets or sets the back page URL. */
     backPageUrl?: string | null;
 
+    /** Campus status defined value guids that limit which campuses are included in the list of available campuses in the campus picker. */
+    campusStatusFilter?: Guid[] | null;
+
+    /** Campus type defined value guids that limit which campuses are included in the list of available campuses in the campus picker. */
+    campusTypeFilter?: Guid[] | null;
+
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.
@@ -67,7 +73,7 @@ export type GroupAttendanceDetailInitializationBox = {
     errorMessage?: string | null;
 
     /** Gets or sets the group unique identifier. */
-    groupGuid?: Guid | null;
+    groupGuid: Guid;
 
     /** Gets or sets the group members section label. */
     groupMembersSectionLabel?: string | null;

@@ -286,32 +286,14 @@ namespace Rock.Model
         {
             get
             {
-                string birthdayDayOfWeek = string.Empty;
+                var thisYearsBirthdate = ThisYearsBirthdate;
 
-                if ( BirthMonth.HasValue && BirthDay.HasValue )
+                if ( !thisYearsBirthdate.HasValue )
                 {
-                    try
-                    {
-                        DateTime thisYearsBirthdate;
-                        if ( BirthMonth == 2 && BirthDay == 29 && !DateTime.IsLeapYear( RockDateTime.Now.Year ) )
-                        {
-                            // if their birthdate is 2/29 and the current year is NOT a leapyear, have their birthday be 2/28
-                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, 28, 0, 0, 0 );
-                        }
-                        else
-                        {
-                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
-                        }
-
-                        birthdayDayOfWeek = thisYearsBirthdate.ToString( "dddd" );
-                    }
-                    catch
-                    {
-                        // intentionally blank
-                    }
+                    return string.Empty;
                 }
 
-                return birthdayDayOfWeek;
+                return thisYearsBirthdate.Value.ToString( "dddd" );
             }
 
             private set
@@ -332,37 +314,50 @@ namespace Rock.Model
         {
             get
             {
-                string birthdayDayOfWeek = string.Empty;
+                var thisYearsBirthdate = ThisYearsBirthdate;
 
-                if ( BirthMonth.HasValue && BirthDay.HasValue )
+                if ( !thisYearsBirthdate.HasValue )
                 {
-                    try
-                    {
-                        DateTime thisYearsBirthdate;
-                        if ( BirthMonth == 2 && BirthDay == 29 && !DateTime.IsLeapYear( RockDateTime.Now.Year ) )
-                        {
-                            // if their birthdate is 2/29 and the current year is NOT a leapyear, have their birthday be 2/28
-                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, 28, 0, 0, 0 );
-                        }
-                        else
-                        {
-                            thisYearsBirthdate = new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
-                        }
-
-                        birthdayDayOfWeek = thisYearsBirthdate.ToString( "ddd" );
-                    }
-                    catch
-                    {
-                        // intentionally blank
-                    }
+                    return string.Empty;
                 }
 
-                return birthdayDayOfWeek;
+                return thisYearsBirthdate.Value.ToString( "ddd" );
             }
 
             private set
             {
                 // intentionally blank
+            }
+        }
+
+        /// <summary>
+        /// Gets the date that represents this person's birthday in the current year.
+        /// </summary>
+        internal DateTime? ThisYearsBirthdate
+        {
+            get
+            {
+                if ( !BirthMonth.HasValue || !BirthDay.HasValue )
+                {
+                    return null;
+                }
+
+                try
+                {
+                    if ( BirthMonth == 2 && BirthDay == 29 && !DateTime.IsLeapYear( RockDateTime.Now.Year ) )
+                    {
+                        // if their birthdate is 2/29 and the current year is NOT a leapyear, have their birthday be 2/28
+                        return new DateTime( RockDateTime.Now.Year, BirthMonth.Value, 28, 0, 0, 0 );
+                    }
+                    else
+                    {
+                        return new DateTime( RockDateTime.Now.Year, BirthMonth.Value, BirthDay.Value, 0, 0, 0 );
+                    }
+                }
+                catch
+                {
+                    return null;
+                }
             }
         }
 
@@ -615,6 +610,30 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the number of days until the Person's next birthday.
+        /// This is an in-memory calculation. If needed in a LinqToSql query, use the DaysUntilBirthday property instead.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's next birthday,
+        /// or null if the person's birth date is not available.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual int? DaysToBirthdayOrNull
+        {
+            get
+            {
+                // If either day or month are not defined, exit.
+                if ( !this.BirthDay.HasValue || !this.BirthMonth.HasValue )
+                {
+                    return null;
+                }
+
+                return GetDaysToNextAnnualDate( this.BirthDay.Value, this.BirthMonth.Value, RockDateTime.Today );
+            }
+        }
+
+        /// <summary>
         /// Gets the number of days until the Person's birthday. This is an in-memory calculation. If needed in a LinqToSql query
         /// use DaysUntilBirthday property instead
         /// </summary>
@@ -624,6 +643,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [NotMapped]
+        /*
+            [2024-03-21 - DL]
+
+            When this method is removed, rename the DaysToBirthdayOrNull property to DaysToBirthday.
+
+            Reason: To replace this with a method of the same name having a nullable return value.
+        */
+        [Obsolete( "Use the DaysToBirthdayOrNull property instead." )]
+        [RockObsolete( "1.17" )] // IMPORTANT: Refer to the engineering note above.
         public virtual int DaysToBirthday
         {
             get
@@ -643,7 +671,7 @@ namespace Rock.Model
                         }
 
                         DateTime bday = DateTime.MinValue;
-                        while ( !DateTime.TryParse( BirthMonth.Value.ToString() + "/" + day.ToString() + "/" + year.ToString(), out bday ) && day > 28 )
+                        while ( !DateTime.TryParse( $"{year}-{month}-{day}", out bday ) && day > 28 )
                         {
                             day--;
                         }
@@ -712,6 +740,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [NotMapped]
+        /*
+            [2024-03-21 - DL]
+
+            When this method is removed, rename the DaysToAnniversaryOrNull property to DaysToAnniversary.
+
+            Reason: To replace this with a method of the same name having a nullable return value.
+        */
+        [Obsolete("Use the DaysToAnniversaryOrNull property instead.")]
+        [RockObsolete( "1.17" )] // IMPORTANT: Refer to the engineering note above.
         public virtual int DaysToAnniversary
         {
             get
@@ -729,7 +766,7 @@ namespace Rock.Model
                     }
 
                     DateTime aday = DateTime.MinValue;
-                    while ( !DateTime.TryParse( month.ToString() + "/" + day.ToString() + "/" + year.ToString(), out aday ) && day > 28 )
+                    while ( !DateTime.TryParse( $"{year}-{month}-{day}", out aday ) && day > 28 )
                     {
                         day--;
                     }
@@ -746,6 +783,29 @@ namespace Rock.Model
             private set
             {
                 // intentionally blank
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of days until the Person's next anniversary.
+        /// This is an in-memory calculation. If needed in a LinqToSql query, use the DaysUntilAnniversary property instead.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the number of days until the Person's anniversary,
+        /// or null if the person's anniversary is not available.
+        /// </value>
+        [DataMember]
+        [NotMapped]
+        public virtual int? DaysToAnniversaryOrNull
+        {
+            get
+            {
+                if ( !this.AnniversaryDate.HasValue )
+                {
+                    return null;
+                }
+
+                return GetDaysToNextAnnualDate( this.AnniversaryDate.Value.Day, this.AnniversaryDate.Value.Month, RockDateTime.Today );
             }
         }
 
@@ -1135,11 +1195,11 @@ namespace Rock.Model
         public override Dictionary<string, object> ToDictionary()
         {
             var dictionary = base.ToDictionary();
-            dictionary.AddOrIgnore( "Age", AgePrecise );
-            dictionary.AddOrIgnore( "DaysToBirthday", DaysToBirthday );
-            dictionary.AddOrIgnore( "DaysToAnniversary", DaysToAnniversary );
-            dictionary.AddOrIgnore( "FullName", FullName );
-            dictionary.AddOrIgnore( "PrimaryAliasId", this.PrimaryAliasId );
+            dictionary.TryAdd( "Age", AgePrecise );
+            dictionary.TryAdd( "DaysToBirthday", this.DaysToBirthdayOrNull );
+            dictionary.TryAdd( "DaysToAnniversary", this.DaysToAnniversaryOrNull );
+            dictionary.TryAdd( "FullName", FullName );
+            dictionary.TryAdd( "PrimaryAliasId", this.PrimaryAliasId );
             return dictionary;
         }
 
@@ -1250,32 +1310,6 @@ namespace Rock.Model
         #endregion
 
         #region Static Helper Methods
-
-        /// <summary>
-        /// Gets the family salutation.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="includeChildren">if set to <c>true</c> [include children].</param>
-        /// <param name="includeInactive">if set to <c>true</c> [include inactive].</param>
-        /// <param name="useFormalNames">if set to <c>true</c> [use formal names].</param>
-        /// <param name="finalSeparator">The final separator.</param>
-        /// <param name="separator">The separator.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.12.4" )]
-        [Obsolete( "Use Person.PrimaryFamily.GroupSalutation instead" )]
-        public static string GetFamilySalutation( Person person, bool includeChildren = false, bool includeInactive = true, bool useFormalNames = false, string finalSeparator = "&", string separator = "," )
-        {
-            var args = new CalculateFamilySalutationArgs( includeChildren )
-            {
-                IncludeInactive = includeInactive,
-                UseFormalNames = useFormalNames,
-                FinalSeparator = finalSeparator,
-                Separator = separator,
-                LimitToPersonIds = null
-            };
-
-            return CalculateFamilySalutation( person, args );
-        }
 
         /// <summary>
         ///
@@ -1789,9 +1823,13 @@ namespace Rock.Model
                 return AgeBracket.Unknown;
             }
 
-            if ( age >= 0 && age <= 12 )
+            if ( age >= 0 && age <= 5 )
             {
-                return Enums.Crm.AgeBracket.ZeroToTwelve;
+                return Enums.Crm.AgeBracket.ZeroToFive;
+            }
+            else if ( age >= 6 && age <= 12 )
+            {
+                return Enums.Crm.AgeBracket.SixToTwelve;
             }
             else if ( age >= 13 && age <= 17 )
             {
@@ -1821,6 +1859,46 @@ namespace Rock.Model
             {
                 return Enums.Crm.AgeBracket.SixtyFiveOrOlder;
             }
+        }
+
+        /// <summary>
+        /// Calculate the number of days until the next occurrence of an annually recurring date.
+        /// </summary>
+        /// <param name="day">The day of the month</param>
+        /// <param name="month">The month of the year</param>
+        /// <param name="asAtDate">The reference date from which the next recurrence is calculated</param>
+        /// <returns>
+        /// The number of days from the reference date until the next occurrence of the annually recurring date,
+        /// or null if the next occurrence date is invalid.
+        /// </returns>
+        internal static int? GetDaysToNextAnnualDate( int day, int month, DateTime asAtDate )
+        {
+            // Get the year of the next occurrence with regard to the asAtDate,
+            // either this year or the following year.
+            var year = asAtDate.Year;
+            if ( month < asAtDate.Month
+                || ( month == asAtDate.Month && day < asAtDate.Day ) )
+            {
+                year++;
+            }
+
+            // Validate the next occurrence.
+            // If the date is not valid but the day is greater than 28, check the previous day for a valid date.
+            // This addresses the case where the recurrence falls on a leap day and we take the previous day as the next recurrence.
+            DateTime testDate;
+            var yyyymm = $"{year}-{month}";
+            while ( !DateTime.TryParse( $"{yyyymm}-{day}", out testDate ) && day > 28 )
+            {
+                day--;
+            }
+
+            // The recurrence day and month are invalid.
+            if ( testDate == DateTime.MinValue )
+            {
+                return null;
+            }
+
+            return Convert.ToInt32( testDate.Subtract( asAtDate ).TotalDays );
         }
 
         #endregion

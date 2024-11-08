@@ -1,0 +1,29 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <WarningBlock>{{ text }}</WarningBlock>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <TextBox v-model="text" label="Text" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import WarningBlock from "@Obsidian/Controls/warningBlock.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const text = ref("Warning Text");
+
+    const importCode = getSfcControlImportPath("warningBlock");
+    const exampleCode = computed(() => {
+        return `<WarningBlock>${text.value}</WarningBlock>`;
+    });
+</script>

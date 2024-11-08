@@ -14,11 +14,13 @@
 // limitations under the License.
 // </copyright>
 
-import { defineComponent, ref, watch } from "vue";
-import { getFieldEditorProps } from "./utils";
+import { computed, defineComponent, ref, watch } from "vue";
+import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
 import { ConfigurationValueKey } from "./communicationTemplateField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+import CheckBox from "@Obsidian/Controls/checkBox.obs";
+import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 
 export const EditComponent = defineComponent({
     name: "CommunicationTemplateField.Edit",
@@ -33,8 +35,11 @@ export const EditComponent = defineComponent({
         // The internal value used by the text editor.
         const internalValue = ref<string>("");
         // The CommunicationTemplate options.
-        const options = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] ?? "[]") as ListItemBag[];
-
+        // The available options to choose from.
+        const options = computed((): ListItemBag[] => {
+            const options = JSON.parse(props.configurationValues[ConfigurationValueKey.ClientValues] || "[]") as ListItemBag[];
+            return options;
+        });
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {
             internalValue.value = props.modelValue;
@@ -54,11 +59,92 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<DropDownList v-model="internalValue" :items="options" :showBlankItem="true" />
+<DropDownList v-model="internalValue" :items="options" :showBlankItem="true" :enhanceForLongLists="true"/>
 `
 });
 
 export const ConfigurationComponent = defineComponent({
     name: "CommunicationTemplateField.Configuration",
-    template: ``
+    components: {
+        CheckBox
+    },
+
+    props: getFieldConfigurationProps(),
+
+    setup(props, { emit }) {
+        // Define the properties that will hold the current selections.
+        const includeInactive = ref(false);
+
+        /**
+         * Update the modelValue property if any value of the dictionary has
+         * actually changed. This helps prevent unwanted postbacks if the value
+         * didn't really change - which can happen if multiple values get updated
+         * at the same time.
+         *
+         * @returns true if a new modelValue was emitted to the parent component.
+         */
+        const maybeUpdateModelValue = (): boolean => {
+            const newValue: Record<string, string> = {
+                ...props.modelValue
+            };
+
+            // Construct the new value that will be emitted if it is different
+            // than the current value.
+            newValue[ConfigurationValueKey.IncludeInactive] = asTrueFalseOrNull(includeInactive.value) ?? "False";
+
+            // Compare the new value and the old value.
+            const anyValueChanged = newValue[ConfigurationValueKey.IncludeInactive] !== (props.modelValue[ConfigurationValueKey.IncludeInactive]);
+
+                // If any value changed then emit the new model value.
+            if (anyValueChanged) {
+                emit("update:modelValue", newValue);
+                return true;
+            }
+            else {
+                return false;
+            }
+        };
+
+        /**
+         * Emits the updateConfigurationValue if the value has actually changed.
+         *
+         * @param key The key that was possibly modified.
+         * @param value The new value.
+         */
+        const maybeUpdateConfiguration = (key: string, value: string): void => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfigurationValue", key, value);
+            }
+        };
+
+        // Watch for changes coming in from the parent component and update our
+        // data to match the new information.
+        watch(() => [props.modelValue, props.configurationProperties], () => {
+            includeInactive.value = asBoolean(props.modelValue[ConfigurationValueKey.IncludeInactive]);
+        }, {
+            immediate: true
+        });
+
+        // Watch for changes in properties that require new configuration
+        // properties to be retrieved from the server.
+        watch([includeInactive], () => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfiguration");
+            }
+        });
+
+        // Watch for changes in properties that only require a local UI update.
+        watch(includeInactive, () => maybeUpdateConfiguration(ConfigurationValueKey.IncludeInactive, asTrueFalseOrNull(includeInactive.value) ?? "False"));
+
+        return {
+            includeInactive,
+        };
+    },
+    template: `
+    <div>
+    <CheckBox v-model="includeInactive"
+        label="Include Inactive"
+        help="When set, inactive system communications will be included in the list." />
+</div>
+    `
 });

@@ -17,6 +17,7 @@
 using System;
 
 using Rock.Data;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Utility.Settings.SparkData
 {
@@ -165,5 +166,37 @@ namespace Rock.Utility.Settings.SparkData
                 PersonDataViewId.HasValue &&
                 PersonDataViewId.Value != 0;
         }
+
+        /// <summary>
+        /// Gets or sets the reference to the uploaded file.
+        /// </summary>
+        /// <value>
+        /// The reference to the uploaded file.
+        /// </value>
+        public ListItemBag UploadFileReference { get; set; }
+
+        /// <summary>
+        /// Gets or sets the minimum move distance to use when determining inactivating people.
+        /// </summary>
+        /// <value>
+        /// The minimum move distance (in miles) to use when determining inactivating people.
+        /// </value>
+        public decimal? MinimumMoveDistance { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean determining if a move in the 19-48 month catagory should be marked as a previous address.
+        /// </summary>
+        /// <value>
+        /// The boolean determining if a move in the 19-48 month catagory should be marked as a previous address.
+        /// </value>
+        public bool? Is48MonthMoveChecked { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean determining invalid addresses should be marked as previous addresses.
+        /// </summary>
+        /// <value>
+        /// The boolean determining if invalid addresses should be marked as previous addresses.
+        /// </value>
+        public bool? IsInvalidAddressesChecked { get; set; }
     }
 }

@@ -60,5 +60,23 @@ namespace Rock.Model
                 return string.Format( "{0} - {1:MM/dd/yy}", FullName, EnteredDateTime );
             }
         }
+
+        /// <summary>
+        /// The <see cref="Rock.Web.SystemSettings" /> configuration object for prayer request AI completions.
+        /// Identified by the <seealso cref="SystemKey.SystemSetting.PRAYER_REQUEST_AI_COMPLETIONS"/>.
+        /// </summary>
+        public class PrayerRequestAICompletions
+        {
+            /// <summary>
+            /// The Lava template to be used for generating the text formatting AI completion request.
+            /// </summary>
+            public string PrayerRequestFormatterTemplate { get; set; }
+
+            /// <summary>
+            /// The Lava template to be used for generating the analysis completion request
+            /// for a prayer request (e.g. Sentiment Classification, auto-cateogrization etc.).
+            /// </summary>
+            public string PrayerRequestAnalyzerTemplate { get; set; }
+        }
     }
 }

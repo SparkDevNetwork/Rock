@@ -225,6 +225,11 @@ namespace Rock.Blocks.Types.Mobile.Reminders
                 var personAlias = personAliasService.Get( bag.EntityGuid );
                 path = personAlias.Person.PhotoUrl;
                 name = personAlias.Person.FullName;
+
+                bag.EntityDetailParameters = new Dictionary<string, object>
+                {
+                    { "PersonGuid", personAlias.Person.Guid }
+                };
             }
             // Otherwise, use the first letter of the entity type.
             else

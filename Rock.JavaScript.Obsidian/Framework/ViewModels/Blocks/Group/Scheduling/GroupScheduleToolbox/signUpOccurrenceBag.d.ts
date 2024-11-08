@@ -32,6 +32,9 @@ export type SignUpOccurrenceBag = {
     /** Gets or sets the formatted occurrence schedule name. */
     formattedScheduleName?: string | null;
 
+    /** Gets or sets the occurrence group unique identifier. */
+    groupGuid: Guid;
+
     /** Gets or sets whether this occurrence represents an immediate need. */
     isImmediateNeed: boolean;
 
@@ -54,7 +57,7 @@ export type SignUpOccurrenceBag = {
     peopleScheduledWithoutLocationCount: number;
 
     /** Gets or sets the occurrence schedule unique identifier. */
-    scheduleGuid?: Guid | null;
+    scheduleGuid: Guid;
 
     /** Gets or sets the occurrence schedule name. */
     scheduleName?: string | null;

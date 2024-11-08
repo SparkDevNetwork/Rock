@@ -40,7 +40,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the details of a particular page route." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -108,6 +108,12 @@ namespace Rock.Blocks.Cms
         private bool ValidatePageRoute( PageRoute pageRoute, RockContext rockContext, out string errorMessage )
         {
             errorMessage = null;
+
+            if ( pageRoute.PageId == 0 )
+            {
+                errorMessage = "Page is required";
+                return false;
+            }
 
             int? siteId = null;
             var entityService = new PageRouteService( rockContext );
@@ -286,7 +292,7 @@ namespace Rock.Blocks.Cms
                 () => entity.IsGlobal = box.Entity.IsGlobal );
 
             box.IfValidProperty( nameof( box.Entity.Page ),
-                () => entity.PageId = box.Entity.Page.GetEntityId<Page>( rockContext ).Value );
+                () => entity.PageId = box.Entity.Page.GetEntityId<Page>( rockContext ) ?? 0 );
 
             box.IfValidProperty( nameof( box.Entity.Route ),
                 () => entity.Route = box.Entity.Route );
@@ -444,8 +450,6 @@ namespace Rock.Blocks.Cms
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new PageRouteService( rockContext );
-
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
                     return actionError;
@@ -463,28 +467,24 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( validationMessage );
                 }
 
-                var isNew = entity.Id == 0;
-
                 rockContext.WrapTransaction( () =>
                 {
                     rockContext.SaveChanges();
                     entity.SaveAttributeValues( rockContext );
                 } );
 
-                if ( isNew )
+                var pageCache = Web.Cache.PageCache.Get( entity.PageId );
+
+                if ( pageCache != null )
                 {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.PageRouteId] = entity.IdKey
-                    } ) );
+                    PageCache.FlushPage( pageCache.Id );
                 }
 
+#if REVIEW_WEBFORMS
+                Rock.Web.RockRouteHandler.ReregisterRoutes();
+#endif
 
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return ActionOk( this.GetParentPageUrl() );
             }
         }
 

@@ -29,8 +29,8 @@
                     </div>
                 </div>
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
+                    <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false" />
                 </div>
             </div>
 
@@ -84,7 +84,7 @@
                         </div>
                     </div>
 
-                    <Rock:RockTextBox ID="tbSendMessage" runat="server" Label="Message" />
+                    <Rock:RockTextBox ID="tbSendMessage" runat="server" Label="Message" DisableTextTrim />
 
                     <asp:LinkButton ID="lbSendMessage" runat="server" Text="Send" CssClass="btn btn-primary margin-t-sm" OnClick="lbSendMessage_Click" />
 
@@ -171,8 +171,11 @@
                                     </div>
                                     <div class="row form-row" id="divAdvanced" runat="server">
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-12">
                                             <Rock:DatePicker ID="dpExpireDate" runat="server" Label="Expire Date" Help="The Rock clean-up job will remove this SMS action after this date. The exact time and day will depend on your clean-up job schedule settings." />
+                                        </div>
+                                        <div class="col-md-12">
+                                            <Rock:RockCheckBox ID="cbLogInteraction" runat="server" Label="Log Interaction When Action Runs" Help="If enabled, when the action runs, an interaction will be written that includes the data from the incoming message (Pipeline Name and Id, the Action's Name, ToPhone, FromPhone, MessageBody, ReceivedDateTime, FromPerson)" />
                                         </div>
 
                                     </div>

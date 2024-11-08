@@ -1,0 +1,47 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <MediaPlayer v-model:watchedPercentage="value" :key="key"
+                     mediaUrl="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+                     thumbnailUrl="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg" />
+
+        <template #settings>
+            <p>
+                This control is not reactive, so changing any props passed in will not cause any changes to the control,
+                so if you'd like to be able to make changes, you'll need to add a <code>key</code> prop and change that
+                to force it to re-initialize.
+            </p>
+            <p>
+                You can specify which media to play by providing the GUID of a Media Element on your Rock instance to
+                the <code>mediaElementGuid</code> prop, or by specifying a URL directly to the media file via the
+                <code>mediaUrl</code> prop. If you specify both, the <code>mediaElementGuid</code> will take precedence.
+                If you're specifying a URL for a video, you should also specify a <code>thumbnailUrl</code> prop to see
+                a thumbnail instead of a black box before the video is played.
+            </p>
+            <p>
+                There is a read-only <code>watchedPercentage</code> v-model that is used to track how much of a piece of
+                media has been consumed.
+            </p>
+            <p>
+                Finally, there are quite a few other props, but they're too numerous to make configurable here.
+            </p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import MediaPlayer from "@Obsidian/Controls/mediaPlayer.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref(0);
+    const key = ref(0);
+
+    const importCode = getSfcControlImportPath("mediaPlayer");
+    const exampleCode = computed(() => {
+        return `<MediaPlayer v-model:watchedPercentage="value"
+             mediaUrl="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+             thumbnailUrl="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg" />`;
+    });
+</script>

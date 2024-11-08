@@ -32,8 +32,10 @@ using System.Runtime.InteropServices;
 [assembly: Guid("05baaf85-9c53-4ccd-a535-036427b0df72")]
 
 [assembly: InternalsVisibleTo( "Rock" )]
+[assembly: InternalsVisibleTo( "Rock.Blocks" )]
 [assembly: InternalsVisibleTo( "Rock.CodeGeneration" )]
 
 #if !WEBFORMS
 [assembly: InternalsVisibleTo( "Rock.NG" )]
+[assembly: InternalsVisibleTo( "Rock.Blocks.NG" )]
 #endif

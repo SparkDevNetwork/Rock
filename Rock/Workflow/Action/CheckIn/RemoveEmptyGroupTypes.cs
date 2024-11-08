@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -52,22 +52,31 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     foreach ( var person in family.People.ToList() )
                     {
+                        var anyGroupTypesExcluded = false;
+
                         foreach ( var groupType in person.GroupTypes.ToList() )
                         {
                             if ( groupType.Groups.Count == 0 )
                             {
                                 person.GroupTypes.Remove( groupType );
+                                anyGroupTypesExcluded = true;
                             }
                             else if ( !groupType.Groups.Any( g => !g.ExcludedByFilter ) )
                             {
                                 groupType.ExcludedByFilter = true;
+                                anyGroupTypesExcluded = true;
                             }
+                        }
+
+                        // If this person has no group types available as a result of this action, set their "No Option Reason".
+                        if ( anyGroupTypesExcluded && !person.GroupTypes.Any( gt => !gt.ExcludedByFilter ) )
+                        {
+                            person.NoOptionReason = "No Matching Groups Found";
                         }
                     }
                 }
 
                 return true;
-
             }
 
             return false;

@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) SiteFieldType
     /// Stored as Site.Id
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SITE )]
     public class SiteFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
@@ -220,7 +221,6 @@ namespace Rock.Field.Types
             cb.AutoPostBack = true;
             cb.CheckedChanged += OnQualifierUpdated;
             cb.Label = "Shortening Enabled Sites Only";
-            cb.Text = "Yes";
             cb.Help = "Should only sites that are enabled for shortening be displayed.";
 
             return controls;

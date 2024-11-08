@@ -122,7 +122,18 @@ namespace Rock.Workflow.Action
                         {
                             emailMessage.SetRecipients( recipients );
                             emailMessage.CreateCommunicationRecord = false;
-                            emailMessage.AppRoot = GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ) ?? string.Empty;
+
+                            /*
+                                [2024-06-20] - DJL
+
+                                Changed the AppRoot from InternalApplicationRoot to PublicApplicationRoot.
+
+                                Reason:
+                                    To ensure that links embedded in the email are accessible to both
+                                    internal and external recipients.
+                             */
+                            emailMessage.AppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) ?? string.Empty;
+
                             emailMessage.Send();
                         }
                         else

@@ -17,9 +17,7 @@
 using Rock.Data;
 using Rock.Utility;
 using System.ComponentModel.DataAnnotations.Schema;
-#if REVIEW_NET5_0_OR_GREATER
 using System.Data.Entity.ModelConfiguration;
-#endif
 using System.Runtime.Serialization;
 
 namespace Rock.Model
@@ -37,7 +35,11 @@ namespace Rock.Model
         // intentionally blank. See AnalyticsDimPersonBase, etc for the fields
     }
 
-#if REVIEW_NET5_0_OR_GREATER
+    #region Entity Configuration
+
+    /// <summary>
+    /// AnalyticsDimPersonCurrent Configuration Class
+    /// </summary>
     public partial class AnalyticsDimPersonCurrentConfiguration : EntityTypeConfiguration<AnalyticsDimPersonCurrent>
     {
         /// <summary>
@@ -53,5 +55,6 @@ namespace Rock.Model
                 .OnDelete( Microsoft.EntityFrameworkCore.DeleteBehavior.Restrict );
         }
     }
-#endif
+
+    #endregion Entity Configuration
 }

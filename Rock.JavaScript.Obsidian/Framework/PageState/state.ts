@@ -23,9 +23,10 @@ export type State = {
     areSecondaryBlocksShown: boolean;
     currentPerson: CurrentPersonBag | null;
     isAnonymousVisitor: boolean;
-    pageParameters: Record<string, unknown>;
+    pageParameters: Record<string, string>;
     pageId: number;
     pageGuid: Guid;
+    interactionGuid: Guid;
     executionStartTime: number;
     debugTimings: DebugTiming[],
     loginUrlWithReturnUrl: string

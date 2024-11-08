@@ -28,8 +28,6 @@ using Newtonsoft.Json;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Reporting;
-using Rock.ViewModels.Utility;
-using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 using static Rock.Web.UI.Controls.ListItems;
@@ -57,7 +55,7 @@ namespace Rock.Field.Types
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
-            if ( usage != ConfigurationValueUsage.Configure )
+            if ( usage != ConfigurationValueUsage.Configure && privateConfigurationValues != null && privateConfigurationValues.ContainsKey( VALUES_KEY ) )
             {
                 var values = JsonConvert.DeserializeObject<List<KeyValuePair>>( privateConfigurationValues[VALUES_KEY] );
                 values = values.Where( a => a.Value.IsNotNullOrWhiteSpace() ).ToList();

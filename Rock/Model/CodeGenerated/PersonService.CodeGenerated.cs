@@ -52,6 +52,10 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            // ignoring PeerNetwork,SourcePersonId
+
+            // ignoring PeerNetwork,TargetPersonId
+
             if ( new Service<PersonAlias>( Context ).Queryable().Any( a => a.PersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PersonAlias.FriendlyTypeName );

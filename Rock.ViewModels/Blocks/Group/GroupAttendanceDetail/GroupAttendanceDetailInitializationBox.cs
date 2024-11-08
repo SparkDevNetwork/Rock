@@ -328,5 +328,22 @@ namespace Rock.ViewModels.Blocks.Group.GroupAttendanceDetail
         /// Gets or sets a value indicating if date is included in the pick from schedule picker.
         /// </summary>
         public bool IsDateIncludedInPickFromSchedule { get; set; }
+
+
+        /// <summary>
+        /// Campus status defined value guids that limit which campuses are included in the list of available campuses in the campus picker.
+        /// </summary>
+        /// <value>
+        /// The campus status filter.
+        /// </value>
+        public List<Guid> CampusStatusFilter { get; set; }
+
+        /// <summary>
+        /// Campus type defined value guids that limit which campuses are included in the list of available campuses in the campus picker.
+        /// </summary>
+        /// <value>
+        /// The campus type filter.
+        /// </value>
+        public List<Guid> CampusTypeFilter { get; set; }
     }
 }

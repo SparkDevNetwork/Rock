@@ -55,6 +55,12 @@ namespace Rock.Model
                     return false;
                 }
 
+                if ( result && StartDate.Date > EndDate.Date )
+                {
+                    this.ValidationResults.Add( new ValidationResult( "Start date cannot be later than End date." ) );
+                    return false;
+                }
+
                 return result;
             }
         }

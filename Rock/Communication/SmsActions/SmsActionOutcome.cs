@@ -62,5 +62,13 @@ namespace Rock.Communication.SmsActions
         /// The exception.
         /// </value>
         public Exception Exception { get; set; }
+
+        /// <summary>
+        /// Gets or sets a flag indicating if an interaction was logged for this action.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if an interaction was recorded for this action; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsInteractionLogged { get; set; }
     }
 }

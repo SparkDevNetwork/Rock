@@ -1,0 +1,34 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <RadioButton v-model="value" name="gospel" label="Matthew" value="matthew" :isBlock="isBlock" />
+        <RadioButton v-model="value" name="gospel" label="Mark" value="mark" :isBlock="isBlock" />
+        <RadioButton v-model="value" name="gospel" label="Luke" value="luke" :isBlock="isBlock" />
+        <RadioButton v-model="value" name="gospel" label="John" value="john" :isBlock="isBlock" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="isBlock" label="Display as block" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import RadioButton from "@Obsidian/Controls/radioButton.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref("");
+    const isBlock = ref(false);
+
+    const importCode = getSfcControlImportPath("radioButton");
+    const exampleCode = computed(() => {
+        const isBlockProp = isBlock.value ? " isBlock" : "";
+        return `<RadioButton v-model="value" name="gospel" label="Matthew" value="matthew"${isBlockProp} />`;
+    });
+</script>

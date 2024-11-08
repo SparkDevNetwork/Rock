@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div style="max-width: 60px;"
-         class="skeleton skeleton-text skeleton-rounded skeleton-sm" />
+         class="skeleton skeleton-text skeleton-rounded" />
 </template>
 
 <script setup lang="ts">

@@ -5,7 +5,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Core.Security
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
     [Ignore("These tests require additional data. Rows are expected in the IdentityVerificationCode table.")]

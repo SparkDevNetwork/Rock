@@ -47,7 +47,7 @@ export type EntityTagListGetAvailableTagsOptionsBag = {
     entityQualifierValue?: string | null;
 
     /** Gets or sets the entity type unique identifier. */
-    entityTypeGuid?: Guid | null;
+    entityTypeGuid: Guid;
 
     /** Gets or sets the partial name match to search for. */
     name?: string | null;

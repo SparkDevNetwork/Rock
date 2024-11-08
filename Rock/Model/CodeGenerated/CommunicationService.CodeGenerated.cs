@@ -122,6 +122,8 @@ namespace Rock.Model
             target.CCEmails = source.CCEmails;
             target.CommunicationTemplateId = source.CommunicationTemplateId;
             target.CommunicationType = source.CommunicationType;
+            target.EmailMetricsReminderOffsetDays = source.EmailMetricsReminderOffsetDays;
+            target.EmailMetricsReminderSentDateTime = source.EmailMetricsReminderSentDateTime;
             target.EnabledLavaCommands = source.EnabledLavaCommands;
             target.ExcludeDuplicateRecipientAddress = source.ExcludeDuplicateRecipientAddress;
             target.ForeignGuid = source.ForeignGuid;
@@ -139,6 +141,7 @@ namespace Rock.Model
             target.PushMessage = source.PushMessage;
             target.PushOpenAction = source.PushOpenAction;
             target.PushOpenMessage = source.PushOpenMessage;
+            target.PushOpenMessageJson = source.PushOpenMessageJson;
             target.PushSound = source.PushSound;
             target.PushTitle = source.PushTitle;
             target.ReplyToEmail = source.ReplyToEmail;

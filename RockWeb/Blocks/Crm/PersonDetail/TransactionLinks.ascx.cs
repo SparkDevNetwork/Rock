@@ -119,9 +119,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             pnlContent.Visible = ( Person != null && Person.Id != 0 );
+
+            base.OnLoad( e );
         }
 
         #endregion

@@ -52,6 +52,7 @@ namespace Rock.Tests.Integration.TestData
     /// <summary>
     /// A base class for actions that create Rock Entities.
     /// </summary>
+    // TODO: Properties in this class should be moved to an EntityPropertiesInfoBase class, which should form part of the Properties<T> constraint.
     public abstract class CreateEntityActionArgsBase<T>
         where T : class, new()
     {

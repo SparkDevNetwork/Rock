@@ -502,12 +502,6 @@ namespace Rock.Lava.Filters
         /// <returns></returns>
         public static List<string> Split( string input, string pattern, object removeEmpty = null, object count = null )
         {
-            // If there is nothing to process, return the input.
-            if ( input.IsNullOrWhiteSpace() )
-            {
-                return new List<string> { input };
-            }
-
             // If zero substrings have been requested, return an empty collection.
             var takeCount = count.ToIntSafe( -1 );
             if ( takeCount == 0 )
@@ -515,7 +509,7 @@ namespace Rock.Lava.Filters
                 return new List<string>();
             }
 
-            var shouldRemove = InputParser.TryConvertBoolean( removeEmpty ) ?? true;
+            var shouldRemove = InputParser.ConvertToBooleanOrDefault( removeEmpty ) ?? true;
             var options = shouldRemove ? StringSplitOptions.RemoveEmptyEntries : StringSplitOptions.None;
 
             List<string> parts;

@@ -2,7 +2,6 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
-
         <asp:HiddenField ID="hfScheduledTransactionGuid" runat="server" />
         <asp:HiddenField ID="hfFinancialGatewayId" runat="server" />
         <Rock:HiddenFieldWithClass ID="hfChangePaymentInfoVisible" CssClass="js-change-paymentinfo-visible" runat="server" />

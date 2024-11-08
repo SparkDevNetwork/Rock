@@ -1,0 +1,60 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <SecurityButton :entityIdKey="entityIdKey"
+                        :entityTypeIdKey="entityTypeIdKey"
+                        :title="title"
+                        :removeBaseClasses="removeBaseClasses"
+                        :isNotSquare="!isSquare" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <TextBox v-model="entityIdKey" label="Entity's ID Key" />
+                </div>
+                <div class="col-md-4">
+                    <TextBox v-model="entityTypeIdKey" label="Entity Type's ID Key" />
+                </div>
+                <div class="col-md-4">
+                    <TextBox v-model="title" label="Title" help="Usually the name of the entity or entity type" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox v-model="removeBaseClasses" label="Remove Base CSS Classes" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox v-model="isSquare" label="Square Button" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import SecurityButton from "@Obsidian/Controls/securityButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const entityIdKey = ref("1");
+    const entityTypeIdKey = ref("72657ed8-d16e-492e-ac12-144c5e7567e7");
+    const title = ref("Person");
+
+    const removeBaseClasses = ref(false);
+    const isSquare = ref(true);
+
+    const importCode = getSfcControlImportPath("securityButton");
+    const exampleCode = computed(() => {
+        const entityIdKeyProp = entityIdKey.value ? ` entityIdKey="${entityIdKey.value}"` : "";
+        const entityTypeIdKeyProp = entityTypeIdKey.value ? ` entityTypeIdKey="${entityTypeIdKey.value}"` : "";
+        const titleProp = title.value ? ` title="${title.value}"` : "";
+
+        const baseClassProp = removeBaseClasses.value ? ` removeBaseClasses` : "";
+        const squareProp = isSquare.value ? "" : ` isNotSquare`;
+
+        return `<SecurityButton ${entityIdKeyProp}${entityTypeIdKeyProp}${titleProp}${baseClassProp}${squareProp} />`;
+    });
+</script>

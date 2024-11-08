@@ -84,20 +84,108 @@ namespace Rock.Personalization.SegmentFilters
         public string PageUrlComparisonValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the page referrer comaprison.
+        /// Gets or sets the type of the page referrer comparison.
         /// </summary>
         /// <value>
-        /// The type of the page referrer comaprison.
+        /// The type of the page referrer comparison.
         /// </value>
         public ComparisonType PageReferrerComparisonType { get; set; } = ComparisonType.StartsWith;
 
         /// <summary>
-        /// Gets or sets the page referrer comaprison value.
+        /// Gets or sets the page referrer comparison value.
         /// </summary>
         /// <value>
-        /// The page referrer comaprison value.
+        /// The page referrer comparison value.
         /// </value>
         public string PageReferrerComparisonValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the source comparison type.
+        /// </summary>
+        /// <value>
+        /// The source comparison type.
+        /// </value>
+        public ComparisonType SourceComparisonType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the source comparison value.
+        /// </summary>
+        /// <value>
+        /// The source comparison value.
+        /// </value>
+        public string SourceComparisonValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the medium comparison type.
+        /// </summary>
+        /// <value>
+        /// The medium comparison type.
+        /// </value>
+        public ComparisonType MediumComparisonType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the medium comparison value.
+        /// </summary>
+        /// <value>
+        /// The medium comparison value.
+        /// </value>
+        public string MediumComparisonValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campaign comparison type.
+        /// </summary>
+        /// <value>
+        /// The campaign comparison type.
+        /// </value>
+        public ComparisonType CampaignComparisonType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campaign comparison value.
+        /// </summary>
+        /// <value>
+        /// The campaign comparison value.
+        /// </value>
+        public string CampaignComparisonValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content comparison type.
+        /// </summary>
+        /// <value>
+        /// The content comparison type.
+        /// </value>
+        public ComparisonType ContentComparisonType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the content comparison value.
+        /// </summary>
+        /// <value>
+        /// The content comparison value.
+        /// </value>
+        public string ContentComparisonValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the term comparison type.
+        /// </summary>
+        /// <value>
+        /// The term comparison type.
+        /// </value>
+        public ComparisonType TermComparisonType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the term comparison value.
+        /// </summary>
+        /// <value>
+        /// The term comparison value.
+        /// </value>
+        public string TermComparisonValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to include descendant pages in the filter.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if child pages should be included; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeChildPages { get; set; }
 
         #endregion Configuration
 
@@ -161,6 +249,10 @@ namespace Rock.Personalization.SegmentFilters
             {
                 limitedToPages = $"limited to the {pageNames.AsDelimited( ",", " and " )} pages";
             }
+            if ( IncludeChildPages )
+            {
+                limitedToPages += " and any child pages";
+            }
 
             string requestDetails = PageUrlComparisonValue.IsNotNullOrWhiteSpace() || PageReferrerComparisonValue.IsNotNullOrWhiteSpace() ? " where " : string.Empty;
             if ( PageUrlComparisonValue.IsNotNullOrWhiteSpace() )
@@ -173,7 +265,33 @@ namespace Rock.Personalization.SegmentFilters
                 requestDetails += $"and referrer {PageReferrerComparisonType.ConvertToString()} {PageReferrerComparisonValue}";
             }
 
-            var description = $"{comparisonPhrase} {onTheSites} {inTheDateRange} {limitedToPages} {requestDetails}";
+            var description = $"{comparisonPhrase} {onTheSites} {inTheDateRange} {limitedToPages} {requestDetails}".Trim();
+
+            if ( SourceComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                description += $" and source {SourceComparisonType.ConvertToString()} '{SourceComparisonValue}'";
+            }
+
+            if ( MediumComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                description += $" and medium {MediumComparisonType.ConvertToString()} '{MediumComparisonValue}'";
+            }
+
+            if ( CampaignComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                description += $" and campaign {CampaignComparisonType.ConvertToString()} '{CampaignComparisonValue}'";
+            }
+
+            if ( ContentComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                description += $" and content {ContentComparisonType.ConvertToString()} '{ContentComparisonValue}'";
+            }
+
+            if ( TermComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                description += $" and term {TermComparisonType.ConvertToString()} '{TermComparisonValue}'";
+            }
+
             return description.Trim() + ".";
         }
 
@@ -199,7 +317,19 @@ namespace Rock.Personalization.SegmentFilters
 
             if ( selectedPageIds.Any() )
             {
-                pageViewsInteractionsQuery = new InteractionService( rockContext ).GetPageViewsByPage( siteIds, selectedPageIds ).Where( a => a.PersonAliasId.HasValue );
+                var pageService = new PageService( rockContext );
+                var allPageIds = selectedPageIds;
+
+                if ( IncludeChildPages )
+                {
+                    foreach ( var pageId in selectedPageIds )
+                    {
+                        var descendantPages = pageService.GetAllDescendents( pageId ).Select( p => p.Id );
+                        allPageIds = allPageIds.Union( descendantPages ).ToArray();
+                    }
+                }
+
+                pageViewsInteractionsQuery = new InteractionService( rockContext ).GetPageViewsByPage( siteIds, allPageIds ).Where( a => a.PersonAliasId.HasValue );
             }
             else
             {
@@ -219,64 +349,37 @@ namespace Rock.Personalization.SegmentFilters
 
             if ( PageUrlComparisonValue.IsNotNullOrWhiteSpace() )
             {
-                switch ( PageUrlComparisonType )
-                {
-                    case ComparisonType.EqualTo:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.InteractionData.ToUpper() == PageUrlComparisonValue.ToUpper() );
-                        break;
-                    case ComparisonType.NotEqualTo:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.InteractionData.ToUpper() != PageUrlComparisonValue.ToUpper() );
-                        break;
-                    case ComparisonType.StartsWith:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.InteractionData.StartsWith( PageUrlComparisonValue ) );
-                        break;
-                    case ComparisonType.Contains:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.InteractionData.Contains( PageUrlComparisonValue ) );
-                        break;
-                    case ComparisonType.DoesNotContain:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => !i.InteractionData.Contains( PageUrlComparisonValue ) );
-                        break;
-                    case ComparisonType.IsBlank:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => string.IsNullOrWhiteSpace( i.InteractionData ) );
-                        break;
-                    case ComparisonType.IsNotBlank:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => !string.IsNullOrWhiteSpace( i.InteractionData ) );
-                        break;
-                    case ComparisonType.EndsWith:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.InteractionData.EndsWith( PageUrlComparisonValue ) );
-                        break;
-                }
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, PageUrlComparisonType, PageUrlComparisonValue, nameof( Interaction.InteractionData ) );
             }
 
             if ( PageReferrerComparisonValue.IsNotNullOrWhiteSpace() )
             {
-                switch ( PageReferrerComparisonType )
-                {
-                    case ComparisonType.EqualTo:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.ChannelCustomIndexed1.ToUpper() == PageReferrerComparisonValue.ToUpper() );
-                        break;
-                    case ComparisonType.NotEqualTo:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.ChannelCustomIndexed1.ToUpper() != PageReferrerComparisonValue.ToUpper() );
-                        break;
-                    case ComparisonType.StartsWith:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.ChannelCustomIndexed1.StartsWith( PageReferrerComparisonValue ) );
-                        break;
-                    case ComparisonType.Contains:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.ChannelCustomIndexed1.Contains( PageReferrerComparisonValue ) );
-                        break;
-                    case ComparisonType.DoesNotContain:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => !i.ChannelCustomIndexed1.Contains( PageReferrerComparisonValue ) );
-                        break;
-                    case ComparisonType.IsBlank:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => string.IsNullOrWhiteSpace( i.InteractionData ) );
-                        break;
-                    case ComparisonType.IsNotBlank:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => !string.IsNullOrWhiteSpace( i.InteractionData ) );
-                        break;
-                    case ComparisonType.EndsWith:
-                        pageViewsInteractionsQuery = pageViewsInteractionsQuery.Where( i => i.ChannelCustomIndexed1.EndsWith( PageReferrerComparisonValue ) );
-                        break;
-                }
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, PageReferrerComparisonType, PageReferrerComparisonValue, nameof( Interaction.ChannelCustomIndexed1 ) );
+            }
+
+            if ( SourceComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, SourceComparisonType, SourceComparisonValue, nameof( Interaction.Source ) );
+            }
+
+            if ( MediumComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, MediumComparisonType, MediumComparisonValue, nameof( Interaction.Medium ) );
+            }
+
+            if ( CampaignComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, CampaignComparisonType, CampaignComparisonValue, nameof( Interaction.Campaign ) );
+            }
+
+            if ( ContentComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, ContentComparisonType, ContentComparisonValue, nameof( Interaction.Content ) );
+            }
+
+            if ( TermComparisonValue.IsNotNullOrWhiteSpace() )
+            {
+                ApplyComparisonFilter( ref pageViewsInteractionsQuery, TermComparisonType, TermComparisonValue, nameof( Interaction.Term ) );
             }
 
             var personAliasQuery = personAliasService.Queryable();
@@ -291,6 +394,23 @@ namespace Rock.Personalization.SegmentFilters
             BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.PersonAlias>( personAliasCompareEqualQuery, parameterExpression, "p" ) as BinaryExpression;
             BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, 0 );
             return result;
+        }
+
+        /// <summary>
+        /// Generates an expression that compares the specified property name to the specified comparison value and applies it as a filter.
+        /// </summary>
+        /// <param name="interactionQuery">The interaction query.</param>
+        /// <param name="comparisonType">Type of the comparison.</param>
+        /// <param name="comparisonValue">The comparison value.</param>
+        /// <param name="propertyName">Name of the property.</param>
+        private void ApplyComparisonFilter( ref IQueryable<Interaction> interactionQuery, ComparisonType comparisonType, string comparisonValue, string propertyName )
+        {
+            var parameterExpression = Expression.Parameter( typeof( Interaction ), "i" );
+            var constantExpression = Expression.Constant( comparisonValue );
+            var propertyExpression = Expression.Property( parameterExpression, propertyName );
+            var whereExpression = ComparisonHelper.ComparisonExpression( comparisonType, propertyExpression, constantExpression );
+
+            interactionQuery = interactionQuery.Where( parameterExpression, whereExpression );
         }
     }
 }

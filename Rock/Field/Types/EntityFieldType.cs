@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Entity filtered by a selected Entity Type
     /// Stored as EntityType.Guid|EntityId
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ENTITY )]
     public class EntityFieldType : FieldType, IEntityFieldType

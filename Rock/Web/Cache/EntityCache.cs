@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -146,7 +145,8 @@ namespace Rock.Web.Cache
         /// <param name="key">The key to be parsed and used to load the cached entity.</param>
         /// <param name="allowIntegerIdentifier">if set to <c>true</c> integer identifiers will be allowed; otherwise <c>null</c> will be returned if an integer identifier is provided.</param>
         /// <returns>The cached <typeparamref name="T"/> or <c>null</c> if not found in cache or the database.</returns>
-        internal static T Get( string key, bool allowIntegerIdentifier )
+        [RockInternal( "1.16.7" )]
+        public static T Get( string key, bool allowIntegerIdentifier )
         {
             int? id = allowIntegerIdentifier ? key.AsIntegerOrNull() : null;
 
@@ -189,6 +189,23 @@ namespace Rock.Web.Cache
             }
 
             return Get( idFromIdKey.Value );
+        }
+
+        /// <summary>
+        /// Gets a cached item using an IdKey.
+        /// </summary>
+        /// <param name="idKey">The IdKey.</param>
+        /// <param name="rockContext">The context to use when database access is required.</param>
+        /// <returns>T.</returns>
+        public static T GetByIdKey( string idKey, RockContext rockContext )
+        {
+            var idFromIdKey = Rock.Utility.IdHasher.Instance.GetId( idKey );
+            if ( !idFromIdKey.HasValue )
+            {
+                return default( T );
+            }
+
+            return Get( idFromIdKey.Value, rockContext );
         }
 
         /// <summary>
@@ -252,8 +269,12 @@ namespace Rock.Web.Cache
             var value = new T();
             value.SetFromEntity( entity );
 
-            IdFromGuidCache.UpdateCacheId<T>( entity.Guid, entity.Id );
-            UpdateCacheItem( entity.Id.ToString(), value );
+            // The entity Id is 0 if the entity is yet to be saved to the database. We want to avoid adding such entities to the cache.
+            if ( entity.Id > 0 )
+            {
+                IdFromGuidCache.UpdateCacheId<T>( entity.Guid, entity.Id );
+                UpdateCacheItem( entity.Id.ToString(), value );
+            }
 
             return value;
         }
@@ -334,8 +355,13 @@ namespace Rock.Web.Cache
         /// <returns>An enumeration of the cached objects.</returns>
         internal static IEnumerable<T> GetMany( ICollection<int> ids, RockContext rockContext = null )
         {
-            var cachedItems = new List<T>();
-            var idsToLoad = new List<int>();
+            if ( ids == null )
+            {
+                return new List<T>();
+            }
+
+            var cachedItems = new List<T>( ids.Count );
+            var idsToLoad = new List<int>( ids.Count );
 
             // Try to get items that already exist in cache.
             foreach ( var id in ids )
@@ -395,6 +421,79 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets all the cache objects for the specified identifiers.
+        /// </summary>
+        /// <param name="guids">The unique identifiers of the cache objects to retrieve.</param>
+        /// <param name="rockContext">The rock context to use if database access is needed.</param>
+        /// <returns>An enumeration of the cached objects.</returns>
+        internal static IEnumerable<T> GetMany( ICollection<Guid> guids, RockContext rockContext = null )
+        {
+            if ( guids == null )
+            {
+                return new List<T>();
+            }
+
+            var cachedItems = new List<T>( guids.Count );
+            var guidsToLoad = new List<Guid>();
+
+            // Try to get items that already exist in cache.
+            foreach ( var guid in guids )
+            {
+                if ( TryGet( guid, out var cachedItem ) )
+                {
+                    cachedItems.Add( cachedItem );
+                }
+                else
+                {
+                    guidsToLoad.Add( guid );
+                }
+            }
+
+            if ( !guidsToLoad.Any() )
+            {
+                return cachedItems;
+            }
+
+            // Get any remaining items that still need to be loaded from the database.
+            bool disposeOfContext = false;
+
+            if ( rockContext == null )
+            {
+                rockContext = new RockContext();
+                disposeOfContext = true;
+            }
+
+            var service = new Service<TT>( rockContext );
+
+            while ( guidsToLoad.Any() )
+            {
+                var guidsBatch = guidsToLoad.Take( 1000 ).ToList();
+                guidsToLoad = guidsToLoad.Skip( 1000 ).ToList();
+
+                var itemsQry = GetQueryableForBulkLoad( rockContext )
+                    .AsNoTracking()
+                    .Where( a => guidsBatch.Contains( a.Guid ) );
+
+                var items = itemsQry.ToList();
+
+                // Pre-load all the attributes.
+                if ( typeof( IHasAttributes ).IsAssignableFrom( typeof( TT ) ) && typeof( T ) != typeof( AttributeCache ) )
+                {
+                    items.Cast<IHasAttributes>().LoadAttributes( rockContext );
+                }
+
+                cachedItems.AddRange( items.Select( a => Get( ( TT ) a ) ) );
+            }
+
+            if ( disposeOfContext )
+            {
+                rockContext.Dispose();
+            }
+
+            return cachedItems;
+        }
+
+        /// <summary>
         /// Gets the queryable for bulk loading of entities to be cached.
         /// The queryable returned will have any required navigation properties
         /// already included.
@@ -414,12 +513,12 @@ namespace Rock.Web.Cache
             return new Service<TT>( rockContext ).Queryable();
         }
 
-    /// <summary>
-    /// Removes or invalidates the CachedItem based on EntityState
-    /// </summary>
-    /// <param name="entityId">The entity identifier.</param>
-    /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
-    public static void UpdateCachedEntity( int entityId, EntityState entityState )
+        /// <summary>
+        /// Removes or invalidates the CachedItem based on EntityState
+        /// </summary>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
+        public static void UpdateCachedEntity( int entityId, EntityState entityState )
         {
             // NOTE: Don't read the Item into the Cache here since it could be part of a transaction that could be rolled back.
             // Reading it from the database here could also cause a deadlock depending on the database isolation level.

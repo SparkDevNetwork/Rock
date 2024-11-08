@@ -1,0 +1,514 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
+    <Panel v-else type="block"
+           :hasTitle="config.isBlockTitleVisible"
+           :title="title"
+           :titleIconCssClass="titleIconCssClass">
+
+        <NotificationBox v-if="blockActionErrorMessage" :alertType="AlertType.Warning">
+            {{ blockActionErrorMessage }}
+        </NotificationBox>
+
+        <AttributeValuesContainer v-model="publicFilterValues"
+                                  :isEditMode="true"
+                                  :attributes="publicFilters"
+                                  :showCategoryLabel="false"
+                                  :numberOfColumns="config.filtersPerRow" />
+
+        <RockButton v-if="config.isFilterButtonVisible"
+                    :btnType="BtnType.Primary"
+                    :btnSize="btnSize"
+                    @click="onApplyFiltersClick">
+            {{ config.filterButtonText }}
+        </RockButton>
+
+        <RockButton v-if="config.isResetFiltersButtonVisible"
+                    :btnType="BtnType.Link"
+                    :btnSize="btnSize"
+                    @click="onResetFiltersClick">
+            Reset Filters
+        </RockButton>
+
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, Ref, ref, watch } from "vue";
+    import { FilterSelectionAction, NavigationUrlKey } from "./PageParameterFilter/types.partial";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { PageMessages, useBrowserBus } from "@Obsidian/Utility/browserBus";
+    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { debounceAsync } from "@Obsidian/Utility/util";
+    import { PageParameterFilterInitializationBox } from "@Obsidian/ViewModels/Blocks/Reporting/PageParameterFilter/pageParameterFilterInitializationBox";
+    import { GetUpdatedFiltersRequestBag } from "@Obsidian/ViewModels/Blocks/Reporting/PageParameterFilter/getUpdatedFiltersRequestBag";
+    import { GetUpdatedFiltersResponseBag } from "@Obsidian/ViewModels/Blocks/Reporting/PageParameterFilter/getUpdatedFiltersResponseBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const config = useConfigurationValues<PageParameterFilterInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
+    const browserBus = useBrowserBus();
+
+    let isStartingUp = true;
+    let lastPublishedQueryString: string;
+
+    // The updating, applying and resetting of filters will share this token
+    // source, so we only use the latest response in the case that multiple,
+    // concurrent requests are in play at any time.
+    let filterCancellationTokenSource: CancellationTokenSource | null = null;
+
+    /**
+     * Represents information about a query string, including its parsed
+     * parameters and string representation.
+     */
+    type QueryStringInfo = {
+        /**
+         * The parsed parameters of the query string.
+         */
+        params: URLSearchParams;
+
+        /**
+         * The full query string, including the leading '?' if present.
+         */
+        queryString: string;
+    };
+
+    // #region Values
+
+    const title = ref(config.blockTitleText ?? "");
+    const titleIconCssClass = ref(config.blockTitleIconCssClass ?? "");
+
+    const publicFilters = ref<Record<string, PublicAttributeBag>>(config.publicFilters ?? {});
+    const publicFilterValues = ref<Record<string, string>>(config.publicFilterValues ?? {});
+    const filterPageParameters = ref<Record<string, string>>(config.filterPageParameters ?? {});
+    const filterKeysWithStartupValues = ref<string[]>(config.filterKeysWithStartupValues ?? []);
+
+    const filterSelectionAction = ref<string>(config.filterSelectionAction || FilterSelectionAction.DoNothing);
+    const redirectUrl = ref(config.navigationUrls?.[NavigationUrlKey.RedirectPage] || null);
+
+    const blockActionErrorMessage = ref("");
+
+    const ignoreWatchersForFilterUpdate = ref(false);
+    const ignoreWatchersForFilterReset = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const btnSize = computed((): BtnSize => {
+        switch (config?.filterButtonSize) {
+            case "1":
+                return "";
+            case "2":
+                return "sm";
+            case "3":
+            default:
+                return "xs";
+        }
+    });
+
+    const filterPageParamsWithValues = computed((): Record<string, string> => {
+        return Object.entries(filterPageParameters.value ?? {})
+            .reduce((acc, [key, value]) => {
+                if (value) {
+                    acc[key] = value;
+                }
+                return acc;
+            }, {} as Record<string, string>);
+    });
+
+    const filterPageParamKeysWithValues = computed((): string[] => {
+        return Object.keys(filterPageParamsWithValues.value);
+    });
+
+    const anyFilterPageParametersWithValues = computed((): boolean => {
+        return !!filterPageParamKeysWithValues.value.length;
+    });
+
+    const ignoreWatchers = computed((): boolean => {
+        return ignoreWatchersForFilterUpdate.value || ignoreWatchersForFilterReset.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Constructs information about the query string based on the current filter
+     * values and any other non-filter parameters that are in the query string.
+     */
+    function buildQueryString(): QueryStringInfo {
+        // Start by getting all params currently in the query string. This will
+        // ensure any params that don't belong to this block will remain in place.
+        var params = new URLSearchParams(window.location.search);
+
+        // Next, synchronize the params with the filters owned by this block
+        // (set/delete according to each filter's value).
+        for (const [key, value] of Object.entries(filterPageParameters.value ?? {})) {
+            if (value) {
+                params.set(key, value);
+            }
+            else {
+                // Check to see if this filter had a startup value. If so, we
+                // need to override the server-side value with an empty string.
+                if (filterKeysWithStartupValues.value.includes(key)) {
+                    params.set(key, "");
+                }
+                else {
+                    // Otherwise, remove the param from the query string.
+                    params.delete(key);
+                }
+            }
+        }
+
+        const queryString = params.toString();
+
+        return {
+            params,
+            queryString: queryString ? `?${queryString}` : ""
+        };
+    }
+
+    /**
+     * Gets updated filters based on the current filter values.
+     *
+     * @param cancellationToken A cancellation token that will instruct this
+     * function to exit early and discard results.
+     */
+    async function getUpdatedFilters(cancellationToken?: ICancellationToken): Promise<void> {
+        if (cancellationToken?.isCancellationRequested) {
+            return;
+        }
+
+        const bag: GetUpdatedFiltersRequestBag = {
+            publicFilterValues: publicFilterValues.value
+        };
+
+        const result = await invokeBlockAction<GetUpdatedFiltersResponseBag>("GetUpdatedFilters", { bag });
+
+        if (cancellationToken?.isCancellationRequested) {
+            return;
+        }
+
+        if (!result.isSuccess || !result.data) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to update filters.";
+            return;
+        }
+
+        // Reset any previous block action error message only after we're sure
+        // we haven't been cancelled and a successful response was received.
+        blockActionErrorMessage.value = "";
+
+        updateFilterRefs(ignoreWatchersForFilterUpdate, result.data);
+    }
+
+    /**
+     * Applies the current filters by taking action according to block settings.
+     *
+     * @param cancellationToken A cancellation token that will instruct this
+     * function to exit early and discard results.
+     */
+    async function applyFilters(cancellationToken?: ICancellationToken): Promise<void> {
+        if (cancellationToken?.isCancellationRequested) {
+            return;
+        }
+
+        const bag: GetUpdatedFiltersRequestBag = {
+            publicFilterValues: publicFilterValues.value
+        };
+
+        const result = await invokeBlockAction<GetUpdatedFiltersResponseBag>("GetUpdatedFilters", { bag });
+
+        if (cancellationToken?.isCancellationRequested) {
+            return;
+        }
+
+        if (!result.isSuccess || !result.data) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to apply filters.";
+            return;
+        }
+
+        // Reset any previous block action error message only after we're sure
+        // we haven't been cancelled and a successful response was received.
+        blockActionErrorMessage.value = "";
+
+        updateFilterRefs(ignoreWatchersForFilterUpdate, result.data);
+
+        if (config.isLegacyReloadEnabled || redirectUrl.value) {
+            redirectOrReload(redirectUrl.value);
+            return;
+        }
+
+        publishQueryStringChangedMessage();
+        updateQueryString();
+    }
+
+    /**
+     * Calls the `applyFilters` function immediately and then debounces future
+     * calls so it will only be called once during the specified delay period
+     * (250ms).
+     */
+    const onApplyFiltersDebounce = debounceAsync(applyFilters, { eager: true });
+
+    /**
+     * Applies filters on startup.
+     */
+    async function applyFiltersOnStartup(): Promise<void> {
+        if (!isStartingUp) {
+            return;
+        }
+
+        if (!anyFilterPageParametersWithValues.value) {
+            isStartingUp = false;
+            return;
+        }
+
+        // Only apply filters if the current filter params are not already
+        // represented (in any order) within the query string.
+        const currentParamKeysWithValues = new Set(
+            Array.from(new URLSearchParams(window.location.search).entries())
+                .filter(([_, value]) => value)
+                .map(([key]) => key)
+        );
+
+        if (filterPageParamKeysWithValues.value.every(key => currentParamKeysWithValues.has(key))) {
+            // All filters are already represented in the query string.
+            lastPublishedQueryString = buildQueryString().queryString;
+            return;
+        }
+
+        if (config.isLegacyReloadEnabled) {
+            // Reload the page with the current filter values.
+            redirectOrReload();
+            return;
+        }
+
+        publishQueryStringChangedMessage();
+        updateQueryString();
+
+        isStartingUp = false;
+    }
+
+    /**
+     * Resets the filters according to block settings default values.
+     *
+     * @param cancellationToken A cancellation token that will instruct this
+     * function to exit early and discard results.
+     */
+    async function resetFilters(cancellationToken?: ICancellationToken): Promise<void> {
+        if (cancellationToken?.isCancellationRequested) {
+            return;
+        }
+
+        const result = await invokeBlockAction<GetUpdatedFiltersResponseBag>("ResetFilters");
+
+        if (cancellationToken?.isCancellationRequested) {
+            return;
+        }
+
+        if (!result.isSuccess || !result.data) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to reset filters.";
+            return;
+        }
+
+        // Reset any previous block action error message only after we're sure
+        // we haven't been cancelled and a successful response was received.
+        blockActionErrorMessage.value = "";
+
+        updateFilterRefs(ignoreWatchersForFilterReset, result.data);
+
+        if (config.isLegacyReloadEnabled) {
+            // Reload the page with the default filter values.
+            redirectOrReload();
+            return;
+        }
+
+        publishQueryStringChangedMessage();
+        updateQueryString();
+    }
+
+    /**
+     * Calls the `resetFilters` function immediately and then debounces future
+     * calls so it will only be called once during the specified delay period
+     * (250ms).
+     */
+    const onResetFiltersDebounce = debounceAsync(resetFilters, { eager: true });
+
+    /**
+     * Redirects the browswer to the specified URL or reloads the current URL,
+     * while applying the current query string parameters in either case.
+     *
+     * @param url The URL to redirect to. If not provided, will reload the
+     * current URL.
+     */
+    function redirectOrReload(url?: string | null): void {
+        if (!url) {
+            url = `${window.location.origin}${window.location.pathname}`;
+        }
+
+        window.location.href = `${url}${buildQueryString().queryString}`;
+    }
+
+    /**
+     * Publishes a message indicating that the query string has changed.
+     */
+    function publishQueryStringChangedMessage(): void {
+        const queryStringInfo = buildQueryString();
+
+        if (queryStringInfo.queryString === lastPublishedQueryString) {
+            // No need to publish a message when there are no changes.
+            return;
+        }
+
+        lastPublishedQueryString = queryStringInfo.queryString;
+
+        browserBus.publish(PageMessages.QueryStringChanged, queryStringInfo.params);
+    }
+
+    /**
+     * Update the window's URL to reflect the current query string (without
+     * causing the page to reload).
+     */
+    function updateQueryString(): void {
+        window.history.replaceState(null, "", `${window.location.pathname}${buildQueryString().queryString}`);
+    }
+
+    /**
+     * Updates the filters, values and corresponding page parameters using the
+     * provided values.
+     *
+     * @param ignoreWatchersToken The token to indicate when watchers should be
+     * ignored and subsequently restored (after we update the watched refs).
+     * @param updatedFilters The updated filters.
+     */
+    function updateFilterRefs(
+        ignoreWatchersToken: Ref<boolean>,
+        updatedFilters: GetUpdatedFiltersResponseBag
+    ): void {
+        // Reassign the filters and filter page params. We don't have watchers
+        // on these objects or their properties, so simple reassignments will
+        // do here.
+        publicFilters.value = updatedFilters.publicFilters ?? {};
+        filterPageParameters.value = updatedFilters.filterPageParameters ?? {};
+
+        // Temporarily disable the watchers so we don't repeatedly fire change
+        // handlers.
+        ignoreWatchersToken.value = true;
+
+        // Reassign the filter values without short-circuiting the watchers.
+        // Note that the initial, shallow copy is to manually trigger reactivity
+        // so the child components will see the property value changes.
+        publicFilterValues.value = { ...publicFilterValues.value };
+        Object.entries(updatedFilters.publicFilterValues ?? {}).forEach(([key, value]) => {
+            publicFilterValues.value[key] = value;
+        });
+
+        nextTick(() => {
+            ignoreWatchersToken.value = false;
+        });
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when a watched filter's value changes.
+     */
+    async function onFilterValueChanged(): Promise<void> {
+        // Cancel any existing filter requests.
+        filterCancellationTokenSource?.cancel();
+        filterCancellationTokenSource = new CancellationTokenSource();
+
+        if (filterSelectionAction.value === FilterSelectionAction.UpdateFilters) {
+            await getUpdatedFilters(filterCancellationTokenSource.token);
+        }
+        else {
+            await onApplyFiltersDebounce(filterCancellationTokenSource.token);
+        }
+    }
+
+    /**
+     * Debounces the `onFilterValueChanged` function so it will only be called
+     * once during the specified delay period (250ms).
+     */
+    const onFilterValueChangedDebounce = debounceAsync(onFilterValueChanged);
+
+    /**
+     * Called when the apply filters button is clicked.
+     */
+    async function onApplyFiltersClick(): Promise<void> {
+        // Cancel any existing filter requests.
+        filterCancellationTokenSource?.cancel();
+        filterCancellationTokenSource = new CancellationTokenSource();
+
+        await onApplyFiltersDebounce(filterCancellationTokenSource.token);
+    }
+
+    /**
+     * Called when the reset filters button is clicked.
+     */
+    async function onResetFiltersClick(): Promise<void> {
+        // Cancel any existing filter requests.
+        filterCancellationTokenSource?.cancel();
+        filterCancellationTokenSource = new CancellationTokenSource();
+
+        await onResetFiltersDebounce(filterCancellationTokenSource.token);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    if (filterSelectionAction.value !== FilterSelectionAction.DoNothing) {
+        Object.keys(publicFilterValues.value).forEach((key: string) => {
+            // Look up the corresponding filter and determine if we want to
+            // watch this filter value based on the filter's field type.
+            const filter = publicFilters.value[key];
+            if ([
+                FieldType.Integer,
+                FieldType.Text
+            ].some(guid => areEqual(guid, filter.fieldTypeGuid))) {
+                // Don't create a watcher for this field type.
+                return;
+            }
+
+            watch(() => publicFilterValues.value[key], (newVal: string, oldVal: string) => {
+                if (!ignoreWatchers.value && newVal !== oldVal) {
+                    onFilterValueChangedDebounce();
+                }
+            });
+        });
+    }
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(() => {
+        // Cancel any in-progress loading of data.
+        filterCancellationTokenSource?.cancel();
+
+        // Remove browser bus event listeners.
+        browserBus.dispose();
+    });
+
+    // #endregion Lifecycle Hooks
+
+    applyFiltersOnStartup();
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>

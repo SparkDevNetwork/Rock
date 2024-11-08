@@ -1,5 +1,9 @@
 @import "~plyr/dist/plyr.css";
 
+.plyr__video-wrapper {
+    z-index: 0;
+}
+
 .plyr__poster {
     background-size: cover;
 }

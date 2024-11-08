@@ -1,0 +1,58 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <MarkdownEditor v-model="value" label="Markdown Content" :editorHeight="400" />
+        <span class="clearfix h-0"></span>
+
+        <template #settings>
+            <p>
+                This is a wrapper around <a href="#CodeEditorGallery">Code Editor</a>, so see that control
+                for more information on settings.
+            </p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import MarkdownEditor from "@Obsidian/Controls/markdownEditor.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const value = ref(`*Italic*
+**Bold**
+
+[Link](http://www.rockrms.com)
+
+![Image](/Assets/Images/rock-logo-black.svg)
+
+> Blockquote
+
+* Apples
+  * Red
+  * Green
+  * Blue
+* Bananas
+* Oranges
+
+1. One
+2. Two
+3. Three
+
+\`Inline code\` with backticks
+
+\`\`\`
+# code block
+print '3 backticks or'
+print 'indent 4 spaces'
+\`\`\`
+
+Horizontal Rule
+
+---`);
+
+    const importCode = getSfcControlImportPath("markdownEditor");
+    const exampleCode = computed(() => {
+        return `<MarkdownEditor v-model="value" label="Markdown Content" />`;
+    });
+</script>

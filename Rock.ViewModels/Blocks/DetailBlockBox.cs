@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
@@ -27,7 +28,7 @@ namespace Rock.ViewModels.Blocks
     /// <typeparam name="TEntityBag">The type of the bag Entity.</typeparam>
     /// <typeparam name="TOptions">The type of the bag options.</typeparam>
     /// <seealso cref="Rock.ViewModels.Utility.IValidPropertiesBox" />
-    public class DetailBlockBox<TEntityBag, TOptions> : BlockBox, IValidPropertiesBox
+    public class DetailBlockBox<TEntityBag, TOptions> : BlockBox, IValidPropertiesBox, Internal.IDetailBlockBox
         where TOptions : new()
     {
         /// <summary>
@@ -60,5 +61,18 @@ namespace Rock.ViewModels.Blocks
         /// are modified.
         /// </summary>
         public List<string> QualifiedAttributeProperties { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the type of entity being viewed or edited.
+        /// </summary>
+        /// <value>The name of the type of entity.</value>
+        public string EntityTypeName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the unique identifier of the type of entity being
+        /// viewed or edited.
+        /// </summary>
+        /// <value>The entity type unique identifier.</value>
+        public Guid? EntityTypeGuid { get; set; }
     }
 }

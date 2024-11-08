@@ -1,0 +1,147 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Audit"
+          :entityTypeGuid="EntityType.Audit"
+          stickyHeader
+          liveUpdates
+          @selectItem="onShowAuditDetails">
+
+        <TextColumn name="auditType"
+                    title="Action"
+                    field="auditType"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <TextColumn name="entityType"
+                    title="Entity Type"
+                    field="entityType"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <NumberColumn name="entityId"
+                      title="Entity Id"
+                      field="entityId"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs"
+                      width="2%" />
+
+        <TextColumn name="title"
+                    title="Entity Description"
+                    field="title"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <NumberColumn name="properties"
+                      title="Properties Updated"
+                      field="properties"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs"
+                      width="2%" />
+
+        <DateTimeColumn name="dateTime"
+                        title="When"
+                        field="dateTime"
+                        visiblePriority="xs"
+                        width="10%" />
+
+        <PersonColumn name="person"
+                      title="Who"
+                      field="person"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
+                      showAsLink />
+
+    </Grid>
+
+    <AuditDetailsModal :modelValue="auditDetails" />
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { textValueFilter, numberValueFilter, PersonColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { AuditDetail } from "./AuditList/types.partial";
+    import { AuditListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AuditList/auditListOptionsBag";
+    import { reactive, ref } from "vue";
+    import AuditDetailsModal from "./AuditList/auditDetailsModal.partial.obs";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+
+    const config = useConfigurationValues<ListBlockBox<AuditListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const auditDetails = ref<AuditDetail[]>([]);
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the Show Details button has been clicked by the individual.
+     * @param key The key of the row that was selected.
+     */
+    async function onShowAuditDetails(key: string): Promise<void> {
+        const result = await invokeBlockAction("GetAuditDetails", { idKey: key });
+
+        if (result.isSuccess && result.data) {
+            const responseData = result.data as AuditDetail[];
+            const details: AuditDetail[] = [];
+            for (let i = 0; i < responseData.length; i++) {
+                details.push(responseData[i]);
+            }
+
+            auditDetails.value = details;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error occurred while getting audit details.");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

@@ -374,6 +374,15 @@ type StandardColumnProps = {
     },
 
     /**
+     * The type of the column which will be used to apply specific CSS classes
+     * dynamically and help in identifying the column type throughout the system.
+     */
+    columnType: {
+        type: PropType<string>,
+        required: false
+    },
+
+    /**
      * Additional CSS class to apply to the header cell.
      */
     headerClass: {
@@ -411,7 +420,7 @@ type StandardColumnProps = {
 
     /**
      * Provides a custom component that will be used to render a skeleton of
-     * the cell during data loading operations. This is rearely needed as you
+     * the cell during data loading operations. This is rarely needed as you
      * can usually accomplish the same with a template.
      */
     skeletonComponent: {
@@ -459,6 +468,14 @@ type StandardColumnProps = {
         type: PropType<string>,
         required: false
     }
+
+    /**
+     * If 'true', disables sorting for this column.
+     */
+    disableSort: {
+        type: PropType<boolean>,
+        default: false
+    },
 };
 
 /** The standard properties available on header cells. */
@@ -645,6 +662,9 @@ export type GridAction = {
 
     /** If true then the action will be disabled and not respond to clicks. */
     disabled?: boolean;
+
+    /** The shortcut key prop to pass to the button. */
+    shortcutKey?: string;
 };
 
 /** The type of unit the length value represents. */
@@ -729,6 +749,12 @@ export type ColumnDefinition = {
     itemClass?: string;
 
     /**
+     * The type of the column which will be used to apply specific CSS classes
+     * dynamically and help in identifying the column type throughout the system.
+     */
+    columnType?: string;
+
+    /**
      * If `true` then the column will not ever be rendered on screen. It may
      * still be included in exports and other operations.
      */
@@ -748,8 +774,16 @@ export type ColumnDefinition = {
     /** All properties and attributes that were defined on the column. */
     props: Record<string, unknown>;
 
+    /** All slots that were defined on the column. */
+    slots: Record<string, Component>;
+
     /** Custom data that the column and cells can use any way they desire. */
     data: Record<string, unknown>;
+
+    /**
+     * If 'true', disables sorting for this column.
+     */
+    disableSort: boolean;
 };
 
 /**

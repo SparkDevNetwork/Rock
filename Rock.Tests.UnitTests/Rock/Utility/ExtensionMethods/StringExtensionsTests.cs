@@ -1,5 +1,5 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Utility.ExtensionMethods
@@ -231,6 +231,71 @@ namespace Rock.Tests.Utility.ExtensionMethods
         {
             var output = "0abcd123-45-6&78$9".AsNumeric();
             Assert.That.AreEqual( "0123456789", output );
+        }
+
+        #endregion
+
+        #region RedirectUrlContainsXss
+
+        [DataRow( "page/1" )]
+        [DataRow( "test&nbsp;test" )]
+        [DataRow( "Occurrence=2023-09-28T09:00:00" )]                   // Valid date input.
+        [DataRow( "Occurrence%253d2023-09-28T09%25253a00%25253a00" )]   // Valid date input, partially double and triple encoded.
+        [DataTestMethod]
+        public void RedirectUrlContainsXss_ValidInput( string input )
+        {
+            var output = input.RedirectUrlContainsXss();
+            Assert.That.AreEqual( output, false );
+
+        }
+
+        [DataRow( "<style>" )]                          // Angle brackets.
+        [DataRow( "%3Cstyle>" )]                        // URL-encoded Angle brackets.
+        [DataRow( "&lt;style>" )]                       // HTML-encoded Angle brackets.
+        [DataRow( "javas\tcript:alert(0)" )]            // Tab character.
+        [DataRow( "1/+/[*/[]/+alert(1)//" )]            // Asterisk character.
+        [DataRow( "javascript%253Aalert(%27xss%27)" )]  // javascript: (with double URL-encoded colon).
+        [DataRow( "java%0d%0ascript%0d%0a:alert(0)" )]  // javascript: (with URL-encoded CR/LF characters).
+        [DataRow( "javas cript:alert(0)" )]             // javascript: (with space character).
+        // javascript: (HTML-encoded hex character reference).
+        [DataRow( "&#x6A;&#x61;&#x76;&#x61;&#x73;&#x63;&#x72;&#x69;&#x70;&#x74;&#x3A;" )]
+        // javascript: (HTML-encoded decimal character reference, no separators).
+        [DataRow( "&#0000106&#0000097&#0000118&#0000097&#0000115&#0000099&#0000114&#0000105&#0000112&#0000116&#0000058&#0000097&#0000108&#0000101&#0000114&#0000116&#0000040&#0000039&#0000088&#0000083&#0000083&#0000039&#0000041" )]
+        [DataTestMethod]
+        public void RedirectUrlContainsXss_RiskyInput( string input )
+        {
+            var output = input.RedirectUrlContainsXss();
+            Assert.That.AreEqual( output, true );
+        }
+
+        #endregion RedirectUrlContainsXss
+
+        #region Truncate
+
+        [TestMethod]
+        [DataRow( 3, "thi" )]
+        [DataRow( 2, "th" )]
+        [DataRow( 1, "t" )]
+        public void Truncate_WithMaxLengthLessThanFour_DoesNotAddEllipsis( int maxLength, string expectedString )
+        {
+            var testString = "this is a test";
+
+            var actualString = testString.Truncate( maxLength, true );
+
+            Assert.That.AreEqual( expectedString, actualString );
+        }
+
+        [TestMethod]
+        [DataRow( 4, "t..." )]
+        [DataRow( 5, "th..." )]
+        [DataRow( 6, "thi..." )]
+        public void Truncate_WithMaxLengthGreaterThanThree_DoesAddEllipsis( int maxLength, string expectedString )
+        {
+            var testString = "this is a test";
+
+            var actualString = testString.Truncate( maxLength, true );
+
+            Assert.That.AreEqual( expectedString, actualString );
         }
 
         #endregion

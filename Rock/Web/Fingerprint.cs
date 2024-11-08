@@ -35,6 +35,15 @@ namespace Rock.Web
         /// <returns></returns>
         public static string Tag( string rootRelativePath )
         {
+            /*
+                 ISSUE #4436 ⁃ Merge Fields Not Populating in Communication Wizard
+                 Fixed the bug that happens when relaxedUrlToFileSystemMapping="false"
+            */
+            if ( rootRelativePath.Contains( "?" ) )
+            {
+                rootRelativePath = rootRelativePath.Remove( rootRelativePath.IndexOf( '?' ) );
+            }
+
             if ( HttpRuntime.Cache[rootRelativePath] == null )
             {
                 string absolute = HostingEnvironment.MapPath( rootRelativePath );

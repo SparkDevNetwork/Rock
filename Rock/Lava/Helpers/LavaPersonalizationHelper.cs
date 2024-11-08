@@ -38,12 +38,12 @@ namespace Rock.Lava
         /// </summary>
         /// <param name="context"></param>
         /// <param name="httpContext"></param>
-        /// <param name="person"></param>
+        /// <param name="person">The person for whom the personalization segments will be retrieved. If not specified, the current user is assumed.</param>
         /// <returns></returns>
 #if REVIEW_NET5_0_OR_GREATER
-        public static List<int> GetPersonalizationSegmentIdListForContext( ILavaRenderContext context, object httpContext = null, Person person = null )
+        public static List<int> GetPersonalizationSegmentIdListForPersonFromContextCookie( ILavaRenderContext context, object httpContext = null, Person person = null )
 #else
-        public static List<int> GetPersonalizationSegmentIdListForContext( ILavaRenderContext context, HttpContext httpContext = null, Person person = null )
+        public static List<int> GetPersonalizationSegmentIdListForPersonFromContextCookie( ILavaRenderContext context, HttpContext httpContext = null, Person person = null )
 #endif
         {
             // Check if the personalization segments exist in the current lava context.
@@ -53,7 +53,7 @@ namespace Rock.Lava
                 return new List<int>();
             }
 
-            var key = $"{PersonalizationSegmentPrefix}{ person.Guid }";
+            var key = $"{PersonalizationSegmentPrefix}{person.Guid}";
             var personSegmentIdList = context.GetInternalField( key, null ) as List<int>;
 
             if ( personSegmentIdList == null )
@@ -76,7 +76,7 @@ namespace Rock.Lava
                 // Retrieve the personalization segments from the database.
                 if ( personSegmentIdList == null )
                 {
-                    personSegmentIdList = GetPersonalizationSegmentIdListForPerson( person, rockContext );
+                    personSegmentIdList = GetPersonalizationSegmentIdListForPersonFromDatabase( person, rockContext );
                 }
 
                 // Cache the segment list in the render context.
@@ -90,7 +90,7 @@ namespace Rock.Lava
         /// <summary>
         /// Sets the personalization segments for the current context.
         /// </summary>
-        /// <param name="segmentIdList">The list of personaliation segment identifiers to be set on the context.</param>
+        /// <param name="segmentIdList">The list of personalization segment identifiers to be set on the context.</param>
         /// <param name="lavaContext">The current lava context that is handling rendering.</param>
         /// <param name="httpContext"></param>
         /// <param name="person"></param>
@@ -111,7 +111,7 @@ namespace Rock.Lava
                 return;
             }
 
-            var key = $"{PersonalizationSegmentPrefix}{ person.Guid }";
+            var key = $"{PersonalizationSegmentPrefix}{person.Guid}";
 
             lavaContext.SetInternalField( key, segmentIdList );
 
@@ -142,7 +142,7 @@ namespace Rock.Lava
         /// <param name="person">A person object.</param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        public static List<int> GetPersonalizationSegmentIdListForPerson( Person person, RockContext rockContext )
+        private static List<int> GetPersonalizationSegmentIdListForPersonFromDatabase( Person person, RockContext rockContext )
         {
             List<int> personSegmentIdList = null;
 

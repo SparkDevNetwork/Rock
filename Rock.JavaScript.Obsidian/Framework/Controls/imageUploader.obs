@@ -1,9 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField
-                   :modelValue="fileGuid"
-                   formGroupClasses="image-uploader"
-                   name="imageuploader">
+    <RockFormField :modelValue="fileGuid" formGroupClasses="image-uploader" name="imageuploader">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <NotificationBox v-if="uploadErrorMessage" alertType="warning">
@@ -12,14 +9,14 @@
                 </NotificationBox>
 
                 <div ref="dropZoneElement" :id="uniqueId" class="imageupload-group" :style="{ pointerEvents: disabled ? 'none' : undefined }" @click="onSelectFileClick">
-                    <div class="imageupload-thumbnail" style="width: 100px; height: 100px;">
+                    <div class="imageupload-thumbnail" :style="thumbnailWrapperStyle">
                         <a v-if="fileUrl" :href="fileUrl" target="_blank" rel="noopener noreferrer" @click.stop>
                             <div class="imageupload-thumbnail-image" :style="thumbnailStyle"></div>
                         </a>
                         <div v-else class="imageupload-thumbnail-image" :style="thumbnailStyle"></div>
 
                         <div v-if="isDeleteVisible" class="imageupload-remove">
-                            <a v-if="fileGuid" href="#" class="remove-file" title="Remove File" @click.prevent.stop="onRemoveFileClick">
+                            <a href="#" class="remove-file" title="Remove File" @click.prevent.stop="onRemoveFileClick">
                                 <i class="fa fa-times"></i>
                             </a>
                         </div>
@@ -48,8 +45,18 @@
     import { uploadBinaryFile } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
 
     const props = defineProps({
+        /**
+         * The current file value. The {@link ListItemBag.value} property should
+         * contain either a BinaryFile GUID value or an absolute path (starting
+         * with a forward slash) on the server to the static file.
+         *
+         * The {@link ListItemBag.text} property should contain the name of the
+         * file.
+         */
         modelValue: {
             type: Object as PropType<ListItemBag | null>,
             required: false
@@ -78,15 +85,46 @@
         showDeleteButton: {
             type: Boolean as PropType<boolean>,
             default: true
+        },
+
+        noPictureUrl: {
+            type: String,
+            default: "/Assets/Images/no-picture.svg"
+        },
+
+        thumbnailHeight: {
+            type: Number,
+            default: 100
+        },
+
+        thumbnailWidth: {
+            type: Number,
+            default: 100
+        },
+
+        uploadUrl: {
+            type: String,
+            default: "/ImageUploader.ashx"
+        },
+
+        /**
+         * A processor that will allow modification of the image file before
+         * it is uploaded to the server. A new file should be created and
+         * returned with any changed filename, mime type or data.
+         */
+        fileProcessor: {
+            type: Function as PropType<(file: File) => (File | Promise<File>)>,
+            required: false
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | undefined): void;
+        (e: "imageUploaded"): void;
+        (e: "imageRemoved"): void;
     }>();
 
-    const fileGuid = ref<Guid>(props.modelValue?.value ?? "");
-    const fileName = ref(props.modelValue?.text ?? "");
+    const internalValue = ref(props.modelValue);
 
     // Variables related to the progress of uploading a new file.
     const isUploading = ref(false);
@@ -97,18 +135,44 @@
     const fileInputElement = ref<HTMLInputElement | null>(null);
     const dropZoneElement = ref<HTMLElement | null>(null);
 
+    const fileGuid = computed<Guid | null>(() => {
+        return toGuidOrNull(internalValue.value?.value);
+    });
+
+    const fileName = computed<string>(() => {
+        return internalValue.value?.text ?? "";
+    });
+
     /** The URL used to download the file. */
     const fileUrl = computed((): string | null => {
         if (fileGuid.value) {
             return `/GetFile.ashx?guid=${fileGuid.value}`;
         }
+        else if (internalValue.value?.value?.startsWith("/") === true) {
+            return internalValue.value.value;
+        }
 
         return null;
     });
 
+    /** The CSS styles to use for the thumbnail wrapper element. */
+    const thumbnailWrapperStyle = computed((): Record<string, string> => {
+        return {
+            width: `${props.thumbnailWidth}px`,
+            height: `${props.thumbnailHeight}px`
+        };
+    });
+
     /** The CSS styles to use for the thumbnail element. */
     const thumbnailStyle = computed((): Record<string, string> => {
-        const imageUrl = fileGuid.value ? `/GetImage.ashx?guid=${fileGuid.value}&width=500` : "/Assets/Images/no-picture.svg";
+        let imageUrl = props.noPictureUrl;
+
+        if (fileGuid.value) {
+            imageUrl = `/GetImage.ashx?guid=${fileGuid.value}&width=${props.thumbnailWidth}`;
+        }
+        else if (internalValue.value?.value && internalValue.value.value.startsWith("/")) {
+            imageUrl = internalValue.value.value;
+        }
 
         return {
             backgroundImage: `url('${imageUrl}')`,
@@ -119,7 +183,8 @@
 
     /** True if the delete button should be visible. */
     const isDeleteVisible = computed((): boolean => {
-        return props.showDeleteButton && !!fileGuid.value;
+        return props.showDeleteButton
+            && (!!fileGuid.value || internalValue.value?.value?.startsWith("/") === true);
     });
 
     /**
@@ -134,17 +199,28 @@
         uploadErrorMessage.value = "";
 
         try {
+            if (props.fileProcessor) {
+                const newFile = props.fileProcessor(file);
+
+                if (isPromise(newFile)) {
+                    file = await newFile;
+                }
+                else {
+                    file = newFile;
+                }
+            }
+
             // Perform the actual file upload using the helper function.
             const result = await uploadBinaryFile(file, props.binaryFileTypeGuid || BinaryFiletype.Default, {
-                baseUrl: "/ImageUploader.ashx",
+                baseUrl: props.uploadUrl,
                 isTemporary: props.uploadAsTemporary,
                 progress: (progress, total, percent) => {
                     uploadProgressText.value = `${percent}%`;
                 }
             });
 
-            fileGuid.value = result.value ?? "";
-            fileName.value = result.text ?? "";
+            internalValue.value = result;
+            emit("imageUploaded");
         }
         catch (e) {
             // Show any error message we got.
@@ -170,8 +246,8 @@
      * Event handler for when the remove file button is clicked.
      */
     function onRemoveFileClick(): void {
-        fileGuid.value = "";
-        fileName.value = "";
+        internalValue.value = null;
+        emit("imageRemoved");
     }
 
     /**
@@ -198,8 +274,7 @@
             return;
         }
 
-        fileGuid.value = "";
-        fileName.value = "";
+        internalValue.value = null;
     }
 
     // Watch for the drop zone element to become available. Once we have it
@@ -238,21 +313,11 @@
 
     // Watch for changes to the model value and update our internal values.
     watch(() => props.modelValue, () => {
-        fileGuid.value = props.modelValue?.value ?? "";
-        fileName.value = props.modelValue?.text ?? "";
+        internalValue.value = props.modelValue;
     });
 
     // Watch for changes to our internal values and update the model value.
-    watch([fileGuid, fileName], () => {
-        let newValue: ListItemBag | undefined = undefined;
-
-        if (fileGuid.value) {
-            newValue = {
-                value: fileGuid.value,
-                text: fileName.value
-            };
-        }
-
-        emit("update:modelValue", newValue);
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value ?? undefined);
     });
 </script>

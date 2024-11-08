@@ -22,7 +22,7 @@ using System.Collections.Generic;
 namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
 {
     /// <summary>
-    /// 
+    /// Contains details on the web farm settings.
     /// </summary>
     /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
     public class WebFarmSettingsBag : EntityBagBase
@@ -35,17 +35,17 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
         /// </value>
         public bool IsEnabled { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating whether this instance has valid key.
+        /// Gets or sets a value indicating whether the web farm has a valid key.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance has valid key; otherwise, <c>false</c>.
+        ///   <c>true</c> if the web farm has a valid key; otherwise, <c>false</c>.
         /// </value>
         public bool HasValidKey { get; set; }
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is running.
+        /// Gets or sets a value indicating whether the web farm is running.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is running; otherwise, <c>false</c>.
+        ///   <c>true</c> if the web farm instance is running; otherwise, <c>false</c>.
         /// </value>
         public bool IsRunning { get; set; }
         /// <summary>
@@ -61,28 +61,28 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
         /// <value>
         /// The lower polling limit.
         /// </value>
-        public int LowerPollingLimit { get; set; }
+        public int? LowerPollingLimit { get; set; }
         /// <summary>
         /// Gets or sets the upper polling limit.
         /// </summary>
         /// <value>
         /// The upper polling limit.
         /// </value>
-        public int UpperPollingLimit { get; set; }
+        public int? UpperPollingLimit { get; set; }
         /// <summary>
         /// Gets or sets the maximum polling wait seconds.
         /// </summary>
         /// <value>
         /// The maximum polling wait seconds.
         /// </value>
-        public int MaxPollingWaitSeconds { get; set; }
+        public int? MaxPollingWaitSeconds { get; set; }
         /// <summary>
-        /// Gets or sets the minimun polling difference.
+        /// Gets or sets the minimum polling difference.
         /// </summary>
         /// <value>
-        /// The minimun polling difference.
+        /// The minimum polling difference.
         /// </value>
-        public int MinimumPollingDifference { get; set; }
+        public int? MinimumPollingDifference { get; set; }
 
         /// <summary>
         /// Gets or sets the nodes.

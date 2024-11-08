@@ -43,6 +43,10 @@ function getExportValue(row: Record<string, unknown>, column: ColumnDefinition):
     return value;
 }
 
+/**
+ * Displays a number inside a badge (pill) with a color that is defined by
+ * the range group the number falls into.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -60,6 +64,11 @@ export default defineComponent({
         exportValue: {
             type: Function as PropType<ExportValueFunction>,
             default: getExportValue
+        },
+
+        columnType: {
+            type: String as PropType<string>,
+            default: "numberBadge"
         },
 
         /**

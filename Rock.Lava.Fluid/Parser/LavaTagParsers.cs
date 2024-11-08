@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using Fluid.Parser;
 using Parlot;
 using Parlot.Fluent;
@@ -186,17 +187,30 @@ namespace Rock.Lava.Fluid
         }
 
         /// <summary>
+        /// Wraps a custom Lava Parser so that is can be included in a standard Fluid parser chain.
+        /// </summary>
+        /// <param name="lavaTagParser"></param>
+        /// <returns></returns>
+        internal static Parser<TagResult> AsFluidTagResultParser( this Parser<LavaDocumentToken> lavaTagParser )
+        {
+            return new LavaDocumentElementResultParser( lavaTagParser );
+        }
+
+        /// <summary>
         /// An extension method that wraps a custom Lava Parser so that is can be included in a standard Fluid parser chain.
         /// </summary>
         /// <param name="result"></param>
         /// <returns></returns>
+        [Obsolete( "Use the AsFluidTagResultParser extension method instead." )]
+        [RockObsolete("1.17")]
         public static Parser<TagResult> LavaTagResultToFluidTagResultParser( Parser<LavaTagResult> lavaTagParser )
         {
             return new LavaTagResultParser( lavaTagParser );
         }
 
         /// <summary>
-        /// Converts a LavaTagResult to a Fluid TagResult for use with a Fluid Parser chain.
+        /// Converts a parser that returns a LavaTagResult to a parser that returns a Fluid TagResult
+        /// so that it can form part of a Fluid Parser chain.
         /// </summary>
         internal class LavaTagResultParser : Parser<TagResult>
         {
@@ -224,6 +238,41 @@ namespace Rock.Lava.Fluid
                 }
 
                 result = new ParseResult<TagResult>( lavaParseResult.Start, lavaParseResult.End, lavaParseResult.Value.TagResult );
+
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// Converts a parser that returns a LavaDocumentToken to a parser that returns a Fluid TagResult
+        /// so that it can form part of a Fluid Parser chain.
+        /// </summary>
+        internal class LavaDocumentElementResultParser : Parser<TagResult>
+        {
+            private Parser<LavaDocumentToken> _tagParser;
+
+            public LavaDocumentElementResultParser( Parser<LavaDocumentToken> tagParser )
+            {
+                _tagParser = tagParser;
+            }
+
+            public override bool Parse( ParseContext context, ref ParseResult<TagResult> result )
+            {
+                if ( _tagParser == null )
+                {
+                    return false;
+                }
+
+                var lavaParseResult = new ParseResult<LavaDocumentToken>();
+
+                var isValid = _tagParser.Parse( context, ref lavaParseResult );
+
+                if ( !isValid )
+                {
+                    return false;
+                }
+
+                result = new ParseResult<TagResult>( lavaParseResult.Start, lavaParseResult.End, TagResult.TagOpen );
 
                 return true;
             }
@@ -350,7 +399,7 @@ namespace Rock.Lava.Fluid
                 // If the number of start and end tags do not match, the block is invalid.
                 if ( openTags != 0 )
                 {
-                    return false;
+                    throw new ParseException( $"Unclosed tag '{_tagName}'", context.Scanner.Cursor.Position );
                 }
 
                 // Store the text content of the block in the parser result.
@@ -400,14 +449,16 @@ namespace Rock.Lava.Fluid
                 {
                     tagParser = LavaShortcodeStart
                         .And( Terms.Text( _tagName ) )
+                        .AndSkip( Literals.WhiteSpace() )
                         .And( AnyCharBefore( LavaShortcodeEnd, canBeEmpty: true ) )
                         .And( LavaShortcodeEnd );
                 }
                 else
                 {
                     tagParser = LiquidTagStart
-                        .And( Terms.Text( _tagName ) ).
-                        And( AnyCharBefore( LavaFluidParser.LavaTokenEndParser, canBeEmpty: true ) )
+                        .And( Terms.Text( _tagName ) )
+                        .AndSkip( Literals.WhiteSpace() )
+                        .And( AnyCharBefore( LavaFluidParser.LavaTokenEndParser, canBeEmpty: true ) )
                         .And( LavaFluidParser.LavaTokenEndParser );
                 }
 
@@ -479,51 +530,44 @@ namespace Rock.Lava.Fluid
 
                 LavaTagResult lavaTagResult;
 
-                // If we are processing the content of a {% liquid %} tag and scanning for a standard Liquid open tag or a Lava shortcode,
-                // the existence of these tokens is implied so return a matched tag result.
+                var parseTag = true;
                 if ( p.InsideLiquidTag
                      && ( _format == LavaTagFormatSpecifier.LiquidTag || _format == LavaTagFormatSpecifier.LavaShortcode ) )
                 {
-                    lavaTagResult = new LavaTagResult()
-                    {
-                        TagResult = TagResult.TagOpen,
-                        Text = new TextSpan( context.Scanner.Buffer, start.Offset, context.Scanner.Cursor.Offset - start.Offset ),
-                        TagFormat = _format
-                    };
-
-                    result.Set( start.Offset, context.Scanner.Cursor.Offset, lavaTagResult );
-                    return true;
+                    // When processing a {% liquid/lava %} tag, each new line represents a new implied start tag
+                    // so we do not need to parse for it.
+                    parseTag = false;
                 }
 
-                // Find the tag start token.
-                var startTagFound = context.Scanner.ReadChar( _tagChar1 )
-                    && context.Scanner.ReadChar( _tagChar2 )
-                    && ( _tagChar3 == '\0' || context.Scanner.ReadChar( _tagChar3 ) );
-                if ( !startTagFound )
+                if ( parseTag )
                 {
-                    // Return the scanner to the start position.
-                    context.Scanner.Cursor.ResetPosition( start );
-                    return false;
-                }
-
-                //  If this is a comment tag, ignore it if it is preceded by an unmatched quote.
-                if ( _format == LavaTagFormatSpecifier.BlockComment
-                    || _format == LavaTagFormatSpecifier.InlineComment )
-                {
-                    if ( p.PreviousTextSpanStatement != null )
+                    // Find the tag start token.
+                    var startTagFound = context.Scanner.ReadChar( _tagChar1 )
+                        && context.Scanner.ReadChar( _tagChar2 )
+                        && ( _tagChar3 == '\0' || context.Scanner.ReadChar( _tagChar3 ) );
+                    if ( !startTagFound )
                     {
-                        var inQuote = TextContainsUnpairedQuote( p.PreviousTextSpanStatement.Text );
-                        if ( inQuote )
-                        {
-                            // This comment tag is enclosed in an open quote, and should therefore be ignored.
-                            // Return the scanner to the start position and exit.
-                            context.Scanner.Cursor.ResetPosition( start );
-                            return false;
-                        }
+                        // Return the scanner to the start position.
+                        context.Scanner.Cursor.ResetPosition( start );
+                        return false;
                     }
                 }
 
-                var trim = context.Scanner.ReadChar( '-' );
+                var trim = false;
+                if ( parseTag )
+                {
+                    if ( _format == LavaTagFormatSpecifier.BlockComment
+                    || _format == LavaTagFormatSpecifier.InlineComment )
+                    {
+                        // Lava Comments do not support the optional Liquid whitespace trim character '-'.
+                        trim = false;
+                    }
+                    else
+                    {
+                        trim = context.Scanner.ReadChar( '-' );
+                    }
+                }
+
                 if ( p.PreviousTextSpanStatement != null )
                 {
                     if ( trim )
@@ -547,29 +591,6 @@ namespace Rock.Lava.Fluid
             }
         }
 
-        internal static bool TextContainsUnpairedQuote( TextSpan text )
-        {
-            int singleQuoteCount = 0;
-            int doubleQuoteCount = 0;
-
-            for ( var i = text.Offset; i < text.Length; i++ )
-            {
-                var c = text.Buffer[i];
-
-                if ( c == '\'' )
-                {
-                    singleQuoteCount++;
-                }
-                else if ( c == '\"' )
-                {
-                    doubleQuoteCount++;
-                }
-            }
-
-            var isQuoted = ( singleQuoteCount % 2 == 1 || doubleQuoteCount % 2 == 1 );
-            return isQuoted;
-        }
-
         /// <summary>
         /// A re-implementation of Fluid.Parser.TagEndParser to capture additional information about the position of the tag in the source text.
         /// </summary>
@@ -579,7 +600,6 @@ namespace Rock.Lava.Fluid
             private readonly LavaTagFormatSpecifier _format;
             private char _tagChar1;
             private char _tagChar2;
-            private bool _autoTrim = false;
 
             public LavaTagEndParser( LavaTagFormatSpecifier format )
             {
@@ -596,9 +616,6 @@ namespace Rock.Lava.Fluid
                 {
                     _tagChar1 = '-';
                     _tagChar2 = '/';
-
-                    // Always trim whitespace around comments.
-                    _autoTrim = true;
                 }
                 else if ( _format == LavaTagFormatSpecifier.InlineComment )
                 {
@@ -673,7 +690,7 @@ namespace Rock.Lava.Fluid
                     }
 
                     // Find an explicit tag close token.
-                    trim = _autoTrim || context.Scanner.ReadChar( '-' );
+                    trim = context.Scanner.ReadChar( '-' );
 
                     var endTagFound = context.Scanner.ReadChar( _tagChar1 )
                         && ( _tagChar2 == '\0' || context.Scanner.ReadChar( _tagChar2 ) );
@@ -683,23 +700,6 @@ namespace Rock.Lava.Fluid
                         context.Scanner.Cursor.ResetPosition( start );
                         return false;
 
-                    }
-
-                    //  If this is a comment tag, ignore it if it is preceded by an unmatched quote.
-                    if ( _format == LavaTagFormatSpecifier.BlockComment
-                            || _format == LavaTagFormatSpecifier.InlineComment )
-                    {
-                        if ( p.PreviousTextSpanStatement != null )
-                        {
-                            var inQuote = TextContainsUnpairedQuote( p.PreviousTextSpanStatement.Text );
-                            if ( inQuote )
-                            {
-                                // This comment tag is enclosed in an open quote, and should therefore be ignored.
-                                // Return the scanner to the start position and exit.
-                                context.Scanner.Cursor.ResetPosition( start );
-                                return false;
-                            }
-                        }
                     }
 
                     p.StripNextTextSpanStatement = trim;
@@ -721,7 +721,16 @@ namespace Rock.Lava.Fluid
                 else
                 {
                     // Find the tag close token.
-                    trim = _autoTrim || context.Scanner.ReadChar( '-' );
+                    if ( _format == LavaTagFormatSpecifier.BlockComment
+                         || _format == LavaTagFormatSpecifier.InlineComment )
+                    {
+                        // Comment tokens do not support the leading/trailing whitespace trim character.
+                        trim = false;
+                    }
+                    else
+                    {
+                         trim = context.Scanner.ReadChar( '-' );
+                    }
 
                     var endTagFound = context.Scanner.ReadChar( _tagChar1 )
                         && ( _tagChar2 == '\0' || context.Scanner.ReadChar( _tagChar2 ) );

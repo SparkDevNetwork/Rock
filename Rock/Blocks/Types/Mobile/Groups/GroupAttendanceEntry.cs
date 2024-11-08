@@ -91,11 +91,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Key = AttributeKeys.AttendanceNoteLabel,
         Order = 6 )]
 
-    [BooleanField("Show Pending Members",
+    [BooleanField( "Show Pending Members",
         Description = "Shows pending members of the group.",
         DefaultBooleanValue = false,
         Key = AttributeKeys.ShowPendingMembers,
-        Order = 7)]
+        Order = 7 )]
 
     [BooleanField( "Show Inactive Members",
         Description = "Shows inactive members of the group.",
@@ -106,7 +106,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_ATTENDANCE_ENTRY_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( "08AE409C-9E4C-42D1-A93C-A554A3EEA0C3")]
+    [Rock.SystemGuid.BlockTypeGuid( "08AE409C-9E4C-42D1-A93C-A554A3EEA0C3" )]
     public class GroupAttendanceEntry : RockBlockType
     {
         #region Block Attributes
@@ -228,7 +228,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// Gets whether or not we should display pending members.
         /// </summary>
         /// <value>The show pending members.</value>
-        protected bool ShowPendingMembers => GetAttributeValue(AttributeKeys.ShowPendingMembers ).AsBoolean();
+        protected bool ShowPendingMembers => GetAttributeValue( AttributeKeys.ShowPendingMembers ).AsBoolean();
 
         #endregion
 
@@ -288,7 +288,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
             }
 
             // Filtering out pending members.
-            if( !ShowPendingMembers )
+            if ( !ShowPendingMembers )
             {
                 group.Members = group.Members.Where( m => m.GroupMemberStatus != GroupMemberStatus.Pending ).ToList();
             }
@@ -317,10 +317,10 @@ namespace Rock.Blocks.Types.Mobile.Groups
         {
             return $@"<StackLayout Orientation=""Horizontal"" Spacing=""20"">
     <StackLayout Spacing=""0"" HorizontalOptions=""FillAndExpand"">
-        <Label Text=""{ group.Name.EncodeXml( true ) } Attendance"" StyleClass=""h2"" />
-        <Label Text=""{ group.Members.Count } members"" />
+        <Label Text=""{group.Name.EncodeXml( true )} Attendance"" StyleClass=""h2, title1, bold, text-interface-strongest"" />
+        <Label Text=""{group.Members.Count} members"" StyleClass=""body, text-interface-strong"" />
     </StackLayout>
-    <Rock:Icon IconClass=""user-check"" FontSize=""24"" />
+    <Rock:Icon VerticalOptions=""Center"" IconClass=""user-check"" FontSize=""28"" StyleClass=""text-interface-strongest"" />
 </StackLayout>";
         }
 

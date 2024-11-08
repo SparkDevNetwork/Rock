@@ -70,6 +70,13 @@ namespace RockWeb.Blocks.Finance
         Order = 4,
         Key = AttributeKey.PersonTokenUsageLimit )]
 
+    [BooleanField( "Show Transaction Type Column",
+        Description = "Show the Transaction Type column.",
+        IsRequired = false,
+        DefaultBooleanValue = false,
+        Order = 5,
+        Key = AttributeKey.ShowTransactionTypeColumn )]
+
     [ContextAware]
     [Rock.SystemGuid.BlockTypeGuid( "694FF260-8C6F-4A59-93C9-CF3793FE30E6" )]
     public partial class ScheduledTransactionList : RockBlock, ISecondaryBlock, ICustomGridColumns
@@ -101,6 +108,10 @@ namespace RockWeb.Blocks.Finance
             /// The person token usage limit
             /// </summary>
             public const string PersonTokenUsageLimit = "PersonTokenUsageLimit";
+            /// <summary>
+            /// The show transaction type column attribute key
+            /// </summary>
+            public const string ShowTransactionTypeColumn = "ShowTransactionTypeColumn";
         }
 
         #endregion Keys
@@ -374,8 +385,34 @@ namespace RockWeb.Blocks.Finance
             {
                 var rockContext = new RockContext();
                 var qry = new FinancialScheduledTransactionService( rockContext )
-                    .Queryable( "ScheduledTransactionDetails,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
-                    .AsNoTracking();
+                    .Queryable()
+                    .Include( t => t.ScheduledTransactionDetails )
+                    .Include( t => t.FinancialPaymentDetail.CurrencyTypeValue )
+                    .Include( t => t.FinancialPaymentDetail.CreditCardTypeValue );
+
+                // Show/hide the "Transaction Type" column.
+                var dvfTransactionTypeValue = gList.ColumnsOfType<DefinedValueField>().FirstOrDefault( c => c.DataField == "TransactionTypeValueId" );
+                if ( GetAttributeValue( AttributeKey.ShowTransactionTypeColumn ).AsBoolean() )
+                {
+                    // Include the TransactionTypeValue when the column should be shown.
+                    qry = qry.Include( t => t.TransactionTypeValue );
+
+                    if ( dvfTransactionTypeValue != null )
+                    {
+                        // Show the column.
+                        dvfTransactionTypeValue.Visible = true;
+                    }
+                }
+                else
+                {
+                    if ( dvfTransactionTypeValue != null )
+                    {
+                        // Hide the column.
+                        dvfTransactionTypeValue.Visible = false;
+                    }
+                }
+
+                qry = qry.AsNoTracking();
 
                 // Valid Accounts
                 var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();

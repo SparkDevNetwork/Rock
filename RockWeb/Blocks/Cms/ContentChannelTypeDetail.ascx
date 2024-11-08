@@ -34,7 +34,7 @@
                                 <Rock:RockDropDownList ID="ddlDateRangeType" runat="server" Label="Date Range Type" AutoPostBack="true" OnSelectedIndexChanged="ddlDateRangeType_SelectedIndexChanged" />
                             </div>
                             <div class="col-xs-6">
-                                <Rock:RockCheckBox ID="cbIncludeTime" runat="server" Label="Include Time" Text="Yes"
+                                <Rock:RockCheckBox ID="cbIncludeTime" runat="server" Label="Include Time"
                                     Help="Should the Date Range include the time of day along with the date?" />
                             </div>
                         </div>
@@ -45,11 +45,11 @@
                         <div class="row">
                             <div class="col-sm-6">
                                 <Rock:RockCheckBox ID="cbDisablePriority" runat="server" Label="Disable Priority" 
-                                    Help="Should channels of this type disable the use of priorities?" Text="Yes" />
+                                    Help="Should channels of this type disable the use of priorities?" />
                             </div>
                             <div class="col-sm-6">
                                 <Rock:RockCheckBox ID="cbDisableContentField" runat="server" Label="Disable Content Field" 
-                                    Help="Should channels of this type disable the use of the content field?" Text="Yes" />
+                                    Help="Should channels of this type disable the use of the content field?" />
                             </div>
                         </div>
                     </div>
@@ -57,10 +57,10 @@
                         <div class="row">
                             <div class="col-sm-6">
                                 <Rock:RockCheckBox ID="cbDisableStatus" runat="server" Label="Disable Status"  
-                                    Help="Should channels of this type disable the use of the status and all be treated as 'Approved'?" Text="Yes" />
+                                    Help="Should channels of this type disable the use of the status and all be treated as 'Approved'?" />
                             </div>
                             <div class="col-sm-6">
-                                <Rock:RockCheckBox ID="cbShowInChannelList" runat="server" Label="Show in Channel Lists" Text="Yes"
+                                <Rock:RockCheckBox ID="cbShowInChannelList" runat="server" Label="Show in Channel Lists"
                                     Help="Unchecking this option means any channel block's 'Channel Types Include' settings MUST specifically include the type in order to show it." />
                             </div>
                         </div>
@@ -98,8 +98,8 @@
                 </Rock:PanelWidget>
 
                 <div class="actions">
-                    <asp:LinkButton ID="lbSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
-                    <asp:LinkButton ID="lbCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
+                    <asp:LinkButton ID="lbSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbSave_Click" />
+                    <asp:LinkButton ID="lbCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbCancel_Click" />
                 </div>
 
             </div>

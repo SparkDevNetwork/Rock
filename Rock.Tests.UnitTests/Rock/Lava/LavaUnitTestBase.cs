@@ -14,13 +14,14 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Lava;
+
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.UnitTests.Lava
 {
     [TestClass]
+    [TestCategory( TestFeatures.Lava )]
     public class LavaUnitTestBase
     {
         public static LavaUnitTestHelper TestHelper

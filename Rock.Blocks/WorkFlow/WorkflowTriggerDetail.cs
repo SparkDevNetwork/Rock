@@ -40,6 +40,7 @@ namespace Rock.Blocks.Workflow
     [Category( "WorkFlow" )]
     [Description( "Displays the details of a particular workflow trigger." )]
     [IconCssClass( "fa fa-question" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

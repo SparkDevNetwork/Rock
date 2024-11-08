@@ -1468,11 +1468,70 @@ namespace Rock.Migrations.Migrations {
         ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
         ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
         ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
-        ///    series. Let’s look at each o [rest of string was truncated]&quot;;.
+        ///    series. Let’s look at e [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202306151802148_UpdateChartShortcode {
             get {
                 return ResourceManager.GetString("_202306151802148_UpdateChartShortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] _202410101546296_AddDefaultCheckInAdvertisement_Image {
+            get {
+                object obj = ResourceManager.GetObject("_202410101546296_AddDefaultCheckInAdvertisement_Image", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///
+        ////* #Obsolete# - Pledge Analytics can be obtained using the spFinance_PledgeAnalyticsQueryWithMultipleAccountIds Stored Procedure. */
+        ///ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NU [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyticsQuery {
+            get {
+                return ResourceManager.GetString("_202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyt" +
+                        "icsQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_PledgeAnalyticsQueryWithMultipleAccountIds]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_PledgeAnalyticsQueryWithMultipleAccountIds]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_PledgeAnalyticsQueryWithMultipleAccountIds]
+        ///	  @AccountIds varchar(max)
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDat [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyticsQueryWithMultipleAccountIds {
+            get {
+                return ResourceManager.GetString("_202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyt" +
+                        "icsQueryWithMultipleAccountIds", resourceCulture);
             }
         }
     }

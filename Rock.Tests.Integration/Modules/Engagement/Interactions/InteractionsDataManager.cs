@@ -66,9 +66,9 @@ namespace Rock.Tests.Integration.Data.Interactions
         /// <param name="actionInfo"></param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        public Interaction CreatePageViewInteraction( CreatePageViewInteractionActionArgs actionInfo )
+        public Interaction CreatePageViewInteraction( CreatePageViewInteractionActionArgs actionInfo, RockContext rockContext = null )
         {
-            var interactions = CreatePageViewInteractionInternal( new List<CreatePageViewInteractionActionArgs> { actionInfo } );
+            var interactions = CreatePageViewInteractionInternal( new List<CreatePageViewInteractionActionArgs> { actionInfo }, rockContext );
             return interactions.First();
         }
 

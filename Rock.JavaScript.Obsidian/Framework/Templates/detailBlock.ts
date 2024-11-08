@@ -35,6 +35,10 @@ import { alert, confirmDelete, showSecurity } from "@Obsidian/Utility/dialogs";
 import { useHttp } from "@Obsidian/Utility/http";
 import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+import { splitCase } from "@Obsidian/Utility/stringUtils";
+import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
+import { useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
+import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
 /** Provides a pattern for entity detail blocks. */
 export default defineComponent({
@@ -52,6 +56,13 @@ export default defineComponent({
     },
 
     props: {
+
+        /** If true then labels for the entity will be visible regardless of the panel mode. */
+        alwaysShowLabels: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         /** The name of the entity. This will be used to construct the panel title. */
         name: {
             type: String as PropType<string>,
@@ -70,13 +81,13 @@ export default defineComponent({
         /** The unique identifier of the entity type that this detail block represents. */
         entityTypeGuid: {
             type: String as PropType<Guid>,
-            required: true
+            required: false
         },
 
         /** The friendly name of the entity type that this block represents. */
         entityTypeName: {
             type: String as PropType<string>,
-            required: true
+            required: false
         },
 
         /** The identifier key of the entity being displayed by this block. */
@@ -128,6 +139,14 @@ export default defineComponent({
         isDeleteVisible: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * If true then the individual will be able to switch to fullscreen mode.
+         */
+        isFullScreenVisible: {
+            type: Boolean as PropType<boolean>,
+            default: true
         },
 
         /** The current display mode for the detail panel. */
@@ -249,6 +268,9 @@ export default defineComponent({
         const isEntityFollowed = ref<boolean | null>(null);
         const showAuditDetailsModal = ref(false);
         const isPanelVisible = ref(true);
+        const providedEntityTypeName = useEntityTypeName();
+        const providedEntityTypeGuid = useEntityTypeGuid();
+        const browserBus = useBlockBrowserBus();
 
         let formSubmissionSource: PromiseCompletionSource | null = null;
         let editModeReadyCompletionSource: PromiseCompletionSource | null = null;
@@ -266,6 +288,20 @@ export default defineComponent({
         // #region Computed Values
 
         /**
+         * The entity type name for this block.
+         */
+        const entityTypeName = computed((): string => {
+            return props.entityTypeName ?? providedEntityTypeName ?? "EntityTypeNotConfigured";
+        });
+
+        /**
+         * The entity type unique identifier for this block.
+         */
+        const entityTypeGuid = computed((): Guid => {
+            return props.entityTypeGuid ?? providedEntityTypeGuid ?? emptyGuid;
+        });
+
+        /**
          * Contains the title to be displayed in the panel depending on the
          * property values and the current state of the panel.
          */
@@ -275,17 +311,22 @@ export default defineComponent({
             }
 
             switch (internalMode.value) {
-                // If we are in view mode then display either the entity name or
-                // the entity type name.
+                // If we are in view mode then we should be display the entity name.
+                // If not, fall back on the entity type name.
                 case DetailPanelMode.View:
-                    return props.name ?? props.entityTypeName;
+                    return props.name ?? splitCase(entityTypeName.value);
 
-                // If we are in edit or add mode then display just the entity type
-                // name. An icon will be shown before the text.
-                case DetailPanelMode.Edit:
+                // If we are in Add mode then display "Add {Entity Type Name}"
                 case DetailPanelMode.Add:
+                    return `Add ${splitCase(entityTypeName.value)}`;
+
+                // If we are in edit mode then we should be displaying the entity name.
+                // If not, fall back on the entity type name.
+                case DetailPanelMode.Edit:
+                    return props.name ?? splitCase(entityTypeName.value);
+
                 default:
-                    return props.entityTypeName;
+                    return splitCase(entityTypeName.value);
             }
         });
 
@@ -310,7 +351,7 @@ export default defineComponent({
         const internalHeaderSecondaryActions = computed((): PanelAction[] => {
             const actions: PanelAction[] = [];
 
-            if (!props.isAuditHidden) {
+            if (!props.isAuditHidden && internalMode.value !== DetailPanelMode.Add) {
                 actions.push({
                     type: "default",
                     title: "Audit Details",
@@ -373,11 +414,6 @@ export default defineComponent({
             return !isAutoEditMode.value || isEditMode.value;
         });
 
-        /** True if we have any labels to display. */
-        const hasLabels = computed((): boolean => {
-            return !!props.labels && props.labels.length > 0;
-        });
-
         /** The header actions that should be displayed in the panel title area. */
         const headerActions = computed((): PanelAction[] => {
             const actions = [...props.headerActions ?? []];
@@ -394,6 +430,14 @@ export default defineComponent({
 
             return actions;
         });
+
+        /** True if we have any labels to display and they should be visible. */
+        const showLabels = computed((): boolean => {
+            return !!props.labels && props.labels.length > 0 && (!isEditMode.value || props.alwaysShowLabels === true);
+        });
+
+        /** True if we're not in Edit mode and the isTagsVisible prop is true.. */
+        const showTags = computed(() => !isEditMode.value && props.isTagsVisible === true);
 
         // #endregion
 
@@ -457,13 +501,14 @@ export default defineComponent({
          */
         const getEntityFollowedState = async (): Promise<void> => {
             // If we don't have an entity then mark the state as "unknown".
-            if (!props.entityTypeGuid || !props.entityKey) {
+            if (areEqual(entityTypeGuid.value, emptyGuid)
+                || !props.entityKey) {
                 isEntityFollowed.value = null;
                 return;
             }
 
             const data: FollowingGetFollowingOptionsBag = {
-                entityTypeGuid: props.entityTypeGuid,
+                entityTypeGuid: entityTypeGuid.value,
                 entityKey: props.entityKey
             };
 
@@ -484,7 +529,7 @@ export default defineComponent({
          */
         const onSecurityClick = (): void => {
             if (props.entityKey) {
-                showSecurity(props.entityTypeGuid, props.entityKey, props.entityTypeName);
+                showSecurity(entityTypeGuid.value, props.entityKey, props.entityTypeName);
             }
         };
 
@@ -525,6 +570,7 @@ export default defineComponent({
             }
 
             internalMode.value = DetailPanelMode.View;
+            browserBus.publish(BlockMessages.EndEdit);
         };
 
         /**
@@ -559,6 +605,7 @@ export default defineComponent({
             await editModeReadyCompletionSource.promise;
 
             // Perform the final switch into edit mode.
+            browserBus.publish(BlockMessages.BeginEdit);
             internalMode.value = props.entityKey ? DetailPanelMode.Edit : DetailPanelMode.Add;
             isEditModeLoading.value = false;
             editModeReadyCompletionSource = null;
@@ -585,6 +632,7 @@ export default defineComponent({
             formSubmissionSource = new PromiseCompletionSource();
             isFormSubmitting.value = true;
             await formSubmissionSource.promise;
+            isFormSubmitting.value = false;
         };
 
         /**
@@ -630,10 +678,12 @@ export default defineComponent({
                 }
 
                 internalMode.value = DetailPanelMode.View;
+                browserBus.publish(BlockMessages.EndEdit);
             }
             finally {
                 if (formSubmissionSource !== null) {
                     formSubmissionSource.resolve();
+                    formSubmissionSource = null;
                 }
             }
         };
@@ -644,7 +694,7 @@ export default defineComponent({
          */
         const onDeleteClick = async (): Promise<void> => {
             if (props.onDelete) {
-                if (!await confirmDelete(props.entityTypeName, props.additionalDeleteMessage ?? "")) {
+                if (!await confirmDelete(entityTypeName.value, props.additionalDeleteMessage ?? "")) {
                     return;
                 }
 
@@ -683,12 +733,14 @@ export default defineComponent({
          */
         const onFollowClick = async (): Promise<void> => {
             // Shouldn't really happen, but just make sure we have everything.
-            if (isEntityFollowed.value === null || !props.entityTypeGuid || !props.entityKey) {
+            if (isEntityFollowed.value === null
+                || areEqual(entityTypeGuid.value, emptyGuid)
+                || !props.entityKey) {
                 return;
             }
 
             const data: FollowingSetFollowingOptionsBag = {
-                entityTypeGuid: props.entityTypeGuid,
+                entityTypeGuid: entityTypeGuid.value,
                 entityKey: props.entityKey,
                 isFollowing: !isEntityFollowed.value
             };
@@ -715,6 +767,7 @@ export default defineComponent({
         watch(isFormSubmitting, () => {
             if (isFormSubmitting.value === false && formSubmissionSource !== null) {
                 formSubmissionSource.resolve();
+                formSubmissionSource = null;
             }
         });
 
@@ -738,7 +791,8 @@ export default defineComponent({
         }
 
         return {
-            hasLabels,
+            entityTypeName,
+            entityTypeGuid,
             internalFooterSecondaryActions,
             internalHeaderSecondaryActions,
             panelTitle,
@@ -760,7 +814,9 @@ export default defineComponent({
             onEditSuspenseReady,
             onSaveClick,
             onSaveSubmit,
-            showAuditDetailsModal
+            showAuditDetailsModal,
+            showLabels,
+            showTags
         };
     },
 
@@ -770,8 +826,12 @@ export default defineComponent({
     type="block"
     :title="panelTitle"
     :titleIconCssClass="panelTitleIconCssClass"
-    :hasFullscreen="true"
+    :hasFullscreen="isFullScreenVisible"
     :headerSecondaryActions="internalHeaderSecondaryActions">
+
+    <template v-if="$slots.sidebar" #sidebar>
+        <slot name="sidebar" />
+    </template>
 
     <template #headerActions>
         <span v-for="action in headerActions" :class="getClassForIconAction(action)" :title="action.title" @click="onActionClick(action, $event)">
@@ -779,18 +839,18 @@ export default defineComponent({
         </span>
     </template>
 
-    <template v-if="!isEditMode && (hasLabels || isTagsVisible)" #subheaderLeft>
+    <template v-if="showLabels || showTags" #subheaderLeft>
         <div class="d-flex">
-            <div v-if="hasLabels" class="label-group">
+            <div v-if="showLabels" class="label-group">
                 <span v-for="action in labels" :class="getClassForLabelAction(action)" @click="onActionClick(action, $event)">
                     <template v-if="action.title">{{ action.title }}</template>
                     <i v-else :class="action.iconCssClass"></i>
                 </span>
             </div>
 
-            <div v-if="isTagsVisible && hasLabels" style="width: 2px; background-color: #eaedf0; margin: 0px 12px;"></div>
+            <div v-if="showTags && showLabels" style="width: 2px; background-color: #eaedf0; margin: 0px 12px;"></div>
 
-            <div v-if="isTagsVisible" class="flex-grow-1">
+            <div v-if="showTags" class="flex-grow-1">
                 <EntityTagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
             </div>
         </div>
@@ -806,12 +866,12 @@ export default defineComponent({
 
     <template #footerActions>
         <template v-if="isEditMode">
-            <RockButton btnType="primary" autoDisable @click="onSaveClick">Save</RockButton>
-            <RockButton btnType="link" @click="onEditCancelClick">Cancel</RockButton>
+            <RockButton btnType="primary" autoDisable @click="onSaveClick" shortcutKey="s">Save</RockButton>
+            <RockButton btnType="link" @click="onEditCancelClick" shortcutKey="c">Cancel</RockButton>
         </template>
 
         <template v-else>
-            <RockButton v-if="isEditVisible" btnType="primary" @click="onEditClick" autoDisable>Edit</RockButton>
+            <RockButton v-if="isEditVisible" btnType="primary" @click="onEditClick" autoDisable shortcutKey="e">Edit</RockButton>
             <RockButton v-if="isDeleteVisible" btnType="link" @click="onDeleteClick" autoDisable>Delete</RockButton>
         </template>
 

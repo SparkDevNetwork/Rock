@@ -140,13 +140,13 @@ namespace RockWeb.Blocks.Reporting
 
             var entityTypeEntityUserPreference = gfMetricValues.GetFilterPreference( this.EntityTypeEntityPreferenceKey ) ?? string.Empty;
 
-            var entityTypeEntityList = entityTypeEntityUserPreference.Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a =>
+            var entityTypeEntityList = entityTypeEntityUserPreference.Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 3 ).Select( a =>
                 new
                 {
                     EntityTypeId = a[0].AsIntegerOrNull(),
-                    EntityId = a[1].AsIntegerOrNull()
+                    EntityId = a[1].AsIntegerOrNull(),
+                    PartitionId = a[2].AsIntegerOrNull()
                 } ).ToList();
-
 
             if ( metric != null )
             {
@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Reporting
                     var controlId = string.Format( "metricPartition{0}_entityTypeEditControl", metricPartition.Id );
                     Control entityTypeEditControl = phMetricValuePartitions.FindControl( controlId );
 
-                    int? entityId = entityTypeEntityList.Where( a => a.EntityTypeId == metricPartition.EntityTypeId ).Select( a => a.EntityId ).FirstOrDefault();
+                    int? entityId = entityTypeEntityList.Where( a => a.EntityTypeId == metricPartition.EntityTypeId && a.PartitionId == metricPartition.Id ).Select( a => a.EntityId ).FirstOrDefault();
 
                     if ( metricPartitionEntityType != null && metricPartitionEntityType.SingleValueFieldType != null && metricPartitionEntityType.SingleValueFieldType.Field is IEntityFieldType )
                     {
@@ -245,7 +245,7 @@ namespace RockWeb.Blocks.Reporting
             {
                 var entityTypeEntityUserPreference = gfMetricValues.GetFilterPreference( this.EntityTypeEntityPreferenceKey ) ?? string.Empty;
 
-                var entityTypeEntityList = ( e.Value ?? string.Empty ).Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a =>
+                var entityTypeEntityList = ( e.Value ?? string.Empty ).Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 3 ).Select( a =>
                     new MetricValuePartition
                     {
                         MetricPartition = new MetricPartition { EntityTypeId = a[0].AsIntegerOrNull() },
@@ -286,7 +286,7 @@ namespace RockWeb.Blocks.Reporting
                 {
                     entityId = ( metricPartitionEntityType.SingleValueFieldType.Field as IEntityFieldType ).GetEditValueAsEntityId( entityTypeEditControl, new Dictionary<string, ConfigurationValue>() );
 
-                    entityTypeEntityFilters.Add( $"{metricPartitionEntityType.Id}|{entityId}" );
+                    entityTypeEntityFilters.Add( $"{metricPartitionEntityType.Id}|{entityId}|{metricPartition.Id}" );
                 }
             }
 
@@ -447,7 +447,7 @@ namespace RockWeb.Blocks.Reporting
                             value = entityItem.ToString();
                         }
 
-                        entityNameLookup.AddOrIgnore( metricValuePartition.EntityId.Value, value );
+                        entityNameLookup.TryAdd( metricValuePartition.EntityId.Value, value );
                     }
 
                     seriesNames.Add( entityNameLookup[metricValuePartition.EntityId.Value] );
@@ -507,7 +507,7 @@ namespace RockWeb.Blocks.Reporting
 
             var entityTypeEntityUserPreference = gfMetricValues.GetFilterPreference( this.EntityTypeEntityPreferenceKey ) ?? string.Empty;
 
-            var entityTypeEntityList = entityTypeEntityUserPreference.Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 2 ).Select( a =>
+            var entityTypeEntityList = entityTypeEntityUserPreference.Split( ',' ).Select( a => a.Split( '|' ) ).Where( a => a.Length == 3 ).Select( a =>
                 new
                 {
                     EntityTypeId = a[0].AsIntegerOrNull(),
@@ -558,8 +558,8 @@ namespace RockWeb.Blocks.Reporting
                 {
                     var entityTypeCache = EntityTypeCache.Get( metricPartition.EntityTypeId ?? 0 );
 
-                    _entityTypeEntityNameLookup.AddOrIgnore( entityTypeCache.Id, new Dictionary<int, string>() );
-                    _entityTypeEntityLookupQry.AddOrIgnore( entityTypeCache.Id, null );
+                    _entityTypeEntityNameLookup.TryAdd( entityTypeCache.Id, new Dictionary<int, string>() );
+                    _entityTypeEntityLookupQry.TryAdd( entityTypeCache.Id, null );
                     if ( entityTypeCache != null )
                     {
                         if ( entityTypeCache.GetEntityType() == typeof( Rock.Model.Group ) )

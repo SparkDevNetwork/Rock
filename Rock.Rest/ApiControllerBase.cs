@@ -24,6 +24,8 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.OData;
 
+using Microsoft.Extensions.DependencyInjection;
+
 #if REVIEW_NET5_0_OR_GREATER
 using Microsoft.AspNet.OData;
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +34,6 @@ using Microsoft.AspNetCore.Mvc;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
-using Rock.Rest.Utility;
 
 namespace Rock.Rest
 {
@@ -62,22 +63,17 @@ namespace Rock.Rest
         /// The rock request context that describes the current request
         /// being made.
         /// </value>
-        public RockRequestContext RockRequestContext => _rockRequestContext.Value;
-        private Lazy<RockRequestContext> _rockRequestContext;
+        public RockRequestContext RockRequestContext { get; private set; }
 
         /// <inheritdoc/>
-        public override async Task<HttpResponseMessage> ExecuteAsync( HttpControllerContext controllerContext, CancellationToken cancellationToken )
+        public override Task<HttpResponseMessage> ExecuteAsync( HttpControllerContext controllerContext, CancellationToken cancellationToken )
         {
-            // Initialize as lazy since very few API calls use this yet. Once
-            // it becomes more common the lazy part can be removed.
-            var responseContext = new RockMessageResponseContext();
-            _rockRequestContext = new Lazy<RockRequestContext>( () => new RockRequestContext( new HttpRequestMessageWrapper( controllerContext.Request ), responseContext ) );
+            if ( controllerContext.Request.Properties["RockServiceProvider"] is IServiceProvider serviceProvider )
+            {
+                RockRequestContext = serviceProvider.GetRequiredService<IRockRequestContextAccessor>().RockRequestContext;
+            }
 
-            var responseMessage = await base.ExecuteAsync( controllerContext, cancellationToken );
-
-            responseContext.Update( responseMessage );
-
-            return responseMessage;
+            return base.ExecuteAsync( controllerContext, cancellationToken );
         }
 
         /// <summary>

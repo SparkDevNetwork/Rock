@@ -122,6 +122,7 @@ namespace Rock.Model
             target.IsCumulative = source.IsCumulative;
             target.IsSystem = source.IsSystem;
             target.LastRunDateTime = source.LastRunDateTime;
+            target.MeasurementClassificationValueId = source.MeasurementClassificationValueId;
             target.MetricChampionPersonAliasId = source.MetricChampionPersonAliasId;
             target.NumericDataType = source.NumericDataType;
             target.ScheduleId = source.ScheduleId;

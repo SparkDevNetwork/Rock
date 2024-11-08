@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -88,8 +89,6 @@ namespace RockWeb.Blocks.Fundraising
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
@@ -103,6 +102,8 @@ namespace RockWeb.Blocks.Fundraising
                     pnlView.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -139,7 +140,15 @@ namespace RockWeb.Blocks.Fundraising
 
             // Left Top Sidebar
             var photoGuid = group.GetAttributeValue( "OpportunityPhoto" );
-            imgOpportunityPhoto.ImageUrl = string.Format( "~/GetImage.ashx?Guid={0}", photoGuid );
+
+            if ( !string.IsNullOrEmpty( photoGuid ) )
+            {
+                imgOpportunityPhoto.ImageUrl = FileUrlHelper.GetImageUrl( photoGuid.AsGuid() );
+            }
+            else
+            {
+                imgOpportunityPhoto.ImageUrl = "~/GetImage.ashx?Guid=";
+            }
 
             // Top Main
             string summaryLavaTemplate = this.GetAttributeValue( "SummaryLavaTemplate" );
@@ -173,7 +182,7 @@ namespace RockWeb.Blocks.Fundraising
                 var contributionTotal = new FinancialTransactionDetailService( rockContext ).Queryable()
                             .Where( d => d.EntityTypeId == entityTypeIdGroupMember
                                     && d.EntityId == groupMember.Id )
-                            .Sum( d => (decimal?)d.Amount ) ?? 0.00M;
+                            .Sum( d => ( decimal? ) d.Amount ) ?? 0.00M;
 
                 var individualFundraisingGoal = groupMember.GetAttributeValue( "IndividualFundraisingGoal" ).AsDecimalOrNull();
                 bool disablePublicContributionRequests = groupMember.GetAttributeValue( "DisablePublicContributionRequests" ).AsBoolean();

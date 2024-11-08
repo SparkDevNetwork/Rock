@@ -308,11 +308,6 @@ namespace RockWeb.Blocks.Core
                     ShowEditValue( attributeId.Value, false );
                 }
 
-                if ( hfActiveDialog.Value.ToUpper() == "ATTRIBUTEVALUE" )
-                {
-                    //
-                }
-
                 ShowDialog();
             }
 

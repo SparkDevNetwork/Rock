@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -26,15 +27,31 @@ namespace Rock.Reporting
     /// <seealso cref="System.Exception" />
     public sealed class RockDataViewFilterExpressionException : RockReportingException
     {
-        private DataViewFilter _dataViewFilter;
+        private IDataViewFilterDefinition _dataViewFilter;
         private readonly string _message;
 
         /// <summary>
         /// Sets the data filter, unless it has been set already
         /// Use this if this DataFilter wasn't known at the time the exception was raised.
         /// </summary>
+        /// <remarks>
+        /// This property should be marked as Obsolete.
+        /// Use SetDataFilterIfNotSet( IDataViewFilterDefinition dataViewFilter ) instead.
+        /// </remarks>
         /// <param name="dataViewFilter">The data view filter.</param>
+        [Obsolete( "Use the method that takes an IDataViewFilterDefinition instead." )]
+        [RockObsolete( "1.16.4" )]
         public void SetDataFilterIfNotSet( DataViewFilter dataViewFilter )
+        {
+            SetDataFilterIfNotSet( dataViewFilter as IDataViewFilterDefinition );
+        }
+
+        /// <summary>
+        /// Sets the data filter, unless it has been set already
+        /// Use this if this DataFilter wasn't known at the time the exception was raised.
+        /// </summary>
+        /// <param name="dataViewFilter">The data view filter.</param>
+        public void SetDataFilterIfNotSet( IDataViewFilterDefinition dataViewFilter )
         {
             if ( _dataViewFilter != null )
             {
@@ -45,13 +62,20 @@ namespace Rock.Reporting
             {
                 if ( dataViewFilter?.DataViewId != null )
                 {
-                    DataView = dataViewFilter.DataView;
+                    DataViewName = dataViewFilter.DataView?.Name;
+                    DataViewId = dataViewFilter.DataViewId;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+                    DataView = dataViewFilter.DataView as DataView;
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
             }
             catch
             {
                 // if we weren't able to lazy-load DataView (or some other problem), just ignore
+#pragma warning disable CS0618 // Type or member is obsolete
                 DataView = null;
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             _dataViewFilter = dataViewFilter;
@@ -62,7 +86,7 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         public RockDataViewFilterExpressionException( string message )
-            : this( ( DataViewFilter ) null, message )
+            : this( ( IDataViewFilterDefinition ) null, message )
         {
         }
 
@@ -72,6 +96,8 @@ namespace Rock.Reporting
         /// <param name="dataViewFilter">The data view filter.</param>
         /// <param name="message">The message.</param>
         /// <param name="innerException">The inner exception.</param>
+        [Obsolete( "Use the constructor that takes an IDataViewFilterDefinition instead." )]
+        [RockObsolete( "1.16.4" )]
         public RockDataViewFilterExpressionException( DataViewFilter dataViewFilter, string message, Exception innerException )
             : base( message, innerException )
         {
@@ -84,7 +110,32 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="dataViewFilter">The data view filter.</param>
         /// <param name="message">The message.</param>
+        [Obsolete( "Use the constructor that takes an IDataViewFilterDefinition instead." )]
+        [RockObsolete( "1.16.4" )]
         public RockDataViewFilterExpressionException( DataViewFilter dataViewFilter, string message )
+            : this( dataViewFilter, message, null )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockDataViewFilterExpressionException"/> class.
+        /// </summary>
+        /// <param name="dataViewFilter">The data view filter.</param>
+        /// <param name="message">The message.</param>
+        /// <param name="innerException">The inner exception.</param>
+        public RockDataViewFilterExpressionException( IDataViewFilterDefinition dataViewFilter, string message, Exception innerException )
+            : base( message, innerException )
+        {
+            SetDataFilterIfNotSet( dataViewFilter );
+            _message = message;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockDataViewFilterExpressionException" /> class.
+        /// </summary>
+        /// <param name="dataViewFilter">The data view filter.</param>
+        /// <param name="message">The message.</param>
+        public RockDataViewFilterExpressionException( IDataViewFilterDefinition dataViewFilter, string message )
             : this( dataViewFilter, message, null )
         {
         }
@@ -95,7 +146,25 @@ namespace Rock.Reporting
         /// <value>
         /// The data view identifier.
         /// </value>
+        [Obsolete( "Use DataViewId and DataViewName properties instead." )]
+        [RockObsolete( "1.16.4" )]
         public DataView DataView { get; private set; }
+
+        /// <summary>
+        /// Gets the identifier of the DataView that produced the error.
+        /// </summary>
+        /// <value>
+        /// The data view identifier.
+        /// </value>
+        public int? DataViewId { get; private set; }
+
+        /// <summary>
+        /// Gets the name of the DataView that produced the error.
+        /// </summary>
+        /// <value>
+        /// The data view name.
+        /// </value>
+        public string DataViewName { get; private set; }
 
         /// <summary>
         /// Gets the friendly message for the caller DataView.
@@ -105,15 +174,37 @@ namespace Rock.Reporting
         /// <value>
         /// The friendly message.
         /// </value>
+        [Obsolete( "Use the method that takes IDataViewDefinition instead." )]
+        [RockObsolete( "1.16.4" )]
         public string GetFriendlyMessage( DataView callerDataView )
+        {
+            return GetFriendlyMessage( callerDataView as IDataViewDefinition );
+        }
+
+        /// <summary>
+        /// Gets the friendly message for the caller DataView.
+        /// </summary>
+        /// <param name="callerDataView">The caller data view.</param>
+        /// <returns></returns>
+        /// <value>
+        /// The friendly message.
+        /// </value>
+        public string GetFriendlyMessage( IDataViewDefinition callerDataView )
         {
             if ( _dataViewFilter != null && _dataViewFilter.EntityTypeId.HasValue )
             {
                 var entityType = EntityTypeCache.Get( _dataViewFilter.EntityTypeId.Value );
-                if ( DataView != null && callerDataView != null && callerDataView?.Id != DataView?.Id )
+                if ( DataViewId.HasValue && callerDataView != null && callerDataView.Id != DataViewId.Value )
                 {
                     // if the DataView that generated this error isn't the same as the DataView that was run, it must have been from an "OtherDataView" filter
-                    return $"An error has occurred within related DataView: {DataView}";
+                    if ( DataViewName.IsNotNullOrWhiteSpace() )
+                    {
+                        return $"An error has occurred within related DataView: {DataViewName}";
+                    }
+                    else
+                    {
+                        return $"An error has occurred within related DataView: #{DataViewId}";
+                    }
                 }
 
                 if ( entityType != null )
@@ -142,7 +233,7 @@ namespace Rock.Reporting
             {
                 if ( _dataViewFilter != null )
                 {
-                    return $"{_message} [DataViewFilterId: {_dataViewFilter?.Id}, DataViewId: {DataView?.Id}]";
+                    return $"{_message} [DataViewFilterId: {_dataViewFilter?.Id}, DataViewId: {DataViewId}]";
                 }
 
                 return _message;

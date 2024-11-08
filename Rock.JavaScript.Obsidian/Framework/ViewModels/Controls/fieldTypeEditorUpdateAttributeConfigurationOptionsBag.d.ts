@@ -35,5 +35,5 @@ export type FieldTypeEditorUpdateAttributeConfigurationOptionsBag = {
     defaultValue?: string | null;
 
     /** Gets or sets the field type unique identifier. */
-    fieldTypeGuid?: Guid | null;
+    fieldTypeGuid: Guid;
 };

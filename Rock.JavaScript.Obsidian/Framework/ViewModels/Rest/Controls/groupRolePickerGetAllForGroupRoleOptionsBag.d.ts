@@ -35,7 +35,7 @@ export type GroupRolePickerGetAllForGroupRoleOptionsBag = {
      * Unique identifier of a group role. Used to get the rest of the data
      * about this role, and the group type it belongs to.
      */
-    groupRoleGuid?: Guid | null;
+    groupRoleGuid: Guid;
 
     /**
      * Gets or sets the security grant token to use when performing

@@ -25,7 +25,7 @@ export const enum NavigationUrlKey {
 export const enum PreferenceKey {
     FilterDaysBack = "filter-days-back",
 
-    FilterContainsSourceType = "filter-contains-source-type",
+    FilterContainsSourceType = "filter-contains-source",
 
     FilterContainsTransactionType = "filter-contains-transaction-type",
 

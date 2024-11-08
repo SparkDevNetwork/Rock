@@ -25,6 +25,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Update;
@@ -156,7 +157,7 @@ namespace RockWeb.Blocks.Core
 
                 _releases = GetOrderedReleaseList( rockUpdateService, _installedVersion );
 
-                if ( _releases.Exists( r => new Version( r.SemanticVersion ) >= new Version( "1.17.0" ) ) && RockInstanceConfig.LavaEngineName != "Fluid" )
+                if ( _releases.Exists( r => new Version( r.SemanticVersion ) >= new Version( "1.17.0" ) ) && RockApp.Current.GetCurrentLavaEngineName() != "Fluid" )
                 {
                     nbLavaEngineIssue.Visible = true;
                 }
@@ -481,7 +482,7 @@ namespace RockWeb.Blocks.Core
             try
             {
                 var ipAddress = Request.ServerVariables["LOCAL_ADDR"];
-                var environmentData = RockUpdateHelper.GetEnvDataAsJson( Request, ResolveRockUrl( "~/" ) );
+                var environmentData = Rock.Web.Utilities.RockUpdateHelper.GetEnvDataAsJson( Request, ResolveRockUrl( "~/" ) );
                 using ( var rockContext = new RockContext() )
                 {
                     var instanceStatistics = new RockInstanceImpactStatistics( new RockImpactService(), rockContext );

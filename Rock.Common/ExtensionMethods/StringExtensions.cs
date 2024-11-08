@@ -181,6 +181,8 @@ namespace Rock
         /// Accepts an encoded string and returns an encoded string
         /// </summary>
         /// <param name="encodedString"></param>
+        [RockObsolete( "1.16.1" )]
+        [Obsolete( "This method is no longer suitable. Consider using RedirectUrlContainsXss." )]
         public static string ScrubEncodedStringForXSSObjects( this string encodedString )
         {
             var decodedString = encodedString.GetFullyUrlDecodedValue();
@@ -200,6 +202,8 @@ namespace Rock
         /// <returns>
         ///   <c>true</c> if <paramref name="decodedString"/> has XSS objects; otherwise, <c>false</c>.
         /// </returns>
+        [RockObsolete( "1.16.1" )]
+        [Obsolete( "This method is no longer suitable. Consider using RedirectUrlContainsXss." )]
         public static bool HasXssObjects( this string decodedString )
         {
             // Characters used by DOM Objects; javascript, document, window and URLs
@@ -214,12 +218,64 @@ namespace Rock
         }
 
         /// <summary>
+        /// Checks a value intended to be a redirect URL for XSS injection methods.
+        /// </summary>
+        /// <param name="redirectUrl">The value intended to be used for a redirect URL.</param>
+        /// <returns>
+        ///   <c>true</c> if [redirectUrl contains XSS injection methods]; otherwise, <c>false</c>.
+        /// </returns>
+        public static bool RedirectUrlContainsXss( this string redirectUrl )
+        {
+            if ( string.IsNullOrWhiteSpace( redirectUrl ) )
+            {
+                return false; // Early exit, nothing to check.
+            }
+
+            // These are characters which we will not ever allow in a URL query string value.  We used to block colon (:), but that
+            // has a valid use in DateTime values.
+            char[] badCharacters = new char[] { '<', '>', '*' };
+
+            // Ensure we URL and HTML decode all characters, even if they are double/triple/etc encoded.
+            var decodedString = redirectUrl.GetFullyUrlDecodedValue().GetFullyHtmlDecodedValue();
+
+            // Check for bad characters.
+            if ( decodedString.IndexOfAny( badCharacters ) >= 0 )
+            {
+                return true;
+            }
+
+            // Some special whitespace characters are ignored by the browser when parsing script.  Remove all whitespace from the
+            // string and make it lower case for easier comparison.
+            decodedString = Regex.Replace( decodedString, @"\s+", "" ).ToLower();
+
+            // These are strings that should never be allowed in a URL query string value.
+            string[] blockedStrings = new string[] { "javascript:" };
+
+            // Check for bad strings.
+            foreach ( string blockedString in blockedStrings )
+            {
+                if ( decodedString.Contains( blockedString ) )
+                {
+                    return true;
+                }
+            }
+
+            // Everything looks okay.
+            return false;
+        }
+
+        /// <summary>
         /// Gets a fully URL-decoded string (or returns string.Empty if it cannot be decoded within 10 attempts).
         /// </summary>
-        /// <param name="encodedString"></param>
+        /// <param name="encodedString">The encoded string.</param>
         /// <returns></returns>
         public static string GetFullyUrlDecodedValue( this string encodedString )
         {
+            if ( string.IsNullOrWhiteSpace( encodedString) )
+            {
+                return encodedString;
+            }
+
             int loopCount = 0;
             var decodedString = encodedString;
             var testString = WebUtility.UrlDecode( encodedString );
@@ -236,6 +292,114 @@ namespace Rock
             }
 
             return decodedString;
+        }
+
+        /// <summary>
+        /// Gets a fully HTML-decoded string (or returns string.Empty if it cannot be decoded within 10 attempts).
+        /// </summary>
+        /// <param name="encodedString">The encoded string.</param>
+        /// <returns></returns>
+        public static string GetFullyHtmlDecodedValue( this string encodedString )
+        {
+            if ( string.IsNullOrWhiteSpace( encodedString ) )
+            {
+                return encodedString;
+            }
+
+            int loopCount = 0;
+            var decodedString = encodedString;
+            var testString = HtmlDecodeCharactersWithoutSeparators( encodedString );
+            while ( testString != decodedString )
+            {
+                loopCount++;
+                if ( loopCount >= 10 )
+                {
+                    return string.Empty;
+                }
+
+                decodedString = testString;
+                testString = HtmlDecodeCharactersWithoutSeparators( testString );
+            }
+
+            return decodedString;
+        }
+
+        /// <summary>
+        /// This method inserts missing semi-colon separators into HTML-encoded character strings that use hex or decimal character
+        /// references before HTML decoding them. Browsers will render these strings without the separators, but
+        /// <see cref="WebUtility.HtmlDecode"/> will not.
+        /// </summary>
+        /// <param name="encodedString">The encoded string.</param>
+        /// <returns></returns>
+        private static string HtmlDecodeCharactersWithoutSeparators( this string encodedString )
+        {
+            if ( string.IsNullOrWhiteSpace( encodedString ) )
+            {
+                return encodedString;
+            }
+
+            // Hex encoded HTML characters should follow the format "&#0000;" (for decimal) or &#x0000; (for hex).  If we don't have
+            // an ampersand together with a pound symbol, we can just use the base method.
+            if ( !encodedString.Contains( "&#" ) )
+            {
+                return WebUtility.HtmlDecode( encodedString );
+            }
+
+            // This loop will shift each segment of the string from encodedString to correctedEncodedString, adding any missing
+            // semi-colons after each decimal or hex encoded character.
+            var correctedEncodedString = string.Empty;
+            while ( encodedString.Contains( "&#" ) )
+            {
+                var elementBoundary = encodedString.IndexOf( "&#" );
+
+                // Start by putting everything before the next &# into the corrected string and removing it from the original.
+                correctedEncodedString += encodedString.Substring( 0, elementBoundary ) + "&#";
+                elementBoundary += 2;
+                encodedString = encodedString.Substring( elementBoundary, encodedString.Length - elementBoundary );
+
+                // If the next character in the string is an "x", move it to the corrected string.
+                var nextChar = encodedString.FirstOrDefault();
+                bool useHex = false;
+                if ( nextChar == 'x' )
+                {
+                    useHex = true;
+                    correctedEncodedString += nextChar;
+                    encodedString = encodedString.Substring( 1, encodedString.Length - 1 );
+                    nextChar = encodedString.FirstOrDefault();
+                }
+
+                // Keep moving any digits to the corrected string.  There's technically no limit on padding zeros.
+                var isDigit = useHex ? nextChar.IsHexDigit() : char.IsDigit( nextChar );
+                while ( isDigit )
+                {
+                    correctedEncodedString += nextChar;
+                    encodedString = encodedString.Substring( 1, encodedString.Length - 1 );
+                    nextChar = encodedString.FirstOrDefault();
+                    isDigit = useHex ? nextChar.IsHexDigit() : char.IsDigit( nextChar );
+                }
+
+                // Add missing semi-colons.
+                if ( nextChar != ';' )
+                {
+                    correctedEncodedString += ";";
+                }
+            }
+
+            // Re-append any trailing characters left over in the original string.
+            correctedEncodedString += encodedString;
+
+            return WebUtility.HtmlDecode( correctedEncodedString );
+        }
+
+        /// <summary>
+        /// Checks a digit to see if it's a valid hexadecimal character (0-9 or A-F).  Permits lowercase.
+        /// </summary>
+        /// <param name="c">The character.</param>
+        /// <returns></returns>
+        private static bool IsHexDigit( this char c )
+        {
+            char[] nonNumericHexCharacters = new char[] { 'A', 'B', 'C', 'D', 'E', 'F', 'a', 'b', 'c', 'd', 'e', 'f' };
+            return char.IsDigit( c ) || nonNumericHexCharacters.Contains( c );
         }
 
         /// <summary>
@@ -806,20 +970,6 @@ namespace Rock
         /// <param name="startIndex">The 0-based starting position.</param>
         /// <param name="maxLength">The maximum length.</param>
         /// <returns></returns>
-        [Obsolete( "Use SubstringSafe() instead. Obsolete as of 1.12.0" )]
-        [RockObsolete( "1.12" )]
-        public static string SafeSubstring( this string str, int startIndex, int maxLength )
-        {
-            return str.SubstringSafe( startIndex, maxLength );
-        }
-
-        /// <summary>
-        /// Returns a substring of a string. Uses an empty string for any part that doesn't exist and will return a partial substring if the string isn't long enough for the requested length (the built-in method would throw an exception in these cases).
-        /// </summary>
-        /// <param name="str">The string.</param>
-        /// <param name="startIndex">The 0-based starting position.</param>
-        /// <param name="maxLength">The maximum length.</param>
-        /// <returns></returns>
         public static string SubstringSafe( this string str, int startIndex, int maxLength )
         {
             if ( str == null || maxLength < 0 || startIndex < 0 || startIndex > str.Length )
@@ -874,6 +1024,15 @@ namespace Rock
             if ( str.Length <= maxLength )
             {
                 return str;
+            }
+
+            // Since we include the ellipsis in the number of max characters
+            // we need to disable ellipsis if they told us to have a max
+            // length of 3 or less - which is the number of periods that
+            // would be added.
+            if ( maxLength <= 3 )
+            {
+                addEllipsis = false;
             }
 
             // If adding an ellipsis then reduce the maxlength by three to allow for the additional characters

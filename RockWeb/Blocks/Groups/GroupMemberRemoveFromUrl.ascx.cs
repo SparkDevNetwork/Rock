@@ -82,8 +82,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 RockContext rockContext = new RockContext();
@@ -113,6 +111,7 @@ namespace RockWeb.Blocks.Groups
                 if ( group == null )
                 {
                     lAlerts.Text = "Could not determine the group to add to.";
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -127,6 +126,7 @@ namespace RockWeb.Blocks.Groups
                 if ( person == null )
                 {
                     lAlerts.Text += "A person could not be found for the identifier provided.";
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -178,6 +178,8 @@ namespace RockWeb.Blocks.Groups
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

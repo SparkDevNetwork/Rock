@@ -11,6 +11,7 @@
                 <h1 class="panel-title"><i class="fa fa-history"></i> Scheduled Job History for <asp:Literal ID="lJobName" runat="server" /></h1>
             </div>
             <div class="panel-body">
+                <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
                 <div class="grid grid-panel">
                     <Rock:Grid ID="gScheduledJobHistory" runat="server" TooltipField="Description" AllowSorting="true" OnRowDataBound="gScheduledJobHistory_RowDataBound">
                         <Columns>

@@ -16,6 +16,7 @@
 //
 using System;
 
+using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -42,7 +43,7 @@ namespace Rock.Attribute
         public DefinedValueRangeFieldAttribute( string definedTypeGuid, string name = "", string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null )
             : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.DefinedValueRangeFieldType ).FullName )
         {
-            var definedType = DefinedTypeCache.Get( new Guid( definedTypeGuid ) );
+            var definedType = RockApp.Current.IsDatabaseAvailable() ? DefinedTypeCache.Get( new Guid( definedTypeGuid ) ) : null;
             if ( definedType != null )
             {
                 var definedTypeConfigValue = new Field.ConfigurationValue( definedType.Id.ToString() );

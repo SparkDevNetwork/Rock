@@ -17,6 +17,7 @@
     import { PropType, ref, watch } from "vue";
     import { DataViewTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import TreeItemPicker from "./treeItemPicker.obs";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -25,7 +26,7 @@
         },
 
         entityTypeGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | null | undefined>,
             required: false
         },
 
@@ -48,7 +49,7 @@
     const standardProps = useStandardAsyncPickerProps(props);
 
     const itemProvider = ref(new DataViewTreeItemProvider());
-    itemProvider.value.entityTypeGuid = props.entityTypeGuid;
+    itemProvider.value.entityTypeGuid = toGuidOrNull(props.entityTypeGuid) ?? undefined;
     itemProvider.value.securityGrantToken = securityGrantToken.value;
     itemProvider.value.displayPersistedOnly = props.displayPersistedOnly;
 
@@ -69,7 +70,7 @@
         // copy old provider's properties
         newProvider.securityGrantToken = oldProvider.securityGrantToken;
         // Use new value
-        newProvider.entityTypeGuid = props.entityTypeGuid;
+        newProvider.entityTypeGuid = toGuidOrNull(props.entityTypeGuid) ?? undefined;
         newProvider.displayPersistedOnly = props.displayPersistedOnly;
 
         // Set the provider to the new one

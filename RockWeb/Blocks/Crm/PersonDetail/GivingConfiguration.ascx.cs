@@ -127,6 +127,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string PersonActionIdentifier = "rckid";
             public const string PledgeId = "PledgeId";
             public const string StatementYear = "StatementYear";
+            public const string AutoEdit = "autoEdit";
+            public const string ReturnUrl = "returnUrl";
         }
 
         #endregion Attribute Keys
@@ -139,14 +141,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             var isVisible = Person != null && Person.Id != 0;
             pnlContent.Visible = isVisible;
             if ( isVisible )
             {
                 ShowDetail();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -208,7 +210,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
             else if ( financialPledge.StartDate != DateTime.MinValue.Date && financialPledge.EndDate == DateTime.MaxValue.Date )
             {
-                lPledgeDate.Text = string.Format( "{0} On-Ward", financialPledge.StartDate.ToShortDateString() );
+                lPledgeDate.Text = string.Format( "{0} Onward", financialPledge.StartDate.ToShortDateString() );
             }
             else
             {
@@ -237,7 +239,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var btnScheduledTransactionInactivate = e.Item.FindControl( "btnScheduledTransactionInactivate" ) as LinkButton;
             btnScheduledTransactionInactivate.CommandArgument = financialScheduledTransaction.Guid.ToString();
 
-            if ( financialScheduledTransaction.IsActive )
+            if ( financialScheduledTransaction.IsActive && financialScheduledTransaction.FinancialGateway.GetGatewayComponent().UpdateScheduledPaymentSupported )
             {
                 btnScheduledTransactionInactivate.Visible = true;
             }
@@ -546,6 +548,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var queryParams = new Dictionary<string, string>();
             queryParams.AddOrReplace( PageParameterKey.PledgeId, "0" );
             queryParams.AddOrReplace( PageParameterKey.PersonActionIdentifier, Person.GetPersonActionIdentifier( "pledge" ) );
+            queryParams.AddOrReplace( PageParameterKey.AutoEdit, "true" );
+            queryParams.AddOrReplace( PageParameterKey.ReturnUrl, Request.RawUrl );
             NavigateToLinkedPage( AttributeKey.PledgeDetailPage, queryParams );
         }
 
@@ -655,6 +659,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 var queryParams = new Dictionary<string, string>();
                 queryParams.AddOrReplace( PageParameterKey.PledgeId, pledge.Id.ToString() );
                 queryParams.AddOrReplace( PageParameterKey.PersonActionIdentifier, Person.GetPersonActionIdentifier( "pledge" ) );
+                queryParams.AddOrReplace( PageParameterKey.AutoEdit, "true" );
+                queryParams.AddOrReplace( PageParameterKey.ReturnUrl, Request.RawUrl );
                 NavigateToLinkedPage( AttributeKey.PledgeDetailPage, queryParams );
             }
         }
@@ -696,6 +702,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             btnEditTextToGive.Visible = false;
             pnlTextToGiveView.Visible = false;
             pnlTextToGiveEdit.Visible = true;
+            pnlTextToGiveAddSettings.Visible = false;
 
             BindSavedAccounts();
 
@@ -767,22 +774,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void SetTextToGiveDetails()
         {
-            if ( !Person.ContributionFinancialAccountId.HasValue )
-            {
-                // Don't show anything.
-                pnlTextToGive.Visible = false;
-                btnEditTextToGive.Visible = false;
-                pnlTextToGiveAddSettings.Visible = true;
-                return;
-            }
-
             pnlTextToGive.Visible = true;
+            pnlTextToGiveAddSettings.Visible = false;
 
             var financialAccount = GetDefaultFinancialAccount();
             lTTGDefaultAccount.Text = financialAccount == null ? "None" : financialAccount.PublicName;
 
             var defaultSavedAccount = GetDefaultSavedAccount();
             lTTGSavedAccount.Text = defaultSavedAccount == null ? "None" : GetSavedAccountName( defaultSavedAccount );
+
+            btnEditTextToGive.Visible = Person.ContributionFinancialAccountId.HasValue || defaultSavedAccount != null;
+
+            pnlTextToGiveAddSettings.Visible = !Person.ContributionFinancialAccountId.HasValue && defaultSavedAccount == null;
         }
 
         /// <summary>

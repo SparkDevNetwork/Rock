@@ -20,7 +20,6 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using System.Windows.Media.Animation;
 
 using Rock.Attribute;
 using Rock.Web.Cache;
@@ -383,7 +382,7 @@ namespace Rock.Web.UI.Controls
             {
                 var categoryAttributes = GetDistinctAttributesByCategory( item );
                 var blockEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.BLOCK );
-                var areBlockSettingsControls = ( item.Attributes.Values.FirstOrDefault().EntityTypeId ?? 0 ) == blockEntityTypeId;
+                var areBlockSettingsControls = ( item.Attributes.Values.FirstOrDefault()?.EntityTypeId ?? 0 ) == blockEntityTypeId;
 
                 // Show block setting categories in panels if at least one category is specified.
                 var showCategoryPanels = areBlockSettingsControls && categoryAttributes.Where( c => c.Category != null ).Count() > 0;

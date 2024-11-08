@@ -64,14 +64,29 @@ namespace Rock.Web.UI
         {
             base.OnLoad( e );
 
-            if ( Block is IRockWebBlockType webBlock )
-            {
-                using ( var sw = new StringWriter() )
-                {
-                    sw.Write( webBlock.GetControlMarkup() );
+            /*
+                 10/08/2024 - NA
 
-                    _cachedRenderContent = sw.ToString();
-                }
+                 An IRockWebBlockType (Obsidian block) should generally never be involved in
+                 an IsPostBack, so it should be able to ignore these events and avoid
+                 reloading its content.
+
+                 Reason: The Obsidian block content was being reloaded and then discarded.
+                         https://app.asana.com/0/1200625776837488/1206779635354257/f
+            */
+            if ( Block is IRockWebBlockType webBlock && !IsPostBack )
+            {
+                var pageTask = new PageAsyncTask( async () =>
+                {
+                    using ( var sw = new StringWriter() )
+                    {
+                        sw.Write( await webBlock.GetControlMarkupAsync() );
+
+                        _cachedRenderContent = sw.ToString();
+                    }
+                } );
+
+                Page.RegisterAsyncTask( pageTask );
             }
         }
 

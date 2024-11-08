@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { Guid } from "@Obsidian/Types";
 import { SearchKeyBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessDetail/searchKeyBag";
 import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -39,6 +40,9 @@ export type BusinessDetailBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** Gets or sets the badge type guids. */
+    badgeTypeGuids?: Guid[] | null;
+
     /** Gets or sets the name of the business. */
     businessName?: string | null;
 
@@ -51,11 +55,17 @@ export type BusinessDetailBag = {
     /** Gets or sets the custom actions. */
     customActions?: string | null;
 
+    /** Gets or sets the phone number when in view mode. */
+    displayPhoneNumber?: string | null;
+
     /** Gets or sets the email address. */
     emailAddress?: string | null;
 
     /** Gets or sets the email preference. */
     emailPreference?: string | null;
+
+    /** Gets or sets the email tag. */
+    emailTag?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;

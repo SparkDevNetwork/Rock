@@ -48,7 +48,7 @@
                                      <div class="flex-fill">
                                          <div class="row">
                                              <div class="col-md-4 col-sm-8">
-                                                 <h5 class="margin-t-none"><%# Eval("StartDate", "{0:M/d/yyyy (dddd)}")  %></h5>
+                                                 <h5 class="margin-t-none"><%# DateTime.Parse(Eval("StartDate").ToString()).ToString("d") + " " + DateTime.Parse(Eval("StartDate").ToString()).ToString(" (dddd)") %></h5>
 
                                                  <p>
                                                     <%# string.Format(Eval("Location").ToString().Length > 0 ? "Location: {0}" : "", Eval("Location").ToString())  %>

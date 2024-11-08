@@ -29,7 +29,7 @@ export type GroupBag = {
     campusName?: string | null;
 
     /** Gets or sets the unique identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the hashed identifier key. */
     idKey?: string | null;

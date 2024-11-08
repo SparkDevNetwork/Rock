@@ -11,6 +11,7 @@
     import { FormError, FormState, provideFormState } from "@Obsidian/Utility/form";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import RockValidation from "./rockValidation.obs";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
 
     const props = defineProps({
         /** True if the form should attempt to submit. */
@@ -33,11 +34,15 @@
         formResetKey: {
             type: String as PropType<string>,
             default: ""
-        }
+        },
+
+        onSubmit: {
+            type: Function as PropType<(() => void | PromiseLike<void>)>,
+            required: false
+        },
     });
 
     const emit = defineEmits<{
-        (e: "submit"): void;
         // This contains all active errors even if the UI is not in sync.
         (e: "validationChanged", errors: FormError[]): void;
         // This contains just the errors that should be currently displayed in the UI.
@@ -88,7 +93,7 @@
     });
 
     // Watch for any submit actions and check the validation.
-    watch(submit, () => {
+    watch(submit, async () => {
         if (submit.value) {
             formState.submitCount++;
 
@@ -96,11 +101,22 @@
             visibleErrors.value = errorValues.value;
             emit("visibleValidationChanged", visibleErrors.value);
 
-            if (Object.keys(errors.value).length === 0) {
-                emit("submit");
-            }
+            try {
+                if (Object.keys(errors.value).length === 0) {
+                    const submitHandler = props.onSubmit;
 
-            submit.value = false;
+                    if (submitHandler) {
+                        const result = submitHandler();
+
+                        if (isPromise(result)) {
+                            await result;
+                        }
+                    }
+                }
+            }
+            finally {
+                submit.value = false;
+            }
         }
 
         emit("update:submit", submit.value);

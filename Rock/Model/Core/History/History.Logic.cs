@@ -343,6 +343,11 @@ namespace Rock.Model
                                     var stepSummary = strBuilder.ToString();
                                     return stepSummary;
                                 }
+
+                            case HistoryVerb.EmailUnsubscribed:
+                                {
+                                    return "Unsubscribed upon request through one-click functionality in email client.";
+                                }
                         }
                     }
 
@@ -490,7 +495,12 @@ namespace Rock.Model
             /// <summary>
             /// The Campus of Step is modified.
             /// </summary>
-            StepCampusModify
+            StepCampusModify,
+
+            /// <summary>
+            /// The Person Unsubscribed from Email Communication.
+            /// </summary>
+            EmailUnsubscribed
         }
 
         /// <summary>

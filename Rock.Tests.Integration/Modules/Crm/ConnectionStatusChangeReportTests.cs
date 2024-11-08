@@ -17,21 +17,28 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Crm.ConnectionStatusChangeReport;
 using Rock.Data;
 using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Crm
+namespace Rock.Tests.Integration.Modules.Crm
 {
     /// <summary>
     /// Create and manage test data for the Rock CRM module.
     /// </summary>
     [TestClass]
-    public class ConnectionStatusChangeReportTests : DatabaseIntegrationTestClassBase
+    [TestCategory( "Crm.ConnectionStatusChangeReport" )]
+    public class ConnectionStatusChangeReportTests : DatabaseTestsBase
     {
+        private readonly int _InvalidCampusId = 99;
+        private readonly int _MainCampusId = 1;
+
         #region Initialization
 
         /// <summary>
@@ -54,59 +61,15 @@ namespace Rock.Tests.Integration.Crm
 
         #endregion
 
-        #region Initialization
-
-        //private const string _TestDataSourceTag = "ConnectionStatusChangeReportTest";
-        private readonly int _InvalidCampusId = 99;
-        private readonly int _MainCampusId = 1;
-
-        /// <summary>
-        /// Override this method to perform custom validation to ensure that the required test data exists in the database.
-        /// </summary>
-        /// <param name="isValid"></param>
-        /// <param name="stateMessage">A message describing the reasons for a failure state.</param>
-        //protected override void OnValidateTestData( out bool isValid, out string stateMessage )
-        //{
-        //    try
-        //    {
-        //        // Verify that the necessary test data exists by retrieving a well-known test record.
-        //        isValid = true;
-        //        stateMessage = null;
-
-        //        var dataContext = GetNewDataContext();
-
-        //        // Create a baseline report to be used as a reference point for all of the tests.
-        //        CreateBaselineReport( dataContext );
-
-        //        // Verify that the baseline report does not contain PrimaryCampusId=null for any record.
-        //        int unassignedCampusCount = _BaselineReport.ChangeEvents.Count( x => x.CampusId == null );
-
-        //        //if ( unassignedCampusCount > 0 )
-        //        //{
-        //        //    throw new Exception( "Person.PrimaryCampusId field is not populated. To calculate this value, run the \"Rock Cleanup\" Job for the current database." );
-        //        //}
-        //    }
-        //    catch ( Exception ex )
-        //    {
-        //        isValid = false;
-        //        stateMessage = ex.Message;
-        //    }
-        //}
-
-        #endregion
-
         #region Tests
 
         /// <summary>
         /// Verify the report can be correctly filtered by Campus.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
         public void FilterByCampus_MatchesExist_ShouldReturnPeopleInMatchedCampusOnly()
         {
-            VerifyTestPreconditionsOrThrow();
-
-            var dataContext = GetDataContext();
+            var dataContext = new RockContext();
 
             // Get an unfiltered report and verify that it contains records for Campus "Main".
             // This establishes the baseline for the test.
@@ -135,12 +98,9 @@ namespace Rock.Tests.Integration.Crm
         /// the time period filter should always resolve to a start and end date if it is working correctly.
         /// </remarks>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
         public void FilterByCurrentYear_MatchesExist_ShouldReturnChangesInCurrentYearOnly()
         {
-            VerifyTestPreconditionsOrThrow();
-
-            var dataContext = GetDataContext();
+            var dataContext = new RockContext();
             var baselineReport = GetBaselineReport( dataContext );
 
             // Get an unfiltered report and verify that it contains records for this year and previous years.
@@ -166,12 +126,9 @@ namespace Rock.Tests.Integration.Crm
         /// Verify the correct result when a Status Filter is set for both Original Value and Updated Value.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
         public void FilterByStatus_OriginalAndUpdatedStatusSpecified_ShouldReturnMatchingStatusesOnly()
         {
-            VerifyTestPreconditionsOrThrow();
-
-            var dataContext = this.GetDataContext();
+            var dataContext = new RockContext();
 
             var settings = new ConnectionStatusChangeReportSettings();
 
@@ -206,12 +163,9 @@ namespace Rock.Tests.Integration.Crm
         /// Verify the correct result when a Status Filter is set for Updated Value only.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
         public void FilterByStatus_OriginalStatusIsUnspecified_ShouldReturnAllStatuses()
         {
-            VerifyTestPreconditionsOrThrow();
-
-            var dataContext = GetDataContext();
+            var dataContext = new RockContext();
 
             var settings = new ConnectionStatusChangeReportSettings();
 
@@ -242,12 +196,9 @@ namespace Rock.Tests.Integration.Crm
         /// Verify the correct result when a Status Filter is set for Original Value only.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
         public void FilterByStatus_UpdatedStatusUnspecified_ShouldReturnAllStatuses()
         {
-            VerifyTestPreconditionsOrThrow();
-
-            var dataContext = GetDataContext();
+            var dataContext = new RockContext();
 
             var settings = new ConnectionStatusChangeReportSettings();
 
@@ -279,11 +230,8 @@ namespace Rock.Tests.Integration.Crm
         /// </summary>
         [TestMethod]
         [TestProperty( "Purpose", TestPurposes.Performance )]
-        [TestCategory( "Rock.Crm.ConnectionStatusChangeReport.Tests" )]
         public void Performance_LargeHistoryDataSet_ShouldNotTimeout()
         {
-            VerifyTestPreconditionsOrThrow();
-
             int monthsToInclude = 2;
 
             var periodStart = new DateTime( RockDateTime.Now.Year, RockDateTime.Now.Month, 1 );
@@ -291,7 +239,7 @@ namespace Rock.Tests.Integration.Crm
             // Run a series of monthly reports throughout the year to test performance for various time periods.
             for ( int i = 1; i <= 12; i++ )
             {
-                var dataContext = GetDataContext();
+                var dataContext = new RockContext();
 
                 periodStart = periodStart.AddMonths( monthsToInclude * -1 );
 

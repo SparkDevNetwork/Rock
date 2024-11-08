@@ -352,6 +352,12 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.HasCamera ),
                 () => entity.HasCamera = box.Entity.HasCamera );
 
+            box.IfValidProperty( nameof( box.Entity.GeoPoint ),
+                () => SaveGeoPoint( entity, box.Entity ) );
+
+            box.IfValidProperty( nameof( box.Entity.GeoFence ),
+                () => SaveGeoFence( entity, box.Entity ) );
+
             box.IfValidProperty( nameof( box.Entity.Locations ),
                 () => SaveLocations( box.Entity, entity, rockContext ) );
 
@@ -364,6 +370,40 @@ namespace Rock.Blocks.Core
                 } );
 
             return true;
+        }
+
+        /// <summary>
+        /// Saves the geo fence.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="bag">The bag.</param>
+        private void SaveGeoFence( Device entity, DeviceBag bag )
+        {
+            if ( entity.Location != null )
+            {
+#if REVIEW_NET5_0_OR_GREATER
+                throw new NotSupportedException();
+#else
+                entity.Location.GeoFence = bag.GeoFence.IsNullOrWhiteSpace() ? null : DbGeography.PolygonFromText( bag.GeoFence, DbGeography.DefaultCoordinateSystemId );
+#endif
+            }
+        }
+
+        /// <summary>
+        /// Saves the geo point.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="bag">The bag.</param>
+        private void SaveGeoPoint( Device entity, DeviceBag bag )
+        {
+            if ( entity.Location != null )
+            {
+#if REVIEW_NET5_0_OR_GREATER
+                throw new NotSupportedException();
+#else
+                entity.Location.GeoPoint = bag.GeoPoint.IsNullOrWhiteSpace() ? null : DbGeography.FromText( bag.GeoPoint );
+#endif
+            }
         }
 
         /// <summary>

@@ -29,6 +29,7 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Pdf;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -90,8 +91,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbEditModeMessage.Visible = false;
 
             if ( !Page.IsPostBack )
@@ -99,6 +98,8 @@ namespace RockWeb.Blocks.Core
                 LoadDropDowns();
                 ShowDetail( PageParameter( "SignatureDocumentTemplateId" ).AsInteger() );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -573,7 +574,7 @@ namespace RockWeb.Blocks.Core
                     rockContext.SaveChanges();
                 }
 
-                pdfPreviewUrl = string.Format( "{0}GetFile.ashx?guid={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), binaryFile.Guid );
+                pdfPreviewUrl = FileUrlHelper.GetFileUrl( binaryFile.Guid );
 
             }
 

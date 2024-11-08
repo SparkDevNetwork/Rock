@@ -168,6 +168,7 @@ namespace Rock.Model
             target.AllowMultipleLocations = source.AllowMultipleLocations;
             target.AllowSpecificGroupMemberAttributes = source.AllowSpecificGroupMemberAttributes;
             target.AllowSpecificGroupMemberWorkflows = source.AllowSpecificGroupMemberWorkflows;
+            target.AlreadyEnrolledMatchingLogic = source.AlreadyEnrolledMatchingLogic;
             target.AttendanceCountsAsWeekendService = source.AttendanceCountsAsWeekendService;
             target.AttendancePrintTo = source.AttendancePrintTo;
             target.AttendanceReminderFollowupDays = source.AttendanceReminderFollowupDays;
@@ -200,11 +201,18 @@ namespace Rock.Model
             target.InheritedGroupTypeId = source.InheritedGroupTypeId;
             target.IsCapacityRequired = source.IsCapacityRequired;
             target.IsIndexEnabled = source.IsIndexEnabled;
+            target.IsPeerNetworkEnabled = source.IsPeerNetworkEnabled;
             target.IsSchedulingEnabled = source.IsSchedulingEnabled;
             target.IsSystem = source.IsSystem;
+            target.LeaderToLeaderRelationshipMultiplier = source.LeaderToLeaderRelationshipMultiplier;
+            target.LeaderToNonLeaderRelationshipMultiplier = source.LeaderToNonLeaderRelationshipMultiplier;
             target.LocationSelectionMode = source.LocationSelectionMode;
             target.Name = source.Name;
+            target.NonLeaderToLeaderRelationshipMultiplier = source.NonLeaderToLeaderRelationshipMultiplier;
+            target.NonLeaderToNonLeaderRelationshipMultiplier = source.NonLeaderToNonLeaderRelationshipMultiplier;
             target.Order = source.Order;
+            target.RelationshipGrowthEnabled = source.RelationshipGrowthEnabled;
+            target.RelationshipStrength = source.RelationshipStrength;
             target.RequiresInactiveReason = source.RequiresInactiveReason;
             target.RequiresReasonIfDeclineSchedule = source.RequiresReasonIfDeclineSchedule;
             target.RSVPReminderOffsetDays = source.RSVPReminderOffsetDays;
@@ -213,6 +221,7 @@ namespace Rock.Model
             target.ScheduleConfirmationEmailOffsetDays = source.ScheduleConfirmationEmailOffsetDays;
             target.ScheduleConfirmationLogic = source.ScheduleConfirmationLogic;
             target.ScheduleConfirmationSystemCommunicationId = source.ScheduleConfirmationSystemCommunicationId;
+            target.ScheduleCoordinatorNotificationTypes = source.ScheduleCoordinatorNotificationTypes;
             target.ScheduleReminderEmailOffsetDays = source.ScheduleReminderEmailOffsetDays;
             target.ScheduleReminderSystemCommunicationId = source.ScheduleReminderSystemCommunicationId;
             target.SendAttendanceReminder = source.SendAttendanceReminder;

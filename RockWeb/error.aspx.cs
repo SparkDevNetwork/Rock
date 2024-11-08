@@ -40,6 +40,9 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Page_Init( object sender, EventArgs e )
         {
+            // Ensure that the request is not cached by CDNs
+            Response.Headers.Add( "Cache-Control", "private" );
+            
             var proxySafeUri = Request.UrlProxySafe();
 
             // If this is an API call, set status code and exit

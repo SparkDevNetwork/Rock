@@ -22,15 +22,15 @@ using Rock.Model;
 using Rock.Reporting.DataFilter.Person;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Reporting.DataFilter
+namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
 {
     /// <summary>
     /// Test DataFilter: Person/Related Data View/Step Data View.  
     [TestClass]
+    [TestCategory( "Crm.Steps" )]
+    [TestCategory( "Reporting.DataFilters" )]
     public class StepDataViewDataFilterTests : DataFilterTestBase
     {
-        private const string _TestCategory = "Rock.Crm.Steps.Reporting.StepDataView.Tests";
-
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
@@ -41,7 +41,6 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         /// Verify that the settings can be correctly serialized to a string and deserialized from the same string.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
         public void StepsRelatedDataViewFilterSettingsSerializationCanRoundTrip()
         {
             var settingsSource = new StepDataViewFilter.FilterSettings();
@@ -59,7 +58,6 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         /// Verify that filtering by a Step Data View correctly returns a Person having a Step referenced in that Data View.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
         public void StepsRelatedDataViewFilterShouldReturnPersonWithRelatedSteps()
         {
             var settings = new StepDataViewFilter.FilterSettings();
@@ -79,7 +77,6 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         /// Verify that filtering by a Step Data View does not return a Person who does not have a matching Step.
         /// </summary>
         [TestMethod]
-        [TestCategory( _TestCategory )]
         public void StepsRelatedDataViewFilterShouldNotReturnPersonWithNoRelatedSteps()
         {
             var settings = new StepDataViewFilter.FilterSettings();
@@ -112,7 +109,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
 
             var predicate = settingsFilter.GetExpression( typeof( Rock.Model.Person ), personService, parameterExpression, settings.ToSelectionString() );
 
-            var personQuery = GetFilteredEntityQuery<Person>( dataContext, predicate, parameterExpression );
+            var personQuery = GetFilteredEntityQuery<Rock.Model.Person>( dataContext, predicate, parameterExpression );
 
             return personQuery;
         }

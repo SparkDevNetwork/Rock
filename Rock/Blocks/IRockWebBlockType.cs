@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Threading.Tasks;
+
 using Rock.Attribute;
 
 namespace Rock.Blocks
@@ -31,7 +33,7 @@ namespace Rock.Blocks
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal( "1.13" )]
+    [RockInternal( "1.13", true )]
     public interface IRockWebBlockType : IRockBlockType
     {
         /// <summary>
@@ -39,6 +41,6 @@ namespace Rock.Blocks
         /// The returned text will be injected into the HTML page.
         /// </summary>
         /// <returns>A string that contains HTML markup.</returns>
-        string GetControlMarkup();
+        Task<string> GetControlMarkupAsync();
     }
 }

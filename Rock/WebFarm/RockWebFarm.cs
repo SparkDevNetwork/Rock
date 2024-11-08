@@ -22,8 +22,9 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Web;
-using Rock.Bus;
+
 using Rock.Bus.Message;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
@@ -118,7 +119,7 @@ namespace Rock.WebFarm
         /// <summary>
         /// The bytes per megabyte
         /// </summary>
-        private const int BytesPerMegayte = 1024 * 1024;
+        private const int BytesPerMegabyte = 1024 * 1024;
 
         /// <summary>
         /// The web farm enabled
@@ -176,7 +177,7 @@ namespace Rock.WebFarm
         /// <summary>
         /// The total ram megabytes
         /// </summary>
-        private static readonly int TotalRamMb = ( int ) ( new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory / BytesPerMegayte );
+        private static readonly int TotalRamMb = ( int ) ( new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory / BytesPerMegabyte );
 #endif
 
         /// <summary>
@@ -189,7 +190,7 @@ namespace Rock.WebFarm
         {
             get
             {
-                return RockMessageBus.NodeName;
+                return RockApp.Current.HostingSettings.NodeName;
             }
         }
 

@@ -1,0 +1,96 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode"
+                      :value="{ value, availableAttributes, availableProperties }" hasMultipleValues
+                      enableReflection>
+
+        <JsonFieldsBuilder v-model="value"
+                           :availableProperties="availableProperties"
+                           :availableAttributes="availableAttributes" />
+
+        <template #settings>
+            <p>
+                You must provide a list of attributes and properties to choose from, which will need to be
+                generated on the back end. See the C# version of this control to see how this is done.
+                The <code>availableAttributes</code> prop takes a list of standard <code>ListItemBags</code>, but
+                <code>availableProperties</code> needs something a little extra: <code>FieldPropertyItemBag</code>
+                (import from <code>"@Obsidian/ViewModels/Controls/fieldPropertyItemBag"</code>). This adds a
+                <code>fieldFormat</code> property to the <code>ListItemBag</code> that can be used to determine
+                the format of the property.
+            </p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import JsonFieldsBuilder from "@Obsidian/Controls/jsonFieldsBuilder.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { FullFieldSettingBag } from "@Obsidian/ViewModels/Controls/fullFieldSettingBag";
+    import { FieldPropertyItemBag } from "@Obsidian/ViewModels/Controls/fieldPropertyItemBag";
+
+    const value = ref<FullFieldSettingBag[]>([
+        {
+            id: 483800935,
+            key: "Name",
+            value: "{{ item.Name }}",
+            fieldName: "Name",
+            fieldSource: 0,
+            attributeFormat: 0,
+            fieldFormat: 0
+        },
+        {
+            id: 1934200521,
+            key: "CreatedDateTime",
+            value: "{{ item.CreatedDateTime }}",
+            fieldName: "CreatedDateTime",
+            fieldSource: 0,
+            attributeFormat: 0,
+            fieldFormat: 2
+        },
+        {
+            id: 1588433594,
+            key: "Matthew",
+            value: "{{ item | Attribute:'Matthew' }}",
+            fieldName: "Matthew",
+            fieldSource: 1,
+            attributeFormat: 0,
+            fieldFormat: 0
+        },
+        {
+            id: -467210166,
+            key: "numberKey",
+            value: "{{ item | Attribute:'AttributeKey' }}",
+            fieldName: "",
+            fieldSource: 2,
+            attributeFormat: 0,
+            fieldFormat: 1
+        }
+    ]);
+
+    const availableProperties: FieldPropertyItemBag[] = [
+        { text: "ArchivedByPersonAlias", value: "ArchivedByPersonAlias", fieldFormat: 0 },
+        { text: "Attributes", value: "Attributes", fieldFormat: 0 },
+        { text: "CreatedByPersonId", value: "CreatedByPersonId", fieldFormat: 1 },
+        { text: "CreatedByPersonName", value: "CreatedByPersonName", fieldFormat: 0 },
+        { text: "CreatedDateTime", value: "CreatedDateTime", fieldFormat: 2 },
+        { text: "Guid", value: "Guid", fieldFormat: 0 },
+        { text: "Id", value: "Id", fieldFormat: 1 },
+        { text: "IsActive", value: "IsActive", fieldFormat: 3 },
+        { text: "Name", value: "Name", fieldFormat: 0 }
+    ];
+
+    const availableAttributes = [
+        { text: "Matthew", value: "Matthew" },
+        { text: "Mark", value: "Mark" },
+        { text: "Luke", value: "Luke" },
+        { text: "John", value: "John" }
+    ];
+
+    const importCode = getSfcControlImportPath("jsonFieldsBuilder");
+    const exampleCode = computed(() => {
+        return `<JsonFieldsBuilder v-model="value" :availableProperties="availableProperties" :availableAttributes="availableAttributes" />`;
+    });
+</script>

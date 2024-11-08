@@ -9,7 +9,10 @@
                          :disabled="!isEditable" />
             </div>
             <div class="col-md-6">
-                <ScheduleBuilder label="Schedule" v-model="calendarContent" />
+                <ScheduleBuilder label="Schedule"
+                                 v-model="calendarContent"
+                                 :hideStartDateTime="true"
+                                 :hideDuration="true" />
             </div>
         </div>
     </fieldset>

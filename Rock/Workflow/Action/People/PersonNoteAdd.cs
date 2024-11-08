@@ -151,6 +151,7 @@ namespace Rock.Workflow.Action
                 if ( author != null )
                 {
                     note.CreatedByPersonAliasId = author.PrimaryAlias.Id;
+                    note.EditedByPersonAliasId = author.PrimaryAlias.Id;
                 }
 
                 noteService.Add( note );

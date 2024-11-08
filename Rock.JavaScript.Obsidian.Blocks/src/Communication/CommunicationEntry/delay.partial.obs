@@ -1,0 +1,47 @@
+<template>
+    <slot v-if="isDelayCompleted" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        /**
+         * How long (in milliseconds) to wait before showing the slotted content.
+         *
+         * This is reactive; i.e., changing this value will hide the slotted content for the new delay duration.
+         */
+        delayMs: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    //#region Values
+
+    const isDelayCompleted = ref<boolean>(false);
+
+    //#endregion
+
+    //#region Functions
+
+    function beginDelay(): void {
+        isDelayCompleted.value = false;
+
+        setTimeout(() => {
+            isDelayCompleted.value = true;
+        }, props.delayMs);
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    watch(() => props.delayMs, () => {
+        beginDelay();
+    }, {
+        immediate: true
+    });
+
+    //#endregion
+</script>

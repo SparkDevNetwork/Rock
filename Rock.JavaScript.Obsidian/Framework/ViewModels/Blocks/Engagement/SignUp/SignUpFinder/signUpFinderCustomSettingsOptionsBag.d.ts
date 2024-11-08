@@ -26,6 +26,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional information required to build the custom settings UI for the Sign-Up Finder block. */
 export type SignUpFinderCustomSettingsOptionsBag = {
+    /** Gets or sets the available campuses for an individual to filter the results by. */
+    availableCampuses?: ListItemBag[] | null;
+
     /** Gets or sets the available group attributes for an individual to filter the results by. */
     availableDisplayAttributeFilters?: ListItemBag[] | null;
 

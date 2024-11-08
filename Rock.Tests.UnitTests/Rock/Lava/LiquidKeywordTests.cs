@@ -21,6 +21,8 @@ using Rock.Data;
 using System.Collections.Generic;
 using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
+using Rock.Enums.Blocks.Crm.FamilyPreRegistration;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.UnitTests.Lava
 {
@@ -33,7 +35,8 @@ namespace Rock.Tests.UnitTests.Lava
         #region Case Statement
 
         /// <summary>
-        /// Verify the resolution of a specific issue in the Fluid framework where a {% case %} statement containing whitespace throws a parsing error.
+        /// Verifies the resolution of Issue #5232.
+        /// https://github.com/SparkDevNetwork/Rock/issues/5232
         /// </summary>
         [TestMethod]
         public void LiquidCaseBlock_WithWhitespace_IsParsedCorrectly()
@@ -63,13 +66,6 @@ Color: green
             TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
         }
 
-        /// <summary>
-        /// Verify the resolution of a specific issue in the Fluid framework where a {% case %} statement containing whitespace throws a parsing error.
-        /// </summary>
-        /// <remarks>
-        /// Verifies the resolution of Issue #5232.
-        /// https://github.com/SparkDevNetwork/Rock/issues/5232
-        /// </remarks>
         [TestMethod]
         public void LiquidCaseBlock_WithMultipleMatchedCases_RendersAllMatches()
         {
@@ -92,6 +88,115 @@ First Case matched. Second Case matched.
 ";
 
             TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// Verifies the resolution of Issue #4910 (Part 2).
+        /// https://github.com/SparkDevNetwork/Rock/issues/4910
+        /// </summary>
+        [TestMethod]
+        public void LiquidCaseBlock_WithEnumCase_MatchesEquivalentValueInWhen()
+        {
+            var person = new
+            {
+                NickName = "Ted",
+                CommunicationPreference = CommunicationPreference.Email
+            };
+
+            Assert.That.AreEqual( 1, (int)CommunicationPreference.Email );
+
+            var template = @"
+{{ person.NickName }}, your communication preference is:
+{% case person.CommunicationPreference %} {% when 1 %}Email{% else %}Not Email!{% endcase %}
+";
+
+            var expectedOutput = @"
+Ted, your communication preference is: Email
+";
+
+            var mergeDictionary = new LavaDataDictionary { { "person", person } };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeDictionary, ignoreWhitespace: true );
+        }
+
+        [TestMethod]
+        public void LiquidCaseBlock_WithEnumCase_MatchesEquivalentNameInWhen()
+        {
+            var person = new
+            {
+                NickName = "Ted",
+                CommunicationPreference = CommunicationPreference.Email
+            };
+
+            Assert.That.AreEqual( 1, ( int ) CommunicationPreference.Email );
+
+            var template = @"
+{{ person.NickName }}, your communication preference is:
+{% case person.CommunicationPreference %} {% when 'Email' %}Email{% else %}Not Email!{% endcase %}
+";
+
+            var expectedOutput = @"
+Ted, your communication preference is: Email
+";
+
+            var mergeDictionary = new LavaDataDictionary { { "person", person } };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeDictionary, ignoreWhitespace: true );
+        }
+
+        /// <summary>
+        /// This test case reproduces the inverse of Issue #4910 (Part 2).
+        /// This is not a reported use case, and is not currently supported in Fluid.
+        /// </summary>
+        [TestMethod]
+        [Ignore( "The Fluid framework does not natively support using an Enum name in a case statement." )]
+        public void LiquidCaseBlock_WithEnumWhen_MatchesEquivalentNameInCase()
+        {
+            var person = new
+            {
+                NickName = "Ted",
+                CommunicationPreference = CommunicationPreference.Email
+            };
+
+            Assert.That.AreEqual( 1, ( int ) CommunicationPreference.Email );
+
+            var template = @"
+{{ person.NickName }}, your communication preference is:
+{% case 'Email' %} {% when person.CommunicationPreference %}Email{% else %}Not Email!{% endcase %}
+";
+
+            var expectedOutput = @"
+Ted, your communication preference is: Email
+";
+
+            var mergeDictionary = new LavaDataDictionary { { "person", person } };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeDictionary, ignoreWhitespace: true );
+        }
+
+        [TestMethod]
+        public void LiquidCaseBlock_WithEnumWhen_MatchesEquivalentValueInCase()
+        {
+            var person = new
+            {
+                NickName = "Ted",
+                CommunicationPreference = CommunicationPreference.Email
+            };
+
+            Assert.That.AreEqual( 1, ( int ) CommunicationPreference.Email );
+
+            var template = @"
+{{ person.NickName }}, your communication preference is:
+{% case 1 %}{% when person.CommunicationPreference %}Email{% else %}Not Email!{% endcase %}
+";
+
+            var expectedOutput = @"
+Ted, your communication preference is: Email
+";
+
+            var mergeDictionary = new LavaDataDictionary { { "person", person } };
+
+            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeDictionary, ignoreWhitespace: true );
         }
 
         #endregion
@@ -446,10 +551,10 @@ The answer is {{ x }}.
         }
 
         /// <summary>
-        /// Verify that the default {% liquid %} tag is correctly aliased to the {% lava %} tag.
+        /// Verify that the {% lava %} tag is correctly aliased to the default {% liquid %} tag.
         /// </summary>
         [TestMethod]
-        public void LiquidTag_UsingLavaTagAlias_IsProcessedAsLiquidTag()
+        public void LavaTag_AsAliasForLiquidTag_IsProcessedAsLiquidTag()
         {
             var template = @"
 {% lava 

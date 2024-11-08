@@ -45,7 +45,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [BlockTemplateField( "Toolbox Template",
         Description = "The template used to render the scheduling data.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_TOOLBOX,
-        DefaultValue = "CD2629E5-8EB0-4D52-ACAB-8EDF9AF84814",
+        DefaultValue = "F04B6154-1543-4632-89A2-1792F6CED9D6",
         IsRequired = true,
         Key = AttributeKey.ToolboxTemplate,
         Order = 0 )]
@@ -53,7 +53,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [BlockTemplateField( "Confirm Decline Template",
         Description = "The template used on the decline reason modal. Must require a decline reason in group type.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_TOOLBOX_DECLINE_MODAL,
-        DefaultValue = "92D39913-7D69-4B73-8FF9-72AC161BE381",
+        DefaultValue = "DE3E57AC-E12B-4249-BB15-64C7A7780AC8",
         IsRequired = true,
         Key = AttributeKey.ConfirmDeclineTemplate,
         Order = 1 )]

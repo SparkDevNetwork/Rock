@@ -14,27 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
-using System.Threading;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Bus;
-using Rock.Tests.Integration.Core.Lava;
-using Rock.Tests.Integration.Database;
-using Rock.Tests.Shared;
-using Rock.Utility.Settings;
-using Rock.Web.Cache;
+using System.Threading.Tasks;
 
-namespace Rock.Tests.Integration
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Bus;
+using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
+using Rock.WebStartup;
+
+namespace Rock.Tests.Integration.TestFramework
 {
     [TestClass]
     [DeploymentItem( "app.TestSettings.config" )]
     [DeploymentItem( "app.ConnectionStrings.config" )]
     public sealed class IntegrationTestInitializer
     {
-        public static bool InitializeDatabaseOnStartup = true;
-        public static ITestDatabaseInitializer DatabaseInitializer = new IntegrationTestDatabaseInitializer();
-        public static bool InitializeSampleDataOnStartup = true;
+        public static bool IsContainersEnabled { get; private set; }
+
+        public static string DatabaseHostSettingKey = "DatabaseHost";
 
         [TestMethod]
         public void ForceDeployment()
@@ -50,137 +52,143 @@ namespace Rock.Tests.Integration
         /// </summary>
         /// <param name="context">The context.</param>
         [AssemblyInitialize]
-        public static void AssemblyInitialize( TestContext context )
+        public static async Task AssemblyInitialize( TestContext context )
         {
-            var testClassType = System.Type.GetType( context.FullyQualifiedTestClassName );
-            var requirement = testClassType.GetCustomAttributes( typeof( DatabaseInitializationStateAttribute ), inherit: false )
-                .Cast<DatabaseInitializationStateAttribute>()
-                .FirstOrDefault();
-
-            if ( requirement == null )
-            {
-                var testMethodType = testClassType.GetMethod( context.TestName );
-                requirement = testMethodType.GetCustomAttributes( typeof( DatabaseInitializationStateAttribute ), inherit: false )
-                    .Cast<DatabaseInitializationStateAttribute>()
-                    .FirstOrDefault();
-            }
-
-            if ( requirement != null )
-            {
-                if ( requirement.RequiredState == DatabaseInitializationStateSpecifier.None
-                    || requirement.RequiredState == DatabaseInitializationStateSpecifier.Custom )
-                {
-                    InitializeDatabaseOnStartup = false;
-                }
-                else if ( requirement.RequiredState == DatabaseInitializationStateSpecifier.New )
-                {
-                    InitializeDatabaseOnStartup = true;
-                    InitializeSampleDataOnStartup = false;
-
-                }
-                else
-                {
-                    InitializeDatabaseOnStartup = true;
-                    InitializeSampleDataOnStartup = true;
-                }
-            }
-
-            Initialize( context );
+            await InitializeTestEnvironment( context );
         }
 
         /// <summary>
-        /// Initialize the Rock application environment for integration testing.
+        /// Initialize the basic test environment. This should only perform
+        /// the bare minimum required to get the Rock internals up and
+        /// running for tests.
         /// </summary>
-        /// <param name="context">The context.</param>
-        public static void Initialize( TestContext context )
+        /// <param name="context">The test context.</param>
+        /// <returns>A task that indicates when the operation has completed.</returns>
+        public static async Task InitializeTestEnvironment( TestContext context )
         {
-            // Copy the configuration settings to the TestContext so they can be accessed by the integration tests project initializer.
             AddTestContextSettingsFromConfigurationFile( context );
 
-            LogHelper.SetTestContext( context );
-            LogHelper.Log( $"Initialize Test Environment: started..." );
+            var databaseHost = ConfigurationManager.AppSettings[DatabaseHostSettingKey]?.ToStringSafe().Trim().ToLower();
+            var connectionString = ConfigurationManager.ConnectionStrings["RockContext"]?.ConnectionString;
 
-            // Initialize the Lava Engine first, because it may be needed by the sample data loader when the database is initialized.
-            LogHelper.Log( $"Initializing Lava Engine (Pass 1)..." );
-            LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: true, testDotLiquidEngine: false, testFluidEngine: true, loadShortcodes: false );
-
-            // Set properties of the database manager from the test context.
-            TestDatabaseHelper.ConnectionString = ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString;
-            TestDatabaseHelper.DatabaseCreatorKey = context.Properties["DatabaseCreatorKey"].ToStringSafe();
-            TestDatabaseHelper.DatabaseRefreshStrategy = context.Properties["DatabaseRefreshStrategy"].ToStringSafe().ConvertToEnum<DatabaseRefreshStrategySpecifier>( DatabaseRefreshStrategySpecifier.Never );
-            TestDatabaseHelper.SampleDataUrl = context.Properties["SampleDataUrl"].ToStringSafe();
-            TestDatabaseHelper.DefaultSnapshotName = context.Properties["DefaultSnapshotName"].ToStringSafe();
-            TestDatabaseHelper.DatabaseInitializer = DatabaseInitializer;
-            TestDatabaseHelper.SampleDataIsEnabled = InitializeSampleDataOnStartup;
-
-            if ( InitializeDatabaseOnStartup )
+            // Initialize a database container for the test environment.
+            ITestDatabaseContainer container;
+            var databaseRefreshDisabled = false;
+            if ( databaseHost == "localdb" )
             {
-                InitializeDatabase();
+                var manager = GetConfiguredLocalDatabaseManager();
+
+                databaseRefreshDisabled = !manager.IsDatabaseResetPermitted;
+
+                container = new LocalDatabaseContainer( manager );
+            }
+            else if ( databaseHost == "remote" )
+            {
+                // Initialize the remote database connection.
+                databaseRefreshDisabled = true;
+
+                if ( connectionString.IsNullOrWhiteSpace() )
+                {
+                    throw new Exception( @"Database Connection string not found. The remote database container requires a configured ConnectionString for ""RockContext""." );
+                }
+
+                // For consistency, this should be implemented as a singleton instance of a container implementing ITestDatabaseContainer in the future.
+                container = null;
+            }
+            else if ( databaseHost == "docker" || databaseHost.IsNullOrWhiteSpace() )
+            {
+                // Initialize the Docker Sql Server container.
+                container = new TestDatabaseContainer();
             }
             else
             {
-                LogHelper.Log( $"Initializing test database... (disabled)" );
+                throw new Exception( $"Database Host is invalid. The DatabaseHost configuration setting should be (docker|localdb|remote) . [DatabaseHost=\"{databaseHost}\"]" );
             }
 
-            LogHelper.Log( $"Initializing Rock..." );
+            TestHelper.ConfigureRockApp( connectionString );
 
-            // This will migrate the database so it needs to run after we initialize
-            // the database in our own way.
-            Rock.AssemblyInitializer.Initialize();
+            DatabaseTestsBase.InitializeContainer( container );
+
+            LogHelper.SetTestContext( context );
+
+            LogHelper.Log( $"Initialize Test Environment: started..." );
+
+            LogHelper.Log( $"Initializing Rock Message Bus..." );
+            await RockMessageBus.StartTestMemoryBusAsync();
+            LogHelper.Log( $"Initializing Rock Message Bus: completed." );
+
+            LogHelper.Log( "Initializing Save Hooks..." );
+            RockApplicationStartupHelper.ConfigureEntitySaveHooks();
+            LogHelper.Log( "Initializing Save Hooks: completed." );
+
+            if ( databaseRefreshDisabled )
+            {
+                LogHelper.LogWarning( $"The test database refresh strategy is set to use the existing database without replacement.\nThis may cause unpredictable results for some tests." );
+            }
 
             LogHelper.Log( $"Initialize Test Environment: completed." );
         }
 
-        private static bool _databaseIsInitialized = false;
-        private static readonly object _databaseInitializationLock = new object();
-
         /// <summary>
-        /// Initialize the Rock test database for integration testing.
+        /// Get an instance of the LocalDatabaseManager configured for the current test session.
         /// </summary>
-        /// <param name="context">The context.</param>
-        public static void InitializeDatabase()
+        /// <param name="context"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static LocalDatabaseManager GetConfiguredLocalDatabaseManager()
         {
-            lock ( _databaseInitializationLock )
+            var manager = new LocalDatabaseManager();
+            manager.ConnectionString = ConfigurationManager.ConnectionStrings["RockContext"]?.ConnectionString;
+
+            // Initialize the LocalDb container.
+            if ( manager.ConnectionString.IsNullOrWhiteSpace() )
             {
-                if ( _databaseIsInitialized )
-                {
-                    return;
-                }
-
-                _databaseIsInitialized = true;
-
-                LogHelper.Log( $"Initialize Test Database: started..." );
-
-                TestDatabaseHelper.InitializeTestDatabase();
-
-                RockInstanceConfig.SetDatabaseIsAvailable( true );
-
-                // Reinitialize the Lava Engine and configure it to load dynamic shortcodes from the test database.
-                LogHelper.Log( $"Initializing Lava Engine (Pass 2)..." );
-                LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: true, testDotLiquidEngine: false, testFluidEngine: true, loadShortcodes: true );
-
-                LogHelper.Log( $"Initializing Rock Message Bus..." );
-
-                // Verify that the InMemory transport component is registered.
-                // If not, the Rock Message Bus will fail to start.
-                var cacheEntity = EntityTypeCache.Get( typeof( Rock.Bus.Transport.InMemory ), createIfNotFound: false );
-                if ( cacheEntity == null )
-                {
-                    throw new System.Exception( "Rock Message Bus failure. The InMemoryTransport Entity Type is not registered. To correct this error, re-create the test database with the \"ForceReplaceExistingDatabase\" configuration option." );
-                }
-
-                // Start the Message Bus and poll until it is ready.
-                _ = RockMessageBus.StartAsync();
-
-                while ( !RockMessageBus.IsReady() )
-                {
-                    LogHelper.Log( $"Waiting on Rock Message Bus..." );
-                    Thread.Sleep( 500 );
-                }
-                RockMessageBus.IsRockStarted = true;
-
-                LogHelper.Log( $"Initializing Test Database: completed." );
+                throw new Exception( @"Database Connection string not found. The LocalDb database container requires a configured ConnectionString for ""RockContext""." );
             }
+
+            var csb = new SqlConnectionStringBuilder( manager.ConnectionString );
+            var targetDatabaseName = csb.InitialCatalog;
+
+            manager.DatabaseCreatorKey = ConfigurationManager.AppSettings["DatabaseCreatorKey"].ToStringSafe();
+            manager.TargetMigrationName = ConfigurationManager.AppSettings["LocalDbResetMigrationName"].ToStringSafe();
+            manager.ArchiveRetentionDays = ConfigurationManager.AppSettings["LocalDbArchiveRetentionDays"].ToIntSafe();
+
+            // To enable database resets, the configured reset database name must match the database name in the connection string.
+            // This operates as a safeguard against accidental replacement of development databases containing custom data.
+            var resetDatabaseName = ConfigurationManager.AppSettings["LocalDbResetDatabaseName"].ToStringSafe();
+
+            if ( targetDatabaseName.Equals( resetDatabaseName, StringComparison.OrdinalIgnoreCase ) )
+            {
+                manager.IsDatabaseResetPermitted = true;
+                manager.IsCreatorKeyVerificationRequiredForDatabaseReset = false;
+            }
+            else
+            {
+                manager.IsDatabaseResetPermitted = false;
+            }
+
+            // Create a database initializer instance to prepare the test data.
+            var initializerTypeName = ConfigurationManager.AppSettings["DatabaseInitializer"].ToStringSafe();
+            if ( string.IsNullOrWhiteSpace( initializerTypeName ) )
+            {
+                initializerTypeName = nameof( Rock.Tests.Shared.TestFramework.Database.Initializer.SampleDataset );
+            }
+
+            var initializerTypesMap = Reflection.FindTypes( typeof( ITestDatabaseInitializer ) );
+            var initializerType = initializerTypesMap.Where( kv => kv.Key == initializerTypeName || kv.Key.EndsWith( "." + initializerTypeName ) )
+                .Select( kv => kv.Value )
+                .FirstOrDefault();
+
+            if ( initializerType == null )
+            {
+                throw new Exception( $@"Database Initializer not found. The configuration setting ""DatabaseInitializer"" must specify a known System.Type that implements the {nameof( ITestDatabaseInitializer )} interface." );
+            }
+
+            var initializerInstance = Activator.CreateInstance( initializerType ) as ITestDatabaseInitializer;
+
+            manager.DatabaseInitializer = initializerInstance;
+
+            return manager;
         }
 
         public static void AddTestContextSettingsFromConfigurationFile( TestContext context )
@@ -189,80 +197,6 @@ namespace Rock.Tests.Integration
             foreach ( var key in ConfigurationManager.AppSettings.AllKeys )
             {
                 context.Properties[key] = ConfigurationManager.AppSettings[key];
-            }
-        }
-    }
-
-    [TestClass]
-    public class DatabaseTests
-    {
-        private static bool _utilityTestsEnabled = false;
-
-        /// <summary>
-        /// Initialize the Rock application environment for integration testing.
-        /// </summary>
-        /// <param name="context">The context.</param>
-        [ClassInitialize()]
-        public static void Initialize( TestContext context )
-        {
-            _utilityTestsEnabled = context.Properties["UtilityTestsEnabled"].ToStringOrDefault(string.Empty).AsBoolean();
-
-            Rock.AssemblyInitializer.Initialize();
-        }
-
-        /// <summary>
-        /// Execute this test method as a placeholder to create/update/verify the test database.
-        /// </summary>
-        [TestMethod]
-        [TestCategory("Utility")]
-        [DatabaseInitializationState( DatabaseInitializationStateSpecifier.None )]
-        public void CreateEmptyDatabase()
-        {
-            AssertUtilityTestsAreEnabled();
-
-            var taskGuid = LogHelper.StartTask( $"Create New Database" );
-
-            // Set properties of the database manager from the test context.
-            TestDatabaseHelper.ConnectionString = ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString;
-            TestDatabaseHelper.DatabaseCreatorKey = ConfigurationManager.AppSettings["DatabaseCreatorKey"].ToStringSafe();
-            TestDatabaseHelper.DatabaseRefreshStrategy = DatabaseRefreshStrategySpecifier.Force;
-            TestDatabaseHelper.SampleDataIsEnabled = false;
-
-            TestDatabaseHelper.InitializeTestDatabase();
-
-            LogHelper.StopTask( taskGuid );
-        }
-
-        /// <summary>
-        /// Execute this test method as a placeholder to create/update/verify the test database.
-        /// </summary>
-        [TestMethod]
-        [TestCategory( "Utility" )]
-        [DatabaseInitializationState(DatabaseInitializationStateSpecifier.None)]
-        public void CreateSampleDatabase()
-        {
-            AssertUtilityTestsAreEnabled();
-
-            var taskGuid = LogHelper.StartTask( $"Create New Database" );
-
-            // Set properties of the database manager from the test context.
-            TestDatabaseHelper.ConnectionString = ConfigurationManager.ConnectionStrings["RockContext"].ConnectionString;
-            TestDatabaseHelper.DatabaseCreatorKey = ConfigurationManager.AppSettings["DatabaseCreatorKey"].ToStringSafe();
-            TestDatabaseHelper.DatabaseRefreshStrategy = DatabaseRefreshStrategySpecifier.Force;
-            TestDatabaseHelper.SampleDataIsEnabled = true;
-
-            TestDatabaseHelper.InitializeTestDatabase();
-
-            LogHelper.StopTask( taskGuid );
-
-            LogHelper.Log( "Database created." );
-        }
-
-        private void AssertUtilityTestsAreEnabled()
-        {
-            if ( !_utilityTestsEnabled )
-            {
-                Assert.Inconclusive( "Utility Test Methods are disabled in this configuration. To enable utility tests, set the configuration option [UtilityTestsEnabled]=true" );
             }
         }
     }

@@ -22,9 +22,14 @@ namespace Rock.SystemGuid
     public static class Layout
     {
         /// <summary>
-        /// Gets the Left Sidebar layout (Internal Site)
+        /// Gets the Left Sidebar layout (External Site)
         /// </summary>
         public const string LEFT_SIDEBAR = "325B7BFD-8B80-44FD-A951-4E4763DA6C0D";
+
+        /// <summary>
+        /// Gets the Left Sidebar layout (Internal Site)
+        /// </summary>
+        public const string LEFT_SIDEBAR_INTERNAL_SITE = "0cb60906-6b74-44fd-ab25-026050ef70eb";
 
         /// <summary>
         /// Gets the Full Width layout (External Site)
@@ -55,5 +60,15 @@ namespace Rock.SystemGuid
         /// Gets the Left Sidebar layout (Checkin Manager Site)
         /// </summary>
         public const string CHECKIN_MANAGER_LEFT_SIDEBAR = "2669A579-48A5-4160-88EA-C3A10024E1E1";
+
+        /// <summary>
+        /// Gets the Model layout ()
+        /// </summary>
+        public const string MODAL = "8F15C679-D757-4225-839E-2589A80F7180";
+
+        /// <summary>
+        /// Gets the Checkin layout (Next-gen Check-in Site).
+        /// </summary>
+        public const string NEXT_GEN_CHECK_IN_CHECKIN = "BC067A3C-1257-4D19-BAD7-505FD28F916B";
     }
 }

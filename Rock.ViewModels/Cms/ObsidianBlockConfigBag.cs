@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Enums.Cms;
+
 namespace Rock.ViewModels.Cms
 {
     /// <summary>
@@ -53,6 +55,15 @@ namespace Rock.ViewModels.Cms
         public Guid BlockGuid { get; set; }
 
         /// <summary>
+        /// Gets or sets the unique identifier of the block type that is being
+        /// represented by this configuration.
+        /// </summary>
+        /// <value>
+        /// The unique identifier of the block type.
+        /// </value>
+        public Guid BlockTypeGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the custom configuration values for the block. This
         /// object is made available to the block component.
         /// </summary>
@@ -60,6 +71,14 @@ namespace Rock.ViewModels.Cms
         /// The custom configuration values for the block.
         /// </value>
         public object ConfigurationValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the initial content to be rendered for the block
+        /// until the component loads. This is only valid when refreshing
+        /// the block initialization for a block reload operation.
+        /// </summary>
+        /// <value>The initial content.</value>
+        public string InitialContent { get; set; }
 
         /// <summary>
         /// Gets or sets the custom configuration actions that should be added
@@ -75,5 +94,11 @@ namespace Rock.ViewModels.Cms
         /// </summary>
         /// <value>The person preferences associated with this block.</value>
         public ObsidianBlockPreferencesBag Preferences { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reload mode when the block configuration changes.
+        /// </summary>
+        /// <value>The reload mode.</value>
+        public BlockReloadMode ReloadMode { get; set; }
     }
 }

@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
 
@@ -33,6 +34,22 @@ namespace Rock.Model
         public IQueryable<AttributeValue> GetByAttributeId( int attributeId )
         {
             return Queryable().Where( t => t.AttributeId == attributeId );
+        }
+        /// <summary>
+        /// Gets an Attribute Value by Attribute Id And Entity Id
+        /// </summary>
+        /// <param name="attributeIds">The IEnumerable{int} of Attribute Ids to get values for.</param>
+        /// <param name="entityId">Entity Id.</param>
+        /// <returns></returns>
+        public IQueryable<AttributeValue> GetByAttributeIdsAndEntityId( IEnumerable<int> attributeIds, int? entityId )
+        {
+            return Queryable()
+                .Where( t =>
+                   attributeIds.Contains( t.AttributeId ) &&
+                    (
+                        ( !t.EntityId.HasValue && !entityId.HasValue ) ||
+                        ( t.EntityId.HasValue && entityId.HasValue && t.EntityId.Value == entityId.Value )
+                    ) );
         }
 
         /// <summary>
@@ -61,6 +78,22 @@ namespace Rock.Model
         public IQueryable<AttributeValue> GetByEntityId( int? entityId )
         {
             return Queryable().Where( t => ( t.EntityId == entityId || ( entityId == null && t.EntityId == null ) ) );
+        }
+
+        /// <summary>
+        /// Returns an IQueryable of <see cref="Rock.Model.AttributeValue">AttributeValues</see>
+        /// by EntityTypeId, EntityTypeQualifierColumn and EntityTypeQualifierValue.
+        /// </summary>
+        /// <param name="entityTypeId">The Id of the <see cref="EntityType"/> for <see cref="Attribute"/> to search for.</param>
+        /// <param name="qualifierColumn">The value of the EntityTypeQualifierColumn to search for (e.g. 'BlockTypeId' or 'EntityTypeId').</param>
+        /// <param name="qualifierValue">The value of the EntityTypeQualifierValue to search for (e.g. 'BlockTypeId' or 'EntityTypeId').</param>
+        /// <returns>An IQueryable of <see cref="Rock.Model.AttributeValue">AttributeValues</see> for the specified parameters.</returns>
+        public IQueryable<AttributeValue> GetByEntityTypeQualified( int entityTypeId, string qualifierColumn, string qualifierValue )
+        {
+            return Queryable().Where( t =>
+                t.Attribute.EntityTypeId == entityTypeId
+                && t.Attribute.EntityTypeQualifierColumn == qualifierColumn
+                && t.Attribute.EntityTypeQualifierValue == qualifierValue );
         }
 
         /// <summary>

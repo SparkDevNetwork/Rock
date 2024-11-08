@@ -16,6 +16,7 @@
 using System;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
 using System.Web.UI;
 
 using Rock;
@@ -33,6 +34,7 @@ namespace RockWeb.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for generating a Contribution Statement" )]
 
+
     [BooleanField(
         "Allow Person QueryString",
         Key = AttributeKey.AllowPersonQueryString,
@@ -45,6 +47,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.FinancialStatementTemplate,
         DefaultValue = Rock.SystemGuid.FinancialStatementTemplate.ROCK_DEFAULT,
         Order = 1 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "E0A699C3-61AA-4522-9067-1FE56FA80972" )]
     public partial class ContributionStatementGenerator : RockBlock
     {
@@ -63,6 +66,8 @@ namespace RockWeb.Blocks.Finance
         private static class PageParameterKey
         {
             public const string StatementYear = "StatementYear";
+            public const string StatementStartMonth = "StatementStartMonth";
+            public const string StatementEndMonth = "StatementEndMonth";
             public const string PersonActionIdentifier = "rckid";
             public const string PersonGuid = "PersonGuid";
         }
@@ -89,12 +94,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 DisplayResults();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -113,11 +118,13 @@ namespace RockWeb.Blocks.Finance
 
         private void DisplayResults()
         {
-            RockContext rockContext = new RockContext();
-
             Person targetPerson = CurrentPerson;
-            
+
+            RockContext rockContext = new RockContext();
+                        
             var statementYear = PageParameter( PageParameterKey.StatementYear ).AsIntegerOrNull() ?? RockDateTime.Now.Year;
+            var statementStartMonth = PageParameter( PageParameterKey.StatementStartMonth ).AsIntegerOrNull() ?? 0;
+            var statementEndMonth = PageParameter( PageParameterKey.StatementEndMonth ).AsIntegerOrNull() ?? 0;
             var personActionId = PageParameter( PageParameterKey.PersonActionIdentifier );
             var personGuid = PageParameter( PageParameterKey.PersonGuid ).AsGuidOrNull();
             var allowPersonQueryString = GetAttributeValue( AttributeKey.AllowPersonQueryString ).AsBoolean();
@@ -146,10 +153,31 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
+            if ( targetPerson == null )
+            {
+                Response.StatusCode = ( int ) HttpStatusCode.BadRequest;
+                Response.Write( "Invalid Person" );
+                Response.End();
+            }
+
             FinancialStatementGeneratorOptions financialStatementGeneratorOptions = new FinancialStatementGeneratorOptions();
             var startDate = new DateTime( statementYear, 1, 1 );
+            
+            // If the statementStartMonth page parameter exists and its value is between 1 and 12 use it, otherwise startDate retains the normal behavior.
+            if ( statementStartMonth > 0 && statementStartMonth < 12 )
+            {
+                startDate = new DateTime( statementYear, statementStartMonth, 1 );
+            }
+            // If the statementEndMonth page parameter exists and its value is between 1 and 12 use it, otherwise endDate retains the normal behavior.
+            var endDate = ( statementEndMonth > 0 && statementEndMonth < 12 ) ? ( new DateTime( statementYear, statementEndMonth, 1 ) ).AddMonths( 1 ) : startDate.AddYears( 1 );
+            
+            // Ensure that endDate is greater than or equal to startDate
+            if ( statementEndMonth > 0 && statementEndMonth < statementStartMonth )
+            {
+                endDate = startDate.AddYears( 1 ).AddMonths( -1 ); // Checking if endDate is less than the startDate. Removing a month from endDate to create a full year if it is.
+            }
             financialStatementGeneratorOptions.StartDate = startDate;
-            financialStatementGeneratorOptions.EndDate = startDate.AddYears( 1 );
+            financialStatementGeneratorOptions.EndDate = endDate;
             financialStatementGeneratorOptions.RenderMedium = "Html";
 
             var financialStatementTemplateGuid = this.GetAttributeValue( AttributeKey.FinancialStatementTemplate ).AsGuidOrNull() ?? Rock.SystemGuid.FinancialStatementTemplate.ROCK_DEFAULT.AsGuid();
@@ -158,6 +186,10 @@ namespace RockWeb.Blocks.Finance
 
             FinancialStatementGeneratorRecipient financialStatementGeneratorRecipient = new FinancialStatementGeneratorRecipient();
 
+            // It's required that we set the LocationId in order for the GetStatementGeneratorRecipientResult() to
+            // fetch all the required data for the Lava.
+            financialStatementGeneratorRecipient.LocationId = targetPerson.GetMailingLocation()?.Id;
+    
             if ( targetPerson.GivingGroupId.HasValue )
             {
                 financialStatementGeneratorRecipient.GroupId = targetPerson.GivingGroupId.Value;

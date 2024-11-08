@@ -27,6 +27,8 @@ export const Site = {
     CheckInManager: "A5FA7C3C-A238-4E0B-95DE-B540144321EC",
     /** Gets the External Site guid. */
     ExternalSite: "F3F82256-2D66-432B-9D67-3552CD2F4C2B",
+    /** The next generation check-in site guid. */
+    NextGenCheckIn: "BFBB35BD-D0B0-459E-9329-B082CE4F253E",
     /** Gets the default Rock Site guid */
     SiteRockInternal: "C2D29296-6A87-47A9-A753-EE4E9159C4C4",
 };

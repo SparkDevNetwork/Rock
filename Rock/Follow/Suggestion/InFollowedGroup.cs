@@ -132,7 +132,7 @@ namespace Rock.Follow.Suggestion
                             followedMembersList.Contains( a.PersonId ) &&
                             a.PersonId == a.AliasPersonId )
                         .ToList()
-                        .ForEach( a => personAliasIds.AddOrIgnore( a.PersonId, a.Id ) );
+                        .ForEach( a => personAliasIds.TryAdd( a.PersonId, a.Id ) );
 
 
                     // Loop through each follower/group combination

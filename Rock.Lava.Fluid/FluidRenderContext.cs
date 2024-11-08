@@ -320,7 +320,7 @@ namespace Rock.Lava.Fluid
 
                 foreach ( var key in properties.Keys )
                 {
-                    dictionary.AddOrIgnore( key, properties[key] );
+                    dictionary.TryAdd( key, properties[key] );
                 }
 
                 scope = scope.Parent;

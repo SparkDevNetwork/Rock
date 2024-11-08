@@ -77,13 +77,12 @@ namespace RockWeb.Blocks.Store
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowPackage();
-
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -385,7 +384,7 @@ namespace RockWeb.Blocks.Store
         protected string FormatRating( int ratings )
         {
             var mergeValues = new Dictionary<string, object>();
-            mergeValues.AddOrIgnore( "Rating", ratings );
+            mergeValues.TryAdd( "Rating", ratings );
             return "{{ Rating | RatingMarkup }}".ResolveMergeFields( mergeValues );
         }
 

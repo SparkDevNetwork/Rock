@@ -23,10 +23,11 @@
                           label="Enable Page Views"
                           help="Determines if interaction records should be written for page views" />
 
-                <NumberBox v-if="enablePageViews"
-                           v-model="pageViewRetentionPeriod"
-                           label="Page View Retention Period"
-                           help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
+                <TextBox v-if="enablePageViews"
+                         v-model="pageViewRetentionPeriod"
+                         :rules="validateIntegerValue"
+                         label="Page View Retention Period"
+                         help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
 
                 <div class="row">
                     <div class="col-md-6 col-sm-6">
@@ -42,10 +43,6 @@
                          label="API Key"
                          rules="required"
                          help="The API key that will be used to secure your TV application." />
-
-                <CheckBox v-model="enablePageViewGeoTracking"
-                          label="Enable Page View Geo Tracking"
-                          help="Enabling this feature will allow the PopulateInteractionSessionData job to begin performing geolocation lookup on the IP addresses in the Interaction Session data. This also requires setting up a IP Address Location Service found under System Settings." />
             </div>
         </div>
 
@@ -63,7 +60,6 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
 
     const props = defineProps({
@@ -91,29 +87,41 @@
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive, "IsActive");
     const enablePageViews = propertyRef(props.modelValue.enablePageViews, "EnablePageViews");
-    const enablePageViewGeoTracking = propertyRef(props.modelValue.enablePageViewGeoTracking, "EnablePageViewGeoTracking");
     const loginPage = propertyRef(props.modelValue.loginPage ?? {}, "LoginPageId");
     const applicationStyles = ref(props.modelValue.applicationStyles ?? "");
     const applicationJavascript = ref(props.modelValue.applicationJavascript ?? "");
-    const pageViewRetentionPeriod = ref(props.modelValue.pageViewRetentionPeriod ?? null);
+    const pageViewRetentionPeriod = ref(props.modelValue.pageViewRetentionPeriod ?? "");
     const apiKey = ref(props.modelValue.apiKey ?? "");
     const isApplicationJsVisible = ref(props.modelValue.showApplicationJavascript);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [name, description, isActive, enablePageViews, loginPage, enablePageViewGeoTracking];
-
-    // #endregion
-
-    // #region Computed Values
+    const propRefs = [name, description, isActive, enablePageViews, loginPage];
 
     // #endregion
 
     // #region Functions
 
-    // #endregion
+    function validateIntegerValue(value: unknown): string | boolean {
 
-    // #region Event Handlers
+        const stringValue = value as string;
+
+        if (stringValue) {
+            const num = Number(value);
+            if (!isValidNumber(num)) {
+                return "must be a valid number.";
+            }
+            else if (num < 0) {
+                return "must have a value of 0 or more.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(num: number): boolean {
+        return !isNaN(num) && isFinite(num);
+    }
 
     // #endregion
 
@@ -125,11 +133,10 @@
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(isActive, props.modelValue.isActive);
         updateRefValue(enablePageViews, props.modelValue.enablePageViews);
-        updateRefValue(enablePageViewGeoTracking, props.modelValue.enablePageViewGeoTracking);
         updateRefValue(loginPage, props.modelValue.loginPage ?? {});
         updateRefValue(applicationStyles, props.modelValue.applicationStyles ?? "");
         updateRefValue(applicationJavascript, props.modelValue.applicationJavascript ?? "");
-        updateRefValue(pageViewRetentionPeriod, props.modelValue.pageViewRetentionPeriod ?? null);
+        updateRefValue(pageViewRetentionPeriod, props.modelValue.pageViewRetentionPeriod ?? "");
         updateRefValue(apiKey, props.modelValue.apiKey ?? "");
     });
 
@@ -143,7 +150,6 @@
             description: description.value,
             isActive: isActive.value,
             enablePageViews: enablePageViews.value,
-            enablePageViewGeoTracking: enablePageViewGeoTracking.value,
             loginPage: loginPage.value,
             applicationStyles: applicationStyles.value,
             applicationJavascript: applicationJavascript.value,

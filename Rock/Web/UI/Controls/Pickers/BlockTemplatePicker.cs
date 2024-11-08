@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -468,26 +469,27 @@ namespace Rock.Web.UI.Controls
                                 _hfTemplateKey.Value = item.Guid.ToString();
                             }
 
-                            var imageUrl = string.Format( "~/GetImage.ashx?guid={0}", item.GetAttributeValue( "Icon" ).AsGuid() );
-                            var imgSrc = string.Format( "<img src='{0}' width='100%'/>", ResolveUrl( imageUrl ) );
+                            var imageUrl = FileUrlHelper.GetImageUrl( item.GetAttributeValue( "Icon" ).AsGuid() );
+                            var imgSrc = $"<img src='{ResolveUrl( imageUrl )}' width='100%'/>";
 
                             string html = string.Format( @" <div class='col-md-2 col-sm-4 template-picker-item'>
-                                                                <div class='radio'>
-                                                                    <label><input type = 'radio' class='js-template-picker' name='template-id-{5}' id='{0}' value='{0}' {2} {3}><span class='label-text'><b>{1}</b></span></label>
-                                                                </div>
-                                                                {4}
-                                                            </div>",
-                                            item.Guid,
-                                            item.Value,
-                                            _hfTemplateKey.Value.AsGuid() == item.Guid ? "checked" : "",
-                                            this.Enabled ? "" : "disabled",
-                                            imgSrc,
-                                            this.ID );
+                                                    <div class='radio'>
+                                                        <label><input type='radio' class='js-template-picker' name='template-id-{5}' id='{0}' value='{0}' {2} {3}><span class='label-text'><b>{1}</b></span></label>
+                                                    </div>
+                                                    {4}
+                                                </div>",
+                                item.Guid,
+                                item.Value,
+                                _hfTemplateKey.Value.AsGuid() == item.Guid ? "checked" : "",
+                                this.Enabled ? "" : "disabled",
+                                imgSrc,
+                                this.ID );
                             htmlBuilder.Append( html );
                         }
                     }
                 }
             }
+
 
             _hfTemplateKey.RenderControl( writer );
 

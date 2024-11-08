@@ -30,6 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -171,8 +172,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbValidation.Visible = false;
             int eventItemId = PageParameter( "EventItemId" ).AsInteger();
 
@@ -191,6 +190,8 @@ namespace RockWeb.Blocks.Event
 
                 ShowDialog();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -808,7 +809,7 @@ namespace RockWeb.Blocks.Event
             string imgTag = GetImageTag( eventItem.PhotoId, 300, 300, false, true );
             if ( eventItem.PhotoId.HasValue )
             {
-                string imageUrl = ResolveRockUrl( string.Format( "~/GetImage.ashx?id={0}", eventItem.PhotoId.Value ) );
+                string imageUrl = FileUrlHelper.GetImageUrl( eventItem.PhotoId.Value );
                 lImage.Text = string.Format( "<a href='{0}'>{1}</a>", imageUrl, imgTag );
                 divImage.Visible = true;
             }
@@ -946,8 +947,10 @@ namespace RockWeb.Blocks.Event
 
                         wpAttributes.Visible = true;
                         calendarAttributeHtmlGenericContainer.Controls.Add( new LiteralControl( string.Format( "<h3>{0}</h3>", eventCalendarService.Get( eventCalendarId ).Name ) ) );
-                        Rock.Attribute.Helper.AddEditControls( eventCalendarItem, calendarAttributeHtmlGenericContainer, true, BlockValidationGroup );
+                        // Add calendarAttributeHtmlGenericContainer to the block's control tree before adding any attributes controls with it as the parent control.
+                        // This way it will be found by any attribute control trying to register a startup script with the page (e.g the grid in the AttributeMatrixEditor).
                         phAttributes.Controls.Add( calendarAttributeHtmlGenericContainer );
+                        Rock.Attribute.Helper.AddEditControls( eventCalendarItem, calendarAttributeHtmlGenericContainer, true, BlockValidationGroup );
                     }
                 }
             }

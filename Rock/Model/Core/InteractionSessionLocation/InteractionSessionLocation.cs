@@ -116,7 +116,7 @@ namespace Rock.Model
         /// <value>
         /// The region code.
         /// </value>
-        [MaxLength( 2 )]
+        [MaxLength( 3 )]
         [DataMember]
         public string RegionCode { get; set; }
 

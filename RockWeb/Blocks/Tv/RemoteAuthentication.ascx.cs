@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Tv
         false,
         @"<div>
     <h1>Success!</h1>
-    <span>{{ CurrentPerson.NickName }}, you have successfully authenicated to your application.</span>
+    <span>{{ CurrentPerson.NickName }}, you have successfully authenticated to your application.</span>
 </div>",
         "default",
         3,
@@ -129,8 +129,6 @@ namespace RockWeb.Blocks.Tv
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 // Check to ensure that the person is logged in.
@@ -140,6 +138,7 @@ namespace RockWeb.Blocks.Tv
                     nbWarningMessages.Visible = true;
 
                     pnlAuthenticate.Visible = false;
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -149,6 +148,7 @@ namespace RockWeb.Blocks.Tv
                 if ( passScanCode.IsNotNullOrWhiteSpace() )
                 {
                     AttemptAuthentication( passScanCode );
+                    base.OnLoad( e );
                     return;
                 }
 

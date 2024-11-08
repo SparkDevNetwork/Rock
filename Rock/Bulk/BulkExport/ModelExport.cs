@@ -15,13 +15,13 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.BulkExport
 {
@@ -127,10 +127,10 @@ namespace Rock.BulkExport
         internal static IQueryable<T> QueryFromDataView<T>( RockContext rockContext, int dataViewId ) where T : Rock.Data.IEntity
         {
             IQueryable<T> entityQuery;
-            var dataView = new DataViewService( rockContext ).GetNoTracking( dataViewId );
+            var dataView = DataViewCache.Get( dataViewId );
             if ( dataView != null )
             {
-                var dataViewGetQueryArgs = new DataViewGetQueryArgs
+                var dataViewGetQueryArgs = new Reporting.GetQueryableOptions
                 {
                     DbContext = rockContext
                 };

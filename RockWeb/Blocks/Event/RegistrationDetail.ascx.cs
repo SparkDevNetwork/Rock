@@ -34,6 +34,7 @@ using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -43,6 +44,7 @@ namespace RockWeb.Blocks.Event
     [DisplayName( "Registration Detail" )]
     [Category( "Event" )]
     [Description( "Displays the details of a given registration." )]
+    [SecurityAction( SecurityActionKey.EditPaymentPlan, "The roles and/or users that can edit the payment plan for the selected persons." )]
 
     [LinkedPage( "Registrant Page", "The page for viewing details about a registrant", true, "", "", 0 )]
     [LinkedPage( "Transaction Page", "The page for viewing transaction details", true, "", "", 1 )]
@@ -64,11 +66,42 @@ namespace RockWeb.Blocks.Event
 
         #endregion ViewState Keys
 
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Security Actions
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            public const string EditPaymentPlan = "EditPaymentPlan";
+        }
+
+        #endregion Security Actions
+
         #region Fields
 
-        private Registration Registration = null;
+        private Registration Registration
+        {
+            get
+            {
+                if ( _registration == null )
+                {
+                    _registration = GetRegistration( this.RegistrationId );
+                }
+
+                return _registration;
+            }
+            set
+            {
+                _registration = value;
+            }
+        }
+
+        private Registration _registration = null;
 
         private Control _hostedPaymentInfoControl;
+
+        bool _canEditPaymentPlan = true;
 
         #endregion Fields
 
@@ -283,6 +316,8 @@ namespace RockWeb.Blocks.Event
             gPayments.Actions.ShowAdd = false;
             gPayments.GridRebind += gPayments_GridRebind;
 
+            _canEditPaymentPlan = IsUserAuthorized( SecurityActionKey.EditPaymentPlan );
+
             var qryParam = new Dictionary<string, string>();
             qryParam.Add( "TransactionId", "PLACEHOLDER" );
             var hlCol = gPayments.Columns[0] as HyperLinkField;
@@ -304,8 +339,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbConfirmationQueued.Visible = false;
             nbPaymentError.Visible = false;
 
@@ -321,6 +354,8 @@ namespace RockWeb.Blocks.Event
                     pnlDetails.Visible = false;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -955,11 +990,11 @@ namespace RockWeb.Blocks.Event
             {
                 if ( Registration.PersonAlias != null && Registration.PersonAlias.Person != null )
                 {
-                    ppPayee.SetValue( Registration.PersonAlias.Person );
+                    ppPayer.SetValue( Registration.PersonAlias.Person );
                 }
                 else
                 {
-                    ppPayee.SetValue( null );
+                    ppPayer.SetValue( null );
                 }
 
                 using ( var rockContext = new RockContext() )
@@ -1000,14 +1035,14 @@ namespace RockWeb.Blocks.Event
             {
                 var person = Registration.PersonAlias.Person;
 
-                ppPayee.SetValue( person );
+                ppPayer.SetValue( person );
 
                 var location = person.GetHomeLocation();
                 acBillingAddress.SetValues( location );
             }
             else
             {
-                ppPayee.SetValue( null );
+                ppPayer.SetValue( null );
                 acBillingAddress.SetValues( null );
             }
 
@@ -1016,7 +1051,7 @@ namespace RockWeb.Blocks.Event
 
         protected void lbSubmitPayment_Click( object sender, EventArgs e )
         {
-            int? personAliasId = ppPayee.PersonAliasId;
+            int? personAliasId = ppPayer.PersonAliasId;
 
             decimal pmtAmount = cbPaymentAmount.Value == null ? 0 : cbPaymentAmount.Value.Value;
             if ( Registration != null && Registration.BalanceDue >= pmtAmount && pmtAmount > 0 )
@@ -1429,6 +1464,8 @@ namespace RockWeb.Blocks.Event
                     .Include( a => a.Group )
                     .Include( a => a.Registrants )
                     .Include( a => a.Registrants.Select( s => s.Fees ) )
+                    .Include( a => a.PaymentPlanFinancialScheduledTransaction )
+                    .Include( a => a.PaymentPlanFinancialScheduledTransaction.TransactionFrequencyValue )
                     .Where( r => r.Id == registrationId.Value )
                     .FirstOrDefault();
 
@@ -1537,7 +1574,7 @@ namespace RockWeb.Blocks.Event
             {
                 foreach ( var discount in this.RegistrationTemplate.Discounts.OrderBy( d => d.Code ) )
                 {
-                    discountCodes.AddOrIgnore(
+                    discountCodes.TryAdd(
                         discount.Code,
                         discount.Code + ( string.IsNullOrWhiteSpace( discount.DiscountString ) ? string.Empty : string.Format( " ({0})", HttpUtility.HtmlDecode( discount.DiscountString ) ) ) );
                 }
@@ -1545,7 +1582,7 @@ namespace RockWeb.Blocks.Event
 
             if ( !string.IsNullOrWhiteSpace( registration.DiscountCode ) )
             {
-                discountCodes.AddOrIgnore( registration.DiscountCode, registration.DiscountCode );
+                discountCodes.TryAdd( registration.DiscountCode, registration.DiscountCode );
             }
 
             ddlGroup.Items.Clear();
@@ -1709,11 +1746,36 @@ namespace RockWeb.Blocks.Event
                 hlCost.Visible = true;
                 hlCost.Text = registration.DiscountedCost.FormatAsCurrency();
 
-                decimal balanceDue = registration.BalanceDue;
+                var balanceDue = registration.BalanceDue;
                 hlBalance.Visible = true;
                 hlBalance.Text = balanceDue.FormatAsCurrency();
-                hlBalance.LabelType = balanceDue > 0 ? LabelType.Danger :
-                    balanceDue < 0 ? LabelType.Warning : LabelType.Success;
+                
+                var isPaymentPlanActive = registration.IsPaymentPlanActive;
+
+                if ( balanceDue > 0.0m )
+                {
+                    if ( !isPaymentPlanActive )
+                    {
+                        hlBalance.LabelType = LabelType.Danger;
+                    }
+                    else
+                    {
+                        hlBalance.LabelType = LabelType.Warning;
+                    }
+                }
+                else if ( balanceDue < 0.0m )
+                {
+                    hlBalance.LabelType = LabelType.Warning;
+                }
+                else
+                {
+                    hlBalance.LabelType = LabelType.Success;
+                }
+
+                if ( isPaymentPlanActive )
+                {
+                    hlBalance.IconCssClass = "fa fa-calendar-day";
+                }
             }
             else
             {
@@ -1771,7 +1833,7 @@ namespace RockWeb.Blocks.Event
             bool enableCreditCard = true;
             if ( this.FinancialGatewayComponent != null && this.FinancialGateway != null )
             {
-                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard } );
+                _hostedPaymentInfoControl = this.FinancialGatewayComponent.GetHostedPaymentInfoControl( this.FinancialGateway, $"_hostedPaymentInfoControl_{this.FinancialGateway.Id}", new HostedPaymentInfoControlOptions { EnableACH = enableACH, EnableCreditCard = enableCreditCard, EnableBillingAddressCollection = false } );
                 phHostedPaymentControl.Controls.Add( _hostedPaymentInfoControl );
                 this.HostPaymentInfoSubmitScript = this.FinancialGatewayComponent.GetHostPaymentInfoSubmitScript( this.FinancialGateway, _hostedPaymentInfoControl );
             }
@@ -1879,6 +1941,13 @@ namespace RockWeb.Blocks.Event
                 paymentInfo.TransactionTypeValueId = txnType.Id;
 
                 gateway.UpdatePaymentInfoFromPaymentControl( this.FinancialGateway, _hostedPaymentInfoControl, paymentInfo, out errorMessage );
+                if ( errorMessage.IsNotNullOrWhiteSpace() )
+                {
+                    nbPaymentError.Text = errorMessage ?? "Unknown Error";
+                    nbPaymentError.Visible = true;
+                    return false;
+                }
+
                 var customerToken = gateway.CreateCustomerAccount( this.FinancialGateway, paymentInfo, out errorMessage );
                 if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
                 {
@@ -1917,6 +1986,16 @@ namespace RockWeb.Blocks.Event
             return true;
         }
 
+        /// <summary>
+        /// Processes a payment via a hosted gateway, and associates the payment details with the resulting financial transaction.
+        /// </summary>
+        /// <param name="gateway">The hosted payment gateway.</param>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <param name="amount">The payment amount.</param>
+        /// <param name="registrationChanges">Tracks registration changes.</param>
+        /// <param name="errorMessage">The error message if issues occur during payment.</param>
+        /// <returns>The financial transaction resulting from issuing payment via the gateway.</returns>
         private FinancialTransaction ProcessTransaction( IHostedGatewayComponent gateway, RockContext rockContext, PaymentInfo paymentInfo, decimal amount, History.HistoryChangeList registrationChanges, out string errorMessage )
         {
             var transaction = gateway.Charge( this.RegistrationTemplate.FinancialGateway, paymentInfo, out errorMessage );
@@ -1949,7 +2028,16 @@ namespace RockWeb.Blocks.Event
             return transaction;
         }
 
-        private bool SaveTransaction( RockContext rockContext, Registration registration, FinancialTransaction transaction, int? personAliasId, decimal amount )
+        /// <summary>
+        /// Saves a registration transaction.
+        /// </summary>
+        /// <param name="rockContext">The Rock context.</param>
+        /// <param name="registration">The registration for which the transaction will be saved.</param>
+        /// <param name="transaction">The transaction to save.</param>
+        /// <param name="authorizedPersonAliasId">The person authorized to save the transaction.</param>
+        /// <param name="transactionAmount">The transaction amount.</param>
+        /// <returns><see langword="true" /> if the transaction is saved successfully; otherwise, <see langword="false" /> is returned.</returns>
+        private bool SaveTransaction( RockContext rockContext, Registration registration, FinancialTransaction transaction, int? authorizedPersonAliasId, decimal transactionAmount )
         {
             if ( transaction == null )
             {
@@ -1957,7 +2045,7 @@ namespace RockWeb.Blocks.Event
             }
 
             transaction.Summary = GetInternalComment( registration );
-            transaction.AuthorizedPersonAliasId = personAliasId;
+            transaction.AuthorizedPersonAliasId = authorizedPersonAliasId;
             transaction.TransactionDateTime = RockDateTime.Now;
 
             var txnType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION ) );
@@ -1974,7 +2062,7 @@ namespace RockWeb.Blocks.Event
             }
 
             var transactionDetail = new FinancialTransactionDetail();
-            transactionDetail.Amount = amount;
+            transactionDetail.Amount = transactionAmount;
             transactionDetail.AccountId = registration.RegistrationInstance.AccountId.Value;
             transactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
             transactionDetail.EntityId = registration.Id;
@@ -2185,9 +2273,13 @@ namespace RockWeb.Blocks.Event
             {
                 if ( registrant.Cost > 0 )
                 {
-                    var costSummary = new RegistrationCostSummaryInfo();
-                    costSummary.Type = RegistrationCostSummaryType.Cost;
-                    costSummary.Description = registrant.PersonName;
+                    var costSummary = new RegistrationCostSummaryInfo
+                    {
+                        Type = RegistrationCostSummaryType.Cost,
+                        Description = registrant.PersonName,
+                        RegistrationRegistrantGuid = registrant.Guid
+                    };
+
                     if ( registrant.OnWaitList )
                     {
                         costSummary.Description += " (Waiting List)";
@@ -2239,10 +2331,13 @@ namespace RockWeb.Blocks.Event
 
                             string desc = string.Format( "{0} ({1:N0} @ {2})", feeName, feeInfo.Quantity, cost.FormatAsCurrency() );
 
-                            var costSummary = new RegistrationCostSummaryInfo();
-                            costSummary.Type = RegistrationCostSummaryType.Fee;
-                            costSummary.Description = desc;
-                            costSummary.Cost = feeInfo.Quantity * cost;
+                            var costSummary = new RegistrationCostSummaryInfo
+                            {
+                                Type = RegistrationCostSummaryType.Fee,
+                                Description = desc,
+                                RegistrationRegistrantGuid = registrant.Guid,
+                                Cost = feeInfo.Quantity * cost
+                            };
 
                             if ( registration.DiscountPercentage > 0.0m && templateFee != null && templateFee.DiscountApplies && registrant.DiscountApplies )
                             {
@@ -2277,7 +2372,10 @@ namespace RockWeb.Blocks.Event
                     Type = RegistrationCostSummaryType.Discount,
                     Description = "Discount",
                     Cost = totalDiscount,
-                    DiscountedCost = totalDiscount
+                    DiscountedCost = totalDiscount,
+
+                    // The total discount isn't associated with a particular registrant, so set the registrant guid to null.
+                    RegistrationRegistrantGuid = null
                 } );
             }
 
@@ -2290,10 +2388,24 @@ namespace RockWeb.Blocks.Event
                 Description = "Total",
                 Cost = costs.Sum( c => c.Cost ),
                 DiscountedCost = registration.DiscountedCost,
+
+                // The total isn't associated with a particular registrant, so set the registrant guid to null.
+                RegistrationRegistrantGuid = null
             } );
 
             rptFeeSummary.DataSource = costs;
             rptFeeSummary.DataBind();
+
+            // Set the payment plan information.
+            if ( registration.PaymentPlanFinancialScheduledTransaction?.IsActive != true )
+            {
+                pnlPaymentPlanSummary.Visible = false;
+            }
+            else
+            {
+                LoadPaymentPlanSummaryPanel();
+                pnlPaymentPlanSummary.Visible = true;
+            }
 
             // Set the totals
             decimal balanceDue = registration.BalanceDue;
@@ -2338,6 +2450,68 @@ namespace RockWeb.Blocks.Event
                 {
                     BuildRegistrantControls( registrant, setValues );
                 }
+            }
+        }
+
+        private void LoadPaymentPlanSummaryPanel()
+        {
+            var registration = this.Registration;
+
+            lFrequencyPaymentAmount.Label = lFrequencyPaymentAmount.Label = $"{registration.PaymentPlanFinancialScheduledTransaction.TransactionFrequencyValue} Payment Amount";
+            lFrequencyPaymentAmount.Text = $"{registration.PaymentPlanFinancialScheduledTransaction.TotalAmount.FormatAsCurrency()} × {registration.PaymentPlanFinancialScheduledTransaction.NumberOfPayments}";
+            spanChangeButtonWrapper.Visible = _canEditPaymentPlan;
+            lbDeletePaymentPlan.Visible = _canEditPaymentPlan;
+
+            var paymentPlanFinancialScheduledTransactionId = registration.PaymentPlanFinancialScheduledTransactionId.Value;
+            var lastTransactionDate = new FinancialTransactionService( new RockContext() )
+                .Queryable()
+                .Where( a =>
+                    a.ScheduledTransactionId.HasValue
+                    && a.ScheduledTransactionId == paymentPlanFinancialScheduledTransactionId
+                    && a.TransactionDateTime.HasValue
+                )
+                .Max( t => ( DateTime? ) t.TransactionDateTime.Value );
+            
+            // Use the financial gateway associated with the existing payment plan
+            // instead of what's configured on the template, as the template's gateway may
+            // have changed after the payment plan was created.
+            var nextPaymentDate = registration.PaymentPlanFinancialScheduledTransaction.FinancialGateway?.GetGatewayComponent()?.GetNextPaymentDate( registration.PaymentPlanFinancialScheduledTransaction, lastTransactionDate );
+                
+            if ( nextPaymentDate.HasValue )
+            {
+                // Show the next payment date.
+                lNextPaymentDate.Text = nextPaymentDate.Value.ToShortDateString();
+                lNextPaymentDate.Visible = true;
+
+                // Disallow updates if the next payment date is today
+                if ( nextPaymentDate.Value.Date == RockDateTime.Today )
+                {
+                    lbChangePaymentPlan.Enabled = false;
+                    spanChangeButtonWrapper.Attributes["title"] = "The plan cannot be changed because the next payment is today (and may be in process).";
+                }
+                else if ( this.Registration.BalanceDue <= 0 )
+                {
+                    lbChangePaymentPlan.Enabled = false;
+                    spanChangeButtonWrapper.Attributes["title"] = "The plan cannot be changed because the amount remaining is zero.";
+                }
+                else
+                {
+                    lbChangePaymentPlan.Enabled = true;
+                    spanChangeButtonWrapper.Attributes["title"] = string.Empty;
+                }
+
+                // Allow deletion if the recurring payment has more payments.
+                lbDeletePaymentPlan.Enabled = true;
+            }
+            else
+            {
+                // Hide the next payment date.
+                lNextPaymentDate.Text = string.Empty;
+                lNextPaymentDate.Visible = false;
+
+                // Disallow updates and deletion if the recurring payment is complete.
+                lbChangePaymentPlan.Enabled = false;
+                lbDeletePaymentPlan.Enabled = false;
             }
         }
 
@@ -2620,7 +2794,7 @@ namespace RockWeb.Blocks.Event
                     links = string.Format(
                         @"<a href='{0}' target='_blank' rel='noopener noreferrer'>Signed on {1}</a>
                         <small>Signed by {2}</small>",
-                        ResolveRockUrl( string.Format( "~/GetFile.ashx?id={0}", registrant.SignatureDocumentId ?? 0 ) ),
+                        FileUrlHelper.GetFileUrl( registrant.SignatureDocumentId.Value ),
                         registrant.SignatureDocumentSignedDateTime?.ToString( "dddd, MMMM dd, yyyy" ),
                         registrant.SignatureDocumentSignedName );
 
@@ -2915,5 +3089,521 @@ namespace RockWeb.Blocks.Event
         }
 
         #endregion Support Classes and Enumerations
+        
+        #region Payment Plan Methods
+
+        /// <summary>
+        /// Gets the calculated payment plan configuration from the current registration.
+        /// </summary>
+        /// <returns>The calculated payment plan configuration from the current registration.</returns>
+        private PaymentPlanConfiguration GetPaymentPlanConfigurationForRegistration()
+        {
+            // Use the financial gateway associated with the existing payment plan
+            // instead of what's configured on the template, as the template's gateway may
+            // have changed after the payment plan was created.
+            var financialGatewayComponent = this.Registration
+                .PaymentPlanFinancialScheduledTransaction
+                .FinancialGateway
+                ?.GetGatewayComponent();
+
+            List<DefinedValueCache> frequencyValueOptions;
+            if ( this.RegistrationTemplate.PaymentPlanFrequencyValueIds?.Any() == true )
+            {
+                frequencyValueOptions = this.RegistrationTemplate
+                    .PaymentPlanFrequencyValueIdsCollection
+                    .Select( frequencyValueOptionId => DefinedValueCache.Get( frequencyValueOptionId ) )
+                    .Where( frequencyValueOption => frequencyValueOption != null )
+                    .ToList();
+            }
+            else
+            {
+                // If no payment plan frequencies were selected on the template,
+                // then allow any frequency the gateway component supports.
+                frequencyValueOptions = financialGatewayComponent
+                    ?.SupportedPaymentSchedules
+                    // Ignore "One-Time" frequency.
+                    ?.Where( f => f.Guid != Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() )
+                    .ToList() ?? new List<DefinedValueCache>();
+            }
+            var paymentPlanFinancialScheduledTransactionId = this.Registration.PaymentPlanFinancialScheduledTransactionId;
+            var lastTransactionDate = new FinancialTransactionService( new RockContext() )
+                .Queryable()
+                .Where( a =>
+                    a.ScheduledTransactionId.HasValue
+                    && a.ScheduledTransactionId == paymentPlanFinancialScheduledTransactionId
+                    && a.TransactionDateTime.HasValue
+                )
+                .Max( t => ( DateTime? ) t.TransactionDateTime.Value );
+
+            var paymentPlanConfigurationOptions = new PaymentPlanConfigurationOptions
+            {
+                DesiredAllowedPaymentFrequencies = frequencyValueOptions,
+
+                AmountForPaymentPlan = this.Registration.BalanceDue,
+                CurrencyPrecision = new RockCurrencyCodeInfo().DecimalPlaces,
+                
+                // Admins can choose whatever payment frequency and number of payments as long as there is at least one payment.
+                DesiredNumberOfPayments = this.Registration.PaymentPlanFinancialScheduledTransaction.NumberOfPayments ?? 0,
+                IsNumberOfPaymentsLimited = false,
+                MinNumberOfPayments = 1,
+
+                // The start date should default to tomorrow if the next payment date is not set.
+                DesiredStartDate = ( financialGatewayComponent.GetNextPaymentDate( this.Registration.PaymentPlanFinancialScheduledTransaction, lastTransactionDate )
+                    ?? RockDateTime.Now.AddDays( 1 ) ).Date,
+                
+                // The Registration Instance payment deadline should have a value since it's a required field,
+                // but default to next year just in case it's missing.
+                EndDate = ( this.Registration.RegistrationInstance.PaymentDeadlineDate
+                    ?? RockDateTime.Now.AddYears( 1 ) ).Date,
+
+            };
+
+            var frequencyValueId = this.Registration.PaymentPlanFinancialScheduledTransaction?.TransactionFrequencyValueId;
+            if ( frequencyValueId.HasValue )
+            {
+                // Ensure the selected frequency value is one of the available options.
+                paymentPlanConfigurationOptions.DesiredPaymentFrequency = paymentPlanConfigurationOptions.DesiredAllowedPaymentFrequencies.FirstOrDefault( option => option.Id == frequencyValueId.Value );
+            }
+
+            return new PaymentPlanConfigurationService().Get( paymentPlanConfigurationOptions );
+        }
+
+        /// <summary>
+        /// Gets the calculated payment plan configuration from the "Update Payment Plan" modal fields.
+        /// </summary>
+        /// <returns>The calculated payment plan configuration from the "Update Payment Plan" modal fields.</returns>
+        private PaymentPlanConfiguration GetPaymentPlanConfigurationFromModal()
+        {
+            // Use the financial gateway associated with the existing payment plan
+            // instead of what's configured on the template, as the template's gateway may
+            // have changed after the payment plan was created.
+            var financialGatewayComponent = this.Registration
+                .PaymentPlanFinancialScheduledTransaction
+                .FinancialGateway
+                ?.GetGatewayComponent();
+
+            List<DefinedValueCache> frequencyValueOptions;
+            if ( this.RegistrationTemplate.PaymentPlanFrequencyValueIds?.Any() == true )
+            {
+                frequencyValueOptions = this.RegistrationTemplate
+                    .PaymentPlanFrequencyValueIdsCollection
+                    .Select( frequencyValueOptionId => DefinedValueCache.Get( frequencyValueOptionId ) )
+                    .Where( frequencyValueOption => frequencyValueOption != null )
+                    .ToList();
+            }
+            else
+            {
+                // If no payment plan frequencies were selected on the template,
+                // then allow any frequency the gateway component supports.
+                frequencyValueOptions = financialGatewayComponent
+                    ?.SupportedPaymentSchedules
+                    // Ignore "One-Time" frequency.
+                    ?.Where( f => f.Guid != Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() )
+                    .ToList() ?? new List<DefinedValueCache>();
+            }
+
+            var paymentPlanConfigurationOptions = new PaymentPlanConfigurationOptions
+            {
+                AmountForPaymentPlan = this.Registration.BalanceDue,
+                CurrencyPrecision = new RockCurrencyCodeInfo().DecimalPlaces,
+
+                DesiredAllowedPaymentFrequencies = frequencyValueOptions,
+
+                // Admins can choose whatever payment frequency and number of payments as long as there is at least one payment.
+                IsNumberOfPaymentsLimited = false,                
+                DesiredNumberOfPayments = nbUpdatePaymentPlanNumberOfPayments.IntegerValue ?? 0,
+                MinNumberOfPayments = 1,
+
+                // The start date should default to tomorrow if no date is selected.
+                DesiredStartDate = dpPaymentPlanStartDate.SelectedDate
+                    ?? RockDateTime.Today.AddDays( 1 ),
+
+                // The Registration Instance payment deadline should have a value since it's a required field,
+                // but default to next year just in case it's missing.
+                EndDate = this.Registration.RegistrationInstance.PaymentDeadlineDate
+                    ?? RockDateTime.Now.AddYears( 1 ),
+            };
+
+            var frequencyValueId = DefinedValueCache.GetByIdKey( ddlPaymentPlanFrequencies.SelectedItem.Value )?.Id;
+            if ( frequencyValueId.HasValue )
+            {
+                // Ensure the selected frequency value is one of the available options.
+                paymentPlanConfigurationOptions.DesiredPaymentFrequency = paymentPlanConfigurationOptions.DesiredAllowedPaymentFrequencies.FirstOrDefault( option => option.Id == frequencyValueId.Value );
+            }
+        
+            return new PaymentPlanConfigurationService().Get( paymentPlanConfigurationOptions );
+        }
+
+        /// <summary>
+        /// Sets the configuration for the "Update Payment Plan" modal.
+        /// </summary>
+        /// <param name="paymentPlanConfiguration">The payment plan configuration.</param>
+        private void SetUpdatePaymentPlanModalConfiguration( PaymentPlanConfiguration paymentPlanConfiguration )
+        {
+            nbUpdatePaymentPlanError.Visible = false;
+            nbUpdatePaymentPlanWarning.Visible = false;
+
+            // Load the payment plan transaction frequencies available for the
+            // registration template.
+            ddlPaymentPlanFrequencies.Items.Clear();
+            ddlPaymentPlanFrequencies.Items.Insert( 0, string.Empty );
+            ddlPaymentPlanFrequencies.Items.AddRange(
+                paymentPlanConfiguration.AllowedPaymentFrequencyConfigurations
+                    .Select( paymentPlanFrequencyConfig => new ListItem
+                    {
+                        Text = paymentPlanFrequencyConfig.PaymentFrequency.ToString(),
+                        Value = paymentPlanFrequencyConfig.PaymentFrequency.IdKey
+                    } )
+                    .ToArray() );
+            ddlPaymentPlanFrequencies.SetValue( paymentPlanConfiguration.PaymentFrequencyConfiguration?.PaymentFrequency.IdKey );
+            dpPaymentPlanStartDate.SelectedDate = paymentPlanConfiguration.StartDate;
+            nbUpdatePaymentPlanNumberOfPayments.IntegerValue = paymentPlanConfiguration.NumberOfPayments;
+            nbUpdatePaymentPlanNumberOfPayments.MinimumValue = paymentPlanConfiguration.MinNumberOfPayments.ToString();
+
+            var balanceAfterPaymentPlan = this.Registration.BalanceDue - paymentPlanConfiguration.PlannedAmount;
+            var remainderSuffix = balanceAfterPaymentPlan > 0 ? $" (this will leave a remaining balance of { balanceAfterPaymentPlan.FormatAsCurrency() })" : string.Empty;
+            if ( paymentPlanConfiguration.NumberOfPayments > 0 && paymentPlanConfiguration.PaymentFrequencyConfiguration != null )
+            {
+                lPaymentPlanSummaryPaymentAmount.Text =
+                    $"{paymentPlanConfiguration.AmountPerPayment.FormatAsCurrency()} × {paymentPlanConfiguration.NumberOfPayments} {paymentPlanConfiguration.PaymentFrequencyConfiguration.PaymentFrequency}{remainderSuffix}";
+            }
+            else
+            {
+                lPaymentPlanSummaryPaymentAmount.Text = string.Empty;
+            }
+
+            if ( paymentPlanConfiguration.AmountPerPayment > 0 )
+            { 
+                pnlUpdatePaymentPlanSummary.Visible = true;
+            }
+            else
+            {
+                // Hide the summary section if there is no payment plan amount.
+                pnlUpdatePaymentPlanSummary.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Updates the registration payment plan.
+        /// </summary>
+        /// <param name="paymentPlanConfiguration">The configuration used to update the registration's payment plan.</param>
+        /// <param name="error">If an error occurs while updating the payment plan, then this will contain a user-friendly error message.</param>
+        /// <param name="warning">If a warning occurs while updating the payment plan, then this will contain a user-friendly warning message.</param>
+        /// <returns><see langword="true"/> if the payment plan was updated; otherwise, <see langword="false"/> is returned.</returns>
+        private bool UpdatePaymentPlan( PaymentPlanConfiguration paymentPlanConfiguration, out string error, out string warning )
+        {
+            var registration = this.Registration;
+
+            var paymentPlanFinancialScheduledTransactionId = registration?.PaymentPlanFinancialScheduledTransactionId;
+            if ( !paymentPlanFinancialScheduledTransactionId.HasValue )
+            {
+                error = null;
+                warning = "This registration does not have a payment plan to update";
+                return false;
+            }
+
+            if ( !paymentPlanConfiguration.IsValidForUpdatingExistingPaymentPlan( out var paymentPlanValidationError ) )
+            {
+                error = null;
+                warning = paymentPlanValidationError.ToStringOrDefault( "Unknown validation error" );
+                return false;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+                var financialScheduledTransaction = financialScheduledTransactionService
+                    .Queryable()
+                    .Include( f => f.FinancialPaymentDetail )
+                    .Include( f => f.FinancialGateway )
+                    .FirstOrDefault( f => f.Id == paymentPlanFinancialScheduledTransactionId.Value );
+                
+                // Use the financial gateway associated with the existing payment plan
+                // instead of what's configured on the template, as the template's gateway may
+                // have changed after the payment plan was created.
+                var financialGatewayComponent = financialScheduledTransaction.FinancialGateway?.GetGatewayComponent();
+
+                if ( financialGatewayComponent == null )
+                {
+                    error = "Unable to retrieve payment gateway information";
+                    warning = null;
+                    return false;
+                }
+
+                if ( !( financialGatewayComponent is IScheduledNumberOfPaymentsGateway ) )
+                {
+                    error = "Payment plans are not supported by this payment gateway";
+                    warning = null;
+                    return false;
+                }
+
+                var transactionType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_EVENT_REGISTRATION.AsGuid() );
+
+                var paymentPlanPaymentInfo = new ReferencePaymentInfo
+                {
+                    // Use the existing payment method.
+                    GatewayPersonIdentifier = financialScheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier,
+                    FinancialPersonSavedAccountId = financialScheduledTransaction.FinancialPaymentDetail.FinancialPersonSavedAccountId,
+
+                    ReferenceNumber = financialGatewayComponent.GetReferenceNumber( financialScheduledTransaction, out var getReferenceNumberError ),
+                    TransactionTypeValueId = transactionType.Id,
+                };
+
+                if ( getReferenceNumberError.IsNotNullOrWhiteSpace() )
+                {
+                    error = getReferenceNumberError;
+                    warning = null;
+                    return false;
+                }
+
+                paymentPlanConfiguration.CopyPaymentPlanDetailsTo( paymentPlanPaymentInfo );
+                paymentPlanConfiguration.CopyPaymentPlanDetailsTo( financialScheduledTransaction );
+
+                var originalGatewayScheduleId = financialScheduledTransaction.GatewayScheduleId;
+                try
+                {
+                    // We are using the existing payment method; DO NOT clear out the FinancialPaymentDetail record.
+                    // financialScheduledTransaction.FinancialPaymentDetail.ClearPaymentInfo();
+
+                    var successfullyUpdated = financialGatewayComponent.UpdateScheduledPayment( financialScheduledTransaction, paymentPlanPaymentInfo, out var updateScheduledPaymentError );
+                    if ( !successfullyUpdated || updateScheduledPaymentError.IsNotNullOrWhiteSpace() )
+                    {
+                        error = updateScheduledPaymentError.IsNotNullOrWhiteSpace() ? updateScheduledPaymentError : "Unknown error occurred while updating scheduled payment";
+                        warning = null;
+                        return false;
+                    }
+
+                    financialScheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentPlanPaymentInfo, financialGatewayComponent as GatewayComponent, rockContext );
+
+                    var scheduledTransactionDetail = financialScheduledTransaction.ScheduledTransactionDetails.FirstOrDefault();
+                    if ( scheduledTransactionDetail == null )
+                    {
+                        // This shouldn't happen.
+                        scheduledTransactionDetail = new FinancialScheduledTransactionDetail();
+                        financialScheduledTransaction.ScheduledTransactionDetails.Add( scheduledTransactionDetail );
+                    }
+                    scheduledTransactionDetail.AccountId = registration.RegistrationInstance.AccountId ?? scheduledTransactionDetail.AccountId;
+                    scheduledTransactionDetail.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Registration ) ).Id;
+                    scheduledTransactionDetail.EntityId = registration.Id;
+
+                    paymentPlanConfiguration.CopyPaymentPlanDetailsTo( scheduledTransactionDetail );
+
+                    rockContext.SaveChanges();
+
+                    // TODO Should message be published to event bus? No. As indicated by the class name, this event is exclusively used for non-event giving (or real "gift" giving).
+                    //Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( financialScheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
+
+                    error = null;
+                    warning = null;
+                    return true;
+                }
+                catch ( Exception )
+                {
+                    // if the GatewayScheduleId was updated, but there was an exception,
+                    // make sure we save the financialScheduledTransaction record with the updated GatewayScheduleId so we don't orphan it
+                    if ( financialScheduledTransaction.GatewayScheduleId.IsNotNullOrWhiteSpace() && ( originalGatewayScheduleId != financialScheduledTransaction.GatewayScheduleId ) )
+                    {
+                        rockContext.SaveChanges();
+                    }
+
+                    throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deletes a payment plan.
+        /// </summary>
+        /// <param name="error"></param>
+        /// <param name="warning"></param>
+        private bool DeletePaymentPlan( out string error, out string warning )
+        {
+            /* 
+               2024-04-27 JMH (copied from mdDeleteTransaction_SaveClick() in ScheduledTransactionListLiquid.ascx.cs)
+              
+               2021-08-27 MDP
+               
+               We really don't want to actually delete a FinancialScheduledTransaction.
+               Just inactivate it, even if there aren't FinancialTransactions associated with it.
+               It is possible the the Gateway has processed a transaction on it that Rock doesn't know about yet.
+               If that happens, Rock won't be able to match a record for that downloaded transaction!
+               We also might want to match inactive or "deleted" schedules on the Gateway to a person in Rock,
+               so we'll need the ScheduledTransaction to do that.
+
+               So, don't delete ScheduledTransactions.
+            */
+
+            var registration = this.Registration;
+            var financialScheduledTransactionId = registration?.PaymentPlanFinancialScheduledTransactionId;
+            if ( !financialScheduledTransactionId.HasValue )
+            {
+                error = string.Empty;
+                warning = "This registration has no payment plan or it has already been deleted";
+                return true;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+                var financialScheduledTransaction = financialScheduledTransactionService.Get( registration.PaymentPlanFinancialScheduledTransactionId.Value );
+
+                if ( !financialScheduledTransactionService.Cancel( financialScheduledTransaction, out var cancelErrorMessage ) )
+                {
+                    error = $"An error occurred while canceling your scheduled transaction on the financial gateway. Message: {cancelErrorMessage}";
+                    warning = null;
+                    return false;
+                }
+
+                try
+                {
+                    if ( !financialScheduledTransactionService.GetStatus( financialScheduledTransaction, out var getStatusErrorMessage ) )
+                    {
+                        error = null;
+                        warning = $"The scheduled transaction was canceled on the financial gateway but was not marked inactive in Rock. Message: {getStatusErrorMessage}";
+                        return true;
+                    }
+                }
+                catch
+                {
+                    // Ignore
+                }
+
+                rockContext.SaveChanges();
+
+                error = null;
+                warning = null;
+                return true;
+            }
+        }
+
+        #endregion Payment Plan Methods
+
+        #region Payment Plan Events
+
+        protected void lbChangePaymentPlan_Click( object sender, EventArgs e )
+        {
+            if ( _canEditPaymentPlan )
+            {
+                lUpdatePaymentPlanMessage.Text = $"<p>The amount remaining for this registration is { this.Registration.BalanceDue.FormatAsCurrency() }.</p>";
+
+                var paymentPlanConfiguration = GetPaymentPlanConfigurationForRegistration();
+                SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration );
+
+                mdUpdatePaymentPlan.Show();
+            }
+        }
+
+        protected void lbDeletePaymentPlan_Click( object sender, EventArgs e )
+        {
+            if ( _canEditPaymentPlan )
+            {
+                mdDeletePaymentPlan.Show();
+            }
+        }
+
+        protected void mdDeletePaymentPlan_SaveClick( object sender, EventArgs e )
+        {
+            if ( !_canEditPaymentPlan )
+            {
+                return;
+            }
+
+            nbPaneAccountError.Visible = false;
+            nbPaneAccountWarning.Visible = false;
+
+            var isSuccessfullyDeleted = DeletePaymentPlan( out var error, out var warning );
+
+            var hasError = error.IsNotNullOrWhiteSpace();
+            var hasWarning = warning.IsNotNullOrWhiteSpace();
+
+            if ( hasError )
+            {
+                nbPaneAccountError.Text = error;
+                nbPaneAccountError.Visible = true;
+            }
+
+            if ( hasWarning )
+            {
+                nbPaneAccountWarning.Text = warning;
+                nbPaneAccountWarning.Visible = true;
+            }
+
+            if ( isSuccessfullyDeleted )
+            {
+                // Reload the registration.
+                this.Registration = GetRegistration( this.RegistrationId );
+                
+                pnlPaymentPlanSummary.Visible = false;
+                mdDeletePaymentPlan.Hide();
+            }
+        }
+
+        protected void mdUpdatePaymentPlan_SaveClick( object sender, EventArgs e )
+        {
+            if ( !_canEditPaymentPlan )
+            {
+                return;
+            }
+
+            nbUpdatePaymentPlanError.Visible = false;
+            nbUpdatePaymentPlanWarning.Visible = false;
+
+            var paymentPlanConfiguration = GetPaymentPlanConfigurationFromModal();
+            UpdatePaymentPlan( paymentPlanConfiguration, out var error, out var warning );
+
+            if ( error.IsNotNullOrWhiteSpace() )
+            {
+                nbUpdatePaymentPlanError.Visible = true;
+                nbUpdatePaymentPlanError.Text = error;
+            }
+
+            if ( warning.IsNotNullOrWhiteSpace() )
+            {
+                nbUpdatePaymentPlanWarning.Visible = true;
+                nbUpdatePaymentPlanWarning.Text = warning;
+            }
+
+            if ( error.IsNullOrWhiteSpace() && warning.IsNullOrWhiteSpace() )
+            {
+                // Reload the registration since it was updated.
+                this.Registration = GetRegistration( this.RegistrationId );
+
+                LoadPaymentPlanSummaryPanel();
+                pnlPaymentPlanSummary.Visible = true;
+                mdUpdatePaymentPlan.Hide();
+            }
+        }
+
+        protected void ddlPaymentPlanFrequencies_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var paymentPlanConfiguration = GetPaymentPlanConfigurationFromModal();
+            SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration );
+        }
+
+        protected void dpPaymentPlanStartDate_SelectDate( object sender, EventArgs e )
+        {
+            var paymentPlanConfiguration = GetPaymentPlanConfigurationFromModal();
+            SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration ); 
+        }
+
+        protected void ddlPaymentPlanNumberOfPayments_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var paymentPlanConfiguration = GetPaymentPlanConfigurationFromModal();
+            SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration );
+        }
+
+        protected void cbPaymentPlanAmount_TextChanged( object sender, EventArgs e )
+        {
+            var paymentPlanConfiguration = GetPaymentPlanConfigurationFromModal();
+            SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration );
+        }
+
+        protected void nbUpdatePaymentPlanNumberOfPayments_TextChanged( object sender, EventArgs e )
+        {
+            var paymentPlanConfiguration = GetPaymentPlanConfigurationFromModal();
+            SetUpdatePaymentPlanModalConfiguration( paymentPlanConfiguration );
+        }
+
+        #endregion
     }
 }

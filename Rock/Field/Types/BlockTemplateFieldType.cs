@@ -23,6 +23,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -31,8 +32,8 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a template to use in a block
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "CCD73456-C83B-4D6E-BD69-8133D2EB996D" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BLOCK_TEMPLATE )]
     public class BlockTemplateFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Configuration
@@ -43,6 +44,42 @@ namespace Rock.Field.Types
         public static readonly string TEMPLATE_BLOCK_KEY = "templateblock";
 
         private static readonly Guid _CustomGuid = new Guid( "ffffffff-ffff-ffff-ffff-ffffffffffff" );
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( usage != ConfigurationValueUsage.View && configurationValues.TryGetValue( TEMPLATE_BLOCK_KEY, out string templateBlockGuidString ) && Guid.TryParse( templateBlockGuidString, out Guid templateBlockGuid ) )
+            {
+                var definedValue = DefinedValueCache.Get( templateBlockGuid );
+
+                if ( definedValue != null )
+                {
+                    configurationValues[TEMPLATE_BLOCK_KEY] = definedValue.ToListItemBag().ToCamelCaseJson( false, true );
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc />
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( configurationValues.TryGetValue( TEMPLATE_BLOCK_KEY, out string templateBlockJsonString ) )
+            {
+                var jsonValue = templateBlockJsonString.FromJsonOrNull<ListItemBag>();
+
+                if ( jsonValue != null )
+                {
+                    configurationValues[TEMPLATE_BLOCK_KEY] = jsonValue.Value;
+                }
+            }
+
+            return configurationValues;
+        }
 
         #endregion
 
@@ -93,6 +130,60 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string[] parts = ( privateValue ?? string.Empty ).Split( new[] { '|' }, 2 );
+            if ( parts.Length >= 1 )
+            {
+                var templateGuid = parts[0];
+                if ( templateGuid == _CustomGuid.ToString() )
+                {
+                    templateGuid = Guid.Empty.ToString();
+                    if ( parts.Length >= 2 )
+                    {
+                        return $"{templateGuid}|{parts[1]}";
+                    }
+                }
+                else
+                {
+                    return $"{templateGuid}|";
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc />
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            string[] parts = ( publicValue ?? string.Empty ).Split( new[] { '|' }, 2 );
+            if ( parts.Length >= 1 )
+            {
+                var templateGuid = parts[0];
+                if ( templateGuid == Guid.Empty.ToString() )
+                {
+                    templateGuid = _CustomGuid.ToString();
+                    if ( parts.Length >= 2 )
+                    {
+                        return $"{templateGuid}|{parts[1]}";
+                    }
+                }
+                else
+                {
+                    return $"{templateGuid}|";
+                }
+            }
+
+            return string.Empty;
+        }
 
         #endregion
 
@@ -186,7 +277,7 @@ namespace Rock.Field.Types
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.TEMPLATE_BLOCK.AsGuid() );
             dvpTemplateBlock.DefinedTypeId = definedType?.Id;
             dvpTemplateBlock.Label = "Template Block";
-            dvpTemplateBlock.Help = "An optional setting to select template block from..";
+            dvpTemplateBlock.Help = "An optional setting to select template block from.";
 
             return controls;
         }

@@ -14,7 +14,7 @@
                     
                     <Rock:GridFilter ID="gfSettings" runat="server" OnApplyFilterClick="gfSettings_ApplyFilterClick">
                         <Rock:PersonPicker ID="ppPersonFilter" runat="server" Label="Person" />
-                        <Rock:RockCheckBox ID="cbShowGlobalMergeTemplates" runat="server" Label="Show Global Merge Templates" Text="Yes" />
+                        <Rock:RockCheckBox ID="cbShowGlobalMergeTemplates" runat="server" Label="Show Global Merge Templates" />
                     </Rock:GridFilter>
 
                     <Rock:Grid ID="gMergeTemplates" runat="server" AllowSorting="true" OnRowSelected="gMergeTemplates_Edit">

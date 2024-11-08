@@ -26,5 +26,5 @@ import { Guid } from "@Obsidian/Types";
 /** A bag that contains the get attendance request information. */
 export type GroupAttendanceDetailGetAttendanceRequestBag = {
     /** Gets or sets the attendance unique identifier. */
-    attendanceGuid?: Guid | null;
+    attendanceGuid: Guid;
 };

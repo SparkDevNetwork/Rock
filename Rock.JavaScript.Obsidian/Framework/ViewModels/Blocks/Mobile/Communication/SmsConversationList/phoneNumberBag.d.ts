@@ -35,7 +35,7 @@ export type PhoneNumberBag = {
     description?: string | null;
 
     /** Gets or sets the unique identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the phone number. */
     phoneNumber?: string | null;

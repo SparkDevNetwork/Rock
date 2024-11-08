@@ -31,7 +31,7 @@ namespace Rock.Model
     [Table( "Snippet" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "93548852-201B-4EF6-AF27-BBF535A2CC2B" )]
-    public class Snippet : Model<Snippet>, IOrdered
+    public partial class Snippet : Model<Snippet>, IOrdered
     {
         #region Entity Properties
 

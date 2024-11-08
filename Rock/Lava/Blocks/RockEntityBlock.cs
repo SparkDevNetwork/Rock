@@ -25,14 +25,15 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Reporting.DataFilter;
 using Rock.Security;
 using Rock.Utility;
-using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
@@ -630,7 +631,7 @@ namespace Rock.Lava.Blocks
         {
             // If the database is not connected, we do not have access to entity definitions.
             // This can occur when the Lava engine is started without an attached database.
-            if ( !RockInstanceConfig.DatabaseIsAvailable )
+            if ( !RockApp.Current.IsDatabaseAvailable() )
             {
                 return;
             }
@@ -970,8 +971,19 @@ namespace Rock.Lava.Blocks
                 }
                 else
                 {
-                    // error in parsing expression
-                    throw new Exception( "Error in Where expression" );
+                    // The Where clause is incomplete.
+                    string errorDetail;
+                    if ( expressionParts.Count == 2 )
+                    {
+                        errorDetail = "Missing or invalid value in Where expression.";
+                    }
+                    else
+                    {
+                        errorDetail = "Where expression is incomplete.";
+                    }
+
+                    errorDetail = $"{errorDetail} [Expression=\"{whereClause}\"]";
+                    throw new Exception( "RockEntity block error. The Where expression is invalid.", new Exception( errorDetail ) );
                 }
             }
 

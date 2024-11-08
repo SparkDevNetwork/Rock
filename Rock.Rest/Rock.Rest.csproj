@@ -21,7 +21,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;WEBFORMS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Debug\Rock.Rest.XML</DocumentationFile>
@@ -31,14 +31,13 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;WEBFORMS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>bin\Release\Rock.Rest.XML</DocumentationFile>
     <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DDay.iCal, Version=1.0.2.575, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -51,17 +50,29 @@
     <Reference Include="ImageResizer, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ImageResizer.4.0.5\lib\net45\ImageResizer.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Data.Edm, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.Edm.5.6.0\lib\net40\Microsoft.Data.Edm.dll</HintPath>
+    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Data.OData, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Data.OData.5.6.0\lib\net40\Microsoft.Data.OData.dll</HintPath>
+    <Reference Include="Microsoft.Data.Edm, Version=5.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.Edm.5.8.5\lib\net40\Microsoft.Data.Edm.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.5.5.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+    <Reference Include="Microsoft.Data.OData, Version=5.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Data.OData.5.8.5\lib\net40\Microsoft.Data.OData.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Logging, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Logging.5.5.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.8.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.5.7.0\lib\net461\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Logging.5.7.0\lib\net461\Microsoft.IdentityModel.Logging.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Protocols, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Protocols.5.2.1\lib\net451\Microsoft.IdentityModel.Protocols.dll</HintPath>
@@ -69,8 +80,8 @@
     <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect, Version=5.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Protocols.OpenIdConnect.5.2.1\lib\net451\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.5.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.7.0\lib\net461\Microsoft.IdentityModel.Tokens.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -90,23 +101,38 @@
       <HintPath>..\packages\Swashbuckle.Core.5.5.3\lib\net40\Swashbuckle.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
+    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.5.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.7.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Spatial, Version=5.6.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Spatial.5.6.0\lib\net40\System.Spatial.dll</HintPath>
+    <Reference Include="System.Spatial, Version=5.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Spatial.5.8.5\lib\net40\System.Spatial.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
     </Reference>
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Cors, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -137,15 +163,21 @@
     </Compile>
     <Compile Include="ApiController.cs" />
     <Compile Include="ApiControllerBase.cs" />
+    <Compile Include="Controllers\CodeGenerated\AdaptiveMessageAdaptationsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\AdaptiveMessageAdaptationSegmentsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\AdaptiveMessagesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\AIProvidersController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AuthAuditLogsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\BenevolenceWorkflowsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\CampusTopicsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\CheckInLabelsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ConnectionStatusAutomationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentCollectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentCollectionSourcesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentTopicDomainsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentTopicsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\EntityIntentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionSessionLocationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceActionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceAnswersController.CodeGenerated.cs" />
@@ -163,15 +195,20 @@
     <Compile Include="Controllers\CodeGenerated\SnippetsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\SnippetTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\SystemPhoneNumbersController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\ThemesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowFormBuilderTemplatesController.CodeGenerated.cs" />
     <Compile Include="Controllers\EntitySetsController.cs" />
     <Compile Include="Controllers\NotificationMessagesController.Partial.cs" />
     <Compile Include="Controllers\ReminderTypesController.Partial.cs" />
     <Compile Include="Controllers\RemindersController.Partial.cs" />
+    <Compile Include="Handler\RockDependencyControllerActivator.cs" />
     <Compile Include="Handler\RockHttpControllerSelector.cs" />
+    <Compile Include="Handler\ServiceScopeHandler.cs" />
     <Compile Include="HttpRequestMessageWrapper.cs" />
+    <Compile Include="ProducesResponseTypeAttribute.cs" />
     <Compile Include="Utility\RockMessageResponseContext.cs" />
+    <Compile Include="v2\CheckInController.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />
@@ -215,6 +252,17 @@
     <Compile Include="Controllers\CodeGenerated\IdentityVerificationCodesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\IdentityVerificationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningActivitiesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningActivityCompletionsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningClassAnnouncementsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningClassContentPagesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningCourseRequirementsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningCoursesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningGradingSystemScalesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningGradingSystemsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningProgramCompletionsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningProgramsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningSemestersController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\MediaAccountsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\MediaElementsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\MediaFoldersController.CodeGenerated.cs" />
@@ -513,6 +561,7 @@
     <Compile Include="Utility\ValueProviders\RockRouteDataValueProviderFactory.cs" />
     <Compile Include="v2\UtilitiesController.PersonPreferences.cs" />
     <Compile Include="v2\UtilitiesController.cs" />
+    <Compile Include="Validation\RockBodyModelValidator.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">

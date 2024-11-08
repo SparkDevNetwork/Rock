@@ -29,7 +29,7 @@ import { Guid } from "@Obsidian/Types";
  */
 export type DefinedValuePickerGetDefinedValuesOptionsBag = {
     /** Gets or sets the unique identifier of the defined type to load values from. */
-    definedTypeGuid?: Guid | null;
+    definedTypeGuid: Guid;
 
     /** Gets or sets a value indicating whether inactive values should be included. */
     includeInactive: boolean;

@@ -164,8 +164,8 @@
                 </Rock:PanelWidget>
 
                 <div class="actions">
-                    <asp:LinkButton ID="lbEditSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbEditSave_Click" />
-                    <asp:LinkButton ID="lbEditCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbEditCancel_Click" />
+                    <asp:LinkButton ID="lbEditSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="lbEditSave_Click" />
+                    <asp:LinkButton ID="lbEditCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="lbEditCancel_Click" />
                 </div>
             </div>
             <Rock:ConfirmPageUnload ID="confirmEditExit" runat="server" ConfirmationMessage="Changes have been made to this benevolence request that have not yet been saved." Enabled="false" />

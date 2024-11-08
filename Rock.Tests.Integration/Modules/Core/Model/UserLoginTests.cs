@@ -15,20 +15,22 @@
 // </copyright>
 
 using System;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core.Security
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    public class UserLoginTests
+    public class UserLoginTests : DatabaseTestsBase
     {
         [TestMethod]
-        [Ignore( "Fix required. This test returns an unexpected result. [Last Modified by MP]" )]
         public void PostSave_ShouldUpdatePersonAccountProtectionProfileToMedium()
         {
             var personGuid = Guid.NewGuid();

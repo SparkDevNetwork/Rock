@@ -1,9 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Fullscreen v-model="isFullscreen" :isPageOnly="isFullscreenPageOnly">
+    <Fullscreen v-model="isFullscreen" :isPageOnly="isFullscreenPageOnly" :class="fullScreenClass">
+        <div v-if="$slots.sidebar" class="panel-sidebar-content">
+            <slot name="sidebar" />
+        </div>
+
         <div :class="panelClass" ref="panelElement" v-bind="$attrs" :tabIndex="panelTabIndex" @keydown="onPanelKeyDown">
 
-            <div :class="panelHeadingClass" @click="onPanelHeadingClick">
+            <div v-if="hasTitle" :class="panelHeadingClass" @click="onPanelHeadingClick">
                 <h1 class="panel-title">
                     <slot v-if="$slots.title" name="title" />
                     <template v-else>
@@ -12,7 +16,7 @@
                     </template>
                 </h1>
 
-                <div class="panel-header-actions" @click.prevent.stop="onIgnoreClick">
+                <div class="panel-header-actions">
                     <slot name="headerActions" />
 
                     <span v-if="isZoomActive && hasZoom" class="mr-1 ml-1 panel-action-zoom-control">
@@ -98,7 +102,7 @@
                 <div v-show="isPanelOpen" class="panel-body" :style="panelBodyStyle">
                     <slot />
 
-                    <div v-if="$slots.footerActions || $slots.footerSecondaryActions" class="actions">
+                    <div v-if="!slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="actions">
                         <div class="footer-actions">
                             <slot name="footerActions" />
                         </div>
@@ -109,6 +113,18 @@
                     </div>
                 </div>
             </TransitionVerticalCollapse>
+        </div>
+
+        <div v-if="slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="sidebar-footer">
+            <div class="actions">
+                <div class="footer-actions">
+                    <slot name="footerActions" />
+                </div>
+
+                <div class="footer-secondary-actions">
+                    <slot name="footerSecondaryActions" />
+                </div>
+            </div>
         </div>
     </Fullscreen>
 </template>
@@ -123,7 +139,7 @@
 </script>
 
 <script setup lang="ts">
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUpdate, PropType, ref, useSlots, watch } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import Fullscreen from "./fullscreen.obs";
     import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
@@ -146,6 +162,15 @@
         isFullscreen: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * True if the panel has a Title and the Title area should be displayed
+         * false if no title is given and the area should not be displayed.
+         */
+        hasTitle: {
+            type: Boolean,
+            default: true
         },
 
         /** True if the panel is collapsable and shows the collapse button. */
@@ -206,6 +231,8 @@
         "update:isFullscreen"
     ]);
 
+    const slots = useSlots();
+
     /** The internal state of the collapsable panel content. */
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
@@ -230,6 +257,14 @@
     const isZoomSupported = !/Firefox\/([0-9.]+)(?:\s|$)/.test(navigator.userAgent)
         && !/FxiOS\/([0-9.]+)/.test(navigator.userAgent);
 
+    /** True if we have a sidebar template defined. */
+    const hasSidebar = ref(!!slots.sidebar);
+
+    /** The CSS class names to be applied to the full screen wrapper. */
+    const fullScreenClass = computed((): string[] => {
+        return hasSidebar.value ? ["panel-with-sidebar"] : [];
+    });
+
     /** The CSS class names to be applied to the panel. */
     const panelClass = computed((): string[] => {
         const classes = ["panel", "panel-flex"];
@@ -238,6 +273,10 @@
 
         if (isFullscreen.value) {
             classes.push("panel-fullscreen");
+        }
+
+        if (hasSidebar.value) {
+            classes.push("flex-grow-1");
         }
 
         return classes;
@@ -290,8 +329,6 @@
         return action.disabled ? "disabled" : "";
     };
 
-    const onIgnoreClick = (): void => { /* Intentionally blank to ignore click. */ };
-
     /** Event handler when the drawer expander is clicked. */
     const onDrawerPullClick = (): void => {
         isDrawerOpen.value = !isDrawerOpen.value;
@@ -302,7 +339,12 @@
     };
 
     /** Event handler when the panel heading is clicked. */
-    const onPanelHeadingClick = (): void => {
+    const onPanelHeadingClick = (event: Event): void => {
+        // Ignore the click if it happened inside the panel actions.
+        if (event.target && event.target instanceof HTMLElement && event.target.closest(".panel-header-actions")) {
+            return;
+        }
+
         if (props.hasCollapse) {
             internalValue.value = !isPanelOpen.value;
         }
@@ -382,5 +424,11 @@
         if (headerSecondaryActionMenu.value) {
             $(headerSecondaryActionMenu.value).dropdown();
         }
+    });
+
+    onBeforeUpdate(() => {
+        // Normally this would be a computed. But it doesn't seem to work
+        // anymore. Either it's a bug in Vue or was changed by design.
+        hasSidebar.value = !!slots.sidebar;
     });
 </script>

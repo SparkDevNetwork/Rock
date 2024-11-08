@@ -5,12 +5,12 @@ body:
   - type: markdown
     attributes:
       value: |
-        > Before opening your first issue we highly recommend reading [this blog post](https://www.snoyman.com/blog/2017/10/effective-ways-help-from-maintainers)
+        > Before opening your first issue we highly recommend reading [this blog post](https://www.snoyman.com/blog/2017/10/effective-ways-help-from-maintainers). Also, please ensure your Github account is configured with your name, organization and a profile photo. This helps us to build community and communicate.
   - type: textarea
     id: summary
     attributes:
       label: Description
-      description: Please write a clear and concise description and include full window non-partial screenshots.
+      description: Please write a clear and concise description *and* **include screenshots**.
       placeholder: Tell us what you see!
       value: "Tell us what you see!"
     validations:
@@ -53,7 +53,7 @@ body:
       options:
         - label: Perform a search on the [Github Issues](https://github.com/issues?q=is%3Aissue+user%3ASparkDevNetwork+-repo%3ARock) to see if your bug or enhancement is already reported.
           required: true
-        - label: Try to reproduce the problem on a fresh install or on the [demo site](https://rock.rocksolidchurchdemo.com/).
+        - label: Reproduced the problem on a fresh install or on the [demo site](https://rock.rocksolidchurchdemo.com/).
           required: true
   - type: input
     id: version

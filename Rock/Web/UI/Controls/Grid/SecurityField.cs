@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -286,6 +287,17 @@ namespace Rock.Web.UI.Controls
             var idValue = DataBinder.Eval( container.DataItem, "id" ) as int?;
             if ( idValue.HasValue && idValue > 0 )
             {
+                /*
+                 * 01/26/2024 - KA
+                 * Any existing ampersand is 'encoded' before calling HttpUtility.UrlEncode because Asp.Net's
+                 * HttpRequestBase decodes the url and interprets the encoded '&' as a query parameter delimiter
+                 * which results in null values when parsing to the QueryString parameter on HttpRequestBase.
+                 * However in this scenario the '&' has to be included as the value for the 't' key.
+                 * See https://stackoverflow.com/questions/3667902/c-sharp-asp-net-httpwebrequest-automatically-decodes-ampersand-values-from-q.
+                 *
+                */
+                title = title.Replace( "&", "%26" );
+                title = HttpUtility.UrlEncode( title.EscapeQuotes() );
                 string url = page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
                     EntityTypeId, idValue.ToString(), title ) );
                 lnk.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + url.EscapeQuotes() + "')" );

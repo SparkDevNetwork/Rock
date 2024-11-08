@@ -14,6 +14,7 @@
     import { FilterMode } from "@Obsidian/Core/Reporting/filterMode";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -43,11 +44,11 @@
 
     /** The field type instance being edited. */
     const field = computed(() => {
-        return getFieldType(props.attribute.fieldTypeGuid ?? "");
+        return getFieldType(toGuidOrNull(props.attribute.fieldTypeGuid) ?? emptyGuid);
     });
 
     /** The filter component to use to display and edit the value. */
-    const filterComponent = computed(() => field.value?.getFilterComponent());
+    const filterComponent = computed(() => field.value?.getFilterComponent(configurationValues.value));
 
     /** The configuration values for the editor component. */
     const configurationValues = computed(() => props.attribute.configurationValues ?? {});

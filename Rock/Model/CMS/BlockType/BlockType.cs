@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,8 +23,10 @@ using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Web.Cache;
+using Rock.Enums.Cms;
 
 namespace Rock.Model
 {
@@ -35,7 +37,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "BlockType" )]
     [DataContract]
-    [Rock.SystemGuid.EntityTypeGuid( "04768EDF-C0CD-4950-B629-4D2370B57C99")]
+    [Rock.SystemGuid.EntityTypeGuid( "04768EDF-C0CD-4950-B629-4D2370B57C99" )]
     public partial class BlockType : Model<BlockType>, ICacheable
     {
         #region Entity Properties
@@ -121,6 +123,12 @@ namespace Rock.Model
         /// </example>
         [DataMember]
         public string Description { get; set; }
+
+        /// <summary>
+        /// The list of <see cref="SiteType" /> this block type could be a part of.
+        /// </summary>
+        [RockInternal( "1.16.6" )]
+        public SiteTypeFlags SiteTypeFlags { get; set; } = SiteTypeFlags.None;
 
         #endregion Entity Properties
 

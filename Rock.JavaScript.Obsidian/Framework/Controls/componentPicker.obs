@@ -6,7 +6,6 @@
 </template>
 
 <script setup lang="ts">
-    import { Guid } from "@Obsidian/Types";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { useHttp } from "@Obsidian/Utility/http";
     import { ComponentPickerGetComponentsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/ComponentPickerGetComponentsOptionsBag";
@@ -21,7 +20,7 @@
         },
 
         containerType: {
-            type: String as PropType<Guid>,
+            type: String as PropType<string | null>,
             default: null
         },
 
@@ -59,7 +58,7 @@
      * Loads the items from the server.
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
-        const options: Partial<ComponentPickerGetComponentsOptionsBag> = {
+        const options: ComponentPickerGetComponentsOptionsBag = {
             containerType: props.containerType
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/ComponentPickerGetComponents", undefined, options);

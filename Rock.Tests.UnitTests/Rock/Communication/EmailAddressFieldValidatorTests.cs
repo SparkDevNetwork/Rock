@@ -17,9 +17,11 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Communication;
+using Rock.Tests.Shared;
 
 namespace Rock.Tests.Rock.Communication
 {
+    [TestCategory( TestFeatures.Communications )]
     [TestClass]
     public class EmailAddressFieldValidatorTests
     {
@@ -151,6 +153,19 @@ namespace Rock.Tests.Rock.Communication
             var result = validator.Validate( "ted.decker-email2@rocksolid.church" );
 
             Assert.AreEqual( EmailFieldValidationResultSpecifier.Valid, result );
+        }
+
+        [TestMethod]
+        public void EmailAddressFieldValidator_IsValidCheckWithEmptyInput_ReturnsFalse()
+        {
+            Assert.That.IsFalse( EmailAddressFieldValidator.IsValid( null ) );
+            Assert.That.IsFalse( EmailAddressFieldValidator.IsValid( string.Empty ) );
+        }
+
+        [TestMethod]
+        public void EmailAddressFieldValidator_IsValidCheckWithValidAddress_ReturnsTrue()
+        {
+            Assert.That.IsTrue( EmailAddressFieldValidator.IsValid( "ted@rocksolidchurchdemo.com" ) );
         }
 
     }

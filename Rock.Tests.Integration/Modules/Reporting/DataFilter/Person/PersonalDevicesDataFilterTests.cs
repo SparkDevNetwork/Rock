@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
@@ -25,16 +27,16 @@ using Rock.Reporting.DataFilter.Person;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Reporting.DataFilter
+namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
 {
     /// <summary>
     /// Test DataFilter: Person/PersonalDevices.
     /// </summary>
     [TestClass]
+    [TestCategory( "Crm.Personalization" )]
+    [TestCategory( "Reporting.DataFilters" )]
     public class PersonalDevicesDataFilterTests : DataFilterTestBase
     {
-        private const string _TestCategory = "Rock.Crm.Personalization.Reporting.PersonalDevicesDataFilter.Tests";
-
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
@@ -136,7 +138,6 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         #endregion
 
         [TestMethod]
-        [TestCategory( _TestCategory )]
         public void PersonalDevicesFilter_FilterBySite_ReturnsMatchedSitesOnly()
         {
             // Filter for Site=Internal
@@ -156,7 +157,6 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         }
 
         [TestMethod]
-        [TestCategory( _TestCategory )]
         public void PersonalDevicesFilter_FilterByDeviceType_ShouldReturnMatchingDeviceTypes()
         {
             // Filter for DeviceType=Mobile.
@@ -175,7 +175,6 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         }
 
         [TestMethod]
-        [TestCategory( _TestCategory )]
         public void PersonalDevicesFilter_FilterByDevicePlatform_ShouldReturnMatchingDevicePlatforms()
         {
             // Filter for DevicePlatform=Mobile.
@@ -194,7 +193,6 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
         }
 
         [TestMethod]
-        [TestCategory( _TestCategory )]
         public void PersonalDevicesFilter_FilterByNotificationStatus_ShouldReturnMatchingNotificationStatus()
         {
             // Filter for DevicePlatform=Mobile.
@@ -228,7 +226,7 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var settingsString = DataComponentSettingsHelper.SerializeFilterSettings( settings );
             var predicate = settingsFilter.GetExpression( typeof( Rock.Model.Person ), personService, parameterExpression, settingsString );
 
-            var personQuery = GetFilteredEntityQuery<Person>( dataContext, predicate, parameterExpression );
+            var personQuery = GetFilteredEntityQuery<Rock.Model.Person>( dataContext, predicate, parameterExpression );
 
             return personQuery;
         }

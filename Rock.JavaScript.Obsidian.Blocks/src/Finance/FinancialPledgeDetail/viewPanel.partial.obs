@@ -27,8 +27,8 @@
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { FinancialPledgeBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeBag";
     import { FinancialPledgeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeDetail/financialPledgeDetailOptionsBag";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const props = defineProps({
         modelValue: {
@@ -113,11 +113,4 @@
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
-
-    // #region Event Handlers
-
-    // #endregion
 </script>

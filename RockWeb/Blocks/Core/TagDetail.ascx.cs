@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.Core
 
             _canConfigure = IsUserAuthorized( Authorization.EDIT );
 
-            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Group.FriendlyTypeName );
+            btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", Tag.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Tag ) ).Id;
             revTagName.ValidationExpression = Rock.Model.Tag.VALIDATOR_REGEX_BLACKLIST;
         }
@@ -67,14 +67,14 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbEditError.Visible = false;
 
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "TagId" ).AsInteger(), PageParameter( "EntityTypeId" ).AsIntegerOrNull() );
             }
+
+            base.OnLoad( e );
         }
 
         public override List<Rock.Web.UI.BreadCrumb> GetBreadCrumbs( Rock.Web.PageReference pageReference )

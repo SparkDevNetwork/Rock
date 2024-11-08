@@ -146,8 +146,6 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             string eventTarget = this.Page.Request.Params["__EVENTTARGET"] ?? string.Empty;
 
             ConnectionStatusChangeReportSettings settings;
@@ -171,6 +169,8 @@ namespace RockWeb.Blocks.Crm
             var dataContext = this.GetDataContext();
 
             BuildPage( dataContext, settings );
+
+            base.OnLoad( e );
         }
 
         /// <summary>

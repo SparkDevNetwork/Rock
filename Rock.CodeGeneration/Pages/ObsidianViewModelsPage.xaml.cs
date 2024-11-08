@@ -11,6 +11,7 @@ using System.Windows.Controls;
 
 using Rock.CodeGeneration.FileGenerators;
 using Rock.CodeGeneration.Utility;
+using Rock.ViewModels.Utility;
 
 namespace Rock.CodeGeneration.Pages
 {
@@ -114,6 +115,11 @@ namespace Rock.CodeGeneration.Pages
 
                     return IsSupportedPropertyType( type.GetGenericArguments()[1], validTypes );
                 }
+
+                if ( type.GetGenericTypeDefinition() == typeof( ValidPropertiesBox<> ) )
+                {
+                    return validTypes.Contains( type.GetGenericArguments()[0] );
+                }
             }
 
             // Named generic parameters are supported.
@@ -210,7 +216,7 @@ namespace Rock.CodeGeneration.Pages
                         var file = createdFiles[i];
                         var filename = Path.Combine( solutionPath, file.SolutionRelativePath );
 
-                        if ( filename.EndsWith( ".cs" ) || filename.EndsWith( ".ts" ) )
+                        if ( filename.EndsWith( ".cs" ) )
                         {
                             var projectName = file.SolutionRelativePath.Split( '\\' )[0];
 

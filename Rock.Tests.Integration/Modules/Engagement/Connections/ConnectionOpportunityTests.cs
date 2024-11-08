@@ -6,11 +6,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Engagement.Connections
+namespace Rock.Tests.Integration.Modules.Engagement.Connections
 {
     [TestClass]
-    public class ConnectionOpportunityTests
+    public class ConnectionOpportunityTests : DatabaseTestsBase
     {
         [TestMethod]
         public void ConnectionOpportunity_NewSignupProducesWorkflow()

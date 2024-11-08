@@ -434,6 +434,16 @@ namespace Rock.UI {
          * @param plyrOptions The options that will be passed to Plyr.
          */
         private initializePlayer(mediaElement: HTMLMediaElement, plyrOptions: Plyr.Options) {
+            if (this.isYouTubeEmbed(this.options.mediaUrl) || this.isVimeoEmbed(this.options.mediaUrl) || this.isHls(this.options.mediaUrl)) {
+                var control = plyrOptions.controls as string[];
+                let index = control.findIndex(d => d === "download"); //find index in your array
+                if (index !== -1) {
+                    control.splice(index, 1);
+                }
+                
+                plyrOptions.controls = control;
+            }
+
             this.player = new Plyr(mediaElement, plyrOptions);
 
             // This is a hack to get playback events for youtube videos. Plyr has a bug
@@ -575,6 +585,7 @@ namespace Rock.UI {
             // https://www.youtube.com/watch?v=uQpLrumQP0E
             const youTubePattern = /https?:\/\/(?:www\.)youtube\.com\/watch(?:[?&]v=([^&]+))/i;
             const vimeoPattern = /https?:\/\/vimeo\.com\/([0-9]+)/i;
+            const vimeoHLSPattern = /https?:\/\/player\.vimeo\.com\/external\/([0-9]+)\.m3u8(\?.*)?/i;
 
             // Check if this URL looks like a standard YouTube link from the browser.
             let match = youTubePattern.exec(url);
@@ -584,6 +595,12 @@ namespace Rock.UI {
 
             // Check if this URL looks like a standard Vimeo link from the browser.
             match = vimeoPattern.exec(url);
+            if (match !== null) {
+                return `https://player.vimeo.com/video/${match[1]}`;
+            }
+
+            // Check if this URL looks like a standard Vimeo HLS link from the browser.
+            match = vimeoHLSPattern.exec(url);
             if (match !== null) {
                 return `https://player.vimeo.com/video/${match[1]}`;
             }
@@ -799,11 +816,11 @@ namespace Rock.UI {
         private wireEvents() {
             const self = this;
             const pageHideHandler = function () {
-                self.writeInteraction(false);
+                self.writeInteraction(true);
             };
             const visibilityChangeHandler = function () {
                 if (document.visibilityState === "hidden") {
-                    self.writeInteraction(false);
+                    self.writeInteraction(true);
                 }
             };
 
@@ -835,6 +852,13 @@ namespace Rock.UI {
                 window.addEventListener("visibilitychange", visibilityChangeHandler);
 
                 this.writeDebugMessage("Event 'play' called.");
+
+                if (!this.options.interactionGuid) {
+                    // Force a write, this will make sure we have an interaction
+                    // guid for later beacon saves.
+                    this.watchBitsDirty = true;
+                    this.writeInteraction(false);
+                }
             });
 
             // Define pause event
@@ -854,7 +878,7 @@ namespace Rock.UI {
 
                 this.emit(EventType.Pause);
 
-                this.writeInteraction(true);
+                this.writeInteraction(false);
 
                 this.writeDebugMessage("Event 'pause' called.");
             });
@@ -904,9 +928,9 @@ namespace Rock.UI {
         /**
          * Writes the watch map interaction to the server.
          *
-         * @param async If true then the call is made asynchronously.
+         * @param beacon If true then the call is made asynchronously using beacons.
          */
-        private writeInteraction(async: boolean) {
+        private writeInteraction(beacon: boolean) {
             // Check for the required mediaElementGuid value.
             if (this.options.writeInteraction === false || this.options.mediaElementGuid === undefined || this.options.mediaElementGuid.length === 0) {
                 return;
@@ -930,7 +954,7 @@ namespace Rock.UI {
                 PageId: (Rock as any).settings.get("pageId")
             }
 
-            if (typeof navigator.sendBeacon !== "undefined" && !async) {
+            if (typeof navigator.sendBeacon !== "undefined" && beacon && this.options.interactionGuid) {
                 var beaconData = new Blob([JSON.stringify(data)], { type: 'application/json; charset=UTF-8' });
 
                 navigator.sendBeacon("/api/MediaElements/WatchInteraction", beaconData);
@@ -940,7 +964,7 @@ namespace Rock.UI {
             // Initialize the API request.
             const xmlRequest = new XMLHttpRequest();
             const self = this;
-            xmlRequest.open("POST", "/api/MediaElements/WatchInteraction", async);
+            xmlRequest.open("POST", "/api/MediaElements/WatchInteraction");
             xmlRequest.setRequestHeader("Content-Type", "application/json");
 
             // Add a handler for when the state changes.

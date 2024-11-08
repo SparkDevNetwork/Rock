@@ -1,0 +1,209 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chart-container" style="height: 100%;">
+        <canvas ref="canvasElement"></canvas>
+    </div>
+</template>
+
+<script lang="ts">
+    export type LineChartData = {
+        /**
+         * The labels for the X axis data points. If this array contains 12
+         * items then each dataset should also contain 12 values.
+         */
+        labels: string[];
+
+        /** Each dataset corresponds to a single line in the chart. */
+        datasets: DataSet[];
+    };
+
+    export type DataSet = {
+        /**
+         * The label for this data set. This is displayed in the legend and
+         * in the tooltip to describe the value.
+         */
+        label: string;
+
+        /**
+         * The values that make up this dataset.
+         */
+        values: number[];
+    };
+</script>
+
+<script setup lang="ts">
+    import { onMounted, PropType, shallowRef, watch } from "vue";
+    import { Chart, ChartConfiguration, ChartData, ChartOptions, ChartType } from "@Obsidian/Libs/chart";
+
+    type Rgba = {
+        r: number;
+        g: number;
+        b: number;
+        a: number;
+    };
+
+    const props = defineProps({
+        data: {
+            type: Object as PropType<LineChartData>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const canvasElement = shallowRef<HTMLCanvasElement | null>(null);
+    let chart: Chart<ChartType, number[]> | null = null;
+    let chartData: ChartData<ChartType, number[]>;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the options that describe the current chart configuration. This
+     * should be called any time the chart needs to be updated.
+     */
+    function getChartOptions(): ChartOptions {
+        const options: ChartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 1000
+            },
+            plugins: {
+                legend: {
+                    position: "bottom",
+                    align: "center",
+                    display: true
+                },
+                tooltip: {
+                    enabled: true
+                },
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                },
+            }
+        };
+
+        return options;
+    }
+
+    /**
+     * Creates a consumer in the form of a function that will take the next
+     * item in the list of values each time it is called. When the end is
+     * reached then it starts over from the beginning.
+     *
+     * @param values The values to be sequentially consumed.
+     * @param seed The starting index to use when creating the consumer.
+     */
+    function createSequentialConsumer<T>(values: T[], seed: number): (() => T) {
+        const items: T[] = [...values];
+        let index = seed % items.length;
+
+        return (): T => {
+            if (items.length === 0) {
+                throw new Error("No values were provided to consumer.");
+            }
+
+            if (index >= items.length) {
+                index = 0;
+            }
+
+            return items[index++];
+        };
+    }
+
+    /**
+     * Gets the standard color set for this chart.
+     */
+    function getStandardColors(): Rgba[] {
+        const colors = ["#709ac7", "#80bb7c", "#f26863", "#80afcb", "#e48480", "#c48cb2", "#ea872e", "#f4cf68", "#968e8b", "#489b98", "#b18772", "#d67493"];
+
+        return colors.map(c => parseCssColor(c));
+    }
+
+    /**
+     * Parses a CSS color string into the individual RGBA components. This
+     * supports any color string that can be used in a CSS property.
+     *
+     * @param str The CSS color string to be parsed.
+     *
+     * @returns An object that contains the individual red, green, blue and alpha components.
+     */
+    function parseCssColor(str: string): Rgba {
+        const div = document.createElement("div");
+        document.body.appendChild(div);
+        div.style.color = str;
+
+        const res = getComputedStyle(div).color.match(/[.\d]+/g)?.map(Number);
+        div.remove();
+
+        if (!res) {
+            return { r: 0, g: 0, b: 0, a: 0 };
+        }
+
+        return res.length === 3
+            ? { r: res[0], g: res[1], b: res[2], a: 1 }
+            : { r: res[0], g: res[1], b: res[2], a: res[3] };
+    }
+
+    /**
+     * Converts an RGBA value into a CSS rgba(r,g,b,a) string. If the alphaAdjust
+     * is supplied then the RGBA alpha value is multiplied by the alphaAdjust
+     * to get the final alpha value.
+     *
+     * @param color The RGBA color values.
+     * @param alphaAdjust The adjustment value to be multiplied with the RGBA alpha component.
+     *
+     * @returns A string that represents the RGBA value as a CSS string.
+     */
+    function toCssRgba(color: Rgba, alphaAdjust?: undefined | number): string {
+        return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a * (alphaAdjust ?? 1)})`;
+    }
+
+    /**
+     * Updates the chart data based on the current component configuration.
+     */
+    async function updateChartData(): Promise<void> {
+        const colorConsumer = createSequentialConsumer(getStandardColors(), 0);
+
+        chartData = {
+            labels: props.data?.labels ?? [],
+            datasets: []
+        };
+
+        for (const dataset of (props.data?.datasets ?? [])) {
+            const color = colorConsumer();
+
+            chartData.datasets.push({
+                label: dataset.label,
+                data: dataset.values,
+                backgroundColor: toCssRgba(color, 0.5),
+                borderColor: toCssRgba(color)
+            });
+        }
+
+        if (chart) {
+            chart.data = chartData;
+            chart.options = getChartOptions();
+            chart.update();
+        }
+        else if (canvasElement.value) {
+            const config: ChartConfiguration<ChartType, number[]> = {
+                type: "line",
+                data: chartData,
+                options: getChartOptions()
+            };
+
+            chart = new Chart(canvasElement.value, config);
+        }
+    }
+
+    // #endregion
+
+    watch(() => props.data, updateChartData);
+
+    onMounted(updateChartData);
+</script>

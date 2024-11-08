@@ -153,13 +153,14 @@ namespace Rock.Jobs
                 groupMemberQry = groupMemberQry.Where( m => m.GroupRole.Guid == groupRoleFilterGuid.Value );
             }
 
-            var groupMembers = groupMemberQry.GroupBy( m => m.Group );
+            var groupMembersByGroup = groupMemberQry.GroupBy( m => m.Group );
             var errorList = new List<string>();
-            foreach ( var groupGroupMember in groupMembers )
+            foreach ( var groupMembersInGroup in groupMembersByGroup )
             {
-                var group = groupGroupMember.Key;
-                var filteredPersons = groupGroupMember.Select( a => a.PersonId );
-                // get list of leaders
+                var group = groupMembersInGroup.Key;
+                var groupMemberPersonIds = groupMembersInGroup.Select( a => a.PersonId );
+
+                // Get list of leaders to email.
                 var groupLeaders = group.Members.Where( m =>
                     !m.IsArchived
                     && m.GroupMemberStatus != GroupMemberStatus.Inactive
@@ -171,78 +172,86 @@ namespace Rock.Jobs
 
                 if ( !groupLeaders.Any() )
                 {
-                    errorList.Add( "Unable to send emails to members in group " + group.Name + " because there is no group leader." );
+                    errorList.Add( $"Unable to send emails to members in group {group.Name} because there is no group leader." );
                     continue;
                 }
 
-                // Get all the occurrences for this group
+                // Attendees who miss the most recent N consecutive occurrences (ignoring occurrences that did not occur)
+                // will be included in the notification email.
                 var occurrences = new AttendanceOccurrenceService( rockContext )
                     .Queryable( "Attendees.PersonAlias.Person" )
-                    .Where( a => a.DidNotOccur.HasValue && !a.DidNotOccur.Value && a.GroupId == group.Id )
+                    .Where( a => a.DidNotOccur != true )
+                    .Where( a => a.GroupId == group.Id )
+                    .Where( a => a.OccurrenceDate <= RockDateTime.Today ) // Ignore future occurrences if there are any.
                     .OrderByDescending( a => a.OccurrenceDate )
                     .Take( minimumAbsences )
                     .ToList();
 
-                if ( occurrences.Count == minimumAbsences )
+                if ( occurrences.Count != minimumAbsences )
                 {
-                    var absentPersons = occurrences
-                                                .SelectMany( a => a.Attendees )
-                                                .Where( a => a.DidAttend.HasValue && !a.DidAttend.Value && filteredPersons.Contains( a.PersonAlias.PersonId ) )
-                                                .GroupBy( a => a.PersonAlias.Person )
-                                                .Where( a => a.Count() == minimumAbsences )
-                                                .Select( a => a.Key )
-                                                .ToList();
-
-                    if ( absentPersons.Count > 0 )
-                    {
-                        var recipients = new List<RockEmailMessageRecipient>();
-                        foreach ( var leader in groupLeaders )
-                        {
-                            // create merge object
-                            var mergeFields = new Dictionary<string, object>();
-                            mergeFields.Add( "AbsentMembers", absentPersons );
-                            mergeFields.Add( "Group", group );
-                            mergeFields.Add( "Person", leader.Person );
-                            recipients.Add( new RockEmailMessageRecipient( leader.Person, mergeFields ) );
-                        }
-
-                        var errorMessages = new List<string>();
-                        var emailMessage = new RockEmailMessage( systemEmail.Guid );
-                        emailMessage.SetRecipients( recipients );
-                        var sendSuccess = emailMessage.Send( out errorMessages );
-                        if ( !sendSuccess )
-                        {
-                            sendFailed++;
-                        }
-
-                        errorsEncountered += errorMessages.Count;
-                        errorList.AddRange( errorMessages );
-
-                        // be conservative: only mark as notified if we are sure the email didn't fail
-                        if ( errorMessages.Any() )
-                        {
-                            continue;
-                        }
-
-                        absentMembersCount += absentPersons.Count;
-                        notificationsSent += recipients.Count();
-                    }
+                    // Skip to the next group if this group doesn't
+                    // have the minimum number of occurrences to check.
+                    continue;
                 }
+
+                // Get the attendees who have missed every one of the most recent N occurrences.
+                var absentPersons = occurrences
+                    .SelectMany( a => a.Attendees )
+                    .Where( a => a.DidAttend != true && groupMemberPersonIds.Contains( a.PersonAlias.PersonId ) )
+                    .GroupBy( a => a.PersonAlias.Person )
+                    .Where( a => a.Count() == minimumAbsences )
+                    .Select( a => a.Key )
+                    .ToList();
+
+                if ( absentPersons.Count == 0 )
+                {
+                    // Skip to the next group if this group has no attendees
+                    // who missed the most recent N occurrences.
+                    continue;
+                }
+
+                var recipients = new List<RockEmailMessageRecipient>();
+                foreach ( var leader in groupLeaders )
+                {
+                    var mergeFields = new Dictionary<string, object>
+                    {
+                        { "AbsentMembers", absentPersons },
+                        { "Group", group },
+                        { "Person", leader.Person }
+                    };
+                    recipients.Add( new RockEmailMessageRecipient( leader.Person, mergeFields ) );
+                }
+
+                var errorMessages = new List<string>();
+                var emailMessage = new RockEmailMessage( systemEmail.Guid );
+                emailMessage.SetRecipients( recipients );
+                var sendSuccess = emailMessage.Send( out errorMessages );
+                if ( !sendSuccess )
+                {
+                    sendFailed++;
+                }
+
+                errorsEncountered += errorMessages.Count;
+                errorList.AddRange( errorMessages );
+
+                // Be conservative: only mark as notified if we are sure the email didn't fail.
+                if ( errorMessages.Any() )
+                {
+                    continue;
+                }
+
+                absentMembersCount += absentPersons.Count;
+                notificationsSent += recipients.Count();
             }
 
-            this.Result = string.Format( "Sent {0} emails to leaders for {1} absent members. {2} errors encountered. {3} times Send reported a fail.", notificationsSent, absentMembersCount, errorsEncountered, sendFailed );
+            this.Result = $"Sent {notificationsSent} emails to leaders for {absentMembersCount} absent members. {errorsEncountered} errors encountered. {sendFailed} times Send reported a fail.";
 
             if ( errorList.Any() )
             {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine();
-                sb.Append( "Errors in GroupLeaderAbsenceNotifications: " );
-                errorList.ForEach( e => { sb.AppendLine(); sb.Append( e ); } );
-                string errors = sb.ToString();
-                this.Result += errors;
+                var errors = $"Errors in GroupLeaderAbsenceNotifications: {Environment.NewLine}{string.Join( Environment.NewLine, errorList )}";
+                this.Result += $"{Environment.NewLine}{errors}";
                 throw new Exception( errors );
             }
-
         }
     }
 }

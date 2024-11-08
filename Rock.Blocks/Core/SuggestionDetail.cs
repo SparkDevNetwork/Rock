@@ -38,7 +38,7 @@ namespace Rock.Blocks.Core
     [Category( "Follow" )]
     [Description( "Block for editing the following suggestion types." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

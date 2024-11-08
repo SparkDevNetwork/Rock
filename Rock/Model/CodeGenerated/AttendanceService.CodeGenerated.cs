@@ -116,6 +116,7 @@ namespace Rock.Model
             target.CampusId = source.CampusId;
             target.CheckedInByPersonAliasId = source.CheckedInByPersonAliasId;
             target.CheckedOutByPersonAliasId = source.CheckedOutByPersonAliasId;
+            target.CheckInStatus = source.CheckInStatus;
             target.DeclineReasonValueId = source.DeclineReasonValueId;
             target.DeviceId = source.DeviceId;
             target.DidAttend = source.DidAttend;
@@ -140,6 +141,7 @@ namespace Rock.Model
             target.SearchResultGroupId = source.SearchResultGroupId;
             target.SearchTypeValueId = source.SearchTypeValueId;
             target.SearchValue = source.SearchValue;
+            target.SourceValueId = source.SourceValueId;
             target.StartDateTime = source.StartDateTime;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

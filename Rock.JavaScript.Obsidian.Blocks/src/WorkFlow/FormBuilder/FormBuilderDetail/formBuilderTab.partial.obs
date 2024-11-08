@@ -84,7 +84,7 @@
     import SectionEditAside from "./sectionEditAside.partial.obs";
     import SectionZone from "./sectionZone.partial.obs";
     import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
-    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { areEqual, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { List } from "@Obsidian/Utility/linq";
     import { FormBuilderSettings, FormTemplateListItem, GeneralAsideSettings, IAsideProvider, SectionAsideSettings } from "./types.partial";
     import { FormField, FormFieldType, FormPersonEntry, FormSection } from "../Shared/types.partial";
@@ -160,8 +160,8 @@
             dragDrop(operation) {
                 operation.element.remove();
 
-                const fieldTypeGuid = (operation.element as HTMLElement).dataset.fieldType ?? "";
-                const sectionGuid = (operation.targetContainer as HTMLElement).dataset.sectionId ?? "";
+                const fieldTypeGuid = toGuidOrNull((operation.element as HTMLElement).dataset.fieldType);
+                const sectionGuid = toGuidOrNull((operation.targetContainer as HTMLElement).dataset.sectionId);
                 const section = new List(sections).firstOrUndefined(s => areEqual(s.guid, sectionGuid));
                 const fieldType = new List(availableFieldTypes.value).firstOrUndefined(f => areEqual(f.guid, fieldTypeGuid));
 
@@ -233,8 +233,8 @@
                 }
             },
             dragDrop(operation) {
-                const sourceSectionGuid = (operation.sourceContainer as HTMLElement).dataset.sectionId ?? "";
-                const targetSectionGuid = (operation.targetContainer as HTMLElement).dataset.sectionId ?? "";
+                const sourceSectionGuid = toGuidOrNull((operation.sourceContainer as HTMLElement).dataset.sectionId);
+                const targetSectionGuid = toGuidOrNull((operation.targetContainer as HTMLElement).dataset.sectionId);
                 const sourceSection = new List(sections).firstOrUndefined(s => areEqual(s.guid, sourceSectionGuid));
                 const targetSection = new List(sections).firstOrUndefined(s => areEqual(s.guid, targetSectionGuid));
 

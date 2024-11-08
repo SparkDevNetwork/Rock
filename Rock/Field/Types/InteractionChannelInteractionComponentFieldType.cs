@@ -24,6 +24,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -33,8 +34,8 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) component filtered by a channel
     /// Stored as "Channel.Guid|Component.Guid"
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "299F8444-BB47-4B6C-B523-235156BF96DC" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.INTERACTION_CHANNEL_INTERACTION_COMPONENT )]
     public class InteractionChannelInteractionComponentFieldType : FieldType, IEntityReferenceFieldType
     {
         #region Keys
@@ -53,6 +54,43 @@ namespace Rock.Field.Types
         #endregion Keys
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( configurationValues.TryGetValue( ConfigKey.DefaultInteractionChannelGuid, out string interactionChannelJson ) )
+            {
+                var jsonValue = interactionChannelJson.FromJsonOrNull<ListItemBag>();
+
+                if ( jsonValue != null )
+                {
+                    var interactionChannel = InteractionChannelCache.Get( jsonValue.Value.AsGuid() );
+                    configurationValues[ConfigKey.DefaultInteractionChannelGuid] = interactionChannel?.Id.ToStringSafe();
+                }
+            }
+
+            return configurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( usage != ConfigurationValueUsage.View && configurationValues.TryGetValue( ConfigKey.DefaultInteractionChannelGuid, out string interactionChannelId ) )
+            {
+                var interactionChannel = InteractionChannelCache.Get( interactionChannelId.AsInteger() );
+
+                if ( interactionChannel != null )
+                {
+                    configurationValues[ConfigKey.DefaultInteractionChannelGuid] = interactionChannel.ToListItemBag().ToCamelCaseJson( false, true );
+                }
+            }
+
+            return configurationValues;
+        }
 
         #endregion Configuration
 
@@ -83,6 +121,38 @@ namespace Rock.Field.Types
         #region Edit Control
 
         #endregion Edit Control
+
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            if ( !string.IsNullOrWhiteSpace( privateValue ) )
+            {
+                GetModelsFromAttributeValue( privateValue, out var interactionChannel, out var interactionComponent );
+
+                var jsonValue = new JsonValue
+                {
+                    InteractionChannel = interactionChannel?.ToListItemBag(),
+                    InteractionComponent = interactionComponent?.ToListItemBag()
+                };
+
+                return jsonValue.ToCamelCaseJson( false, true );
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc />
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var jsonValue = publicValue.FromJsonOrNull<JsonValue>();
+            return jsonValue != null ? $"{jsonValue.InteractionChannel?.Value}|{jsonValue.InteractionComponent?.Value}" : string.Empty;
+        }
 
         #region Parse Helpers
 
@@ -371,6 +441,19 @@ namespace Rock.Field.Types
         }
 
 #endif
+        #endregion
+
+        #region Helper Classes
+
+        /// <summary>
+        /// Data sent to the obsidian client.
+        /// </summary>
+        private sealed class JsonValue
+        {
+            public ListItemBag InteractionChannel { get; set; }
+            public ListItemBag InteractionComponent { get; set; }
+        }
+
         #endregion
     }
 }

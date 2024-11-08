@@ -1,0 +1,200 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="config.options?.canView"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          :rowClass="getCustomActiveClass"
+          keyField="idKey"
+          itemTerm="Instance"
+          :title="itemTerm"
+          :entityTypeGuid="EntityType.RegistrationInstance"
+          stickyHeader
+          liveUpdates
+          :showLaunchWorkflow="false"
+          :exportTitle="config.options?.templateName ?? 'Registration Instance'"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    width="40%"
+                    visiblePriority="xs" />
+
+        <DateColumn name="startDateTime"
+                    title="Start Date"
+                    field="startDateTime"
+                    :filter="dateValueFilter"
+                    headerClass="title-right"
+                    itemClass="justify-content-end text-right"
+                    visiblePriority="xs" />
+
+        <DateColumn name="endDateTime"
+                    title="End Date"
+                    field="endDateTime"
+                    :filter="dateValueFilter"
+                    headerClass="title-right"
+                    itemClass="justify-content-end text-right"
+                    visiblePriority="xs" />
+
+        <NumberColumn name="registrants"
+                      title="Registrants"
+                      field="registrants"
+                      :filter="numberValueFilter"
+                      headerClass="text-left"
+                      itemClass="justify-content-start text-left"
+                      visiblePriority="xs" />
+
+        <NumberColumn v-if="config.options?.waitListEnabled"
+                      name="waitList"
+                      title="Wait List"
+                      field="waitList"
+                      :filter="numberValueFilter"
+                      headerClass="title-right"
+                      itemClass="justify-content-end text-right"
+                      visiblePriority="xs" />
+
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       visiblePriority="xs"
+                       :filter="booleanValueFilter"
+                       headerClass="title-center"
+                       itemClass="justify-content-center text-center" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" :disableConfirmation="true" @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+
+.title-center .grid-column-title {
+    text-align: center;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, dateValueFilter, numberValueFilter, booleanValueFilter, DeleteColumn, DateColumn, NumberColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { RegistrationInstanceListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceList/registrationInstanceListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./RegistrationInstanceList/types.partial";
+    import { computed, reactive, ref } from "vue";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+
+    const config = useConfigurationValues<ListBlockBox<RegistrationInstanceListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    function getCustomActiveClass(row: Record<string, unknown>): string {
+        const isActive = asBoolean(row.isActive);
+
+        if (!isActive) {
+            return "inactive";
+        }
+
+        return "";
+    }
+
+    // #endregion
+
+    //# region
+
+    const itemTerm = computed((): string => {
+        return config.options?.templateName ? `${config.options?.templateName} Instances` : "Registration Instance";
+    });
+
+    //# endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const confirmationResult = await confirm("Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!");
+
+        if (!confirmationResult) {
+            return;
+        }
+
+        const finalConfirmationResult = await confirm("Are you really sure?");
+
+        if (!finalConfirmationResult) {
+            return;
+        }
+
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete registration instance.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

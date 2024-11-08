@@ -13,6 +13,9 @@ namespace Rock.Field.Types
     public partial class AddressFieldType : Rock.Field.FieldType
     {
     }
+    public partial class AIProviderFieldType : Rock.Field.FieldType
+    {
+    }
     public partial class AssessmentTypesFieldType : Rock.Field.FieldType
     {
     }
@@ -94,10 +97,10 @@ namespace Rock.Field.Types
             Toggle
         }
     }
-    public partial class CampusFieldType : Rock.Field.FieldType
+    public partial class CampusesFieldType : Rock.Field.FieldType
     {
     }
-    public partial class CampusesFieldType : Rock.Field.FieldType
+    public partial class CampusFieldType : Rock.Field.FieldType
     {
     }
     public partial class CaptchaFieldType : Rock.Field.FieldType
@@ -112,10 +115,10 @@ namespace Rock.Field.Types
     public partial class CategoryFieldType : Rock.Field.FieldType
     {
     }
-    public partial class CheckListFieldType : Rock.Field.FieldType
+    public partial class CheckinConfigurationTypeFieldType : Rock.Field.FieldType
     {
     }
-    public partial class CheckinConfigurationTypeFieldType : Rock.Field.FieldType
+    public partial class CheckListFieldType : Rock.Field.FieldType
     {
     }
     public partial class CodeEditorFieldType : Rock.Field.FieldType
@@ -189,13 +192,13 @@ namespace Rock.Field.Types
         public static readonly string CONTENT_CHANNEL_KEY = "contentchannel";
         public static readonly string CONTENT_CHANNELS = "contentchannels";
     }
+    public partial class ContentChannelsFieldType : Rock.Field.FieldType
+    {
+    }
     public partial class ContentChannelTypeFieldType : Rock.Field.FieldType
     {
     }
     public partial class ContentChannelTypesFieldType : Rock.Field.FieldType
-    {
-    }
-    public partial class ContentChannelsFieldType : Rock.Field.FieldType
     {
     }
     public partial class CurrencyFieldType : Rock.Field.FieldType
@@ -375,6 +378,13 @@ namespace Rock.Field.Types
     }
     public partial class LocationFieldType : Rock.Field.FieldType
     {
+        public static class ConfigurationKey
+        {
+            /// <summary>
+            /// The location type
+            /// </summary>
+            public const string AllowedPickerMode = "allowedPickerModes";
+        }
     }
     public partial class LocationListFieldType : Rock.Field.FieldType
     {
@@ -431,6 +441,9 @@ namespace Rock.Field.Types
         public static readonly string CONFIG_AUTO_RESUME_IN_DAYS = "autoResumeInDays";
         public static readonly string CONFIG_MAX_WIDTH = "maxWidth";
         public static readonly string CONFIG_VALIDATION_MESSAGE = "validationMessage";
+        public static readonly string CONFIG_MEDIA_ACCOUNT = "mediaAccount";
+        public static readonly string CONFIG_MEDIA_FOLDER = "mediaFolder";
+        public static readonly string CONFIG_MEDIA_ELEMENT = "mediaElement";
     }
     public partial class MemoFieldType : Rock.Field.FieldType
     {
@@ -456,6 +469,9 @@ namespace Rock.Field.Types
     public partial class NoteTypesFieldType : Rock.Field.FieldType
     {
     }
+    public partial class OpenAIModelPickerFieldType : Rock.Field.FieldType
+    {
+    }
     public partial class PageReferenceFieldType : Rock.Field.FieldType
     {
     }
@@ -466,6 +482,9 @@ namespace Rock.Field.Types
     {
     }
     public partial class PhoneNumberFieldType : Rock.Field.FieldType
+    {
+    }
+    public partial class PrayerRequestFieldType : Rock.Field.FieldType
     {
     }
     public partial class RangeSliderFieldType : Rock.Field.FieldType
@@ -499,9 +518,6 @@ namespace Rock.Field.Types
     public partial class ReportFieldType : Rock.Field.FieldType
     {
     }
-    public partial class SSNFieldType : Rock.Field.FieldType
-    {
-    }
     public partial class ScheduleFieldType : Rock.Field.FieldType
     {
     }
@@ -530,6 +546,9 @@ namespace Rock.Field.Types
     {
     }
     public partial class SocialMediaAccountFieldType : Rock.Field.FieldType
+    {
+    }
+    public partial class SSNFieldType : Rock.Field.FieldType
     {
     }
     public partial class StepFieldType : Rock.Field.FieldType
@@ -601,6 +620,7 @@ namespace Rock.Field.Types
     {
         public const string HIDE_FILTER_MODE = "hidefiltermode";
         public const string COMPARISON_TYPES = "comparisontypes";
+        public const string COMPARISON_TYPES_OPTIONS = "comparisontypesoptions";
     }
     public partial class ValueListFieldType : Rock.Field.FieldType
     {

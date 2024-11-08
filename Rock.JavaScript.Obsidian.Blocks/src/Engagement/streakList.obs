@@ -1,0 +1,296 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="isVisible"
+          :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          personKeyField="personId"
+          itemTerm="Streak"
+          :title="gridTitle"
+          :entityTypeGuid="EntityType.Streak"
+          stickyHeader
+          liveUpdates
+          :rowClass="getIsDeceasedRowClass"
+          :showBulkUpdate="true"
+          :showCommunicate="true"
+          :showPersonMerge="true"
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <Column name="person"
+                title="Name"
+                field="person"
+                :filter="pickExistingValueFilter"
+                :filterValue="getNameRowFilterValue"
+                :quickFilterValue="getNameRowFilterValue"
+                visiblePriority="xs"
+                width="15%">
+            <template #format="{ row }">
+                <div class="photo-icon photo-round photo-round-xs pull-left margin-r-sm"
+                     :ref="initializePopover"
+                     :personid="`${row.personId}`"
+                     :data-original="`${photoUrl(row)}&w=50`"
+                     :style="`background-image: url( ${photoUrl(row)} );
+                        background-size: cover;
+                        background-repeat: no-repeat;`">
+                </div>
+                <span class="mr-1">{{ `${row.fullName ?? ""}` }}</span>
+                <span v-if="row.signalMarkup" class="mr-1" v-html="row.signalMarkup"></span>
+            </template>
+        </Column>
+
+        <Column name="engagementMap"
+                title="Recent Engagement"
+                field="engagementMap"
+                visiblePriority="md"
+                width="12%">
+
+            <template #format="{ row }">
+                <div style="flex: 1 1 10%;" v-html="row.engagementMap">
+                </div>
+            </template>
+
+        </Column>
+
+        <NumberColumn name="currentStreakCount"
+                      title="Current Streak"
+                      field="currentStreakCount"
+                      headerClass="title-right"
+                      itemClass="justify-content-end text-right"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs"
+                      width="5%" />
+
+        <NumberColumn name="longestStreakCount"
+                      title="Longest Streak"
+                      field="longestStreakCount"
+                      headerClass="title-right"
+                      itemClass="justify-content-end text-right"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs"
+                      width="5%" />
+
+        <NumberColumn name="engagementCount"
+                      title="Engagements"
+                      field="engagementCount"
+                      headerClass="title-right"
+                      itemClass="justify-content-end text-right"
+                      :filter="numberValueFilter"
+                      visiblePriority="xs"
+                      width="5%" />
+
+        <DateColumn name="enrollmentDate"
+                    title="Enrollment Date"
+                    field="enrollmentDate"
+                    headerClass="title-right"
+                    itemClass="justify-content-end text-right"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs"
+                    width="5%" />
+
+        <ButtonColumn v-if="config.navigationUrls?.[NavigationUrlKey.ProfilePage]"
+                      name="user"
+                      iconClass="fa fa-user"
+                      @click="onPersonClick"
+                      visiblePriority="md" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { NumberColumn, numberValueFilter, ButtonColumn, pickExistingValueFilter, dateValueFilter, DeleteColumn, DateColumn, Column } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { StreakListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakList/streakListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./StreakList/types.partial";
+    import { computed, reactive, ref } from "vue";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { useStore } from "@Obsidian/PageState";
+
+    const config = useConfigurationValues<ListBlockBox<StreakListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const http = useHttp();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    //#region Computed Values
+
+    const gridTitle = computed((): string => {
+        return `${config.options?.streakTypeName ?? ""} Enrollments`;
+    });
+
+    const isVisible = computed((): boolean => {
+        return !!config.options?.streakTypeIdKey && useStore().state.areSecondaryBlocksShown;
+    });
+
+    //#endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    function getIsDeceasedRowClass(row: Record<string, unknown>): string {
+        const isDeceased = asBoolean(row["isDeceased"]);
+        return isDeceased ? "is-deceased" : "";
+    }
+
+    /**
+    * Gets the URL for the avatar of the name column.
+    */
+    function photoUrl(row: Record<string, unknown>): string {
+        if (!row["person"]) {
+            return "";
+        }
+
+        const value = row["person"] as PersonFieldBag;
+
+        if (!value || typeof value !== "object") {
+            return "";
+        }
+
+        return value.photoUrl ?? "";
+    }
+
+    /**
+    * Gets the filter value text to use for the person column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getNameRowFilterValue(row: Record<string, unknown>): string {
+        return row.fullName as string;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete streak.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    /**
+    * Called when the person button has been clicked by the indivual.
+    */
+    function onPersonClick(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.ProfilePage]) {
+            const personIdKey = gridData?.rows?.find(r => r["idKey"] === key)?.personId as string;
+            if (personIdKey) {
+                window.location.href = config.navigationUrls?.[NavigationUrlKey.ProfilePage].replace("((Key))", personIdKey);
+            }
+        }
+    }
+
+    // #endregion
+
+    function initializePopover(element): void {
+        var $ = window["$"];
+        if (element) {
+            $(element).popover({
+                placement: "right",
+                trigger: "manual",
+                delay: 500,
+                html: true,
+                content: function () {
+                    let personId = $(this).attr("personid");
+                    let dataUrl = "/api/People/PopupHtml/" + personId + "/false";
+
+                    let content = document.getElementById(personId) ?? document.createElement("div");
+                    content.setAttribute("id", personId);
+                    content.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
+
+                    http.get<any>(dataUrl).then(response => {
+                        content.style.display = "block";
+                        content.innerHTML = response.data.PickerItemDetailsHtml;
+                    });
+
+                    // Return empty div to be updated whrn response from server is received.
+                    return content;
+                }
+            }).on("mouseenter", (e: Event) => {
+                var target = e.target;
+                $(target).popover("show");
+                $(target).siblings(".popover").on("mouseleave", () => {
+                    $(target).popover("hide");
+                });
+            }).on("mouseleave", (e: Event) => {
+                var target = e.target;
+                setTimeout(() => {
+                    if (!$(".popover:hover").length) {
+                        $(target).popover("hide");
+                    }
+                }, 100);
+            });
+        }
+    }
+
+    gridDataSource.value = loadGridData();
+</script>

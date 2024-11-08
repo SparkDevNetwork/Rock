@@ -32,7 +32,7 @@ export type PagePickerGetChildrenOptionsBag = {
      * Gets or sets the unique identifier of the parent page whose
      * children are to be enumerated.
      */
-    guid?: Guid | null;
+    guid: Guid;
 
     /**
      * Gets or sets the list of unique identifiers of pages that should

@@ -128,12 +128,12 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !this.IsPostBack )
             {
                 ShowReport();
             }
+
+            base.OnLoad( e );
         }
 
         #region View
@@ -580,7 +580,7 @@ namespace RockWeb.Blocks.Reporting
                         if ( ex is RockDataViewFilterExpressionException )
                         {
                             RockDataViewFilterExpressionException rockDataViewFilterExpressionException = ex as RockDataViewFilterExpressionException;
-                            nbReportErrors.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( report.DataView );
+                            nbReportErrors.Text = rockDataViewFilterExpressionException.GetFriendlyMessage( ( IDataViewDefinition ) report.DataView );
                         }
                         else
                         {

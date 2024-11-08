@@ -26,7 +26,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type SearchKeyBag = {
     /** Gets or sets the identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the type of the search. */
     searchType?: ListItemBag | null;

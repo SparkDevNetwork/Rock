@@ -1,0 +1,86 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<script setup lang="ts">
+    /**
+     * MetaTagsPlugin - Adds <meta> tag support to a note editor.
+     *
+     * Note: This plugin does not add a toolbar button.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <div id="uniqueWrapperId">
+     *     <div id="uniqueEditorId">
+     *       <MetaTagsPlugin />
+     *     </div>
+     *   </div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import MetaTagsPlugin from "./NoteEditor/metaTagsPlugin.partial.obs";
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     * (/script)
+     */
+    import { usePluginHelper } from "./utils.partial";
+    import { RawEditorOptions } from "@Obsidian/Libs/tinymce";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const id = `meta-tags-${newGuid()}` as const;
+
+    defineExpose({
+        id
+    });
+
+    const { onConfigureEditorOptions } = usePluginHelper();
+
+    onConfigureEditorOptions((currentOptions: RawEditorOptions) => {
+        // Syntax examples:
+        // "+div[p|i]"              This would add <p> and <i> as valid child elements of <div> elements.
+        // "-div[strong]"           This would remove <strong> from being a valid child element of <div> elements.
+        // "+div[p|i],-div[strong]" Use commas to combine multiple rules.
+        // For more information, visit: https://www.tiny.cloud/docs/tinymce/latest/content-filtering/#valid_children
+
+        // Allow style elements as "root" elements in the editor.
+        // The editor is hosted in a <div> element.
+        // Since the "root" would be direct children of that host <div>,
+        // the rule should allow <meta> tags as children of <div> tags.
+        const metaChildren = "+div[meta]";
+
+        if (!currentOptions.valid_children) {
+            currentOptions.valid_children = metaChildren;
+        }
+        else if (!currentOptions.valid_children.includes("+div[meta]")) {
+            currentOptions.valid_children += `,${metaChildren}`;
+        }
+
+        return currentOptions;
+    });
+
+    //#region Values
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    //#endregion
+</script>

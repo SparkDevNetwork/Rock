@@ -193,29 +193,37 @@ namespace Rock.Model
         {
             AddLogEntry( "Workflow Processing..." );
 
-            DateTime processStartTime = RockDateTime.Now;
-
-            if ( Attributes == null )
+            using ( var diagnosticActivity = Observability.ObservabilityHelper.StartActivity( $"WORKFLOW: Type '{WorkflowTypeCache?.Name}'" ) )
             {
-                this.LoadAttributes( rockContext );
+                diagnosticActivity?.AddTag( "rock.workflow.id", Id );
+                diagnosticActivity?.AddTag( "rock.workflow.name", Name );
+                diagnosticActivity?.AddTag( "rock.workflow.type.id", WorkflowTypeId );
+                diagnosticActivity?.AddTag( "rock.workflow.type.name", WorkflowTypeCache?.Name ?? string.Empty );
+
+                DateTime processStartTime = RockDateTime.Now;
+
+                if ( Attributes == null )
+                {
+                    this.LoadAttributes( rockContext );
+                }
+
+                SetInitiator();
+
+                while ( ProcessActivity( rockContext, processStartTime, entity, out errorMessages )
+                    && errorMessages.Count == 0 )
+                { }
+
+                this.LastProcessedDateTime = RockDateTime.Now;
+
+                AddLogEntry( "Workflow Processing Complete" );
+
+                if ( !this.HasActiveActivities )
+                {
+                    MarkComplete();
+                }
+
+                return errorMessages.Count == 0;
             }
-
-            SetInitiator();
-
-            while ( ProcessActivity( rockContext, processStartTime, entity, out errorMessages )
-                && errorMessages.Count == 0 )
-            { }
-
-            this.LastProcessedDateTime = RockDateTime.Now;
-
-            AddLogEntry( "Workflow Processing Complete" );
-
-            if ( !this.HasActiveActivities )
-            {
-                MarkComplete();
-            }
-
-            return errorMessages.Count == 0;
         }
 
         /// <summary>

@@ -27,6 +27,11 @@ namespace Rock.Enums.Reporting
         /// <summary>
         /// The value will be read from an entity attribute value.
         /// </summary>
-        Attribute = 0
+        Attribute = 0,
+
+        /// <summary>
+        /// The value will be read from an entity property.
+        /// </summary>
+        Property = 1,
     }
 }

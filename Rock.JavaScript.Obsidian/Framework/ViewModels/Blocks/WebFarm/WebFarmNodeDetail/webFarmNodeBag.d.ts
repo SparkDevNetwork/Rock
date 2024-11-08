@@ -31,7 +31,7 @@ export type WebFarmNodeBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
-    /** Gets or sets the chart HTML. */
+    /** Gets or sets the chart data. */
     chartData?: string | null;
 
     /** Gets or sets the current leadership polling interval seconds. */

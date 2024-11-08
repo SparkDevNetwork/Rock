@@ -1,0 +1,87 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <a href="#" @click.prevent="showModal" role="button" :class="classes"><i class="fa fa-lock"></i></a>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed } from "vue";
+    import { showSecurity } from "@Obsidian/Utility/dialogs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+
+    const props = defineProps({
+        /** The type of entity to secure */
+        entityTypeIdKey: {
+            type: String,
+            default: "0"
+        },
+
+        /** The ID of the entity being secured */
+        entityIdKey: {
+            type: String,
+            default: "0"
+        },
+
+        /** Description of item to secure; shown in model heading */
+        title: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * By default, the `btn` and `btn-security` CSS classes are added to the control.
+         * If this is `true`, do not add those classes to this control.
+         */
+        removeBaseClasses: {
+            type: Boolean
+        },
+
+        /**
+         * By default, the `btn-square` CSS class is added to the control. If this is `true`, do not
+         * add that class to the control.
+         */
+        isNotSquare: {
+            type: Boolean
+        },
+
+        /**
+         * Size of the button. No size is given by default.
+         */
+        btnSize: {
+            type: String as PropType<BtnSize>,
+            default: BtnSize.Default
+        }
+    });
+
+    const entityTitle = computed(() => {
+        let title = props.title;
+
+        if (title.substring(0, 6).toUpperCase() == "SECURE") {
+            title = title.substring(6).trim();
+        }
+
+        return title;
+    });
+
+    const classes = computed(() => {
+        const classes: string[] = [];
+
+        if (!props.removeBaseClasses) {
+            classes.push("btn", "btn-security");
+        }
+
+        if (!props.isNotSquare) {
+            classes.push("btn-square");
+        }
+
+        if (props.btnSize) {
+            classes.push(`btn-${props.btnSize}`);
+        }
+
+        return classes;
+    });
+
+    function showModal(): void {
+        showSecurity(props.entityTypeIdKey, props.entityIdKey, entityTitle.value);
+    }
+
+</script>

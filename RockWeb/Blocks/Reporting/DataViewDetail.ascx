@@ -23,7 +23,7 @@
                     <fieldset>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" AutoPostBack="true" OnTextChanged="tbName_TextChanged" CssClass="" />
+                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" AutoPostBack="false" OnTextChanged="tbName_TextChanged" CssClass="" />
                                 <Rock:RockCheckBox ID="cbDisableUseOfReadOnlyContext" runat="server" Visible="false" Label="Disable Use Of Read Only Context" Help="Enabling this option will cause the data view to run with a normal database context instead of using a read-only context. This may be needed if the results of the data view will be used for updating data, or for specific plugin filters that update data during the query process." />
                             </div>
                             <div class="col-md-6">
@@ -42,6 +42,14 @@
                             </div>
                             <div class="col-md-6">
                                 <Rock:Toggle ID="tglIncludeDeceased" runat="server" Label="Include Deceased" OnText="Yes" OffText="No" Visible="false" />
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"
+                                        Help="The Font Awesome icon class to use when an Entity is returned by this DataView." />
+                                    <Rock:ColorPicker ID="cpIconColor" runat="server" Label="Highlight Color"
+                                        Help="The highlight color of the icon in the Icon CSS Class." />
+                                 </div>
                             </div>
                         </div>
 
@@ -90,8 +98,8 @@
                     <Rock:NotificationBox ID="nbPersistError" runat="server" NotificationBoxType="Warning" />
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                         <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn btn-default pull-right" CausesValidation="false" OnClick="btnPreview_Click" />
                     </div>
 
@@ -145,7 +153,7 @@
                             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Warning" />
 
                             <div class="actions">
-                                <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                                <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" AccessKey="m" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                                 <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" />
                                 <div class="pull-right">
                                     <asp:LinkButton ID="btnCopy" runat="server" Text="<i class='fa fa-clone'></i>" Tooltip="Copy Data View" CssClass="btn btn-default btn-square btn-sm" OnClick="btnCopy_Click" />

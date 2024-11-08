@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -66,6 +66,7 @@ namespace Rock.Model
         /// <value>
         /// The icon CSS class.
         /// </value>
+        [MaxLength( 100 )]
         [DataMember]
         public string IconCssClass { get; set; }
 

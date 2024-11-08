@@ -4,6 +4,7 @@
                    :modelValue="internalValue"
                    formGroupClasses="rock-number-box"
                    name="numberbox"
+                   :validationTitle="validationTitle"
                    :rules="computedRules">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
@@ -11,16 +12,20 @@
                 <div :class="controlContainerClass">
                     <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                     <input
-                           v-model="internalValue"
+                           :value="internalValue"
                            :id="uniqueId"
-                           type="number"
+                           type="text"
                            class="form-control"
                            :class="inputClasses"
                            v-bind="field"
+                           inputmode="decimal"
                            :placeholder="placeholder"
                            :step="internalStep"
                            :min="minimumValue"
-                           :max="maximumValue" />
+                           :max="maximumValue"
+                           @input="onInput"
+                           @change="onChange"
+                           @blur="formatInternalValue" />
                     <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                 </div>
                 <slot name="append" />
@@ -39,6 +44,11 @@
         modelValue: {
             type: Number as PropType<number | null>,
             default: null
+        },
+        /** Internal use to track what modifier flags were applied to modelValue. */
+        modelModifiers: {
+            type: Object as PropType<Record<string, boolean>>,
+            default: () => ({})
         },
         placeholder: {
             type: String as PropType<string>,
@@ -64,6 +74,10 @@
             type: String as PropType<string>,
             default: ""
         },
+        validationTitle: {
+            type: String as PropType<string>,
+            default: ""
+        },
         rules: rulesPropType
     });
 
@@ -72,7 +86,7 @@
     }>();
 
     const slots = useSlots();
-    const internalValue = ref(asFormattedString(props.modelValue, props.decimalCount ?? undefined, { useGrouping: false }));
+    const internalValue = ref(formatNumber(props.modelValue));
 
     const internalNumberValue = computed((): number | null => {
         return toNumberOrNull(internalValue.value);
@@ -93,24 +107,72 @@
     const computedRules = computed((): ValidationRule[] => {
         const rules = normalizeRules(props.rules);
 
-        if (props.maximumValue !== null && props.maximumValue !== undefined) {
+        rules.push("number");
+
+        if (props.maximumValue != null) {
             rules.push(`lte:${props.maximumValue}`);
         }
 
-        if (props.minimumValue !== null && props.minimumValue !== undefined) {
+        if (props.minimumValue != null) {
             rules.push(`gte:${props.minimumValue}`);
         }
 
         return rules;
     });
 
+    function formatNumber(num: number | null): string {
+        return asFormattedString(num, props.decimalCount ?? undefined, { useGrouping: false });
+    }
+
+    function formatInternalValue(): void {
+        if (internalNumberValue.value !== null) {
+            internalValue.value = formatNumber(internalNumberValue.value);
+        }
+    }
+
+    /**
+     * Event handler for the input field having any modification to the value
+     * happen. This is basically called on every key press.
+     *
+     * @param e The object that describes the event.
+     */
+    function onInput(e: Event): void {
+        if (e.target instanceof HTMLInputElement) {
+            internalValue.value = e.target.value;
+        }
+
+        // Lazy models do not get every single key press.
+        if (!props.modelModifiers.lazy) {
+            emit("update:modelValue", internalNumberValue.value);
+        }
+    }
+
+    /**
+     * Event handler for the input field when the changed value is "committed".
+     * This is basically called when the focus leaves the input field.
+     *
+     * @param e The object that describes the event.
+     */
+    function onChange(e: Event): void {
+        if (e.target instanceof HTMLInputElement) {
+            internalValue.value = e.target.value;
+        }
+
+        formatInternalValue();
+
+        // Only send the update if we didn't send it in the onInput handler.
+        if (props.modelModifiers.lazy) {
+            emit("update:modelValue", internalNumberValue.value);
+        }
+    }
+
     watch(() => props.modelValue, () => {
         if (props.modelValue !== internalNumberValue.value) {
-            internalValue.value = asFormattedString(props.modelValue, props.decimalCount ?? undefined, { useGrouping: false });
+            internalValue.value = formatNumber(props.modelValue);
         }
     });
 
-    watch(internalNumberValue, () => {
-        emit("update:modelValue", internalNumberValue.value);
+    watch(() => props.decimalCount, () => {
+        formatInternalValue();
     });
 </script>

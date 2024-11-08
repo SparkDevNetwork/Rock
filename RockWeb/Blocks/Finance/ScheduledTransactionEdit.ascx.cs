@@ -362,8 +362,6 @@ achieve our mission.  We are so grateful for your commitment.
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // Hide the error box on every postback
             nbMessage.Visible = false;
             pnlDupWarning.Visible = false;
@@ -372,6 +370,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 SetPage( 0 );
                 ShowMessage( NotificationBoxType.Danger, "Invalid Transaction", "The transaction you've selected either does not exist or is not valid." );
+                base.OnLoad( e );
                 return;
             }
 
@@ -390,6 +389,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 SetPage( 0 );
                 ShowMessage( NotificationBoxType.Danger, "Configuration", "This page is not configured to allow edits for the payment gateway associated with the selected transaction." );
+                base.OnLoad( e );
                 return;
             }
 
@@ -464,6 +464,8 @@ achieve our mission.  We are so grateful for your commitment.
                 // Get the list of accounts that can be used
                 BindAccounts();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

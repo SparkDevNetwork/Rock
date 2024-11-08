@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,9 +15,11 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using Rock.Data;
+using Rock.Net;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -100,46 +102,56 @@ namespace Rock.Rest.Controllers
         /// <summary>
         /// Gets the campus context.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The identifier for the campus context or 0 if not found.</returns>
         [System.Web.Http.Route( "api/Utility/GetCampusContext" )]
         [HttpGet]
         [Rock.SystemGuid.RestActionGuid( "771A4B90-302E-4DAF-BC11-FB7C47615C9F" )]
         public int GetCampusContext()
         {
-            string campusCookieCypher = null;
-            if ( System.Web.HttpContext.Current.Request.Cookies.AllKeys.Contains( "Rock_Context" ) )
+            // Get the sitewide context cookie.
+            System.Web.HttpCookie contextCookie = null;
+            if ( System.Web.HttpContext.Current.Request.Cookies.AllKeys.Contains( RockRequestContext.SiteContextCookieName ) )
             {
-                var contextCookie = System.Web.HttpContext.Current.Request.Cookies["Rock_Context"];
-                if ( contextCookie.Values.OfType<string>().Contains( "Rock.Model.Campus" ) )
-                {
-                    campusCookieCypher = contextCookie.Values["Rock.Model.Campus"];
-                }
+                contextCookie = System.Web.HttpContext.Current.Request.Cookies[RockRequestContext.SiteContextCookieName];
             }
 
-            if ( campusCookieCypher == null )
+            if ( contextCookie == null )
             {
                 return 0;
             }
 
             try
             {
-                var publicKey = Rock.Security.Encryption.DecryptString( campusCookieCypher ).Split( '|' )[1];
-
-                string[] idParts = publicKey.Split( '>' );
-                if ( idParts.Length == 2 )
+                // See if the cookie contains a campus context value.
+                var contextItems = contextCookie.Value.FromJsonOrNull<Dictionary<string, string>>();
+                string contextItem = null;
+                if ( contextItems?.TryGetValue( "Rock.Model.Campus", out contextItem ) != true )
                 {
-                    int id = idParts[0].AsInteger();
-                    Guid guid = idParts[1].AsGuid();
-                    var campus = CampusCache.Get( guid );
-                    if ( campus != null )
-                    {
-                        return campus.Id;
-                    }
+                    return 0;
                 }
+
+                // Attempt to parse the URL-encoded, encrypted campus context value.
+                var decodedItem = System.Web.HttpUtility.UrlDecode( contextItem );
+                var decryptedItem = Rock.Security.Encryption.DecryptString( decodedItem );
+                var itemParts = decryptedItem.Split( '|' );
+                if ( itemParts.Length != 2 )
+                {
+                    return 0;
+                }
+
+                var idParts = itemParts[1].Split( '>' );
+                if ( idParts.Length != 2 )
+                {
+                    return 0;
+                }
+
+                var campusCache = CampusCache.Get( idParts[1] );
+
+                return campusCache?.Id ?? 0;
             }
             catch
             {
-                // ignore and return 0
+                // Intentionally ignore exception in case parsing fails.
             }
 
             return 0;

@@ -2,7 +2,11 @@
 <template>
     <RockFormField v-bind="standardFieldProps" name="maxAge" :modelValue="internalValue">
         <div class="btn-group">
-            <RockButton v-for="(item, index) in items" @click="internalValue = item.value" :btnSize="btnSize" :btnType="itemButtonType(item)">{{item.text}}</RockButton>
+            <RockButton v-for="(item, index) in items"
+                        @click="internalValue = item.value"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType(item)"
+                        :disabled="disabled">{{ item.text }}</RockButton>
         </div>
     </RockFormField>
 </template>
@@ -46,6 +50,11 @@
         btnSize: {
             type: String as PropType<BtnSize>,
             default: BtnSize.Default
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         ...standardRockFormFieldProps

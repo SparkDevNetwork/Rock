@@ -33,6 +33,7 @@
     import { useHttp } from "@Obsidian/Utility/http";
     import { RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/registrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { deepEqual } from "@Obsidian/Utility/util";
 
     const props = defineProps({
@@ -66,7 +67,7 @@
     const http = useHttp();
 
     const internalTemplateGuid = computed(() => {
-        return (props.registrationTemplateGuid || internalTemplateValue.value?.value) ?? "";
+        return toGuidOrNull(props.registrationTemplateGuid) ?? toGuidOrNull(internalTemplateValue.value?.value);
     });
 
     let skipWatcher = false;
@@ -106,7 +107,7 @@
 
     async function getTemplateFromInstance(): Promise<void> {
         const options: RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag = {
-            registrationInstanceGuid: props.modelValue?.value,
+            registrationInstanceGuid: toGuidOrNull(props.modelValue?.value) ?? emptyGuid,
             securityGrantToken: securityGrantToken.value
         };
 

@@ -32,6 +32,9 @@ export type CategoryBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** Gets or sets the CategoryId of the currently selected Category. */
+    categoryId?: number | null;
+
     /** Gets or sets the description. */
     description?: string | null;
 
@@ -52,6 +55,9 @@ export type CategoryBag = {
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
+
+    /** Gets or sets if the delete option should be shown on the remote device. */
+    isDeletable: boolean;
 
     /** Gets or sets a flag indicating if this Category is part of the Rock core system/framework. */
     isSystem: boolean;

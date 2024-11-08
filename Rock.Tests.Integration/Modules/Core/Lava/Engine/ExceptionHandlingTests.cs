@@ -15,10 +15,12 @@
 // </copyright>
 //
 using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Lava;
 
-namespace Rock.Tests.Integration.Core.Lava
+namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 {
     [TestClass]
     public class ExceptionHandlingTests : LavaIntegrationTestBase

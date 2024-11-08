@@ -27,7 +27,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 /** Class CampusScheduleBag. */
 export type CampusScheduleBag = {
     /** Gets or sets the unique identifier. */
-    guid?: Guid | null;
+    guid: Guid;
 
     /** Gets or sets the schedule. */
     schedule?: ListItemBag | null;

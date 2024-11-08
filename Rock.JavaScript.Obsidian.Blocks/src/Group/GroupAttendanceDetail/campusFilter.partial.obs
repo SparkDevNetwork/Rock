@@ -3,9 +3,12 @@
     <CampusPicker
         v-model="campusPickerValue"
         blankValue="All Campuses"
+        :forceVisible="true"
         :includeInactive="true"
         :multiple="false"
-        :showBlankItem="true" />
+        :showBlankItem="true"
+        :campusStatusFilter="campusStatusFilter ?? []"
+        :campusTypeFilter="campusTypeFilter ?? []" />
 </template>
 
 <script setup lang="ts">
@@ -15,6 +18,7 @@
     import { areEqual } from "@Obsidian/Utility/guid";
     import { GroupAttendanceDetailAttendanceBag } from "@Obsidian/ViewModels/Blocks/Group/GroupAttendanceDetail/groupAttendanceDetailAttendanceBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps({
         modelValue: {
@@ -23,14 +27,24 @@
         },
 
         campusGuid: {
-            type: String as PropType<string | null | undefined>,
+            type: String as PropType<Guid | null | undefined>,
             required: true
+        },
+
+        campusTypeFilter: {
+            type: Array as PropType<Guid[] | null>,
+            required: false
+        },
+
+        campusStatusFilter: {
+            type: Array as PropType<Guid[] | null>,
+            required: false
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: IAttendanceFilter): void,
-        (e: "update:campusGuid", value: string | null | undefined): void
+        (e: "update:campusGuid", value: Guid | null | undefined): void
     }>();
 
     //#region Values

@@ -568,7 +568,6 @@ namespace Rock.Field.Types
             var cbDisplayDiff = new RockCheckBox();
             controls.Add( cbDisplayDiff );
             cbDisplayDiff.Label = "Display as Elapsed Time";
-            cbDisplayDiff.Text = "Yes";
             cbDisplayDiff.Help = "Display value as an elapsed time.";
 
             var ddlDatePickerMode = new RockDropDownList();
@@ -586,7 +585,6 @@ namespace Rock.Field.Types
             cbDisplayCurrent.AutoPostBack = true;
             cbDisplayCurrent.CheckedChanged += OnQualifierUpdated;
             cbDisplayCurrent.Label = "Display Current Option";
-            cbDisplayCurrent.Text = "Yes";
             cbDisplayCurrent.Help = "Include option to specify value as the current date.";
 
             var nbFutureYearCount = new NumberBox();
@@ -906,6 +904,58 @@ namespace Rock.Field.Types
             dateFiltersPanel.Controls.Add( slidingDateRangePicker );
 
             return dateFiltersPanel;
+        }
+
+        /// <summary>
+        /// Gets the filter value.
+        /// </summary>
+        /// <param name="filterControl">The filter control.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="filterMode">The filter mode.</param>
+        /// <returns></returns>
+        public override List<string> GetFilterValues( Control filterControl, Dictionary<string, ConfigurationValue> configurationValues, FilterMode filterMode )
+        {
+            var values = new List<string>();
+
+            if ( filterControl != null )
+            {
+                try
+                {
+                    string compare = GetFilterCompareValue( filterControl.Controls[0].Controls[0], filterMode );
+                    if ( compare != "0" )
+                    {
+                        values.Add( compare );
+                    }
+
+                    ComparisonType? comparisonType = compare.ConvertToEnumOrNull<ComparisonType>();
+                    if ( comparisonType.HasValue )
+                    {
+                        if ( ( ComparisonType.IsBlank | ComparisonType.IsNotBlank ).HasFlag( comparisonType.Value ) )
+                        {
+                            // if using IsBlank or IsNotBlank, we don't care about the value, so don't try to grab it from the UI
+                            values.Add( string.Empty );
+                        }
+                        else
+                        {
+                            string value = GetFilterValueValue( filterControl.Controls[1].Controls[0], configurationValues );
+                            var filterValues = value.Split( new string[] { "\t" }, StringSplitOptions.None );
+                            if ( filterValues.All( a => a.IsNullOrWhiteSpace() ) )
+                            {
+                                return new List<string>();
+                            }
+
+                            values.Add( value );
+                        }
+                    }
+
+                }
+                catch
+                {
+                    // intentionally ignore error
+                }
+            }
+
+            return values;
         }
 
         /// <summary>

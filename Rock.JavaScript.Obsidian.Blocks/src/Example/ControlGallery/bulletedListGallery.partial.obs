@@ -1,0 +1,40 @@
+<template>
+    <GalleryAndResult :value="{ 'input:items': items }" hasMultipleValues description="This thing does something" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <BulletedList :items="items" :label="label" :help="help" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <ValueList label="List Items" v-model="items" />
+                </div>
+                <div class="col-md-3">
+                    <TextBox label="Label" v-model="label" />
+                </div>
+                <div class="col-md-3">
+                    <TextBox label="Help" v-model="help" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import BulletedList from "@Obsidian/Controls/bulletedList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import ValueList from "@Obsidian/Controls/valueList.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const items = ref(["Matthew", "Mark", "Luke", "John"]);
+    const label = ref("");
+    const help = ref("");
+
+    const importCode = getSfcControlImportPath("bulletedList");
+    const exampleCode = computed(() => {
+        const labelProp = label.value ? ` label="${label.value}"` : "";
+        const helpProp = help.value ? ` help="${help.value}"` : "";
+        return `<BulletedList :items="items"${labelProp}${helpProp} />`;
+    });
+</script>

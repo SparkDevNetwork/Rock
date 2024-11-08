@@ -17,20 +17,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
 using Rock.Reporting.DataFilter;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Engagement.Steps
+namespace Rock.Tests.Integration.Modules.Core.Jobs
 {
     /// <summary>
     /// Tests for Steps Automation that use the database
     /// </summary>
     [TestClass]
-    public class StepsAutomationJobTests
+    public class StepsAutomationJobTests : DatabaseTestsBase
     {
         private const string ForeignKey = "_StepsAutomationJobTests_654FDDBF-6758-49B2-938F-F0856683E201_";
         private const string DataViewMiddleName = "_InTheDataViewForTests_";
@@ -58,8 +61,6 @@ namespace Rock.Tests.Integration.Engagement.Steps
         [TestInitialize]
         public void TestInitialize()
         {
-            TestDatabaseHelper.ResetDatabase();
-
             CreateTestData();
         }
 

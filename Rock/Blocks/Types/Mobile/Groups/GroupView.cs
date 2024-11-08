@@ -57,14 +57,14 @@ namespace Rock.Blocks.Types.Mobile.Groups
         Description = "The template to use when rendering the content.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_VIEW,
         IsRequired = true,
-        DefaultValue = "",
+        DefaultValue = "95FF4A7D-6512-4C5F-9A01-523E42CA10D6",
         Key = AttributeKeys.Template,
         Order = 2 )]
 
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_VIEW_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( "3F34AE03-9378-4363-A232-0318139C3BD3")]
+    [Rock.SystemGuid.BlockTypeGuid( "3F34AE03-9378-4363-A232-0318139C3BD3" )]
     public class GroupView : RockBlockType
     {
         #region Block Attributes

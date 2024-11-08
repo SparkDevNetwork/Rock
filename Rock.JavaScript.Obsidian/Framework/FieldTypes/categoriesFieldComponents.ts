@@ -22,6 +22,8 @@ import TextBox from "@Obsidian/Controls/textBox.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
 import { ConfigurationValueKey } from "./categoriesField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { toGuidOrNull } from "@Obsidian/Utility/guid";
+import { Guid } from "@Obsidian/Types";
 
 export const EditComponent = defineComponent({
     name: "CategoriesField.Edit",
@@ -44,9 +46,9 @@ export const EditComponent = defineComponent({
             emit("update:modelValue", JSON.stringify(internalValue.value));
         });
 
-        const entityTypeGuid = computed((): string | null | undefined => {
+        const entityTypeGuid = computed<Guid | null>(() => {
             const entityType = JSON.parse(props.configurationValues[ConfigurationValueKey.EntityTypeName] ?? "{}") as ListItemBag;
-            return entityType?.value;
+            return toGuidOrNull(entityType?.value);
         });
 
         return {

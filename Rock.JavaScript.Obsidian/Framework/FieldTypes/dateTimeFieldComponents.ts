@@ -283,8 +283,8 @@ export const ConfigurationComponent = defineComponent({
     template: `
 <div>
     <TextBox v-model="format" label="Date Time Format" help="The format string to use for date (default is system short date and time)" />
-    <CheckBox v-model="displayAsElapsedTime" label="Display as Elapsed Time" text="Yes" help="Display value as an elapsed time" />
-    <CheckBox v-model="displayCurrentOption" label="Display Current Option" text="Yes" help="Include option to specify value as the current time" />
+    <CheckBox v-model="displayAsElapsedTime" label="Display as Elapsed Time" help="Display value as an elapsed time" />
+    <CheckBox v-model="displayCurrentOption" label="Display Current Option" help="Include option to specify value as the current time" />
 </div>
 `
 });

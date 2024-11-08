@@ -22,13 +22,28 @@ using Rock.ViewModels.Utility;
 
 namespace Rock
 {
-    internal static class IValidPropertiesBoxExtensions
+    /// <summary>
+    /// 
+    /// </summary>
+    public static class IValidPropertiesBoxExtensions
     {
+        /// <summary>
+        /// Checks if the box contains the property in the list of Valid Properties.
+        /// </summary>
+        /// <param name="box"></param>
+        /// <param name="propertyName"></param>
+        /// <returns></returns>
         public static bool IsValidProperty( this IValidPropertiesBox box, string propertyName )
         {
             return box.ValidProperties.Contains( propertyName, StringComparer.OrdinalIgnoreCase );
         }
 
+        /// <summary>
+        /// Perform the action if property name is present in the list of Valid Properties on the box
+        /// </summary>
+        /// <param name="box"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="executeIfValid"></param>
         public static void IfValidProperty( this IValidPropertiesBox box, string propertyName, Action executeIfValid )
         {
             if ( IsValidProperty( box, propertyName ) )
@@ -37,6 +52,15 @@ namespace Rock
             }
         }
 
+        /// <summary>
+        /// Perform the action if property name is present in the list of Valid Properties on the box
+        /// </summary>
+        /// <typeparam name="TReturn"></typeparam>
+        /// <param name="box"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="executeIfValid"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
         public static TReturn IfValidProperty<TReturn>( this IValidPropertiesBox box, string propertyName, Func<TReturn> executeIfValid, TReturn defaultValue )
         {
             if ( IsValidProperty( box, propertyName ) )

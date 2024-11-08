@@ -199,9 +199,9 @@
 
 <div runat="server" class="r-example">
 <div class="form-group">
-	<label class="control-label">Group</label> 
+	<label class="control-label">Group</label>
 	<div class="control-wrapper">
-		<p>A/V Team</p>	
+		<p>A/V Team</p>
 	</div>
 </div>
 </div>

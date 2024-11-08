@@ -14,7 +14,8 @@
                         <Rock:RockTextBox ID="tbNameFilter" runat="server" Label="Name" />
                         <Rock:RockTextBox ID="tbPathFilter" runat="server" Label="Path" />
                         <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Label="Category" />
-                        <Rock:RockCheckBox ID="cbExcludeSystem" runat="server" Label="Exclude 'System' types?" Text="Yes" />
+                        <Rock:RockCheckBox ID="cbExcludeSystem" runat="server" Label="Exclude 'System' types?" />
+                        <Rock:RockCheckBox ID="cbShowObsidianOnly" runat="server" Label="Show Obsidian only?" Text="" />
                     </Rock:GridFilter>
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
                     <Rock:Grid ID="gBlockTypes" runat="server" AllowSorting="true" OnRowDataBound="gBlockTypes_RowDataBound" OnRowSelected="gBlockTypes_Edit" TooltipField="Description">

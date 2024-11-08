@@ -25,7 +25,7 @@ import { Guid } from "@Obsidian/Types";
 
 /** The results from the GetBlockTemplates API action of the BlockTemplatePicker control. */
 export type BlockTemplatePickerGetBlockTemplatesResultsBag = {
-    guid?: Guid | null;
+    guid: Guid;
 
     iconUrl?: string | null;
 

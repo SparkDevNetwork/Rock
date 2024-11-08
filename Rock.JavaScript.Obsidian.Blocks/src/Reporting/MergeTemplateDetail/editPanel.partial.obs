@@ -57,6 +57,8 @@
     import { Guid } from "@Obsidian/Types";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -92,7 +94,7 @@
     const personAlias = propertyRef(props.modelValue.personAlias ?? undefined, "PersonAliasId");
     const showPersonPicker = ref(props.modelValue.showPersonPicker);
     const showCategory = ref(props.modelValue.showCategoryPicker);
-    const entityTypeGuid = ref(props.entityTypeGuid);
+    const entityTypeGuid = ref<Guid>(toGuidOrNull(props.entityTypeGuid) ?? emptyGuid);
     const containerType = ref("Rock.MergeTemplates.MergeTemplateTypeContainer");
     const binaryFileTypeGuid = BinaryFiletype.MergeTemplate;
     const warningMessage = ref("");
@@ -120,10 +122,14 @@
     watch(() => [templateBinaryFile.value, mergeTemplateTypeEntityType.value], async () => {
 
         if (templateBinaryFile.value?.value) {
-            const response = await invokeBlockAction<MergeTemplateFileValidationBag>("ValidateFile", {
+            const request: {
+                binaryFile: ListItemBag | null | undefined;
+                mergeTemplateTypeGuid: Guid | null | undefined;
+            } = {
                 binaryFile: templateBinaryFile.value,
-                mergeTemplateTypeGuid: mergeTemplateTypeEntityType?.value?.value ?? ""
-            });
+                mergeTemplateTypeGuid: toGuidOrNull(mergeTemplateTypeEntityType?.value?.value),
+            };
+            const response = await invokeBlockAction<MergeTemplateFileValidationBag>("ValidateFile", request);
 
             if (response.isSuccess && response.data) {
                 if (!name.value) {

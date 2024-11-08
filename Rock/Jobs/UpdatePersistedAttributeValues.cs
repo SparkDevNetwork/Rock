@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
+using Microsoft.Extensions.Logging;
 
 namespace Rock.Jobs
 {
@@ -55,6 +56,7 @@ namespace Rock.Jobs
 
     #endregion
 
+    [RockLoggingCategory]
     public class UpdatePersistedAttributeValues : RockJob
     {
         #region Keys
@@ -550,7 +552,7 @@ namespace Rock.Jobs
 
                                 Helper.BulkUpdateAttributeValueComputedColumns( attributeId, attributeValueIds, value, rockContext );
 
-                                updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, rockContext );
+                                updatedCount += Helper.BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, true, rockContext );
 
                                 LogTimedMessage( $"Rebuild of {attributeValueIds.Count:N0} dirty values for attribute #{attributeId}.", sw.Elapsed.TotalMilliseconds );
 
@@ -686,30 +688,12 @@ namespace Rock.Jobs
         {
             if ( milliseconds > 1_000 )
             {
-                LogInformation( $"[{milliseconds:N0}ms] {message}" );
+                Logger.LogInformation( $"[{milliseconds:N0}ms] {message}" );
             }
             else
             {
-                LogDebug( $"[{milliseconds:N0}ms] {message}" );
+                Logger.LogDebug( $"[{milliseconds:N0}ms] {message}" );
             }
-        }
-
-        /// <summary>
-        /// Logs the message to the information logger.
-        /// </summary>
-        /// <param name="message">The message to be logged.</param>
-        private void LogInformation( string message )
-        {
-            Log( RockLogLevel.Info, message );
-        }
-
-        /// <summary>
-        /// Logs the message to the debug logger.
-        /// </summary>
-        /// <param name="message">The message to be logged.</param>
-        private void LogDebug( string message )
-        {
-            Log( RockLogLevel.Debug, message );
         }
 
         /// <summary>

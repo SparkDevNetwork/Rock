@@ -1,22 +1,25 @@
-﻿using System.Data.Entity;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Achievement;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Tests.Shared;
-using System;
-using System.Collections.Generic;
+using Rock.Tests.Shared.TestFramework;
+using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Engagement.Achievements
+namespace Rock.Tests.Integration.Modules.Engagement.Achievements
 {
     /// <summary>
     /// Tests for Interaction Achievements that use the database
     /// </summary>
     [TestClass]
     [Ignore( "Broken test. Interaction component for Internal website does not exist in sample data?" )]
-    public class InteractionAchievementTests
+    public class InteractionAchievementTests : DatabaseTestsBase
     {
         private const string ComponentEntityTypeName = "Rock.Achievement.Component.InteractionSourcedAccumulativeAchievement";
 
@@ -111,6 +114,10 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         /// </summary>
         private static void CreateAchievementTypeData()
         {
+            // Create the component so it sets up the attributes.
+            AchievementContainer.Instance.Refresh();
+            _ = AchievementContainer.GetComponent( ComponentEntityTypeName );
+
             var achievementType = new AchievementType
             {
                 Name = "Test Achievement",

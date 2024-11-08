@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Threading.Tasks;
+
 using Rock.Net;
 using Rock.Web.Cache;
 
@@ -62,6 +64,6 @@ namespace Rock.Blocks
         /// </summary>
         /// <param name="clientType">The type of client that is requesting the configuration data.</param>
         /// <returns>An object that will be JSON encoded and sent to the client.</returns>
-        object GetBlockInitialization( RockClientType clientType );
+        Task<object> GetBlockInitializationAsync( RockClientType clientType );
     }
 }

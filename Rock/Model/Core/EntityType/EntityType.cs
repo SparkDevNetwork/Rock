@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -184,6 +184,15 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public bool AttributesSupportShowOnBulk { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating if this entity type will automatically
+        /// have <see cref="InteractionEntity"/> records created to associate the
+        /// creation of new entities with the interaction that was active at the
+        /// time.
+        /// </summary>
+        [DataMember]
+        public bool IsRelatedToInteractionTrackedOnCreate { get; set; }
 
         #endregion
 

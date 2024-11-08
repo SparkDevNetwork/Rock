@@ -17,16 +17,16 @@
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            type: Object as PropType<ListItemBag | ListItemBag[] | null | undefined>,
             required: false
         },
 
         rootCategoryGuid: {
-            type: String as PropType<Guid>
+            type: String as PropType<Guid | undefined>
         },
 
         entityTypeGuid: {
-            type: String as PropType<Guid>
+            type: String as PropType<Guid | undefined>
         },
 
         entityTypeQualifierColumn: {

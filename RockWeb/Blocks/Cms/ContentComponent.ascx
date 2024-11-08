@@ -86,7 +86,7 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSaveItem" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save Item" ValidationGroup="vgContentComponentEditContentChannelItem" CssClass="btn btn-primary" OnClick="btnSaveItem_Click" />
+                        <asp:LinkButton ID="btnSaveItem" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save Item" ValidationGroup="vgContentComponentEditContentChannelItem" CssClass="btn btn-primary" OnClick="btnSaveItem_Click" />
                     </div>
 
                 </Content>

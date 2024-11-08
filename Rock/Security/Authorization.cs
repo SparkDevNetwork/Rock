@@ -169,6 +169,11 @@ namespace Rock.Security
         /// </summary>
         public const string VIEW_PROTECTION_PROFILE = "ViewProtectionProfile";
 
+        /// <summary>
+        /// Browser recognition cookie key (.ROCK_BROWSER_KEY).
+        /// </summary>
+        public const string ROCK_BROWSER_RECOGNITION_COOKIE = ".ROCK_BROWSER_KEY";
+
         #endregion
 
         #region Public Methods
@@ -236,13 +241,13 @@ namespace Rock.Security
 
             foreach ( var authEntityRule in authEntityRules )
             {
-                authorizations.AddOrIgnore( authEntityRule.EntityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
+                authorizations.TryAdd( authEntityRule.EntityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
                 var entityAuths = authorizations[authEntityRule.EntityTypeId];
 
-                entityAuths.AddOrIgnore( authEntityRule.AuthRule.EntityId ?? 0, new Dictionary<string, List<AuthRule>>( StringComparer.OrdinalIgnoreCase ) );
+                entityAuths.TryAdd( authEntityRule.AuthRule.EntityId ?? 0, new Dictionary<string, List<AuthRule>>( StringComparer.OrdinalIgnoreCase ) );
                 var instanceAuths = entityAuths[authEntityRule.AuthRule.EntityId ?? 0];
 
-                instanceAuths.AddOrIgnore( authEntityRule.Action, new List<AuthRule>() );
+                instanceAuths.TryAdd( authEntityRule.Action, new List<AuthRule>() );
                 var actionPermissions = instanceAuths[authEntityRule.Action];
 
                 actionPermissions.Add( authEntityRule.AuthRule );
@@ -758,8 +763,8 @@ namespace Rock.Security
             var ticket = new FormsAuthenticationTicket(
                 1,
                 userName,
-                RockInstanceConfig.SystemDateTime,
-                RockInstanceConfig.SystemDateTime.Add( expiresIn ),
+                RockDateTime.SystemDateTime,
+                RockDateTime.SystemDateTime.Add( expiresIn ),
                 isPersisted,
                 userData.ToJson(),
                 FormsAuthentication.FormsCookiePath );
@@ -896,6 +901,34 @@ namespace Rock.Security
 
             RockPage.AddOrUpdateCookie( domainCookie );
         }
+
+        /// <summary>
+        /// Checks to see if the user's browser is recognized and sets the recognition cookie for future checks.
+        /// </summary>
+        /// <param name="personRecognitionValue">The short person guid string.</param>
+        /// <returns>
+        ///   <c>true</c> if the user's browser is recognized; otherwise, <c>false</c>.
+        /// </returns>
+        internal static bool IsBrowserRecognized( string personRecognitionValue )
+        {
+            var browserRecognitionCookie = WebRequestHelper.GetCookieFromContext( HttpContext.Current, ROCK_BROWSER_RECOGNITION_COOKIE );
+
+            var isValid = ( browserRecognitionCookie != null && browserRecognitionCookie.Value.ToLower() == personRecognitionValue.ToLower() );
+
+            // set even if it matches, to slide the expiration.
+            SetBrowserRecognitionCookie( personRecognitionValue );
+
+            return isValid;
+        }
+
+        /// <summary>
+        /// Sets the recognition cookie for future checks.
+        /// </summary>
+        /// <param name="personRecognitionValue">The short person guid string.</param>
+        private static void SetBrowserRecognitionCookie( string personRecognitionValue )
+        {
+            RockPage.AddOrUpdateCookie( ROCK_BROWSER_RECOGNITION_COOKIE, personRecognitionValue, RockDateTime.SystemDateTime.AddYears( 1 ) );
+        }
 #endif
 
         /// <summary>
@@ -914,7 +947,7 @@ namespace Rock.Security
             if ( domainCookie != null )
             {
                 var authCookie = GetAuthCookie( domainCookie.Value, null );
-                authCookie.Expires = RockInstanceConfig.SystemDateTime.AddDays( -1d );
+                authCookie.Expires = RockDateTime.SystemDateTime.AddDays( -1d );
                 RockPage.AddOrUpdateCookie( authCookie );
 
                 domainCookie = new HttpCookie( domainCookieName )
@@ -923,7 +956,7 @@ namespace Rock.Security
                     Domain = authCookie.Domain,
                     Path = FormsAuthentication.FormsCookiePath,
                     Secure = FormsAuthentication.RequireSSL,
-                    Expires = RockInstanceConfig.SystemDateTime.AddDays( -1d )
+                    Expires = RockDateTime.SystemDateTime.AddDays( -1d )
                 };
 
                 RockPage.AddOrUpdateCookie( domainCookie );
@@ -944,7 +977,7 @@ namespace Rock.Security
         {
             if ( HttpContext.Current.Request.Cookies.AllKeys.Contains( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER ) )
             {
-                RockPage.AddOrUpdateCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER, null, RockInstanceConfig.SystemDateTime.AddDays( -1d ) );
+                RockPage.AddOrUpdateCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER, null, RockDateTime.SystemDateTime.AddDays( -1d ) );
             }
         }
 
@@ -1038,7 +1071,7 @@ namespace Rock.Security
         {
             HttpCookie httpcookie = new HttpCookie( Rock.Security.Authorization.COOKIE_UNSECURED_PERSON_IDENTIFIER );
             httpcookie.Value = personAliasGuid.ToString();
-            httpcookie.Expires = RockInstanceConfig.SystemDateTime.AddYears( 1 );
+            httpcookie.Expires = RockDateTime.SystemDateTime.AddYears( 1 );
             RockPage.AddOrUpdateCookie( httpcookie );
         }
 #endif
@@ -1453,10 +1486,10 @@ namespace Rock.Security
             var authorizations = Get();
             if ( authorizations != null )
             {
-                authorizations.AddOrIgnore( entityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
+                authorizations.TryAdd( entityTypeId, new Dictionary<int, Dictionary<string, List<AuthRule>>>() );
                 var entityAuths = authorizations[entityTypeId];
 
-                entityAuths.AddOrIgnore( entityId, new Dictionary<string, List<AuthRule>>( StringComparer.OrdinalIgnoreCase ) );
+                entityAuths.TryAdd( entityId, new Dictionary<string, List<AuthRule>>( StringComparer.OrdinalIgnoreCase ) );
                 var instanceAuths = entityAuths[entityId];
 
                 instanceAuths.AddOrReplace( action, new List<AuthRule>() );

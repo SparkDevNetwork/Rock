@@ -1,0 +1,411 @@
+<template>
+    <div class="menu">
+        <div class="menu-bar">
+            <div class="menu-item menu-controls clickable"
+                 :class="{ active: !isComponentMenuSelected }"
+                 @click="onControlsClick">
+                <div>
+                    Controls
+                </div>
+            </div>
+
+            <div v-if="!!labelManager.selectedField.value"
+                 class="menu-item menu-component clickable"
+                 :class="{ active: isComponentMenuSelected }"
+                 @click="onComponentClick">
+                {{ selectedComponentType }}
+            </div>
+
+            <div class="menu-fill"></div>
+        </div>
+
+        <div v-if="!isComponentMenuSelected" class="control-list">
+            <ControlButton icon="fa fa-user"
+                           title="Attendee Info"
+                           :type="LabelFieldType.Text"
+                           :subtype="TextFieldSubType.AttendeeInfo" />
+
+            <ControlButton icon="fa fa-calendar-check"
+                           title="Check-in Info"
+                           :type="LabelFieldType.Text"
+                           :subtype="TextFieldSubType.CheckInInfo" />
+
+            <ControlButton icon="fa fa-medal"
+                           title="Achievement Info"
+                           :type="LabelFieldType.Text"
+                           :subtype="TextFieldSubType.AchievementInfo" />
+
+            <ControlButton icon="fa fa-font"
+                           title="Text"
+                           :type="LabelFieldType.Text"
+                           :subtype="TextFieldSubType.Custom" />
+
+            <ControlButton icon="fa fa-grip-lines"
+                           title="Line"
+                           :type="LabelFieldType.Line" />
+
+            <ControlButton icon="fa fa-square"
+                           title="Rectangle"
+                           :type="LabelFieldType.Rectangle" />
+
+            <ControlButton icon="fa fa-circle"
+                           title="Ellipse"
+                           :type="LabelFieldType.Ellipse" />
+
+            <ControlButton icon="fa fa-icons"
+                           title="Icon"
+                           :type="LabelFieldType.Icon" />
+
+            <ControlButton icon="fa fa-image"
+                           title="Image"
+                           :type="LabelFieldType.Image" />
+
+            <ControlButton icon="fa fa-id-badge"
+                           title="Attendee Photo"
+                           :type="LabelFieldType.AttendeePhoto" />
+
+            <ControlButton icon="fa fa-qrcode"
+                           title="Barcode"
+                           :type="LabelFieldType.Barcode" />
+        </div>
+
+        <div v-else class="field-settings" style="overflow-y: auto;">
+            <Panel title="Properties"
+                   :modelValue="true"
+                   hasCollapse>
+                <component :is="fieldConfigurationComponent"
+                           :key="labelManager.selectedField.value?.guid"
+                           :labelManager="labelManager" />
+
+                <CheckBox label="Include On Preview"
+                          v-model="isIncludedOnPreview" />
+            </Panel>
+
+            <Panel title="Conditionals"
+                   :modelValue="true"
+                   hasCollapse>
+                <div v-if="hasConditions">
+                    <div v-html="conditionalTitle"></div>
+                    <ul>
+                        <li v-for="rule in conditionalRules" :key="rule.guid!">{{ getRuleDescription(rule) }}</li>
+                    </ul>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <RockButton btnType="default" btnSize="sm" @click="onConditionalSettingsClick">
+                        <i class="fa fa-pencil"></i>
+                    </RockButton>
+                </div>
+            </Panel>
+
+            <Modal v-model="isConditionalSettingsVisible" title="Conditional Settings" saveText="Save" @save="onConditionalSettingsSave">
+                <div style="min-height: 290px;">
+                    <FieldFilterEditor v-model="editVisibilityRule"
+                                       title="Field"
+                                       :sources="blockConfig.filterSources ?? []"
+                                       enhanceForLongSourceLists
+                                       groupSources />
+                </div>
+            </Modal>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.menu {
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu-bar {
+    height: var(--menu-bar-height);
+    display: flex;
+    flex-shrink: 0;
+}
+
+.menu-item {
+    background-color: var(--theme-lightest);
+    color: var(--theme-dark);
+    font-weight: bold;
+    border-left: 1px solid var(--theme-light);
+    border-right: 1px solid var(--theme-light);
+    border-bottom: 1px solid var(--theme-light);
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+.menu-item:first {
+    border-left: 0;
+}
+
+.menu-item.active {
+    background-color: var(--color-white);
+    color: var(--color-primary);
+    border: 0;
+}
+
+.menu-controls,
+.menu-component {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-fill {
+    flex-grow: 1;
+    height: 100%;
+    background-color: var(--theme-lightest);
+    border: 1px solid var(--theme-light);
+    border-top-width: 0;
+}
+
+.control-list {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px;
+    gap: 10px;
+    overflow-y: auto;
+}
+
+.field-settings :deep(.panel) {
+    border-radius: 0;
+    box-shadow: none;
+    margin-bottom: 0;
+    border: 0;
+}
+
+.field-settings :deep(.panel-heading) {
+    border-radius: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ControlButton from "./controlButton.partial.obs";
+    import FieldConfigAttendeePhoto from "./fieldConfigAttendeePhoto.partial.obs";
+    import FieldConfigDataSourceText from "./fieldConfigDataSourceText.partial.obs";
+    import FieldConfigBarcode from "./fieldConfigBarcode.partial.obs";
+    import FieldConfigCustomText from "./fieldConfigCustomText.partial.obs";
+    import FieldConfigEllipse from "./fieldConfigEllipse.partial.obs";
+    import FieldConfigIcon from "./fieldConfigIcon.partial.obs";
+    import FieldConfigImage from "./fieldConfigImage.partial.obs";
+    import FieldConfigLine from "./fieldConfigLine.partial.obs";
+    import FieldConfigRectangle from "./fieldConfigRectangle.partial.obs";
+    import { Component, computed, PropType, ref, watch } from "vue";
+    import { LabelUndoManager } from "./undoManager.partial";
+    import { createEmptyRuleset } from "./utils.partial";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
+    import { getFilterGroupTitleHtml, getFilterRuleDescription } from "@Obsidian/Core/Reporting/fieldFilter";
+    import { LabelFieldType } from "@Obsidian/Enums/CheckIn/Labels/labelFieldType";
+    import { TextFieldSubType } from "@Obsidian/Enums/CheckIn/Labels/textFieldSubType";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+    import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
+    import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
+
+    const props = defineProps({
+        labelManager: {
+            type: Object as PropType<LabelUndoManager>,
+            required: true
+        }
+    });
+
+    const blockConfig = useConfigurationValues<LabelDesignerOptionsBag>();
+
+    const isComponentMenuSelected = ref(!!props.labelManager.selectedField.value);
+    const isConditionalSettingsVisible = ref(false);
+    const visibilityRule = ref<FieldFilterGroupBag | undefined | null>();
+    const editVisibilityRule = ref<FieldFilterGroupBag>(createEmptyRuleset());
+    const isIncludedOnPreview = ref(false);
+
+    /**
+     * Determines which field configuration component we are currently
+     * displaying. This will be `undefined` if no field is selected or we
+     * somehow have an unknown field type.
+     */
+    const fieldConfigurationComponent = computed((): Component | undefined => {
+        const field = props.labelManager.current.value.labelData.fields
+            .find(f => areEqual(f.guid, props.labelManager.selectedField.value?.guid));
+
+        if (!field) {
+            return undefined;
+        }
+
+        if (field.fieldType === LabelFieldType.Text) {
+            if (field.fieldSubType === TextFieldSubType.AttendeeInfo) {
+                return FieldConfigDataSourceText;
+            }
+            else if (field.fieldSubType === TextFieldSubType.CheckInInfo) {
+                return FieldConfigDataSourceText;
+            }
+            else if (field.fieldSubType === TextFieldSubType.AchievementInfo) {
+                return FieldConfigDataSourceText;
+            }
+            else {
+                return FieldConfigCustomText;
+            }
+        }
+        else if (field.fieldType === LabelFieldType.Line) {
+            return FieldConfigLine;
+        }
+        else if (field.fieldType === LabelFieldType.Rectangle) {
+            return FieldConfigRectangle;
+        }
+        else if (field.fieldType === LabelFieldType.Ellipse) {
+            return FieldConfigEllipse;
+        }
+        else if (field.fieldType === LabelFieldType.Icon) {
+            return FieldConfigIcon;
+        }
+        else if (field.fieldType === LabelFieldType.Image) {
+            return FieldConfigImage;
+        }
+        else if (field.fieldType === LabelFieldType.AttendeePhoto) {
+            return FieldConfigAttendeePhoto;
+        }
+        else if (field.fieldType === LabelFieldType.Barcode) {
+            return FieldConfigBarcode;
+        }
+        else {
+            undefined;
+        }
+    });
+
+    /**
+     * A friendly text string that describes the field component currently
+     * being edited.
+     */
+    const selectedComponentType = computed((): string | undefined => {
+        const field = props.labelManager.current.value.labelData.fields
+            .find(f => areEqual(f.guid, props.labelManager.selectedField.value?.guid));
+
+        if (!field) {
+            return undefined;
+        }
+
+        if (field.fieldType === LabelFieldType.Text) {
+            if (field.fieldSubType === TextFieldSubType.AttendeeInfo) {
+                return "Attendee Info";
+            }
+            else if (field.fieldSubType === TextFieldSubType.CheckInInfo) {
+                return "Check-in Info";
+            }
+            else if (field.fieldSubType === TextFieldSubType.AchievementInfo) {
+                return "Achievement Info";
+            }
+            else {
+                return "Text";
+            }
+        }
+        else if (field.fieldType === LabelFieldType.Line) {
+            return "Line";
+        }
+        else if (field.fieldType === LabelFieldType.Rectangle) {
+            return "Rectangle";
+        }
+        else if (field.fieldType === LabelFieldType.Ellipse) {
+            return "Ellipse";
+        }
+        else if (field.fieldType === LabelFieldType.Icon) {
+            return "Icon";
+        }
+        else if (field.fieldType === LabelFieldType.Image) {
+            return "Image";
+        }
+        else if (field.fieldType === LabelFieldType.AttendeePhoto) {
+            return "Attendee Photo";
+        }
+        else if (field.fieldType === LabelFieldType.Barcode) {
+            return "Barcode";
+        }
+        else {
+            return "Unknown";
+        }
+    });
+
+    /** Determines if we have any active conditional rules. */
+    const hasConditions = computed((): boolean => {
+        return !!visibilityRule.value?.rules && visibilityRule.value.rules.length > 0;
+    });
+
+    /** Contains the "Show/Hide any/all" title of the field visibility rule. */
+    const conditionalTitle = computed((): string => {
+        return visibilityRule.value
+            ? getFilterGroupTitleHtml(visibilityRule.value)
+            : "";
+    });
+
+    /** The individual rules that decide if this field will be visible. */
+    const conditionalRules = computed((): FieldFilterRuleBag[] => {
+        return visibilityRule.value?.rules ?? [];
+    });
+
+    /**
+     * Gets the description of a single filter rule, including the source name.
+     *
+     * @param rule The rule that needs to be translated into description text.
+     *
+     * @returns A string that contains a human friendly description about the rule.
+     */
+    function getRuleDescription(rule: FieldFilterRuleBag): string {
+        return getFilterRuleDescription(rule, blockConfig.filterSources ?? []);
+    }
+
+    /**
+     * Event handler for the Controls button - switch to the control list.
+     */
+    function onControlsClick(): void {
+        isComponentMenuSelected.value = false;
+    }
+
+    /**
+     * Event handler for the component button - switch tot he component editor.
+     */
+    function onComponentClick(): void {
+        isComponentMenuSelected.value = true;
+    }
+
+    /**
+     * Event handler for a request to open the conditional field filter rule
+     * editor modal. This allows editing the rules for this field.
+     */
+    function onConditionalSettingsClick(): void {
+        if (visibilityRule.value) {
+            editVisibilityRule.value = { ...visibilityRule.value };
+        }
+        else {
+            editVisibilityRule.value = createEmptyRuleset();
+        }
+
+        isConditionalSettingsVisible.value = true;
+    }
+
+    /**
+     * Event handler for the Save button on the conditional settings modal.
+     * Save the rules and close the modal.
+     */
+    function onConditionalSettingsSave(): void {
+        visibilityRule.value = { ...editVisibilityRule.value };
+        isConditionalSettingsVisible.value = false;
+    }
+
+    // Watch for changes on the selected field and update the UI.
+    watch(props.labelManager.selectedField, () => {
+        isComponentMenuSelected.value = !!props.labelManager.selectedField.value;
+        isIncludedOnPreview.value = props.labelManager.selectedField.value?.isIncludedOnPreview === true;
+        visibilityRule.value = props.labelManager.selectedField.value?.conditionalVisibility;
+    });
+
+    // Watch for changes in the UI and update the selected field.
+    watch([isIncludedOnPreview, visibilityRule], () => {
+        props.labelManager.mutateSelectedField(field => {
+            field.isIncludedOnPreview = isIncludedOnPreview.value;
+            field.conditionalVisibility = visibilityRule.value;
+        });
+    });
+</script>

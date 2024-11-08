@@ -330,7 +330,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            StringBuilder cssClassBuilder = new StringBuilder( "controls js-rockradiobuttonlist rockradiobuttonlist" );
+            StringBuilder cssClassBuilder = new StringBuilder( "controls js-rockradiobuttonlist rockradiobuttonlist " + this.CssClass );
             if ( this.RepeatDirection == RepeatDirection.Horizontal )
             {
                 cssClassBuilder.Append( " rockradiobuttonlist-horizontal" );

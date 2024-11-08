@@ -20,7 +20,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Web;
-using   Ical.Net.Serialization;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;

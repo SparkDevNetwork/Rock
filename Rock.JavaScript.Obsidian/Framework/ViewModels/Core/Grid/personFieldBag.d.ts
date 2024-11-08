@@ -26,7 +26,10 @@
  * a PersonColumn in a Grid.
  */
 export type PersonFieldBag = {
-    /** Gets or sets the person's IdKey. */
+    /** Gets or sets the connection status. */
+    connectionStatus?: string | null;
+
+    /** Gets or sets the hashed identifier key. */
     idKey?: string | null;
 
     /** Gets or sets the last name. */

@@ -150,24 +150,21 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            // Get the queryable and make sure it is ordered correctly.
+            var qry = GetListQueryable( RockContext );
+            qry = GetOrderedListQueryable( qry, RockContext );
+
+            // Get the entities from the database.
+            var items = GetListItems( qry, RockContext );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
             {
-                // Get the queryable and make sure it is ordered correctly.
-                var qry = GetListQueryable( rockContext );
-                qry = GetOrderedListQueryable( qry, rockContext );
-
-                // Get the entities from the database.
-                var items = GetListItems( qry, rockContext );
-
-                if ( !items.ReorderEntity( key, beforeKey ) )
-                {
-                    return ActionBadRequest( "Invalid reorder attempt." );
-                }
-
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( "Invalid reorder attempt." );
             }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }{% endif %}{% if ShowDelete == true %}
 
         /// <summary>
@@ -178,31 +175,28 @@ namespace Rock.Blocks.{{ DomainNamespace }}
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new {{ ServiceName }}( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new {{ ServiceName }}( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{{ '{' }}{{ EntityName }}.FriendlyTypeName} not found." );
-                }
-
-                if ( !{% if UseEntitySecurity == true %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete ${{'{'}}{{ EntityName }}.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{{ '{' }}{{ EntityName }}.FriendlyTypeName} not found." );
             }
+
+            if ( !{% if UseEntitySecurity == true %}entity{% else %}BlockCache{% endif %}.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {{'{'}}{{ EntityName }}.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }{% endif %}
 
         #endregion

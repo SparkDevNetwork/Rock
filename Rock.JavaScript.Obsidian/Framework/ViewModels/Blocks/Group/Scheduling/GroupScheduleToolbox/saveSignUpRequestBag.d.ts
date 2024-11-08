@@ -25,21 +25,18 @@ import { Guid } from "@Obsidian/Types";
 
 /** A bag that contains information about an additional time sign-up to be saved or deleted for the group schedule toolbox block. */
 export type SaveSignUpRequestBag = {
-    /** Gets or sets whether this request represents a save () or delete () attempt. */
-    isSigningUp: boolean;
-
     /** Gets or sets the occurrence date time. */
     occurrenceDateTime?: string | null;
 
     /** Gets or sets the selected group unique identifier. */
-    selectedGroupGuid?: Guid | null;
+    selectedGroupGuid: Guid;
 
     /** Gets or sets the selected location unique identifier. */
-    selectedLocationGuid?: Guid | null;
+    selectedLocationGuid: Guid;
 
     /** Gets or sets the selected person unique identifier. */
-    selectedPersonGuid?: Guid | null;
+    selectedPersonGuid: Guid;
 
     /** Gets or sets the selected schedule unique identifier. */
-    selectedScheduleGuid?: Guid | null;
+    selectedScheduleGuid: Guid;
 };

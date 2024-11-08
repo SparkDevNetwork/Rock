@@ -11,7 +11,7 @@
     8. Column Types
     9. Row Types
     10. Responsive Columns
-    11. Components
+    11. Print Styles (Obsidian)
 */
 
 
@@ -621,5 +621,33 @@ tr.row-highlight {
   border-radius: 0;
 }
 
-// 11. Components
-// -------------------------
+// 11. Print Styles (Obsidian)
+// -----------------------------
+@media print {
+
+  /* Hide grid actions */
+  .grid-actions,
+  .btn-grid-action {
+    display: none;
+  }
+
+  .grid-header-separator,
+  .grid-header-fill {
+      display: none;
+  }
+
+  /* Unhide all of the columns */
+  .grid-obsidian .d-none {
+    display: block !important;
+  }
+
+  /* Hide the checkbox column */
+  .grid-select-field {
+    display: none;
+  }
+
+  /* Hide all command columns */
+  .grid-columncommand {
+    display: none;
+  }
+}

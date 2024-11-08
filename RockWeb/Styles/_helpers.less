@@ -13,6 +13,7 @@
 @import "utilities/_borders.less";               //  Utilities for controlling the style of an element's borders.
 @import "utilities/_card.less";                  //  Utilities for controlling the cursor style when hovering over an element.
 @import "utilities/_colors.less";                //  Utilities for controlling an element's background color.
+@import "utilities/_cssgrid.less";               //  Utilities for controlling CSS grid
 @import "utilities/_cursor.less";                //  Utilities for controlling the cursor style when hovering over an element.
 @import "utilities/_display.less";               //  Utilities for controlling the display box type of an element.
 @import "utilities/_flex.less";                  //  Utilities for controlling flex
@@ -21,6 +22,7 @@
 @import "utilities/_opacity.less";               //  Utilities for controlling the opacity of an element.
 @import "utilities/_order.less";                 //  Utilities for controlling the order of flex items.
 @import "utilities/_position.less";              //  Utilities for controlling how an element is positioned in the DOM.
+@import "utilities/_ratios.less";                //  Utilities for controlling a fixed aspect ratio of an element.
 @import "utilities/_shadows.less";               //  Utilities for controlling the box shadow of an element.
 @import "utilities/_sizing.less";                //  Utilities for setting the width and height of an element
 @import "utilities/_spacing.less";               //  Shorthand responsive margin and padding utility classes.
@@ -34,31 +36,39 @@
 }
 
 .util-mix-display;
+.util-mix-css-grid;
 .util-mix-flex;
 .util-mix-order;
+.util-mix-ratios;
 .util-mix-spacing;
 .util-mix-text-align;
 
 @media (min-width: @screen-sm-min) {
   .util-mix-display("sm");
+  .util-mix-css-grid("sm");
   .util-mix-flex("sm");
   .util-mix-order("sm");
+  .util-mix-ratios("sm");
   .util-mix-spacing("sm");
   .util-mix-text-align("sm");
 }
 
 @media (min-width: @screen-md-min) {
   .util-mix-display("md");
+  .util-mix-css-grid("md");
   .util-mix-flex("md");
   .util-mix-order("md");
+  .util-mix-ratios("md");
   .util-mix-spacing("md");
   .util-mix-text-align("md");
 }
 
 @media (min-width: @screen-lg-min) {
   .util-mix-display("lg");
+  .util-mix-css-grid("lg");
   .util-mix-flex("lg");
   .util-mix-order("lg");
+  .util-mix-ratios("lg");
   .util-mix-spacing("lg");
   .util-mix-text-align("lg");
 }

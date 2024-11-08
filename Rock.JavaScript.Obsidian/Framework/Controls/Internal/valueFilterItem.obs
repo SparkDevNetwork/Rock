@@ -1,0 +1,140 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="input-group mb-2">
+        <input type="text" class="form-control" v-model="internalValue.value">
+        <span class="input-group-btn" :class="{ open: isDropDownOpen }" ref="dropdownElement">
+            <button type="button" class="btn btn-default dropdown-toggle filter-dropdown-toggle" :aria-expanded="isDropDownOpen ? 'true' : 'false'" @click.prevent.stop="toggleOpen">
+                <span>{{ selectedText }}</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-right">
+                <li v-for="item of comparisonTypes" :key="item.value ?? 0" @click.stop="selectComparisonType(item.value)" role="button">
+                    <a href="#" @click.prevent>{{ item.text }}</a>
+                </li>
+            </ul>
+            <button type="button" class="btn btn-danger btn-square" @click="emit('delete')">
+                <i class="fa fa-times"></i>
+            </button>
+        </span>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType, computed, ref, watch } from "vue";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { ComparisonItem, ComparisonFilterExpression } from "@Obsidian/ViewModels/Controls/valueFilter.d";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        /** The v-model value this control */
+        modelValue: {
+            type: Object as PropType<ComparisonFilterExpression>,
+            required: true
+        },
+
+        /** The items that will be listed in the dropdown menu. */
+        comparisonTypes: {
+            type: Array as PropType<ComparisonItem[]>,
+            default: () => [
+                { value: 1, text: "Equal To" },
+                { value: 2, text: "Not Equal To" },
+                { value: 4, text: "Starts With" },
+                { value: 8, text: "Contains" },
+                { value: 16, text: "Does Not Contain" },
+                { value: 32, text: "Is Blank" },
+                { value: 64, text: "Is Not Blank" },
+                { value: 2048, text: "Ends With" }
+            ]
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", v: string): void,
+        (e: "delete"): void
+    }>();
+
+    // #region Values
+
+    const isDropDownOpen = ref(false);
+    const dropdownElement = ref<HTMLElement>();
+    const internalValue = ref(JSON.parse(JSON.stringify(props.modelValue)));
+
+    // #endregion
+
+    // #region Computed Values
+
+    const itemsMap = computed(() => {
+        return props.comparisonTypes.reduce((map, item) => {
+            map[item.value ?? ""] = item.text ?? "";
+            return map;
+        }, {} as Record<string, string>);
+    });
+
+    const selectedText = computed(() => {
+        return itemsMap.value[internalValue.value.comparison];
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for when the drop down button has been clicked.
+     */
+    function toggleOpen(): void {
+        isDropDownOpen.value = !isDropDownOpen.value;
+    }
+
+    function selectComparisonType(value: ComparisonType): void {
+        internalValue.value.comparison = value;
+        isDropDownOpen.value = false;
+    }
+
+    /**
+     * Event handler for when the mouse is pressed down somewhere in the
+     * document.
+     *
+     * @param event The current event.
+     */
+    function onDocumentMouseDown(event: MouseEvent): void {
+        if (event.target instanceof HTMLElement && dropdownElement.value?.contains(event.target) !== true) {
+            isDropDownOpen.value = false;
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    // Watch for the drop down being opened or closed and add/remove the
+    // event handler for detecting clicks outside the dropdown.
+    watch(isDropDownOpen, () => {
+        if (isDropDownOpen.value) {
+            document.addEventListener("mousedown", onDocumentMouseDown);
+        }
+        else {
+            document.removeEventListener("mousedown", onDocumentMouseDown);
+        }
+    });
+
+    watch(internalValue, () => {
+        emit("update:modelValue", JSON.parse(JSON.stringify(internalValue.value)));
+    }, { deep: true });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(internalValue, JSON.parse(JSON.stringify(props.modelValue)));
+    });
+
+    // #endregion
+
+    // If we don't already have a value selected, select a default.
+    if (!internalValue.value.comparison) {
+        // "Contains" is the default selected answer if available
+        if (itemsMap.value[ComparisonType.Contains]) {
+            internalValue.value.comparison = ComparisonType.Contains;
+        }
+        else {
+            // Backup is to use the first item in the list
+            internalValue.value.comparison = props.comparisonTypes[0].value;
+        }
+    }
+</script>

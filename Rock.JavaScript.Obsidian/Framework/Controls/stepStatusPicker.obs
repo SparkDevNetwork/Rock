@@ -11,15 +11,16 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, PropType, ref, watch } from "vue";
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
+            type: Object as PropType<ListItemBag | ListItemBag[] | null | undefined>,
             required: false
         },
 
         stepProgramGuid: {
-            type: String as PropType<Guid>,
+            type: String as PropType<Guid | null>,
             default: null
         },
 
@@ -57,8 +58,8 @@
      * Loads the items from the server.
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
-        const options: Partial<StepStatusPickerGetStepStatusesOptionsBag> = {
-            stepProgramGuid: props.stepProgramGuid
+        const options: StepStatusPickerGetStepStatusesOptionsBag = {
+            stepProgramGuid: toGuidOrNull(props.stepProgramGuid)
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/StepStatusPickerGetStepStatuses", undefined, options);
 

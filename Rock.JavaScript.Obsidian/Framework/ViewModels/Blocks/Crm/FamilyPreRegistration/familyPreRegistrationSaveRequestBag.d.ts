@@ -52,9 +52,6 @@ export type FamilyPreRegistrationSaveRequestBag = {
     /** Gets or sets the family unique identifier. */
     familyGuid?: Guid | null;
 
-    /** Gets or sets the full name. */
-    isCaptchaValid: boolean;
-
     /** Gets or sets the planned visit date. */
     plannedVisitDate?: string | null;
 

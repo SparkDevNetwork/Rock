@@ -50,7 +50,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="pull-right">
-                                <Rock:RockCheckBox ID="cbBulk" runat="server" Text="Bulk Communication" CssClass="js-bulk-option"
+                                <Rock:RockCheckBox ID="cbBulk" runat="server" Text="Bulk Communication" CssClass="js-bulk-option" Visible="false"
                                   Help="Select this option if you are sending this email to a group of people.  This will include the option for recipients to unsubscribe and will not send the email to any recipients that have already asked to be unsubscribed." />
                             </div>
                         </div>
@@ -93,6 +93,15 @@
                     <asp:PlaceHolder ID="phContent" runat="server" />
 
                     <Rock:DateTimePicker ID="dtpFutureSend" runat="server" Label="Delay Send Until" SourceTypeName="Rock.Model.Communication" PropertyName="FutureSendDateTime" />
+
+                    <div>
+                        <Rock:RockCheckBox
+                            ID="cbDuplicatePreventionOption"
+                            runat="server"
+                            Label="Prevent Duplicate Email/SMS Addresses"
+                            Help="Check this option to prevent communications from being sent to people with the same email/SMS addresses.
+                            This will mean two people who share an address will not receive a personalized communication, only one of them will." />
+                    </div>
 
                     <div class="actions">
                         <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="btnSubmit_Click" />

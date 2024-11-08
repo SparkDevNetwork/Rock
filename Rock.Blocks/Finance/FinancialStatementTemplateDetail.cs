@@ -23,6 +23,7 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Financial;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
@@ -376,6 +377,9 @@ namespace Rock.Blocks.Finance
             box.IfValidProperty( nameof( box.Entity.HideCorrectedTransactionOnSameData ),
                 () => entity.ReportSettings.TransactionSettings.HideCorrectedTransactionOnSameData = box.Entity.HideCorrectedTransactionOnSameData );
 
+            box.IfValidProperty( nameof( box.Entity.IncludeChildAccountsCustom ),
+                () => entity.ReportSettings.TransactionSettings.AccountSelectionOption = GetAccountSelectionOption( box.Entity ) );
+
             // Pledge Settings
             box.IfValidProperty( nameof( box.Entity.IncludeChildAccountsPledges ),
                 () => entity.ReportSettings.PledgeSettings.IncludeGiftsToChildAccounts = box.Entity.IncludeChildAccountsPledges );
@@ -384,6 +388,27 @@ namespace Rock.Blocks.Finance
                 () => entity.ReportSettings.PledgeSettings.IncludeNonCashGifts = box.Entity.IncludeNonCashGiftsPledge );
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the account selection option.
+        /// </summary>
+        /// <param name="bag">The bag.</param>
+        /// <returns></returns>
+        private FinancialStatementTemplateTransactionSettingAccountSelectionOption GetAccountSelectionOption( FinancialStatementTemplateBag bag )
+        {
+            if ( bag.AccountSelectionOption == "0" )
+            {
+                return FinancialStatementTemplateTransactionSettingAccountSelectionOption.AllTaxDeductibleAccounts;
+            }
+            else if ( bag.IncludeChildAccountsCustom )
+            {
+                return FinancialStatementTemplateTransactionSettingAccountSelectionOption.SelectedAccountsIncludeChildren;
+            }
+            else
+            {
+                return FinancialStatementTemplateTransactionSettingAccountSelectionOption.SelectedAccounts;
+            }
         }
 
         /// <summary>
@@ -573,19 +598,6 @@ namespace Rock.Blocks.Finance
                 if ( !UpdateEntityFromBox( entity, box, rockContext ) )
                 {
                     return ActionBadRequest( "Invalid data." );
-                }
-
-                if ( box.Entity.AccountSelectionOption == "0" )
-                {
-                    entity.ReportSettings.TransactionSettings.AccountSelectionOption = Rock.Financial.FinancialStatementTemplateTransactionSettingAccountSelectionOption.AllTaxDeductibleAccounts;
-                }
-                else if ( box.Entity.AccountSelectionOption == "1" )
-                {
-                    entity.ReportSettings.TransactionSettings.AccountSelectionOption = Rock.Financial.FinancialStatementTemplateTransactionSettingAccountSelectionOption.SelectedAccountsIncludeChildren;
-                }
-                else
-                {
-                    entity.ReportSettings.TransactionSettings.AccountSelectionOption = Rock.Financial.FinancialStatementTemplateTransactionSettingAccountSelectionOption.SelectedAccounts;
                 }
 
                 var selectedAccountGuids = box.Entity.SelectedAccounts.ConvertAll( lb => lb.Value.AsGuid() );

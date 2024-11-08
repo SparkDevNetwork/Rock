@@ -1,6 +1,24 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
 import { List } from "./linq";
 import { padLeft, padRight } from "./stringUtils";
 import { RockDateTime } from "./rockDateTime";
+import { LocaleDateFormatter } from "./localeDateFormatter";
 
 /**
  * Returns a blank string if the string value is 0.
@@ -117,8 +135,10 @@ const dateFormatterKeys = new List<string>(Object.keys(dateFormatters))
     .orderByDescending(k => k.length)
     .toArray();
 
+const currentLocaleDateFormatter = LocaleDateFormatter.fromCurrent();
+
 const standardDateFormats: Record<string, DateFormatterCommand> = {
-    "d": date => formatAspDate(date, "M/d/yyyy"),
+    "d": date => formatAspDate(date, currentLocaleDateFormatter.aspDateFormat),
     "D": date => formatAspDate(date, "dddd, MMMM dd, yyyy"),
     "t": date => formatAspDate(date, "h:mm tt"),
     "T": date => formatAspDate(date, "h:mm:ss tt"),

@@ -37,7 +37,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The first name.
         /// </value>
-        [RockIndexField( Boost = 3 )]
+        [RockIndexField( Analyzer = "asciifolding", Boost = 3 )]
         public string FirstName { get; set; }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The name of the nick.
         /// </value>
-        [RockIndexField( Boost = 3 )]
+        [RockIndexField( Analyzer = "asciifolding", Boost = 3 )]
         public string NickName { get; set; }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The last name.
         /// </value>
-        [RockIndexField( Boost = 3.5 )] // gives slight nudge to last name over first name
+        [RockIndexField( Analyzer = "asciifolding", Boost = 3.5 )] // gives slight nudge to last name over first name
         public string LastName { get; set; }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The previous last names.
         /// </value>
-        [RockIndexField]
+        [RockIndexField( Analyzer = "asciifolding" )]
         public string PreviousLastNames { get; set; }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// <value>
         /// The spouse.
         /// </value>
-        [RockIndexField]
+        [RockIndexField( Analyzer = "asciifolding" )]
         public string Spouse { get; set; }
 
         /// <summary>

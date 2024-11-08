@@ -82,7 +82,7 @@ namespace Rock.Blocks.Engagement
                 SetBoxInitialEntityState( box, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
+                box.Options = GetBoxOptions();
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<AchievementType>();
 
                 return box;
@@ -93,10 +93,8 @@ namespace Rock.Blocks.Engagement
         /// Gets the box options required for the component to render the view
         /// or edit the entity.
         /// </summary>
-        /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private AchievementTypeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private AchievementTypeDetailOptionsBag GetBoxOptions()
         {
             var options = new AchievementTypeDetailOptionsBag();
 
@@ -108,37 +106,50 @@ namespace Rock.Blocks.Engagement
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="achievementType">The AchievementType to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the AchievementType is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateAchievementType( AchievementType achievementType, RockContext rockContext, out string errorMessage )
+        private bool ValidateAchievementType( AchievementType achievementType, out string errorMessage )
         {
             errorMessage = null;
             var isNew = achievementType.Id == 0;
-            var sb = new StringBuilder();
+            var sb = new StringBuilder( "<ul>" );
             var isValid = true;
 
             if ( !isNew )
             {
                 var achievementTypeCache = GetAchievementTypeCache();
-                var eligibleAchievementTypes = AchievementTypeService.GetEligiblePrerequisiteAchievementTypeCaches( achievementTypeCache );
+                var eligibleAchievementTypes = achievementTypeCache == null
+                    ? new List<AchievementTypeCache>()
+                    : AchievementTypeService.GetEligiblePrerequisiteAchievementTypeCaches( achievementTypeCache );
 
                 foreach ( var prerequisite in achievementType.Prerequisites )
                 {
-                    if ( !eligibleAchievementTypes.Any( stat => stat.Id == prerequisite.PrerequisiteAchievementTypeId ) )
+                    if ( !eligibleAchievementTypes.Exists( stat => stat.Id == prerequisite.PrerequisiteAchievementTypeId ) )
                     {
                         isValid = false;
 
                         sb.AppendFormat(
-                            "This achievement type cannot have prerequisite \"{0}\" because it would create a circular dependency.",
-                            prerequisite.PrerequisiteAchievementType.Name ).AppendLine();
+                            "<li>This achievement type cannot have prerequisite \"{0}\" because it would create a circular dependency.</li>",
+                            prerequisite.PrerequisiteAchievementType.Name )
+                            .AppendLine();
                     }
                 }
             }
 
             if ( achievementType.MaxAccomplishmentsAllowed > 1 && achievementType.AllowOverAchievement )
             {
-                sb.Append( nameof( achievementType.MaxAccomplishmentsAllowed ) ).Append( " cannot be greater than 1 if " ).Append( nameof( achievementType.AllowOverAchievement ) ).AppendLine( " is set." );
+                sb.Append( "<li>" )
+                    .Append( nameof( achievementType.MaxAccomplishmentsAllowed ) )
+                    .Append( " cannot be greater than 1 if " )
+                    .Append( nameof( achievementType.AllowOverAchievement ) )
+                    .Append( " is set." )
+                    .AppendLine( "</li>" );
+                isValid = false;
+            }
+
+            if ( achievementType.ComponentEntityTypeId <= 0 )
+            {
+                sb.Append( "<li>Select a valid Entity Type.</li>" );
                 isValid = false;
             }
 
@@ -146,9 +157,11 @@ namespace Rock.Blocks.Engagement
             {
                 foreach ( var validationResult in achievementType.ValidationResults )
                 {
-                    sb.AppendLine( validationResult.ErrorMessage );
+                    sb.Append("<li>" ).Append( validationResult.ErrorMessage ).AppendLine( "</li>" );
                 }
             }
+
+            sb.AppendLine( "</ul>" );
 
             errorMessage = sb.ToString();
 
@@ -362,6 +375,21 @@ namespace Rock.Blocks.Engagement
             box.IfValidProperty( nameof( box.Entity.ResultsLavaTemplate ),
                 () => entity.ResultsLavaTemplate = box.Entity.ResultsLavaTemplate );
 
+            box.IfValidProperty( nameof( box.Entity.AchievementEntityType ),
+                () => entity.ComponentEntityTypeId = box.Entity.AchievementEntityType.GetEntityId<EntityType>( rockContext ) ?? 0 );
+
+            box.IfValidProperty( nameof( box.Entity.ImageBinaryFile ),
+                () => SaveImage( box, rockContext, entity ) );
+
+            box.IfValidProperty( nameof( box.Entity.AlternateImageBinaryFile ),
+                () => SaveAlternateImage( box, rockContext, entity ) );
+
+            box.IfValidProperty( nameof( box.Entity.AddStepOnSuccess ),
+                () => SaveStepDetails( box, rockContext, entity ) );
+
+            box.IfValidProperty( nameof( box.Entity.Prerequisites ),
+                () => SavePrerequisites( box, rockContext, entity ));
+
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
                 {
@@ -481,18 +509,20 @@ namespace Rock.Blocks.Engagement
 
             if ( isNew )
             {
-                eligiblePrerequisites = config == null ?
-                    new List<AchievementTypeCache>() :
-                    AchievementTypeService.GetEligiblePrerequisiteAchievementTypeCachesForNewAchievement( config.AchieverEntityTypeCache.Id );
+                eligiblePrerequisites = config == null
+                    ? new List<AchievementTypeCache>()
+                    : AchievementTypeService.GetEligiblePrerequisiteAchievementTypeCachesForNewAchievement( config.AchieverEntityTypeCache.Id );
             }
             else
             {
-                eligiblePrerequisites = AchievementTypeService.GetEligiblePrerequisiteAchievementTypeCaches( achievementTypeCache );
+                eligiblePrerequisites = achievementTypeCache == null
+                    ? new List<AchievementTypeCache>()
+                    : AchievementTypeService.GetEligiblePrerequisiteAchievementTypeCaches( achievementTypeCache );
             }
 
             bag.AvailablePrerequisites = eligiblePrerequisites.ConvertAll( p => new ListItemBag() { Text = p.Name, Value = p.Guid.ToString() } );
 
-            if ( !isNew )
+            if ( !isNew && achievementTypeCache != null)
             {
                 bag.Prerequisites = achievementTypeCache.Prerequisites.ConvertAll( p => p.PrerequisiteAchievementType.Guid.ToString() );
             }
@@ -588,7 +618,9 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private AchievementTypeCache GetAchievementTypeCache()
         {
-            return AchievementTypeCache.Get( PageParameter( PageParameterKey.AchievementTypeId ).AsInteger() );
+            var key = PageParameter( PageParameterKey.AchievementTypeId );
+            var achievementTypeId = Rock.Utility.IdHasher.Instance.GetId( key ) ?? key.AsInteger();
+            return AchievementTypeCache.Get( achievementTypeId );
         }
 
         /// <summary>
@@ -717,6 +749,66 @@ namespace Rock.Blocks.Engagement
             return factory;
         }
 
+
+        private void SaveImage( DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box, RockContext rockContext, AchievementType entity )
+        {
+            var binaryFileService = new BinaryFileService( rockContext );
+
+            if ( box.Entity.ImageBinaryFile != null )
+            {
+                var binaryFileId = box.Entity.ImageBinaryFile.GetEntityId<BinaryFile>( rockContext );
+                MarkOldImageAsTemporary( entity.ImageBinaryFileId, binaryFileId, binaryFileService );
+                entity.ImageBinaryFileId = binaryFileId;
+                // Ensure that the Image is not set as IsTemporary=True
+                EnsureCurrentImageIsNotMarkedAsTemporary( entity.ImageBinaryFileId, binaryFileService );
+            }
+        }
+
+        private void SaveAlternateImage( DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box, RockContext rockContext, AchievementType entity )
+        {
+            var binaryFileService = new BinaryFileService( rockContext );
+
+            if ( box.Entity.AlternateImageBinaryFile != null )
+            {
+                var binaryFileId = box.Entity.AlternateImageBinaryFile.GetEntityId<BinaryFile>( rockContext );
+                MarkOldImageAsTemporary( entity.AlternateImageBinaryFileId, binaryFileId, binaryFileService );
+                entity.AlternateImageBinaryFileId = binaryFileId;
+                // Ensure that the Image is not set as IsTemporary=True
+                EnsureCurrentImageIsNotMarkedAsTemporary( entity.AlternateImageBinaryFileId, binaryFileService );
+            }
+        }
+
+        private void SavePrerequisites( DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box, RockContext rockContext, AchievementType entity )
+        {
+            // Upsert Prerequisites
+            var prerequisiteService = new AchievementTypePrerequisiteService( rockContext );
+
+            // Remove existing prerequisites that are not selected
+            var removePrerequisiteAchievementTypes = entity.Prerequisites
+                .Where( statp => !box.Entity.Prerequisites.Contains( statp.PrerequisiteAchievementType.Guid.ToString() ) ).ToList();
+
+            foreach ( var prerequisite in removePrerequisiteAchievementTypes )
+            {
+                entity.Prerequisites.Remove( prerequisite );
+                prerequisiteService.Delete( prerequisite );
+            }
+
+            // Add selected achievement types prerequisites that are not existing
+            var addPrerequisiteAchievementTypeIds = box.Entity.Prerequisites
+                .Where( statGuid => !entity.Prerequisites.Any( statp => statp.PrerequisiteAchievementType.Guid.ToString() == statGuid ) )
+                .Select( statGuid => statGuid.AsGuid() )
+                .ToList();
+
+            foreach ( var prerequisiteAchievementType in GetAchievementTypeService().GetByGuids( addPrerequisiteAchievementTypeIds ) )
+            {
+                entity.Prerequisites.Add( new AchievementTypePrerequisite
+                {
+                    AchievementTypeId = entity.Id,
+                    PrerequisiteAchievementTypeId = prerequisiteAchievementType.Id
+                } );
+            }
+        }
+
         #endregion
 
         #region Block Actions
@@ -821,71 +913,8 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( "Invalid data." );
                 }
 
-                var binaryFileService = new BinaryFileService( rockContext );
-
-                if ( box.Entity.ImageBinaryFile != null )
-                {
-                    var binaryFileId = box.Entity.ImageBinaryFile.GetEntityId<BinaryFile>( rockContext );
-                    MarkOldImageAsTemporary( entity.ImageBinaryFileId, binaryFileId, binaryFileService );
-                    entity.ImageBinaryFileId = binaryFileId;
-                    // Ensure that the Image is not set as IsTemporary=True
-                    EnsureCurrentImageIsNotMarkedAsTemporary( entity.ImageBinaryFileId, binaryFileService );
-                }
-
-                if ( box.Entity.AlternateImageBinaryFile != null )
-                {
-                    var binaryFileId = box.Entity.ImageBinaryFile.GetEntityId<BinaryFile>( rockContext );
-                    MarkOldImageAsTemporary( entity.AlternateImageBinaryFileId, binaryFileId, binaryFileService );
-                    entity.AlternateImageBinaryFileId = binaryFileId;
-                    // Ensure that the Image is not set as IsTemporary=True
-                    EnsureCurrentImageIsNotMarkedAsTemporary( entity.AlternateImageBinaryFileId, binaryFileService );
-                }
-
-                // Both step type and status are required together or neither can be set
-                var stepTypeId = box.Entity.AchievementStepType.GetEntityId<StepType>( rockContext );
-                var stepStatusId = box.Entity.AchievementStepStatus.GetEntityId<StepStatus>( rockContext );
-
-                if ( box.Entity.AddStepOnSuccess && stepTypeId.HasValue && stepStatusId.HasValue )
-                {
-                    entity.AchievementStepTypeId = stepTypeId;
-                    entity.AchievementStepStatusId = stepStatusId;
-                }
-                else
-                {
-                    entity.AchievementStepTypeId = null;
-                    entity.AchievementStepStatusId = null;
-                }
-
-                // Upsert Prerequisites
-                var prerequisiteService = new AchievementTypePrerequisiteService( rockContext );
-
-                // Remove existing prerequisites that are not selected
-                var removePrerequisiteAchievementTypes = entity.Prerequisites
-                    .Where( statp => !box.Entity.Prerequisites.Contains( statp.PrerequisiteAchievementType.Guid.ToString() ) ).ToList();
-
-                foreach ( var prerequisite in removePrerequisiteAchievementTypes )
-                {
-                    entity.Prerequisites.Remove( prerequisite );
-                    prerequisiteService.Delete( prerequisite );
-                }
-
-                // Add selected achievement types prerequisites that are not existing
-                var addPrerequisiteAchievementTypeIds = box.Entity.Prerequisites
-                    .Where( statGuid => !entity.Prerequisites.Any( statp => statp.PrerequisiteAchievementType.Guid.ToString() == statGuid ) )
-                    .Select( statGuid => statGuid.AsGuid() )
-                    .ToList();
-
-                foreach ( var prerequisiteAchievementType in GetAchievementTypeService().GetByGuids( addPrerequisiteAchievementTypeIds ) )
-                {
-                    entity.Prerequisites.Add( new AchievementTypePrerequisite
-                    {
-                        AchievementTypeId = entity.Id,
-                        PrerequisiteAchievementTypeId = prerequisiteAchievementType.Id
-                    } );
-                }
-
                 // Ensure everything is valid before saving.
-                if ( !ValidateAchievementType( entity, rockContext, out var validationMessage ) )
+                if ( !ValidateAchievementType( entity, out var validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
                 }
@@ -931,6 +960,24 @@ namespace Rock.Blocks.Engagement
                 entity.LoadAttributes( rockContext );
 
                 return ActionOk( GetEntityBagForView( entity ) );
+            }
+        }
+
+        private static void SaveStepDetails( DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box, RockContext rockContext, AchievementType entity )
+        {
+            // Both step type and status are required together or neither can be set
+            var stepTypeId = box.Entity.AchievementStepType.GetEntityId<StepType>( rockContext );
+            var stepStatusId = box.Entity.AchievementStepStatus.GetEntityId<StepStatus>( rockContext );
+
+            if ( box.Entity.AddStepOnSuccess && stepTypeId.HasValue && stepStatusId.HasValue )
+            {
+                entity.AchievementStepTypeId = stepTypeId;
+                entity.AchievementStepStatusId = stepStatusId;
+            }
+            else
+            {
+                entity.AchievementStepTypeId = null;
+                entity.AchievementStepStatusId = null;
             }
         }
 
@@ -1059,7 +1106,7 @@ namespace Rock.Blocks.Engagement
 
             if ( !hasData )
             {
-                return ActionNotFound( "There are no Attempts matching the current filter." );
+                return ActionNotFound();
             }
 
             // Get chart data and set visibility of related elements.
@@ -1079,7 +1126,7 @@ namespace Rock.Blocks.Engagement
             };
             var chartData = chartFactory.GetChartDataJson( args );
 
-            return ActionOk( new { chartData = chartData } );
+            return ActionOk( new { chartData } );
         }
 
         #endregion

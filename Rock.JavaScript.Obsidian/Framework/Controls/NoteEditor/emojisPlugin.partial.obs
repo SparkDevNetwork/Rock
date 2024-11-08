@@ -1,0 +1,134 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<script setup lang="ts">
+    /**
+     * EmojisPlugin - Adds a toolbar button that opens the open-source TinyMCE emoticons plugin modal.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <div id="uniqueWrapperId">
+     *     <div id="uniqueEditorId">
+     *       <EmojisPlugin />
+     *     </div>
+     *   </div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import EmojisPlugin from "./NoteEditor/emojisPlugin.partial.obs";
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     * (/script)
+     */
+    import { watch } from "vue";
+    import { usePluginHelper } from "./utils.partial";
+    import { Editor, RawEditorOptions, Ui } from "@Obsidian/Libs/tinymce";
+    import { newGuid } from "@Obsidian/Utility/guid";
+
+    const id = `rock-emojis-${newGuid()}` as const;
+    const tooltip = "Emojis" as const;
+
+    defineExpose({
+        id
+    });
+
+    const { editorInstance, onConfigureEditorOptions } = usePluginHelper();
+
+    onConfigureEditorOptions((currentOptions: RawEditorOptions) => {
+        // Add the "emoticons" plugin to the editor.
+        // This will add the "mceEmoticons" command to the command registry.
+        const pluginName = "emoticons";
+
+        const { plugins } = currentOptions;
+        if (!plugins) {
+            return {
+                ...currentOptions,
+                plugins: pluginName
+            };
+        }
+        else if (Array.isArray(plugins)) {
+            if (plugins.includes(pluginName)) {
+                return currentOptions;
+            }
+            else {
+                return {
+                    ...currentOptions,
+                    plugins: [...plugins, pluginName]
+                };
+            }
+        }
+        else if (typeof plugins === "string") {
+            if (plugins.includes(pluginName)) {
+                return currentOptions;
+            }
+            else {
+                return {
+                    ...currentOptions,
+                    plugins: `${plugins} ${pluginName}`
+                };
+            }
+        }
+        else {
+            // This shouldn't occur but throw an error just in case.
+            throw "Unable to initialize emojis plugin.";
+        }
+    });
+
+    //#region Values
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    /**
+     * Initializes the plugin.
+     */
+    function init(editor: Editor): void {
+        // Register toolbar button.
+        editor.ui.registry.addToggleButton(id, {
+            // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
+            icon: "emoji",
+            tooltip: tooltip,
+            // Open the modal when the toolbar button is clicked.
+            onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
+                editor.execCommand("mceEmoticons");
+            },
+        });
+    }
+
+    /** Disposes the tooltip button. */
+    function dispose(): void {
+        /* Nothing to dispose. */
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    //#endregion
+
+    //#region Watchers
+
+    // Register the plugin whenever the bound Editor changes.
+    watch(editorInstance, () => {
+        // Dispose any dependencies.
+        dispose();
+
+        if (editorInstance.value) {
+            init(editorInstance.value);
+        }
+    });
+
+    //#endregion
+</script>

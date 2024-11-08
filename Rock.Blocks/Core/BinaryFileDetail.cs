@@ -99,6 +99,12 @@ namespace Rock.Blocks.Core
 
         #endregion Keys
 
+        #region Fields
+
+        private BinaryFileType _binaryFileType;
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
@@ -111,7 +117,7 @@ namespace Rock.Blocks.Core
                 SetBoxInitialEntityState( box, rockContext );
 
                 box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
+                box.Options = GetBoxOptions( box.Entity, rockContext );
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<BinaryFile>();
 
                 return box;
@@ -122,13 +128,15 @@ namespace Rock.Blocks.Core
         /// Gets the box options required for the component to render the view
         /// or edit the entity.
         /// </summary>
-        /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
+        /// <param name="bag"><c>true</c> if the block should be visible; otherwise <c>false</c>.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private BinaryFileDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private BinaryFileDetailOptionsBag GetBoxOptions( BinaryFileBag bag, RockContext rockContext )
         {
-            var options = new BinaryFileDetailOptionsBag();
-
+            var options = new BinaryFileDetailOptionsBag()
+            {
+                IsBlockVisible = bag.IdKey.IsNotNullOrWhiteSpace() || bag.BinaryFileType != null,
+            };
             return options;
         }
 
@@ -165,11 +173,6 @@ namespace Rock.Blocks.Core
 
             var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-
-            if ( entity.Id == 0 )
-            {
-                entity.BinaryFileTypeId = PageParameter( PageParameterKey.BinaryFileTypeId ).AsIntegerOrNull();
-            }
 
             entity.LoadAttributes( rockContext );
 
@@ -220,6 +223,7 @@ namespace Rock.Blocks.Core
                 Description = entity.Description,
                 File = entity.ToListItemBag(),
                 FileName = entity.FileName,
+                FileId = entity.IdKey,
                 MimeType = entity.MimeType,
                 ShowBinaryFileType = GetAttributeValue( AttributeKey.ShowBinaryFileType ).AsBoolean(),
                 WorkflowButtonText = GetAttributeValue( AttributeKey.WorkflowButtonText ),
@@ -227,15 +231,40 @@ namespace Rock.Blocks.Core
             };
 
             bag.IsLabelFile = IsLabelFile( bag );
-
-            var binaryFileTypeId = PageParameter( PageParameterKey.BinaryFileTypeId ).AsIntegerOrNull();
-            if ( bag.BinaryFileType == null && binaryFileTypeId.HasValue )
+            if ( entity.Id == 0 )
             {
-                var binaryFileType = new BinaryFileTypeService( rockContext ).Get( binaryFileTypeId.Value );
-                bag.BinaryFileType = binaryFileType.ToListItemBag();
+                bag.BinaryFileType = GetBinaryFileType().ToListItemBag();
             }
 
             return bag;
+        }
+
+        /// <summary>
+        /// Gets the binary file type id.
+        /// </summary>
+        /// <returns></returns>
+        private int? GetBinaryFileTypeId()
+        {
+            var binaryFileTypeIdParam = PageParameter( PageParameterKey.BinaryFileTypeId );
+            return Rock.Utility.IdHasher.Instance.GetId( binaryFileTypeIdParam ) ?? binaryFileTypeIdParam.AsIntegerOrNull();
+        }
+
+        /// <summary>
+        /// Gets the binary file type.
+        /// </summary>
+        /// <returns></returns>
+        private BinaryFileType GetBinaryFileType()
+        {
+            if ( _binaryFileType == null )
+            {
+                var binaryFileTypeId = GetBinaryFileTypeId();
+                if ( binaryFileTypeId.HasValue )
+                {
+                    _binaryFileType = new BinaryFileTypeService( RockContext ).Get( binaryFileTypeId.Value );
+                }
+            }
+
+            return _binaryFileType;
         }
 
         /// <summary>
@@ -302,6 +331,9 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.MimeType ),
                 () => entity.MimeType = box.Entity.MimeType );
 
+            box.IfValidProperty( nameof( box.Entity.File ),
+                () => SaveFile( box.Entity, rockContext, entity ) );
+
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
                 {
@@ -321,7 +353,14 @@ namespace Rock.Blocks.Core
         /// <returns>The <see cref="BinaryFile"/> to be viewed or edited on the page.</returns>
         private BinaryFile GetInitialEntity( RockContext rockContext )
         {
-            return GetInitialEntity<BinaryFile, BinaryFileService>( rockContext, PageParameterKey.BinaryFileId );
+            var entity = GetInitialEntity<BinaryFile, BinaryFileService>( rockContext, PageParameterKey.BinaryFileId );
+
+            if ( entity?.Id == 0 )
+            {
+                entity.BinaryFileTypeId = GetBinaryFileTypeId();
+            }
+
+            return entity;
         }
 
         /// <summary>
@@ -333,7 +372,7 @@ namespace Rock.Blocks.Core
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [AttributeKey.EditLabelPage] =  this.GetLinkedPageUrl( AttributeKey.EditLabelPage, new Dictionary<string, string> { { "BinaryFileId", PageParameter( PageParameterKey.BinaryFileId ) } } )
+                [AttributeKey.EditLabelPage] =  this.GetLinkedPageUrl( AttributeKey.EditLabelPage, new Dictionary<string, string> { { "BinaryFileId", "((Key))" } } )
             };
         }
 
@@ -391,7 +430,7 @@ namespace Rock.Blocks.Core
             {
                 // Create a new entity.
                 entity = new BinaryFile();
-                entity.BinaryFileTypeId = PageParameter( PageParameterKey.BinaryFileTypeId ).AsIntegerOrNull();
+                entity.BinaryFileTypeId = GetBinaryFileTypeId();
                 entityService.Add( entity );
             }
 
@@ -549,38 +588,6 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest( validationMessage );
                 }
 
-                var binaryFileId = box.Entity.File.GetEntityId<BinaryFile>( rockContext );
-                if ( binaryFileId.HasValue && entity.Id != binaryFileId.Value )
-                {
-                    var uploadedBinaryFile = entityService.Get( binaryFileId.Value );
-                    if ( uploadedBinaryFile != null )
-                    {
-                        entity.BinaryFileTypeId = uploadedBinaryFile.BinaryFileTypeId;
-                        entity.FileSize = uploadedBinaryFile.FileSize;
-                        var memoryStream = new MemoryStream();
-
-                        // If this is a label file then we need to cleanup some settings that most templates will use by default
-                        if ( IsLabelFile( box.Entity ) )
-                        {
-                            // ^JUS will save changes to EEPROM, doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
-                            string label = uploadedBinaryFile.ContentsToString().Replace( "^JUS", string.Empty );
-
-                            // Use UTF-8 instead of ASCII
-                            label = label.Replace( "^CI0", "^CI28" );
-
-                            var writer = new StreamWriter( memoryStream );
-                            writer.Write( label );
-                            writer.Flush();
-                        }
-                        else
-                        {
-                            uploadedBinaryFile.ContentStream.CopyTo( memoryStream );
-                        }
-
-                        entity.ContentStream = memoryStream;
-                    }
-                }
-
                 entity.IsTemporary = false;
 
                 rockContext.WrapTransaction( () =>
@@ -608,6 +615,42 @@ namespace Rock.Blocks.Core
                 {
                     [PageParameterKey.BinaryFileId] = entity.IdKey
                 } ) );
+            }
+        }
+
+        private void SaveFile( BinaryFileBag bag, RockContext rockContext, BinaryFile entity )
+        {
+            var entityService = new BinaryFileService( rockContext );
+            var binaryFileId = bag.File.GetEntityId<BinaryFile>( rockContext );
+            if ( binaryFileId.HasValue && entity.Id != binaryFileId.Value )
+            {
+                var uploadedBinaryFile = entityService.Get( binaryFileId.Value );
+                if ( uploadedBinaryFile != null )
+                {
+                    entity.BinaryFileTypeId = uploadedBinaryFile.BinaryFileTypeId;
+                    entity.FileSize = uploadedBinaryFile.FileSize;
+                    var memoryStream = new MemoryStream();
+
+                    // If this is a label file then we need to cleanup some settings that most templates will use by default
+                    if ( IsLabelFile( bag ) )
+                    {
+                        // ^JUS will save changes to EEPROM, doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
+                        string label = uploadedBinaryFile.ContentsToString().Replace( "^JUS", string.Empty );
+
+                        // Use UTF-8 instead of ASCII
+                        label = label.Replace( "^CI0", "^CI28" );
+
+                        var writer = new StreamWriter( memoryStream );
+                        writer.Write( label );
+                        writer.Flush();
+                    }
+                    else
+                    {
+                        uploadedBinaryFile.ContentStream.CopyTo( memoryStream );
+                    }
+
+                    entity.ContentStream = memoryStream;
+                }
             }
         }
 
@@ -687,7 +730,7 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Reruns the workflow.
         /// </summary>
-        /// <param name="idKey">The identifier key.</param>
+        /// <param name="bag">The binary file bag.</param>
         /// <returns></returns>
         [BlockAction]
         public BlockActionResult RerunWorkflow( BinaryFileBag bag )

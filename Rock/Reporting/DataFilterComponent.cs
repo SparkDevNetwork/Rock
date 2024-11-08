@@ -306,24 +306,6 @@ namespace Rock.Reporting
         #region Protected Methods
 
         #endregion
-
-        #region Static Properties
-
-#if REVIEW_WEBFORMS
-        /// <summary>
-        /// Registers Javascript to hide/show .js-filter-control child elements of a .js-filter-compare dropdown
-        /// see RockWeb\Scripts\Rock\reportingInclude.js
-        /// </summary>
-        /// <param name="filterControl">The control that serves as the container for the filter controls.</param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "No Longer Needed", true )]
-        public void RegisterFilterCompareChangeScript( FilterField filterControl )
-        {
-            // no longer needed since the required javascript is now bundled
-        }
-#endif
-
-        #endregion
     }
 
     #region Enums

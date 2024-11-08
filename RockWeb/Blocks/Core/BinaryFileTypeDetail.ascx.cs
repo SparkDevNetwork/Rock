@@ -86,8 +86,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "BinaryFileTypeId" ).AsInteger() );
@@ -106,6 +104,8 @@ namespace RockWeb.Blocks.Core
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -174,17 +174,8 @@ namespace RockWeb.Blocks.Core
 
             cbRequiresViewSecurity.Checked = binaryFileType.RequiresViewSecurity;
 
-            nbMaxWidth.Text = binaryFileType.MaxWidth.ToString();
-            nbMaxHeight.Text = binaryFileType.MaxHeight.ToString();
-
-            ddlPreferredFormat.BindToEnum<Format>();
-            ddlPreferredFormat.SetValue( ( int ) binaryFileType.PreferredFormat );
-
-            ddlPreferredResolution.BindToEnum<Resolution>();
-            ddlPreferredResolution.SetValue( ( int ) binaryFileType.PreferredResolution );
-
-            ddlPreferredColorDepth.BindToEnum<ColorDepth>();
-            ddlPreferredColorDepth.SetValue( ( int ) binaryFileType.PreferredColorDepth );
+            nbMaxWidth.Text = binaryFileType.MaxWidth.HasValue ? binaryFileType.MaxWidth.Value.ToString() : string.Empty;
+            nbMaxHeight.Text = binaryFileType.MaxHeight.HasValue ? binaryFileType.MaxHeight.Value.ToString() : string.Empty;
 
             cbPreferredRequired.Checked = binaryFileType.PreferredRequired;
 
@@ -256,9 +247,6 @@ namespace RockWeb.Blocks.Core
             cpStorageType.Enabled = !readOnly;
             nbMaxWidth.ReadOnly = readOnly;
             nbMaxHeight.ReadOnly = readOnly;
-            ddlPreferredFormat.Enabled = !readOnly;
-            ddlPreferredResolution.Enabled = !readOnly;
-            ddlPreferredColorDepth.Enabled = !readOnly;
             cbPreferredRequired.Enabled = !readOnly;
             btnSave.Visible = !readOnly;
         }
@@ -311,11 +299,8 @@ namespace RockWeb.Blocks.Core
             binaryFileType.CacheToServerFileSystem = cbCacheToServerFileSystem.Checked;
             binaryFileType.CacheControlHeaderSettings = cpCacheSettings.CurrentCacheability.ToJson();
             binaryFileType.RequiresViewSecurity = cbRequiresViewSecurity.Checked;
-            binaryFileType.MaxWidth = nbMaxWidth.Text.AsInteger();
-            binaryFileType.MaxHeight = nbMaxHeight.Text.AsInteger();
-            binaryFileType.PreferredFormat = ddlPreferredFormat.SelectedValueAsEnum<Format>();
-            binaryFileType.PreferredResolution = ddlPreferredResolution.SelectedValueAsEnum<Resolution>();
-            binaryFileType.PreferredColorDepth = ddlPreferredColorDepth.SelectedValueAsEnum<ColorDepth>();
+            binaryFileType.MaxWidth = nbMaxWidth.Text.AsIntegerOrNull();
+            binaryFileType.MaxHeight = nbMaxHeight.Text.AsIntegerOrNull();
             binaryFileType.PreferredRequired = cbPreferredRequired.Checked;
 
             if ( !string.IsNullOrWhiteSpace( cpStorageType.SelectedValue ) )

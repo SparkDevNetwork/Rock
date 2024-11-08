@@ -127,16 +127,16 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( "TypeId" ).AsInteger() );
+                ShowDetail( GetContentTypeKeyFromPageParameters() );
             }
             else
             {
                 ShowDialog();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -168,10 +168,11 @@ namespace RockWeb.Blocks.Cms
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int? contentTypeId = PageParameter( pageReference, "TypeId" ).AsIntegerOrNull();
-            if ( contentTypeId != null )
+            var contentTypeKey = GetContentTypeKeyFromPageParameters();
+
+            if ( contentTypeKey.Length > 0)
             {
-                ContentChannelType contentType = new ContentChannelTypeService( new RockContext() ).Get( contentTypeId.Value );
+                var contentType = GetContentChannelType( contentTypeKey );
                 if ( contentType != null )
                 {
                     breadCrumbs.Add( new BreadCrumb( contentType.Name, pageReference ) );
@@ -276,10 +277,10 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
-            int contentTypeId = hfId.ValueAsInt();
-            if ( contentTypeId != 0 )
+            var contentTypeKey = hfId.Value;
+            if ( IsValidContentTypeKey( contentTypeKey ) )
             {
-                ShowDetail( contentTypeId );
+                ShowDetail( contentTypeKey );
             }
         }
 
@@ -576,28 +577,58 @@ namespace RockWeb.Blocks.Cms
         /// <param name="contentTypeId">The content type identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private ContentChannelType GetContentChannelType( int contentTypeId, RockContext rockContext = null )
+        private ContentChannelType GetContentChannelType( string contentTypeKey )
         {
-            rockContext = rockContext ?? new RockContext();
+            var rockContext = new RockContext();
+
             var contentType = new ContentChannelTypeService( rockContext )
-                .Queryable()
-                .Where( t => t.Id == contentTypeId )
-                .FirstOrDefault();
+                .Get( contentTypeKey );
+
             return contentType;
+        }
+
+        /// <summary>
+        /// Gets the key for looking up the ContentChannelType from the PageParameters.
+        /// First attempts to find the old, "TypeId" integer PageParameter.
+        /// If not found checks for the new "IdKey" PageParameter.
+        /// </summary>
+        /// <returns>
+        /// The TypeId parameter if present and greater than 0 or the IdKey parameter.
+        /// If neither value is found then an empty string is returned.
+        /// </returns>
+        private string GetContentTypeKeyFromPageParameters()
+        {
+            var contentTypeKey = PageParameter( "TypeId" );
+
+            if ( contentTypeKey.IsNullOrWhiteSpace() )
+            {
+                contentTypeKey = PageParameter( "IdKey" );
+            }
+
+            return contentTypeKey;
+        }
+
+        /// <summary>
+        /// Checks that the contentTypeKey is not zero and has a length greater than 0.
+        /// </summary>
+        /// <param name="contentTypeKey">The string version of the contentType.</param>
+        /// <returns>true if a non-zero integer or a string with length > 0.</returns>
+        private static bool IsValidContentTypeKey( string contentTypeKey )
+        {
+            return !(contentTypeKey.Equals( "0" ) || contentTypeKey.Length == 0);
         }
 
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="contentTypeId">The content type identifier.</param>
-        public void ShowDetail( int contentTypeId )
+        /// <param name="contentTypeKey">The content type identifier.</param>
+        public void ShowDetail( string contentTypeKey )
         {
-            var rockContext = new RockContext();
             ContentChannelType contentType = null;
 
-            if ( !contentTypeId.Equals( 0 ) )
+            if ( IsValidContentTypeKey( contentTypeKey ) )
             {
-                contentType = GetContentChannelType( contentTypeId );
+                contentType = GetContentChannelType( contentTypeKey );
                 pdAuditDetails.SetEntity( contentType, ResolveRockUrl( "~" ) );
             }
             if ( contentType == null )
@@ -616,7 +647,7 @@ namespace RockWeb.Blocks.Cms
 
             tbName.Text = contentType.Name;
             ddlDateRangeType.BindToEnum<ContentChannelDateType>();
-            ddlDateRangeType.SetValue( (int)contentType.DateRangeType );
+            ddlDateRangeType.SetValue( ( int ) contentType.DateRangeType );
             ddlDateRangeType_SelectedIndexChanged( null, null );
 
             cbIncludeTime.Checked = contentType.IncludeTime;
@@ -638,11 +669,11 @@ namespace RockWeb.Blocks.Cms
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ChannelAttributesState.Add( a ) );
-            
+
             // Set order 
             int newOrder = 0;
             ChannelAttributesState.ForEach( a => a.Order = newOrder++ );
-                
+
             BindChannelAttributesGrid();
 
             attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId, true ).AsQueryable()
@@ -651,11 +682,11 @@ namespace RockWeb.Blocks.Cms
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .ToList()
                 .ForEach( a => ItemAttributesState.Add( a ) );
-                
+
             // Set order 
             newOrder = 0;
             ItemAttributesState.ForEach( a => a.Order = newOrder++ );
-            
+
             BindItemAttributesGrid();
         }
 

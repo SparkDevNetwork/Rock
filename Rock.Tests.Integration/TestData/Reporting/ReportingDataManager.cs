@@ -1,0 +1,366 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+using System.Linq;
+
+using Rock.Data;
+using Rock.Model;
+using Rock.Tests.Shared;
+using Rock.Web.Cache;
+
+namespace Rock.Tests.Integration.TestData.Reporting
+{
+    /// <summary>
+    /// Provides actions to manage Reporting and authorization data for users.
+    /// </summary>
+    public class ReportingDataManager
+    {
+        private static Lazy<ReportingDataManager> _dataManager = new Lazy<ReportingDataManager>();
+        public static ReportingDataManager Instance => _dataManager.Value;
+
+        #region Data Views
+
+        public class CreateDataViewArgs : CreateEntityActionArgsBase
+        {
+            public string Name { get; set; }
+            public string AppliesToEntityTypeIdentifier { get; set; }
+            public string Description { get; set; }
+            public string CategoryIdentifier { get; set; }
+
+            /// <summary>
+            /// The relationship between the top-level nodes of this data view.
+            /// If not specified, the default value is All/True.
+            /// </summary>
+            public FilterExpressionType? OuterGroupType { get; set; }
+        }
+
+        public DataView CreateDataView( CreateDataViewArgs args )
+        {
+            TestHelper.Log( $"Adding Data View \"{args.Name}\"..." );
+
+            DataView newDataView = null;
+
+            var rockContext = new RockContext();
+            var dataViewService = new DataViewService( rockContext );
+            if ( args.Guid != null )
+            {
+                newDataView = dataViewService.Get( args.Guid.Value );
+                if ( newDataView != null )
+                {
+                    if ( args.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Fail )
+                    {
+                        throw new Exception( "Item exists." );
+                    }
+                    else if ( args.ExistingItemStrategy == CreateExistingItemStrategySpecifier.Replace )
+                    {
+                        var isDeleted = DeleteDataView( args.Guid.Value );
+
+                        if ( !isDeleted )
+                        {
+                            throw new Exception( "Could not replace existing item." );
+                        }
+
+                        newDataView = null;
+                    }
+                }
+            }
+
+            if ( newDataView == null )
+            {
+                newDataView = new DataView();
+            }
+
+            var entityTypeService = new EntityTypeService( rockContext );
+            var entityType = entityTypeService.GetByIdentifierOrThrow( args.AppliesToEntityTypeIdentifier );
+
+            newDataView.EntityTypeId = entityType.Id;
+            newDataView.Name = args.Name;
+            newDataView.Guid = args.Guid ?? Guid.NewGuid();
+            newDataView.ForeignKey = args.ForeignKey;
+
+            dataViewService.Add( newDataView );
+
+            rockContext.SaveChanges();
+
+            // Add an empty root-level filter, which returns all records by default.
+            var filter = new DataViewFilter();
+
+            if ( args.OuterGroupType == null || args.OuterGroupType == FilterExpressionType.Filter )
+            {
+                filter.ExpressionType = FilterExpressionType.GroupAll;
+            }
+            else
+            {
+                filter.ExpressionType = args.OuterGroupType.Value;
+            }
+
+            newDataView.DataViewFilter = filter;
+
+            rockContext.SaveChanges();
+
+            return newDataView;
+        }
+
+        public bool DeleteDataView( Guid dataViewGuid )
+        {
+            bool success = false;
+            var rockContext = new RockContext();
+            rockContext.WrapTransaction( () =>
+            {
+                success = DeleteDataView( rockContext, dataViewGuid );
+                rockContext.SaveChanges();
+            } );
+
+            return success;
+        }
+
+        /// <summary>
+        /// Remove DataViews flagged with the current test record tag.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <returns></returns>
+        public bool DeleteDataView( RockContext dataContext, Guid dataViewGuid )
+        {
+            var dataViewService = new DataViewService( dataContext );
+
+            var dataView = dataViewService.Get( dataViewGuid );
+
+            if ( dataView == null )
+            {
+                return false;
+            }
+
+            var dataViewId = dataView.Id;
+
+            // Remove references to Data View from Group Requirement Types.
+            var groupRequirementTypeService = new GroupRequirementTypeService( dataContext );
+
+            var groupRequirementTypes = groupRequirementTypeService.Queryable()
+                .Where( r => r.DataViewId == dataViewId || r.WarningDataViewId == dataViewId )
+                .ToList();
+            foreach ( var groupRequirementType in groupRequirementTypes )
+            {
+                if ( groupRequirementType.DataViewId == dataViewId )
+                {
+                    groupRequirementType.DataViewId = null;
+                }
+                if ( groupRequirementType.WarningDataViewId == dataViewId )
+                {
+                    groupRequirementType.DataViewId = null;
+                }
+            }
+
+            dataContext.SaveChanges();
+
+            // Remove references to Data View from Group Requirements.
+            var groupRequirementService = new GroupRequirementService( dataContext );
+
+            var groupRequirements = groupRequirementService.Queryable()
+                .Where( r => r.AppliesToDataViewId == dataViewId )
+                .ToList();
+            foreach ( var groupRequirement in groupRequirements )
+            {
+                groupRequirement.AppliesToDataViewId = null;
+            }
+
+            dataContext.SaveChanges();
+
+            // Delete the filters associated with this Data View.
+            var dataViewFilterService = new DataViewFilterService( dataContext );
+
+            DeleteDataViewFilter( dataView.DataViewFilter, dataViewFilterService, dataContext );
+
+            dataView = dataViewService.Get( dataViewGuid );
+            if ( dataView != null )
+            {
+                var isDeleted = dataViewService.Delete( dataView );
+
+                if ( !isDeleted )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Deletes the data view filter.
+        /// </summary>
+        /// <param name="dataViewFilter">The data view filter.</param>
+        /// <param name="service">The service.</param>
+        private void DeleteDataViewFilter( DataViewFilter dataViewFilter, DataViewFilterService service, RockContext rockContext )
+        {
+            if ( dataViewFilter == null )
+            {
+                return;
+            }
+
+            rockContext = rockContext ?? new RockContext();
+
+            foreach ( var childFilter in dataViewFilter.ChildFilters.ToList() )
+            {
+                DeleteDataViewFilter( childFilter, service, rockContext );
+            }
+
+            dataViewFilter.DataViewId = null;
+            dataViewFilter.RelatedDataViewId = null;
+
+            rockContext.SaveChanges();
+
+            service.Delete( dataViewFilter );
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Remove DataViews flagged with the current test record tag.
+        /// </summary>
+        /// <param name="dataContext"></param>
+        /// <returns></returns>
+        public int DeleteDataViewsByRecordTag( RockContext dataContext, string recordTag )
+        {
+            // Remove DataViews associated with the current test record tag.
+            var dataViewService = new DataViewService( dataContext );
+
+            var dataViewGuidList = dataViewService.Queryable()
+                .Where( dv => dv.ForeignKey == recordTag )
+                .Select( dv => dv.Guid )
+                .ToList();
+
+            var recordsDeleted = 0;
+            foreach ( var guid in dataViewGuidList )
+            {
+                var success = DeleteDataView( dataContext, guid );
+                if ( success )
+                {
+                    recordsDeleted++;
+                }
+            }
+
+            TestHelper.Log( $"Delete Test Data: {recordsDeleted} DataViews deleted." );
+
+            return recordsDeleted;
+        }
+
+        public class AddDataViewPropertyFilterArgs : CreateEntityActionArgsBase
+        {
+            public string DataViewIdentifier { get; set; }
+
+            /// <summary>
+            /// The unique identifier of the parent data filter.
+            /// If not specified, the filter will be added to the top-level filter group.
+            /// </summary>
+            public string ParentFilterIdentifier { get; set; }
+
+            public FilterExpressionType NodeType { get; set; }
+
+            public string PropertyFilterSettings { get; set; }
+        }
+
+        public DataViewFilter AddDataViewPropertyFilter( AddDataViewPropertyFilterArgs args, RockContext rockContext )
+        {
+            var newComponentArgs = new AddDataViewComponentFilterArgs
+            {
+                DataViewIdentifier = args.DataViewIdentifier,
+                ExistingItemStrategy = args.ExistingItemStrategy,
+                FilterTypeIdentifier = typeof( Rock.Reporting.DataFilter.PropertyFilter ).Name,
+                ForeignKey = args.ForeignKey,
+                ParentFilterIdentifier = args.ParentFilterIdentifier,
+                NodeType = args.NodeType,
+                Guid = args.Guid,
+                FilterSettings = args.PropertyFilterSettings
+            };
+
+            return AddDataViewFilter( args.NodeType, newComponentArgs, rockContext );
+        }
+
+        public class AddDataViewComponentFilterArgs : CreateEntityActionArgsBase
+        {
+            public string DataViewIdentifier { get; set; }
+
+            /// <summary>
+            /// The unique identifier of the parent data filter.
+            /// If not specified, the filter will be added to the top-level filter group.
+            /// </summary>
+            public string ParentFilterIdentifier { get; set; }
+
+            public FilterExpressionType NodeType { get; set; }
+
+            public string FilterTypeIdentifier { get; set; }
+            public string FilterSettings { get; set; }
+        }
+
+        public DataViewFilter AddDataViewComponentFilter( AddDataViewComponentFilterArgs args, RockContext rockContext )
+        {
+            return AddDataViewFilter( FilterExpressionType.Filter, args, rockContext );
+        }
+
+        private DataViewFilter AddDataViewFilter( FilterExpressionType nodeType, AddDataViewComponentFilterArgs args, RockContext rockContext )
+        {
+            var dataViewFilterService = new DataViewFilterService( rockContext );
+
+            DataViewFilter parentNode = null;
+            if ( !string.IsNullOrWhiteSpace( args.DataViewIdentifier ) )
+            {
+                var dataViewService = new DataViewService( rockContext );
+                parentNode = dataViewService.GetByIdentifierOrThrow( args.DataViewIdentifier ).DataViewFilter;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( args.ParentFilterIdentifier ) )
+            {
+                parentNode = dataViewFilterService.GetByIdentifierOrThrow( args.ParentFilterIdentifier );
+            }
+
+            if ( parentNode == null )
+            {
+                throw new Exception( "Invalid parent node." );
+            }
+
+            var addNode = new DataViewFilter();
+            addNode.ExpressionType = nodeType;
+
+            // Identify the component (a Rock entity) that implements the filter action.
+            if ( !string.IsNullOrWhiteSpace( args.FilterTypeIdentifier ) )
+            {
+                addNode.EntityTypeId = EntityTypeCache.GetId( args.FilterTypeIdentifier );
+                if ( addNode.EntityTypeId == null )
+                {
+                    throw new Exception( $"Invalid Filter Component. [Name=\"{args.FilterTypeIdentifier}\"]" );
+                }
+            }
+
+            addNode.Selection = args.FilterSettings;
+
+            parentNode.ChildFilters.Add( addNode );
+
+            return parentNode;
+        }
+
+        public DataView GetDataView( int dataViewId )
+        {
+            var rockContext = new RockContext();
+            var dataViewService = new DataViewService( rockContext );
+
+            var newDataView = dataViewService.Get( dataViewId );
+
+            return newDataView;
+        }
+
+        #endregion
+    }
+}

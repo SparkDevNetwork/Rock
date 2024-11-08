@@ -299,9 +299,13 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var adaptiveMessageId = RequestContext.GetPageParameter( PageParameterKey.AdaptiveMessageId );
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.AdaptiveMessageId] = adaptiveMessageId
+                } )
             };
         }
 

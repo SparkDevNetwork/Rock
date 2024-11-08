@@ -69,6 +69,7 @@ namespace Rock.Web.UI.Controls
 
                 // Add client script to construct the chart.
                 var args = GetTimeChartDataFactoryArgs();
+
                 chartDataJson = chartFactory.GetJson( args );
             }
             else if ( dataSource is List<ChartJsCategorySeriesDataset> categoryDatasets )
@@ -106,6 +107,10 @@ namespace Rock.Web.UI.Controls
             else if ( intervalType == "day" )
             {
                 timeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day;
+            }
+            else if ( intervalType == "week" )
+            {
+                timeScale = ChartJsTimeSeriesTimeScaleSpecifier.Week;
             }
             else if ( intervalType == "month" )
             {
@@ -161,10 +166,16 @@ namespace Rock.Web.UI.Controls
             var args = new ChartJsTimeSeriesDataFactory.GetJsonArgs();
 
             args.ContainerControlId = this.ClientID;
-            args.LegendPosition = this.LegendPosition;
+
+            GetChartJsLegendLocationSettings( out string legendPosition, out string legendAlignment );
+
+            args.LegendPosition = legendPosition;
+            args.LegendAlignment = legendAlignment;
             args.DisplayLegend = this.ShowLegend;
             args.DisableAnimation = this.Page.IsPostBack;
             args.YValueFormatString = this.YValueFormatString;
+
+            args.MaintainAspectRatio = this.MaintainAspectRatio;
 
             return args;
         }
@@ -178,10 +189,17 @@ namespace Rock.Web.UI.Controls
             var args = new ChartJsCategorySeriesDataFactory.GetJsonArgs();
 
             args.ContainerControlId = this.ClientID;
-            args.LegendPosition = this.LegendPosition;
+
+            GetChartJsLegendLocationSettings( out string legendPosition, out string legendAlignment );
+
+            args.LegendPosition = legendPosition;
+            args.LegendAlignment = legendAlignment;
             args.DisplayLegend = this.ShowLegend;
+
             args.DisableAnimation = this.Page.IsPostBack;
             args.YValueFormatString = this.YValueFormatString;
+
+            args.MaintainAspectRatio = this.MaintainAspectRatio;
 
             return args;
         }

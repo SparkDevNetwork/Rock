@@ -35,15 +35,20 @@ using Ical.Net;
 #if REVIEW_WEBFORMS
 using ImageResizer;
 #endif
+
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Lava.Helpers;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 using Rock.Utilities;
 using Rock.Utility;
@@ -65,9 +70,17 @@ namespace Rock.Lava
     /// Filters that are confirmed as suitable for use with both the Rock Web and Rock Mobile applications should be
     /// implemented in the TemplateFilters class.
     /// </remarks>
+    [RockLoggingCategory]
     internal static partial class LavaFilters
     {
         static Random _randomNumberGenerator = new Random();
+
+        /// <summary>
+        /// The logger to use for the static methods of this class.
+        /// This is not normal initialization, but we have to do it this way
+        /// since we are in a static class.
+        /// </summary>
+        private static readonly ILogger _logger = RockLogger.LoggerFactory.CreateLogger( "Rock.Lava.LavaFilters" );
 
         #region String Filters
 
@@ -378,7 +391,7 @@ namespace Rock.Lava
                 catch { }
             }
 
-            if ( numericQuantity > 1 )
+            if ( numericQuantity != 1 && numericQuantity != -1 )
             {
                 return input.Pluralize();
             }
@@ -930,21 +943,6 @@ namespace Rock.Lava
         }
 
         #endregion
-
-        /// <summary>
-        /// Decrypts an encrypted string
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns></returns>
-        public static string Decrypt( string input )
-        {
-            if ( input == null )
-            {
-                return input;
-            }
-
-            return Rock.Security.Encryption.DecryptString( input );
-        }
 
         /// <summary>
         /// Parse the input string as a URL and then return a specific part of the URL.
@@ -2081,7 +2079,7 @@ namespace Rock.Lava
                     // Check qualifer for "HtmlValue" and if true return PersistedHtmlValue
                     if ( qualifier.Equals( "HtmlValue", StringComparison.OrdinalIgnoreCase ) )
                     {
-                        return item.AttributeValues[attributeKey].PersistedTextValue;
+                        return item.AttributeValues[attributeKey].PersistedHtmlValue;
                     }
 
                     // Check qualifer for "CondensedTextValue" and if true return PersistedTextValue
@@ -2591,7 +2589,7 @@ namespace Rock.Lava
                 }
                 catch ( Exception ex )
                 {
-                    RockLogger.Log.Error( RockLogDomains.Lava, ex, $"Unable to return object(s) from Cache (input = '{input}', cacheType = '{cacheType}')." );
+                    _logger.LogError( ex, $"Unable to return object(s) from Cache (input = '{input}', cacheType = '{cacheType}')." );
 
                     return null;
                 }
@@ -3015,7 +3013,7 @@ namespace Rock.Lava
         /// <param name="context">The context.</param>
         /// <param name="dataObject">The data object.</param>
         /// <returns></returns>
-        public static object FilterNotFollowed( ILavaRenderContext context, object dataObject )
+        public static object FilterUnfollowed( ILavaRenderContext context, object dataObject )
         {
             return FilterFollowedOrNotFollowed( context, GetCurrentPerson( context ), dataObject, FollowFilterType.NotFollowed );
         }
@@ -3335,7 +3333,7 @@ namespace Rock.Lava
 
             if ( expiryMinutes.HasValue )
             {
-                cookie.Expires = Rock.Utility.Settings.RockInstanceConfig.SystemDateTime.AddMinutes( expiryMinutes.Value );
+                cookie.Expires = RockDateTime.SystemDateTime.AddMinutes( expiryMinutes.Value );
             }
 
             response.Cookies.Set( cookie );
@@ -3475,106 +3473,133 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Pages the specified input.
+        /// Returns information about the current page.
         /// </summary>
+        /// <param name="context">The current Lava render context.</param>
         /// <param name="input">The input.</param>
-        /// <param name="parm">The parm.</param>
-        /// <returns></returns>
-        public static object Page( string input, string parm )
+        /// <param name="parm">The type of information to return about the current page.</param>
+        /// <returns>Information about the current page or null if not found.</returns>
+        public static object Page( ILavaRenderContext context, string input, string parm )
         {
 #if REVIEW_NET5_0_OR_GREATER
             throw new NotImplementedException();
 #else
+            PageCache pageCache = null;
             var page = HttpContext.Current?.Handler as RockPage;
 
-            if ( page != null )
+            var rockRequestContext = context.GetRockRequestContext();
+            if ( rockRequestContext != null )
             {
-                switch ( parm )
-                {
-                    case "Title":
+                pageCache = rockRequestContext.Page;
+            }
+            else if ( page != null )
+            {
+                pageCache = PageCache.Get( page.PageId );
+            }
+
+            if ( pageCache == null )
+            {
+                return null;
+            }
+
+            switch ( parm )
+            {
+                case "Title":
+                    {
+                        return pageCache.PageTitle;
+                    }
+
+                case "BrowserTitle":
+                    {
+                        return pageCache.BrowserTitle;
+                    }
+
+                case "Url":
+                    {
+                        return HttpContext.Current.Request.UrlProxySafe().AbsoluteUri;
+                    }
+
+                case "Id":
+                    {
+                        return pageCache.Id.ToString();
+                    }
+
+                case "Host":
+                    {
+                        var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
+                        return host;
+                    }
+
+                case "Path":
+                    {
+                        return HttpContext.Current.Request.UrlProxySafe().AbsolutePath;
+                    }
+
+                case "SiteName":
+                    {
+                        return pageCache.Site;
+                    }
+
+                case "SiteId":
+                    {
+                        return pageCache.SiteId;
+                    }
+
+                case "Theme":
+                    {
+                        if ( page?.Theme != null )
                         {
-                            return page.PageTitle;
+                            return page.Theme;
                         }
 
-                    case "BrowserTitle":
-                        {
-                            return page.BrowserTitle;
-                        }
-
-                    case "Url":
-                        {
-                            return HttpContext.Current.Request.UrlProxySafe().AbsoluteUri;
-                        }
-
-                    case "Id":
-                        {
-                            return page.PageId.ToString();
-                        }
-
-                    case "Host":
-                        {
-                            var host = WebRequestHelper.GetHostNameFromRequest( HttpContext.Current );
-                            return host;
-                        }
-
-                    case "Path":
-                        {
-                            return HttpContext.Current.Request.UrlProxySafe().AbsolutePath;
-                        }
-
-                    case "SiteName":
-                        {
-                            return page.Site.Name;
-                        }
-
-                    case "SiteId":
-                        {
-                            return page.Site.Id.ToString();
-                        }
-
-                    case "Theme":
-                        {
-                            if ( page.Theme != null )
-                            {
-                                return page.Theme;
-                            }
-                            else
-                            {
-                                return page.Site.Theme;
-                            }
-                        }
-                    case "Description":
+                        return pageCache.SiteTheme;
+                    }
+                case "Description":
+                    {
+                        if ( page?.MetaDescription != null )
                         {
                             return page.MetaDescription;
                         }
-                    case "Layout":
-                        {
-                            return page.Layout.Name;
-                        }
 
-                    case "Scheme":
-                        {
-                            return HttpContext.Current.Request.UrlProxySafe().Scheme;
-                        }
+                        return pageCache.Description;
+                    }
+                case "Layout":
+                    {
+                        return pageCache.Layout?.Name;
+                    }
 
-                    case "QueryString":
+                case "Scheme":
+                    {
+                        return HttpContext.Current.Request.UrlProxySafe().Scheme;
+                    }
+
+                case "QueryString":
+                    {
+                        if ( rockRequestContext != null )
+                        {
+                            return rockRequestContext.PageParameters;
+                        }
+                        else if ( page != null )
                         {
                             return page.PageParameters();
                         }
-                    case "Cookies":
-                        {
-                            var cookies = new List<HttpCookieDrop>();
-                            foreach ( string cookieKey in System.Web.HttpContext.Current.Request.Cookies )
-                            {
-                                cookies.Add( new HttpCookieDrop( System.Web.HttpContext.Current.Request.Cookies[cookieKey] ) );
-                            }
 
-                            return cookies;
+                        return null;
+                    }
+                case "Cookies":
+                    {
+                        var cookies = new List<HttpCookieDrop>();
+                        foreach ( string cookieKey in System.Web.HttpContext.Current.Request.Cookies )
+                        {
+                            cookies.Add( new HttpCookieDrop( System.Web.HttpContext.Current.Request.Cookies[cookieKey] ) );
                         }
-                }
-            }
 
             return null;
+                        return cookies;
+                    }
+                default:
+                    return null;
+            }
 #endif
         }
 
@@ -3599,23 +3624,29 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Returns the specified page parm.
+        /// Returns the specified page parameter.
         /// </summary>
+        /// <param name="context">The current Lava render context.</param>
         /// <param name="input">The input.</param>
-        /// <param name="parm">The parm.</param>
-        /// <returns></returns>
-        public static object PageParameter( string input, string parm )
+        /// <param name="parm">The parameter name.</param>
+        /// <returns>The page parameter or null if not found.</returns>
+        public static object PageParameter( ILavaRenderContext context, string input, string parm )
         {
 #if REVIEW_NET5_0_OR_GREATER
             throw new NotImplementedException();
 #else
-            var page = HttpContext.Current?.Handler as RockPage;
-            if ( page == null )
-            {
-                return null;
-            }
+            string parmReturn;
 
-            var parmReturn = page.PageParameter( parm );
+            var rockRequestContext = context.GetRockRequestContext();
+            if ( rockRequestContext != null )
+            {
+                parmReturn = rockRequestContext.GetPageParameter( parm );
+            }
+            else
+            {
+                var page = HttpContext.Current?.Handler as RockPage;
+                parmReturn = page?.PageParameter( parm );
+            }
 
             if ( parmReturn == null )
             {
@@ -3690,11 +3721,11 @@ namespace Rock.Lava
 
             foreach ( var kvp in inputPageReference.Parameters )
             {
-                allParameters.AddOrIgnore( kvp.Key, kvp.Value );
+                allParameters.TryAdd( kvp.Key, kvp.Value );
             }
             foreach ( var nv in inputPageReference.QueryString.AllKeys )
             {
-                allParameters.AddOrIgnore( nv, inputPageReference.QueryString[nv] );
+                allParameters.TryAdd( nv, inputPageReference.QueryString[nv] );
             }
 
             // Add, remove or modify the target parameter.
@@ -4038,8 +4069,8 @@ namespace Rock.Lava
         public static string ImageUrl( object input, string fallbackUrl = null, object rootUrl = null )
         {
             string inputString = input?.ToString();
-            var queryStringKey = "Id";
             var useFallbackUrl = false;
+            var queryStringKey = "Id";
 
             if ( !inputString.AsIntegerOrNull().HasValue )
             {
@@ -4047,7 +4078,7 @@ namespace Rock.Lava
 
                 if ( !inputString.AsGuidOrNull().HasValue )
                 {
-                    RockLogger.Log.Information( RockLogDomains.Lava, $"The input value provided ('{( inputString ?? "null" )}') is neither an integer nor a Guid." );
+                    _logger.LogInformation( $"The input value provided ('{inputString ?? "null"}') is neither an integer nor a Guid." );
                     useFallbackUrl = true;
                 }
             }
@@ -4092,12 +4123,19 @@ namespace Rock.Lava
 
             if ( useGetImageHandler )
             {
-                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ) : "/";
+                string prefix = prependAppRootUrl ? GlobalAttributesCache.Value( "PublicApplicationRoot" ).TrimEnd( '/' ) : string.Empty;
 
-                url = $"{prefix}GetImage.ashx?{queryStringKey}={inputString}";
+                if ( queryStringKey == "Id" )
+                {
+                    url = prefix + FileUrlHelper.GetImageUrl( inputString.ToIntSafe(), new GetImageUrlOptions() );
+                }
+                else
+                {
+                    url = prefix + FileUrlHelper.GetImageUrl( inputString.AsGuid(), new GetImageUrlOptions() );
+                }
             }
 
-            return url;
+            return url ?? fallbackUrl ?? string.Empty;
         }
 
         /// <summary>
@@ -4111,31 +4149,31 @@ namespace Rock.Lava
 
             if ( valueName == "applicationdirectory" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.ApplicationDirectory;
+                return RockApp.Current.HostingSettings.VirtualRootPath;
             }
             else if ( valueName == "isclustered" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.IsClustered;
+                return WebFarm.RockWebFarm.IsEnabled();
             }
             else if ( valueName == "machinename" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.MachineName;
+                return RockApp.Current.HostingSettings.MachineName;
             }
             else if ( valueName == "physicaldirectory" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.PhysicalDirectory;
+                return RockApp.Current.HostingSettings.WebRootPath;
             }
             else if ( valueName == "systemdatetime" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.SystemDateTime;
+                return RockDateTime.SystemDateTime;
             }
             else if ( valueName == "aspnetversion" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.AspNetVersion;
+                return RockApp.Current.HostingSettings.DotNetVersion;
             }
             else if ( valueName == "lavaengine" )
             {
-                return Rock.Utility.Settings.RockInstanceConfig.LavaEngineName;
+                return RockApp.Current.GetCurrentLavaEngineName();
             }
 
             return $"Configuration setting \"{ input }\" is not available.";
@@ -4247,19 +4285,31 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Determines whether [contains] [the specified input].
+        /// Determines whether the input collection contains the specified value.
         /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="containValue">The contain value.</param>
+        /// <param name="input">The input collection.</param>
+        /// <param name="containValue">The search value.</param>
         /// <returns>
-        ///   <c>true</c> if [contains] [the specified input]; otherwise, <c>false</c>.
+        ///   <c>true</c> if the input collection contains the specified value; otherwise, <c>false</c>.
         /// </returns>
         public static bool Contains( object input, object containValue )
         {
-            var inputList = ( input as IList );
-            if ( inputList != null )
+            if ( input == null || containValue == null )
             {
+                return false;
+            }
+
+            if ( input is IList inputList )
+            { 
                 return inputList.Contains( containValue );
+            }
+            else if ( input is IEnumerable<object> inputGenericEnumerable )
+            {
+                return inputGenericEnumerable.ToList().Contains( containValue );
+            }
+            else if ( input is IEnumerable inputEnumerable )
+            {
+                return inputEnumerable.Cast<object>().ToList().Contains( containValue );
             }
 
             return false;
@@ -5075,20 +5125,27 @@ namespace Rock.Lava
         private static Person GetCurrentPerson( ILavaRenderContext context )
         {
             // First check for a person override value included in lava context
-            var currentPerson = context.GetMergeField( "CurrentPerson", null ) as Person;
-
-            if ( currentPerson == null )
+            if ( context.GetMergeField( "CurrentPerson" ) is Person currentPerson )
             {
-#if REVIEW_WEBFORMS
-                var httpContext = System.Web.HttpContext.Current;
-                if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
-                {
-                    currentPerson = httpContext.Items["CurrentPerson"] as Person;
-                }
-#endif
+                return currentPerson;
             }
 
-            return currentPerson;
+            // Next check the RockRequestContext in the lava context.
+            if ( context.GetInternalField( "RockRequestContext" ) is RockRequestContext currentRequest )
+            {
+                return currentRequest.CurrentPerson;
+            }
+
+#if REVIEW_WEBFORMS
+            // Finally check the HttpContext.
+            var httpContext = System.Web.HttpContext.Current;
+            if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
+            {
+                return httpContext.Items["CurrentPerson"] as Person;
+            }
+#endif
+
+            return null;
         }
 
         /// <summary>

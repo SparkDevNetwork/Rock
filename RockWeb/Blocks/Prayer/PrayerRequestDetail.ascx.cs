@@ -24,6 +24,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.AI;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
@@ -37,13 +38,73 @@ namespace RockWeb.Blocks.Prayer
     [Category( "Prayer" )]
     [Description( "Displays the details of a given Prayer Request for viewing or editing." )]
 
-    [IntegerField( "Expires After (days)", "Default number of days until the request will expire.", false, 14, "", 0, AttributeKey.ExpireDays )]
-    [CategoryField( "Default Category", "If a category is not selected, choose a default category to use for all new prayer requests.", false, "Rock.Model.PrayerRequest", "", "", false, "4B2D88F5-6E45-4B4B-8776-11118C8E8269", "", 1, AttributeKey.DefaultCategory )]
-    [BooleanField( "Set Current Person To Requester", "Will set the current person as the requester. This is useful in self-entry situations.", false, order: 2 )]
-    [BooleanField( "Require Last Name", "Require that a last name be entered", true, "", 3 )]
-    [BooleanField( "Default To Public", "If enabled, all prayers will be set to public by default", false, "", 4)]
-    [BooleanField( "Default Allow Comments Checked", "If true, the Allow Comments checkbox will be pre-checked for all new requests by default.", true, order: 5 )]
-    [BooleanField("Require Campus", "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.", false, "", 6 )]
+    [IntegerField(
+        "Expires After (days)",
+        Description = "Default number of days until the request will expire.",
+        IsRequired = false,
+        DefaultIntegerValue = 14,
+        Category = "",
+        Order = 0,
+        Key = AttributeKey.ExpireDays )]
+
+    [CategoryField(
+        "Default Category",
+        Description = "If a category is not selected, choose a default category to use for all new prayer requests.",
+        AllowMultiple = false,
+        EntityTypeName = "Rock.Model.PrayerRequest",
+        EntityTypeQualifierColumn = "",
+        EntityTypeQualifierValue = "",
+        IsRequired = false,
+        DefaultValue = "4B2D88F5-6E45-4B4B-8776-11118C8E8269",
+        Category = "",
+        Order = 1,
+        Key = AttributeKey.DefaultCategory )]
+
+    [BooleanField(
+        "Set Current Person To Requester",
+        Description = "Will set the current person as the requester. This is useful in self-entry situations.",
+        DefaultBooleanValue = false,
+        Order = 2 )]
+
+    [BooleanField(
+        "Require Last Name",
+        Description = "Require that a last name be entered",
+        DefaultBooleanValue = true,
+        Order = 3 )]
+
+    [BooleanField(
+        "Default To Public",
+        Description = "If enabled, all prayers will be set to public by default",
+        DefaultBooleanValue = false,
+        Order = 4 )]
+
+    [BooleanField(
+        "Default Allow Comments Checked",
+        Description = "If true, the Allow Comments checkbox will be pre-checked for all new requests by default.",
+        DefaultBooleanValue = true,
+        Order = 5 )]
+
+    [BooleanField(
+        "Require Campus",
+        Description = "Require that a campus be selected. The campus will not be displayed if there is only one available campus, in which case if this is set to true then the single campus is automatically used.",
+        DefaultBooleanValue = false,
+        Order = 6 )]
+
+    [BooleanField(
+        "Enable AI Disclaimer",
+        Description = "If enabled and the PrayerRequest Text was sent to an AI automation the configured AI Disclaimer will be shown.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.EnableAIDisclaimer,
+        Order = 7 )]
+
+    [TextField(
+        "AI Disclaimer",
+        Description = "The message to display indicating the Prayer Request text may have been modified by an AI automation.",
+        IsRequired = false,
+        DefaultValue = "This request may have been modified by an AI for formatting and privacy. Please be aware that errors may be present.",
+        Key = AttributeKey.AIDisclaimer,
+        Order = 8 )]
+
     [Rock.SystemGuid.BlockTypeGuid( "F791046A-333F-4B2A-9815-73B60326162D" )]
     public partial class PrayerRequestDetail : RockBlock
     {
@@ -100,6 +161,8 @@ namespace RockWeb.Blocks.Prayer
             public const string SetCurrentPersonToRequester = "SetCurrentPersonToRequester";
             public const string DefaultCategory = "DefaultCategory";
             public const string ExpireDays = "ExpireDays";
+            public const string EnableAIDisclaimer = "EnableAIDisclaimer";
+            public const string AIDisclaimer = "AIDisclaimer";
         }
 
         #endregion
@@ -195,6 +258,7 @@ namespace RockWeb.Blocks.Prayer
         #endregion
 
         #region Events
+
         /// <summary>
         /// Handles the edit Click event of the lbEdit control.
         /// </summary>
@@ -335,7 +399,9 @@ namespace RockWeb.Blocks.Prayer
 
             hfPrayerRequestId.Value = prayerRequest.Id.ToString();
 
-            // render UI based on Authorized and IsSystem
+            hlInactive.Visible = prayerRequest.IsActive != true;
+
+            // Render UI based on Authorized and IsSystem
             bool readOnly = false;
 
             nbEditModeMessage.Text = string.Empty;
@@ -347,6 +413,8 @@ namespace RockWeb.Blocks.Prayer
             }
 
             hlCategory.Text = prayerRequest.Category != null ? prayerRequest.Category.Name : string.Empty;
+            hlSentiment.Text = prayerRequest.SentimentEmotionValueId.HasValue ? DefinedValueCache.GetName( prayerRequest.SentimentEmotionValueId ) : string.Empty;
+            AddModerationCategoryLabels( prayerRequest );
 
             if ( readOnly )
             {
@@ -365,7 +433,27 @@ namespace RockWeb.Blocks.Prayer
                     ShowEditDetails( prayerRequest );
                 }
             }
+        }
 
+        private void AddModerationCategoryLabels( PrayerRequest prayerRequest )
+        {
+            var moderationFlags = ( ModerationFlags ) prayerRequest.ModerationFlags;
+            var flags = Enum.GetValues( typeof( ModerationFlags ) );
+
+            foreach ( ModerationFlags flag in flags )
+            {
+                if ( moderationFlags.HasFlag( flag ) && flag != ModerationFlags.None )
+                {
+                    var flagText = flag.ToString().SplitCase();
+                    pnlHighlightLabels.Controls.Add( new HighlightLabel
+                    {
+                        ID = "hl" + flag,
+                        Text = flagText,
+                        LabelType = LabelType.Warning,
+                        CssClass = "mr-1"
+                    } );
+                }
+            }
         }
 
         /// <summary>
@@ -412,6 +500,13 @@ namespace RockWeb.Blocks.Prayer
 
             descriptionList.Add( "Request", prayerRequest.Text.ScrubHtmlAndConvertCrLfToBr() );
             descriptionList.Add( "Answer", prayerRequest.Answer.ScrubHtmlAndConvertCrLfToBr() );
+
+            if ( prayerRequest.OriginalRequest.IsNotNullOrWhiteSpace() && GetAttributeValue( AttributeKey.EnableAIDisclaimer ).AsBoolean() )
+            {
+                var aiDisclaimerHtml = $"<small class='text-muted'>{GetAttributeValue( AttributeKey.AIDisclaimer )}</small>";
+                descriptionList.Add( string.Empty, aiDisclaimerHtml );
+            }
+
             lMainDetails.Text = descriptionList.Html;
 
             prayerRequest.LoadAttributes();
@@ -440,6 +535,12 @@ namespace RockWeb.Blocks.Prayer
             if ( prayerRequest.Id > 0 )
             {
                 lActionTitle.Text = ActionTitle.Edit( PrayerRequest.FriendlyTypeName ).FormatAsHtmlTitle();
+
+                if ( prayerRequest.OriginalRequest.IsNotNullOrWhiteSpace() )
+                {
+                    lOriginalRequest.Visible = true;
+                    lOriginalRequest.Text = prayerRequest.OriginalRequest;
+                }
             }
             else
             {
@@ -455,6 +556,7 @@ namespace RockWeb.Blocks.Prayer
             cpCampus.SelectedCampusId = prayerRequest.CampusId;
 
             pnlDetails.Visible = true;
+            AddModerationCategoryLabels( prayerRequest );
 
             var prayRequestCategory = prayerRequest.Category;
             if ( prayRequestCategory == null )
@@ -679,6 +781,10 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.CampusId = cpCampus.SelectedCampusId;
             prayerRequest.CategoryId = catpCategory.SelectedValueAsInt();
 
+            var currentPrayerRequestText = prayerRequest.Text ?? string.Empty;
+            var prayerRequestTextToSave = dtbText.Text.Trim();
+            var hasPrayerRequestTextChanged = !currentPrayerRequestText.Equals( prayerRequestTextToSave, StringComparison.OrdinalIgnoreCase );
+
             // Now record all the bits...
             prayerRequest.IsApproved = hfApprovedStatus.Value.AsBoolean();
             prayerRequest.IsActive = cbIsActive.Checked;
@@ -688,7 +794,7 @@ namespace RockWeb.Blocks.Prayer
             prayerRequest.FirstName = tbFirstName.Text;
             prayerRequest.LastName = tbLastName.Text;
             prayerRequest.Email = tbEmail.Text;
-            prayerRequest.Text = dtbText.Text.Trim();
+            prayerRequest.Text = prayerRequestTextToSave;
             prayerRequest.Answer = dtbAnswer.Text.Trim();
 
             prayerRequest.LoadAttributes( rockContext );
@@ -708,7 +814,66 @@ namespace RockWeb.Blocks.Prayer
             rockContext.SaveChanges();
             prayerRequest.SaveAttributeValues( rockContext );
 
+            if ( !hasPrayerRequestTextChanged )
+            {
+                // There will be no need to run AI Automations if the text hasn't changed.
+                NavigateToParent();
+            }
+
+            // If AI automations are configured alert the individual that updates may take some time.
+            var hasAICompletions = false;
+            var categoryId = prayerRequest.CategoryId.ToIntSafe();
+
+            // The AI configuration is determined by the category
+            // so if there's no category we can skip any additional checks.
+            if ( categoryId > 0 )
+            {
+                // Use a new context to prevent exceptions when AIProviderService.GetCompletionConfiguration
+                // is called both here and in the SaveHook. 
+                using ( var aiConfigRockContext = new RockContext() )
+                {
+                    var aiProviderService = new AIProviderService( aiConfigRockContext );
+                    var aiConfig = aiProviderService.GetCompletionConfiguration( categoryId );
+
+                    if ( aiConfig != null )
+                    {
+                        // Determine if there are any AI automations that use the Formatter template ( text changes ).
+                        var hasTextChangingCompletions =
+                            aiConfig.RemoveNames != NameRemoval.NoChanges
+                            || aiConfig.TextEnhancement != TextEnhancement.NoChanges;
+
+                        // Determine if there are any AI automations that use the Analyzer template.
+                        var hasAnalysisCompletions = aiConfig.ClassifySentiment ||
+                            aiConfig.AutoCategorize ||
+                            aiConfig.CheckPublicAppropriateness ||
+                            aiConfig.EnableAIModeration;
+
+                        hasAICompletions = hasTextChangingCompletions || hasAnalysisCompletions;
+                    }
+                }
+            }
+
+            if ( hasAICompletions )
+            {
+                // Show the AI Automations alert when there are completions to run and the PrayerRequest.Text has changed.
+                mdAIAutomationsAlertModal.Show();
+            }
+            else
+            {
+                // Otherwise navigate to the parent page as usual.
+                NavigateToParent();
+            }
+        }
+
+        protected void mdAIAutomationsAlertModal_SaveClick( object sender, EventArgs e )
+        {
+            NavigateToParent();
+        }
+
+        private void NavigateToParent()
+        {
             var queryParms = new Dictionary<string, string>();
+
             if ( !string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.PersonId ) ) )
             {
                 queryParms.Add( PageParameterKey.PersonId, PageParameter( PageParameterKey.PersonId ) );

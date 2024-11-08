@@ -1,4 +1,9 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="PrayerRequestList.ascx.cs" Inherits="RockWeb.Blocks.Prayer.PrayerRequestList" %>
+<style>
+    .text-top {
+        vertical-align: top;
+    }
+</style>
 <asp:UpdatePanel ID="upPrayerRequests" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlLists" runat="server" Visible="true">
@@ -63,7 +68,13 @@
                                 <Rock:RockBoundField DataField="Text" HeaderText="Request" SortExpression="Text" />
                                 <Rock:BadgeField DataField="PrayerCount" HeaderText="Prayer Count" SortExpression="PrayerCount" DangerMin="0" DangerMax="0" SuccessMin="3" />
                                 <Rock:BadgeField DataField="FlagCount" HeaderText="Flag Count" SortExpression="FlagCount" DangerMin="4" WarningMin="1" />
-                                <Rock:ToggleField DataField="IsApproved" HeaderText="Approved?" ButtonSizeCssClass="btn-xs" Enabled="True" OnCssClass="btn-success" OnText="Yes" OffText="No" SortExpression="IsApproved" OnCheckedChanged="gPrayerRequests_CheckChanged" />
+                                <Rock:BoolField DataField="IsPublic" HeaderText="Public" SortExpression="IsPublic" ItemStyle-CssClass="text-top" />
+                                <Rock:ToggleField DataField="IsApproved" HeaderText="Approved" ButtonSizeCssClass="btn-xs" Enabled="True" OnCssClass="btn-success" OnText="Yes" OffText="No" SortExpression="IsApproved" OnCheckedChanged="gPrayerRequests_CheckChanged" />
+                                <Rock:RockTemplateField ID="rtfSelfHarmFlag" Visible="false" HeaderText="" ItemStyle-HorizontalAlign="Center" ItemStyle-VerticalAlign="Top">
+                                    <ItemTemplate >
+                                        <Rock:RockLiteral ID="lSelfHarmFlag" runat="server" />
+                                    </ItemTemplate>
+                                </Rock:RockTemplateField>
                             </Columns>
                         </Rock:Grid>
                     </div>

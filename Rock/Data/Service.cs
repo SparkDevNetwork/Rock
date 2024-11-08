@@ -20,6 +20,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.Logging;
 using Rock.Web.Cache;
 
 using Z.EntityFramework.Plus;
@@ -30,13 +33,18 @@ namespace Rock.Data
     /// Generic POCO service class
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class Service<T> : IService where T : Rock.Data.Entity<T>, new()
+    public class Service<T> : IService where T : class, Rock.Data.IEntity, new()
     {
 
         #region Fields
 
         private DbContext _context;
         internal DbSet<T> _objectSet;
+
+        /// <summary>
+        /// The logger for this instance.
+        /// </summary>
+        private ILogger _logger;
 
         #endregion
 
@@ -73,6 +81,23 @@ namespace Rock.Data
             get
             {
                 return Expression.Parameter( typeof( T ), "p" );
+            }
+        }
+
+        /// <summary>
+        /// Gets the logger for this instance.
+        /// </summary>
+        /// <value>The logger for this instance.</value>
+        protected ILogger Logger
+        {
+            get
+            {
+                if ( _logger == null )
+                {
+                    _logger = RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+                }
+
+                return _logger;
             }
         }
 
@@ -129,8 +154,8 @@ namespace Rock.Data
                 ? Context.ChangeTracker
                     .Entries()
                     .Where( a => statesToExclude.Contains( a.State ) )
-                    .Where( a => a.Entity as Entity<T> != null )
-                    .Select( a => ( ( Entity<T> ) a.Entity ).Id )
+                    .Where( a => a.Entity as IEntity != null )
+                    .Select( a => ( ( IEntity ) a.Entity ).Id )
                     .ToList()
                 : new List<int>();
 
@@ -637,6 +662,11 @@ namespace Rock.Data
         {
             try
             {
+                if ( publicKey.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
                 string[] idParts = publicKey.Split( '>' );
                 if ( idParts.Length == 2 )
                 {
@@ -687,7 +717,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Calls _objectSet.RemoveRange which adds the given collection of items
+        /// Calls _objectSet.AddRange which adds the given collection of items
         /// NOTE: Consider doing a SaveChanges(true) if there could be large number of items
         /// </summary>
         /// <param name="items">The items.</param>

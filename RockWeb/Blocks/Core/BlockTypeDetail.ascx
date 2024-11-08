@@ -23,6 +23,8 @@
                             <asp:Literal ID="lReadonlySummary" runat="server" />
                             <Rock:RockLiteral ID="lblStatus" runat="server" Label="Status" />
                             <Rock:RockLiteral ID="lPages" runat="server" Label="Pages that use this block type" />
+                            <Rock:RockLiteral ID="lLayout" runat="server" Label="Layouts that use this block type" Visible="False" />
+                            <Rock:RockLiteral ID="lSites" runat="server" Label="Sites that use this block type" Visible="False" />
                         </div>
                         <asp:Panel ID="pnlBlockTypeAttributesGrid" runat="server">
                             <div class="col-md-6">
@@ -57,9 +59,9 @@
 
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnEdit" runat="server" AccessKey="m" ToolTip="Alt+m" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
+                    <asp:LinkButton ID="btnEdit" runat="server" data-shortcut-key="e" AccessKey="m" ToolTip="Alt+e" Text="Edit" CssClass="btn btn-primary" CausesValidation="false" OnClick="btnEdit_Click" />
+                    <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
 
             </div>

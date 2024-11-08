@@ -95,8 +95,14 @@ export const BlockType = {
     MobileConnectionConnectionTypeList: "31E1FCCF-C4B1-4D84-992C-DEACAF3697CF",
     /** The mobile attribute values &gt; Attribute Values block type. */
     MobileCoreAttributeValues: "DF110543-C295-4DD9-B06E-82640AC63610",
+    /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.MyNotes block type. */
+    MobileCoreMyNotes: "9BDE231C-B6A7-4753-BBB8-1531F6362387",
+    /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.QuickNote block type. */
+    MobileCoreQuickNote: "B7E187C8-6F74-4FBD-8853-5BAC48F5822C",
     /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.Search block type. */
     MobileCoreSearch: "41174BEA-6567-430C-AAD4-A89A5CF70FB0",
+    /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.SmartSearch block type. */
+    MobileCoreSmartSearch: "9AA64485-9641-4A06-9450-B5244BC1464A",
     /** The mobile group members &gt; Group Members block type. */
     MobileCrmGroupMembers: "1F1E7598-8D51-4750-8D61-E5791A226FDB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Crm.PersonProfile. */
@@ -125,6 +131,8 @@ export const BlockType = {
     Motivators: "18CF8DA8-5DE0-49EC-A279-D5507CFA5713",
     /** The notes */
     Notes: "2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3",
+    /** The obsidian category detail block type. */
+    ObsidianCategoryDetail: "515dc5c2-4fbd-4eea-9d8e-a807409defde",
     /** The obsidian event registration entry */
     ObsidianEventRegistrationEntry: "0252E237-0684-4426-9E5C-D454A13E152A",
     /** The obsidian event control gallery */

@@ -20,6 +20,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Data;
@@ -185,4 +186,22 @@ namespace Rock.Model
             return Name;
         }
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// StreakType Configuration Class
+    /// </summary>
+    public partial class StreakTypeConfiguration : EntityTypeConfiguration<StreakType>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StreakTypeConfiguration"/> class.
+        /// </summary>
+        public StreakTypeConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }

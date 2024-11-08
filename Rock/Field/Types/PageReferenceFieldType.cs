@@ -23,6 +23,8 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Rest.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -32,7 +34,8 @@ namespace Rock.Field.Types
     /// Stored as "Page.Guid" or "Page.Guid,PageRoute.Guid"
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PAGE_REFERENCE )]
     public class PageReferenceFieldType : FieldType, IEntityReferenceFieldType
     {
@@ -85,6 +88,75 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var pageRouteBag = new PageRouteValueBag();
+            string[] valuePair = ( privateValue ?? string.Empty ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+            //// Value is in format "Page.Guid,PageRoute.Guid"
+            //// If only the Page.Guid is specified this is just a reference to a page without a special route
+            //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
+
+            if ( valuePair.Length > 0 )
+            {
+                var pageGuid = valuePair[0].AsGuidOrNull();
+                if ( pageGuid.HasValue )
+                {
+                    var page = PageCache.Get( pageGuid.Value );
+                    if ( page != null )
+                    {
+                        pageRouteBag.Page = page.ToListItemBag();
+
+                        if ( valuePair.Length > 1 )
+                        {
+                            var routeGuid = valuePair[1].AsGuidOrNull();
+                            if ( routeGuid.HasValue )
+                            {
+                                var route = page.PageRoutes.Find( r => r.Guid.Equals( routeGuid.Value ) );
+                                if ( route != null )
+                                {
+                                    pageRouteBag.Route = new ListItemBag()
+                                    {
+                                        Text = route.Route,
+                                        Value = route.Guid.ToString()
+                                    };
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return pageRouteBag.ToCamelCaseJson( false, true );
+        }
+
+        /// <inheritdoc />
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var jsonValue = publicValue.FromJsonOrNull<PageRouteValueBag>();
+
+            if ( jsonValue != null )
+            {
+                if ( jsonValue.Route != null )
+                {
+                    return $"{jsonValue.Page.Value},{jsonValue.Route.Value}";
+                }
+                else
+                {
+                    return jsonValue.Page.Value;
+                }
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
 
         #endregion
 

@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
@@ -555,7 +554,7 @@ This can be due to multiple threads updating the same attribute at the same time
                         PropertyInfo propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
                         if ( propertyInfo != null )
                         {
-                            propertyValues.AddOrIgnore( propertyName, propertyInfo.GetValue( entity, null ) );
+                            propertyValues.TryAdd( propertyName, propertyInfo.GetValue( entity, null ) );
                         }
                     }
 
@@ -601,7 +600,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 foreach ( var attribute in allAttributes )
                 {
                     // Add a placeholder for this item's value for each attribute
-                    attributeValues.AddOrIgnore( attribute.Key, null );
+                    attributeValues.TryAdd( attribute.Key, null );
                 }
 
                 // If loading attributes for a saved item, read the item's value(s) for each attribute 
@@ -745,7 +744,7 @@ This can be due to multiple threads updating the same attribute at the same time
             }
 
             entity.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-            allAttributes.ForEach( a => entity.Attributes.AddOrIgnore( a.Key, a ) );
+            allAttributes.ForEach( a => entity.Attributes.TryAdd( a.Key, a ) );
 
             entity.AttributeValues = attributeValues;
         }
@@ -939,7 +938,7 @@ This can be due to multiple threads updating the same attribute at the same time
                         var propertyInfo = entityType.GetProperty( propertyName ) ?? entityType.GetProperties().Where( a => a.Name.Equals( propertyName, StringComparison.OrdinalIgnoreCase ) ).FirstOrDefault();
                         if ( propertyInfo != null )
                         {
-                            propertyValues.AddOrIgnore( propertyName.ToLower(), propertyInfo.GetValue( entity, null ).ToStringSafe() );
+                            propertyValues.TryAdd( propertyName.ToLower(), propertyInfo.GetValue( entity, null ).ToStringSafe() );
                         }
                     }
 
@@ -983,7 +982,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 // Add the value for each attribute defined on the entity type.
                 foreach ( var attribute in entityAttributes )
                 {
-                    if ( allAttributeValues.TryGetValue( ( entity.Id, attribute.Id ), out var value ) )
+                    if ( allAttributeValues.TryGetValue( (entity.Id, attribute.Id), out var value ) )
                     {
                         var attributeValueCache = new AttributeValueCache( attribute.Id, value.EntityId, value.Value, value.PersistedTextValue, value.PersistedHtmlValue, value.PersistedCondensedTextValue, value.PersistedCondensedHtmlValue, value.IsPersistedValueDirty );
 
@@ -1031,7 +1030,7 @@ This can be due to multiple threads updating the same attribute at the same time
                 }
 
                 entity.Attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-                entityAttributes.ForEach( a => entity.Attributes.AddOrIgnore( a.Key, a ) );
+                entityAttributes.ForEach( a => entity.Attributes.TryAdd( a.Key, a ) );
 
                 entity.AttributeValues = attributeValues;
             }
@@ -1105,7 +1104,7 @@ This can be due to multiple threads updating the same attribute at the same time
                     // If the qualifier value is blank, that means the qualification
                     // is simply "does this property exist".
                     var needle = string.IsNullOrEmpty( a.EntityTypeQualifierValue )
-                        ? a.EntityTypeQualifierValue.ToLower()
+                        ? a.EntityTypeQualifierColumn.ToLower()
                         : string.Format( "{0}|{1}", a.EntityTypeQualifierColumn.ToLower(), a.EntityTypeQualifierValue );
 
                     return entityQualifications.Contains( needle );
@@ -1209,7 +1208,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 .ToList();
             }
 
-            return items.ToDictionary( i => ( i.RealEntityId, i.AttributeId ), i => i );
+            return items.ToDictionary( i => (i.RealEntityId, i.AttributeId), i => i );
         }
 
         #endregion
@@ -1381,7 +1380,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
                 newAttribute.Order = attributeService.Queryable().Max( a => a.Order ) + 1;
             }
 
-            var fieldTypeCache = FieldTypeCache.Get( attribute.FieldTypeGuid ?? Guid.Empty );
+            var fieldTypeCache = FieldTypeCache.Get( attribute.RealFieldTypeGuid ?? attribute.FieldTypeGuid ?? Guid.Empty );
 
             // For now, if they try to make changes to an attribute that is using
             // an unknown field type we just can't do it. Even if they only change
@@ -1412,6 +1411,9 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
             newAttribute.PostHtml = attribute.PostHtml;
             newAttribute.FieldTypeId = fieldTypeCache.Id;
             newAttribute.DefaultValue = fieldTypeCache.Field.GetPrivateEditValue( attribute.DefaultValue, configurationValues );
+            newAttribute.IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging;
+            newAttribute.IconCssClass = attribute.IconCssClass;
+            newAttribute.AttributeColor = attribute.AttributeColor;
 
             var categoryGuids = attribute.Categories?.Select( c => c.Value.AsGuid() ).ToList();
             newAttribute.Categories.Clear();
@@ -1912,7 +1914,7 @@ INNER JOIN @AttributeId attributeId ON attributeId.[Id] = AV.[AttributeId]",
 
             attributeValue.UpdateValueAsProperties( rockContext );
 
-            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", (object) attributeValue.ValueAsBoolean ?? DBNull.Value );
+            var valueAsBooleanParameter = new SqlParameter( "@ValueAsBoolean", ( object ) attributeValue.ValueAsBoolean ?? DBNull.Value );
             var valueAsDateTimeParameter = new SqlParameter( "@ValueAsDateTime", ( object ) attributeValue.ValueAsDateTime ?? DBNull.Value );
             var valueAsNumericParameter = new SqlParameter( "@ValueAsNumeric", ( object ) attributeValue.ValueAsNumeric ?? DBNull.Value );
             var valueAsPersonIdParameter = new SqlParameter( "@ValueAsPersonId", ( object ) attributeValue.ValueAsPersonId ?? DBNull.Value );
@@ -2174,7 +2176,8 @@ INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
 
         /// <summary>
         /// Bulk updates the persisted values for all the values of an attribute
-        /// that have the specified value.
+        /// that have the specified value. This updates whether they are marked
+        /// as <see cref="AttributeValue.IsPersistedValueDirty"/> or not.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -2227,15 +2230,17 @@ WHERE [AttributeId] = @AttributeId
         /// <param name="attributeId">The attribute identifier.</param>
         /// <param name="valueIds">The value identifiers that should be updated.</param>
         /// <param name="persistedValues">The persisted values to use during the update.</param>
+        /// <param name="onlyDirty">Only update the <see cref="AttributeValue"/> objects if they marked dirty.</param>
         /// <param name="rockContext">The database context to use when updating.</param>
         /// <returns>The number of attribute value rows that were updated.</returns>
-        internal static int BulkUpdateAttributeValuePersistedValues( int attributeId, IEnumerable<int> valueIds, Rock.Field.PersistedValues persistedValues, RockContext rockContext )
+        internal static int BulkUpdateAttributeValuePersistedValues( int attributeId, IEnumerable<int> valueIds, Rock.Field.PersistedValues persistedValues, bool onlyDirty, RockContext rockContext )
         {
             var textValueParameter = new SqlParameter( "@TextValue", ( object ) persistedValues.TextValue ?? DBNull.Value );
             var htmlValueParameter = new SqlParameter( "@HtmlValue", ( object ) persistedValues.HtmlValue ?? DBNull.Value );
             var condensedTextValueParameter = new SqlParameter( "@CondensedTextValue", ( object ) persistedValues.CondensedTextValue ?? DBNull.Value );
             var condensedHtmlValueParameter = new SqlParameter( "@CondensedHtmlValue", ( object ) persistedValues.CondensedHtmlValue ?? DBNull.Value );
             var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
+            var onlyDirtyParameter = new SqlParameter( "@OnlyDirty", onlyDirty );
 
             // Initialize the ValueId SQL parameter.
             var attributeIdsTable = new DataTable();
@@ -2262,12 +2267,13 @@ SET [AV].[PersistedTextValue] = @TextValue,
 FROM [AttributeValue] AS [AV]
 INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]
 WHERE [AV].[AttributeId] = @AttributeId
-  AND [AV].[IsPersistedValueDirty] = 1",
+  AND (@OnlyDirty = 0 OR [AV].[IsPersistedValueDirty] = 1)",
                 textValueParameter,
                 htmlValueParameter,
                 condensedTextValueParameter,
                 condensedHtmlValueParameter,
                 attributeIdParameter,
+                onlyDirtyParameter,
                 valueIdParameter );
         }
 
@@ -2284,7 +2290,7 @@ WHERE [AV].[AttributeId] = @AttributeId
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public static void UpdateAttributeValueEntityReferences( AttributeValue attributeValue, RockContext rockContext )
         {
             var referencedEntitySet = rockContext.Set<AttributeValueReferencedEntity>();
@@ -2382,7 +2388,7 @@ WHERE [AV].[AttributeId] = @AttributeId
             // We only need to add rows if we have any referenced entities.
             if ( referenceDictionary.Any() )
             {
-                foreach (var kvpReference in referenceDictionary )
+                foreach ( var kvpReference in referenceDictionary )
                 {
                     var valueId = kvpReference.Key;
                     var referencedEntities = kvpReference.Value;
@@ -2436,7 +2442,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public static void UpdateAttributeEntityReferences( Rock.Model.Attribute attribute, RockContext rockContext )
         {
             var referencedEntitySet = rockContext.Set<AttributeReferencedEntity>();
@@ -2498,7 +2504,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public static void UpdateAttributeValuePersistedValues( Rock.Model.AttributeValue attributeValue, AttributeCache attribute )
         {
             var field = attribute?.FieldType?.Field;
@@ -2536,7 +2542,6 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         internal static void UpdateDependantAttributesAndValues( IReadOnlyList<int> attributeIds, int entityTypeId, int entityId, RockContext rockContext )
         {
             var qry = rockContext.Set<AttributeReferencedEntity>()
-                .AsNoTracking()
                 .Where( re => re.EntityTypeId == entityTypeId && re.EntityId == entityId );
 
             if ( attributeIds != null && attributeIds.Any() )
@@ -2648,7 +2653,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                         };
                     }
 
-                    BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, rockContext );
+                    BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, false, rockContext );
                 }
             }
         }
@@ -2927,7 +2932,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                         {
                             // No need to wrap the title in another div when there is no description.
                             panelHeader.Controls.Add( panelTitle );
-                        } 
+                        }
                     }
 
                     panel.Controls.Add( panelHeader );
@@ -3219,7 +3224,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                     Control control = parentControl?.FindControl( string.Format( "attribute_field_{0}", attributeKeyValue.Value.Id ) );
                     if ( control != null )
                     {
-                        result.AddOrIgnore( attributeKeyValue.Value, control );
+                        result.TryAdd( attributeKeyValue.Value, control );
                     }
                 }
             }

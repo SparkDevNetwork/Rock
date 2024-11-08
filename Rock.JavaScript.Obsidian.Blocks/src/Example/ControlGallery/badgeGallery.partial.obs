@@ -1,0 +1,50 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+        <Badge :tooltip="tooltip" :isCircle="isCircle" :badgeType="badgeType">{{ content }}</Badge>
+
+        <template #settings>
+            <div class="row">
+                <TextBox formGroupClasses="col-md-3" label="Content" v-model="content" />
+                <TextBox formGroupClasses="col-md-3" label="Tooltip" v-model="tooltip" />
+                <DropDownList formGroupClasses="col-md-3" label="Badge Style" :items="badgeTypes" v-model="badgeType" />
+                <CheckBox formGroupClasses="col-md-3" label="Circle Shape" v-model="isCircle" />
+            </div>
+            <p>
+                <strong>Note</strong>: The <code>tooltip</code> prop is not reactive due to the way
+                the tooltip plugin works.
+            </p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const content = ref("Badge");
+    const tooltip = ref("Hover Me");
+
+    const isCircle = ref(false);
+    const badgeType = ref<BadgeType>("success");
+
+    const badgeTypes = Object.entries(BadgeType).map(entry => {
+        return {
+            text: entry[0],
+            value: entry[1]
+        };
+    });
+
+    const importCode = getSfcControlImportPath("badge");
+    const exampleCode = computed(() => {
+        const badgeTypeProp = `badgeType="${badgeType.value}"`;
+        const tooltipProp = tooltip.value ? ` tooltip="${tooltip.value}"` : "";
+        const circleProp = isCircle.value ? ` isCircle` : "";
+        return `<Badge ${badgeTypeProp}${tooltipProp}${circleProp}>${content.value}</Badge>`;
+    });
+</script>

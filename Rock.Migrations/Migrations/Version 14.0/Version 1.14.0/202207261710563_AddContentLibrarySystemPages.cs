@@ -39,6 +39,7 @@ namespace Rock.Migrations
             //  Site: Rock RMS
             RockMigrationHelper.AddPage( true, "40875E7E-B912-43FF-892B-6161C21F130B","D65F783D-87A9-4CC9-8110-E83466A0EADB","Content Library Detail","","9EB5FFB8-8BD6-4F64-9A27-7131D9AC76BF","");
 
+#pragma warning disable CS0618 // Type or member is obsolete
             // Add Page Route
             //   Page:Content Libraries
             //   Route:admin/cms/content-libraries
@@ -48,6 +49,7 @@ namespace Rock.Migrations
             //   Page:Content Library Detail
             //   Route:admin/cms/content-libraries/{ContentLibraryId}
             RockMigrationHelper.AddPageRoute( "9EB5FFB8-8BD6-4F64-9A27-7131D9AC76BF","admin/cms/content-libraries/{ContentLibraryId}","3287058E-E1E1-4445-9A00-85CC98509AF5" );
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Add/Update BlockType
             //   Name: Content Library List

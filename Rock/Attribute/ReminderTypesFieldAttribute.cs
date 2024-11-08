@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+
+using Rock.Configuration;
 using Rock.Web.Cache;
 
 namespace Rock.Attribute
@@ -77,7 +79,7 @@ namespace Rock.Attribute
             set
             {
                 var entityTypeGuid = value.AsGuidOrNull();
-                var entityTypeId = entityTypeGuid.HasValue ? EntityTypeCache.GetId( entityTypeGuid.Value ) : null;
+                var entityTypeId = entityTypeGuid.HasValue && RockApp.Current.IsDatabaseAvailable() ? EntityTypeCache.GetId( entityTypeGuid.Value ) : null;
                 FieldConfigurationValues.AddOrReplace( ENTITY_TYPE_KEY, new Field.ConfigurationValue( entityTypeId?.ToString() ) );
             }
         }

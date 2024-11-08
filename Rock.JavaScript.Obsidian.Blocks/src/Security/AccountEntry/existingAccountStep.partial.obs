@@ -2,6 +2,8 @@
 <template>
     <NotificationBox v-if="options.caption" alertType="warning">{{ options.caption }}</NotificationBox>
 
+    <slot name="captcha" />
+
     <div class="actions">
         <RockButton
                     :btnType="BtnType.Link"

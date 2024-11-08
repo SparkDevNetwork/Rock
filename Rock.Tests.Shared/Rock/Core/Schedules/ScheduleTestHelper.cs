@@ -52,18 +52,31 @@ namespace Rock.Tests
                 throw new ArgumentException( nameof( dates ) );
             }
 
-            // Get the template calendar event.
-            var firstDate = dates.First().Date.Add( startTime.GetValueOrDefault() );
-            firstDate = DateTime.SpecifyKind( firstDate, DateTimeKind.Unspecified );
+            if ( ( startTime.HasValue || eventDuration.HasValue ) && !( startTime.HasValue && eventDuration.HasValue ) )
+            {
+                throw new Exception( "If StartTime or Duration is specified, both must be provided." );
+            }
 
-            //var startDateTime = dates.First().Add( startTime.GetValueOrDefault() );
+            // Get the template calendar event.
+            var firstDate = dates.First().Date;
+            if ( startTime.HasValue )
+            {
+                firstDate = firstDate.Add( startTime.Value );
+            }
+
+            firstDate = DateTime.SpecifyKind( firstDate, DateTimeKind.Unspecified );
 
             var calendarEvent = GetCalendarEvent( firstDate, eventDuration );
 
             var recurrenceDates = new PeriodList();
             foreach ( var datetime in dates )
             {
-                recurrenceDates.Add( new CalDateTime( datetime ) );
+                var startDateTime = datetime.Date;
+                if ( startTime.HasValue )
+                {
+                    startDateTime = startDateTime.Add( startTime.Value );
+                }
+                recurrenceDates.Add( new CalDateTime( startDateTime ) );
             }
 
             calendarEvent.RecurrenceDates.Add( recurrenceDates );
@@ -108,7 +121,6 @@ namespace Rock.Tests
                 throw new Exception( "The Event Start Date must have a Kind of Unspecified. Calendar Events do not store timezone information." );
             }
 
-            //eventDuration = eventDuration ?? new TimeSpan( 1, 0, 0 );
             var calendarEvent = new CalendarEvent
             {
                 DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day )
@@ -118,12 +130,13 @@ namespace Rock.Tests
             dtStart.HasTime = true;
             calendarEvent.DtStart = dtStart;
 
-            if ( eventDuration != null )
+            // Mimic Rock's ScheduleBuilder control, which defaults to a minimum of 1 second.
+            if ( !eventDuration.HasValue || eventDuration.Value.TotalSeconds < 1 )
             {
-                var dtEnd = dtStart.Add( eventDuration.Value );
-                dtEnd.HasTime = true;
-                calendarEvent.DtEnd = dtEnd;
+                eventDuration = new TimeSpan( 0, 0, 1 );
             }
+
+            calendarEvent.Duration = eventDuration.Value;
 
             return calendarEvent;
         }
@@ -131,23 +144,9 @@ namespace Rock.Tests
         public static CalendarEvent GetCalendarEvent( DateTimeOffset eventStartDate, TimeSpan? eventDuration )
         {
             // Convert the start date to Rock time.
-            var startDate = TimeZoneInfo.ConvertTime( eventStartDate, RockDateTime.OrgTimeZoneInfo );
-            eventDuration = eventDuration ?? new TimeSpan( 1, 0, 0 );
+            var rockStartDate = TimeZoneInfo.ConvertTime( eventStartDate, RockDateTime.OrgTimeZoneInfo );
 
-            var dtStart = new CalDateTime( startDate.DateTime );
-            dtStart.HasTime = true;
-
-            var dtEnd = dtStart.Add( eventDuration.Value );
-            dtEnd.HasTime = true;
-
-            var calendarEvent = new CalendarEvent
-            {
-                DtStart = dtStart,
-                DtEnd = dtEnd,
-                DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day ),
-            };
-
-            return calendarEvent;
+            return GetCalendarEvent( rockStartDate, eventDuration );
         }
 
         public static RecurrencePattern GetDailyRecurrencePattern( DateTimeOffset? recurrenceEndDate = null, int? occurrenceCount = null, int? interval = 1 )

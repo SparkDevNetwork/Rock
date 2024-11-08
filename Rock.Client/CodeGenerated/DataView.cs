@@ -56,6 +56,12 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public string HighlightColor { get; set; }
+
+        /// <summary />
+        public string IconCssClass { get; set; }
+
+        /// <summary />
         public bool IncludeDeceased { get; set; }
 
         /// <summary />
@@ -136,6 +142,8 @@ namespace Rock.Client
             this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.HighlightColor = source.HighlightColor;
+            this.IconCssClass = source.IconCssClass;
             this.IncludeDeceased = source.IncludeDeceased;
             this.IsSystem = source.IsSystem;
             this.LastRunDateTime = source.LastRunDateTime;

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -48,6 +48,23 @@ namespace Rock.Bus.Transport
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="InMemory"/> class.
+        /// </summary>
+        public InMemory()
+            : base()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InMemory" /> class.
+        /// </summary>
+        /// <param name="updateAttributes">if set to <c>true</c> then attributes will be loaded from database.</param>
+        public InMemory( bool updateAttributes )
+            : base( updateAttributes )
+        {
+        }
+
+        /// <summary>
         /// Gets the bus control.
         /// </summary>
         /// <param name="configureEndpoints">Call this within your configuration function to add the
@@ -69,8 +86,14 @@ namespace Rock.Bus.Transport
         /// <returns></returns>
         public override ISendEndpoint GetSendEndpoint( IBusControl bus, string queueName )
         {
-            var url = $"{bus.Address.AbsoluteUri}/{queueName}";
-            return bus.GetSendEndpoint( new Uri( url ) ).Result;
+            var address = GetDestinationAddressForQueue( bus, queueName );
+            return bus.GetSendEndpoint( address ).Result;
+        }
+
+        /// <inheritdoc/>
+        public override Uri GetDestinationAddressForQueue( IBusControl bus, string queueName )
+        {
+            return new Uri( $"{bus.Address.AbsoluteUri}/{queueName}" );
         }
     }
 }

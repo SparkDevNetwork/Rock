@@ -18,6 +18,7 @@ using System;
 using System.ComponentModel;
 using System.Web.UI;
 using Rock;
+using Rock.Address;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -32,12 +33,43 @@ namespace RockWeb.Blocks.Security
     [Category( "Security" )]
     [Description( "Block for a user to change their password." )]
 
-    [TextField( "Invalid Password Caption","", false, "The password is not valid.", "Captions", 0 )]
-    [TextField( "Success Caption","", false, "Your password has been changed", "Captions", 1 )]
-    [TextField( "Change Password Not Supported Caption", "", false, "Changing your password is not supported.", "Captions", 2 )]
+    [TextField( "Invalid Password Caption",
+        Key = AttributeKey.InvalidPasswordCaption,
+        Description = "",
+        IsRequired = false,
+        DefaultValue = "The password is not valid.",
+        Category = "Captions",
+        Order = 0 )]
+    [TextField( "Success Caption",
+        Key = AttributeKey.SuccessCaption,
+        Description = "",
+        IsRequired = false,
+        DefaultValue = "Your password has been changed",
+        Category = "Captions",
+        Order = 1 )]
+    [TextField( "Change Password Not Supported Caption",
+        Key = AttributeKey.ChangePasswordNotSupportedCaption,
+        Description = "",
+        IsRequired = false,
+        DefaultValue = "Changing your password is not supported.",
+        Category = "Captions",
+        Order = 2 )]
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 3 )]
     [Rock.SystemGuid.BlockTypeGuid( "3C12DE99-2D1B-40F2-A9B8-6FE7C2524B37" )]
     public partial class ChangePassword : Rock.Web.UI.RockBlock
     {
+        public static class AttributeKey
+        {
+            public const string InvalidPasswordCaption = "InvalidPasswordCaption";
+            public const string SuccessCaption = "SuccessCaption";
+            public const string ChangePasswordNotSupportedCaption = "ChangePasswordNotSupportedCaption";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
+        }
 
         #region Base Control Methods
 
@@ -47,8 +79,6 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbMessage.Visible = false;
 
             if ( CurrentUser == null || ! CurrentUser.IsAuthenticated )
@@ -60,6 +90,13 @@ namespace RockWeb.Blocks.Security
             {
                 if ( !Page.IsPostBack )
                 {
+                    var disableCaptchaSupport = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !cpCaptcha.IsAvailable;
+                    if ( disableCaptchaSupport )
+                    {
+                        pnlCaptcha.Visible = false;
+                        EnableForm();
+                    }
+
                     if ( PageParameter( "ChangeRequired" ).AsBoolean() )
                     {
                         nbMessage.NotificationBoxType = NotificationBoxType.Info;
@@ -75,6 +112,8 @@ namespace RockWeb.Blocks.Security
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -146,6 +185,25 @@ namespace RockWeb.Blocks.Security
             }
         }
 
+        /// <summary>
+        /// Handles the TokenReceived event of the CpCaptcha control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
+        protected void cpCaptcha_TokenReceived( object sender, Rock.Web.UI.Controls.Captcha.TokenReceivedEventArgs e )
+        {
+            pnlCaptcha.Visible = false;
+
+            if ( e.IsValid )
+            {
+                EnableForm();
+            }
+            else
+            {
+                DisplayMessage( "There was an issue processing your request. Please reload this page to try again. If the issue persists please contact us.", NotificationBoxType.Warning );
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -170,7 +228,14 @@ namespace RockWeb.Blocks.Security
             nbMessage.Visible = true;
         }
 
-        #endregion
+        /// <summary>
+        /// Enables the form after CAPTCHA has been solved (or disabled).
+        /// </summary>
+        private void EnableForm()
+        {
+            btnChange.Visible = true;
+        }
 
+        #endregion
     }
 }

@@ -36,7 +36,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<PersonalizedEntity> GetPersonalizedEntityRequestFilterQuery( int entityTypeId, int entityId )
         {
-            return ( this.Context as RockContext ).PersonalizedEntities
+            return ( this.Context as RockContext ).Set<PersonalizedEntity>()
                 .Where( a => a.PersonalizationType == PersonalizationType.RequestFilter && a.EntityTypeId == entityTypeId && a.EntityId == entityId );
         }
 
@@ -66,7 +66,7 @@ namespace Rock.Model
                 PersonalizationEntityId = personalizationEntityId
             } ).ToList();
 
-            rockContext.PersonalizedEntities.AddRange( personalizedEntitiesToInsert );
+            rockContext.Set<PersonalizedEntity>().AddRange( personalizedEntitiesToInsert );
             rockContext.SaveChanges();
         }
 
@@ -152,30 +152,52 @@ namespace Rock.Model
                 }
             }
 
-            // Check against Browser type and version
-            bool browserFiltersMatch = true;
-            foreach ( var browserRequestFilter in requestFilterConfiguration.BrowserRequestFilters )
+            if ( requestFilterConfiguration.BrowserRequestFilters.Any() )
             {
-                var isMatch = browserRequestFilter.IsMatch( request );
-                browserFiltersMatch = browserFiltersMatch || isMatch;
+                // Check against Browser type and version
+                bool browserFiltersMatch = false;
+                foreach ( var browserRequestFilter in requestFilterConfiguration.BrowserRequestFilters )
+                {
+                    var isMatch = browserRequestFilter.IsMatch( request );
+                    browserFiltersMatch = browserFiltersMatch || isMatch;
+                }
+
+                if ( !browserFiltersMatch )
+                {
+                    return false;
+                }
             }
 
-            if ( !browserFiltersMatch )
+            if ( requestFilterConfiguration.IPAddressRequestFilters.Any() )
             {
-                return false;
+                // Check based on IPAddress Range
+                bool ipAddressFiltersMatch = false;
+                foreach ( var ipAddressRequestFilter in requestFilterConfiguration.IPAddressRequestFilters )
+                {
+                    var isMatch = ipAddressRequestFilter.IsMatch( request );
+                    ipAddressFiltersMatch = ipAddressFiltersMatch || isMatch;
+                }
+
+                if ( !ipAddressFiltersMatch )
+                {
+                    return false;
+                }
             }
 
-            // Check based on IPAddress Range
-            bool ipAddressFiltersMatch = true;
-            foreach ( var ipAddressRequestFilter in requestFilterConfiguration.IPAddressRequestFilters )
+            if ( requestFilterConfiguration.GeolocationRequestFilters.Any() )
             {
-                var isMatch = ipAddressRequestFilter.IsMatch( request );
-                ipAddressFiltersMatch = ipAddressFiltersMatch || isMatch;
-            }
+                // Check against geolocation
+                bool geolocationFiltersMatch = false;
+                foreach ( var geolocationRequestFilter in requestFilterConfiguration.GeolocationRequestFilters )
+                {
+                    var isMatch = geolocationRequestFilter.IsMatch( request );
+                    geolocationFiltersMatch = geolocationFiltersMatch || isMatch;
+                }
 
-            if ( !ipAddressFiltersMatch )
-            {
-                return false;
+                if ( !geolocationFiltersMatch )
+                {
+                    return false;
+                }
             }
 
             // Check against Environment

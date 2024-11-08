@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
@@ -180,4 +181,22 @@ namespace Rock.Model
 
         #endregion Entity Properties
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// AnalyticsSourceGivingUnit Configuration Class
+    /// </summary>
+    public partial class AnalyticsSourceGivingUnitConfiguration : EntityTypeConfiguration<AnalyticsSourceGivingUnit>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AnalyticsSourceGivingUnitConfiguration"/> class.
+        /// </summary>
+        public AnalyticsSourceGivingUnitConfiguration()
+        {
+            // Empty constructor. This is required to tell EF that this model exists.
+        }
+    }
+
+    #endregion Entity Configuration
 }

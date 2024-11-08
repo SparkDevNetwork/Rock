@@ -131,8 +131,11 @@ namespace Rock.Model
             target.IsUrgent = source.IsUrgent;
             target.LanguageValueId = source.LanguageValueId;
             target.LastName = source.LastName;
+            target.ModerationFlags = source.ModerationFlags;
+            target.OriginalRequest = source.OriginalRequest;
             target.PrayerCount = source.PrayerCount;
             target.RequestedByPersonAliasId = source.RequestedByPersonAliasId;
+            target.SentimentEmotionValueId = source.SentimentEmotionValueId;
             target.Text = source.Text;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;

@@ -176,7 +176,7 @@ namespace Rock.Financial
 
                     if ( financialStatementGeneratorOptions.DataViewId.HasValue )
                     {
-                        var dataView = new DataViewService( new RockContext() ).Get( financialStatementGeneratorOptions.DataViewId.Value );
+                        var dataView = DataViewCache.Get( financialStatementGeneratorOptions.DataViewId.Value );
                         if ( dataView != null )
                         {
                             var personList = dataView.GetQuery().OfType<Rock.Model.Person>().Select( a => new { a.Id, a.GivingGroupId } ).ToList();
@@ -300,7 +300,7 @@ namespace Rock.Financial
             using ( var activity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement" ) )
             {
 
-                activity?.AddTag( "rock-activity-type", "generate-statement" );
+                activity?.AddTag( "rock.activity_type", "generate-statement" );
 
                 // START PREP
                 var prepActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Statement Prep" );
@@ -343,18 +343,21 @@ namespace Rock.Financial
                     var transactionSettings = reportSettings.TransactionSettings;
                     var financialTransactionQry = FinancialStatementGeneratorHelper.GetFinancialTransactionQuery( financialStatementGeneratorOptions, rockContext, false );
 
+                    IQueryable<Person> personQry = null;
                     var personList = new List<Person>();
                     Person person = null;
                     if ( personId.HasValue )
                     {
-                        person = new PersonService( rockContext ).Queryable( true, true ).Include( a => a.Aliases ).Include( a => a.PrimaryFamily ).Where( a => a.Id == personId.Value ).FirstOrDefault();
+                        personQry = new PersonService( rockContext ).Queryable( true, true ).Where( a => a.Id == personId.Value );
+                        person = personQry.Include( a => a.PrimaryFamily ).FirstOrDefault();
                         personList.Add( person );
                     }
                     else
                     {
                         // get transactions for all the persons in the specified group that have specified that group as their GivingGroup
                         GroupMemberService groupMemberService = new GroupMemberService( rockContext );
-                        personList = groupMemberService.GetByGroupId( groupId, true ).Where( a => a.Person.GivingGroupId == groupId ).Select( s => s.Person ).Include( a => a.Aliases ).Include( a => a.PrimaryFamily ).ToList();
+                        personQry = groupMemberService.GetByGroupId( groupId, true ).Where( a => a.Person.GivingGroupId == groupId ).Select( s => s.Person );
+                        personList = personQry.Include( a => a.PrimaryFamily ).ToList();
                         person = personList.FirstOrDefault();
                     }
 
@@ -363,27 +366,44 @@ namespace Rock.Financial
 
 
                     List<int> personAliasIds;
-                    using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Person Alias Ids" ) ) {
-                        personAliasIds = personList.SelectMany( a => a.Aliases.Select( x => x.Id ) ).ToList();
+                    using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Person Alias Ids" ) )
+                    {
+                        /*
+                            1/4/2024 - JPH
 
-                        if ( personAliasIds.Count == 1 )
-                        {
-                            var personAliasId = personAliasIds[0];
-                            financialTransactionQry = financialTransactionQry.Where( a => a.AuthorizedPersonAliasId.Value == personAliasId );
-                        }
-                        else
-                        {
-                            financialTransactionQry = financialTransactionQry.Where( a => personAliasIds.Contains( a.AuthorizedPersonAliasId.Value ) );
-                        }
+                            The following 2 usages of ".Contains(...)" result in JOINs rather than WHERE...IN clauses, since they're
+                            leveraging an IQueryable<Person> instead of the List<int>[PersonAlias.Id] we were previously using.
+
+                            Reason: Statement Generator times out when generating statements for people with an excessive number of
+                                    person alias records.
+                        */
+                        var personIdQry = personQry.Select( p => p.Id );
+
+                        personAliasIds = new PersonAliasService( rockContext )
+                            .Queryable()
+                            .Where( pa => personIdQry.Contains( pa.PersonId ) )
+                            .Select( pa => pa.Id )
+                            .ToList();
+
+                        financialTransactionQry = financialTransactionQry.Where( a => personIdQry.Contains( a.AuthorizedPersonAlias.PersonId ) );
                     }
 
                     using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Configure Transaction Query" ) )
                     {
                         financialTransactionQry = financialTransactionQry.Include( a => a.FinancialPaymentDetail )
-                        .Include( a => a.FinancialPaymentDetail.CurrencyTypeValue )
-                        .Include( a => a.TransactionDetails )
-                        .Include( a => a.TransactionDetails.Select( x => x.Account ) )
-                        .OrderBy( a => a.TransactionDateTime );
+                            .Include( a => a.FinancialPaymentDetail.CurrencyTypeValue )
+                            .Include( a => a.TransactionDetails )
+                            .Include( a => a.TransactionDetails.Select( x => x.Account ) );
+
+                        if ( transactionSettings.HideRefundedTransactions )
+                        {
+                            // Eager-load refunds so we can filter against them below.
+                            financialTransactionQry = financialTransactionQry
+                                .Include( a => a.RefundDetails )
+                                .Include( a => a.Refunds );
+                        }
+
+                        financialTransactionQry = financialTransactionQry.OrderBy( a => a.TransactionDateTime );
                     }
 
                     List<FinancialTransaction> financialTransactionsList;
@@ -397,15 +417,15 @@ namespace Rock.Financial
                         var transactionAccountIds = transactionSettings.GetIncludedAccountIds( rockContext );
 
                         foreach ( var financialTransaction in financialTransactionsList )
-                    {
-                        if ( transactionAccountIds.Any() )
                         {
-                            // remove any Accounts that were not included (in case there was a mix of included and not included accounts in the transaction)
-                            financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.Where( a => transactionAccountIds.Contains( a.AccountId ) ).ToList();
-                        }
+                            if ( transactionAccountIds.Any() )
+                            {
+                                // remove any Accounts that were not included (in case there was a mix of included and not included accounts in the transaction)
+                                financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.Where( a => transactionAccountIds.Contains( a.AccountId ) ).ToList();
+                            }
 
-                        financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.OrderBy( a => a.Account.Order ).ThenBy( a => a.Account.PublicName ).ToList();
-                    }
+                            financialTransaction.TransactionDetails = financialTransaction.TransactionDetails.OrderBy( a => a.Account.Order ).ThenBy( a => a.Account.PublicName ).ToList();
+                        }
                     }
 
                     var lavaTemplateLava = financialStatementTemplate.ReportTemplate;
@@ -493,15 +513,22 @@ namespace Rock.Financial
                         // get the location that was specified for the recipient
                         mailingAddress = new LocationService( rockContext ).Get( locationId.Value );
                     }
-                    /*  JME 9/22/2023
+                    /*  
+                        12/7/2023 - NA
+                        We discoverd the 'else' below was compensating for the fact that the ContributionStatementGenerator
+                        block was failing to include the LocationId in the financialStatementGeneratorRecipientRequest.
+                        Therefore, we're fixing it in that block.
+
+                        9/22/2023 - JME 
                         This query below was taking 4 seconds on the Life.Church server and appears to be redundant to the original query. Said
                         a different way, if the request above didn't find a location this one won't either.
-                    else
-                    {
-                        // for backwards compatibility, get the first address
-                        IQueryable<GroupLocation> groupLocationsQry = FinancialStatementGeneratorHelper.GetGroupLocationQuery( rockContext );
-                        mailingAddress = groupLocationsQry.Where( a => a.GroupId == groupId ).Select( a => a.Location ).FirstOrDefault();
-                    }
+
+                        else
+                        {
+                            // for backwards compatibility, get the first address
+                            IQueryable<GroupLocation> groupLocationsQry = FinancialStatementGeneratorHelper.GetGroupLocationQuery( rockContext );
+                            mailingAddress = groupLocationsQry.Where( a => a.GroupId == groupId ).Select( a => a.Location ).FirstOrDefault();
+                        }
                     */
 
                     mergeFields.Add( MergeFieldKey.MailingAddress, mailingAddress );
@@ -534,32 +561,100 @@ namespace Rock.Financial
 
                     var transactionDetailListAll = financialTransactionsList.SelectMany( a => a.TransactionDetails ).ToList();
 
-                    if ( transactionSettings.HideRefundedTransactions && transactionDetailListAll.Any( a => a.Amount < 0 ) )
+                    if ( transactionSettings.HideRefundedTransactions )
                     {
-                        var allRefunds = transactionDetailListAll.SelectMany( a => a.Transaction.Refunds ).ToList();
+                        var allRefunds = transactionDetailListAll
+                            // Refunds can be represented as top-level transactions within the list
+                            // (if a given transaction's RefundDetails property is populated).
+                            .Where( a => a.Transaction.RefundDetails != null )
+                            .Select( a => a.Transaction.RefundDetails )
+                            // Refunds can also be represented as children of transactions within the list
+                            // (if a given transaction's Refunds collection is populated).
+                            .Union( transactionDetailListAll.SelectMany( a => a.Transaction.Refunds ) )
+                            .ToList();
+
+                        // It's possible a refund was queried as both a top-level transaction AND as a
+                        // child of another transaction. Keep track of those we've already processed.
+                        var processedRefundIds = new List<int>();
+
                         foreach ( var refund in allRefunds )
                         {
-                            foreach ( var refundedOriginalTransactionDetail in refund.OriginalTransaction.TransactionDetails )
+                            if ( processedRefundIds.Contains( refund.Id ) )
                             {
-                                // remove the refund's original TransactionDetails from the results
-                                if ( transactionDetailListAll.Contains( refundedOriginalTransactionDetail ) )
+                                continue;
+                            }
+
+                            /*
+                                7/9/2024 - JPH
+
+                                ------------------------------------------------------
+                                 For each of a refund's original transaction details:
+                                ------------------------------------------------------
+
+                                    1. If the original transaction detail is in the current list of transaction details
+                                       AND the refund has any [new] transaction details whose account IDs match that of the original:
+
+                                        a. Reduce the original transaction detail's amount by the sum of matching refunds.
+                                        b. If the original transaction detail's amount is now zero (or less), remove it from the current list.
+
+                                ---------------------------------------------------
+                                 For each of a refund's [new] transaction details:
+                                ---------------------------------------------------
+
+                                    2. If the [new] transaction detail is in the current list of transaction details:
+
+                                        a. Remove it from the current list.
+
+                                Reason:Contribution Statement Generator Block Not Hiding Refunds for Transactions in Differing Years
+                                https://github.com/SparkDevNetwork/Rock/issues/5712
+                             */
+
+                            var originalTransactionDetails = refund.OriginalTransaction?.TransactionDetails ?? new List<FinancialTransactionDetail>();
+                            var refundTransactionDetails = refund.FinancialTransaction?.TransactionDetails ?? new List<FinancialTransactionDetail>();
+
+                            foreach ( var originalTransactionDetail in originalTransactionDetails )
+                            {
+                                var currentTransactionDetail = transactionDetailListAll.FirstOrDefault( a => a.Id == originalTransactionDetail.Id );
+                                if ( currentTransactionDetail == null )
                                 {
-                                    foreach ( var refundDetailId in refund.FinancialTransaction.TransactionDetails.Select( a => a.Id ) )
-                                    {
-                                        var refundDetail = transactionDetailListAll.FirstOrDefault( a => a.Id == refundDetailId );
-                                        if ( refundDetail != null )
-                                        {
-                                            // If this is full refund, remove it from the list of transactions.
-                                            // If this is a partial refund, we'll need to keep it otherwise the totals won't match.
-                                            if ( ( refundDetail.AccountId == refundedOriginalTransactionDetail.AccountId ) && ( refundDetail.Amount + refundedOriginalTransactionDetail.Amount == 0 ) )
-                                            {
-                                                transactionDetailListAll.Remove( refundDetail );
-                                                transactionDetailListAll.Remove( refundedOriginalTransactionDetail );
-                                            }
-                                        }
-                                    }
+                                    // The refund's original transaction detail is not in the current list.
+                                    continue;
+                                }
+
+                                // Sum the amounts of all refund transaction details whose account IDs match that of the current transaction detail.
+                                var refundAmount = refundTransactionDetails
+                                    .Where( a => a.AccountId == currentTransactionDetail.AccountId )
+                                    .Sum( a => a.Amount );
+
+                                if ( refundAmount == 0 )
+                                {
+                                    continue;
+                                }
+
+                                // Reduce the current transaction detail's amount by that of the matching refund
+                                // (note that refund amounts should always be negative, so we'll add amounts here).
+                                currentTransactionDetail.Amount += refundAmount;
+
+                                // If the current transaction amount is now zero (or less), remove it from the list.
+                                if ( currentTransactionDetail.Amount <= 0 )
+                                {
+                                    transactionDetailListAll.Remove( currentTransactionDetail );
                                 }
                             }
+
+                            foreach ( var refundTransactionDetail in refundTransactionDetails )
+                            {
+                                var currentTransactionDetail = transactionDetailListAll.FirstOrDefault( a => a.Id == refundTransactionDetail.Id );
+                                if ( currentTransactionDetail == null )
+                                {
+                                    // The refund's [new] transaction detail is not in the current list.
+                                    continue;
+                                }
+
+                                transactionDetailListAll.Remove( refundTransactionDetail );
+                            }
+
+                            processedRefundIds.Add( refund.Id );
                         }
                     }
 
@@ -821,7 +916,7 @@ namespace Rock.Financial
             {
 
                 int? doNotSendGivingStatementAttributeId = AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.Id;
-                var defaultIsOptOut = (AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.DefaultValue).AsBoolean();
+                var defaultIsOptOut = ( AttributeCache.Get( Rock.SystemGuid.Attribute.PERSON_DO_NOT_SEND_GIVING_STATEMENT.AsGuid() )?.DefaultValue ).AsBoolean();
 
                 if ( !doNotSendGivingStatementAttributeId.HasValue )
                 {
@@ -1508,7 +1603,7 @@ namespace Rock.Financial
             /// <value>
             /// The percent complete.
             /// </value>
-            public int PercentComplete => ( int ) ( ( this.AmountGiven * 100 ) / this.AmountPledged );
+            public int PercentComplete => ( int ) ( ( this.AmountGiven * 100 ) / ( this.AmountPledged > 0 ? this.AmountPledged : 1 ) );
 
             /// <summary>
             /// Gets or sets the amount remaining.

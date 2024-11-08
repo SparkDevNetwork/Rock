@@ -15,20 +15,24 @@
 // </copyright>
 //
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Communication.SmsActions;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Communications.Sms
+namespace Rock.Tests.Integration.Modules.Communications
 {
     /// <summary>
     /// Initialize test data for the Steps feature of Rock.
     /// </summary>
     [TestClass]
-    public class SmsTests
+    [TestCategory( TestFeatures.Communications )]
+    public class SmsTests : DatabaseTestsBase
     {
         public static class Constants
         {
@@ -38,7 +42,6 @@ namespace Rock.Tests.Integration.Communications.Sms
         }
 
         [TestMethod]
-        [TestProperty( "Feature", TestFeatures.Communications )]
         public void IncomingSms_FromUnknownMobileNumber_CreatesNamelessPerson()
         {
             var message = this.GetTestIncomingSmsMessage( TestGuids.Communications.UnknownPerson1MobileNumber );
@@ -77,7 +80,6 @@ namespace Rock.Tests.Integration.Communications.Sms
         /// An incoming SMS sent from a mobile number that has been previously added as a Nameless Person record, should return the same Nameless Person record.
         /// </summary>
         [TestMethod]
-        [TestProperty( "Feature", TestFeatures.Communications )]
         public void IncomingSms_FromKnownNamelessPerson_ReturnsMatchedPerson()
         {
             var dataContext = new RockContext();
@@ -104,7 +106,6 @@ namespace Rock.Tests.Integration.Communications.Sms
         /// An incoming SMS sent from a mobile number that has been previously added as a Nameless Person record, should return the same Nameless Person record.
         /// </summary>
         [TestMethod]
-        [TestProperty( "Feature", TestFeatures.Communications )]
         public void IncomingSms_FromKnownNamedPerson_ReturnsMatchedPerson()
         {
             var message = this.GetTestIncomingSmsMessage( TestGuids.Communications.MobilePhoneTedDecker );
@@ -120,7 +121,6 @@ namespace Rock.Tests.Integration.Communications.Sms
             Assert.That.AreEqual( namedPerson1.Guid, TestGuids.Communications.TedDeckerPersonGuid.AsGuid(), "Incorrect Person record retrieved by mobile phone number." );
         }
         [TestMethod]
-        [TestProperty( "Feature", TestFeatures.Communications )]
         public void NamelessPersonRecordType_GetDefaultPersonQuery_DoesNotIncludeNameless()
         {
             // Verify at least one NamelessPerson Record Type exists.

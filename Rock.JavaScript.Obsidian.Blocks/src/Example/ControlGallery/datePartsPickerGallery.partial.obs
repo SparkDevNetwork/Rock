@@ -1,0 +1,73 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <DatePartsPicker label="Date"
+                         v-model="value"
+                         :showYear="showYear"
+                         :hideDay="hideDay"
+                         :allowFutureDates="allowFutureDates"
+                         :futureYearCount="futureYearCount ?? undefined"
+                         :startYear="startYear ?? undefined"
+                         :disabled="disabled" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox label="Show Year" v-model="showYear" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Hide Day" v-model="hideDay" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Allow Future Dates" v-model="allowFutureDates" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <NumberBox label="Future Year Count" v-model="futureYearCount" />
+                </div>
+                <div class="col-md-3">
+                    <NumberBox label="Start Year" v-model="startYear" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Disabled" v-model="disabled" />
+                </div>
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Number Box</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DatePartsPicker from "@Obsidian/Controls/datePartsPicker.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
+
+    const value = ref<DatePartsPickerValue>({
+        month: 1,
+        day: 1,
+        year: 2020
+    });
+
+    const showYear = ref(true);
+    const hideDay = ref(false);
+    const allowFutureDates = ref(false);
+    const futureYearCount = ref<number | null>(50);
+    const startYear = ref<number | null>(1980);
+    const disabled = ref(false);
+
+    const importCode = getSfcControlImportPath("datePartsPicker");
+    const exampleCode = computed(() => {
+        return `<DatePartsPicker label="Date" v-model="value" :allowFutureDates="${allowFutureDates.value}" />`;
+    });
+</script>

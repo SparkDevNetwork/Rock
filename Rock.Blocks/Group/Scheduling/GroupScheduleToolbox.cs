@@ -15,6 +15,12 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Blocks.Group.Scheduling;
@@ -24,12 +30,6 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
 
 namespace Rock.Blocks.Group.Scheduling
 {
@@ -163,7 +163,7 @@ namespace Rock.Blocks.Group.Scheduling
 
     [BooleanField( "Scheduler Receive Confirmation Emails",
         Key = AttributeKey.SchedulerReceiveConfirmationEmails,
-        Description = @"When enabled, the scheduler will receive an email for each confirmation or decline. Note that if a Group's ""Schedule Cancellation Person to Notify"" is defined, that person will automatically receive an email for schedules that are declined or cancelled, regardless of this setting.",
+        Description = @"When enabled, the scheduler will receive an email for each confirmation or decline. Note that if a Group's ""Schedule Coordinator"" is defined, that person will automatically receive emails based on the Group/GroupType's configured notification options (e.g., accept, decline, self-schedule), regardless of this setting.",
         DefaultBooleanValue = false,
         Category = AttributeCategory.CurrentSchedule,
         Order = 2,
@@ -171,7 +171,7 @@ namespace Rock.Blocks.Group.Scheduling
 
     [SystemCommunicationField( "Scheduling Response Email",
         Key = AttributeKey.SchedulingResponseEmail,
-        Description = @"The system communication that will be used for sending emails to the scheduler for each confirmation or decline. If a Group's ""Schedule Cancellation Person to Notify"" is defined, this system communication will also be used to send those emails for schedules that are declined or cancelled.",
+        Description = @"The system communication used to send emails to the scheduler for each confirmation or decline. If a Group's ""Schedule Coordinator"" is defined, this will also be used when sending emails based on the Group/GroupType's configured notification options (e.g., accept, decline, self-schedule).",
         DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SCHEDULING_RESPONSE,
         Category = AttributeCategory.CurrentSchedule,
         Order = 3,
@@ -507,7 +507,7 @@ namespace Rock.Blocks.Group.Scheduling
                 return toolboxData;
             }
 
-            if ( config.SchedulableGroupLoadingMode != SchedulableGroupLoadingMode.DotNoLoad )
+            if ( config.SchedulableGroupLoadingMode != SchedulableGroupLoadingMode.DoNotLoad )
             {
                 toolboxData.SchedulableGroups = GetSchedulableGroups( rockContext, toolboxData.SelectedPerson, config.SchedulableGroupLoadingMode );
 
@@ -1147,14 +1147,8 @@ namespace Rock.Blocks.Group.Scheduling
                 var attendanceService = new AttendanceService( rockContext );
 
                 // Get all the supporting data we'll need to operate below.
-                // Note that some of these entities aren't directly needed here, but will be needed if sending emails.
                 var attendance = attendanceService
-                    .Queryable()
-                    .Include( a => a.Occurrence.Group.GroupType )
-                    .Include( a => a.Occurrence.Group.ScheduleCancellationPersonAlias.Person )
-                    .Include( a => a.Occurrence.Schedule )
-                    .Include( a => a.PersonAlias.Person )
-                    .Include( a => a.ScheduledByPersonAlias.Person )
+                    .GetWithScheduledPersonResponseData()
                     .FirstOrDefault( a => a.Guid == bag.EntityGuid );
 
                 if ( attendance == null )
@@ -1200,7 +1194,7 @@ namespace Rock.Blocks.Group.Scheduling
 
                 if ( shouldTrySendingResponseEmails )
                 {
-                    TrySendScheduledPersonResponseEmails( toolboxData.SelectedPerson.Id, attendance, attendanceService, bag.ActionType );
+                    TrySendScheduledPersonResponseEmails( attendance, bag.ActionType );
                 }
             }
 
@@ -1215,39 +1209,45 @@ namespace Rock.Blocks.Group.Scheduling
         }
 
         /// <summary>
-        /// Tries to send response emails to "scheduled by person" and/or "cancellation person".
+        /// Tries to send response emails to "scheduled by person" and/or "group schedule coordinator person".
         /// </summary>
-        /// <param name="scheduledPersonId">The scheduled person identifier.</param>
-        /// <param name="attendance">The attendance record for which to send response emails.</param>S
-        /// <param name="attendanceService">The initialized attendance service to be used to send response emails.</param>
+        /// <param name="attendance">The attendance record for which to send response emails.</param>
         /// <param name="actionType">The action type being performed against the attendance record.</param>
-        private void TrySendScheduledPersonResponseEmails( int scheduledPersonId, Attendance attendance, AttendanceService attendanceService, ToolboxScheduleRowActionType actionType )
+        private void TrySendScheduledPersonResponseEmails( Attendance attendance, ToolboxScheduleRowActionType actionType )
         {
             var schedulingResponseEmailGuid = GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuidOrNull();
+            if ( !schedulingResponseEmailGuid.HasValue )
+            {
+                return;
+            }
 
-            // Send "accept" and "decline" emails to scheduled-by person (defined on the attendance record).
+            // Send "accept" and "cancel/decline" emails to scheduled-by person (defined on the attendance record).
             var scheduledByPerson = attendance.ScheduledByPersonAlias?.Person;
             var shouldSendScheduledByPersonEmail = scheduledByPerson != null
-                && schedulingResponseEmailGuid.HasValue
-                && actionType != ToolboxScheduleRowActionType.Cancel
-                && GetAttributeValue( AttributeKey.SchedulerReceiveConfirmationEmails ).AsBoolean();
+                && GetAttributeValue( AttributeKey.SchedulerReceiveConfirmationEmails ).AsBoolean()
+                && (
+                    actionType == ToolboxScheduleRowActionType.Accept
+                    || actionType == ToolboxScheduleRowActionType.Cancel
+                    || actionType == ToolboxScheduleRowActionType.Decline
+                );
 
-            // Send "decline" and "cancel" emails to cancellation person (defined on the group record).
-            var groupScheduleCancellationPerson = attendance.Occurrence?.Group?.ScheduleCancellationPersonAlias?.Person;
-            var shouldSendCancellationPersonEmail = groupScheduleCancellationPerson != null
-                && ( !shouldSendScheduledByPersonEmail || scheduledByPerson.Id != groupScheduleCancellationPerson.Id ) // Prevent duplicate email.
-                && schedulingResponseEmailGuid.HasValue
-                && actionType != ToolboxScheduleRowActionType.Accept;
+            // Send emails to group schedule coordinator person based on group/group type configuration.
+            var groupScheduleCoordinatorPerson = attendance.Occurrence?.Group?.ScheduleCoordinatorPersonAlias?.Person;
+            var scheduleCoordinatorNotificationType = GetScheduleCoordinatorNotificationTypeForActionType( actionType );
+            var shouldSendCoordinatorPersonEmail = groupScheduleCoordinatorPerson != null
+                && ( !shouldSendScheduledByPersonEmail || scheduledByPerson.Id != groupScheduleCoordinatorPerson.Id ) // Prevent duplicate email.
+                && scheduleCoordinatorNotificationType != ScheduleCoordinatorNotificationType.None
+                && attendance.Occurrence.Group.ShouldSendScheduleCoordinatorNotificationType( scheduleCoordinatorNotificationType );
 
             void SendEmail( Person recipient )
             {
                 try
                 {
-                    attendanceService.SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipient );
+                    AttendanceService.SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipient );
                 }
                 catch ( Exception ex )
                 {
-                    var message = $"{nameof( GroupScheduleToolbox )}: Unable to send scheduled person response email to {recipient.FullName} (Attendance ID = {attendance.Id}, Scheduled Person ID = {scheduledPersonId}, Recipient Person ID = {recipient.Id}).";
+                    var message = $"{nameof( GroupScheduleToolbox )}: Unable to send scheduled person response email to {recipient.FullName} (Attendance ID = {attendance.Id}, Scheduled Person ID = {attendance.PersonAlias?.Person?.Id}, Recipient Person ID = {recipient.Id}).";
 
                     ExceptionLogService.LogException( new Exception( message, ex ) );
                 }
@@ -1258,9 +1258,30 @@ namespace Rock.Blocks.Group.Scheduling
                 SendEmail( scheduledByPerson );
             }
 
-            if ( shouldSendCancellationPersonEmail )
+            if ( shouldSendCoordinatorPersonEmail )
             {
-                SendEmail( groupScheduleCancellationPerson );
+                SendEmail( groupScheduleCoordinatorPerson );
+            }
+        }
+
+        /// <summary>
+        /// Gets the corresponding schedule coordinator notification type for the provided toolbox schedule row action type.
+        /// </summary>
+        /// <param name="actionType">The toolbox schedule row action type.</param>
+        /// <returns>The corresponding schedule coordinator notification type for the provided toolbox schedule row action type.</returns>
+        private ScheduleCoordinatorNotificationType GetScheduleCoordinatorNotificationTypeForActionType( ToolboxScheduleRowActionType actionType )
+        {
+            switch ( actionType )
+            {
+                case ToolboxScheduleRowActionType.Accept:
+                    return ScheduleCoordinatorNotificationType.Accept;
+                case ToolboxScheduleRowActionType.Decline:
+                case ToolboxScheduleRowActionType.Cancel:
+                    return ScheduleCoordinatorNotificationType.Decline;
+                case ToolboxScheduleRowActionType.SelfSchedule:
+                    return ScheduleCoordinatorNotificationType.SelfSchedule;
+                default:
+                    return ScheduleCoordinatorNotificationType.None;
             }
         }
 
@@ -1299,13 +1320,8 @@ namespace Rock.Blocks.Group.Scheduling
             var attendanceService = new AttendanceService( rockContext );
 
             // Get all the supporting data we'll need to operate below.
-            // Note that some of these entities aren't directly needed here, but will be needed if sending emails.
             var attendance = attendanceService
-                .Queryable()
-                .Include( a => a.Occurrence.Group.ScheduleCancellationPersonAlias.Person )
-                .Include( a => a.Occurrence.Schedule )
-                .Include( a => a.PersonAlias.Person )
-                .Include( a => a.ScheduledByPersonAlias.Person )
+                .GetWithScheduledPersonResponseData()
                 .FirstOrDefault( a => a.Guid == bag.AttendanceGuid );
 
             if ( attendance == null )
@@ -1344,7 +1360,7 @@ namespace Rock.Blocks.Group.Scheduling
                 ? ToolboxScheduleRowActionType.Cancel
                 : ToolboxScheduleRowActionType.Decline;
 
-            TrySendScheduledPersonResponseEmails( toolboxData.SelectedPerson.Id, attendance, attendanceService, actionType );
+            TrySendScheduledPersonResponseEmails( attendance, actionType );
         }
 
         /// <summary>
@@ -1374,8 +1390,8 @@ namespace Rock.Blocks.Group.Scheduling
             }
 
             var today = RockDateTime.Today;
-            var startDate = bag.StartDate.Value.LocalDateTime;
-            var endDate = bag.EndDate.Value.LocalDateTime;
+            var startDate = bag.StartDate.Value.Date;
+            var endDate = bag.EndDate.Value.Date;
             if ( startDate < today && endDate < today )
             {
                 errorMessage = "Please enter a current or future date range.";
@@ -1676,7 +1692,7 @@ namespace Rock.Blocks.Group.Scheduling
             DateTime? scheduleStartDate = null;
             if ( bag.ScheduleStartDate.HasValue )
             {
-                scheduleStartDate = bag.ScheduleStartDate.Value.LocalDateTime;
+                scheduleStartDate = bag.ScheduleStartDate.Value.Date;
             }
 
             groupMember.ScheduleReminderEmailOffsetDays = bag.ScheduleReminderEmailOffsetDays.AsIntegerOrNull();
@@ -1756,7 +1772,7 @@ namespace Rock.Blocks.Group.Scheduling
                 .AsNoTracking()
                 .Where( gl => gl.GroupId == groupId )
                 .SelectMany( gl => gl.Schedules )
-                .Where( s => s.IsPublic == true )
+                .Where( s => s.IsActive && s.IsPublic == true )
                 .Distinct()
                 .ToList();
 
@@ -2128,12 +2144,15 @@ namespace Rock.Blocks.Group.Scheduling
                 locationIdsByGuid: ( Dictionary<Guid, int?> ) null
             );
 
-            // Ensure the selected person meets group requirements.
-            if ( new GroupService( rockContext )
-                    .GroupMembersNotMeetingRequirements( selectedGroup, false, false )
-                    .Any( gm => gm.Key.PersonId == selectedPersonId ) )
+            if ( selectedGroup.SchedulingMustMeetRequirements )
             {
-                return response;
+                // Ensure the selected person meets group requirements.
+                if ( new GroupService( rockContext )
+                        .GroupMembersNotMeetingRequirements( selectedGroup, false, false )
+                        .Any( gm => gm.Key.PersonId == selectedPersonId ) )
+                {
+                    return response;
+                }
             }
 
             // Determine the date/time ranges to use when sourcing additional time sign-ups. The minimum begin date/time
@@ -2307,6 +2326,7 @@ namespace Rock.Blocks.Group.Scheduling
 
                         scheduleOccurrence = new SignUpOccurrenceBag
                         {
+                            GroupGuid = selectedGroup.Guid,
                             ScheduleGuid = gls.Schedule.Guid,
                             ScheduleName = gls.Schedule.ToString( true ),
                             FormattedScheduleName = GetFormattedSchedule( gls.Schedule ),
@@ -2319,7 +2339,7 @@ namespace Rock.Blocks.Group.Scheduling
                         response.occurrences.Add( scheduleOccurrence );
 
                         // Add a schedule Guid-to-ID dictionary entry, so the caller of this method will have access to any IDs they need.
-                        response.scheduleIdsByGuid.AddOrIgnore( gls.Schedule.Guid, gls.Schedule.Id );
+                        response.scheduleIdsByGuid.TryAdd( gls.Schedule.Guid, gls.Schedule.Id );
                     }
 
                     // Narrow the RSVP "Yes" count down to the specific location.
@@ -2356,7 +2376,7 @@ namespace Rock.Blocks.Group.Scheduling
                     scheduleOccurrence.Locations.Add( locationOccurrence );
 
                     // Add a location Guid-to-ID dictionary entry, so the caller of this method will have access to any IDs they need.
-                    response.locationIdsByGuid.AddOrIgnore( gls.Location.Guid, gls.Location.Id );
+                    response.locationIdsByGuid.TryAdd( gls.Location.Guid, gls.Location.Id );
                 }
             }
 
@@ -2391,7 +2411,7 @@ namespace Rock.Blocks.Group.Scheduling
                             LocationName = NO_LOCATION_PREFERENCE
                         } );
 
-                        response.locationIdsByGuid.AddOrIgnore( Guid.Empty, null );
+                        response.locationIdsByGuid.TryAdd( Guid.Empty, null );
                     }
                 }
             }
@@ -2428,10 +2448,10 @@ namespace Rock.Blocks.Group.Scheduling
         }
 
         /// <summary>
-        /// Saves or deletes an additional time sign-up for the select person, group, schedule and location.
+        /// Saves an additional time sign-up for the specified person, group, schedule and location.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        /// <param name="bag">The information about the additional time sign-up to be saved or deleted.</param>
+        /// <param name="bag">The information about the additional time sign-up to be saved.</param>
         /// <returns>An object containing information about the outcome of the request.</returns>
         private SaveSignUpResponseBag SaveSignUp( RockContext rockContext, SaveSignUpRequestBag bag )
         {
@@ -2446,45 +2466,7 @@ namespace Rock.Blocks.Group.Scheduling
                 return response;
             }
 
-            // If there is an existing attendance for the occurrence date + person + group + schedule combo,
-            // it's likely one they just signed up for, and have either unselected it or changed the location.
-            // Delete it. It's important to remove this record BEFORE trying to get the currently-available
-            // sign-ups, so we can validate any attempt to save new / modify existing sign-ups against the
-            // latest data.
-            var attendanceService = new AttendanceService( rockContext );
-            var localOccurrenceDateTime = bag.OccurrenceDateTime.LocalDateTime;
-
-#if REVIEW_WEBFORMS
-            rockContext.SqlLogging( true );
-#endif
-
-            var attendance = attendanceService
-                .Queryable()
-                .FirstOrDefault( a =>
-                    a.Occurrence.OccurrenceDate == localOccurrenceDateTime.Date
-                    && a.PersonAlias.Person.Guid == bag.SelectedPersonGuid
-                    && a.Occurrence.Group.Guid == bag.SelectedGroupGuid
-                    && a.Occurrence.Schedule.Guid == bag.SelectedScheduleGuid
-                );
-
-#if REVIEW_WEBFORMS
-            rockContext.SqlLogging( false );
-#endif
-
-            if ( attendance != null )
-            {
-                attendanceService.Delete( attendance );
-                rockContext.SaveChanges();
-            }
-
-            if ( !bag.IsSigningUp )
-            {
-                // If they were simply deleting an existing attendance, we're done.
-                // Send back an empty object indicating success.
-                return response;
-            }
-
-            // Get the currently-available sign-ups, against which we can validate the remainder of the request.
+            // Get the currently-available sign-ups, against which we can validate this request.
             var signUpsRequestBag = new GetSignUpsRequestBag
             {
                 SelectedPersonGuid = bag.SelectedPersonGuid,
@@ -2499,7 +2481,7 @@ namespace Rock.Blocks.Group.Scheduling
                 errorMessage
             ) = GetSignUps( rockContext, signUpsRequestBag );
 
-            response.SignUps = signUps;
+            response.SignUps = signUps; // So we can send back the updated list of available sign-ups.
 
             if ( errorMessage.IsNotNullOrWhiteSpace() )
             {
@@ -2507,16 +2489,20 @@ namespace Rock.Blocks.Group.Scheduling
                 return response;
             }
 
-            // Ensure the selected person is a group member of the specified schedulable group.
+            // If any of the following are true, the toolbox data's selected group will not represent the group
+            // specified on this sign-up request; bail out in this case:
+            //  1. The group is inactive, archived, or disabled for scheduling;
+            //  2. The group is hidden from the toolbox;
+            //  3. The group's group type is disabled for scheduling;
+            //  4. The group member's status is not active or the person has been removed from the group.
             if ( toolboxData.SelectedGroup?.Group?.Guid != bag.SelectedGroupGuid )
             {
                 response.SaveError = friendlyErrorMessage;
                 return response;
             }
 
-            var groupId = toolboxData.SelectedGroup.Group.Id;
-
             // Ensure the request is referencing a currently-available occurrence.
+            var localOccurrenceDateTime = bag.OccurrenceDateTime.LocalDateTime;
             var matchingOccurrence = signUps.Occurrences
                 ?.FirstOrDefault( o =>
                     o.ScheduleGuid == bag.SelectedScheduleGuid
@@ -2524,21 +2510,121 @@ namespace Rock.Blocks.Group.Scheduling
                     && o.Locations.Any( l => l.LocationGuid == bag.SelectedLocationGuid )
                 );
 
-            int scheduleId = 0;
+            var attendanceService = new AttendanceService( rockContext );
+
+            // If we didn't find a matching [available] occurrence, determine why and see if we can prevent showing an
+            // error to the individual.
+            if ( matchingOccurrence == null )
+            {
+                // If there's already an existing attendance record for the occurrence date + person + group + schedule
+                // combo (note that we're purposefully excluding a location comparison from this query), this means
+                // someone else - a Rock scheduler or family member - has already signed the selected person up for the
+                // same time slot. This is an edge case, and will almost never happen, as either multiple people would
+                // need to be scheduling the same person within seconds of each other, or someone left their screen open
+                // on the toolbox after loading available sign-ups and didn't actually get around to picking one for an
+                // extended time period / someone else swooped in and happened to schedule this same individual.
+                // Unlikely, but possible. Get all the supporting data we'll need, in case we need to send an email to
+                // the scheduler or group schedule coordinator.
+                var existingAttendance = attendanceService
+                    .GetWithScheduledPersonResponseData()
+                    .FirstOrDefault( a =>
+                        a.Occurrence.OccurrenceDate == localOccurrenceDateTime.Date
+                        && a.PersonAlias.Person.Guid == bag.SelectedPersonGuid
+                        && a.Occurrence.Group.Guid == bag.SelectedGroupGuid
+                        && a.Occurrence.Schedule.Guid == bag.SelectedScheduleGuid
+                    );
+
+                if ( existingAttendance != null )
+                {
+                    // We can simply "accept" the existing attendance if either:
+                    //  1. The existing attendance's location matches the selected location;
+                    //  2. The existing attendance HAS a location defined and the selected location is "No Location Preference".
+                    var existingLocationGuid = existingAttendance.Occurrence.Location?.Guid ?? Guid.Empty;
+                    var shouldAcceptExistingLocation = existingLocationGuid.Equals( bag.SelectedLocationGuid )
+                        || (
+                            !existingLocationGuid.Equals( Guid.Empty )
+                            && bag.SelectedLocationGuid.Equals( Guid.Empty )
+                        );
+
+                    if ( shouldAcceptExistingLocation )
+                    {
+                        // Ensure they're confirmed.
+                        if ( !AttendanceService.IsScheduledPersonConfirmed( existingAttendance ) )
+                        {
+                            // If not, confirm them and try to send emails to the scheduler and coordinator.
+                            attendanceService.ScheduledPersonConfirm( existingAttendance.Id );
+                            rockContext.SaveChanges();
+
+                            TrySendScheduledPersonResponseEmails( existingAttendance, ToolboxScheduleRowActionType.Accept );
+                        }
+
+                        // Return a successful response; no need to alert the individual that the selected person was
+                        // already scheduled; just treat it as if they successfully signed up now.
+                        return response;
+                    }
+
+                    // If the existing attendance's location doesn't match the selected location, return an error with
+                    // further instructions. Ideally, it would be nice to simply delete the existing attendance record
+                    // and re-run the `GetSignUps()` call to ensure there's still an available spot at the new, desired
+                    // location. But that call is quite slow, and until we can improve its performance, this fallback
+                    // behavior will suffice.
+                    var personLabel = ( this.CurrentPerson?.Guid ?? Guid.Empty ).Equals( bag.SelectedPersonGuid )
+                        ? "You are"
+                        : $"{toolboxData.SelectedPerson.NickName} is";
+                    var groupName = existingAttendance.Occurrence.Group.Name;
+                    var friendlyDate = existingAttendance.Occurrence.OccurrenceDate.ToString( "ddd, MMM d" );
+                    var formattedSchedule = GetFormattedSchedule( existingAttendance.Occurrence.Schedule );
+                    var formattedLocation = GetFormattedLocation( existingAttendance.Occurrence.Location );
+                    response.SaveError = $@"{personLabel} already scheduled for {formattedSchedule} on {friendlyDate}, but at a different {groupName} location: {formattedLocation}.";
+                    return response;
+                }
+
+                if ( bag.SelectedLocationGuid.Equals( Guid.Empty ) )
+                {
+                    // It's possible a previously-available location has been maxed-out, leading to the "No Location
+                    // Preference" option no longer being available. If the specified occurrence date + schedule combo
+                    // has ANY locations available, just pick the first one in the list and assign this individual there.
+                    // This way, we'll avoid showing them a needless error in the UI.
+                    matchingOccurrence = signUps.Occurrences
+                        ?.FirstOrDefault( o =>
+                            o.ScheduleGuid == bag.SelectedScheduleGuid
+                            && o.OccurrenceDateTime.LocalDateTime == localOccurrenceDateTime
+                            && o.Locations.Any()
+                        );
+
+                    if ( matchingOccurrence != null )
+                    {
+                        bag.SelectedLocationGuid = matchingOccurrence.Locations.First().LocationGuid;
+                    }
+                }
+
+                if ( matchingOccurrence == null )
+                {
+                    // If we got here, this indicates that the selected occurrence is no longer available or maxed out.
+                    // Encourage them to select a different occurrence if any remain.
+                    response.SaveError = $"The selected sign-up is no longer available.{( signUps.Occurrences?.Any() == true ? " Please make a different selection to try again." : string.Empty )}";
+                    return response;
+                }
+            }
+
+            // Now it's just a matter of finding the actual IDs of the schedule and location so we can save a new
+            // attendance record.
+            int newScheduleId = 0;
             var wasScheduleFound = true;
-            if ( scheduleGuidsById == null || !scheduleGuidsById.TryGetValue( bag.SelectedScheduleGuid, out scheduleId ) )
+            if ( scheduleGuidsById == null || !scheduleGuidsById.TryGetValue( bag.SelectedScheduleGuid, out newScheduleId ) )
             {
                 wasScheduleFound = false;
             }
 
-            int? locationId = null;
+            int? newLocationId = null;
             var wasLocationFound = true;
-            if ( locationGuidsById == null || !locationGuidsById.TryGetValue( bag.SelectedLocationGuid, out locationId ) )
+            if ( locationGuidsById == null || !locationGuidsById.TryGetValue( bag.SelectedLocationGuid, out newLocationId ) )
             {
                 wasLocationFound = false;
             }
 
-            if ( matchingOccurrence == null || !wasScheduleFound || !wasLocationFound )
+            // Should never happen.
+            if ( !wasScheduleFound || !wasLocationFound )
             {
                 response.SaveError = friendlyErrorMessage;
                 return response;
@@ -2546,32 +2632,43 @@ namespace Rock.Blocks.Group.Scheduling
 
             // Since we got this far, we have the group, schedule & location IDs we need to move forward.
             // Add a new attendance record. Start by getting the attendance occurrence.
-            var attendanceOccurrence = new AttendanceOccurrenceService( rockContext )
-                .GetOrAdd( localOccurrenceDateTime.Date, groupId, locationId, scheduleId );
+            var newAttendanceOccurrence = new AttendanceOccurrenceService( rockContext )
+                .GetOrAdd( localOccurrenceDateTime.Date, toolboxData.SelectedGroup.Group.Id, newLocationId, newScheduleId );
 
-            if ( attendanceOccurrence == null )
+            // Should never happen.
+            if ( newAttendanceOccurrence == null )
             {
                 response.SaveError = friendlyErrorMessage;
                 return response;
             }
 
             // Save the attendance record to get the ID.
-            attendance = attendanceService.ScheduledPersonAddPending( toolboxData.SelectedPerson.Id, attendanceOccurrence.Id, this.RequestContext.CurrentPerson.PrimaryAlias );
+            var newAttendance = attendanceService.ScheduledPersonAddPending( toolboxData.SelectedPerson.Id, newAttendanceOccurrence.Id, this.CurrentPerson?.PrimaryAlias );
             rockContext.SaveChanges();
 
-            if ( attendance == null )
+            // Should never happen.
+            if ( newAttendance == null )
             {
                 response.SaveError = friendlyErrorMessage;
                 return response;
             }
 
-            // Finally, we can confirm their attendance.
-            attendanceService.ScheduledPersonConfirm( attendance.Id );
+            // Next, we can go ahead and confirm their attendance.
+            attendanceService.ScheduledPersonConfirm( newAttendance.Id );
             rockContext.SaveChanges();
 
-            // Since we got this far, the save was successful.
-            // Send back an empty object indicating success.
-            response.SignUps = null;
+            // Let's check to see if we need to send the group schedule coordinator an email.
+            // To do this, we're going to have to get the whole attendance record again, with all supporting data.
+            newAttendance = attendanceService
+                .GetWithScheduledPersonResponseData()
+                .FirstOrDefault( a => a.Id == newAttendance.Id );
+
+            TrySendScheduledPersonResponseEmails( newAttendance, ToolboxScheduleRowActionType.SelfSchedule );
+
+            // Finally, before sending the updated sign-ups back to the client, let's remove the one they just signed up
+            // for, so it'll be excluded from the UI's list of available sign-ups.
+            response.SignUps.Occurrences.Remove( matchingOccurrence );
+
             return response;
         }
 
@@ -2918,7 +3015,7 @@ namespace Rock.Blocks.Group.Scheduling
             /// <summary>
             /// Gets or sets how to load the selected person's schedulable groups.
             /// </summary>
-            public SchedulableGroupLoadingMode SchedulableGroupLoadingMode { get; set; } = SchedulableGroupLoadingMode.DotNoLoad;
+            public SchedulableGroupLoadingMode SchedulableGroupLoadingMode { get; set; } = SchedulableGroupLoadingMode.DoNotLoad;
         }
 
         /// <summary>
@@ -2967,7 +3064,7 @@ namespace Rock.Blocks.Group.Scheduling
             /// <summary>
             /// Do not load any of the selected person's schedulable groups.
             /// </summary>
-            DotNoLoad = 0,
+            DoNotLoad = 0,
 
             /// <summary>
             /// Load all of the selected person's schedulable groups.

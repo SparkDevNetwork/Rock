@@ -105,6 +105,8 @@ namespace RockWeb.Blocks.Security
                 return;
             }
 
+            _securitySettingsService.SecuritySettings.DisablePredictableIds = cbDisablePredictableIds.Checked;
+
             _securitySettingsService.SecuritySettings.AccountProtectionProfilesForDuplicateDetectionToIgnore =
                 cblIgnoredAccountProtectionProfiles.SelectedValuesAsInt.Select( a => ( AccountProtectionProfile ) a ).ToList();
 
@@ -142,7 +144,9 @@ namespace RockWeb.Blocks.Security
             }
 
             _securitySettingsService.SecuritySettings.PasswordlessSignInSessionDuration = nbPasswordlessSignInSessionDuration.Text.AsInteger();
-            
+
+            _securitySettingsService.SecuritySettings.RejectAuthenticationCookiesIssuedBefore = dtpRejectAuthenticationCookiesIssuedBefore.SelectedDateTime;
+
             if ( _securitySettingsService.Save() )
             {
                 nbSaveResult.Text = "Your Security Settings have been saved.";
@@ -243,6 +247,7 @@ namespace RockWeb.Blocks.Security
                     .DisableTokensForAccountProtectionProfiles
                     .Select( a => a.ConvertToInt().ToString() ) );
 
+            cbDisablePredictableIds.Checked = _securitySettingsService.SecuritySettings.DisablePredictableIds;
 
             // Clear the 2FA settings when it is not supported.
             if ( !IsTwoFactorAuthenticationSupported() )
@@ -304,6 +309,8 @@ namespace RockWeb.Blocks.Security
             ddlPasswordlessConfirmationCommunicationTemplate.DataSource = communicationTemplates;
             ddlPasswordlessConfirmationCommunicationTemplate.DataBind();
             ddlPasswordlessConfirmationCommunicationTemplate.SetValue( _securitySettingsService.SecuritySettings.PasswordlessConfirmationCommunicationTemplateGuid );
+
+            dtpRejectAuthenticationCookiesIssuedBefore.SelectedDateTime = _securitySettingsService.SecuritySettings.RejectAuthenticationCookiesIssuedBefore;
         }
 
         #endregion

@@ -29,6 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -141,8 +142,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 cbHideFullyPaidRegistrations.Checked = true;
@@ -162,6 +161,8 @@ namespace RockWeb.Blocks.Finance
                 BindHtmlGrid();
                 LoadRegistrationDropDowns();
             }
+
+            base.OnLoad( e );
         }
 
         protected override object SaveViewState()
@@ -430,7 +431,7 @@ namespace RockWeb.Blocks.Finance
                                 string imageTag = string.Empty;
                                 if ( primaryImage != null )
                                 {
-                                    var imageUrl = string.Format( "~/GetImage.ashx?id={0}", primaryImage.BinaryFileId );
+                                    var imageUrl = FileUrlHelper.GetImageUrl( primaryImage.BinaryFileId );
                                     imageTag = string.Format( "<div class='photo transaction-image' style='max-width: 400px;'><a href='{0}'><img src='{0}'/></a></div>", ResolveRockUrl( imageUrl ) );
                                 }
 

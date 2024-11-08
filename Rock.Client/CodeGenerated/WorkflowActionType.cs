@@ -56,6 +56,9 @@ namespace Rock.Client
         public string ForeignKey { get; set; }
 
         /// <summary />
+        public bool IsActionCompletedIfCriteriaUnmet { get; set; }
+
+        /// <summary />
         public bool IsActionCompletedOnSuccess { get; set; }
 
         /// <summary />
@@ -115,6 +118,7 @@ namespace Rock.Client
             this.EntityTypeId = source.EntityTypeId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
+            this.IsActionCompletedIfCriteriaUnmet = source.IsActionCompletedIfCriteriaUnmet;
             this.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
             this.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;

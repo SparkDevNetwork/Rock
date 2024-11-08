@@ -38,7 +38,4 @@ export type ScheduleDetailOptionsBag = {
 
     /** Gets or sets the help text. */
     helpText?: string | null;
-
-    /** Gets or sets the next occurrence. */
-    nextOccurrence?: string | null;
 };

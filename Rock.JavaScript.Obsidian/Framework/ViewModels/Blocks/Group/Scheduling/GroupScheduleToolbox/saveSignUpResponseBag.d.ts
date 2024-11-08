@@ -28,6 +28,6 @@ export type SaveSignUpResponseBag = {
     /** Gets or sets a friendly error message to describe any problems encountered while saving. */
     saveError?: string | null;
 
-    /** Gets or sets the current sign-ups; will only be provided if the save failed. */
+    /** Gets or sets the updated sign-ups after the save attempt. */
     signUps?: SignUpsBag | null;
 };

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -149,6 +149,15 @@ namespace Rock.Model
         [MaxLength( 100 )]
         public string PackageName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the ConnectionRequestId of the BackgroundCheck.
+        /// </summary>
+        /// <value>
+        /// The <see cref="ConnectionRequest"/> identifier.
+        /// </value>
+        [DataMember]
+        public int? ConnectionRequestId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -189,6 +198,19 @@ namespace Rock.Model
         [DataMember]
         public virtual Rock.Model.EntityType ProcessorEntityType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the connection request.
+        /// </summary>
+        /// <value>
+        /// The connecton request.
+        /// </value>
+        /// <remarks>
+        /// [IgnoreCanDelete] since there is an ON DELETE SET NULL cascade on this constraint
+        /// </remarks>
+        [IgnoreCanDelete]
+        [DataMember]
+        public virtual Rock.Model.ConnectionRequest ConnectionRequest { get; set; }
+
         #endregion
     }
 
@@ -208,6 +230,8 @@ namespace Rock.Model
             this.HasOptional( p => p.Workflow ).WithMany().HasForeignKey( p => p.WorkflowId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.ResponseDocument ).WithMany().HasForeignKey( p => p.ResponseDocumentId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ProcessorEntityType ).WithMany().HasForeignKey( p => p.ProcessorEntityTypeId ).WillCascadeOnDelete( false );
+            // The FK Constraint uses the ON DELETE SET NULL clause (see AddConnectionRequestToBackgroundCheck migration).
+            this.HasOptional( p => p.ConnectionRequest ).WithMany().HasForeignKey( p => p.ConnectionRequestId ).WillCascadeOnDelete( true );
         }
     }
 

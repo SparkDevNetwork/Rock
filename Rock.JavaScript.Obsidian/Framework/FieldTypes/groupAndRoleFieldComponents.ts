@@ -23,6 +23,8 @@ import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import { ConfigurationValueKey, GroupAndRoleValue } from "./groupAndRoleField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { GroupRolePickerGetGroupRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetGroupRolesOptionsBag";
+import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
 const http = useHttp();
 
@@ -70,12 +72,11 @@ export const EditComponent = defineComponent({
 
         // Watch for changes to the groupType value and get the corresponding roles
         watch(() => groupType.value, async () => {
-            const groupTypeGuid = groupType.value?.value;
+            const groupTypeGuid = toGuidOrNull(groupType.value?.value);
 
-            if (groupTypeGuid) {
-
-                const options = {
-                    groupTypeGuid: groupTypeGuid,
+            if (groupTypeGuid && !areEqual(groupTypeGuid, emptyGuid)) {
+                const options: GroupRolePickerGetGroupRolesOptionsBag = {
+                    groupTypeGuid,
                 };
 
                 const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupRolePickerGetGroupRoles", null, options);

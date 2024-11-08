@@ -57,6 +57,7 @@
     import { BinaryFileBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileDetail/binaryFileBag";
     import { BinaryFileDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileDetail/binaryFileDetailOptionsBag";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -78,7 +79,7 @@
     const emit = defineEmits<{
         (e: "update:modelValue", value: BinaryFileBag): void,
         (e: "propertyChanged", value: string): void
-        (e: "isLabelFileChanged", value: boolean): void
+        (e: "labelFileChanged", value: BinaryFileBag): void
     }>();
 
     // #region Values
@@ -93,25 +94,13 @@
     const showBinaryFileType = ref(props.modelValue.showBinaryFileType);
     const workflowNotificationMessage = ref(props.modelValue.workflowNotificationMessage ?? "");
     const orphanedBinaryFileIdList = ref(props.modelValue.orphanedBinaryFileIdList ?? []);
-    const binaryFileTypeGuid = ref(props.modelValue.binaryFileType?.value ?? BinaryFiletype.Default);
+    const binaryFileTypeGuid = ref(toGuidOrNull(props.modelValue.binaryFileType?.value) ?? BinaryFiletype.Default);
 
     const invokeBlockAction = useInvokeBlockAction();
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, fileName, mimeType, binaryFileType];
-
-    // #endregion
-
-    // #region Computed Values
-
-    // #endregion
-
-    // #region Functions
-
-    // #endregion
-
-    // #region Event Handlers
 
     // #endregion
 
@@ -132,7 +121,7 @@
             });
 
             // If successful update UI, NOTE: Any data sent from the front-end that does not need to be ovewritten
-            // e.g. a filename if one was provided before uploading the file will not be returned as is so we can
+            // e.g. a filename if one was provided before uploading the file, will be returned as is so we can
             // set it as the current value.
             if (result.isSuccess && result.data) {
                 if (result.data.fileName) {
@@ -155,16 +144,24 @@
                     workflowNotificationMessage.value = result.data.workflowNotificationMessage;
                 }
 
-                // Add the uploaded file to the OrphanedFileIdList, after the Binary file has been saved of the process is cancelled,
-                // those not persisted or has IsTemporary = true will be deleted.
+                // Add the uploaded file to the OrphanedFileIdList, after the Binary file has been saved,
+                // if the process is cancelled, those not persisted or has IsTemporary = true will be deleted.
                 if (file.value.value) {
                     orphanedBinaryFileIdList.value.push(file.value.value);
+                }
+
+                if (result.data.attributes) {
+                    attributes.value = result.data.attributes;
+                }
+
+                if (result.data.attributeValues) {
+                    attributeValues.value = result.data.attributeValues;
                 }
 
                 // If isLabelFile status changes e.g. after uploading a check-in lable file, emit event so parent block can show
                 // the Edit Label Contents button.
                 if (result.data.isLabelFile != props.modelValue.isLabelFile) {
-                    emit("isLabelFileChanged", result.data.isLabelFile);
+                    emit("labelFileChanged", result.data);
                 }
             }
         }
@@ -178,7 +175,7 @@
         updateRefValue(fileName, props.modelValue.fileName ?? "");
         updateRefValue(mimeType, props.modelValue.mimeType ?? "");
         updateRefValue(binaryFileType, props.modelValue.binaryFileType ?? {});
-        updateRefValue(binaryFileTypeGuid, props.modelValue.binaryFileType?.value ?? BinaryFiletype.Default);
+        updateRefValue(binaryFileTypeGuid, toGuidOrNull(props.modelValue.binaryFileType?.value) ?? BinaryFiletype.Default);
         updateRefValue(workflowNotificationMessage, props.modelValue.workflowNotificationMessage ?? "");
         updateRefValue(orphanedBinaryFileIdList, props.modelValue.orphanedBinaryFileIdList ?? []);
     });

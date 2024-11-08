@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,6 +19,7 @@ using System.Data.Entity;
 using System.Runtime.Serialization;
 
 using Rock.Lava;
+using Rock.Observability;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -55,45 +56,85 @@ namespace Rock.Model
         /// </summary>
         /// <exception cref="System.Runtime.Serialization.InvalidDataContractException">Is thrown if the resulting data deserialized.</exception>
         /// <exception cref="Rock.Model.PersistedDataset.UnsupportedBuildScriptTypeException">Is thrown if the BuildScriptType is not known/supported.</exception>
-        public void UpdateResultData()
+        public UpdateResult UpdateResultData()
         {
-            var timeToBuildStopwatch = System.Diagnostics.Stopwatch.StartNew();
-            switch ( this.BuildScriptType )
+            using ( var activity = ObservabilityHelper.StartActivity( $"PERSISTED DATASET: Update Result Data (Id: {Id})" ) )
             {
-                case PersistedDatasetScriptType.Lava:
+                ObservabilityHelper.EnableDbQueryCountTracking( activity );
+
+                activity?.AddTag( "rock.persisted_dataset.id", Id );
+                activity?.AddTag( "rock.persisted_dataset.name", Name );
+                activity?.AddTag( "rock.persisted_dataset.type", BuildScriptType.ToString() );
+
+                var timeToBuildStopwatch = System.Diagnostics.Stopwatch.StartNew();
+                var result = new UpdateResult();
+
+                try
+                {
+                    switch ( this.BuildScriptType )
                     {
-                        var mergeFields = LavaHelper.GetCommonMergeFields( null, null, CommonMergeFieldsOptions.CommonMergeFieldsOptionsEmpty );
-                        var output = this.BuildScript.ResolveMergeFields( mergeFields, null, this.EnabledLavaCommands );
-
-                        // Ensure resulting output is valid for its defined format,
-                        // otherwise log the problem and throw an exception.
-                        if ( this.ResultFormat == PersistedDatasetDataFormat.JSON )
-                        {
-                            var outputAsDynamic = output.FromJsonDynamicOrNull();
-
-                            // If the 
-                            if ( outputAsDynamic == null )
+                        case PersistedDatasetScriptType.Lava:
                             {
-                                throw new InvalidDataContractException( $"PersistedDataset (Id: {this.Id}) build script created invalid result data: {output}" );
+                                var mergeFields = LavaHelper.GetCommonMergeFields( null, null, CommonMergeFieldsOptions.CommonMergeFieldsOptionsEmpty );
+                                var output = this.BuildScript.ResolveMergeFields( mergeFields, null, this.EnabledLavaCommands );
+
+                                if ( this.ResultFormat == PersistedDatasetDataFormat.JSON )
+                                {
+                                    var outputAsDynamic = output.FromJsonDynamicOrNull();
+
+                                    if ( outputAsDynamic == null )
+                                    {
+                                        LogError( $"PersistedDataset (Id: {this.Id}) build script created invalid result data: {output}" );
+                                        result.IsSuccess = false;
+                                        result.WarningMessage = $"Invalid result data for dataset {this.Id}";
+                                    }
+                                    else
+                                    {
+                                        this.ResultData = outputAsDynamic.ToJson( true );
+                                        result.IsSuccess = true;
+                                    }
+                                }
+                                else
+                                {
+                                    // Handle non-JSON formats or add a suitable log/error message
+                                    LogError( $"Unsupported result format for dataset {this.Id}" );
+                                    result.IsSuccess = false;
+                                    result.WarningMessage = $"Unsupported result format for dataset {this.Id}";
+                                }
+                                break;
                             }
-
-                            // Save a nicely formatted version of the result
-                            this.ResultData = outputAsDynamic.ToJson( true );
-                        }
-                        break;
+                        default:
+                            {
+                                LogError( $"Unsupported PersistedDatasetScriptType: {this.BuildScriptType}" );
+                                result.IsSuccess = false;
+                                result.WarningMessage = $"Unsupported script type for dataset {this.Id}";
+                                break;
+                            }
                     }
+                }
+                catch ( Exception ex )
+                {
+                    LogError( $"An error occurred while updating PersistedDataset (Id: {this.Id}): {ex.Message}" );
+                    result.IsSuccess = false;
+                    result.WarningMessage = ex.Message;
+                }
+                finally
+                {
+                    timeToBuildStopwatch.Stop();
+                    this.TimeToBuildMS = timeToBuildStopwatch.Elapsed.TotalMilliseconds;
+                    this.LastRefreshDateTime = RockDateTime.Now;
+                }
 
-                default:
-                    {
-                        throw new UnsupportedBuildScriptTypeException( this.BuildScriptType );
-                    }
+                activity?.AddTag( "rock.persisted_dataset.build_duration", ( int ) Math.Floor( timeToBuildStopwatch.Elapsed.TotalMilliseconds ) );
+                activity?.AddTag( "rock.persisted_dataset.result_size", ResultData?.Length ?? 0 );
+
+                return result;
             }
+        }
 
-            timeToBuildStopwatch.Stop();
-            this.TimeToBuildMS = timeToBuildStopwatch.Elapsed.TotalMilliseconds;
-
-            this.LastRefreshDateTime = RockDateTime.Now;
-
+        private void LogError( string errorMessage )
+        {
+            Rock.Model.ExceptionLogService.LogException( new Exception( errorMessage ) );
         }
 
         /// <summary>
@@ -121,6 +162,24 @@ namespace Rock.Model
             {
                 this.buildScriptType = buildScriptType;
             }
+        }
+
+        #endregion
+
+        #region Helper Classes
+        /// <summary>
+        /// Result of the <see cref="PersistedDataset.UpdateResultData"/> method.
+        /// </summary>
+        public class UpdateResult
+        {
+            /// <summary>
+            /// Gets or sets a value indicating whether this <see cref="UpdateResult"/> is a success.
+            /// </summary>
+            public bool IsSuccess { get; set; }
+            /// <summary>
+            /// Gets or sets the warning message.
+            /// </summary>
+            public string WarningMessage { get; set; }
         }
 
         #endregion

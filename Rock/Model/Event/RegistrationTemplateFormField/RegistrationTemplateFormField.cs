@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -187,6 +187,15 @@ namespace Rock.Model
                 this.FieldVisibilityRules = rules ?? new Field.FieldVisibilityRules();
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether editing the field is restricted when a value is already on the person's record.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if editing the field is restricted when a value is already on the person's record; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsLockedIfValuesExist { get; set; }
 
         #endregion Entity Properties
 

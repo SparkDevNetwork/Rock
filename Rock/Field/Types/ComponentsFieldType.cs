@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a checkbox list of MEF Components of a specific type
     /// Stored as a pipe-delimited list of EntityType.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.COMPONENTS )]
     public class ComponentsFieldType : FieldType

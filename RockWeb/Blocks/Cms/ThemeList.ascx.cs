@@ -43,12 +43,19 @@ namespace RockWeb.Blocks.Cms
     #region Block Attributes
 
     [LinkedPage(
+        "Detail Page",
+        Key = AttributeKey.DetailPage,
+        Description = "Page to use for editing next-gen themes.",
+        Order = 0 )]
+
+    [LinkedPage(
         "Theme Styler Page",
         Key = AttributeKey.ThemeStylerPage,
         Description = "Page to use for the theme styler page.",
-        Order = 0 )]
+        Order = 1 )]
 
     #endregion
+
     [Rock.SystemGuid.BlockTypeGuid( "FD99E0AA-E1CB-4049-A6F6-9C5F2A34F694" )]
     public partial class ThemeList : Rock.Web.UI.RockBlock, ICustomGridColumns
     {
@@ -56,6 +63,7 @@ namespace RockWeb.Blocks.Cms
 
         private static class AttributeKey
         {
+            public const string DetailPage = "DetailPage";
             public const string ThemeStylerPage = "ThemeStylerPage";
         }
 
@@ -102,7 +110,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( !allowsCompile )
                 {
-                    var cell = e.Row.Cells[3].Controls[0].Visible = false;
+                    e.Row.Cells[4].Controls[0].Visible = false;
                 }
             }
         }
@@ -113,12 +121,22 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
+                using ( var rockContext = new RockContext() )
+                {
+                    var themeService = new ThemeService( rockContext );
+
+                    if ( themeService.UpdateThemes() )
+                    {
+                        rockContext.SaveChanges();
+                    }
+                }
+
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -153,6 +171,14 @@ namespace RockWeb.Blocks.Cms
 
             if ( cloneWasSuccessful )
             {
+                using ( var rockContext = new RockContext() )
+                {
+                    if ( new ThemeService( rockContext ).UpdateThemes() )
+                    {
+                        rockContext.SaveChanges();
+                    }
+                }
+
                 nbMessages.NotificationBoxType = NotificationBoxType.Success;
                 nbMessages.Text = string.Format( "The {0} theme has been successfully cloned to {1}.", hfClonedThemeName.Value, tbNewThemeName.Text );
                 BindGrid();
@@ -219,6 +245,18 @@ namespace RockWeb.Blocks.Cms
         {
             string messages = string.Empty;
 
+            using ( var rockContext = new RockContext() )
+            {
+                var themeService = new ThemeService( rockContext );
+                var themesToDelete = themeService.Queryable()
+                    .Where( t => t.Name == e.RowKeyValue.ToString() )
+                    .ToList();
+
+                themeService.DeleteRange( themesToDelete );
+
+                rockContext.SaveChanges();
+            }
+
             bool deleteSuccess = RockTheme.DeleteTheme( e.RowKeyValue.ToString(), out messages );
 
             if ( deleteSuccess )
@@ -243,46 +281,56 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         private void BindGrid()
         {
-            DirectoryInfo themeDirectory = new DirectoryInfo( HttpRuntime.AppDomainAppPath + "Themes" );
-
-            var themes = RockTheme.GetThemes();
+            var themes = GetThemes();
 
             var sortProperty = gThemes.SortProperty;
 
             if ( sortProperty != null )
             {
-                switch ( sortProperty.Property )
-                {
-                    case "Name":
-                        {
-                            if ( sortProperty.Direction == SortDirection.Ascending )
-                            {
-                                themes = themes.OrderBy( t => t.Name ).ToList();
-                            }
-                            else
-                            {
-                                themes = themes.OrderByDescending( t => t.Name ).ToList();
-                            }
-                            break;
-                        }
-                }
+                themes = themes.AsQueryable().Sort( sortProperty ).ToList();
             }
 
             if ( themes.Any( f => f.Name == "RockOriginal" ) )
             {
-                DeleteRockOriginalTheme( themes );
+                DeleteRockOriginalTheme();
             }
 
             gThemes.DataSource = themes.Where( f => f.Name != "RockOriginal" ).ToList();
             gThemes.DataBind();
         }
 
-        private void DeleteRockOriginalTheme( List<RockTheme> themes )
+        private List<ThemePoco> GetThemes()
         {
-            var theme = themes.Where( f => f.Name == "RockOriginal" ).FirstOrDefault();
-            if ( theme != null )
+            using ( var rockContext = new RockContext() )
             {
-                Directory.Delete( theme.AbsolutePath, true );
+                var legacyThemeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.THEME_PURPOSE_WEBSITE_LEGACY.AsGuid(), rockContext ).Id;
+
+                return new ThemeService( rockContext )
+                    .Queryable()
+                    .ToList()
+                    .DistinctBy( t => t.Name )
+                    .Select( t => new ThemePoco
+                    {
+                        IdKey = t.IdKey,
+                        Name = t.Name,
+                        Purpose = DefinedValueCache.Get( t.PurposeValueId ?? 0, rockContext )?.Value ?? string.Empty,
+                        PurposeValueId = t.PurposeValueId,
+                        IsActive = t.IsActive,
+                        IsSystem = t.IsSystem,
+                        AllowsCompile = t.PurposeValueId == legacyThemeValueId,
+                    } )
+                    .OrderBy( t => t.Name )
+                    .ToList();
+            }
+        }
+
+        private void DeleteRockOriginalTheme()
+        {
+            var themeDirectory = Path.Combine( HttpRuntime.AppDomainAppPath, "Themes", "RockOriginal" );
+
+            if ( Directory.Exists( themeDirectory ) )
+            {
+                Directory.Delete( themeDirectory, true );
             }
         }
 
@@ -290,9 +338,41 @@ namespace RockWeb.Blocks.Cms
 
         protected void gThemes_RowSelected( object sender, RowEventArgs e )
         {
-            Dictionary<string, string> qryParams = new Dictionary<string, string>();
-            qryParams.Add( "EditTheme", e.RowKeyValue.ToString() );
-            NavigateToLinkedPage( AttributeKey.ThemeStylerPage, qryParams );
+            var theme = GetThemes().Where( t => t.Name == e.RowKeyValue.ToString() ).FirstOrDefault();
+            var legacyThemeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.THEME_PURPOSE_WEBSITE_LEGACY.AsGuid() ).Id;
+
+            if ( theme != null && theme.PurposeValueId != legacyThemeValueId )
+            {
+                var qryParams = new Dictionary<string, string>
+                {
+                    { "ThemeId", theme.IdKey }
+                };
+
+                NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
+            }
+            else
+            {
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                qryParams.Add( "EditTheme", e.RowKeyValue.ToString() );
+                NavigateToLinkedPage( AttributeKey.ThemeStylerPage, qryParams );
+            }
+        }
+
+        private class ThemePoco
+        {
+            public string IdKey { get; set; }
+
+            public string Name { get; set; }
+
+            public string Purpose { get; set; }
+
+            public int? PurposeValueId { get; set; }
+
+            public bool IsSystem { get; set; }
+
+            public bool IsActive { get; set; }
+
+            public bool AllowsCompile { get; set; }
         }
     }
 }

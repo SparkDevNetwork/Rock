@@ -36,12 +36,11 @@ namespace Rock.Blocks.Finance
     /// <summary>
     /// Displays the details of a particular financial pledge.
     /// </summary>
-
     [DisplayName( "Pledge Detail" )]
     [Category( "Finance" )]
     [Description( "Allows the details of a given pledge to be edited." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
     [GroupTypeField( "Select Group Type",
@@ -97,7 +96,6 @@ namespace Rock.Blocks.Finance
         /// Gets the box options required for the component to render the view
         /// or edit the entity.
         /// </summary>
-        /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
         private FinancialPledgeDetailOptionsBag GetBoxOptions( FinancialPledgeBag bag, RockContext rockContext )
@@ -106,7 +104,7 @@ namespace Rock.Blocks.Finance
             var options = new FinancialPledgeDetailOptionsBag
             {
                 SelectGroupTypeGuid = selectedGroupTypeGuid,
-                Groups = LoadGroups( bag.PersonAlias?.Value?.AsGuidOrNull(), rockContext ),
+                Groups = LoadGroups( bag?.PersonAlias?.Value?.AsGuidOrNull(), rockContext ),
                 GroupType = GroupTypeCache.Get( selectedGroupTypeGuid ?? Guid.Empty )?.Name
             };
             return options;
@@ -126,10 +124,9 @@ namespace Rock.Blocks.Finance
 
             if ( !financialPledge.IsValid )
             {
-                errorMessage = string.Join("</br>", financialPledge.ValidationResults.Select( x => x.ErrorMessage ) );
+                errorMessage = string.Format( "Please correct the following:<ul><li>{0}</li></ul>", financialPledge.ValidationResults.AsDelimited( "</li><li>" ) ); ;
                 return false;
             }
-
 
             return true;
         }
@@ -150,8 +147,8 @@ namespace Rock.Blocks.Finance
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
@@ -200,31 +197,32 @@ namespace Rock.Blocks.Finance
                 IdKey = entity.IdKey,
                 Account = entity.Account.ToListItemBag(),
                 Group = entity.Group.ToListItemBag(),
-                PersonAlias = entity.PersonAlias != null ? entity.PersonAlias.ToListItemBag() : GetPersonByBersonActionIdentifier( rockContext ),
+                PersonAlias = entity.PersonAlias != null ? entity.PersonAlias.ToListItemBag() : GetPersonByPersonActionIdentifier( rockContext ),
                 PledgeFrequencyValue = entity.PledgeFrequencyValue.ToListItemBag(),
                 TotalAmount = entity.Id == 0 ? ( decimal? ) null : entity.TotalAmount
             };
 
-            if ( entity.StartDate.Date != DateTime.MinValue.Date )
+            if ( entity.Id != 0 )
             {
-                bag.StartDate = entity.StartDate;
+                bag.StartDate = entity.StartDate == DateTime.MinValue.Date ? ( DateTime? ) null : entity.StartDate;
+                bag.EndDate = entity.EndDate == DateTime.MaxValue.Date ? ( DateTime? ) null : entity.EndDate;
             }
 
             return bag;
         }
 
         /// <summary>
-        /// Gets the person by berson action identifier.
+        /// Gets the person by person action identifier.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        private ListItemBag GetPersonByBersonActionIdentifier( RockContext rockContext )
+        private ListItemBag GetPersonByPersonActionIdentifier( RockContext rockContext )
         {
             var personActionId = PageParameter( PageParameterKey.PersonActionIdentifier );
             var person = new PersonService( rockContext ).GetByPersonActionIdentifier( personActionId, "pledge" );
 
-            return person.ToListItemBag();
+            return person?.PrimaryAlias?.ToListItemBag();
         }
 
         /// <summary>
@@ -242,11 +240,6 @@ namespace Rock.Blocks.Finance
             var bag = GetCommonEntityBag( entity, rockContext );
 
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
-
-            if ( entity.EndDate.Date != DateTime.MaxValue.Date && entity.EndDate.Date != DateTime.MinValue.Date )
-            {
-                bag.EndDate = entity.EndDate;
-            }
 
             return bag;
         }
@@ -266,11 +259,6 @@ namespace Rock.Blocks.Finance
             var bag = GetCommonEntityBag( entity, rockContext );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
-
-            if ( entity.EndDate.Date != DateTime.MinValue.Date )
-            {
-                bag.EndDate = entity.EndDate;
-            }
 
             return bag;
         }
@@ -407,7 +395,7 @@ namespace Rock.Blocks.Finance
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${FinancialPledge.FriendlyTypeName}." );
                 return false;
@@ -427,7 +415,7 @@ namespace Rock.Blocks.Finance
             Guid? groupTypeGuid = GetAttributeValue( AttributeKey.SelectGroupType ).AsGuidOrNull();
             if ( personAliasGuid.HasValue && groupTypeGuid.HasValue )
             {
-                var personId = new PersonAliasService( rockContext ).Get( personAliasGuid.Value )?.PersonId ?? 0;
+                var personId = new PersonAliasService( rockContext ).GetSelect( personAliasGuid.Value, p => p.PersonId );
 
                 var groups = new GroupMemberService( rockContext )
                     .Queryable().AsNoTracking()
@@ -497,8 +485,6 @@ namespace Rock.Blocks.Finance
         {
             using ( var rockContext = new RockContext() )
             {
-                var entityService = new FinancialPledgeService( rockContext );
-
                 if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
                 {
                     return actionError;

@@ -16,6 +16,7 @@
 //
 
 using System;
+
 using Rock.AI.OpenAI.OpenAIApiClient.Enums;
 using Rock.Enums.AI;
 
@@ -23,7 +24,6 @@ namespace Rock.AI.OpenAI.Utilities
 {
     internal static class OpenAIUtilities
     {
-
         /// <summary>
         /// Calculates the number of tokens for a given string.
         /// </summary>
@@ -40,14 +40,14 @@ namespace Rock.AI.OpenAI.Utilities
             // Add a fudge factor
             if ( tokenCount < 20 )
             {
-                tokenCount = (int) Math.Ceiling( tokenCount * 1.2 ); // 20% fudge factor
+                tokenCount = ( int ) Math.Ceiling( tokenCount * 1.2 ); // 20% fudge factor
             }
             else
             {
                 tokenCount = ( int ) Math.Ceiling( tokenCount * 1.05 ); // 5% fudge factor
             }
 
-            return tokenCount; 
+            return tokenCount;
         }
 
         /// <summary>

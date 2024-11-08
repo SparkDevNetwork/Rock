@@ -26,7 +26,7 @@ import { Guid } from "@Obsidian/Types";
 /** A bag that contains information about a schedule preference assignment for the group schedule toolbox block. */
 export type SchedulePreferenceAssignmentBag = {
     /** Gets or sets the group member assignment unique identifier. */
-    groupMemberAssignmentGuid?: Guid | null;
+    groupMemberAssignmentGuid: Guid;
 
     /** Gets or sets the location name. */
     locationName?: string | null;

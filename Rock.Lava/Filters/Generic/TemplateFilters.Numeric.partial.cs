@@ -24,47 +24,6 @@ namespace Rock.Lava.Filters
     public static partial class TemplateFilters
     {
         /// <summary>
-        /// Converts the input to a Boolean(true/false) value.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="resultIfNullOrEmpty"></param>
-        /// <returns></returns>
-        public static bool AsBoolean( object input, bool resultIfNullOrEmpty = false )
-        {
-            return input.ToStringSafe().AsBoolean( resultIfNullOrEmpty );
-        }
-
-        /// <summary>
-        /// Converts the input to a decimal value, or 0 if the conversion is unsuccessful.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static decimal AsDecimal( object input )
-        {
-            return input.ToStringSafe().AsDecimal();
-        }
-
-        /// <summary>
-        /// Converts the input to a double-precision value, or 0 if the conversion is unsuccessful.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static double AsDouble( object input )
-        {
-            return input.ToStringSafe().AsDouble();
-        }
-
-        /// <summary>
-        /// Converts the input to an integer value, or 0 if the conversion is unsuccessful.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public static int AsInteger( object input )
-        {
-            return input.ToStringSafe().AsInteger();
-        }
-
-        /// <summary>
         /// Formats numeric input using the specified pattern string.
         /// Supports numeric formats that are implemented in the .NET Framework.
         /// For more details, refer https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings

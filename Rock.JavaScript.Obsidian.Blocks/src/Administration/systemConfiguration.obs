@@ -1,0 +1,659 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Edit System Configuration" type="block">
+        <template #default>
+            <Panel :modelValue="true" title="General Configuration" :hasCollapse="true">
+                <NotificationBox v-if="generalConfigNotificationMessage" :alertType="generalConfigNotificationAlertType">
+                    {{ generalConfigNotificationMessage }}
+                </NotificationBox>
+                <RockForm @submit="onSubmitGeneralConfigForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <CheckBox v-model="enableMultipleTimeZoneSupport"
+                                      label="Enable Multiple Time Zone Support"
+                                      help="When checked, Mutliple Time Zone is supported." />
+                            <UrlLinkBox v-model="pdfExternalRenderEndpoint"
+                                        label="PDF External Render Endpoint"
+                                        help="Specify a URL to use an external service like browserless.io to generate PDFs instead of using the internal PDF Generator." />
+                            <NumberBox v-model="visitorCookiePersistenceLength"
+                                       label="Visitor Cookie Persistence Length"
+                                       inputGroupClasses="input-width-lg"
+                                       help="The number of days a visitor cookie persists."
+                                       :minimumValue="1">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">days</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+                        <div class="col-md-6">
+                            <CheckBox v-model="showBusinessInPersonPicker"
+                                      label="Always Show Businesses in Person Picker"
+                                      help="When enabled, businesses will always be included in the search results of the person picker." />
+                            <CheckBox v-model="enableKeepAlive"
+                                      label="Enable Keep Alive"
+                                      help="Enable this setting to have Rock poll itself to keep it alive during times of inactivity. This setting is not needed if your AppPool's Idle Time-out is set to 0 (Highly Recommended). See the Rock Solid Internal Hosting guide for recommended AppPool settings." />
+                            <NumberBox v-model="personalizationCookieCacheLengthMinutes"
+                                       label="Personalization Segment Cookie Affinity Duration"
+                                       inputGroupClasses="input-width-lg"
+                                       help="Number of minutes old the ROCK_SEGMENT_FILTERS cookie can be before it is considered stale and will be re-fetched from the database. The default is 5 minutes if not set.">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">minutes</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+                    </div>
+                    <RockButton :btnType="BtnType.Primary"
+                                type="submit"
+                                loadingText="Saving..."
+                                :isLoading="isSavingGeneralConfigForm">
+                        Save
+                    </RockButton>
+                </RockForm>
+            </Panel>
+            <Panel :isDrawerOpen="false" title="UI Settings" :hasCollapse="true">
+                <NotificationBox v-if="uiSettingsNotificationMessage" :alertType="uiSettingsNotificationAlertType">
+                    {{ uiSettingsNotificationMessage }}
+                </NotificationBox>
+
+                <RockForm @submit="onSubmitUiSettingsForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <TextBox v-model="personRaceLabel"
+                                     label="Race Label"
+                                     help="The value to use in the label wherever the Race field is used." />
+                        </div>
+                        <div class="col-md-6">
+                            <TextBox v-model="personEthnicityLabel"
+                                     label="Ethnicity Label"
+                                     help="The value to use in the label wherever the Ethnicity field is used." />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <TextBox v-model="captchaSiteKey"
+                                     label="Captcha Site Key"
+                                     help="The Captcha site key." />
+                        </div>
+                        <div class="col-md-6">
+                            <TextBox v-model="captchaSecretKey"
+                                     label="Captcha Secret Key"
+                                     help="The Captcha secret key." />
+                        </div>
+                    </div>
+
+                    <TextBox v-model="smsOptInMessage"
+                             label="SMS Opt-In Message"
+                             help="This text will display next to a checkbox on blocks where a mobile phone number can be entered to enable SMS messaging for that number." />
+
+                    <div class="actions">
+                        <RockButton :btnType="BtnType.Primary"
+                                    type="submit"
+                                    loadingText="Saving..."
+                                    :isLoading="isSavingUiSettingsForm">
+                            Save
+                        </RockButton>
+                    </div>
+                </RockForm>
+            </Panel>
+
+            <Panel :isDrawerOpen="false" title="Observability" :hasCollapse="true">
+
+                <NotificationBox v-if="observabilityNotificationMessage" :alertType="observabilityNotificationAlertType">
+                    {{ observabilityNotificationMessage }}
+                </NotificationBox>
+                <RockForm @submit="onSubmitObservabilityForm">
+                    <CheckBox v-model="enableObservaility"
+                              label="Enable Observability"
+                              help="Enables the observability feature set." />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <UrlLinkBox v-model="endpointUrl"
+                                        label="Endpoint"
+                                        help="The URL for sending observability telemetry to." />
+
+                            <DropDownList v-model="endpointProtocol"
+                                          label="Endpoint Protocol"
+                                          :items="endpointProtocols"
+                                          help="The protocol to use to encode the telemetry data when sending it to the endpoint." />
+                        </div>
+                        <div class="col-md-6">
+                            <NumberBox v-model="spanCountLimit"
+                                       label="Span Count Limit"
+                                       help="Some data collectors have a limit on the number of spans that can be attached to a single trace. Once a trace reaches this many spans it will truncate any additional spans before sending. If blank then 9,900 will be used." />
+
+                            <NumberBox v-model="maxAttributeLength"
+                                       label="Maximum Attribute Length"
+                                       help="Some collectors will drop spans if they have attributes that exceed this length. Rock will limit attribute values to this length. If blank then 4,000 will be used." />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <KeyValueList v-model="endpointHeaders"
+                                          label="Endpoint Headers"
+                                          help="List of HTTP headers to be added to the HTTP calls when sending telemetry." />
+                        </div>
+                        <div class="col-md-6">
+                            <CheckBox v-model="includeQueryStatements"
+                                      label="Include Query Statements"
+                                      help="Enabling this option will include all SQL query statements in database activities. Otherwise they will only be included for targeted queries." />
+
+                            <ValueList v-model="targetedQueries"
+                                       label="Targeted Queries"
+                                       help="List of query hashes that will report more in depth metrics for." />
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        The service name used by the observability framework is defined in the web.config.
+                    </div>
+
+                    <div class="actions">
+                        <RockButton :btnType="BtnType.Primary"
+                                    type="submit"
+                                    loadingText="Saving..."
+                                    :isLoading="isSavingObservabilityForm">
+                            Save
+                        </RockButton>
+                    </div>
+                </RockForm>
+            </Panel>
+
+            <Panel :isDrawerOpen="false" title="Experimental Settings" titleIconCssClass="fa fa-flask" :hasCollapse="true">
+                <RockForm @submit="onSubmitExperimentalSettingsForm">
+                    <DayOfWeekPicker v-model="startingDayOfWeek"
+                                     label="Starting Day of Week"
+                                     defaultDayOfWeek="Monday"
+                                     help="Set this to change how Rock calculates 'Sunday Date'. This setting is retro-active to any data that is stored with SundayDate." />
+                    <NotificationBox alertType="warning">
+                        This is an experimental setting. Changing this will change how SundayDate is calculated and will also update existing data that keeps track of 'SundayDate'.
+                    </NotificationBox>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <NumberBox v-model="securityGrantTokenDuration"
+                                       inputGroupClasses="input-width-md"
+                                       label="Security Grant Token Duration"
+                                       help="This specifies the default duration in minutes that a security grant token will be valid for. These are used to provide additional security context to UI controls."
+                                       :minimumValue="60">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">minutes</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+                    </div>
+
+                    <NotificationBox v-if="experimentalSettingsNotificationMessage" :alertType="experimentalSettingsNotificationAlertType" v-html="experimentalSettingsNotificationMessage"/>
+
+                    <div class="actions">
+                        <RockButton :btnType="BtnType.Primary"
+                                    type="submit"
+                                    loadingText="Updating..."
+                                    :isLoading="isSavingExperimentalSettingsForm">
+                            Save
+                        </RockButton>
+
+                        <span class="pull-right">
+                            <RockButton :btnType="BtnType.Default"
+                                        loadingText="Saving..."
+                                        :isLoading="isRevokingGrants"
+                                        toolTip="Revokes all existing security grant tokens that have been issued."
+                                        @click="onRevokeGrantsClick">
+                                Revoke Grants
+                            </RockButton>
+                        </span>
+                    </div>
+                </RockForm>
+            </Panel>
+
+            <Panel :isDrawerOpen="false" title="Web.Config Settings" :hasCollapse="true">
+                <NotificationBox v-if="webConfigSettingsNotificationMessage" :alertType="webConfigNotificationAlertType" :heading="webConfigNotificationHeading">
+                    {{ webConfigSettingsNotificationMessage }}
+                </NotificationBox>
+                <RockForm @submit="onSubmitWebConfigForm">
+                    <fieldset>
+                        <DropDownList v-model="timeZone"
+                                      class="input-width-xxl"
+                                      label="Time Zone"
+                                      :items="timeZones"
+                                      help="The time zone you want Rock to operate in (regardless of what time zone the server is set to)." />
+                        <CheckBox v-model="enableRunJobsInIISContext"
+                                  label="Enable Run Jobs In IIS Context"
+                                  text=""
+                                  help="When checked, Rock's job engine runs on the web server. This setting allows you to disable running jobs on this server if it's participating in a Rock cluster. See the 'Jobs' section in the Admin Hero Guide for more information on this topic." />
+                        <NumberBox v-model="maxUploadFileSize"
+                                   label="Max Upload File Size"
+                                   inputGroupClasses="input-width-md"
+                                   :minimumValue="1"
+                                   :maximumValue="10000">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">MB</span>
+                            </template>
+                        </NumberBox>
+                        <NumberBox v-model="loginCookieTimeout"
+                                   label="Login Cookie Persistence Length"
+                                   inputGroupClasses="input-width-lg"
+                                   :minimumValue="1"
+                                   help="The length a login cookie persists in minutes. This should be set to a large number. This reduces 'login friction' and increases the chance that someone will remain logged in for a long period of time.">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">minutes</span>
+                            </template>
+                        </NumberBox>
+                        <CheckBox v-model="enableDatabasePerformanceCounters"
+                                  label="Enable Database Performance Counters"
+                                  text=""
+                                  help="When checked, metric values regarding the counts of active and available database connections will be collected, for reporting within the 'Hosting Metrics' category. Note that website performance can be impacted when this option is enabled; consider using only when investigating possible database performance issues." />
+                        <div class="row">
+                            <div class="col-md-4">
+                                <TextBox v-model="azureSignalREndpoint"
+                                         label="Azure SignalR Endpoint"
+                                         help="The Azure SignalR endpoint." />
+                            </div>
+                            <div class="col-md-4">
+                                <TextBox v-model="azureSignalRAccessKey"
+                                         label="Azure SignalR AccessKey"
+                                         help="The Azure SignalR access key." />
+                            </div>
+                        </div>
+
+                        <TextBox v-model="observabilityServiceName"
+                                 label="Observability Service Name" />
+                    </fieldset>
+                    <div class="actions">
+                        <RockButton :btnType="BtnType.Primary"
+                                    type="submit"
+                                    loadingText="Saving..."
+                                    :isLoading="isSavingWebConfigSettingsForm">
+                            Save
+                        </RockButton>
+                    </div>
+                </RockForm>
+            </Panel>
+
+            <Panel :isDrawerOpen="false" title="Family Rules" :hasCollapse="true">
+                <NotificationBox v-if="familyRulesNotificationMessage" :alertType="familyRulesNotificationAlertType">
+                    {{ familyRulesNotificationMessage }}
+                </NotificationBox>
+
+                <RockForm @submit="onSubmitFamilyRulesForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <CheckBox v-model="enableBibleStrictSpouse"
+                                      label="Bible Strict Spouse"
+                                      help="When unchecked, spouse rules are relaxed." />
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <RockButton :btnType="BtnType.Primary"
+                                    type="submit"
+                                    loadingText="Saving..."
+                                    :isLoading="isSavingFamilyRulesForm">
+                            Save
+                        </RockButton>
+                    </div>
+                </RockForm>
+            </Panel>
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import ValueList from "@Obsidian/Controls/valueList.obs";
+    import DayOfWeekPicker from "@Obsidian/Controls/dayOfWeekPicker.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { SystemConfigurationInitializationBox } from "@Obsidian/ViewModels/Blocks/Administration/SystemConfiguration/systemConfigurationInitializationBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { GeneralConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SystemConfiguration/generalConfigurationBag";
+    import { SaveConfigurationResponseBag } from "@Obsidian/ViewModels/Blocks/Administration/SystemConfiguration/saveConfigurationResponseBag";
+    import { confirm } from "@Obsidian/Utility/dialogs";
+    import { UiSettingsConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SystemConfiguration/uiSettingsConfigurationBag";
+    import { ObservabilityConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SystemConfiguration/observabilityConfigurationBag";
+    import { ExperimentalSettingsConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SystemConfiguration/experimentalSettingsConfigurationBag";
+    import { WebConfigConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SystemConfiguration/webConfigConfigurationBag";
+    import { FamilyRulesSettingsConfigurationBag } from "@Obsidian/ViewModels/Blocks/Administration/SystemConfiguration/familyRulesSettingsConfigurationBag";
+    import { upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+
+    const config = useConfigurationValues<SystemConfigurationInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    //#region Values
+    const endpointProtocols = ref<ListItemBag[]>(config.observabilityEndpointProtocols ?? []);
+    const timeZones = ref<ListItemBag[]>(config.timeZones ?? []);
+
+    // General Configuration
+    const enableMultipleTimeZoneSupport = ref(config.generalConfigurationBag?.isMultipleTimeZoneSupportEnabled ?? false);
+    const pdfExternalRenderEndpoint = ref(config.generalConfigurationBag?.pdfExternalRenderEndpoint ?? "");
+    const visitorCookiePersistenceLength = ref(config.generalConfigurationBag?.visitorCookiePersistenceLengthDays);
+    const showBusinessInPersonPicker = ref(config.generalConfigurationBag?.includeBusinessInPersonPicker ?? false);
+    const enableKeepAlive = ref(config.generalConfigurationBag?.enableKeepAlive ?? false);
+    const personalizationCookieCacheLengthMinutes = ref(config.generalConfigurationBag?.personalizationCookieCacheLengthMinutes);
+
+    const isSavingGeneralConfigForm = ref(false);
+    const generalConfigNotificationMessage = ref("");
+    const generalConfigNotificationAlertType = ref("");
+
+    // UI Settings
+    const personRaceLabel = ref(config.uiSettingsConfigurationBag?.raceLabel ?? "");
+    const personEthnicityLabel = ref(config.uiSettingsConfigurationBag?.ethnicityLabel ?? "");
+    const captchaSiteKey = ref(config.uiSettingsConfigurationBag?.captchaSiteKey ?? "");
+    const captchaSecretKey = ref(config.uiSettingsConfigurationBag?.captchaSecretKey ?? "");
+    const smsOptInMessage = ref(config.uiSettingsConfigurationBag?.smsOptInMessage ?? "");
+
+    const isSavingUiSettingsForm = ref(false);
+    const uiSettingsNotificationMessage = ref("");
+    const uiSettingsNotificationAlertType = ref("");
+
+    // Observability
+    const enableObservaility = ref(config.observabilityConfigurationBag?.enableObservability ?? false);
+    const endpointUrl = ref(config.observabilityConfigurationBag?.endpoint ?? "");
+    const endpointProtocol = ref(config.observabilityConfigurationBag?.endpointProtocol ?? "");
+    const spanCountLimit = ref(config.observabilityConfigurationBag?.spanCountLimit);
+    const maxAttributeLength = ref(config.observabilityConfigurationBag?.maximumAttributeLength);
+    const endpointHeaders = ref((config.observabilityConfigurationBag?.endpointHeaders ?? []).map((s): KeyValueItem => ({ key: s.text, value: s.value })));
+    const includeQueryStatements = ref(config.observabilityConfigurationBag?.includeQueryStatements ?? false);
+    const targetedQueries = ref(config.observabilityConfigurationBag?.targetedQueries ?? []);
+
+    const isSavingObservabilityForm = ref(false);
+    const observabilityNotificationMessage = ref("");
+    const observabilityNotificationAlertType = ref("");
+
+    // Experimental Settings
+    const startingDayOfWeek = ref(config.experimentalSettingsConfigurationBag?.startingDayOfWeek ?? "");
+    const securityGrantTokenDuration = ref(config.experimentalSettingsConfigurationBag?.securityGrantTokenDuration);
+
+    const isSavingExperimentalSettingsForm = ref(false);
+    const isRevokingGrants = ref(false);
+    const experimentalSettingsNotificationMessage = ref("");
+    const experimentalSettingsNotificationAlertType = ref("");
+
+    // Web Config
+    const timeZone = ref(config.webConfigConfigurationBag?.timeZone ?? "");
+    const enableRunJobsInIISContext = ref(config.webConfigConfigurationBag?.enableRunJobsInIISContext ?? false);
+    const maxUploadFileSize = ref(config.webConfigConfigurationBag?.maxUploadFileSize);
+    const loginCookieTimeout = ref(config.webConfigConfigurationBag?.loginCookiePersistenceLength);
+    const enableDatabasePerformanceCounters = ref(config.webConfigConfigurationBag?.enableDatabasePerformanceCounters ?? false);
+    const azureSignalREndpoint = ref(config.webConfigConfigurationBag?.azureSignalREndpoint ?? "");
+    const azureSignalRAccessKey = ref(config.webConfigConfigurationBag?.azureSignalRAccessKey ?? "");
+    const observabilityServiceName = ref(config.webConfigConfigurationBag?.observabilityServiceName ?? "");
+
+    const isSavingWebConfigSettingsForm = ref(false);
+    const webConfigDefaultMessage = " Once you save these changes, your website will be restarted. Consider making these changes at a low use time for your audience.";
+    const webConfigSettingsNotificationMessage = ref(webConfigDefaultMessage);
+    const webConfigNotificationAlertType = ref("warning");
+
+    // Family Rules
+    const enableBibleStrictSpouse = ref(config.familyRulesSettingsConfigurationBag?.enableBibleStrictSpouse ?? false);
+
+    const isSavingFamilyRulesForm = ref(false);
+    const familyRulesNotificationMessage = ref("");
+    const familyRulesNotificationAlertType = ref("");
+
+    const defaultSuccessMessage = "Settings saved successfully.";
+
+    //#endregion
+
+    //#region Computed Values
+
+    const webConfigNotificationHeading = computed((): string => {
+        return `${upperCaseFirstCharacter(webConfigNotificationAlertType.value)} `;
+    });
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /**
+     * Event handler for the "Submit" button being clicked on the General Configuration form.
+     */
+    async function onSubmitGeneralConfigForm(): Promise<void> {
+        try {
+            isSavingGeneralConfigForm.value = true;
+            const bag: GeneralConfigurationBag = {
+                enableKeepAlive: enableKeepAlive.value,
+                includeBusinessInPersonPicker: showBusinessInPersonPicker.value,
+                isMultipleTimeZoneSupportEnabled: enableMultipleTimeZoneSupport.value,
+                pdfExternalRenderEndpoint: pdfExternalRenderEndpoint.value,
+                personalizationCookieCacheLengthMinutes: personalizationCookieCacheLengthMinutes.value,
+                visitorCookiePersistenceLengthDays: visitorCookiePersistenceLength.value
+            };
+
+            const result = await invokeBlockAction<SaveConfigurationResponseBag>("SaveGeneralConfiguration", { bag });
+
+            if (!result.isSuccess || !result.data) {
+                generalConfigNotificationMessage.value = result.errorMessage || "An unexpected error occurred.";
+                generalConfigNotificationAlertType.value = "danger";
+            }
+            else if (result.data.errorMessage) {
+                generalConfigNotificationMessage.value = result.data.errorMessage;
+                generalConfigNotificationAlertType.value = result.data.alertType ?? "danger";
+            }
+            else {
+                generalConfigNotificationMessage.value = result.data.successMessage ?? defaultSuccessMessage;
+                generalConfigNotificationAlertType.value = result.data.alertType ?? "success";
+            }
+        }
+        finally {
+            isSavingGeneralConfigForm.value = false;
+        }
+    }
+
+    /**
+    * Event handler for the "Submit" button being clicked on the Ui Settings form.
+    */
+    async function onSubmitUiSettingsForm(): Promise<void> {
+        try {
+            isSavingUiSettingsForm.value = true;
+
+            const bag: UiSettingsConfigurationBag = {
+                captchaSecretKey: captchaSecretKey.value,
+                captchaSiteKey: captchaSiteKey.value,
+                ethnicityLabel: personEthnicityLabel.value,
+                raceLabel: personRaceLabel.value,
+                smsOptInMessage: smsOptInMessage.value
+            };
+
+            const result = await invokeBlockAction<SaveConfigurationResponseBag>("SaveUiSettingsConfiguration", { bag });
+
+            if (!result.isSuccess || !result.data) {
+                uiSettingsNotificationMessage.value = result.errorMessage || "An unexpected error occurred.";
+                uiSettingsNotificationAlertType.value = "danger";
+            }
+            else if (result.data.errorMessage) {
+                uiSettingsNotificationMessage.value = result.data.errorMessage;
+                uiSettingsNotificationAlertType.value = result.data.alertType ?? "danger";
+            }
+            else {
+                uiSettingsNotificationMessage.value = result.data.successMessage ?? defaultSuccessMessage;
+                uiSettingsNotificationAlertType.value = result.data.alertType ?? "success";
+            }
+        }
+        finally {
+            isSavingUiSettingsForm.value = false;
+        }
+    }
+
+    /**
+    * Event handler for the "Submit" button being clicked on the Observability form.
+    */
+    async function onSubmitObservabilityForm(): Promise<void> {
+        try {
+            isSavingObservabilityForm.value = true;
+
+            const bag: ObservabilityConfigurationBag = {
+                enableObservability: enableObservaility.value,
+                includeQueryStatements: includeQueryStatements.value,
+                endpoint: endpointUrl.value,
+                endpointHeaders: endpointHeaders.value.map((s): ListItemBag => ({ value: s.value ?? "", text: s.key ?? "" })),
+                endpointProtocol: endpointProtocol.value,
+                maximumAttributeLength: maxAttributeLength.value,
+                spanCountLimit: spanCountLimit.value,
+                targetedQueries: targetedQueries.value
+            };
+
+            const result = await invokeBlockAction<SaveConfigurationResponseBag>("SaveObservabilityConfiguration", { bag });
+
+            if (!result.isSuccess || !result.data) {
+                observabilityNotificationMessage.value = result.errorMessage || "An unexpected error occurred.";
+                observabilityNotificationAlertType.value = "danger";
+            }
+            else if (result.data.errorMessage) {
+                observabilityNotificationMessage.value = result.data.errorMessage;
+                observabilityNotificationAlertType.value = result.data.alertType ?? "danger";
+            }
+            else {
+                observabilityNotificationMessage.value = result.data.successMessage ?? defaultSuccessMessage;
+                observabilityNotificationAlertType.value = result.data.alertType ?? "success";
+            }
+        }
+        finally {
+            isSavingObservabilityForm.value = false;
+        }
+    }
+
+    /**
+    * Event handler for the "Submit" button being clicked on the Experimental Settings form.
+    */
+    async function onSubmitExperimentalSettingsForm(): Promise<void> {
+        try {
+            isSavingExperimentalSettingsForm.value = true;
+
+            const bag: ExperimentalSettingsConfigurationBag = {
+                securityGrantTokenDuration: securityGrantTokenDuration.value,
+                startingDayOfWeek: startingDayOfWeek.value
+            };
+
+            const result = await invokeBlockAction<SaveConfigurationResponseBag>("SaveExperimentalConfiguration", { bag });
+
+            if (!result.isSuccess || !result.data) {
+                experimentalSettingsNotificationMessage.value = result.errorMessage || "An unexpected error occurred.";
+                experimentalSettingsNotificationAlertType.value = "danger";
+            }
+            else if (result.data.errorMessage) {
+                experimentalSettingsNotificationMessage.value = result.data.errorMessage;
+                experimentalSettingsNotificationAlertType.value = result.data.alertType ?? "danger";
+            }
+            else {
+                experimentalSettingsNotificationMessage.value = result.data.successMessage ?? defaultSuccessMessage;
+                experimentalSettingsNotificationAlertType.value = result.data.alertType ?? "success";
+            }
+        }
+        finally {
+            isSavingExperimentalSettingsForm.value = false;
+        }
+    }
+
+    /**
+    * Event handler for the "Submit" button being clicked on the Web Config form.
+    */
+    async function onSubmitWebConfigForm(): Promise<void> {
+        try {
+            isSavingWebConfigSettingsForm.value = true;
+
+            const bag: WebConfigConfigurationBag = {
+                enableDatabasePerformanceCounters: enableDatabasePerformanceCounters.value,
+                enableRunJobsInIISContext: enableRunJobsInIISContext.value,
+                azureSignalRAccessKey: azureSignalRAccessKey.value,
+                azureSignalREndpoint: azureSignalREndpoint.value,
+                loginCookiePersistenceLength: loginCookieTimeout.value,
+                maxUploadFileSize: maxUploadFileSize.value,
+                observabilityServiceName: observabilityServiceName.value,
+                timeZone: timeZone.value
+            };
+
+            const result = await invokeBlockAction<SaveConfigurationResponseBag>("SaveWebConfigConfiguration", { bag });
+
+            if (!result.isSuccess || !result.data) {
+                webConfigSettingsNotificationMessage.value = result.errorMessage || "An unexpected error occurred.";
+                webConfigNotificationAlertType.value = "danger";
+            }
+            else if (result.data.errorMessage) {
+                webConfigSettingsNotificationMessage.value = result.data.errorMessage;
+                webConfigNotificationAlertType.value = result.data.alertType ?? "danger";
+            }
+            else {
+                webConfigSettingsNotificationMessage.value = result.data.successMessage ?? defaultSuccessMessage;
+                webConfigNotificationAlertType.value = result.data.alertType ?? "success";
+            }
+        }
+        finally {
+            isSavingWebConfigSettingsForm.value = false;
+        }
+    }
+
+    /**
+    * Event handler for the "Submit" button being clicked on the Family Rules form.
+    */
+    async function onSubmitFamilyRulesForm(): Promise<void> {
+        try {
+            isSavingFamilyRulesForm.value = true;
+
+            const bag: FamilyRulesSettingsConfigurationBag = {
+                enableBibleStrictSpouse: enableBibleStrictSpouse.value
+            };
+
+            const result = await invokeBlockAction<SaveConfigurationResponseBag>("SaveFamilyRulesSettingsConfiguration", { bag });
+
+            if (!result.isSuccess || !result.data) {
+                familyRulesNotificationMessage.value = result.errorMessage || "An unexpected error occurred.";
+                familyRulesNotificationAlertType.value = "danger";
+            }
+            else if (result.data.errorMessage) {
+                familyRulesNotificationMessage.value = result.data.errorMessage;
+                familyRulesNotificationAlertType.value = result.data.alertType ?? "danger";
+            }
+            else {
+                familyRulesNotificationMessage.value = result.data.successMessage ?? defaultSuccessMessage;
+                familyRulesNotificationAlertType.value = result.data.alertType ?? "success";
+            }
+        }
+        finally {
+            isSavingFamilyRulesForm.value = false;
+        }
+    }
+
+    async function onRevokeGrantsClick(): Promise<void> {
+        isRevokingGrants.value = true;
+
+        try {
+            if (await confirm("Are you sure you wish to revoke all security grant tokens?")) {
+                const result = await invokeBlockAction<SaveConfigurationResponseBag>("RevokeSecurityGrants");
+
+                if (!result.isSuccess || !result.data) {
+                    experimentalSettingsNotificationMessage.value = result.errorMessage || "An unexpected error occurred.";
+                    experimentalSettingsNotificationAlertType.value = "danger";
+                }
+                else if (result.data.errorMessage) {
+                    experimentalSettingsNotificationMessage.value = result.data.errorMessage;
+                    experimentalSettingsNotificationAlertType.value = result.data.alertType ?? "danger";
+                }
+                else {
+                    experimentalSettingsNotificationMessage.value = result.data.successMessage ?? defaultSuccessMessage;
+                    experimentalSettingsNotificationAlertType.value = result.data.alertType ?? "success";
+                }
+            }
+        }
+        finally {
+            isRevokingGrants.value = false;
+        }
+    }
+
+    //#endregion
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+</script>

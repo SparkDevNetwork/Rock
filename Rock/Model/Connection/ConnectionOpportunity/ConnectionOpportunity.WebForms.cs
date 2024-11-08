@@ -18,6 +18,7 @@
 
 using System;
 using System.Web;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -34,21 +35,10 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetPhotoUrl( int? photoId, int? maxWidth = null, int? maxHeight = null )
         {
-            string virtualPath = String.Empty;
+            string virtualPath = string.Empty;
             if ( photoId.HasValue )
             {
-                string widthHeightParams = string.Empty;
-                if ( maxWidth.HasValue )
-                {
-                    widthHeightParams += string.Format( "&maxwidth={0}", maxWidth.Value );
-                }
-
-                if ( maxHeight.HasValue )
-                {
-                    widthHeightParams += string.Format( "&maxheight={0}", maxHeight.Value );
-                }
-
-                virtualPath = String.Format( "~/GetImage.ashx?id={0}" + widthHeightParams, photoId );
+                virtualPath = FileUrlHelper.GetImageUrl( photoId.Value, new GetImageUrlOptions { MaxWidth = maxWidth, MaxHeight = maxHeight } );
             }
             else
             {
@@ -63,6 +53,7 @@ namespace Rock.Model
             {
                 return VirtualPathUtility.ToAbsolute( virtualPath );
             }
+
         }
 
         #endregion

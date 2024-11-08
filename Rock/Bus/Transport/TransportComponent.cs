@@ -74,5 +74,42 @@ namespace Rock.Bus.Transport
         public abstract ISendEndpoint GetSendEndpoint( IBusControl bus, string queueName );
 
         #endregion Abstract Methods
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransportComponent"/> class.
+        /// </summary>
+        public TransportComponent()
+            : base()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TransportComponent" /> class.
+        /// </summary>
+        /// <param name="updateAttributes">if set to <c>true</c> then attributes will be loaded from database.</param>
+        public TransportComponent( bool updateAttributes )
+            : base( updateAttributes )
+        {
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the destination address used for sending messages to the
+        /// named queue.
+        /// </summary>
+        /// <param name="bus">The bus this transport is handling communication for.</param>
+        /// <param name="queueName">The name of the queue.</param>
+        /// <returns>An instance of <see cref="Uri"/> if the queue was valid; otherwise <c>null</c>.</returns>
+        public virtual Uri GetDestinationAddressForQueue( IBusControl bus, string queueName )
+        {
+            return null;
+        }
+
+        #endregion
     }
 }

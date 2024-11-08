@@ -211,6 +211,15 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets the interaction intent defined type cache.
+        /// </summary>
+        protected DefinedTypeCache InteractionIntentDefinedTypeCache => DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.INTERACTION_INTENT ) );
+
+        #endregion
+
         #region Control Methods
 
         /// <summary>
@@ -245,6 +254,16 @@ namespace RockWeb.Blocks.Cms
             lbSave.OnClientClick = clearScript;
             lbCancel.OnClientClick = clearScript;
 
+            if ( InteractionIntentDefinedTypeCache != null )
+            {
+                dvpContentChannelItemIntents.DefinedTypeId = InteractionIntentDefinedTypeCache.Id;
+                dvpContentChannelItemIntents.Visible = true;
+            }
+            else
+            {
+                dvpContentChannelItemIntents.Visible = false;
+            }
+
             string script = string.Format( _jsScript, pnlStatus.ClientID, hfStatus.ClientID, hfIsDirty.ClientID, htmlContent.ClientID );
             ScriptManager.RegisterStartupScript( pnlStatus, pnlStatus.GetType(), "status-script-" + this.BlockId.ToString(), script, true );
         }
@@ -255,8 +274,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             RockPage.AddScriptLink( "~/Scripts/Rock/slug.js" );
 
             if ( !Page.IsPostBack )
@@ -284,6 +301,8 @@ namespace RockWeb.Blocks.Cms
 
                 ShowDialog();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -407,7 +426,7 @@ namespace RockWeb.Blocks.Cms
                     }
                 }
 
-                if (contentItem.ContentChannel.IsContentLibraryEnabled)
+                if ( contentItem.ContentChannel.IsContentLibraryEnabled )
                 {
                     contentItem.ExperienceLevel = rblExperienceLevel.SelectedValueAsEnumOrNull<ContentLibraryItemExperienceLevel>();
                     contentItem.ContentLibraryContentTopicId = ddlTopic.SelectedValueAsInt();
@@ -480,6 +499,14 @@ namespace RockWeb.Blocks.Cms
                             occurrenceChannelItemService.Add( occurrenceChannelItem );
                             rockContext.SaveChanges();
                         }
+                    }
+
+                    if ( InteractionIntentDefinedTypeCache != null )
+                    {
+                        new EntityIntentService( rockContext )
+                            .SetIntents<ContentChannelItem>( contentItem.Id, dvpContentChannelItemIntents.SelectedValuesAsInt );
+
+                        rockContext.SaveChanges();
                     }
                 } );
 
@@ -1167,60 +1194,59 @@ namespace RockWeb.Blocks.Cms
                     BindParentItemsGrid( contentItem );
                 }
 
-                // Content Library
-                if ( contentItem.ContentChannel.IsContentLibraryEnabled )
+                using ( var rockContext = new RockContext() )
                 {
-                    var license = contentItem.ContentLibraryLicenseTypeValueId.HasValue ? DefinedValueCache.Get( contentItem.ContentLibraryLicenseTypeValueId.Value ) : null;
-
-                    if ( contentItem.IsUploadedToContentLibrary )
+                    // Content Library
+                    if ( contentItem.ContentChannel.IsContentLibraryEnabled )
                     {
-                        pwContentLibraryUploaded.Visible = true;
-                        pwContentLibraryUploaded.LabelControls = new Control[]
+                        var license = contentItem.ContentLibraryLicenseTypeValueId.HasValue ? DefinedValueCache.Get( contentItem.ContentLibraryLicenseTypeValueId.Value ) : null;
+
+                        if ( contentItem.IsUploadedToContentLibrary )
                         {
-                            new HighlightLabel
+                            pwContentLibraryUploaded.Visible = true;
+                            pwContentLibraryUploaded.LabelControls = new Control[]
                             {
-                                ClientIDMode = ClientIDMode.AutoID,
-                                LabelType = LabelType.Info,
-                                Text = $"{license.Value} License"
-                            }
-                        };
+                                new HighlightLabel
+                                {
+                                    ClientIDMode = ClientIDMode.AutoID,
+                                    LabelType = LabelType.Info,
+                                    Text = $"{license.Value} License"
+                                }
+                            };
 
-                        var uploadedByPersonName = contentItem.ContentLibraryUploadedByPersonName;
+                            var uploadedByPersonName = contentItem.ContentLibraryUploadedByPersonName;
 
-                        lContentLibraryUploadedOn.Text = uploadedByPersonName.IsNotNullOrWhiteSpace() ? $" by { uploadedByPersonName }" : string.Empty;
-                        lContentLibraryUploadedBy.Text = contentItem.ContentLibraryUploadedDateTime.HasValue ? $" on { contentItem.ContentLibraryUploadedDateTime.Value.ToShortDateString() }" : string.Empty;
-                        ;
-                    }
-                    else if ( contentItem.IsDownloadedFromContentLibrary )
-                    {
-                        pwContentLibraryDownloaded.Visible = true;
-                        pwContentLibraryDownloaded.LabelControls = new Control[]
+                            lContentLibraryUploadedOn.Text = uploadedByPersonName.IsNotNullOrWhiteSpace() ? $" by {uploadedByPersonName}" : string.Empty;
+                            lContentLibraryUploadedBy.Text = contentItem.ContentLibraryUploadedDateTime.HasValue ? $" on {contentItem.ContentLibraryUploadedDateTime.Value.ToShortDateString()}" : string.Empty;
+                        }
+                        else if ( contentItem.IsDownloadedFromContentLibrary )
                         {
-                            new HighlightLabel
+                            pwContentLibraryDownloaded.Visible = true;
+                            pwContentLibraryDownloaded.LabelControls = new Control[]
                             {
-                                ClientIDMode = ClientIDMode.AutoID,
-                                LabelType = LabelType.Info,
-                                Text = $"{license.Value} License"
-                            }
-                        };
-                         
-                        var downloadedOn = contentItem.CreatedDateTime.HasValue ? $" on {contentItem.CreatedDateTime.ToShortDateString()}" : string.Empty;
-                        var downloadedBy = contentItem.CreatedByPersonAlias != null ? $" by {contentItem.CreatedByPersonName}" : string.Empty;
+                                new HighlightLabel
+                                {
+                                    ClientIDMode = ClientIDMode.AutoID,
+                                    LabelType = LabelType.Info,
+                                    Text = $"{license.Value} License"
+                                }
+                            };
 
-                        lContentLibraryDownloadedOn.Text = downloadedOn;
-                        lContentLibraryDownloadedBy.Text = downloadedBy;
-                        aContentLibraryDownloadedLicense.HRef = $"https://rockrms.com/library/licenses?utm_source=rock-item-uploaded";
-                        aContentLibraryDownloadedLicense.InnerText = $"{license?.Value} License";
-                    }
+                            var downloadedOn = contentItem.CreatedDateTime.HasValue ? $" on {contentItem.CreatedDateTime.ToShortDateString()}" : string.Empty;
+                            var downloadedBy = contentItem.CreatedByPersonAlias != null ? $" by {contentItem.CreatedByPersonName}" : string.Empty;
 
-                    rblExperienceLevel.Visible = true;
-                    rblExperienceLevel.BindToEnum<ContentLibraryItemExperienceLevel>();
-                    rblExperienceLevel.SelectedValue = contentItem.ExperienceLevel.HasValue ? contentItem.ExperienceLevel.ConvertToInt().ToString() : null;
+                            lContentLibraryDownloadedOn.Text = downloadedOn;
+                            lContentLibraryDownloadedBy.Text = downloadedBy;
+                            aContentLibraryDownloadedLicense.HRef = $"https://rockrms.com/library/licenses?utm_source=rock-item-uploaded";
+                            aContentLibraryDownloadedLicense.InnerText = $"{license?.Value} License";
+                        }
 
-                    ddlTopic.Visible = true;
-                    using ( var rockContext = new RockContext() )
-                    {
+                        rblExperienceLevel.Visible = true;
+                        rblExperienceLevel.BindToEnum<ContentLibraryItemExperienceLevel>();
+                        rblExperienceLevel.SelectedValue = contentItem.ExperienceLevel.HasValue ? contentItem.ExperienceLevel.ConvertToInt().ToString() : null;
+
                         // Topics
+                        ddlTopic.Visible = true;
                         var contentTopics = new ContentTopicService( rockContext )
                             .Queryable()
                             .Select( c => new
@@ -1259,6 +1285,23 @@ namespace RockWeb.Blocks.Cms
                         }
 
                         ddlTopic.SelectedValue = contentItem.ContentLibraryContentTopicId.ToString();
+                    }
+
+                    // Interaction Intents
+                    if ( InteractionIntentDefinedTypeCache != null )
+                    {
+                        var intentValueIds = contentItem.Id > 0
+                            ? new EntityIntentService( rockContext ).GetIntentValueIds<ContentChannelItem>( contentItem.Id )
+                            : null;
+
+                        if ( intentValueIds?.Any() == true )
+                        {
+                            dvpContentChannelItemIntents.SetValues( intentValueIds );
+                        }
+                        else
+                        {
+                            dvpContentChannelItemIntents.ClearSelection();
+                        }
                     }
                 }
             }

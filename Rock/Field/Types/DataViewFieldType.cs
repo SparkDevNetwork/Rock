@@ -76,17 +76,58 @@ namespace Rock.Field.Types
             if ( Guid.TryParse( privateValue, out Guid guid ) )
             {
                 var schedule = NamedScheduleCache.Get( guid );
+                
                 if ( schedule != null )
                 {
-                    return new ListItemBag()
-                    {
-                        Value = schedule.Guid.ToString(),
-                        Text = schedule.Name,
-                    }.ToCamelCaseJson( false, true );
+                    return schedule.ToListItemBag().ToCamelCaseJson( false, true );
                 }
             }
 
             return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            if ( publicConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+            {
+                var entityTypeNameValue = privateConfigurationValues[ENTITY_TYPE_NAME_KEY].FromJsonOrNull<ListItemBag>();
+                if ( entityTypeNameValue != null )
+                {
+                    var entityType = EntityTypeCache.Get( entityTypeNameValue.Value.AsGuid() );
+
+                    if ( entityType != null )
+                    {
+                        privateConfigurationValues[ENTITY_TYPE_NAME_KEY] = entityType.Name;
+                    }
+                }
+            }
+
+            return privateConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            if ( usage != ConfigurationValueUsage.View && publicConfigurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+            {
+                var entityTypeName = publicConfigurationValues[ENTITY_TYPE_NAME_KEY];
+                var entityType = EntityTypeCache.Get( entityTypeName );
+                if ( entityType != null )
+                {
+                    publicConfigurationValues[ENTITY_TYPE_NAME_KEY] = new ListItemBag()
+                    {
+                        Text = entityType.FriendlyName,
+                        Value = entityType.Guid.ToString()
+                    }.ToCamelCaseJson( false, true );
+                }
+            }
+
+            return publicConfigurationValues;
         }
 
         #endregion

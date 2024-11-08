@@ -238,7 +238,7 @@ namespace Rock.Obsidian.UI
 
                 foreach ( var aliasId in chunkedPrimaryAliasIds )
                 {
-                    personAliasIdLookup.AddOrIgnore( aliasId.PersonId, aliasId.Id );
+                    personAliasIdLookup.TryAdd( aliasId.PersonId, aliasId.Id );
                 }
             }
 

@@ -3,6 +3,7 @@
     <RockFormField :modelValue="internalValue"
                    v-bind="standardProps"
                    :formGroupClasses="'rock-note-text-editor ' + formGroupClasses"
+                   :rules="augmentedRules"
                    name="note-text-editor">
         <template #default="{ uniqueId }">
             <div ref="relativeElement" class="control-wrapper rock-text-container" style="position: relative">
@@ -203,6 +204,8 @@
     import { NoteEditorMentionSearchResultsBag } from "@Obsidian/ViewModels/Rest/Controls/noteEditorMentionSearchResultsBag";
     import { NoteMentionItemBag } from "@Obsidian/ViewModels/Controls/noteMentionItemBag";
     import { arrow, shift, useFloating, VirtualElement } from "@Obsidian/Libs/floating-ui";
+    import type { ValidationRule } from "@Obsidian/Types/validationRules";
+    import { normalizeRules } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
         modelValue: {
@@ -216,6 +219,11 @@
         },
 
         mentionEnabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        allowHtml: {
             type: Boolean as PropType<boolean>,
             default: false
         },
@@ -255,6 +263,18 @@
 
     const mentionPickerVisible = computed((): boolean => {
         return inMentionMode.value && mentionSearchResults.value.length > 0;
+    });
+
+    const augmentedRules = computed((): ValidationRule[] => {
+
+        const rules = normalizeRules(props.rules);
+
+        // Mentions use HTML text, so we need to allow it.
+        if (!props.allowHtml && !props.mentionEnabled) {
+            rules.push("nohtml");
+        }
+
+        return rules;
     });
 
     // #region Functions

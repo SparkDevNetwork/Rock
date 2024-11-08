@@ -325,6 +325,12 @@ namespace Rock.Web.Cache
         public bool IsPublic { get; private set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if changes to the attribute values should be recorded into the generic History log table.
+        /// </summary>
+        [DataMember]
+        public bool IsSuppressHistoryLogging { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
         /// </summary>
         /// <value>
@@ -569,6 +575,7 @@ namespace Rock.Web.Cache
             AbbreviatedName = attribute.AbbreviatedName;
             ShowOnBulk = attribute.ShowOnBulk;
             IsPublic = attribute.IsPublic;
+            IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging;
 
             ConfigurationValues = new Dictionary<string, string>( qualifiers );
             QualifierValues = new Dictionary<string, ConfigurationValue>();
@@ -701,7 +708,7 @@ namespace Rock.Web.Cache
                 rockControl.Warning = options.WarningText;
                 rockControl.Required = isRequired;
                 rockControl.ValidationGroup = options.ValidationGroup;
-                if ( options.LabelText.IsNullOrWhiteSpace() && isRequired )
+                if ( options.LabelText.IsNullOrWhiteSpace() && isRequired && rockControl.RequiredErrorMessage.IsNullOrWhiteSpace() )
                 {
                     rockControl.RequiredErrorMessage = $"{Name} is required.";
                 }
@@ -869,6 +876,16 @@ namespace Rock.Web.Cache
         internal static void ClearReferencedEntityDependencies()
         {
             RockCache.Remove( AttributePropertyDependenciesCacheKey );
+        }
+
+        /// <summary>
+        /// Loads the referenced entity dependency cache if it is empty. This can be called
+        /// before an Attribute is created, modified or deleted if there is the possibility
+        /// the cache might be empty to prevent a deadlock.
+        /// </summary>
+        internal static void GetReferencedEntityDependencies()
+        {
+            RockCache.GetOrAddExisting( AttributePropertyDependenciesCacheKey, GetAttributePropertyDependencies );
         }
 
         /// <summary>
@@ -1055,18 +1072,6 @@ namespace Rock.Web.Cache
         #endregion
 
         #region Entity Attributes Cache
-
-        /// <summary>
-        /// Flushes the entity attributes.
-        /// </summary>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use EntityTypeAttributesCache.Clear() instead." )]
-        public static void RemoveEntityAttributes()
-        {
-#if REVIEW_WEBFORMS
-            EntityAttributesCache.Remove();
-#endif
-        }
 
         /// <summary>
         /// Gets the person attributes of given list of field types class names. If no Field types are specified, all the person attributes are retrieved.

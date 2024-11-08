@@ -165,6 +165,7 @@
                                     <asp:ListItem Value="Update" Text="Update In Group" />
                                 </Rock:RockDropDownList>
                                 <Rock:GroupPicker ID="gpGroup" runat="server" Label="Group" OnSelectItem="gpGroup_SelectItem" />
+                                <Rock:NotificationBox ID="nbGroupMessage" runat="server" NotificationBoxType="Warning" Visible="false"></Rock:NotificationBox>
                             </div>
                             <asp:Panel ID="pnlGroupMemberStatus" runat="server" CssClass="col-sm-6">
                                 <Rock:RockDropDownList ID="ddlGroupRole" runat="server" Label="Role" DataTextField="Name" DataValueField="Id" Visible="false" />

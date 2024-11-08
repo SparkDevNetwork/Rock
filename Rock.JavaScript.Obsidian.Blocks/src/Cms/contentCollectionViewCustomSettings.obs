@@ -37,6 +37,12 @@
                     <CheckBox v-model="showSort"
                               label="Show Sort" />
                 </div>
+
+                <div class="col-md-4">
+                    <CheckBox v-model="includeUnapproved"
+                              label="Include Unapproved"
+                              help="Determines if unapproved items should be included in the search results." />
+                </div>
             </div>
 
             <div class="row">
@@ -78,6 +84,7 @@
             </div>
 
             <CodeEditor v-model="resultsTemplate"
+                        v-if="!isMobileSiteType"
                         label="Results Template"
                         mode="lava"
                         rules="required" />
@@ -89,6 +96,12 @@
 
             <CodeEditor v-model="preSearchTemplate"
                         label="Pre-Search Template"
+                        mode="lava" />
+
+            <CodeEditor v-model="groupHeaderTemplate"
+                        v-if="isMobileSiteType && isGroupBySourceEnabled"
+                        label="Group Header Template"
+                        help="The template to use for the header of each group of results."
                         mode="lava" />
 
             <div v-if="showFiltersPanel">
@@ -139,7 +152,6 @@
                                help="The amount of boost to apply to each shared request filter. A value of 1 = no boost, a value of > 1 will increase the match score while a value of < 1 will reduce the match score." />
                 </div>
             </div>
-
         </div>
 
     </Modal>
@@ -213,6 +225,7 @@
     const contentCollection = ref("");
     const contentCollectionItems = ref<ContentCollectionListItemBag[]>([]);
     const groupResultsBySource = ref(false);
+    const siteType = ref("");
     const searchOnLoad = ref(false);
     const numberOfResults = ref<number | null>(null);
     const showFiltersPanel = ref(false);
@@ -222,12 +235,15 @@
     const trendingTerm = ref("");
     const filters = ref<FilterOptionsBag[]>([]);
     const resultsTemplate = ref("");
+    const groupHeaderTemplate = ref("");
+
     const itemTemplate = ref("");
     const preSearchTemplate = ref("");
     const boostMatchingSegments = ref(false);
     const boostMatchingRequestFilters = ref(false);
     const segmentBoostAmount = ref<number | null>(null);
     const requestFilterBoostAmount = ref<number | null>(null);
+    const includeUnapproved = ref<boolean>(false);
 
     const editingFilter = ref<FilterOptionsBag | null>(null);
     const editingFilterHeaderMarkup = ref("");
@@ -242,6 +258,14 @@
 
     const isTrendingSortEnabled = computed((): boolean => {
         return enabledSortOrders.value.includes(SortOrdersKey.Trending);
+    });
+
+    const isMobileSiteType = computed((): boolean => {
+        return siteType.value === "mobile";
+    });
+
+    const isGroupBySourceEnabled = computed((): boolean => {
+        return groupResultsBySource.value;
     });
 
     // #endregion
@@ -274,6 +298,9 @@
             boostMatchingRequestFilters.value = result.data.settings.boostMatchingRequestFilters;
             segmentBoostAmount.value = result.data.settings.segmentBoostAmount ?? null;
             requestFilterBoostAmount.value = result.data.settings.requestFilterBoostAmount ?? null;
+            includeUnapproved.value = result.data.settings.includeUnapproved;
+            siteType.value = result.data.settings.siteType ?? "web";
+            groupHeaderTemplate.value = result.data.settings.groupHeaderTemplate ?? "";
 
             // Set any additional information required by the UI to paint the
             // custom settings interface.
@@ -332,6 +359,8 @@
         setCustomSettingsBoxValue(box, "boostMatchingRequestFilters", boostMatchingRequestFilters.value);
         setCustomSettingsBoxValue(box, "segmentBoostAmount", segmentBoostAmount.value);
         setCustomSettingsBoxValue(box, "requestFilterBoostAmount", requestFilterBoostAmount.value);
+        setCustomSettingsBoxValue(box, "includeUnapproved", includeUnapproved.value);
+        setCustomSettingsBoxValue(box, "groupHeaderTemplate", groupHeaderTemplate.value);
 
         const data = {
             box

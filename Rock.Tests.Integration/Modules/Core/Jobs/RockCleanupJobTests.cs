@@ -24,13 +24,14 @@ using Rock.Jobs;
 using Rock.Model;
 using Rock.Tests.Integration.Data.Interactions;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core.Jobs
+namespace Rock.Tests.Integration.Modules.Core.Jobs
 {
     [TestClass]
-    public class RockCleanupJobTests
+    public class RockCleanupJobTests : DatabaseTestsBase
     {
         [Ignore( "Fix required. Tests related to the Account Protection Profile are not returning expected results. [Last Modified by MP]" )]
         [TestMethod]
@@ -543,6 +544,7 @@ namespace Rock.Tests.Integration.Core.Jobs
         #region Cleanup Task: Cleanup Person-Related Records
 
         [TestMethod]
+        [IsolatedTestDatabase]
         public void RockCleanup_CleanupPersonRelatedRecords_MissingSearchKeysAreAdded()
         {
             var job = new Rock.Jobs.RockCleanup();
@@ -586,9 +588,6 @@ WHERE PersonId IN ( SELECT Id FROM Person WHERE [Guid] = '{TestGuids.TestPeople.
 
             // Verify that the initial search keys have been restored, less the two invalid records.
             Assert.AreEqual( initialSearchKeyCount - 2, finalSearchKeyCount, "Invalid search key count." );
-
-            // Restore the database for subsequent tests.
-            TestDatabaseHelper.ResetDatabase();
         }
 
         #endregion

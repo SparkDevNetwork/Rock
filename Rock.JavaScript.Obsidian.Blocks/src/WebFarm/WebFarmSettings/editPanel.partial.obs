@@ -103,18 +103,6 @@
 
     // #endregion
 
-    // #region Computed Values
-
-    // #endregion
-
-    // #region Functions
-
-    // #endregion
-
-    // #region Event Handlers
-
-    // #endregion
-
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
         updateRefValue(attributes, props.modelValue.attributes ?? {});

@@ -34,7 +34,7 @@ export type AttributeFieldDefinitionBag = {
      * Gets or sets the field type unique identifier. This is the field type
      * that provides logic for the attribute.
      */
-    fieldTypeGuid?: Guid | null;
+    fieldTypeGuid: Guid;
 
     /**
      * Gets or sets the name of the field. This corresponds to the key name

@@ -56,5 +56,15 @@ namespace Rock.Net
         /// </summary>
         /// <value>The cookies provided in the request.</value>
         IDictionary<string, string> Cookies { get; }
+
+        /// <summary>
+        /// Gets the method used for the request.
+        /// </summary>
+        string Method { get; }
+
+        /// <summary>
+        /// Gets whether the cookie values for this request have already been URL decoded.
+        /// </summary>
+        bool CookiesValuesAreUrlDecoded { get; }
     }
 }

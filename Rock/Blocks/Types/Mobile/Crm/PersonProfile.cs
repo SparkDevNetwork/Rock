@@ -185,63 +185,62 @@ namespace Rock.Blocks.Types.Mobile.Crm
       <Button Text=""Edit""
         Command=""{Binding ShowEdit}""
         HorizontalOptions=""End""
-        StyleClass=""btn, btn-link"" />
+        StyleClass=""btn, btn-link, p-0"" />
     {% endif %}
     
     <!-- The main layout of the block. -->
-    <StackLayout HorizontalOptions=""Center""
+    <StackLayout 
+        HorizontalOptions=""Center""
         Spacing=""4"">
         <Rock:Image Source=""{{ 'Global' | Attribute:'PublicApplicationRoot' | Append:Person.PhotoUrl | Escape }}"" 
-            WidthRequest=""128"" 
-            HeightRequest=""128"">
+            WidthRequest=""100"" 
+            HeightRequest=""100"">
             <Rock:CircleTransformation />
         </Rock:Image>
-        
+
         {% if Person.IsDeceased %}
             <Label Text=""Deceased""
-                StyleClass=""text-danger""
-                FontAttributes=""Bold""
+                StyleClass=""text-danger-strong, body, bold""
                 HorizontalTextAlignment=""Center"" />
         {% endif %}
         
-        <Label Text=""{{ Person.FullName }}""
-            StyleClass=""h2""
+        <Label Text=""{{ Person.FullName | Escape }}""
+            StyleClass=""title1, bold, text-interface-strongest""
             HorizontalTextAlignment=""Center"" />
             
         <!-- Our campus, connection status and record status -->
         <StackLayout Orientation=""Horizontal""
-            HorizontalOptions=""Center"">
+            HorizontalOptions=""Center""
+            StyleClass=""spacing-4"">
             
             <!-- Campus -->
             <Frame Padding=""4""
                 CornerRadius=""4""
-                HasShadow=""False""
-                BackgroundColor=""#d9f2fe"">
-                <Label Text=""{{ Person | Campus | Property:'Name' }}""
-                    TextColor=""#0079b0""
+                StyleClass=""bg-info, bg-info-soft""
+                HasShadow=""false"">
+                <Label Text=""{{ Person | Campus | Property:'Name' | Escape }}""
                     VerticalTextAlignment=""Center""
-                    FontSize=""14"" />
+                    StyleClass=""text-info, text-info-strong, body"" />
             </Frame>
             
             <!-- Connection Status -->
             <Frame Padding=""4""
                 CornerRadius=""4""
-                HasShadow=""False""
-                BackgroundColor=""#dcf6ed"">
-                <Label Text=""{{ Person.ConnectionStatusValue.Value }}""
-                    FontSize=""14""
-                    TextColor=""#065f46"" />
+                StyleClass=""bg-success, bg-success-soft""
+                HasShadow=""false"">
+                <Label Text=""{{ Person.ConnectionStatusValue.Value | Escape }}""
+                    StyleClass=""text-success, text-success-strong, body""/>
             </Frame>
             
             <!-- Record Status -->
             {% assign recordStatus = Person.RecordStatusValue.Value %}
             {% if recordStatus == 'Inactive' %}
-                <Frame Padding=""8""
+                <Frame Padding=""4""
                     CornerRadius=""4""
                     HasShadow=""False""
-                    BackgroundColor=""#f9e5e2"">
-                    <Label Text=""{{ Person.RecordStatusValue.Value }}""
-                        TextColor=""#ac3523"" />
+                    StyleClass=""bg-warning, bg-warning-soft"">
+                    <Label Text=""{{ Person.RecordStatusValue.Value | Escape }}""
+                        StyleClass=""text-warning, text-warning-strong, body""/>
                 </Frame>
             {% endif %}
             
@@ -664,49 +663,34 @@ namespace Rock.Blocks.Types.Mobile.Crm
             person.Gender = personBag.Gender.ToNative();
             person.InactiveReasonNote = personBag.InactiveNote;
 
-            if ( personBag.Suffix.HasValue )
-            {
-                person.SuffixValueId = DefinedValueCache.GetId( personBag.Suffix.Value );
-            }
+            person.SuffixValueId = personBag.Suffix.HasValue ? DefinedValueCache.GetId( personBag.Suffix.Value ) : null;
+            person.ConnectionStatusValueId = personBag.ConnectionStatus.HasValue ? DefinedValueCache.GetId( personBag.ConnectionStatus.Value ) : null;
+            person.RecordStatusValueId = personBag.RecordStatus.HasValue ? DefinedValueCache.GetId( personBag.RecordStatus.Value ) : null;
+            person.RecordStatusReasonValueId = personBag.InactiveReason.HasValue ? DefinedValueCache.GetId( personBag.InactiveReason.Value ) : null;
+            person.DeceasedDate = personBag.DeceasedDate.HasValue ? personBag.DeceasedDate.Value.DateTime : ( DateTime? ) null;
+            person.MaritalStatusValueId = personBag.MaritalStatus.HasValue ? DefinedValueCache.GetId( personBag.MaritalStatus.Value ) : null;
+            person.AnniversaryDate = personBag.AnniversaryDate.HasValue ? personBag.AnniversaryDate.Value.DateTime : ( DateTime? ) null;
 
-            if ( personBag.ConnectionStatus.HasValue )
-            {
-                person.ConnectionStatusValueId = DefinedValueCache.GetId( personBag.ConnectionStatus.Value );
-            }
+            var birthday = personBag.BirthDate;
 
-            if ( personBag.RecordStatus.HasValue )
+            if ( birthday.HasValue )
             {
-                person.RecordStatusValueId = DefinedValueCache.GetId( personBag.RecordStatus.Value );
-            }
+                person.BirthMonth = birthday.Value.Month;
+                person.BirthDay = birthday.Value.Day;
+                if ( birthday.Value.Year != DateTime.MinValue.Year )
+                {
+                    person.BirthYear = birthday.Value.Year;
+                }
+                else
+                {
+                    person.BirthYear = null;
+                }
 
-            if ( personBag.InactiveReason.HasValue )
-            {
-                person.RecordStatusReasonValueId = DefinedValueCache.GetId( personBag.InactiveReason.Value );
-            }
-
-            if ( personBag.DeceasedDate.HasValue )
-            {
-                person.DeceasedDate = personBag.DeceasedDate.Value.DateTime;
-            }
-
-            if ( personBag.InactiveNote.IsNotNullOrWhiteSpace() )
-            {
-                person.InactiveReasonNote = personBag.InactiveNote;
-            }
-
-            if ( personBag.BirthDate.HasValue )
-            {
                 person.SetBirthDate( personBag.BirthDate.Value.DateTime );
             }
-
-            if ( personBag.MaritalStatus.HasValue )
+            else
             {
-                person.MaritalStatusValueId = DefinedValueCache.GetId( personBag.MaritalStatus.Value );
-            }
-
-            if ( personBag.AnniversaryDate.HasValue )
-            {
-                person.AnniversaryDate = personBag.AnniversaryDate.Value.DateTime;
+                person.SetBirthDate( null );
             }
         }
 

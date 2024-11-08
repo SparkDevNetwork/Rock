@@ -23,6 +23,8 @@ namespace Rock.Utility.Settings
     /// <summary>
     /// Provides configuration information for a Rock instance.
     /// </summary>
+    [Obsolete( "RockApp should be used for access Rock instance data." )]
+    [RockObsolete( "1.16.6" )]
     public class RockInstanceConfigurationService
     {
         /// <summary>
@@ -36,6 +38,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Returns the date and time of the application host server.
         /// </summary>
+        [Obsolete( "RockApp should be used for access Rock instance data." )]
+        [RockObsolete( "1.16.6" )]
         public DateTime SystemDateTime
         {
             get
@@ -49,6 +53,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Returns the date and time of the application host server, localised according to the timezone specified in the Rock application settings.
         /// </summary>
+        [Obsolete( "RockApp should be used for access Rock instance data." )]
+        [RockObsolete( "1.16.6" )]
         public DateTime RockDateTime
         {
             get
@@ -63,6 +69,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Returns the date and time of the application host server, localised according to the timezone specified in the Rock application settings.
         /// </summary>
+        [Obsolete( "RockApp should be used for access Rock instance data." )]
+        [RockObsolete( "1.16.6" )]
         public DateTimeOffset RockDateTimeOffset
         {
             get
@@ -78,6 +86,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Returns the install path of the Rock application on the host.
         /// </summary>
+        [Obsolete( "RockApp should be used for access Rock instance data." )]
+        [RockObsolete( "1.16.6" )]
         public string PhysicalDirectory
         {
             get
@@ -97,6 +107,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Returns the virtual path of the Rock application on the host.
         /// </summary>
+        [Obsolete( "RockApp should be used for access Rock instance data." )]
+        [RockObsolete( "1.16.6" )]
         public string ApplicationDirectory
         {
             get
@@ -119,6 +131,8 @@ namespace Rock.Utility.Settings
         /// <value>
         /// The name of the machine.
         /// </value>
+        [Obsolete( "RockApp should be used for access Rock instance data." )]
+        [RockObsolete( "1.16.6" )]
         public string MachineName
         {
             get
@@ -133,6 +147,8 @@ namespace Rock.Utility.Settings
         /// <value>
         /// The ASP net version.
         /// </value>
+        [Obsolete( "RockApp should be used for access Rock instance data." )]
+        [RockObsolete( "1.16.6" )]
         public string AspNetVersion
         {
             get
@@ -148,6 +164,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Returns the database properties of the Rock application.
         /// </summary>
+        [Obsolete( "RockApp should be used for access Rock instance data." )]
+        [RockObsolete( "1.16.6" )]
         public RockInstanceDatabaseConfiguration Database { get; }
 
         /// <summary>
@@ -156,6 +174,8 @@ namespace Rock.Utility.Settings
         /// <value>
         ///   <c>true</c> if this instance is clustered; otherwise, <c>false</c>.
         /// </value>
+        [Obsolete( "RockApp should be used for access Rock instance data." )]
+        [RockObsolete( "1.16.6" )]
         public bool IsClustered
         {
             get
@@ -172,6 +192,8 @@ namespace Rock.Utility.Settings
         /// <summary>
         /// Gets the name of the rendering engine that is currently used to render Lava templates.
         /// </summary>
+        [Obsolete( "RockApp should be used for access Rock instance data." )]
+        [RockObsolete( "1.16.6" )]
         public string LavaEngineName
         {
             get

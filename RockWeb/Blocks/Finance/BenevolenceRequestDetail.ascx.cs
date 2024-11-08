@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -220,12 +221,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             SetPageParameters();
             _caseWorkRoleGuid = GetAttributeValue( AttributeKey.CaseWorkerRole ).AsGuidOrNull();
             LoadEditDetails();
             LoadViewDetails();
             ConfigureRaceAndEthnicityControls();
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -780,7 +781,7 @@ namespace RockWeb.Blocks.Finance
             var benevolenceRequestDocument = e.Item.DataItem as BenevolenceRequestDocument;
             if ( benevolenceRequestDocument?.BinaryFile != null )
             {
-                var getFileUrl = string.Format( "{0}GetFile.ashx?guid={1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), benevolenceRequestDocument.BinaryFile.Guid );
+                var getFileUrl = FileUrlHelper.GetFileUrl( benevolenceRequestDocument.BinaryFile.Guid );
 
                 uploadLink.NavigateUrl = getFileUrl;
                 uploadLink.Text = benevolenceRequestDocument.BinaryFile.FileName;

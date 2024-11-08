@@ -14,7 +14,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should correctly update the 'Default' communication template when custom values for lava fields are set
         /// </summary>
-        [TestMethod]
+        //TODO: Move to integration test [TestMethod]
         public void TemplateEditor_DefaultCommunicationTemplate()
         {
             string defaultCommunicationTemplate = @"<!DOCTYPE html>
@@ -770,7 +770,7 @@ namespace Rock.Tests.Rock.Model
                         <tr style=""padding: 0; text-align: left; vertical-align: top;"">
                           <td style=""-moz-hyphens: auto; -webkit-hyphens: auto; Margin: 0; border-collapse: collapse !important; color: {{ textColor }}; font-family: Helvetica, Arial, sans-serif; font-size: 16px; font-weight: normal; hyphens: auto; line-height: 1.3; margin: 0; padding: 0; text-align: left; vertical-align: top; word-wrap: break-word;"">
                             <!-- LOGO -->
-                            <img id=""template-logo"" src=""/GetImage.ashx?Id=1"" width=""200"" height=""50"" data-instructions=""Provide a PNG with a transparent background."" style=""display: block;"">  
+                            <img id=""template-logo"" src=""/Content/EmailTemplates/placeholder-logo.png"" width=""200"" height=""50"" data-instructions=""Provide a PNG with a transparent background."" style=""display: block;"">  
                           </td>
                         </tr>
                       </tbody>
@@ -885,18 +885,18 @@ namespace Rock.Tests.Rock.Model
 
 
 </html>";
-            var defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplate, 1, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
+            var defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplate, null, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
             Assert.That.AreEqual( expectedDefaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ), defaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ) );
 
             // see if it still ok after running it again
-            defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplateOutput, 1, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
+            defaultCommunicationTemplateOutput = CommunicationTemplateHelper.GetUpdatedTemplateHtml( defaultCommunicationTemplateOutput, null, lavaFieldsTemplateDictionaryFromControls, defaultCommunicationTemplateLavaFieldsDefaultDictionary );
             Assert.That.AreEqual( expectedDefaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ), defaultCommunicationTemplateOutput.Replace( "\r\n", "\n" ) );
         }
 
         /// <summary>
         /// Should correctly update the a very simple html doc when lava fields are defined in the UI
         /// </summary>
-        [TestMethod]
+        //TODO: Move to integration test [TestMethod]
         public void TemplateEditor_SimpleHtml()
         {
             /* simple html*/
@@ -920,7 +920,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should correctly update the a formatted simple html doc when lava fields are defined in the UI
         /// </summary>
-        [TestMethod]
+        //TODO: Move to integration test [TestMethod]
         public void TemplateEditor_FormattedSimpleHtml()
         {
             /* formatted simple html*/
@@ -954,7 +954,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should correctly update the a formatted simple html doc when lava fields are defined in the UI
         /// </summary>
-        [TestMethod]
+        //TODO: Move to integration test [TestMethod]
         public void TemplateEditor_FormattedSimpleHtmlWithMeta()
         {
             /* formatted simple html*/
@@ -994,7 +994,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should correctly update an empty html doc when lava fields are defined in the UI
         /// </summary>
-        [TestMethod]
+        //TODO: Move to integration test [TestMethod]
         public void TemplateEditor_EmptyHtml()
         {
             /* empty html*/
@@ -1018,8 +1018,7 @@ namespace Rock.Tests.Rock.Model
         /// <summary>
         /// Should correctly update an html doc that has lava logic in it when lava fields are defined in the UI
         /// </summary>
-        /// [TestMethod]
-        [TestMethod]
+        //TODO: Move to integration test [TestMethod]
         public void TemplateEditor_HasLavaLogic()
         {
             /* already has lava html*/

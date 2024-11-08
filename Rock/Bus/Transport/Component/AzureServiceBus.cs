@@ -18,8 +18,9 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using MassTransit;
+
+using Microsoft.Extensions.Logging;
 #if REVIEW_WEBFORMS
-using MassTransit.AzureServiceBusTransport;
 using Microsoft.ServiceBus;
 #endif
 using Rock.Attribute;
@@ -67,6 +68,7 @@ namespace Rock.Bus.Transport
         Key = AttributeKey.DeadLetterOnMessageExpiration )]
 
     [Rock.SystemGuid.EntityTypeGuid( "91130C54-D189-4B0B-B8CB-F92B6681A327")]
+    [RockLoggingCategory]
     public class AzureServiceBus : TransportComponent
     {
         #region Attribute Keys
@@ -99,7 +101,7 @@ namespace Rock.Bus.Transport
             // Catch bad data entries and default to 7 days if so and log it.
             if ( !TimeSpan.TryParse( messageExpirationString, out messageExpiration ) )
             {
-                RockLogger.Log.Warning( RockLogDomains.Bus, $"{nameof( AzureServiceBus )}: An invalid Message Expiration TimeSpan value of {messageExpirationString} was specified. Defaulting to 07:00:00:00 (7 days)." );
+                Logger.LogWarning( $"An invalid Message Expiration TimeSpan value of {messageExpirationString} was specified. Defaulting to 07:00:00:00 (7 days)." );
                 messageExpiration = TimeSpan.FromDays( 7 );
 
                 SetAttributeValue( AttributeKey.MessageExpiration, $"{messageExpiration.Days:D2}:{messageExpiration.Hours:D2}:{messageExpiration.Minutes:D2}:{messageExpiration.Seconds:D2}" );
@@ -187,10 +189,10 @@ namespace Rock.Bus.Transport
                 var client = new Azure.Messaging.ServiceBus.Administration.ServiceBusAdministrationClient( url );
 
                 // Get all of the current queues
-                var queues = await client.GetQueuesAsync().ToListAsync();
+                var queues = client.GetQueuesAsync();
                 if ( queues != null )
                 {
-                    foreach ( var queue in queues )
+                    await foreach ( var queue in queues )
                     {
                         if ( queue.DefaultMessageTimeToLive != messageExpiration || queue.DeadLetteringOnMessageExpiration != enableDeadletterOnMessageExpiration )
                         {
@@ -202,10 +204,10 @@ namespace Rock.Bus.Transport
                 }
 
                 // Get all of the current topics
-                var topics = await client.GetTopicsAsync().ToListAsync();
+                var topics = client.GetTopicsAsync();
                 if ( topics != null )
                 {
-                    foreach ( var topic in topics )
+                    await foreach ( var topic in topics )
                     {
                         if ( topic.DefaultMessageTimeToLive != messageExpiration )
                         {
@@ -213,12 +215,12 @@ namespace Rock.Bus.Transport
                             await client.UpdateTopicAsync( topic );
                         }
 
-                        var subs = await client.GetSubscriptionsAsync( topic.Name ).ToListAsync();
+                        var subs = client.GetSubscriptionsAsync( topic.Name );
 
                         // Get all of the topic subscriptions 
                         if ( subs != null )
                         {
-                            foreach ( var sub in subs )
+                            await foreach ( var sub in subs )
                             {
                                 // If the topic specifies a smaller TTL than the subscription, the topic TTL is applied ⬆.
 
@@ -245,8 +247,14 @@ namespace Rock.Bus.Transport
         /// <returns></returns>
         public override ISendEndpoint GetSendEndpoint( IBusControl bus, string queueName )
         {
-            var url = $"sb://{GetHost()}{queueName}";
-            return bus.GetSendEndpoint( new Uri( url ) ).Result;
+            var address = GetDestinationAddressForQueue( bus, queueName );
+            return bus.GetSendEndpoint( address ).Result;
+        }
+
+        /// <inheritdoc/>
+        public override Uri GetDestinationAddressForQueue( IBusControl bus, string queueName )
+        {
+            return new Uri( $"sb://{GetHost()}{queueName}" );
         }
 
         /// <summary>

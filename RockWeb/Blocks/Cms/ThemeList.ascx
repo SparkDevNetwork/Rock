@@ -13,10 +13,11 @@
                 <Rock:NotificationBox ID="nbMessages" runat="server" CssClass="alert-grid" />
 
                 <div class="grid grid-panel">
-                    <Rock:Grid ID="gThemes" runat="server" AllowSorting="true" DataKeyNames="Name" OnRowSelected="gThemes_RowSelected">
+                    <Rock:Grid ID="gThemes" runat="server" AllowSorting="true" DataKeyNames="Name" OnRowSelected="gThemes_RowSelected" RowItemText="Theme">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                            <Rock:BoolField DataField="AllowsCompile" HeaderText="Allows Compile" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                            <Rock:RockBoundField DataField="Purpose" HeaderText="Purpose" SortExpression="Purpose" />
+                            <Rock:BoolField DataField="IsActive" HeaderText="Active" HeaderStyle-HorizontalAlign="Center"  ItemStyle-HorizontalAlign="Center"/>
                             <Rock:BoolField DataField="IsSystem" HeaderText="System" HeaderStyle-HorizontalAlign="Center"  ItemStyle-HorizontalAlign="Center"/>
                             <Rock:LinkButtonField HeaderText="Compile" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-refresh'></i>" OnClick="gCompileTheme_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>
                             <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-clone'></i>" OnClick="gCloneTheme_Click" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center"/>

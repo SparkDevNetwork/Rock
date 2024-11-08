@@ -82,6 +82,20 @@ namespace Rock.Field.Types
             }
         }
 
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            // The default implementation of GetPublicEditValue calls GetPublicValue, which in this case has been overridden to return the text value
+            // or Friendly Name of the entity, but when editing we actually need the private value, i.e. the saved comma delimited Guid value(s). 
+            return privateValue;
+        }
+
         #endregion
 
         #region Formatting

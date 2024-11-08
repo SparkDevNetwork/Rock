@@ -58,7 +58,7 @@ namespace Rock.Model
         {% endif %}
         {% if LatestStep and LatestStep.CompletedDateTime != '' %}
             <br />
-            <small>{{ LatestStep.CompletedDateTime | Date:'M/d/yyyy' }}</small>
+            <small>{{ LatestStep.CompletedDateTime | Date:'sd' }}</small>
         {% endif %}
     </p>
     {% if StepCount > 1 %}

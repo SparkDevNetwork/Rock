@@ -100,7 +100,7 @@ ORDER BY d.[Date];",
         Order = 7 )]
     [CustomDropdownListField( "Legend Position",
         Description = "Select the position of the Legend (corner)",
-        ListSource = "ne,nw,se,sw",
+        ListSource = "n,ne,e,se,s,sw,w,nw",
         IsRequired = false,
         DefaultValue = "ne",
         Order = 8 )]
@@ -262,8 +262,6 @@ ORDER BY d.[Date];",
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             lcLineChart.Visible = false;
             bcBarChart.Visible = false;
             pcPieChart.Visible = false;
@@ -271,6 +269,7 @@ ORDER BY d.[Date];",
             // If the block has a configuration error, do not attempt to load the data.
             if ( nbConfigurationWarning.Visible )
             {
+                base.OnLoad( e );
                 return;
             }
 
@@ -287,6 +286,7 @@ ORDER BY d.[Date];",
 
             if ( dataTable == null )
             {
+                base.OnLoad( e );
                 return;
             }
 
@@ -294,6 +294,7 @@ ORDER BY d.[Date];",
             var sampleRow = rows.FirstOrDefault();
             if ( sampleRow == null )
             {
+                base.OnLoad( e );
                 return;
             }
 
@@ -385,6 +386,7 @@ ORDER BY d.[Date];",
             // If the block has a configuration error, do not attempt to load the data.
             if ( nbConfigurationWarning.Visible )
             {
+                base.OnLoad( e );
                 return;
             }
 
@@ -425,6 +427,8 @@ ORDER BY d.[Date];",
             }
 
             chartControl.Visible = true;
+
+            base.OnLoad( e );
         }
 
         /// <summary>

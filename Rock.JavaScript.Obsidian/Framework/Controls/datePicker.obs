@@ -23,8 +23,6 @@
 </template>
 
 <script setup lang="ts">
-
-
     import { computed, PropType, ref, watch } from "vue";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
@@ -84,6 +82,25 @@
             default: 0
         },
 
+        /**
+         * The container to attach the popup to, if not specified it will
+         * default to the document body.
+         */
+        container: {
+            type: HTMLElement as PropType<HTMLElement | null>,
+            required: false
+        },
+
+        /**
+         * The horizontal orientation of the popup. Left will attempt to keep
+         * the left edge aligned with the control and right will attempt to
+         * keep the right edge aligned with the control.
+         */
+        horizontalOrientation: {
+            type: String as PropType<"left" | "right">,
+            required: false
+        },
+
         ...standardRockFormFieldProps
     });
 
@@ -124,6 +141,8 @@
             disallowFutureDateSelection: props.disallowFutureDateSelection,
             disallowPastDateSelection: props.disallowPastDateSelection,
             startView: props.startView,
+            container: props.container,
+            horizontalOrientation: props.horizontalOrientation
         };
     });
 
@@ -182,7 +201,5 @@
         }
     });
 
-            // #endregion
-
-
+    // #endregion
 </script>

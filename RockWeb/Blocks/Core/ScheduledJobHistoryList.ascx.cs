@@ -171,6 +171,9 @@ namespace RockWeb.Blocks.Administration
 
             if ( scheduledJobId == null )
             {
+                nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Danger;
+                nbErrorMessage.Title = "Invalid Request";
+                nbErrorMessage.Text = "An incorrect querystring parameter was used.  A valid ScheduledJobId is required.";
                 return;
             }
 
@@ -179,6 +182,13 @@ namespace RockWeb.Blocks.Administration
             ServiceJobService jobService = new ServiceJobService( rockContext );
 
             var job = jobService.Get( scheduledJobId.Value );
+            if ( job == null )
+            {
+                nbErrorMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
+                nbErrorMessage.Title = "Warning";
+                nbErrorMessage.Text = "Job history not found. Job may have been deleted.";
+                return;
+            }
             lJobName.Text = job.Name;
 
             var jobHistoryService = new ServiceJobHistoryService( rockContext );

@@ -19,13 +19,16 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
+using Rock.AI.Classes.Moderations;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.AI;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
@@ -115,12 +118,12 @@ namespace RockWeb.Blocks.Prayer
 
             // Is the Approved columnn supposed to show?
             var showApprovedColumn = GetAttributeValue( "ShowApprovedColumn" ).AsBoolean();
-            gPrayerRequests.GetColumnByHeaderText( "Approved?" ).Visible = showApprovedColumn;
+            gPrayerRequests.GetColumnByHeaderText( "Approved" ).Visible = showApprovedColumn;
 
             // But if showing, check if the person is not authorized to approve and hide the column anyhow
             if ( showApprovedColumn && !IsUserAuthorized( Authorization.APPROVE ) )
             {
-                gPrayerRequests.GetColumnByHeaderText( "Approved?" ).Visible = false;
+                gPrayerRequests.GetColumnByHeaderText( "Approved" ).Visible = false;
             }
 
             AddDynamicControls();
@@ -772,6 +775,19 @@ namespace RockWeb.Blocks.Prayer
                 if (lFullname != null && prayerRequest != null)
                 {
                     lFullname.Text = prayerRequest.FirstName + " " + prayerRequest.LastName;
+                }
+
+                if ( ( ModerationFlags ) prayerRequest.ModerationFlags == ModerationFlags.SelfHarm )
+                {
+                    // Ensure the column is visible.
+                    rtfSelfHarmFlag.Visible = true;
+
+                    // Find the row control and add the icon to it for the self-harm flag.
+                    var lSelfHarmFlag = e.Row.FindControl( "lSelfHarmFlag" ) as RockLiteral;
+                    if (lSelfHarmFlag != null )
+                    {
+                        lSelfHarmFlag.Text = "<i class=\"fa fa-exclamation-triangle text-warning\" data-toggle=\"tooltip\" data-trigger=\"hover\" data-delay=\"250\" title=\"Flagged for self-harm\" ></i>";
+                    }
                 }
             }
         }

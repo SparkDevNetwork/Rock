@@ -14,8 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Dynamic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -33,6 +37,23 @@ namespace Rock.Tests.UnitTests.Lava
         List<string> _TestDuplicateStringList = new List<string>() { "Item 1", "Item 2 (duplicate)", "Item 2 (duplicate)", "Item 2 (duplicate)", "Item 3" };
 
         [TestMethod]
+        public void Compact_DocumentationExample_ProducesExpectedOutput()
+        {
+            var template = @"
+{% assign fruits = '' | AddToArray:'apples' | AddToArray:nil | AddToArray:'oranges' | AddToArray:nil | AddToArray:'peaches' %}
+Whole Fruit: {{ fruits | Join:', ' }}
+{% assign squashedFruits = fruits | Compact %}
+Squashed Fruit: {{ squashedFruits | Join:', ' }}
+";
+            var expectedOutput = @"
+Whole Fruit: apples, , oranges, , peaches
+Squashed Fruit: apples, oranges, peaches
+";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+        }
+
+        [TestMethod]
         public void Compact_ForArrayWithNullValues_RemovesNullValues()
         {
             var names = new List<string>() { null, "Alisha", "Brian", null, "Cynthia" };
@@ -41,6 +62,20 @@ namespace Rock.Tests.UnitTests.Lava
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
                 "Alisha,Brian,Cynthia",
                 "{{ TestList | Compact | Join:',' }}", mergeValues );
+        }
+
+        [TestMethod]
+        public void Concat_DocumentationExample_ProducesExpectedOutput()
+        {
+            var template = @"
+{% assign primaryColors = 'red, yellow, blue' | Split: ', ' %}
+{% assign secondaryColors = 'orange, green, violet' | Split: ', ' %}
+{% assign allColors = primaryColors | Concat: secondaryColors %}
+{{ allColors | Join:', ' }}
+";
+            var expectedOutput = @"red, yellow, blue, orange, green, violet";
+
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
         }
 
         [TestMethod]
@@ -88,6 +123,16 @@ namespace Rock.Tests.UnitTests.Lava
 
             // Only the first person of each family in the collection should be returned.
             TestHelper.AssertTemplateOutput( "TedDecker<br>BillMarble<br>", lavaTemplate, mergeValues, ignoreWhitespace:true );
+        }
+
+        [TestMethod]
+        public void Distinct_IncludedInFilterChain_ProvidesValidInputToNextFilter()
+        {
+            var lavaTemplate = @"
+{% assign testArray = '2,1,3,5,4,2' | Split:',' %}
+{{ testArray  | Distinct | Contains:'2' }}
+";
+            TestHelper.AssertTemplateOutput( "true", lavaTemplate, ignoreWhitespace: true );
         }
 
         #endregion
@@ -281,6 +326,62 @@ Total: {{ '3,5,7' | Split:',' | Sum }}
             lavaTemplate = lavaTemplate.Replace( "<searchValue>", searchValue );
 
             TestHelper.AssertTemplateOutput( isFound ? "true" : "false", lavaTemplate, mergeValues );
+        }
+
+        [TestMethod]
+        public void Contains_WithInputAsEnumerable_ReturnCorrectMatchIndicators()
+        {
+            var mergeValues = new LavaDataDictionary();
+            var lavaTemplate = @"{{ TestEnumerable | Contains:'2' }}";
+
+            var itemList = new List<string>() { "1", "2", "3" };
+
+            // IEnumerable collection.
+            var enumerableCollection = new Stack( itemList );
+            mergeValues["TestEnumerable"] = enumerableCollection;
+
+            Assert.That.IsTrue( enumerableCollection is IEnumerable
+                && !( enumerableCollection is IEnumerable<object> )
+                && !( enumerableCollection is IList ) );
+
+            TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace: true );
+
+            // IEnumerable<> collection.
+            var queueCollection = new Queue<string>( itemList );
+            mergeValues["TestEnumerable"] = queueCollection;
+
+            Assert.That.IsTrue( queueCollection is IEnumerable<string>
+                && !( queueCollection is IList ) );
+
+            TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace:true );
+
+            // IList collection.
+            mergeValues["TestEnumerable"] = itemList;
+
+            TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace: true );
+        }
+
+        [TestMethod]
+        public void Contains_WithInputAsList_ReturnCorrectMatchIndicators()
+        {
+            var mergeValues = new LavaDataDictionary();
+            var lavaTemplate = @"{{ TestEnumerable | Contains:'2' }}";
+
+            var itemList = new List<string>() { "1", "2", "3" };
+
+            // IList collection.
+            var itemArray = new ArrayList( itemList );
+            mergeValues["TestEnumerable"] = itemArray;
+
+            Assert.That.IsTrue( itemArray is IList
+                && !( itemArray is IList<string> ) );
+
+            TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace: true );
+
+            // IList<T> collection.
+            mergeValues["TestEnumerable"] = itemList;
+
+            TestHelper.AssertTemplateOutput( "true", lavaTemplate, mergeValues, ignoreWhitespace: true );
         }
 
         #region Filter Tests: Index

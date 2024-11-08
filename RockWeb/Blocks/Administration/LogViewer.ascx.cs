@@ -63,14 +63,14 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindGrid();
             }
 
             ScriptManager.GetCurrent( this.Page ).RegisterPostBackControl( lbDownload );
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDownload_Click(object sender, EventArgs e)
         {
-            var logFiles = Rock.Logging.RockLogger.Log.LogFiles;
+            var logFiles = ( Rock.Logging.RockLogger.LogReader as Rock.Logging.RockSerilogReader ).GetLogFiles();
 
             using (MemoryStream ms = new MemoryStream())
             {

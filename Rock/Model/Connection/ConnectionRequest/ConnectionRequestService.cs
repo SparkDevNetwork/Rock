@@ -78,34 +78,34 @@ namespace Rock.Model
                 qry = qry.Where( r => options.ConnectionStates.Contains( r.ConnectionState ) );
             }
 
+            if ( options.CampusGuid != null )
+            {
+                var campusId = CampusCache.GetId( options.CampusGuid.Value );
+                if ( campusId != null )
+                {
+                    qry = qry.Where( r => r.CampusId == campusId );
+                }
+            }
+
+            // Filter past due: Allow other states to go through, but "future follow-up" must be due today or already past due
+            if ( options.IsFutureFollowUpPastDueOnly )
+            {
+                var midnight = RockDateTime.Today.AddDays( 1 );
+
+                qry = qry.Where( cr =>
+                    cr.ConnectionState != ConnectionState.FutureFollowUp ||
+                    (
+                        cr.FollowupDate.HasValue &&
+                        cr.FollowupDate.Value < midnight
+                    ) );
+            }
+
             return qry;
         }
 
         #endregion
 
         #region Connection Board Helper Methods
-
-        /// <summary>
-        /// Determines whether this request can be connected.
-        /// </summary>
-        /// <param name="request">The request.</param>
-        /// <param name="connectionType">Type of the connection.</param>
-        /// <returns>
-        ///   <c>true</c> if this instance can connect; otherwise, <c>false</c>.
-        /// </returns>
-        [RockObsolete( "1.12" )]
-        [Obsolete( "Use CanConnect( ConnectionRequestViewModel request, ConnectionOpportunity connectionOpportunity, ConnectionTypeCache connectionType )" )]
-        public bool CanConnect( ConnectionRequestViewModel request, ConnectionTypeCache connectionType )
-        {
-            var rockContext = Context as RockContext;
-            var connectionOpportunityService = new ConnectionOpportunityService( rockContext );
-
-            var connectionOpportunity = connectionOpportunityService.Queryable()
-                .AsNoTracking()
-                .FirstOrDefault( co => co.Id == request.ConnectionOpportunityId );
-
-            return CanConnect( request, connectionOpportunity, connectionType );
-        }
 
         /// <summary>
         /// Determines whether this request can be connected.

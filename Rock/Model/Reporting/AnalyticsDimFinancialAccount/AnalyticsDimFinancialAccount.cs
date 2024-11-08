@@ -19,9 +19,7 @@ using Rock.Utility;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-#if REVIEW_NET5_0_OR_GREATER
 using System.Data.Entity.ModelConfiguration;
-#endif
 using System.Runtime.Serialization;
 
 namespace Rock.Model
@@ -226,7 +224,11 @@ namespace Rock.Model
         #endregion Entity Properties Specific to Analytics
     }
 
-#if REVIEW_NET5_0_OR_GREATER
+    #region Entity Configuration
+
+    /// <summary>
+    /// AnalyticsDimFinancialAccount Configuration Class
+    /// </summary>
     public partial class AnalyticsDimFinancialAccountConfiguration : EntityTypeConfiguration<AnalyticsDimFinancialAccount>
     {
         /// <summary>
@@ -234,7 +236,9 @@ namespace Rock.Model
         /// </summary>
         public AnalyticsDimFinancialAccountConfiguration()
         {
+            // Empty constructor. This is required to tell EF that this model exists.
         }
     }
-#endif
+
+    #endregion Entity Configuration
 }

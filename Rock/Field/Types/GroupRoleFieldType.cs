@@ -139,7 +139,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
 
-            if ( publicConfigurationValues?.ContainsKey( GROUP_TYPE_KEY ) == true && int.TryParse( publicConfigurationValues[GROUP_TYPE_KEY], out int groupTypeId ) )
+            if ( usage != ConfigurationValueUsage.View && publicConfigurationValues?.ContainsKey( GROUP_TYPE_KEY ) == true && int.TryParse( publicConfigurationValues[GROUP_TYPE_KEY], out int groupTypeId ) )
             {
                 var groupType = GroupTypeCache.Get( groupTypeId );
                 if ( groupType != null )

@@ -150,16 +150,6 @@ namespace Rock.Badge
         private static ContextEntityBlock _nonHttpContextParentContextEntityBlock;
 
         /// <summary>
-        /// Gets or sets the parent person block.
-        /// </summary>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "Use the ParentContextEntityBlock instead.", true )]
-        public PersonBlock ParentPersonBlock
-        {
-            get => ParentContextEntityBlock as PersonBlock;
-        }
-
-        /// <summary>
         /// Optional: The Entity that should be used when determining which PropertyFields and Attributes to show (instead of just basing it off of EntityType)
         /// </summary>
         /// <value>
@@ -310,7 +300,7 @@ namespace Rock.Badge
             }
 
             return
-$@"(function () {{
+$@";(function () {{
     {script}
 }})();";
         }
@@ -328,20 +318,6 @@ $@"(function () {{
 
 #if REVIEW_WEBFORMS
         #region Obsolete Methods
-
-        /// <summary>
-        /// Gets the attribute value for the badge
-        /// </summary>
-        /// <param name="personBadgeCache">The badge.</param>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "Use the BadgeCache param instead.", true )]
-        protected string GetAttributeValue( PersonBadgeCache personBadgeCache, string key )
-        {
-            var badgeCache = BadgeCache.Get( personBadgeCache.Id );
-            return GetAttributeValue( badgeCache, key );
-        }
 
         /// <summary>
         /// Renders the specified writer.
@@ -407,15 +383,6 @@ $@"(function () {{
             var entityKey = Entity != null ? Entity.Guid.ToString() : "no-entity";
             return $"{GetType().Name}-{badge.Guid}-{entityKey}";
         }
-
-        /// <summary>
-        /// Renders the specified writer.
-        /// </summary>
-        /// <param name="personBadgeCache">The badge.</param>
-        /// <param name="writer">The writer.</param>
-        [RockObsolete( "1.10" )]
-        [Obsolete( "Use the BadgeCache param instead.", true )]
-        public virtual void Render( PersonBadgeCache personBadgeCache, HtmlTextWriter writer ) { }
 
         #endregion
 #endif

@@ -74,12 +74,12 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 RenderState();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -608,12 +608,14 @@ namespace RockWeb.Blocks.Crm
         {
             if ( _documentType == null )
             {
-                var documentTypeId = PageParameter( PageParameterKey.DocumentTypeId ).AsIntegerOrNull();
-
-                if ( documentTypeId.HasValue && documentTypeId.Value > 0 )
+                var documentTypeKey = PageParameter( PageParameterKey.DocumentTypeId );
+                if ( documentTypeKey.IsNotNullOrWhiteSpace() )
                 {
                     var documentTypeService = GetDocumentTypeService();
-                    _documentType = documentTypeService.Queryable( "EntityType,BinaryFileType" ).FirstOrDefault( dt => dt.Id == documentTypeId.Value );
+                    _documentType = documentTypeService.GetQueryableByKey( documentTypeKey, !PageCache.Layout.Site.DisablePredictableIds )
+                        .Include( dt => dt.EntityType )
+                        .Include( dt => dt.BinaryFileType )
+                        .FirstOrDefault();
                 }
             }
 

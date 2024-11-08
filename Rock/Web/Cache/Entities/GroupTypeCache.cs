@@ -20,7 +20,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.CheckIn.v2;
 using Rock.Data;
+using Rock.Enums.CheckIn;
 using Rock.Enums.Group;
 using Rock.Model;
 
@@ -33,10 +35,11 @@ namespace Rock.Web.Cache
     [DataContract]
     public class GroupTypeCache : ModelCache<GroupTypeCache, GroupType>
     {
+        private TemplateConfigurationData _checkInConfiguration;
+
+        private AreaConfigurationData _checkInAreaData;
 
         #region Properties
-
-        private readonly object _obj = new object();
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
@@ -172,6 +175,10 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public AttendanceRule AttendanceRule { get; private set; }
+
+        /// <inheritdoc cref="GroupType.AlreadyEnrolledMatchingLogic"/>
+        [DataMember]
+        public AlreadyEnrolledMatchingLogic AlreadyEnrolledMatchingLogic { get; private set; }
 
         /// <summary>
         /// Gets or sets the group capacity rule.
@@ -394,7 +401,7 @@ namespace Rock.Web.Cache
             {
                 // skip if parent group type and current group type are the same (a situation that should not be possible) to prevent stack overflow
                 if ( groupType.Id == parentGroupType.Id ||
-                    // also skip if the parent group type and starting group type are the same as this is a circular reference and can cause a stack overflow
+                     // also skip if the parent group type and starting group type are the same as this is a circular reference and can cause a stack overflow
                      startingGroup.Id == parentGroupType.Id )
                 {
                     continue;
@@ -639,20 +646,20 @@ namespace Rock.Web.Cache
             {
                 if ( _roles == null )
                 {
-                    lock ( _obj )
+                    using ( var rockContext = new RockContext() )
                     {
-                        using ( var rockContext = new RockContext() )
-                        {
-                            var roles = new List<GroupTypeRoleCache>();
-                            new GroupTypeRoleService( rockContext )
-                                .Queryable().AsNoTracking()
-                                .Where( r => r.GroupTypeId == Id )
-                                .OrderBy( r => r.Order )
-                                .ToList()
-                                .ForEach( r => roles.Add( new GroupTypeRoleCache( r ) ) );
+                        var roleIds = new GroupTypeRoleService( rockContext )
+                            .Queryable()
+                            .Where( r => r.GroupTypeId == Id )
+                            .Select( r => r.Id )
+                            .ToList();
 
-                            _roles = roles;
-                        }
+                        // GroupTypeRole invalidates the GroupTypeCache object
+                        // when it is changed, so it is safe to cache the full
+                        // GroupTypeRoleCache objects instead of just the Ids.
+                        _roles = GroupTypeRoleCache.GetMany( roleIds, rockContext )
+                            .OrderBy( r => r.Order )
+                            .ToList();
                     }
                 }
 
@@ -675,36 +682,28 @@ namespace Rock.Web.Cache
             {
                 if ( _groupScheduleExclusions == null )
                 {
-                    lock ( _obj )
+                    using ( var rockContext = new RockContext() )
                     {
-                        if ( _groupScheduleExclusions == null )
-                        {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                GroupScheduleExclusions = new List<DateRange>();
-                                new GroupScheduleExclusionService( rockContext )
-                                    .Queryable().AsNoTracking()
-                                    .Where( s => s.GroupTypeId == Id )
-                                    .OrderBy( s => s.StartDate )
-                                    .ToList()
-                                    .ForEach( s => GroupScheduleExclusions.Add( new DateRange( s.StartDate, s.EndDate ) ) );
-
-                            }
-                        }
+                        _groupScheduleExclusions = new GroupScheduleExclusionService( rockContext )
+                            .Queryable().AsNoTracking()
+                            .Where( s => s.GroupTypeId == Id )
+                            .OrderBy( s => s.StartDate )
+                            .ToList()
+                            .Select( s => new DateRange( s.StartDate, s.EndDate ) )
+                            .ToList();
                     }
                 }
+
                 return _groupScheduleExclusions;
             }
-            private set
-            {
-                _groupScheduleExclusions = value;
-            }
         }
+
         private List<DateRange> _groupScheduleExclusions;
 
         /// <summary>
         /// Gets the group types that are allowed for child groups.
-        /// Use this along with <seealso cref="AllowAnyChildGroupType"/> to determine if a child group can have a parent group of this group type
+        /// Use this along with <seealso cref="AllowAnyChildGroupType"/> to
+        /// determine if a child group can have a parent group of this group type
         /// </summary>
         /// <value>
         /// The child group types.
@@ -719,27 +718,6 @@ namespace Rock.Web.Cache
             {
                 var childGroupTypes = new List<GroupTypeCache>();
 
-                if ( ChildGroupTypeIds == null )
-                {
-                    lock ( _obj )
-                    {
-                        if ( ChildGroupTypeIds == null )
-                        {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                ChildGroupTypeIds = new GroupTypeService( rockContext )
-                                    .GetChildGroupTypes( Id )
-                                    .Select( g => g.Id )
-                                    .ToList();
-                            }
-                        }
-                    }
-                }
-
-
-                if ( ChildGroupTypeIds == null )
-                    return childGroupTypes;
-
                 foreach ( var id in ChildGroupTypeIds )
                 {
                     var groupType = Get( id );
@@ -753,8 +731,34 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// Gets the group type identifiers that are allowed for child groups.
+        /// Use this along with <seealso cref="AllowAnyChildGroupType"/> to
+        /// determine if a child group can have a parent group of this group type
+        /// </summary>
+        /// <value>
+        /// The child group type identifiers.
+        /// </value>
         [DataMember]
-        private List<int> ChildGroupTypeIds { get; set; }
+        private List<int> ChildGroupTypeIds
+        {
+            get
+            {
+                if ( _childGroupTypeIds == null )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        _childGroupTypeIds = new GroupTypeService( rockContext )
+                            .GetChildGroupTypes( Id )
+                            .Select( g => g.Id )
+                            .ToList();
+                    }
+                }
+
+                return _childGroupTypeIds;
+            }
+        }
+        private List<int> _childGroupTypeIds;
 
         /// <summary>
         /// Gets the parent group types.
@@ -768,27 +772,7 @@ namespace Rock.Web.Cache
             {
                 var parentGroupTypes = new List<GroupTypeCache>();
 
-                if ( _parentGroupTypeIds == null )
-                {
-                    lock ( _obj )
-                    {
-                        if ( _parentGroupTypeIds == null )
-                        {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                _parentGroupTypeIds = new GroupTypeService( rockContext )
-                                    .GetParentGroupTypes( Id )
-                                    .Select( g => g.Id )
-                                    .ToList();
-                            }
-                        }
-                    }
-                }
-
-                if ( _parentGroupTypeIds == null )
-                    return parentGroupTypes;
-
-                foreach ( var id in _parentGroupTypeIds )
+                foreach ( var id in ParentGroupTypeIds )
                 {
                     var groupType = Get( id );
                     if ( groupType != null )
@@ -798,6 +782,31 @@ namespace Rock.Web.Cache
                 }
 
                 return parentGroupTypes;
+            }
+        }
+
+        /// <summary>
+        /// Gets the parent group type identifiers.
+        /// </summary>
+        /// <value>
+        /// The parent group type identifiers.
+        /// </value>
+        private List<int> ParentGroupTypeIds
+        {
+            get
+            {
+                if ( _parentGroupTypeIds == null )
+                {
+                    using ( var rockContext = new RockContext() )
+                    {
+                        _parentGroupTypeIds = new GroupTypeService( rockContext )
+                            .GetParentGroupTypes( Id )
+                            .Select( g => g.Id )
+                            .ToList();
+                    }
+                }
+
+                return _parentGroupTypeIds;
             }
         }
         private List<int> _parentGroupTypeIds;
@@ -842,6 +851,10 @@ namespace Rock.Web.Cache
         /// The type of the group status defined.
         /// </value>
         public DefinedTypeCache GroupStatusDefinedType => GroupStatusDefinedTypeId.HasValue ? DefinedTypeCache.Get( this.GroupStatusDefinedTypeId.Value ) : null;
+
+        /// <inheritdoc cref="Rock.Model.Group.ScheduleCoordinatorNotificationTypes" />
+        [DataMember]
+        public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; set; }
 
         #endregion
 
@@ -922,6 +935,56 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
+        /// Gets the check-in configuration that represents all the attribute
+        /// values of this group type. If this group type is not a check-in
+        /// configuration group type then <c>null</c> will be returned.
+        /// </summary>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <returns>An instance of <see cref="TemplateConfigurationData"/> or <c>null</c>.</returns>
+        internal TemplateConfigurationData GetCheckInConfiguration( RockContext rockContext )
+        {
+            if ( rockContext == null )
+            {
+                throw new ArgumentNullException( nameof( rockContext ) );
+            }
+
+            if ( _checkInConfiguration == null )
+            {
+                var checkinTemplateTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), rockContext )?.Id;
+
+                if ( GroupTypePurposeValueId != checkinTemplateTypeId )
+                {
+                    return null;
+                }
+
+                _checkInConfiguration = new TemplateConfigurationData( this, rockContext );
+            }
+
+            return _checkInConfiguration;
+        }
+
+        /// <summary>
+        /// Gets the check-in data that represents all the attribute
+        /// values of this area group type.
+        /// </summary>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <returns>An instance of <see cref="AreaConfigurationData"/>.</returns>
+        internal AreaConfigurationData GetCheckInAreaData( RockContext rockContext )
+        {
+            if ( rockContext == null )
+            {
+                throw new ArgumentNullException( nameof( rockContext ) );
+            }
+
+            if ( _checkInAreaData == null )
+            {
+                _checkInAreaData = new AreaConfigurationData( this, rockContext );
+            }
+
+            return _checkInAreaData;
+        }
+
+        /// <summary>
         /// Copies from model.
         /// </summary>
         /// <param name="entity">The entity.</param>
@@ -948,6 +1011,7 @@ namespace Rock.Web.Cache
             SendAttendanceReminder = groupType.SendAttendanceReminder;
             ShowConnectionStatus = groupType.ShowConnectionStatus;
             AttendanceRule = groupType.AttendanceRule;
+            AlreadyEnrolledMatchingLogic = groupType.AlreadyEnrolledMatchingLogic;
             GroupCapacityRule = groupType.GroupCapacityRule;
             AttendancePrintTo = groupType.AttendancePrintTo;
             Order = groupType.Order;
@@ -985,6 +1049,7 @@ namespace Rock.Web.Cache
             ScheduleConfirmationLogic = groupType.ScheduleConfirmationLogic;
             IsCapacityRequired = groupType.IsCapacityRequired;
             GroupsRequireCampus = groupType.GroupsRequireCampus;
+            ScheduleCoordinatorNotificationTypes = groupType.ScheduleCoordinatorNotificationTypes;
         }
 
         /// <summary>
@@ -1054,137 +1119,5 @@ namespace Rock.Web.Cache
         }
 
         #endregion
-    }
-
-    /// <summary>
-    /// Cached version of GroupTypeRole
-    /// </summary>
-    [Serializable]
-    [DataContract]
-    public class GroupTypeRoleCache
-    {
-        /// <summary>
-        /// Gets or sets the identifier.
-        /// </summary>
-        /// <value>
-        /// The identifier.
-        /// </value>
-        [DataMember]
-        public int Id { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the unique identifier.
-        /// </summary>
-        /// <value>
-        /// The unique identifier.
-        /// </value>
-        [DataMember]
-        public Guid Guid { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        [DataMember]
-        public string Name { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the order.
-        /// </summary>
-        /// <value>
-        /// The order.
-        /// </value>
-        [DataMember]
-        public int Order { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the maximum count.
-        /// </summary>
-        /// <value>
-        /// The maximum count.
-        /// </value>
-        [DataMember]
-        public int? MaxCount { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the minimum count.
-        /// </summary>
-        /// <value>
-        /// The minimum count.
-        /// </value>
-        [DataMember]
-        public int? MinCount { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is leader.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is leader; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool IsLeader { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can view.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance can view; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool CanView { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can edit.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool CanEdit { get; private set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance can manage members.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance can manage members; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool CanManageMembers { get; private set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GroupTypeRoleCache"/> class.
-        /// </summary>
-        /// <param name="role">The role.</param>
-        public GroupTypeRoleCache( GroupTypeRole role )
-        {
-            if ( role == null )
-            {
-                return;
-            }
-
-            Id = role.Id;
-            Guid = role.Guid;
-            Name = role.Name;
-            Order = role.Order;
-            MaxCount = role.MaxCount;
-            MinCount = role.MinCount;
-            IsLeader = role.IsLeader;
-            CanView = role.CanView;
-            CanEdit = role.CanEdit;
-            CanManageMembers = role.CanManageMembers;
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return Name;
-        }
     }
 }

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,7 +23,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// Represents a row of matrix values in an <see cref="AttributeMatrix"/>.
+    /// Individual cell values are stored as a collection of <see cref="AttributeValue"/> instances associated with this entity.
     /// </summary>
     [RockDomain( "Core" )]
     [Table( "AttributeMatrixItem" )]

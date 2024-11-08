@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using System.Linq;
+
 namespace Rock.Model
 {
     /// <summary>
@@ -21,5 +23,16 @@ namespace Rock.Model
     /// </summary>
     public partial class RegistrationTemplateService
     {
+        /// <summary>
+        /// Determines whether the Registration Template has any Registration Template Placements.
+        /// </summary>
+        /// <param name="registrationTemplateId">The registration template identifier.</param>
+        /// <returns>
+        ///   <c>true</c> if [has registration template placements] [the specified registration template identifier]; otherwise, <c>false</c>.
+        /// </returns>
+        public bool HasRegistrationTemplatePlacements( int registrationTemplateId )
+        {
+            return Queryable().Any( r => r.Id == registrationTemplateId && r.Placements.Any() );
+        }
     }
 }

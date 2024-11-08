@@ -22,6 +22,7 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export const enum ConfigurationValueKey {
     ClientValues = "clientValues",
+    IncludeInactive = "includeInactive"
 }
 
 // The edit component can be quite large, so load it only as needed.

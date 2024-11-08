@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -103,6 +103,9 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the fee amount of the transaction detail, which is a subset of the Amount.
         /// </summary>
+        /// <remarks>
+        /// This is the actual fee amount that has been charged by the payment processor after the transaction has settled.
+        /// </remarks>
         /// <value>
         /// A <see cref="System.Decimal"/> representing the fee amount of the transaction detail.
         /// </value>
@@ -116,6 +119,9 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the fee coverage amount.
         /// </summary>
+        /// <remarks>
+        /// This is an estimated fee amount the contributing individual has agreed to cover.
+        /// </remarks>
         /// <value>
         /// The fee coverage amount.
         /// </value>

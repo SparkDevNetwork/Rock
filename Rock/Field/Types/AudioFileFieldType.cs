@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,6 +24,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -68,12 +69,12 @@ namespace Rock.Field.Types
 
                     if ( binaryFileInfo != null )
                     {
-                        var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                        var filePath = FileUrlHelper.GetFileUrl( binaryFileInfo.Guid );
                         string htmlFormat = @"
 <audio
-    src='{0}?guid={1}' 
+    src='{0}' 
     class='img img-responsive js-media-audio'
-    type='{2}' 
+    type='{1}' 
     controls
 >
 </audio>
@@ -83,7 +84,7 @@ namespace Rock.Field.Types
 </script>
 ";
 
-                        var html = string.Format( htmlFormat, filePath, binaryFileInfo.Guid, binaryFileInfo.MimeType );
+                        var html = string.Format( htmlFormat, filePath, binaryFileInfo.MimeType );
                         return html;
                     }
                 }
@@ -103,7 +104,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            return $"<a href=\"/GetFile.ashx?guid={binaryFileGuid}\">{GetFileName( privateValue ).EncodeHtml()}</a>";
+            return $"<a href=\"{FileUrlHelper.GetFileUrl( binaryFileGuid.Value )}\">{GetFileName( privateValue ).EncodeHtml()}</a>";
         }
 
         /// <summary>

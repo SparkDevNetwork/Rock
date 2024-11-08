@@ -1021,8 +1021,6 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 // Ensure that there is only one transaction processed by getting a unique guid when this block loads for the first time
@@ -1034,6 +1032,8 @@ mission. We are so grateful for your commitment.</p>
             {
                 RouteAction();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods
@@ -1075,7 +1075,6 @@ mission. We are so grateful for your commitment.</p>
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="Captcha.TokenReceivedEventArgs"/> instance containing the event data.</param>
-        /// <exception cref="NotImplementedException"></exception>
         private void CpCaptcha_TokenReceived( object sender, Captcha.TokenReceivedEventArgs e )
         {
             if ( e.IsValid )
@@ -2801,6 +2800,7 @@ mission. We are so grateful for your commitment.</p>
             if ( transactionAlreadyExists )
             {
                 ShowTransactionSummary();
+                return;
             }
 
             bool givingAsBusiness = this.GivingAsBusiness();
@@ -3326,7 +3326,7 @@ mission. We are so grateful for your commitment.</p>
                 {
                     feeCoverageACHAmount = feeCoverageGatewayComponent.GetACHFeeCoverageAmount( this.FinancialGateway );
                 }
-                else if ( cbGetPaymentInfoCoverTheFeeCreditCard.Checked )
+                else if ( !isAch && cbGetPaymentInfoCoverTheFeeCreditCard.Checked )
                 {
                     feeCoverageCreditCardPercent = feeCoverageGatewayComponent.GetCreditCardFeeCoveragePercentage( this.FinancialGateway );
                 }

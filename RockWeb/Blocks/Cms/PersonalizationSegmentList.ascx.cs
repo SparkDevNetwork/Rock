@@ -102,13 +102,13 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindFilter();
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -267,13 +267,14 @@ namespace RockWeb.Blocks.Cms
                 Name = a.Name,
                 FilterDataViewName = a.FilterDataViewId.HasValue ? a.FilterDataView.Name : null,
                 IsActive = a.IsActive,
-                AnonymousIndividualsCount =
+                AnonymousIndividualsCount = a.IsDirty ? "Loading..." :
                      personAliasPersonalizationsSegmentsQry
-                         .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId == anonymousVisitorPersonId ).Count(),
-                KnownIndividualsCount =
+                         .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId == anonymousVisitorPersonId ).Count().ToString(),
+                KnownIndividualsCount = a.IsDirty ? "Loading..." :
                      personAliasPersonalizationsSegmentsQry
-                         .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId != anonymousVisitorPersonId ).Count(),
-                Guid = a.Guid
+                         .Where( p => p.PersonalizationEntityId == a.Id && p.PersonAlias.PersonId != anonymousVisitorPersonId ).Count().ToString(),
+                Guid = a.Guid,
+                TimeToUpdateDurationMilliseconds = a.TimeToUpdateDurationMilliseconds
             } );
 
             // sort the query based on the column that was selected to be sorted
@@ -299,9 +300,10 @@ namespace RockWeb.Blocks.Cms
             public string Name { get; set; }
             public string FilterDataViewName { get; set; }
             public bool IsActive { get; set; }
-            public int AnonymousIndividualsCount { get; set; }
-            public int KnownIndividualsCount { get; set; }
+            public string AnonymousIndividualsCount { get; set; }
+            public string KnownIndividualsCount { get; set; }
             public Guid Guid { get; set; }
+            public double? TimeToUpdateDurationMilliseconds { get; set; }
         }
     }
 }

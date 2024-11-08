@@ -118,6 +118,11 @@ namespace Rock
                 // from http://stackoverflow.com/a/18154152/
                 HtmlDocument doc = new HtmlDocument();
                 doc.LoadHtml( html );
+                // Yes, even strip out HTML comments. See https://github.com/zzzprojects/html-agility-pack/issues/80#issuecomment-331663090
+                doc.DocumentNode.Descendants()
+                 .Where( n => n.NodeType == HtmlAgilityPack.HtmlNodeType.Comment )
+                 .ToList()
+                 .ForEach( n => n.Remove() );
                 return doc.DocumentNode.InnerText;
             }
             else
@@ -200,6 +205,8 @@ namespace Rock
         /// </summary>
         /// <param name="email">The string to validate</param>
         /// <returns>true if valid email, false otherwise</returns>
+        [Obsolete( "Use EmailAddressFieldValidator.IsValid() instead." )]
+        [RockObsolete( "1.16" )]
         public static bool IsValidEmail( this string email )
         {
             Match match = Regex.Match( email, @"[\w\.\'_%-]+(\+[\w-]*)?@([\w-]+\.)+[\w-]+" );

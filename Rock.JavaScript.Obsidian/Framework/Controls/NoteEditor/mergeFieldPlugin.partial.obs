@@ -1,0 +1,204 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isShown"
+           cancelText="Cancel"
+           saveText="OK"
+           title="Select Merge Field"
+           :onSave="onMergeFieldPicked">
+        <MergeFieldPicker v-model="mergeFieldValue"
+                          :additionalFields="mergeFields ? mergeFields.join(',') : ''"
+                          :multiple="false"
+                          placeholder="Add Merge Field" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    /**
+     * MergeFieldPlugin - Adds a toolbar button for adding a merge field at the current
+     * cursor position in the editor.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <div id="uniqueEditorId">
+     *     <MergeFieldPlugin ref="mergeFieldPlugin" />
+     *   </div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import MergeFieldPlugin from "./NoteEditor/mergeFieldPlugin.partial.obs";
+     *   ...
+     *
+     *   const mergeFieldPlugin = ref<InstanceType<typeof MergeFieldPlugin> | undefined>();
+     *   ...
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     *   ...
+     *
+     *   // Initialize the editor.
+     *   onMounted(() => {
+     *     ...
+     *
+     *     tinymce.init({
+     *       // The merge field button can be placed anywhere in this configuration string.
+     *       // Here, the toolbar will display
+     *       // the merge field button, followed by a separator character,
+     *       // then the undo and redo buttons.
+     *       // Reference: https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#example-grouped-toolbar
+     *       toolbar: `${mergeFieldPlugin.value?.id} | undo redo`
+     *     });
+     *
+     *     ...
+     *   });
+     * (/script)
+     */
+    import { PropType, ref, watch } from "vue";
+    import { getToolbarButton, usePluginHelper } from "./utils.partial";
+    import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { Editor, Ui } from "@Obsidian/Libs/tinymce";
+    import { formatValue } from "@Obsidian/Utility/mergeField";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        mergeFields: {
+            type: Array as PropType<string[] | undefined>,
+            required: false
+        },
+        isIconHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        label: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+        cssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        }
+    });
+
+    const id = "rockmergefield" as const;
+    const tooltip = "Merge Field" as const;
+
+    defineExpose({
+        id
+    });
+
+    //#region Values
+
+    const { editorInstance, toolbarElement } = usePluginHelper();
+    const toolbarButtonElement = ref<HTMLElement | undefined>();
+    const mergeFieldValue = ref<ListItemBag | undefined>();
+    const isShown = ref<boolean>(false);
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    /** Disposes the tooltip button. */
+    function disposeTooltipButton(): void {
+        // Nothing to dispose.
+    }
+
+    /** Shows or hides the toolbar button based */
+    function showOrHideToolbarButton(): void {
+        if (toolbarButtonElement.value) {
+            // Set the CSS display value depending on whether there is a value.
+            const display = props.mergeFields?.length ? "" : "none";
+            toolbarButtonElement.value.style.display = display;
+
+            // Also update the display of the toolbar button group if this is the only button in the button group.
+            const parentElement = toolbarButtonElement.value.parentElement;
+            if (parentElement?.classList.contains("tox-toolbar__group") && parentElement.children.length === 1) {
+                parentElement.style.display = display;
+            }
+        }
+    }
+
+    /** Initializes the plugin. */
+    function init(editor: Editor): void {
+        editor.ui.registry.addIcon("merge-field", `<svg width="24" height="26" viewBox="0 0 24 26" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.02344 12.5859C5.17448 12.237 5.25 11.8646 5.25 11.4688V9.84375C5.25 9.51042 5.36979 9.22396 5.60938 8.98438C5.84896 8.74479 6.13542 8.625 6.46875 8.625C6.69312 8.625 6.875 8.44312 6.875 8.21875V7.40625C6.875 7.18188 6.69312 7 6.46875 7C5.6875 7 5.01823 7.27864 4.46094 7.83594C3.90364 8.39323 3.625 9.0625 3.625 9.84375V11.4688C3.625 11.8021 3.50521 12.0885 3.26562 12.3281C3.02604 12.5677 2.73959 12.6875 2.40625 12.6875C2.18188 12.6875 2 12.8694 2 13.0938V13.9062C2 14.1306 2.18188 14.3125 2.40625 14.3125C2.73959 14.3125 3.02604 14.4323 3.26562 14.6719C3.50521 14.9115 3.625 15.1979 3.625 15.5312V17.1562C3.625 17.9375 3.90364 18.6068 4.46094 19.1641C5.01823 19.7214 5.6875 20 6.46875 20C6.69312 20 6.875 19.8181 6.875 19.5938V18.7812C6.875 18.5569 6.69312 18.375 6.46875 18.375C6.13542 18.375 5.84896 18.2552 5.60938 18.0156C5.36979 17.776 5.25 17.4896 5.25 17.1562V15.5312C5.25 15.1354 5.17448 14.763 5.02344 14.4141C4.8724 14.0651 4.66146 13.7604 4.39062 13.5C4.66146 13.2396 4.8724 12.9349 5.02344 12.5859Z" fill="black"/><path d="M9 17V9H11V15.25H15V17H9Z" fill="black"/><path d="M17.8516 12.5859C17.7005 12.237 17.625 11.8646 17.625 11.4688L17.625 9.84375C17.625 9.51042 17.5052 9.22396 17.2656 8.98438C17.026 8.74479 16.7396 8.625 16.4063 8.625C16.1819 8.625 16 8.44312 16 8.21875L16 7.40625C16 7.18188 16.1819 7 16.4062 7C17.1875 7 17.8568 7.27864 18.4141 7.83594C18.9714 8.39323 19.25 9.0625 19.25 9.84375L19.25 11.4688C19.25 11.8021 19.3698 12.0885 19.6094 12.3281C19.849 12.5677 20.1354 12.6875 20.4688 12.6875C20.6931 12.6875 20.875 12.8694 20.875 13.0938L20.875 13.9062C20.875 14.1306 20.6931 14.3125 20.4688 14.3125C20.1354 14.3125 19.849 14.4323 19.6094 14.6719C19.3698 14.9115 19.25 15.1979 19.25 15.5313L19.25 17.1563C19.25 17.9375 18.9714 18.6068 18.4141 19.1641C17.8568 19.7214 17.1875 20 16.4063 20C16.1819 20 16 19.8181 16 19.5938L16 18.7813C16 18.5569 16.1819 18.375 16.4063 18.375C16.7396 18.375 17.026 18.2552 17.2656 18.0156C17.5052 17.776 17.625 17.4896 17.625 17.1563L17.625 15.5313C17.625 15.1354 17.7005 14.763 17.8516 14.4141C18.0026 14.0651 18.2135 13.7604 18.4844 13.5C18.2135 13.2396 18.0026 12.9349 17.8516 12.5859Z" fill="black"/></svg>`);
+
+        editor.ui.registry.addButton(id, {
+            // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
+            icon: !props.isIconHidden ? "merge-field" : undefined,
+            text: props.label || undefined,
+            tooltip: tooltip,
+            onSetup: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): (api: Ui.Toolbar.ToolbarButtonInstanceApi) => void => {
+                toolbarButtonElement.value = getToolbarButton(tooltip, toolbarElement.value) ?? undefined;
+
+                showOrHideToolbarButton();
+
+                const tb = toolbarButtonElement.value;
+                if (tb) {
+                    if (props.cssClass) {
+                        tb.classList.add(...props.cssClass.split(" "));
+                    }
+                }
+
+                // Return a dispose callback.
+                return disposeTooltipButton;
+            },
+            onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
+                isShown.value = true;
+            },
+        });
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /** Event handler for a merge field being picked. */
+    async function onMergeFieldPicked(): Promise<void> {
+        if (editorInstance.value) {
+            const mergeField = mergeFieldValue.value;
+
+            if (mergeField?.value) {
+                const formattedValue = await formatValue(mergeField.value);
+
+                // Insert the merge field value into the editor at the current position.
+                editorInstance.value.insertContent(formattedValue);
+            }
+        }
+
+        // Clear the merge field and close the modal.
+        mergeFieldValue.value = undefined;
+        isShown.value = false;
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    // Hide or show the toolbar button when the mergeFields change.
+    watch(() => props.mergeFields, () => {
+        showOrHideToolbarButton();
+    });
+
+    // Register the plugin whenever the bound Editor changes.
+    watch(editorInstance, () => {
+        // Dispose the previous tooltip button if set.
+        disposeTooltipButton();
+
+        if (editorInstance.value) {
+            init(editorInstance.value);
+        }
+    });
+
+    //#endregion
+</script>

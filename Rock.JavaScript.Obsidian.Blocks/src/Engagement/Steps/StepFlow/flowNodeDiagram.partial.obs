@@ -78,6 +78,39 @@
     fill: rgba(170, 170, 170, 0.8);
 }
 
+.step-flow-svg .edge {
+  opacity: 0;
+  transform-origin: left center;
+  animation: flow-edges 0.25s ease-in-out forwards;
+}
+.step-flow-svg .edge.level-2 {
+  animation-delay: 0.25s;
+}
+.step-flow-svg .edge.level-3 {
+  animation-delay: .5s;
+}
+.step-flow-svg .edge.level-4 {
+  animation-delay: .75s;
+}
+.step-flow-svg .edge.level-5 {
+  animation-delay: 1s;
+}
+.step-flow-svg .edge.level-6 {
+  animation-delay: 1.25s;
+}
+@keyframes flow-edges {
+  0% {
+    opacity: 0;
+    -webkit-clip-path: inset(0 100% 0 0);
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    opacity: 1;
+    -webkit-clip-path: inset(0 0 0 0);
+    clip-path: inset(0 0 0 0);
+  }
+}
+
 .flow-legend {
     display: flex;
     flex-wrap: wrap;

@@ -1,0 +1,70 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <li class="picker-select-item"
+        style="list-style: none;">
+        <div class="radio">
+            <label>
+                <input type="radio" name="item-value" @click="onItemSelected">
+                <span class="label-text d-flex gap align-items-start">
+                    <span class="flex-grow-1">{{ result.title }}</span>
+                    <span class="d-flex gap">
+                        <span v-for="label in result.labels"
+                              :class="getLabelClass(label)">
+                            {{ label.text }}
+                        </span>
+                    </span>
+                </span>
+            </label>
+        </div>
+
+        <TransitionVerticalCollapse>
+            <div v-if="detailsVisible" class="picker-select-item-details">
+                <div v-if="result.description"
+                     class="picker-select-item-description mb-2">
+                    {{ result.description }}
+                </div>
+
+                <dl v-for="detail in result.details"
+                    class="d-flex">
+                    <dt class="mr-2 text-nowrap">{{ detail.value }}</dt>
+                    <dd>{{ detail.text }}</dd>
+                </dl>
+            </div>
+        </TransitionVerticalCollapse>
+    </li>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import { UniversalItemSearchPickerItemBag } from "@Obsidian/ViewModels/Controls/universalItemSearchPickerItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+
+    const props = defineProps({
+        result: {
+            type: Object as PropType<UniversalItemSearchPickerItemBag>,
+            required: true
+        },
+
+        areDetailsAlwaysVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "select", value: UniversalItemSearchPickerItemBag): void
+    }>();
+
+    const result = ref(props.result);
+    const detailsVisible = ref(props.areDetailsAlwaysVisible);
+
+    function getLabelClass(label: ListItemBag): string {
+        return `label label-${label.value}`;
+    }
+
+    function onItemSelected(): void {
+        detailsVisible.value = true;
+        emit("select", result.value);
+    }
+</script>

@@ -147,6 +147,8 @@
                                 <Rock:RockRadioButtonList ID="rblExperienceLevel" runat="server" Label="Experience Level" RepeatDirection="Horizontal" Help="Required when uploading to the Content Library." Visible="false" />
 
                                 <Rock:RockDropDownList ID="ddlTopic" runat="server" Label="Topic" EnhanceForLongLists="true" DataTextField="Text" DataValueField="Value" Help="Required when uploading to the Content Library." Visible="false" />
+
+                                <Rock:DefinedValuesPickerEnhanced ID="dvpContentChannelItemIntents" runat="server" Label="Content Intent" Help="Helps classify the purpose of the content channel item. This is written to interactions as individuals view the content channel item. You can provide options here by editing the Interaction Intent Defined Type." />
                             </div>
                         </div>
 

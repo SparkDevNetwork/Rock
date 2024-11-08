@@ -71,23 +71,6 @@ namespace Rock.Storage.AssetStorage
                 return System.Web.HttpContext.Current;
             }
         }
-
-        /// <summary>
-        /// Gets or sets the file system compont HTTP context.
-        /// </summary>
-        /// <value>
-        /// The file system compont HTTP context.
-        /// </value>
-        [RockObsolete( "1.11" )]
-        [Obsolete( "Use FileSystemComponentHttpContext instead, and using the setter is no longer supported" )]
-        public System.Web.HttpContext FileSystemCompontHttpContext
-        {
-            get => FileSystemComponentHttpContext;
-            set
-            {
-                // do nothing, the getter will always use HttpContext.Current
-            }
-        }
 #endif
 
         /// <summary>

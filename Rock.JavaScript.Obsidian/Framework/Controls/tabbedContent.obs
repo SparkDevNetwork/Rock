@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div>
-        <TabbedBar  v-model="selectedTab" :tabs="tabs" />
+        <TabbedBar v-model="selectedTab" :tabs="tabs" />
 
         <div class="tab-content mt-4">
             <div v-for="(item, i) in tabs" :key="i" :class="classes[i]">
-                <slot name="tabpane" :item="item" />
+                <slot v-if="!isLazyLoad || tabHasBeenViewed[i]" name="tabpane" :item="item" />
             </div>
         </div>
     </div>
@@ -13,21 +13,80 @@
 
 <script setup lang="ts">
     import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
-    import { PropType, ref, watch } from "vue";
+    import { computed, onMounted, onUnmounted, PropType, ref, watch } from "vue";
 
     const props = defineProps({
+        /** Whether to load tabs lazily or not. Defaults to false. */
+        lazyLoad: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** The currently selected tab. */
+        selectedTab: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The array of tab texts. */
         tabs: {
             type: Array as PropType<string[]>,
             required: true
+        },
+
+        /** The key for the selected tab to be tracked in the Query String. */
+        selectedTabQueryParameterKey: {
+            type: String as PropType<string>,
+            required: false
         }
     });
 
-    const selectedTab = ref(props.tabs.length > 0 ? props.tabs[0] : "");
+    const isLazyLoad = ref(props.lazyLoad ?? false);
     const classes = ref<string[]>([]);
+    const tabHasBeenViewed = ref<boolean[]>([]);
+    const selectedTabQueryParameterKey = ref(props.selectedTabQueryParameterKey ?? "");
+
+    const emit = defineEmits<{
+        (e: "update:selectedTab", value: string): void
+    }>();
+
+    const selectedTab = ref(props.selectedTab ?? "");
+
     let timeout: number;
 
+    /** Whether the query string parameter property has a value. */
+    const shouldManageQueryString = computed(() => selectedTabQueryParameterKey.value.length > 0);
+
+    /** Handles the browser's back button click with respect to selected tab Query params. */
+    function handleBackButton(): void {
+        const tab = new URLSearchParams(window.location.search).get(selectedTabQueryParameterKey.value) ?? "";
+
+        if (tab && tab !== selectedTab.value) {
+            selectedTab.value = tab;
+        }
+    }
+
+    /** Updates the current URL with the value of the selected tab for the specified query string parameter (if specified). */
+    function updateUrlWithSelectedTab(): void {
+        // If the control's not configured with a query string parameter don't do anything.
+        if (!shouldManageQueryString.value){
+            return;
+        }
+
+        const queryParams = new URLSearchParams(window.location.search);
+        const selectedTabName = selectedTab.value ?? "";
+        const queryParamValue = queryParams.get(selectedTabQueryParameterKey.value) ?? "";
+
+        if (queryParamValue !== selectedTabName) {
+            queryParams.set(selectedTabQueryParameterKey.value, selectedTabName);
+            history.pushState(null, "", "?" + queryParams.toString());
+        }
+    }
+
     watch(() => props.tabs, () => {
-        selectedTab.value = props.tabs.length > 0 ? props.tabs[0] : "";
+        const tabsLength = props.tabs.length;
+        const indexOfSelectedTab = props.tabs.findIndex(t => t.toLowerCase() === selectedTab.value?.toLowerCase()) ?? 0;
+        selectedTab.value = tabsLength > 0 ? props.tabs[indexOfSelectedTab] : "";
 
         classes.value = props.tabs.map(item => {
             let list = "tab-pane fade";
@@ -38,18 +97,39 @@
 
             return list;
         });
+
+        const falseValuesArray = tabsLength > 1 ? new Array(tabsLength - 1).fill(false) : [];
+        tabHasBeenViewed.value = [true].concat(falseValuesArray);
     }, { immediate: true });
 
     watch(selectedTab, (current, previous) => {
         const previousIndex = props.tabs.indexOf(previous);
         const currentIndex = props.tabs.indexOf(current);
+        tabHasBeenViewed.value[currentIndex] = true;
+
+        updateUrlWithSelectedTab();
+
+        emit("update:selectedTab", selectedTab.value);
 
         classes.value[previousIndex] = "tab-pane fade active";
-
         clearTimeout(timeout);
         timeout = window.setTimeout(() => {
             classes.value[previousIndex] = "tab-pane fade";
             classes.value[currentIndex] = "tab-pane fade active in";
         }, 150);
+    });
+
+    onMounted(() => {
+        if (shouldManageQueryString){
+            // Listen for the browser back button click and update the selected tab.
+            window.addEventListener("popstate", handleBackButton);
+        }
+    });
+
+    onUnmounted(() => {
+        if (shouldManageQueryString){
+            // Remove the listener.
+            window.removeEventListener("popstate", handleBackButton);
+        }
     });
 </script>

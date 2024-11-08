@@ -18,9 +18,16 @@
 namespace Rock.ViewModels.Blocks.Core.TagDetail
 {
     /// <summary>
-    /// 
+    /// Additional Configuration for the TagDetail block.
     /// </summary>
     public class TagDetailOptionsBag
     {
+        /// <summary>
+        /// The Regular Expression used to determine a valid tag name. This regex will return true if the string does not contain angle brackets, percent, or ampersand.
+        /// </summary>
+        /// <value>
+        /// The tag name black list regex.
+        /// </value>
+        public string TagNameBlackListRegex { get; set; }
     }
 }

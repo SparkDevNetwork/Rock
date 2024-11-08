@@ -41,14 +41,16 @@ export interface IFieldType {
     /**
      * Get the HTML representation of the attribute value. This will be used
      * as literal HTML so if you are returning plain text it must be encoded
-     * for HTML entities first.
+     * for HTML entities first. If you are returning renderable HTML, make sure
+     * to esacpe that HTML if the `isEscaped` parameter is set to `true`.
      *
      * @param value The attribute value.
      * @param configurationValues The configuration values that will provide the necessary information to format the value.
+     * @param isEscaped If true, escape the renderable HTML
      *
      * @returns A string that contains a user-friendly HTML representation of the value.
      */
-    getHtmlValue(value: string, configurationValues: Record<string, string>): string;
+    getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string;
 
     /**
      * Get the condensed plain text representation of the attribute value.
@@ -65,37 +67,49 @@ export interface IFieldType {
     /**
      * Get the condensed HTML representation of the attribute value. This will
      * be used as literal HTML so if you are returning plain text it must be
-     * encoded for HTML entities first. This should be a more concise
-     * representation of the {@link FieldType.getHtmlValue getHtmlValue()}.
+     * encoded for HTML entities first. If you are returning renderable HTML, make
+     * sure to esacpe that HTML if the `isEscaped` parameter is set to `true`.
+     *
+     * This should be a more concise representation of the {@link FieldType.getHtmlValue getHtmlValue()}.
      *
      * @param value The attribute value.
      * @param configurationValues The configuration values that will provide the necessary information to format the value.
+     * @param isEscaped If true, escape the renderable HTML
      *
      * @returns A string that contains a condensed version of {@link FieldType.getHtmlValue getHtmlValue()}.
      */
-    getCondensedHtmlValue(value: string, configurationValues: Record<string, string>): string;
+    getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string;
 
     /**
      * Get the component that will be used to display the formatted value.
      *
+     * @param configurationValues The configuration values that will provide the
+     * necessary information to process the value.
+     *
      * @returns A component that is already configured to show the value.
      */
-    getFormattedComponent(): Component;
+    getFormattedComponent(configurationValues: Record<string, string>): Component;
 
     /**
      * Get the component that will be used to display the condensed formatted value.
      *
+     * @param configurationValues The configuration values that will provide the
+     * necessary information to process the value.
+     *
      * @returns A component that is already configured to show the condensed value.
      */
-    getCondensedFormattedComponent(): Component;
+    getCondensedFormattedComponent(configurationValues: Record<string, string>): Component;
 
     /**
      * Get the component that will be used to edit the value. It will receive
      * the modelValue property which contains the {@link PublicAttributeValueViewModel.value}.
      *
+     * @param configurationValues The configuration values that will provide the
+     * necessary information to process the value.
+     *
      * @returns A component that is already configured to edit the value.
      */
-    getEditComponent(): Component;
+    getEditComponent(configurationValues: Record<string, string>): Component;
 
     /**
      * Get the component that will be used to configure the field. It will receive
@@ -112,35 +126,47 @@ export interface IFieldType {
      * editing the configuration. It is rare for a field type to not support
      * this but there are some edge cases.
      *
+     * @param configurationValues The configuration values that will provide the
+     * necessary information to process the value.
+     *
      * @returns true if a default value component should be rendered when editing
      * the field configuration; otherwise false.
      */
-    hasDefaultComponent(): boolean;
+    hasDefaultComponent(configurationValues: Record<string, string>): boolean;
 
     /**
      * Determines if this field type supports filtering. By returning true it is
      * assumed that a filter component is available.
      *
+     * @param configurationValues The configuration values that will provide the
+     * necessary information to process the value.
+     *
      * @returns true if this field type supports filtering and has a filter
      * component; otherwise false.
      */
-    isFilterable(): boolean;
+    isFilterable(configurationValues: Record<string, string>): boolean;
 
     /**
      * Get the component that will be used to configure a filter rule for the
      * field.
      *
+     * @param configurationValues The configuration values that will provide the
+     * necessary information to process the value.
+     *
      * @returns A component that can be used to edit a filter value or null if not supported.
      */
-    getFilterComponent(): Component | null;
+    getFilterComponent(configurationValues: Record<string, string>): Component | null;
 
     /**
      * Get the comparison types that are supported by this field type. All
      * supported types should be OR'd together into a single value.
      *
+     * @param configurationValues The configuration values that will provide the
+     * necessary information to process the value.
+     *
      * @returns The bit flags that make up the supported comparison types.
      */
-    getSupportedComparisonTypes(): ComparisonType;
+    getSupportedComparisonTypes(configurationValues: Record<string, string>): ComparisonType;
 
     /**
      * Get a human friendly description of the configured filter value. Such as

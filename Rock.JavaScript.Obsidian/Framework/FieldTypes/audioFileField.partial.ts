@@ -61,7 +61,7 @@ export class AudioFileFieldType extends FieldTypeBase {
         return ComparisonType.IsBlank | ComparisonType.IsNotBlank;
     }
 
-    public override getHtmlValue(value: string, configurationValues: Record<string, string>): string {
+    public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
         if (!value) {
             return "";
         }
@@ -82,6 +82,10 @@ export class AudioFileFieldType extends FieldTypeBase {
     Rock.controls.mediaPlayer.initialize();
 </script>
         `;
+
+        if (isEscaped) {
+            return escapeHtml(html);
+        }
 
         return html;
     }

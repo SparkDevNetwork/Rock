@@ -18,6 +18,7 @@ using System;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Enums.Event;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -84,8 +85,28 @@ namespace Rock.Model
 
                 var attendance = this.Entity;
 
-                if ( State == EntityContextState.Modified )
+                if ( State == EntityContextState.Added )
                 {
+                    if ( attendance.CheckInStatus != CheckInStatus.Unknown )
+                    {
+                        UpdateCheckInDatesFromCheckInStatus();
+                    }
+                    else
+                    {
+                        UpdateCheckInStatusFromCheckInDates();
+                    }
+                }
+                else if ( State == EntityContextState.Modified )
+                {
+                    if ( IsCheckInStatusModified() )
+                    {
+                        UpdateCheckInDatesFromCheckInStatus();
+                    }
+                    else if ( AreCheckInDatesModified() )
+                    {
+                        UpdateCheckInStatusFromCheckInDates();
+                    }
+
                     preSavePersonAliasId = attendance.PersonAliasId;
                     var originalOccurrenceId = ( int? ) OriginalValues[nameof( attendance.OccurrenceId )];
                     if ( originalOccurrenceId.HasValue && attendance.OccurrenceId != originalOccurrenceId.Value )
@@ -111,22 +132,17 @@ namespace Rock.Model
                             }
                         }
                     }
+
+                    // Add the checkin and the checkout to the history if
+                    var previousCheckInValue = ( DateTime? ) Entry.OriginalValues.GetReadOnlyValueOrDefault( "StartDateTime", null );
+                    var previousCheckOutValue = ( DateTime? ) Entry.OriginalValues.GetReadOnlyValueOrDefault( "EndDateTime", null );
+                    History.EvaluateChange( PersonAttendanceHistoryChangeList, "Check-in", previousCheckInValue?.ToShortDateTimeString(), attendance.StartDateTime.ToShortDateTimeString() );
+                    History.EvaluateChange( PersonAttendanceHistoryChangeList, "Check-out", previousCheckOutValue?.ToShortDateTimeString(), attendance.EndDateTime?.ToShortDateTimeString() );
                 }
                 else if ( State == EntityContextState.Deleted )
                 {
                     preSavePersonAliasId = ( int? ) OriginalValues[nameof( attendance.PersonAliasId )];
                     PersonAttendanceHistoryChangeList.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Attendance" );
-                }
-
-                // If we need to send a real-time notification then do so after
-                // this change has been committed to the database.
-                if ( ShouldSendRealTimeMessage() )
-                {
-                    RockContext.ExecuteAfterCommit( () =>
-                    {
-                        // Use the fast queue for this because it is real-time.
-                        new SendAttendanceRealTimeNotificationsTransaction( Entity.Guid, State == EntityContextState.Deleted ).Enqueue( true );
-                    } );
                 }
 
                 base.PreSave();
@@ -196,6 +212,24 @@ namespace Rock.Model
                     }
                 }
 
+                // If we need to send a real-time notification then do so after
+                // this change has been committed to the database.
+                if ( ShouldSendRealTimeMessage() )
+                {
+                    // EF will null out this field when deleting, so we need to
+                    // snag it from the original values in that case.
+                    var personAliasId = State == EntityContextState.Deleted
+                        ? preSavePersonAliasId
+                        : Entity.PersonAliasId;
+
+                    if ( personAliasId.HasValue )
+                    {
+                        var attendanceState = new AttendanceService.AttendanceUpdatedState( Entity, personAliasId.Value, State );
+
+                        new SendAttendanceRealTimeNotificationsTransaction( attendanceState ).Enqueue( true );
+                    }
+                }
+
                 base.PostSave();
             }
 
@@ -229,6 +263,14 @@ namespace Rock.Model
                     {
                         return true;
                     }
+                    else if ( Entity.EndDateTime != ( DateTime? ) OriginalValues[nameof( Entity.EndDateTime )] )
+                    {
+                        return true;
+                    }
+                    else if ( Entity.CheckInStatus != ( CheckInStatus ) OriginalValues[nameof( Entity.CheckInStatus )] )
+                    {
+                        return true;
+                    }
                 }
                 else if ( PreSaveState == EntityContextState.Deleted )
                 {
@@ -236,6 +278,81 @@ namespace Rock.Model
                 }
 
                 return false;
+            }
+
+            /// <summary>
+            /// Determines whether CheckInStatus property has been modified.
+            /// </summary>
+            /// <returns><c>true</c> if the property was modified; otherwise, <c>false</c>.</returns>
+            private bool IsCheckInStatusModified()
+            {
+                var originalCheckInStatus = ( CheckInStatus ) OriginalValues[nameof( Entity.CheckInStatus )];
+
+                return originalCheckInStatus != Entity.CheckInStatus;
+            }
+
+            /// <summary>
+            /// Determines whether any of the check-in DateTime properties
+            /// have been modified.
+            /// </summary>
+            /// <returns><c>true</c> if any properties were modified, <c>false</c> otherwise.</returns>
+            private bool AreCheckInDatesModified()
+            {
+                var originalStartDateTime = ( DateTime ) OriginalValues[nameof( Entity.StartDateTime )];
+                var originalEndDateTime = ( DateTime? ) OriginalValues[nameof( Entity.EndDateTime )];
+                var originalPresentDateTime = ( DateTime? ) OriginalValues[nameof( Entity.PresentDateTime )];
+
+                return originalStartDateTime != Entity.StartDateTime
+                    || originalEndDateTime != Entity.EndDateTime
+                    || originalPresentDateTime != Entity.PresentDateTime;
+            }
+
+            /// <summary>
+            /// Updates the check in dates from the CheckInStatus property. This
+            /// is called when the CheckInStatus has been modified.
+            /// </summary>
+            private void UpdateCheckInDatesFromCheckInStatus()
+            {
+                if ( Entity.CheckInStatus == CheckInStatus.CheckedOut )
+                {
+                    Entity.EndDateTime = Entity.EndDateTime ?? RockDateTime.Now;
+                }
+                else if ( Entity.CheckInStatus == CheckInStatus.Present )
+                {
+                    Entity.PresentDateTime = Entity.PresentDateTime ?? RockDateTime.Now;
+                    Entity.EndDateTime = null;
+                }
+                else if ( Entity.CheckInStatus == CheckInStatus.NotPresent )
+                {
+                    Entity.PresentDateTime = null;
+                    Entity.EndDateTime = null;
+                }
+                else if ( Entity.CheckInStatus == CheckInStatus.Pending )
+                {
+                    Entity.PresentDateTime = null;
+                    Entity.EndDateTime = null;
+                }
+            }
+
+            /// <summary>
+            /// Updates the CheckInStatus property from the check in dates. This
+            /// is called if the CheckInStatus property has not changed but one
+            /// of the date values has.
+            /// </summary>
+            private void UpdateCheckInStatusFromCheckInDates()
+            {
+                if ( Entity.EndDateTime.HasValue )
+                {
+                    Entity.CheckInStatus = CheckInStatus.CheckedOut;
+                }
+                else if ( Entity.PresentDateTime.HasValue )
+                {
+                    Entity.CheckInStatus = CheckInStatus.Present;
+                }
+                else
+                {
+                    Entity.CheckInStatus = CheckInStatus.NotPresent;
+                }
             }
 
             private LaunchMemberAttendedGroupWorkflow.Message GetLaunchMemberAttendedGroupWorkflowMessage()

@@ -1,0 +1,143 @@
+<template>
+    <div class="number-pad">
+        <RockButton class="key-1" @click="onKeyClick">1</RockButton>
+        <RockButton class="key-2" @click="onKeyClick">2</RockButton>
+        <RockButton class="key-3" @click="onKeyClick">3</RockButton>
+        <RockButton class="key-4" @click="onKeyClick">4</RockButton>
+        <RockButton class="key-5" @click="onKeyClick">5</RockButton>
+        <RockButton class="key-6" @click="onKeyClick">6</RockButton>
+        <RockButton class="key-7" @click="onKeyClick">7</RockButton>
+        <RockButton class="key-8" @click="onKeyClick">8</RockButton>
+        <RockButton class="key-9" @click="onKeyClick">9</RockButton>
+        <RockButton class="key-back" @click="onKeyClick">Back</RockButton>
+        <RockButton class="key-0" @click="onKeyClick">0</RockButton>
+        <RockButton class="key-clear" @click="onKeyClick">Clear</RockButton>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { onMounted, onUnmounted, PropType, watch } from "vue";
+
+    const props = defineProps({
+        /** The text value. */
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** Adds an event listener to the document for physical keybord events */
+        documentListener: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+        (e: "submit"): void;
+    }>();
+
+    const searchTerm = useVModelPassthrough(props, "modelValue", emit);
+
+    /**
+     * Handles the key click event for the number pad buttons.
+     *
+     * @param event The event associated with the key click event.
+     */
+    function onKeyClick(event: Event): void {
+        if (!(event.target instanceof HTMLElement)) {
+            return;
+        }
+
+        if (event.target.classList.contains("key-1")) {
+            searchTerm.value = searchTerm.value + "1";
+        }
+        else if (event.target.classList.contains("key-2")) {
+            searchTerm.value = searchTerm.value + "2";
+        }
+        else if (event.target.classList.contains("key-3")) {
+            searchTerm.value = searchTerm.value + "3";
+        }
+        else if (event.target.classList.contains("key-4")) {
+            searchTerm.value = searchTerm.value + "4";
+        }
+        else if (event.target.classList.contains("key-5")) {
+            searchTerm.value = searchTerm.value + "5";
+        }
+        else if (event.target.classList.contains("key-6")) {
+            searchTerm.value = searchTerm.value + "6";
+        }
+        else if (event.target.classList.contains("key-7")) {
+            searchTerm.value = searchTerm.value + "7";
+        }
+        else if (event.target.classList.contains("key-8")) {
+            searchTerm.value = searchTerm.value + "8";
+        }
+        else if (event.target.classList.contains("key-9")) {
+            searchTerm.value = searchTerm.value + "9";
+        }
+        else if (event.target.classList.contains("key-0")) {
+            searchTerm.value = searchTerm.value + "0";
+        }
+        else if (event.target.classList.contains("key-back")) {
+            if (searchTerm.value.length > 0) {
+                searchTerm.value = searchTerm.value.substring(0, searchTerm.value.length - 1);
+            }
+        }
+        else if (event.target.classList.contains("key-clear")) {
+            searchTerm.value = "";
+        }
+
+        event.target.blur();
+    }
+
+    /**
+     * Handles the key down event for the document. This allows a keyboard
+     * to type without focus on the text input.
+     *
+     * @param event The event associated with the key down event.
+     */
+     function onDocumentKeyDown(event: KeyboardEvent): void {
+        if (event.target instanceof HTMLInputElement) {
+            return;
+        }
+
+        // Ignore any key presses if any modifier keys are also pressed.
+        if (event.altKey || event.ctrlKey || event.shiftKey || event.metaKey) {
+            return;
+        }
+
+        if (event.key.length === 1) {
+            searchTerm.value += event.key;
+        }
+        else if (event.key === "Backspace") {
+            if (searchTerm.value.length > 0) {
+                searchTerm.value = searchTerm.value.substring(0, searchTerm.value.length - 1);
+            }
+        }
+
+        if (event.key === "Enter") {
+            emit("submit");
+        }
+    }
+
+    onMounted(() => {
+        if (props.documentListener) {
+            document.addEventListener("keydown", onDocumentKeyDown);
+        }
+    });
+
+    onUnmounted(() => {
+        document.removeEventListener("keydown", onDocumentKeyDown);
+    });
+
+    watch(() => props.documentListener, () => {
+        if (props.documentListener) {
+            // Remove it just in in case we already added it.
+            document.removeEventListener("keydown", onDocumentKeyDown);
+            document.addEventListener("keydown", onDocumentKeyDown);
+        }
+    });
+</script>

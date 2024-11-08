@@ -450,11 +450,12 @@ namespace Rock.Blocks.Group
                     // Between the group's GroupCapacity and DefaultGroupRole.MaxCount, grab the one we're closest to hitting, and how close we are to
                     // hitting it.
                     box.OpenSpots = Math.Min( openGroupSpots, openRoleSpots );
-                }
 
-                if ( box.OpenSpots <= 0 )
-                {
-                    box.ErrorMessage = "This group is at or exceeds capacity.";
+                    // If no spots are open, display a message that says so.
+                    if ( box.OpenSpots <= 0 )
+                    {
+                        box.ErrorMessage = "This group is at or exceeds capacity.";
+                    }
                 }
             }
         }
@@ -667,7 +668,10 @@ namespace Rock.Blocks.Group
                 var isCurrentPerson = RequestContext.CurrentPerson != null
                     && RequestContext.CurrentPerson.NickName.IsNotNullOrWhiteSpace()
                     && RequestContext.CurrentPerson.LastName.IsNotNullOrWhiteSpace()
-                    && groupRegistrationBag.FirstName.Trim().Equals( RequestContext.CurrentPerson.NickName.Trim(), StringComparison.OrdinalIgnoreCase )
+                    && (
+                        groupRegistrationBag.FirstName.Trim().Equals( RequestContext.CurrentPerson.NickName.Trim(),StringComparison.OrdinalIgnoreCase )
+                        || groupRegistrationBag.FirstName.Trim().Equals( RequestContext.CurrentPerson.FirstName.Trim(), StringComparison.OrdinalIgnoreCase )
+                    )
                     && groupRegistrationBag.LastName.Trim().Equals( RequestContext.CurrentPerson.LastName.Trim(), StringComparison.OrdinalIgnoreCase );
 
                 // Only use current person if the name entered matches the current person's name and autofill mode is true
@@ -746,8 +750,23 @@ namespace Rock.Blocks.Group
                         SetPhoneNumber( rockContext, person, groupRegistrationBag.MobilePhone, groupRegistrationBag.IsMessagingEnabled, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                     }
 
-                    if ( groupRegistrationBag.Address != null )
+                    if ( !string.IsNullOrWhiteSpace( groupRegistrationBag.Address?.Street1 ) )
                     {
+                        var editedLocation = new Location()
+                        {
+                            Street1 = groupRegistrationBag.Address.Street1,
+                            Street2 = groupRegistrationBag.Address.Street2,
+                            City = groupRegistrationBag.Address.City,
+                            State = groupRegistrationBag.Address.State,
+                            PostalCode = groupRegistrationBag.Address.PostalCode,
+                            Country = groupRegistrationBag.Address.Country,
+                        };
+
+                        if ( !LocationService.ValidateLocationAddressRequirements( editedLocation, out string validationMessage ) )
+                        {
+                            return ActionBadRequest( validationMessage );
+                        }
+
                         var location = new LocationService( rockContext ).Get( groupRegistrationBag.Address.Street1, groupRegistrationBag.Address.Street2, groupRegistrationBag.Address.City, groupRegistrationBag.Address.State, groupRegistrationBag.Address.PostalCode, groupRegistrationBag.Address.Country );
                         if ( location != null )
                         {
@@ -773,8 +792,12 @@ namespace Rock.Blocks.Group
                         var married = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
                         var adultRole = familyType?.Roles?.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) );
 
+                        // Check if there is no spouse or if the spouse's first name (or nickname) and last name do not match the provided values.
                         if ( spouse == null ||
-                            !groupRegistrationBag.SpouseFirstName.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) ||
+                            (
+                              !groupRegistrationBag.SpouseFirstName.Trim().Equals( spouse.FirstName.Trim(), StringComparison.OrdinalIgnoreCase ) &&
+                              !groupRegistrationBag.SpouseFirstName.Trim().Equals( spouse.NickName.Trim(), StringComparison.OrdinalIgnoreCase )
+                            ) ||
                             !groupRegistrationBag.SpouseLastName.Trim().Equals( spouse.LastName.Trim(), StringComparison.OrdinalIgnoreCase ) )
                         {
                             spouse = new Person();
@@ -800,7 +823,7 @@ namespace Rock.Blocks.Group
                             person.MaritalStatusValueId = married.Id;
                         }
 
-                        spouse.Email = groupRegistrationBag.Email;
+                        spouse.Email = groupRegistrationBag.SpouseEmail;
 
                         if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( groupRegistrationBag.HomePhone ) )
                         {

@@ -4,51 +4,55 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
-    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
-        <Panel type="block" :title="panelName">
-            <template #default>
-                <ViewPanel v-if="panelMode == DetailPanelMode.View" :modelValue="achievementTypeViewBag" :options="options" :rebuildActionSuccessMessage="rebuildActionSuccessMessage" />
+    <Panel type="block" :title="panelName">
+        <template #default>
+            <div v-if="validationError" class="alert alert-validation">
+                Please correct the following:
+                <div v-html="validationError" />
+            </div>
+            <ViewPanel v-if="panelMode == DetailPanelMode.View" :modelValue="achievementTypeViewBag" :options="options" :rebuildActionSuccessMessage="rebuildActionSuccessMessage" />
+            <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
                 <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit" v-model="achievementTypeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
-            </template>
-            <template #footerActions>
-                <div v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add">
-                    <RockButton v-if="isEditable"
-                                :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Primary"
-                                @click="onStartSubmitForm">
-                        Save
-                    </RockButton>
-                    <RockButton v-if="isEditable"
-                                :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Link"
-                                @click="onCancelEdit">
-                        Cancel
-                    </RockButton>
-                </div>
-
-                <div v-if="panelMode === DetailPanelMode.View && isEditable">
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Primary"
-                                @click="onEdit">
-                        Edit
-                    </RockButton>
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Link"
-                                @click="onDelete">
-                        Delete
-                    </RockButton>
-                </div>
-            </template>
-            <template #footerSecondaryActions>
-                <RockButton v-if="panelMode == DetailPanelMode.View"
+            </RockForm>
+        </template>
+        <template #footerActions>
+            <div v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add">
+                <RockButton v-if="isEditable"
                             :btnSize="BtnSize.Default"
-                            :btnType="BtnType.Danger"
-                            @click="onRebuild">
-                        Rebuild
-                    </RockButton>
-            </template>
-        </Panel>
-    </RockForm>
+                            :btnType="BtnType.Primary"
+                            @click="onStartSubmitForm">
+                    Save
+                </RockButton>
+                <RockButton v-if="isEditable"
+                            :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Link"
+                            @click="onCancelEdit">
+                    Cancel
+                </RockButton>
+            </div>
+
+            <div v-if="panelMode === DetailPanelMode.View && isEditable">
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Primary"
+                            @click="onEdit">
+                    Edit
+                </RockButton>
+                <RockButton :btnSize="BtnSize.Default"
+                            :btnType="BtnType.Link"
+                            @click="onDelete">
+                    Delete
+                </RockButton>
+            </div>
+        </template>
+        <template #footerSecondaryActions>
+            <RockButton v-if="panelMode == DetailPanelMode.View"
+                        :btnSize="BtnSize.Default"
+                        :btnType="BtnType.Danger"
+                        @click="onRebuild">
+                Rebuild
+            </RockButton>
+        </template>
+    </Panel>
 </template>
 
 <script setup lang="ts">
@@ -83,6 +87,7 @@
     const rebuildActionSuccessMessage = ref("");
     const submitForm = ref(false);
     const resetKey = ref("");
+    const validationError = ref("");
 
     const achievementTypeViewBag = ref(config.entity);
     const achievementTypeEditBag = ref<AchievementTypeBag>({} as AchievementTypeBag);
@@ -113,7 +118,8 @@
         "maxAccomplishmentsAllowed",
         "name",
         "prerequisites",
-        "resultsLavaTemplate"
+        "resultsLavaTemplate",
+        "addStepOnSuccess"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(achievementTypeEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -250,6 +256,7 @@
      */
     async function onSave(): Promise<void> {
         errorMessage.value = "";
+        validationError.value = "";
 
         const data: DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> = {
             entity: achievementTypeEditBag.value,
@@ -269,6 +276,9 @@
             else if (result.statusCode === 201 && typeof result.data === "string") {
                 window.location.href = makeUrlRedirectSafe(result.data);
             }
+        }
+        else if (result.statusCode === 400) {
+            validationError.value = result.errorMessage ?? "Unknown error while trying to save achievement type.";
         }
         else {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to save achievement type.";

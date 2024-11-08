@@ -1,0 +1,149 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isShown"
+           title="Paste as Plain Text"
+           cancelText=""
+           saveText="Insert"
+           :onSave="onPlainTextInserted">
+        <TextBox v-model="pasteAsPlainTextValue"
+                 label="Paste the content below, then press the Insert button to insert the content as plain text."
+                 textMode="multiline"
+                 :rows="10" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    /**
+     * PasteAsPlainTextPlugin - Adds a toolbar button for pasting content as plain text.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <div id="uniqueEditorId">
+     *     <PasteAsPlainTextPlugin ref="pasteAsPlainTextPlugin" />
+     *   </div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import PasteAsPlainTextPlugin from "./NoteEditor/pasteAsPlainTextPlugin.partial.obs";
+     *   ...
+     *
+     *   const pasteAsPlainTextPlugin = ref<InstanceType<typeof PasteAsPlainTextPlugin> | undefined>();
+     *   ...
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     *   ...
+     *
+     *   // Initialize the editor.
+     *   onMounted(() => {
+     *     ...
+     *
+     *     tinymce.init({
+     *       // The paste as plain text button can be placed anywhere in this configuration string.
+     *       // Here, the toolbar will display
+     *       // the paste as plain text button, followed by a separator character,
+     *       // then the undo and redo buttons.
+     *       // Reference: https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#example-grouped-toolbar
+     *       toolbar: `${pasteAsPlainTextPlugin.value?.id} | undo redo`
+     *     });
+     *
+     *     ...
+     *   });
+     * (/script)
+     */
+    import { ref, watch } from "vue";
+    import { getToolbarButton, usePluginHelper } from "./utils.partial";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { Editor, Ui } from "@Obsidian/Libs/tinymce";
+
+    const id = "rockpasteasplaintext" as const;
+    const tooltip = "Paste Text" as const;
+
+    defineExpose({
+        id
+    });
+
+    //#region Values
+
+    const { editorInstance, toolbarElement } = usePluginHelper();
+    const toolbarButtonElement = ref<HTMLElement | undefined>();
+    const isShown = ref<boolean>(false);
+    const pasteAsPlainTextValue = ref<string>("");
+
+    //#endregion
+
+    //#region Computed Values
+
+    //#endregion
+
+    //#region Functions
+
+    /** Disposes the tooltip button. */
+    function disposeTooltipButton(): void {
+        // Nothing to dispose.
+    }
+
+    /** Initializes the plugin. */
+    function init(editor: Editor): void {
+        // Register toolbar buttons.
+        editor.ui.registry.addToggleButton(id, {
+            // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
+            icon: "paste-text",
+            tooltip: tooltip,
+            onAction: (_api: Ui.Toolbar.ToolbarToggleButtonInstanceApi): void => {
+                isShown.value = true;
+            },
+            onSetup: (_api: Ui.Toolbar.ToolbarToggleButtonInstanceApi): (api: Ui.Toolbar.ToolbarToggleButtonInstanceApi) => void => {
+                toolbarButtonElement.value = getToolbarButton(tooltip, toolbarElement.value) ?? undefined;
+
+                // Return a dispose callback.
+                return disposeTooltipButton;
+            },
+        });
+    }
+
+    //#endregion
+
+    //#region Event Handlers
+
+    /** Event handler for the plain text being inserted. */
+    function onPlainTextInserted(): void {
+        if (editorInstance.value) {
+            // Create a temporary div element that will be used to get the text content of the pasted value.
+            const temporaryDiv = document.createElement("div");
+            temporaryDiv.innerHTML = pasteAsPlainTextValue.value;
+
+            // Paste the content into the editor at the current position.
+            editorInstance.value.insertContent(temporaryDiv.textContent ?? "");
+        }
+
+        // Clear the pasted value and close the modal.
+        pasteAsPlainTextValue.value = "";
+        isShown.value = false;
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    // Register the plugin whenever the bound Editor changes.
+    watch(editorInstance, () => {
+        // Dispose the previous tooltip button if set.
+        disposeTooltipButton();
+
+        if (editorInstance.value) {
+            init(editorInstance.value);
+        }
+    });
+
+    //#endregion
+</script>

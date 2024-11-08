@@ -36,7 +36,7 @@
                 <Rock:PanelWidget ID="pnlEmailTemplate" Title="Email" TitleIconCssClass="fa fa-envelope" CssClass="js-email-template" runat="server" Expanded="true">
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbFromName" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="FromName" Label="From Name" Help="<small><span class='tip tip-lava'></span></small>" />
+                            <Rock:RockTextBox ID="tbFromName" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="FromName" Label="From Name" Help="<small><span class='tip tip-lava'></span></small>" />
                             <Rock:EmailBox ID="tbTo" runat="server" Label="To" AllowMultiple="true" Help="<small><span class='tip tip-lava'></span></small>" AllowLava="true" />
                         </div>
                         <div class="col-md-6">
@@ -61,7 +61,7 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:DataTextBox ID="tbSubject" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="Subject" Help="<small><span class='tip tip-lava'></span></small>" />
+                            <Rock:RockTextBox ID="tbSubject" runat="server" Label="Subject" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="Subject" Help="<small><span class='tip tip-lava'></span></small>" />
                         </div>
                         <div class="col-md-6">
                         </div>
@@ -79,7 +79,7 @@
                                         <a class="help" href="javascript: $('.js-template-help').toggle;"><i class="fa fa-question-circle"></i></a>
                                         <div class="alert alert-info js-template-help" id="nbTemplateHelp" runat="server" style="display: none;"></div>
                                     </div>
-                                    <Rock:CodeEditor ID="ceEmailTemplate" EditorHeight="500" Label="Message Body" EditorMode="Html" EditorTheme="Rock" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="Body" Required="true" />
+                                    <Rock:CodeEditor ID="ceEmailTemplate" EditorHeight="500" Label="Message Body" EditorMode="Html" EditorTheme="Rock" runat="server" SourceTypeName="Rock.Model.SystemCommunication, Rock" PropertyName="Body" />
                                 </div>
                                 <div class="col-md-4">
                                     <Rock:RockCheckBox ID="cbCssInliningEnabled" runat="server" Text="CSS Inlining Enabled" Help="Enable CSS Inlining to move styles to inline attributes. This can help maximize compatibility with email clients. This requires support for inlining by the configured email transport." />
@@ -163,8 +163,8 @@
                 <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
 
                 <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" AccessKey="s" ToolTip="Alt+s"  Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
-                    <asp:LinkButton ID="btnCancel" runat="server" AccessKey="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                    <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s"  Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
+                    <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
                 </div>
 
             </div>

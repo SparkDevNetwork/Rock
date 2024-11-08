@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext"
+  },
+  "include": [ "./**/*.ts" ],
+  "references": [
+    { "path": "../Enums" }
+  ]
+}

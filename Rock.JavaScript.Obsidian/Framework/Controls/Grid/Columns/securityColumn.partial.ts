@@ -20,6 +20,10 @@ import { Component, defineComponent, PropType } from "vue";
 import SecurityCell from "../Cells/securityCell.partial.obs";
 import { IGridState } from "@Obsidian/Types/Controls/grid";
 
+/**
+ * Displays a security button that will open the standard Security editor
+ * modal for the item.
+ */
 export default defineComponent({
     props: {
         ...standardColumnProps,
@@ -47,6 +51,11 @@ export default defineComponent({
         width: {
             type: String as PropType<string>,
             default: "52px"
+        },
+
+        columnType: {
+            type: String as PropType<string>,
+            default: "security"
         },
 
         /**

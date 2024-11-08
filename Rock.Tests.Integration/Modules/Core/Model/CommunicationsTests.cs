@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 
-namespace Rock.Tests.Integration.Communications
+namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    public class CommunicationTests
+    public class CommunicationTests : DatabaseTestsBase
     {
         private string communicationForeignKey;
-
-        [ClassInitialize]
-        public static void TestInitialize( TestContext context )
-        {
-            TestDatabaseHelper.ResetDatabase();
-        }
 
         [TestInitialize]
         public void TestInitialize()

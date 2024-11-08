@@ -116,5 +116,35 @@ namespace Rock.Model
         /// </summary>
         [Description( "Giving Alerts" )]
         public const string FinancialAccountGivingAlert = "ACCOUNT-GIVING-ALERT";
+
+        /// <summary>
+        /// <para>
+        /// The relationship between a check-in area (GroupType) and a check-in
+        /// label that should be printed when someone checks in or out of the
+        /// area.
+        /// </para>
+        /// <para>For this, the related entity fields would be...</para>
+        /// 
+        /// <list>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.PurposeKey" /></term>
+        ///     <description>AREA-CHECK-IN-LABEL</description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.SourceEntityType"/></term>
+        ///     <description><see cref="GroupType"/></description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.TargetEntityType"/></term>
+        ///     <description><see cref="CheckInLabel"/></description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.QualifierValue"/></term>
+        ///     <description><c>null</c></description>
+        /// </item>
+        /// </list>
+        /// </summary>
+        [Description( "Check-in Label" )]
+        public const string AreaCheckInLabel = "AREA-CHECK-IN-LABEL";
     }
 }
