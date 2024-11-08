@@ -49,7 +49,7 @@
   --color-secondary-tint:   #83758f;
   --color-secondary-shade:  #83758f;
 
-  @supports (color-mix(in srgb, red 50%, white 50%)) {
+  @supports (color: color-mix(in srgb, red 50%, white 50%)) {
     --tint-white-percentage: 100%;
     --shade-black-percentage: 15%;
 
