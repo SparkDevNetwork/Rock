@@ -45,7 +45,7 @@ namespace Rock.Blocks.Lms
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
-        IsRequired = true,
+        IsRequired = false,
         DefaultValue = AttributeDefault.CourseDetailTemplate,
         Order = 1 )]
 
@@ -110,167 +110,199 @@ namespace Rock.Blocks.Lms
             public const string CourseDetailTemplate = @"
 //- Variable Assignments
 {% assign requirementTypes = Course.CourseRequirements | Distinct:'RequirementType' %}
-{% assign prerequisitesText = Course.CourseRequirements | Where:'RequirementType','Prerequisite' | Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
+{% assign prerequisitesText = Course.CourseRequirements | Where:'RequirementType','Prerequisite' |
+Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
 {% assign facilitatorCount = Course.Facilitators | Size %}
 {% assign facilitators = Course.Facilitators | Join:', ' | ReplaceLast:',',' and' | Default:'TBD' %}
-{% assign imageFileNameLength = Course.ImageFileGuid | Size %}
+
 
 //- Styles
-{% stylesheet %}
-    .page-container {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 12px;
+
+<style>
+
+    @media (max-width: 991px) {
+        .course-side-panel {
+            padding-left: 0;
+        }
+        .card {
+            margin-bottom: 24px;
+        }
+        
     }
     
-    .page-header-section {
-        {% if imageFileNameLength > 0 %}
-            height: 280px;
-            background-image: url('/GetImage.ashx?guid={{Course.ImageFileGuid}}'); 
-            background-size: cover;
-        {% endif %}
-        align-items: center; 
-        border-radius: 12px; 
+    @media (max-width: 767px) {
+        h1 {
+            font-size: 28px;
+        }
+        .card {
+            margin-bottom: 24px;
+        }
     }
+
+</style>
+
+
+<div class=""d-flex flex-column gap-4"">
     
-    .header-block {
-        display: flex;
-        flex-direction: column;
-        position: relative;
-        left: 10%;
-        {% if imageFileNameLength > 0 %}
-            bottom: -85%;
-            -webkit-transform: translateY(-30%);
-            transform: translateY(-30%);
-        {% endif %}
-        background-color: white; 
-        border-radius: 12px; 
-        width: 80%; 
-    }
-    
-    .page-sub-header {
-        padding-left: 10%; 
-        padding-right: 10%; 
-        padding-bottom: 12px;
-        margin-bottom: 12px;
-    }
-    
-    .page-main-content {
-        margin-top: 30px;   
-    }
-    
-    .course-detail-container {
-        background-color: white; 
-        border-radius: 12px;
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .course-status-sidebar-container {
-        padding: 12px; 
-        margin-left: 12px;
-        background-color: white; 
-        border-radius: 12px;
-        width: 300px;
-    }
-{% endstylesheet %}
-<div class=""page-container"">
-	<div class=""page-header-section mb-5"">
-		<div class=""header-block text-center"">
-			<h2>
-				{{ Course.Entity.PublicName }}
-			</h2>
-			<div class=""page-sub-header"">
-				{{ Course.Entity.Summary }}
-			</div>
-		</div>
-	</div>
-	
-	<div class=""page-main-content d-flex"">
-		<div class=""course-detail-container text-muted"">
-			<div class=""description-header h4"">Course Description</div>
-			
-			<div class=""course-item-pair-container course-code"">
-				<span class=""text-bold"">Course Code: </span>
-				<span>{{Course.Entity.CourseCode}}</span>
-			</div>
-			
-			<div class=""course-item-pair-container credits"">
-				<span class=""text-bold"">Credits: </span>
-				<span>{{Course.Entity.Credits}}</span>
-			</div>
-			
-			<div class=""course-item-pair-container prerequisites"">
-				<span class=""text-bold"">Prerequisites: </span>
-				
-				<span>
-					{{ prerequisitesText }}
-				</span>
-			</div>
-			
-			<div class=""course-item-pair-container description"">
-				<span>{{Course.DescriptionAsHtml}}</span>
-			</div>
-		</div>
-		
-		
-		<div class=""course-side-panel d-flex flex-column"">
-			<div class=""course-status-sidebar-container"">
-				
-			{% case Course.LearningCompletionStatus %}
-			{% when 'Incomplete' %} 
-				<div class=""sidebar-header text-bold"">Currently Enrolled</div>
-				<div class=""sidebar-value text-muted"">You are currently enrolled in this course.</div>
-					
-				<div class=""side-bar-action mt-3"">
-					<a class=""btn btn-info"" href=""{{ Course.ClassWorkspaceLink }}"">View Course</a>
-				</div>
-				
-                {% for requirementType in requirementTypes %}
-                	{% assign requirementsText = Course.CourseRequirements | Where:'RequirementType',requirementType | Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
-                				<div class=""sidebar-header text-bold"">{{ requirementType | Pluralize }}</div>
-                				<div class=""sidebar-value text-muted"">{{ requirementsText }}</div>
-                {% endfor %}
-			{% when 'Passed' %} 
-				<div class=""sidebar-header text-bold"">History</div>
-				<div class=""sidebar-value text-muted"">You completed this class on {{ Course.MostRecentParticipation.LearningCompletionDateTime | Date: 'MMMM dd, yyyy' }}</div>
-				
-				<div class=""side-bar-action mt-3"">
-					<a href=""{{ Course.ClassWorkspaceLink }}"">View Class Work</a>
-				</div>
-				
-                {% for requirementType in requirementTypes %}
-                	{% assign requirementsText = Course.CourseRequirements | Where:'RequirementType',requirementType | Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
-                				<div class=""sidebar-header text-bold"">{{ requirementType | Pluralize }}</div>
-                				<div class=""sidebar-value text-muted"">{{ requirementsText }}</div>
-                {% endfor %}
-			{% else %} 
-                {% for requirementType in requirementTypes %}
-                	{% assign requirementsText = Course.CourseRequirements | Where:'RequirementType',requirementType | Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
-                				<div class=""sidebar-header text-bold"">{{ requirementType | Pluralize }}</div>
-                				<div class=""sidebar-value text-muted"">{{ requirementsText }}</div>
-                {% endfor %}
-				
-				<div class=""sidebar-upcoming-schedule h4"">Upcoming Schedule</div>
-				
-				<div class=""side-bar-header-value-pair text-muted"">
-					<div class=""sidebar-header text-bold"">Next Session Semester: </div>
-					<div class=""sidebar-value"">{{ Course.NextSemester.Name }}</div>
-				</div>
-				
-				<div class=""side-bar-header-value-pair text-muted"">
-					<div class=""sidebar-header text-bold"">{{ 'Facilitator' | PluralizeForQuantity:facilitatorCount }}:</div>
-					<div class=""sidebar-value"">{{ facilitators }}</div>
-				</div>
-				<div class=""side-bar-action mt-3"">
-					<a class=""btn btn-info"" href=""{{ Course.CourseEnrollmentLink }}"">Enroll</a>
-				</div>
-			{% endcase %}
-			</div>
-		</div>
-	</div>
-</div>";
+    <div class=""hero-section"">
+        <div class=""hero-section-image"" style=""background-image: url('/GetImage.ashx?guid={{ Course.Entity.ImageBinaryFile.Guid }}')""></div>
+        <div class=""hero-section-content"">
+            <h1 class=""hero-section-title""> {{ Course.Entity.PublicName }} </h1>
+            <p class=""hero-section-description""> {{ Course.Entity.Summary }} </p>
+        </div>
+    </div>
+
+    <div>
+
+        <div class=""row"">
+
+            <div class=""col-xs-12 col-sm-12 col-md-8""> //- LEFT CONTAINER
+
+                <div class=""card""> //-COURSE DESCRIPTION
+
+                    <div class=""card-body"">
+                        <div class=""card-title"">
+                            <h4>Course Description</h4>
+                        </div>
+                        <div class=""card-text"">
+                            <div class=""text-muted"">
+                                <span class=""text-bold"">Course Code: </span>
+                                <span>{{Course.Entity.CourseCode}}</span>
+                            </div>
+
+                            <div class=""text-muted"">
+                                <span class=""text-bold"">Credits: </span>
+                                <span>{{Course.Entity.Credits}}</span>
+                            </div>
+
+                            <div class=""text-muted"">
+                                <span class=""text-bold"">Prerequisites: </span>
+                                <span>
+                                    {{ prerequisitesText }}
+                                </span>
+                            </div>
+
+                            <div class=""pt-3 text-muted"">
+                                <span>{{Course.DescriptionAsHtml}}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class=""col-xs-12 col-sm-12 col-md-4""> //- RIGHT CONTAINER
+
+                <div>
+
+                    {% case Course.LearningCompletionStatus %}
+
+                        {% when 'Incomplete' %}
+                        <div class=""card"">
+                            <div class=""card-body"">
+                                <div class=""card-title d-flex align-items-center"">
+                                    <i class=""fa fa-user-check mr-2""></i>
+                                    <h4>Currently Enrolled</h4>
+                                </div>
+                                <div class=""card-text text-muted"">
+                                    <p>You are currently enrolled in this course.</p>
+                                </div>
+                                <div class=""mt-3"">
+                                    <a class=""btn btn-info"" href=""{{ Course.ClassWorkspaceLink }}"">View Course Workspace</a>
+                                </div>
+                            </div>
+                            
+                        </div>
+
+
+                        {% when 'Pass' or 'Fail' %}
+                        <div class=""card"">
+                            
+                            <div class=""card-body"">
+                                <div class=""card-title d-flex align-items-center"">
+                                    <i class=""fa fa-rotate-left mr-2""></i>
+                                    <h4>History</h4>
+                                </div>
+                                <div class=""text-muted"">You completed this class on {{
+                                    Course.MostRecentParticipation.LearningCompletionDateTime | Date: 'MMMM dd, yyyy' }}</div>
+        
+                                <div class=""mt-3"">
+                                    <a href=""{{ Course.ClassWorkspaceLink }}"">View Class Work</a>
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                        {% else %}
+
+                        <div class=""card"">
+
+                            <div class=""card-body"">
+                                <div class=""card-title d-flex align-items-center"">
+                                    <i class=""fa fa-calendar-alt mr-2""></i>
+                                    <h4>Upcoming Schedule</h4>
+                                </div>
+
+                                <div class=""card-text d-flex flex-column gap-1"">
+
+                                    <div class=""text-muted"">
+                                        <p class=""text-bold mb-0"">Next Session Semester: </p>
+                                        {% if Course.NextSemester.Name %}
+                                        <p>{{ Course.NextSemester.Name }}</p>
+                                        {% else %}
+                                        <p>TBD</p>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class=""text-muted"">
+                                        <p class=""text-bold mb-0"">{{ 'Instructor' | PluralizeForQuantity:facilitatorCount
+                                            }}:</p>
+                                        <p>{{ facilitators }}</p>
+                                    </div>
+
+                                    {% for requirementType in requirementTypes %}
+
+                                    {% assign requirementsText = Course.CourseRequirements |
+                                    Where:'RequirementType',requirementType | Select:'RequiredLearningCourse' |
+                                    Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
+                                    <div class=""text-muted"">
+                                        <div class=""d-flex align-items-center"">
+                                            <p class=""text-bold mb-0"">{{ requirementType | Pluralize }}</p>
+                                            {% if course.UnmetPrerequisites %}
+                                            <i class=""fa fa-check-circle text-success ml-2""></i>
+                                            {% else %}
+                                            <i class=""fa fa-exclamation-circle text-danger ml-2""></i>
+                                            {% endif %}
+                                        </div>
+                                        <p>{{ requirementsText }}</p>
+                                    </div>
+
+                                    {% endfor %}
+
+                                    <div class=""mt-3"">
+
+                                        {% if course.UnmetPrerequisites != empty %}
+                                        <a class=""btn btn-info"" href=""{{ Course.CourseEnrollmentLink }}"">Enroll</a>
+                                        {% else %}
+                                        <div class=""btn btn-info disabled"">Enroll</div>
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    {% endcase %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+";
         }
 
         #endregion Keys
