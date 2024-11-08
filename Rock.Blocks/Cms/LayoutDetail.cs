@@ -514,8 +514,7 @@ namespace Rock.Blocks.Cms
                 {
                     return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
                     {
-                        [PageParameterKey.LayoutId] = entity.IdKey,
-                        [PageParameterKey.SiteId] = entity.SiteId.ToString()
+                        [PageParameterKey.LayoutId] = entity.IdKey
                     } ) );
                 }
 
