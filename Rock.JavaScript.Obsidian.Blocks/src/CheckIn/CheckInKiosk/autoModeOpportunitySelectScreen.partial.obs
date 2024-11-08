@@ -96,20 +96,12 @@
         for (const schedule of props.session.attendeeOpportunities.schedules) {
             for (const area of props.session.attendeeOpportunities.areas) {
                 for (const group of props.session.attendeeOpportunities.groups) {
-                    if (group.areaId !== area.id || !group.locationIds) {
+                    if (group.areaId !== area.id || !group.locations) {
                         continue;
                     }
 
                     for (const location of props.session.attendeeOpportunities.locations) {
-                        if (!group.locationIds.some(l => l === location.id)) {
-                            continue;
-                        }
-
-                        if (!location.scheduleIds) {
-                            continue;
-                        }
-
-                        if (!location.scheduleIds.some(s => s === schedule.id)) {
+                        if (!group.locations.some(l => l.locationId === location.id && l.scheduleId === schedule.id)) {
                             continue;
                         }
 

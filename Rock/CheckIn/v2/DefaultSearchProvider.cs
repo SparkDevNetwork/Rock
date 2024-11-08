@@ -100,7 +100,7 @@ namespace Rock.CheckIn.v2
 
                     return searchTerm.Any( c => char.IsLetter( c ) )
                         ? SearchForFamiliesByName( searchTerm )
-                        : SearchForFamiliesByPhoneNumber( searchTerm);
+                        : SearchForFamiliesByPhoneNumber( searchTerm );
 
                 case FamilySearchMode.ScannedId:
                     return SearchForFamiliesByScannedId( searchTerm );
@@ -199,7 +199,14 @@ namespace Rock.CheckIn.v2
                 } )
                 .ToList();
 
-            familyMembers.Select( fm => fm.Person ).LoadAttributes( Session.RockContext );
+            // Load all attributes in one query. We need attributes for the
+            // ability level. DistinctBy person identifier because some people
+            // may be in multiple families which means they may be in our set
+            // multiple times and LoadAttributes() doesn't like duplicates.
+            familyMembers
+                .Select( fm => fm.Person )
+                .DistinctBy( p => p.Id )
+                .LoadAttributes( Session.RockContext );
 
             // Convert the raw database data into the bags that are understood
             // by different elements of the check-in system.
@@ -369,12 +376,12 @@ namespace Rock.CheckIn.v2
             var personRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid(), Session.RockContext )?.Id;
             var numericSearchTerm = searchTerm.AsNumeric();
 
-            if ( TemplateConfiguration.MinimumPhoneNumberLength.HasValue && searchTerm.Length < TemplateConfiguration.MinimumPhoneNumberLength.Value )
+            if ( TemplateConfiguration.MinimumPhoneNumberLength.HasValue && numericSearchTerm.Length < TemplateConfiguration.MinimumPhoneNumberLength.Value )
             {
                 throw new CheckInMessageException( $"Search term must be at least {TemplateConfiguration.MinimumPhoneNumberLength} digits." );
             }
 
-            if ( TemplateConfiguration.MaximumPhoneNumberLength.HasValue && searchTerm.Length > TemplateConfiguration.MaximumPhoneNumberLength.Value )
+            if ( TemplateConfiguration.MaximumPhoneNumberLength.HasValue && numericSearchTerm.Length > TemplateConfiguration.MaximumPhoneNumberLength.Value )
             {
                 throw new CheckInMessageException( $"Search term must be at most {TemplateConfiguration.MaximumPhoneNumberLength} digits." );
             }
@@ -382,6 +389,13 @@ namespace Rock.CheckIn.v2
             if ( !personRecordTypeId.HasValue )
             {
                 throw new Exception( "Person record type was not found in the database, please check your installation." );
+            }
+
+            var match = Session.TemplateConfiguration.PhoneNumberRegex?.Match( numericSearchTerm );
+
+            if ( match?.Success == true && match.Groups.Count == 2 )
+            {
+                numericSearchTerm = match.Groups[1].Value;
             }
 
             var phoneQry = new PhoneNumberService( Session.RockContext )

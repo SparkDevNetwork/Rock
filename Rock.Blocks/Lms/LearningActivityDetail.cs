@@ -112,7 +112,9 @@ namespace Rock.Blocks.Lms
                 IconCssClass = component.Value.Value.IconCssClass,
                 IdKey = component.Value.Value.EntityType.IdKey,
                 Guid = component.Value.Value.EntityType.Guid.ToString()
-            } ).ToList();
+            } )
+                .OrderBy( a => a.Name )
+                .ToList();
 
             // Get a list of Activity Types for the user to select from.
             options.ActivityTypeListItems = options.ActivityTypes.Select( a => new ListItemBag
@@ -226,7 +228,10 @@ namespace Rock.Blocks.Lms
 
             // Get the current persons info.
             var currentPerson = GetCurrentPerson();
-            var isClassFacilitator = new LearningParticipantService( RockContext ).GetFacilitatorId( currentPerson.Id, entity.LearningClassId ) > 0;
+            var facilitatorId = new LearningParticipantService( RockContext )
+                .GetFacilitatorId( currentPerson.Id, entity.LearningClassId );
+
+            var isClassFacilitator = facilitatorId.HasValue && facilitatorId.Value > 0;
             var currentPersonBag = new LearningActivityParticipantBag
             {
                 Name = currentPerson.FullName,

@@ -1811,6 +1811,7 @@ FROM [GroupMember] GMO
 	LEFT OUTER JOIN [GroupMember] GMN
 		ON GMN.[GroupId] = GMO.[GroupId]
 		AND GMN.[PersonId] = @NewId
+        AND GMN.[IsArchived] = 0
 		AND (GTR.[MaxCount] <= 1 OR GMN.[GroupRoleId] = GMO.[GroupRoleId])
 WHERE GMO.[PersonId] = @OldId
 	AND GMN.[Id] IS NULL

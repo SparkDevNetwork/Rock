@@ -1,6 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="check-in-page">
+    <div v-if="loginRequiredUrl" class="p-4">
+        <NotificationBox alertType="warning">
+            Check-in is not configured for anonymous access and you are not logged in.
+            Please update block settings or <a :href="loginRequiredUrl">login</a>.
+        </NotificationBox>
+    </div>
+
+    <div v-else class="check-in-page">
         <PageHeader :hasBack="hasBackButton"
                     :hideNavigation="!hasNavigation"
                     :isOverrideMode="isOverrideMode"
@@ -89,7 +96,8 @@
                 <SuccessScreen v-if="currentScreen === Screen.Success"
                                :configuration="configuration"
                                :session="currentSession"
-                               @updateActions="onUpdateActions($event, Screen.Success)" />
+                               @updateActions="onUpdateActions($event, Screen.Success)"
+                               @checkInFamily="onRegistrationCheckInFamily" />
 
                 <CheckoutSuccessScreen v-if="currentScreen === Screen.CheckoutSuccess"
                                        :configuration="configuration"
@@ -136,6 +144,7 @@
     import FamilySelectScreen from "./CheckInKiosk/familySelectScreen.partial.obs";
     import GroupSelectScreen from "./CheckInKiosk/groupSelectScreen.partial.obs";
     import LocationSelectScreen from "./CheckInKiosk/locationSelectScreen.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AutoModeOpportunitySelectScreen from "./CheckInKiosk/autoModeOpportunitySelectScreen.partial.obs";
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
     import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
@@ -222,6 +231,8 @@
             component: RegistrationEditIndividualScreen
         }
     ]);
+
+    const loginRequiredUrl = blockConfiguration.loginRequiredUrl as string;
 
     // #endregion
 
@@ -506,6 +517,7 @@
 
             if (currentScreen.value !== Screen.Welcome) {
                 configuration.value.locationCountAdjustments.push({
+                    id: attendance.attendanceIdKey,
                     timestamp: Date.now(),
                     locationId: locationId,
                     count: 1
@@ -627,6 +639,12 @@
 
         session = await session.withFamily(familyId);
         session = await session.withNextScreen();
+
+        // If we are on the action select screen, skip it and go straight to
+        // family member screen.
+        if (session.currentScreen === Screen.ActionSelect) {
+            session = await session.withNextScreen();
+        }
 
         // Make the back button go back to the welcome screen.
         currentSession.value = blankSession;

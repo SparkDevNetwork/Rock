@@ -96,8 +96,6 @@
     <Compile Include="Blocks\CheckIn\CheckInScheduleBuilder\GroupLocationsBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInScheduleBuilder\CloneScheduleBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInSimulator\CheckInSimulatorOptionsBag.cs" />
-    <Compile Include="Blocks\CheckIn\Configuration\CustomSettingsBag.cs" />
-    <Compile Include="Blocks\CheckIn\Configuration\CustomSettingsOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\DataSourceBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\IconItemBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\LabelDesignerOptionsBag.cs" />
@@ -163,6 +161,7 @@
     <Compile Include="Blocks\Lms\LearningSemesterDetail\LearningSemesterDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\PublicLearningClassWorkspace\PublicLearningClassWorkspaceNotificationBag.cs" />
     <Compile Include="Blocks\Lms\PublicLearningClassWorkspace\PublicLearningClassWorkspaceBox.cs" />
+    <Compile Include="Blocks\Lms\PublicLearningClassEnrollment\PublicLearningClassEnrollmentBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningCourseDetail\PublicLearningCourseDetailBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningProgramList\PublicLearningProgramListBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningCourseList\PublicLearningCourseListBox.cs" />
@@ -767,6 +766,7 @@
     <Compile Include="CheckIn\Labels\LineFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\RectangleFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\TextFieldConfigurationBag.cs" />
+    <Compile Include="CheckIn\LocationAndScheduleBag.cs" />
     <Compile Include="CheckIn\LocationOpportunityBag.cs" />
     <Compile Include="CheckIn\ConfigurationTemplateBag.cs" />
     <Compile Include="CheckIn\PersonBag.cs" />

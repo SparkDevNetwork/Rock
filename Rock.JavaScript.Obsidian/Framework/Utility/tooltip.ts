@@ -58,7 +58,8 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
     }
 
     const $node = $(node);
-    let appliedContainer: string | undefined = undefined;let fsElement: HTMLElement | undefined = undefined;
+    let appliedContainer: string | undefined = undefined;
+    let fsElement: HTMLElement | undefined = undefined;
 
     const getContainer = (): string | undefined => {
         if (!isFullscreen() && fsElement) {
@@ -143,3 +144,13 @@ export function showTooltip(node: Element): void {
     }
 }
 
+/**
+ * Manually destroy a previously-configured tooltip for the specified node.
+ *
+ * @param node The node for which to destroy a tooltip.
+ */
+export function destroyTooltip(node: Element): void {
+    if (typeof $ === "function") {
+        $(node).tooltip("destroy");
+    }
+}

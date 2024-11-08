@@ -24,6 +24,7 @@ using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.AchievementTypeDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
@@ -50,7 +51,7 @@ namespace Rock.Blocks.Engagement
 
     [Rock.SystemGuid.EntityTypeGuid( "8b22d387-c8f3-41ff-99ef-ee4f088610a1" )]
     [Rock.SystemGuid.BlockTypeGuid( "eddfcaff-70aa-4791-b051-6567b37518c4" )]
-    public class AchievementTypeDetail : RockDetailBlockType
+    public class AchievementTypeDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -87,6 +88,23 @@ namespace Rock.Blocks.Engagement
 
                 return box;
             }
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var key = pageReference.GetPageParameter( PageParameterKey.AchievementTypeId );
+            var achievementTypeId = Rock.Utility.IdHasher.Instance.GetId( key ) ?? key.AsInteger();
+            var achievementType = AchievementTypeCache.Get( achievementTypeId );
+
+            var breadCrumbs = new List<IBreadCrumb>();
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+            breadCrumbs.Add( new BreadCrumbLink( achievementType?.Name ?? "New Achievement Type", breadCrumbPageRef ) );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = breadCrumbs
+            };
         }
 
         /// <summary>
@@ -499,9 +517,9 @@ namespace Rock.Blocks.Engagement
         /// <summary>
         /// Loads the prerequisite list.
         /// </summary>
-        private void SetPrerequisiteListValues( AchievementTypeBag bag )
+        private void SetPrerequisiteListValues( AchievementTypeBag bag, Guid? componentEntityTypeGuid = null )
         {
-            var config = GetAchievementConfiguration();
+            var config = GetAchievementConfiguration( componentEntityTypeGuid );
             var achievementTypeCache = GetAchievementTypeCache();
             var isNew = GetAchievementType()?.Id == 0;
 
@@ -555,9 +573,9 @@ namespace Rock.Blocks.Engagement
         /// Gets the achievement configuration.
         /// </summary>
         /// <returns></returns>
-        private AchievementConfiguration GetAchievementConfiguration()
+        private AchievementConfiguration GetAchievementConfiguration( Guid? componentEntityTypeGuid = null )
         {
-            var component = GetAchievementComponent();
+            var component = GetAchievementComponent( componentEntityTypeGuid );
 
             if ( component == null )
             {
@@ -575,7 +593,8 @@ namespace Rock.Blocks.Engagement
         {
             if ( _achievementType == null )
             {
-                var achievementTypeId = PageParameter( PageParameterKey.AchievementTypeId ).AsIntegerOrNull();
+                var achievementTypeIdParam = PageParameter( PageParameterKey.AchievementTypeId );
+                var achievementTypeId = Rock.Utility.IdHasher.Instance.GetId( achievementTypeIdParam ) ?? achievementTypeIdParam.AsIntegerOrNull();
 
                 if ( achievementTypeId > 0 )
                 {
@@ -851,6 +870,7 @@ namespace Rock.Blocks.Engagement
 
             var bag = GetCommonEntityBag( _achievementType );
             bag.LoadAttributesAndValuesForPublicEdit( _achievementType, RequestContext.CurrentPerson, attributeFilter: IsAttributeIncluded );
+            SetPrerequisiteListValues( bag, entityTypeGuid );
 
             var component = AchievementContainer.GetComponent( entityType.Name );
             if ( component != null )

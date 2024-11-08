@@ -366,12 +366,22 @@ namespace Rock.Blocks.Core
                     r.Parameters.Count == 1
                     && r.Parameters.FirstOrDefault().Equals( "CategoryId", StringComparison.OrdinalIgnoreCase ) );
 
-            var templateUrl = $"{RequestContext.RootUrlPath}/{routeWithCategoryId.Route}";
-            return new Dictionary<string, string>
+            if ( routeWithCategoryId?.Route?.IsNotNullOrWhiteSpace() == true )
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [NavigationUrlKey.CurrentPageTemplate] = templateUrl
-            };
+                var templateUrl = $"{RequestContext.RootUrlPath}/{routeWithCategoryId?.Route}";
+                return new Dictionary<string, string>
+                {
+                    [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
+                    [NavigationUrlKey.CurrentPageTemplate] = templateUrl
+                };
+            }
+            else
+            {
+                return new Dictionary<string, string>
+                {
+                    [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                };
+            }
         }
 
         // <inheritdoc/>
@@ -567,7 +577,16 @@ namespace Rock.Blocks.Core
             entityService.Delete( entity );
             RockContext.SaveChanges();
 
-            return ActionOk( this.GetParentPageUrl() );
+            var pageReference = new Rock.Web.PageReference( this.PageCache.Guid.ToString(), new Dictionary<string, string>() );
+
+            if ( pageReference.PageId > 0 )
+            {
+                return ActionOk( pageReference.BuildUrl() );
+            }
+            else
+            {
+                return ActionOk( this.GetCurrentPageUrl() );
+            }
         }
 
         /// <summary>

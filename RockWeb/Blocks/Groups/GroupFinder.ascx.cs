@@ -1919,6 +1919,8 @@ namespace RockWeb.Blocks.Groups
         var parser = new DOMParser();
 
         var mapStyle = {3};
+        var mapId = '{15}';
+        var isDefaultMapId = mapId === 'DEFAULT_MAP_ID';
 
         var polygonColorIndex = 0;
         var polygonColors = [{5}];
@@ -1938,8 +1940,11 @@ namespace RockWeb.Blocks.Groups
                 ,maxZoom: {11}
                 ,minZoom: {12}
                 ,zoom: {9}
-                ,mapId: '{15}'
             }};
+
+            if (!isDefaultMapId) {{
+                mapOptions.mapId = mapId;
+            }}
 
             // Display a map on the page
             map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
@@ -1969,63 +1974,90 @@ namespace RockWeb.Blocks.Groups
                 var updatedMarkers = [];
                 for (var i = 0; i < markerCount; i++) {{
                     var marker = allMarkers[i];
+                    var updatedMarker;
 
-                    const pinSvg = parser.parseFromString(""{10}"",""image/svg+xml"").documentElement;
-                    pinSvg.style.fill = marker.icon_color;
+                    if (isDefaultMapId) {{
+                        var pinImage = {{
+                            path: marker.icon.path,
+                            fillColor: marker.icon.fillColor,
+                            fillOpacity: marker.icon.fillOpacity,
+                            strokeColor: marker.icon.strokeColor,
+                            strokeWeight: marker.icon.strokeWeight,
+                            scale: scale,
+                            labelOrigin: marker.icon.labelOrigin,
+                            anchor: marker.icon.anchor,
+                        }};
 
-                    // Remove marker
-  			        marker.marker_element.map = null;
+                        // Remove marker
+  			            marker.setMap(null);
 
-				    // Add marker back
-                    var updatedMarker = {{
-                        id: marker.id,
-                        position: marker.position,
-                        map: map,
-                        title: marker.title,
-                        info_window: marker.info_window,
-                        icon_color: marker.icon_color,
-                        marker_element: new google.maps.marker.AdvancedMarkerElement({{
+				        // Add marker back
+                        updatedMarker = new google.maps.Marker({{
+                            position: marker.position,
+                            icon: pinImage,
+                            map: map,
+                            id: marker.id,
+                            title: marker.title,
+                            info_window: marker.info_window,
+                        }});
+                    }}
+                    else {{
+                        const pinSvg = parser.parseFromString(""{10}"",""image/svg+xml"").documentElement;
+                        pinSvg.style.fill = marker.icon_color;
+
+                        // Remove marker
+  			            marker.marker_element.map = null;
+
+				        // Add marker back
+                        updatedMarker = {{
                             id: marker.id,
                             position: marker.position,
                             map: map,
                             title: marker.title,
-                            content: pinSvg,
-                        }}),
-                        setMap: function(map) {{
-                            this.map = map;
-                            this.marker_element.map = map;
-                        }},
-                        getPosition: function() {{
-                            return this.position;
-                        }},
-                        setPosition: function(position) {{
-                            this.position = position;
-                            this.marker_element.position = position;
-                        }}
-                    }};
+                            info_window: marker.info_window,
+                            icon_color: marker.icon_color,
+                            marker_element: new google.maps.marker.AdvancedMarkerElement({{
+                                id: marker.id,
+                                position: marker.position,
+                                map: map,
+                                title: marker.title,
+                                content: pinSvg,
+                            }}),
+                            setMap: function(map) {{
+                                this.map = map;
+                                this.marker_element.map = map;
+                            }},
+                            getPosition: function() {{
+                                return this.position;
+                            }},
+                            setPosition: function(position) {{
+                                this.position = position;
+                                this.marker_element.position = position;
+                            }}
+                        }};
+                    }}
 
-                if ( updatedMarker.info_window != null ) {{ 
-                    google.maps.event.addListener(updatedMarker.marker_element, 'click', (function (marker) {{
-                        return function () {{
-                            openInfoWindow(marker);
-                        }}
-                    }})(updatedMarker));
-                }}
+                    if ( updatedMarker.info_window != null ) {{ 
+                        google.maps.event.addListener(updatedMarker.marker_element || marker, 'click', (function (marker) {{
+                            return function () {{
+                                openInfoWindow(marker);
+                            }}
+                        }})(updatedMarker));
+                    }}
 
-                if ( updatedMarker.id && updatedMarker.id > 0 ) {{ 
-                    google.maps.event.addListener(updatedMarker.marker_element, 'mouseover', (function (marker) {{
-                        return function () {{
-                            $(""tr[datakey='"" + marker.id + ""']"").addClass('row-highlight');
-                        }}
-                    }})(updatedMarker));
+                    if ( updatedMarker.id && updatedMarker.id > 0 ) {{ 
+                        google.maps.event.addListener(updatedMarker.marker_element || marker, 'mouseover', (function (marker) {{
+                            return function () {{
+                                $(""tr[datakey='"" + marker.id + ""']"").addClass('row-highlight');
+                            }}
+                        }})(updatedMarker));
 
-                    google.maps.event.addListener(updatedMarker.marker_element, 'mouseout', (function (marker) {{
-                        return function () {{
-                            $(""tr[datakey='"" + marker.id + ""']"").removeClass('row-highlight');
-                        }}
-                    }})(updatedMarker));
-
-                }}
+                        google.maps.event.addListener(updatedMarker.marker_element || marker, 'mouseout', (function (marker) {{
+                            return function () {{
+                                $(""tr[datakey='"" + marker.id + ""']"").removeClass('row-highlight');
+                            }}
+                        }})(updatedMarker));
+                    }}
 
                     updatedMarkers.push(updatedMarker);
                 }}
@@ -2081,10 +2113,15 @@ namespace RockWeb.Blocks.Groups
 
         function openInfoWindow(marker) {{
             infoWindow.setContent( $('<div/>').html(marker.info_window).text() );
-            infoWindow.open({{
-                anchor: marker.marker_element,
-                map
-            }});
+            if (isDefaultMapId) {{
+                infoWindow.open(map, marker);
+            }}
+            else {{
+                infoWindow.open({{
+                    anchor: marker.marker_element,
+                    map
+                }});
+            }}
         }}
 
         function addMapItem( i, mapItem, color ) {{
@@ -2105,31 +2142,53 @@ namespace RockWeb.Blocks.Groups
                     color = '#' + color;
                 }}
 
-                const pinSvg = parser.parseFromString(""{10}"",""image/svg+xml"").documentElement;
-                pinSvg.style.fill = color;
-
-                marker = {{
-                    id: mapItem.EntityId,
-                    position: position,
-                    map: map,
-                    title: htmlDecode(mapItem.Name),
-                    info_window: mapItem.InfoWindow,
-                    icon_color: color,
-                    marker_element: new google.maps.marker.AdvancedMarkerElement({{
+                if (isDefaultMapId) {{
+                    var pinImage = {{
+                        path: ""{10}"",
+                        fillColor: color,
+                        fillOpacity: 1,
+                        strokeColor: '#000',
+                        strokeWeight: 0,
+                        scale: markerScale,
+                        labelOrigin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(0, 0),
+                    }};
+                    marker = new google.maps.Marker({{
                         id: mapItem.EntityId,
                         position: position,
                         map: map,
                         title: htmlDecode(mapItem.Name),
-                        content: pinSvg
-                    }}),
-                    setMap: function(map) {{
-                        this.map = map;
-                    }},
-                    getPosition: function() {{
-                        return this.position;
-                    }},
-                    setPosition: function(position) {{
-                        this.position = position;
+                        icon: pinImage,
+                        info_window: mapItem.InfoWindow,
+                    }});
+                }}
+                else {{
+                    const pinSvg = parser.parseFromString(""{10}"",""image/svg+xml"").documentElement;
+                    pinSvg.style.fill = color;
+
+                    marker = {{
+                        id: mapItem.EntityId,
+                        position: position,
+                        map: map,
+                        title: htmlDecode(mapItem.Name),
+                        info_window: mapItem.InfoWindow,
+                        icon_color: color,
+                        marker_element: new google.maps.marker.AdvancedMarkerElement({{
+                            id: mapItem.EntityId,
+                            position: position,
+                            map: map,
+                            title: htmlDecode(mapItem.Name),
+                            content: pinSvg
+                        }}),
+                        setMap: function(map) {{
+                            this.map = map;
+                        }},
+                        getPosition: function() {{
+                            return this.position;
+                        }},
+                        setPosition: function(position) {{
+                            this.position = position;
+                        }}
                     }}
                 }}
 
@@ -2137,7 +2196,7 @@ namespace RockWeb.Blocks.Groups
                 allMarkers.push(marker);
 
                 if ( mapItem.InfoWindow != null ) {{
-                    google.maps.event.addListener(marker.marker_element, 'click', (function (marker, i) {{
+                    google.maps.event.addListener(marker.marker_element || marker, 'click', (function (marker, i) {{
                         return function () {{
                             openInfoWindow(marker);
                         }}
@@ -2145,13 +2204,13 @@ namespace RockWeb.Blocks.Groups
                 }}
 
                 if ( mapItem.EntityId && mapItem.EntityId > 0 ) {{ 
-                    google.maps.event.addListener(marker.marker_element, 'mouseover', (function (marker, i) {{
+                    google.maps.event.addListener(marker.marker_element || marker, 'mouseover', (function (marker, i) {{
                         return function () {{
                             $(""tr[datakey='"" + mapItem.EntityId + ""']"").addClass('row-highlight');
                         }}
                     }})(marker, i));
 
-                    google.maps.event.addListener(marker.marker_element, 'mouseout', (function (marker, i) {{
+                    google.maps.event.addListener(marker.marker_element || marker, 'mouseout', (function (marker, i) {{
                         return function () {{
                             $(""tr[datakey='"" + mapItem.EntityId + ""']"").removeClass('row-highlight');
                         }}
@@ -2260,15 +2319,19 @@ namespace RockWeb.Blocks.Groups
 
             var markerDefinedValueId = GetAttributeValue( AttributeKey.MapMarker ).AsIntegerOrNull();
             var marker = "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z";
-            var markerFormat = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"-10 -40 30 55\"><path d=\"{0}\"/></svg>";
             var mapId = GlobalAttributesCache.Get().GetValue( "core_GoogleMapId" );
+            mapId = mapId.IsNullOrWhiteSpace() ? "DEFAULT_MAP_ID" : mapId;
 
             if ( markerDefinedValueId != null )
             {
                 marker = DefinedValueCache.Get( markerDefinedValueId.Value ).Description;
             }
 
-            marker = string.Format( markerFormat, marker ).Replace( "\"", "'" );
+            if (mapId != "DEFAULT_MAP_ID" )
+            {
+                var markerFormat = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"50\" height=\"50\" viewBox=\"-10 -40 30 55\"><path d=\"{0}\"/></svg>";
+                marker = string.Format( markerFormat, marker ).Replace( "\"", "'" );
+            }
 
             string mapScript = string.Format(
                 mapScriptFormat,
@@ -2287,7 +2350,7 @@ namespace RockWeb.Blocks.Groups
                 minZoomLevel,       // 12
                 zoomThreshold,      // 13
                 zoomAmount,         // 14
-                mapId.IsNullOrWhiteSpace() ? "DEFAULT_MAP_ID" : mapId );            // 15
+                mapId );            // 15
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-finder-map-script", mapScript, true );
         }

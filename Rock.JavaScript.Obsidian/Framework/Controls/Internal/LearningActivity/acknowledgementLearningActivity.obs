@@ -7,10 +7,10 @@
             </div>
             <div class="is-required-section">
                 <CheckBox
-                    v-model="isConfirmationRequired"
-                    label="Confirmation Required"
-                    help="Is the individual required to check the checkbox in order to complete the activity."
-                    :disabled="disabled" />
+                          v-model="isConfirmationRequired"
+                          label="Confirmation Required"
+                          help="Is the individual required to check the checkbox in order to complete the activity."
+                          :disabled="disabled" />
             </div>
 
             <div class="footer-content-section">
@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref,  toValue, watch, } from "vue";
+    import { computed, ref, toValue, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";

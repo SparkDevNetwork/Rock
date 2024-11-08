@@ -4,9 +4,9 @@
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <div class="assessment-term-section">
                 <TextBox v-model="assessmentTerm"
-                        :disabled="disabled"
-                        label="Assessment Term"
-                        help="How we should refer to this assessment." />
+                         :disabled="disabled"
+                         label="Assessment Term"
+                         help="How we should refer to this assessment." />
             </div>
             <div class="header-content-section">
                 <StructuredContentEditor label="Header" v-model="header" :disabled="disabled" />
@@ -29,14 +29,14 @@
                 <div class="minor-fields-section">
                     <div class="additional-settings-section">
                         <NumberBox v-model="multipleChoiceWeight"
-                                :key="multiFieldWeightStateKey"
-                                :decimalCount="0"
-                                :disabled="disabled"
-                                :min="0"
-                                label="Multiple Choice Weight"
-                                :rules="weightsSumTo100"
-                                :help="multipleChoiceWeightHelpText"
-                                inputGroupClasses="input-width-md">
+                                   :key="multiFieldWeightStateKey"
+                                   :decimalCount="0"
+                                   :disabled="disabled"
+                                   :min="0"
+                                   label="Multiple Choice Weight"
+                                   :rules="weightsSumTo100"
+                                   :help="multipleChoiceWeightHelpText"
+                                   inputGroupClasses="input-width-md">
                             <template #inputGroupAppend>
                                 <span class="input-group-addon">%</span>
                             </template>
@@ -55,10 +55,15 @@
             <div class="assessment-items-section">
                 <div class="assessment-items-title-bar">
                     <h4 class="assessment-items-header">Assessment Items</h4>
-
-                    <button aria-label="Add an assessment item" :disabled="disabled" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem(0)">
-                        <i class="fa fa-plus" aria-hidden="true"></i> Add Item
-                    </button>
+                    <div class="add-assessment-item-button-container">
+                        <button
+                                aria-label="Add an assessment item"
+                                :disabled="disabled"
+                                class="btn btn-default btn-xs align-items-center add-assessment-item-button text-muted"
+                                @click.prevent="addAssessmentItem(0)">
+                            <i class="fa fa-plus" aria-hidden="true"></i> Add Item
+                        </button>
+                    </div>
                 </div>
                 <div class="assessment-items-container" v-dragSource="dragOptions" v-dragTarget="dragOptions">
                     <div class="well well-sm assessment-item-container" v-for="(item, index) in items">
@@ -76,20 +81,24 @@
                             <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="items[index]" :disabled="disabled" :screenToShow="screenToShow" rules="required" />
                             <AssessmentItemSection v-if="item.typeName === 'Section'" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
                             <AssessmentItemShortAnswer
-                                                    v-if="item.typeName === 'Short Answer'"
-                                                    :allAssessmentWeightsSumTo100="weightsSumTo100"
-                                                    :weightsValidationKey="multiFieldWeightStateKey"
-                                                    v-model="items[index]"
-                                                    :disabled="disabled"
-                                                    :screenToShow="screenToShow"
-                                                    rules="required"
-                                                    :totalActivityPoints="activityBag.points" />
+                                                       v-if="item.typeName === 'Short Answer'"
+                                                       :allAssessmentWeightsSumTo100="weightsSumTo100"
+                                                       :weightsValidationKey="multiFieldWeightStateKey"
+                                                       v-model="items[index]"
+                                                       :disabled="disabled"
+                                                       :screenToShow="screenToShow"
+                                                       rules="required"
+                                                       :totalActivityPoints="activityBag.points" />
                         </div>
                     </div>
                 </div>
 
                 <div class="configuration-footer-buttons">
-                    <button v-if="items.length > 0" aria-label="Add an assessment item" :disabled="disabled" class="btn btn-default btn-small add-assessment-item-button text-muted" @click.prevent="addAssessmentItem(items.length - 1)">
+                    <button v-if="items.length > 0"
+                            aria-label="Add an assessment item"
+                            :disabled="disabled"
+                            class="btn btn-default btn-xs align-items-center add-assessment-item-button text-muted"
+                            @click.prevent="addAssessmentItem(items.length - 1)">
                         <i class="fa fa-plus" aria-hidden="true"></i> Add Item
                     </button>
                 </div>
@@ -111,7 +120,7 @@
                 <div class="assessment-item" v-for="(item, index) in completedItems">
                     <div class="well well-sm assessment-item-container" v-if="typeNamesWithSummaryScreen.includes(item.typeName)">
                         <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="completedItems[index]" :screenToShow="screenToShow" />
-                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
+                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" :hasBeenGraded="hasBeenGraded" />
                     </div>
                 </div>
             </div>
@@ -169,7 +178,7 @@
                 </div>
             </div>
 
-            <div v-if="hasMultipleChoiceQuestions && hasIncorrectResponses">
+            <div v-if="hasMultipleChoiceQuestions && showMissedQuestionsOnResults && hasIncorrectResponses">
                 <div class="missed-questions-section">
                     <h4>Missed Questions</h4>
 
@@ -187,7 +196,7 @@
                 </div>
             </div>
 
-            <div class="continue-button-container">
+            <div class="continue-button-container mt-3">
                 <RockButton :btnType="BtnType.Primary" @click="emits('closed')">Continue</RockButton>
             </div>
         </div>
@@ -344,7 +353,7 @@ div.summary-sub-title {
         multipleChoiceWeightAtCompletion,
         panelTitle,
         showMissedQuestionsOnResults,
-        showResultsOnCompletion
+        showResultsOnCompletion,
     } = useLearningComponent<AssessmentActivityConfiguration, AssessmentActivityCompletion>(
         activityBag,
         completionBag,
@@ -471,7 +480,7 @@ div.summary-sub-title {
     const hasMultipleChoiceQuestions = computed(() => multipleChoiceItemCount.value > 0);
     const hasShortAnswerQuestions = computed(() => shortAnswerItems.value.length > 0);
     const hasIncorrectResponses = computed(() => incorrectMultipleChoiceItems.value.length > 0);
-    const gradePercent = computed(() => totalPointsEarned.value / activityBag.value.points);
+    const gradePercent = computed(() => totalPointsEarned.value / activityBag.value.points * 100);
 
     /**
      * The calculated points earned.
@@ -487,7 +496,7 @@ div.summary-sub-title {
             .map(i => Number(i.pointsPossible) > 0 ? (i.pointsEarned / Number(i.pointsPossible)) * (i.questionWeight / 100) * activityBag.value.points : 0)
             .reduce((prev, cur) => cur + prev, 0);
 
-        return Math.round((earnedMultipleChoicePoints + earnedShortAnswerPoints) * 100);
+        return Math.round((earnedMultipleChoicePoints + earnedShortAnswerPoints));
     });
 
     const multipleChoiceGradePercent = computed(() => {

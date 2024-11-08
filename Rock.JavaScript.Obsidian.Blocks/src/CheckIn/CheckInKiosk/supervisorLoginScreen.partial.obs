@@ -123,7 +123,7 @@
 
                 areaCounts.children.push(groupCounts);
 
-                for (const locId of group.locationIds ?? []) {
+                for (const locId of group.locations?.map(gl => gl.locationId) ?? []) {
                     const location = data.locations?.find(l => l.id === locId);
 
                     if (!location || !location.id || !location.name) {
@@ -157,7 +157,7 @@
         const locations: AttendanceCountGroup[] = [];
 
         for (const location of data.locations ?? []) {
-            if (!location.id || !location.name || !data.groups?.some(g => g.locationIds?.includes(location.id ?? ""))) {
+            if (!location.id || !location.name || !data.groups?.some(g => g.locations?.some(gl => gl.locationId === location.id))) {
                 continue;
             }
 
@@ -170,7 +170,7 @@
 
             locations.push(locationCounts);
 
-            for (const group of data.groups?.filter(g => g.locationIds?.includes(location.id ?? "")) ?? []) {
+            for (const group of data.groups?.filter(g => g.locations?.some(gl => gl.locationId === location.id)) ?? []) {
                 if (!group.id || !group.name) {
                     continue;
                 }

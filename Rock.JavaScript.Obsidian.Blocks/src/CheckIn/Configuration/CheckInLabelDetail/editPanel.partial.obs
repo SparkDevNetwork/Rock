@@ -168,6 +168,9 @@
         else if (labelType.value === LabelType.Checkout.toString()) {
             return props.options.checkoutLabelFilterSources ?? [];
         }
+        else if (labelType.value === LabelType.PersonLocation.toString()) {
+            return props.options.personLocationLabelFilterSources ?? [];
+        }
         else {
             return [];
         }

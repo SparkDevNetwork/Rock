@@ -31,8 +31,6 @@ export const enum PreferenceKey {
     FilterCreatedBy = "filter-created-by",
     FilterCreatedDateRangeFrom = "filter-created-date-from",
     FilterCreatedDateRangeTo = "filter-created-date-to",
-    FilterSentDateRangeFrom = "filter-sent-date-range-from",
-    FilterSentDateRangeTo = "filter-sent-date-range-to",
     FilterContent = "filter-content",
     FilterRecipientCountRangeFrom = "filter-recipient-count-from",
     FilterRecipientCountRangeTo = "filter-recipient-count-to",
@@ -44,7 +42,6 @@ export type GridSettingsOptions = {
     status?: string | null;
     createdBy?: ListItemBag | undefined;
     createdDateRange?: DateRangeParts | null;
-    sentDateRange?: DateRangeParts | null;
     content?: string | null;
     recipientCount?: NumberRangeModelValue | undefined;
 };

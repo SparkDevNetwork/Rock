@@ -3,7 +3,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           :class="visibleCssClass"
-          keyField="idKey"
+          keyField="key"
           title="Learning Plan Completion Status"
           :entityTypeGuid="EntityType.LearningActivityCompletion"
           :isCountMessageVisible="false"
@@ -38,8 +38,8 @@
             <template #format="{ row }">
                 <span :class="{ 'text-warning': row.hadExtension }">
                     {{ RockDateTime.parseISO(row.dueDate as string)?.toLocaleString({
-        dateStyle: "short"
-    }) }}</span>
+                        dateStyle: "short"
+                    }) }}</span>
             </template>
         </DateColumn>
 
@@ -261,8 +261,29 @@
      * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        // IdKey|KeyType => "7QVlZw9PZW|Key" or 223|LearningParticipantId.
+        const keyParts = key.split("|");
+        if (keyParts.length === 2) {
+            if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+                // The idKey of the LearningActivityCompletion or LearningParticipant
+                const idKey = keyParts[0];
+
+                // "LearningParticipant" or "Key".
+                const keyType = keyParts[1];
+
+                if (keyType === "LearningParticipantId") {
+                    // If the activity completion doesn't yet exist we'll need the participantId
+                    // in addition to the other parameters in order to create one.
+                    window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage]
+                        .replace("((Key))", "0")
+                        .replace("((LearningParticipantId))", idKey);
+                }
+                else {
+                    // If the activity completion does exist we can use the normal behavior
+                    // of setting the key.
+                    window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", idKey);
+                }
+            }
         }
     }
 

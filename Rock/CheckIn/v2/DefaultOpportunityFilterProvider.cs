@@ -40,6 +40,7 @@ namespace Rock.CheckIn.v2
             typeof( BirthMonthOpportunityFilter ),
             typeof( GradeOpportunityFilter ),
             typeof( GenderOpportunityFilter ),
+            typeof( AbilityLevelOpportunityFilter ),
             typeof( SpecialNeedsOpportunityFilter ),
             typeof( MembershipOpportunityFilter ),
             typeof( DataViewOpportunityFilter ),
@@ -123,8 +124,8 @@ namespace Rock.CheckIn.v2
             var allReferencedLocationIds = new HashSet<string>(
                 person.Opportunities
                     .Groups
-                    .SelectMany( g => g.LocationIds )
-                    .Union( person.Opportunities.Groups.SelectMany( g => g.OverflowLocationIds ) )
+                    .SelectMany( g => g.Locations.Select( l => l.LocationId ) )
+                    .Union( person.Opportunities.Groups.SelectMany( g => g.OverflowLocations.Select( l => l.LocationId ) ) )
             );
             person.Opportunities.Locations.RemoveAll( l => !allReferencedLocationIds.Contains( l.Id ) );
 
@@ -140,7 +141,12 @@ namespace Rock.CheckIn.v2
             }
 
             // Remove any schedules that have no group referencing them.
-            var allReferencedScheduleIds = new HashSet<string>( person.Opportunities.Locations.SelectMany( l => l.ScheduleIds ) );
+            var allReferencedScheduleIds = new HashSet<string>(
+                person.Opportunities
+                    .Groups
+                    .SelectMany( g => g.Locations.Select( l => l.ScheduleId ) )
+                    .Union( person.Opportunities.Groups.SelectMany( g => g.OverflowLocations.Select( l => l.ScheduleId ) ) )
+            );
             person.Opportunities.Schedules.RemoveAll( s => !allReferencedScheduleIds.Contains( s.Id ) );
 
             // Run schedule filters.
@@ -181,11 +187,22 @@ namespace Rock.CheckIn.v2
 
             if ( skipAbilityLevels )
             {
-                attendee.Opportunities.AbilityLevels.ForEach( abilityLevel => abilityLevel.IsDisabled = true );
+                var personAbilityLevelId = attendee.Person.AbilityLevel?.Id;
+
+                // Mark each ability level that is not the current value as
+                // disabled so we don't end up asking for ability level.
+                foreach ( var abilityLevel in attendee.Opportunities.AbilityLevels )
+                {
+                    if ( abilityLevel.Id != personAbilityLevelId )
+                    {
+                        abilityLevel.IsDisabled = true;
+                    }
+                }
             }
             else if ( attendee.Person.AbilityLevel != null )
             {
-                // Disable any ability level that is lower than the current level.
+                // Mark any ability level that is lower than the current level
+                // as deprioritized so it will be displayed differently.
                 foreach ( var abilityLevel in attendee.Opportunities.AbilityLevels )
                 {
                     if ( abilityLevel.Id == attendee.Person.AbilityLevel.Id )
@@ -193,7 +210,7 @@ namespace Rock.CheckIn.v2
                         break;
                     }
 
-                    abilityLevel.IsDisabled = true;
+                    abilityLevel.IsDeprioritized = true;
                 }
             }
         }

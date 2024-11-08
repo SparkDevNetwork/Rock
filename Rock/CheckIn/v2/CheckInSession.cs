@@ -372,7 +372,8 @@ namespace Rock.CheckIn.v2
                     attendee.SelectedOpportunities = SelectionProvider.GetDefaultSelectionsForPerson( attendee );
                 }
 
-                attendee.IsPreSelected = TemplateConfiguration.AutoSelectDaysBack > 0 && attendee.RecentAttendances.Count > 0;
+                attendee.IsPreSelected = TemplateConfiguration.AutoSelectDaysBack > 0
+                    && IsAnyOpportunityInRecentAttendance( attendee );
                 attendee.IsMultipleSelectionsAvailable = attendee.Opportunities.Areas.Count > 1
                     || attendee.Opportunities.Groups.Count > 1
                     || attendee.Opportunities.Locations.Count > 1
@@ -562,6 +563,26 @@ namespace Rock.CheckIn.v2
 
                 return SaveProvider.Checkout( sessionRequest, attendanceIds, kiosk );
             }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// This determines if the person has any recent attendance records that
+        /// match the area of a recent attendance. This is used to decide if the
+        /// attendee should be pre-selected.
+        /// </summary>
+        /// <param name="attendee">The attendee to be checked.</param>
+        /// <returns><c>true</c> if an available opportunity matches a recent attendance for pre-selection.</returns>
+        private static bool IsAnyOpportunityInRecentAttendance( Attendee attendee )
+        {
+            return attendee.Opportunities
+                .Areas
+                .Select( a => a.Id )
+                .Intersect( attendee.RecentAttendances.Select( a => a.GroupTypeId ) )
+                .Any();
         }
 
         #endregion

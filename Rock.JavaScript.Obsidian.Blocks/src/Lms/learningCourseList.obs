@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Grid :definition="config.gridDefinition ?? undefined"
+          :class="visibleCssClass"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Course"
@@ -25,7 +26,7 @@
                 width="30%"
                 :filter="textValueFilter"
                 visiblePriority="xs">
-            <template #format="{ row }" >
+            <template #format="{ row }">
                 <div class="d-flex flex-fill align-items-center">
                     <i :style="'color: ' + row.categoryColor" :class="'mr-2 flex-shrink-0 fa-2x fw ' + (row.categoryIconCssClass ?? '')"></i>
                     <div class="flex-grow-1">
@@ -75,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { textValueFilter, Column, BooleanColumn, TextColumn, ReorderColumn, DeleteColumn, SecurityColumn, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -84,10 +85,25 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningCourseList/types.partial";
     import { reactive, ref } from "vue";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<ListBlockBox<LearningCourseListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     onConfigurationValuesChanged(useReloadBlock());
+
+    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
+    const browserBus = useBlockBrowserBus();
+    const visibleCssClass = ref("show");
+
+    // When another block on the page begins editing hide this block.
+    browserBus.subscribe(BlockMessages.BeginEdit, () => {
+        visibleCssClass.value = "hidden";
+    });
+
+    // When another block begins editing show this block.
+    browserBus.subscribe(BlockMessages.EndEdit, () => {
+        visibleCssClass.value = "show";
+    });
 
     // #region Values
 

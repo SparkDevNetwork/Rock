@@ -138,6 +138,7 @@
     <Compile Include="Lms\LearningProgramCompletionDetail.cs" />
     <Compile Include="Lms\LearningSemesterDetail.cs" />
     <Compile Include="Lms\Public\PublicLearningClassWorkspace.cs" />
+    <Compile Include="Lms\Public\PublicLearningClassEnrollment.cs" />
     <Compile Include="Lms\Public\PublicLearningCourseDetail.cs" />
     <Compile Include="Lms\Public\PublicLearningCourseList.cs" />
     <Compile Include="Lms\Public\PublicLearningProgramList.cs" />
@@ -149,7 +150,6 @@
     <Compile Include="Cms\BlockList.cs" />
     <Compile Include="Cms\PageShortLinkDialog.cs" />
     <Compile Include="Administration\PageProperties.cs" />
-    <Compile Include="Mobile\CheckIn\CheckIn.cs" />
     <Compile Include="Tv\RokuApplicationDetail.cs" />
     <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\PersistedDatasetList.cs" />
@@ -256,7 +256,7 @@
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\FinancialGatewayList.cs" />
     <Compile Include="Finance\BusinessContactList.cs" />
-	<Compile Include="Event\RegistrationInstanceList.cs" />
+    <Compile Include="Event\RegistrationInstanceList.cs" />
     <Compile Include="Event\RegistrationInstancePaymentList.cs" />
     <Compile Include="Finance\SavedAccountList.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />

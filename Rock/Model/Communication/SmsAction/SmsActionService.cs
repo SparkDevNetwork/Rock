@@ -79,6 +79,11 @@ namespace Rock.Model
         /// </returns>
         static public List<SmsActionOutcome> ProcessIncomingMessage( SmsMessage message, int smsPipelineId )
         {
+            if ( IsOptOutMessage( message.Message ) )
+            {
+                return ProcessOptOut( message );
+            }
+
             var errorMessage = string.Empty;
             var outcomes = new List<SmsActionOutcome>();
             var smsPipelineService = new SmsPipelineService( new RockContext() );
@@ -118,9 +123,7 @@ namespace Rock.Model
 
                 try
                 {
-                    //
                     // Check if the action wants to process this message.
-                    //
                     outcome.ShouldProcess = smsAction.SmsActionComponent.ShouldProcessMessage( smsAction, message, out errorMessage );
                     outcome.ErrorMessage = errorMessage;
                     LogIfError( errorMessage );
@@ -130,10 +133,8 @@ namespace Rock.Model
                         continue;
                     }
 
-                    //
                     // Process the message and use either the response returned by the action
                     // or the previous response we already had.
-                    //
                     outcome.Response = smsAction.SmsActionComponent.ProcessMessage( smsAction, message, out errorMessage );
                     outcome.ErrorMessage = errorMessage;
                     LogIfError( errorMessage );
@@ -143,9 +144,7 @@ namespace Rock.Model
                         LogIfError( errorMessage );
                     }
 
-                    //
                     // Log an interaction if this action completed successfully.
-                    //
                     if ( smsAction.IsInteractionLoggedAfterProcessing && errorMessage.IsNullOrWhiteSpace() )
                     {
                         WriteInteraction( smsAction, message, smsPipeline );
@@ -158,9 +157,7 @@ namespace Rock.Model
                     LogIfError( exception );
                 }
 
-                //
                 // If the action is set to not continue after processing then stop.
-                //
                 if ( outcome.ShouldProcess && !smsAction.ContinueAfterProcessing )
                 {
                     break;
@@ -299,6 +296,71 @@ namespace Rock.Model
             ExceptionLogService.LogException( exception, context );
 #endif
         }
+
+        #region Opt Out
+
+        /// <summary>
+        /// Checks the message body to see if an opt-out keyword was sent.
+        /// </summary>
+        /// <param name="messageBody">The message body.</param>
+        /// <returns></returns>
+        private static bool IsOptOutMessage( string messageBody )
+        {
+            List<string> optOutKeywords = new List<string>
+            {
+                "STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"
+            };
+
+            foreach ( var keyword in optOutKeywords )
+            {
+                if ( string.Equals( messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Disables messaging if an opt-out keyword was received.
+        /// </summary>
+        /// <param name="message">The <see cref="SmsMessage"/> that was received.</param>
+        private static List<SmsActionOutcome> ProcessOptOut( SmsMessage message )
+        {
+            var cleanedNumber = PhoneNumber.CleanNumber( message.FromNumber );
+            using ( var rockContext = new RockContext() )
+            {
+                var phoneNumberService = new PhoneNumberService( rockContext );
+                var phoneNumbers = phoneNumberService.Queryable().Where( p => p.Number == cleanedNumber || p.FullNumber == message.FromNumber ).ToList();
+
+                foreach ( var phoneNumber in phoneNumbers )
+                {
+                    phoneNumber.IsMessagingEnabled = false;
+                }
+
+                rockContext.SaveChanges();
+            }
+
+            return new List<SmsActionOutcome>
+            {
+                new SmsActionOutcome
+                {
+                    ActionName = "SMSOptOut",
+                    ShouldProcess = true,
+                    IsInteractionLogged = false,
+                    ErrorMessage = string.Empty,
+                    Response = new SmsMessage
+                    {
+                        ToNumber = cleanedNumber,
+                        FromNumber = message.ToNumber,
+                        Message = "You have opted out of messages."
+                    }
+                }
+            };
+        }
+
+        #endregion Opt Out
 
         #region Support classes
 

@@ -32,6 +32,7 @@
     import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
     import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
     import { useBlockBrowserBus } from "@Obsidian/Utility/block";
+    import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
 
     const props = defineProps({
         configuration: {
@@ -47,6 +48,7 @@
 
     const emit = defineEmits<{
         (event: "updateActions", actions: KioskButton[]): void;
+        (event: "checkInFamily", familyId: string): void;
     }>();
 
     const browserBus = useBlockBrowserBus();
@@ -134,7 +136,27 @@
     function updateActions(): void {
         const actions: KioskButton[] = [];
 
+        if (props.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
+            actions.push({
+                title: "Check In Another",
+                key: "checkInAnother",
+                disabled: false,
+                type: "primary",
+                handler: onCheckInAnother
+            });
+        }
+
         emit("updateActions", actions);
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    async function onCheckInAnother(): Promise<void> {
+        if (props.session.currentFamilyId) {
+            emit("checkInFamily", props.session.currentFamilyId);
+        }
     }
 
     // #endregion

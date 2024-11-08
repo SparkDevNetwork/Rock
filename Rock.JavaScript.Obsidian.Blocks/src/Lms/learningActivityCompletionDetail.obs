@@ -44,7 +44,6 @@
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<DetailBlockBox<LearningActivityCompletionBag, LearningActivityCompletionDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -69,7 +68,9 @@
         entity: learningActivityCompletionEditBag
     });
 
-    const gradingScales = ref(config.options?.gradingScales?.sort((a,b) => b.thresholdPercentage - a.thresholdPercentage) ?? []);
+    const gradingScales = ref(config.options?.gradingScales?.sort((a, b) => b.thresholdPercentage - a.thresholdPercentage) ?? []);
+    const requiresScoring = ref(learningActivityCompletionViewBag.value?.requiresScoring);
+    const isLate = ref(learningActivityCompletionViewBag.value?.isLate);
 
     // #endregion
 
@@ -105,7 +106,7 @@
 
         const pointsEarned = learningActivityCompletionEditBag.value?.bag?.pointsEarned ?? 0;
         const pointsPossible = learningActivityCompletionViewBag.value?.activityBag?.points ?? 0;
-        const percentEarned = pointsPossible > 0 ? pointsEarned / pointsPossible * 100 : 0;
+        const percentEarned = pointsPossible > 0 ? Math.round(pointsEarned / pointsPossible * 100) : 0;
         const grade = gradingScales.value?.find(s => percentEarned >= s.thresholdPercentage);
         const hasGradeScale = grade != null;
 
@@ -121,26 +122,14 @@
             });
         }
 
-        // Get the dueDate - falling back to the activity's calculated dueDate if the student has no explicit value.
-        const dueDate = RockDateTime.parseISO(
-            learningActivityCompletionViewBag.value?.dueDate ??
-            learningActivityCompletionViewBag.value?.activityBag?.dueDateCalculated ??
-            ""
-        );
-
-        const isLate = dueDate != null && dueDate >= RockDateTime.now();
-        const isStudentCompleted = learningActivityCompletionViewBag.value?.isStudentCompleted === true;
-        const wasCompletedLate = isStudentCompleted && learningActivityCompletionViewBag.value?.wasCompletedOnTime === false;
-        if ((isLate && !isStudentCompleted) || wasCompletedLate) {
+        if (isLate.value) {
             labels.push({
                 title: "Late",
                 type: "warning"
             });
         }
 
-        const points = learningActivityCompletionViewBag.value?.activityBag?.points ?? 0;
-        const isFacilitatorCompleted = learningActivityCompletionViewBag.value?.isFacilitatorCompleted === true;
-        if (points > 0 && !isFacilitatorCompleted && isStudentCompleted) {
+        if (requiresScoring.value) {
             labels.push({
                 title: "Requires Scoring",
                 type: "warning"
@@ -186,7 +175,7 @@
      *
      * @returns true if the panel should enter edit mode; otherwise false.
      */
-     async function onEdit(): Promise<boolean> {
+    async function onEdit(): Promise<boolean> {
         const result = await invokeBlockAction<ValidPropertiesBox<LearningActivityCompletionBag>>("Edit", {
             key: learningActivityCompletionViewBag.value?.idKey
         });
@@ -210,7 +199,7 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        if (!learningActivityCompletionEditBag.value || !learningActivityCompletionEditBag.value.bag){
+        if (!learningActivityCompletionEditBag.value || !learningActivityCompletionEditBag.value.bag) {
             return false;
         }
 
@@ -220,7 +209,7 @@
         });
 
         if (result.isSuccess && result.data) {
-            if (result.statusCode === 200 && typeof result.data === "string") {
+            if (typeof result.data === "string") {
                 return result.data;
             }
         }
@@ -239,8 +228,4 @@
     else if (!config.entity) {
         blockError.value = "The specified learning activity completion could not be viewed.";
     }
-    // else if (!config.entity.idKey) {
-    //     learningActivityCompletionEditBag.value = { bag: config.entity };
-    //     panelMode.value = DetailPanelMode.Add;
-    // }
 </script>

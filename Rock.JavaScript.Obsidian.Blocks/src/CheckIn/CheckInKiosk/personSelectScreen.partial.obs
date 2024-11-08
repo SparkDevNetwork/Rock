@@ -38,7 +38,7 @@
                         Remove
                     </span>
 
-                    <span v-if="isAutoSelectMode && attendee.selectedOpportunities && attendee.selectedOpportunities.length > 0 && attendee.isMultipleSelectionsAvailable"
+                    <span v-if="isAutoSelectMode && attendee.isMultipleSelectionsAvailable"
                           class="btn btn-info change-selection-button"
                           @click="onChangeSelection(attendee)">
                         Change
@@ -284,7 +284,6 @@
     async function onAttendeeClick(attendee: AttendeeBag, event: MouseEvent): Promise<void> {
         // Check if the user clicked our button or one of the nested buttons.
         if (!(event.target instanceof HTMLElement) || event.target.closest(".btn") !== event.currentTarget) {
-            console.log("skip");
             return;
         }
 
@@ -434,21 +433,16 @@
         try {
             isProcessing.value = true;
 
-            if (props.session.configuration.template?.isAutoSelect) {
-                emit("next", await props.session.withNextScreen());
-            }
-            else {
-                // This makes sure our selections are in the same order as they
-                // are displayed on screen so when we start asking for details
-                // of attendees the order isn't random.
-                const familySelections = attendees.value
-                    .filter(a => selections.value.includes(a.person?.id ?? ""))
-                    .map(a => a.person?.id ?? "");
+            // This makes sure our selections are in the same order as they
+            // are displayed on screen so when we start asking for details
+            // of attendees the order isn't random.
+            const familySelections = attendees.value
+                .filter(a => selections.value.includes(a.person?.id ?? ""))
+                .map(a => a.person?.id ?? "");
 
-                let newSession = props.session.withSelectedAttendees(familySelections);
+            let newSession = props.session.withSelectedAttendees(familySelections);
 
-                emit("next", await newSession.withNextScreen());
-            }
+            emit("next", await newSession.withNextScreen());
         }
         catch (error) {
             await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);

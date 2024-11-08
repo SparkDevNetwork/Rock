@@ -434,8 +434,7 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52
-        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {
@@ -868,7 +867,7 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to ALTER PROCEDURE[dbo].[spCheckin_BadgeAttendance]
         ///                  @PersonId int
@@ -886,6 +885,16 @@ namespace Rock.Plugin.HotFixes {
         public static string _177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge {
             get {
                 return ResourceManager.GetString("_177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap _216_open_bible_on_notebook {
+            get {
+                object obj = ResourceManager.GetObject("_216_open_bible_on_notebook", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

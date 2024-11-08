@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -36,7 +35,6 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of learning activity completions.
     /// </summary>
-
     [DisplayName( "Learning Activity Completion List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning activity completions." )]
@@ -73,6 +71,7 @@ namespace Rock.Blocks.Lms
             public const string LearningProgramId = "LearningProgramId";
             public const string LearningCourseId = "LearningCourseId";
             public const string LearningClassId = "LearningClassId";
+            public const string LearningParticipantId = "LearningParticipantId";
         }
 
         #endregion Keys
@@ -137,7 +136,8 @@ namespace Rock.Blocks.Lms
                 [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
                 [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
                 [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId ),
-                [PageParameterKey.LearningActivityId] = PageParameter( PageParameterKey.LearningActivityId )
+                [PageParameterKey.LearningActivityId] = PageParameter( PageParameterKey.LearningActivityId ),
+                [PageParameterKey.LearningParticipantId] = "((LearningParticipantId))"
             };
 
             return new Dictionary<string, string>
@@ -159,6 +159,7 @@ namespace Rock.Blocks.Lms
             return new GridBuilder<LearningActivityCompletion>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "key", a => a.Id == 0 ? $"{a.StudentId}|LearningParticipantId" : $"{a.IdKey}|Key" )
                 .AddPersonField( "student", a => a.Student?.Person )
                 .AddField( "studentGuid", a => a.Student.Guid )
                 .AddField( "completionDate", a => a.CompletedDateTime )
@@ -167,7 +168,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "points", a => a.LearningActivity.Points )
                 .AddField( "grade", a => a.GetGradeText() )
                 .AddField( "gradePercent", a => a.GradePercent.ToIntSafe() )
-                .AddField( "requiresScoring", a => a.RequiresScoring )
+                .AddField( "requiresScoring", a => a.RequiresGrading )
                 .AddField( "isPassingGrade", a => a.GetGrade()?.IsPassing )
                 .AddField( "isLate", a => a.IsLate )
                 .AddField( "isCompleted", a => a.CompletedDateTime.HasValue )

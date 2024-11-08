@@ -7,10 +7,11 @@
           :entityTypeGuid="EntityType.MediaAccount"
           stickyHeader
           liveUpdates
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
-        <SelectColumn />
-
         <TextColumn name="name"
                     title="Name"
                     field="name"
@@ -18,15 +19,15 @@
                     visiblePriority="xs" />
 
         <TextColumn name="componentEntityType"
-                    title="Component Entity Type"
+                    title="Type"
                     field="componentEntityType"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <DateTimeColumn name="lastRefreshDateTime"
                         title="Last Refresh Date/Time"
                         field="lastRefreshDateTime"
-                        :filter="textValueFilter"
+                        :filter="dateValueFilter"
                         visiblePriority="xs" />
 
         <NumberColumn name="folderCount"
@@ -57,18 +58,22 @@
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible" />
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, SelectColumn, NumberColumn, numberValueFilter, DateTimeColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, pickExistingValueFilter, dateValueFilter, NumberColumn, numberValueFilter, DateTimeColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { MediaAccountListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountList/mediaAccountListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey } from "./MediaAccountList/types.partial";
-    import { reactive, ref } from "vue";
+    import { NavigationUrlKey, GridSettingsOptions, PreferenceKey } from "./MediaAccountList/types.partial";
+    import GridSettingsModal from "./MediaAccountList/gridSettingsModal.partial.obs";
+    import { computed, reactive, ref, watch } from "vue";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<ListBlockBox<MediaAccountListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -77,6 +82,16 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+    const preferences = usePersonPreferences().blockPreferences;
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        includeInactive: preferences.getValue(PreferenceKey.FilterIncludeInactive)
+    });
+
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
+        return asBoolean(gridSettings.value.includeInactive);
+    });
 
     // #endregion
 
@@ -100,6 +115,11 @@
     // #endregion
 
     // #region Event Handlers
+
+    const onGridSettingsClick = (): void => {
+        isGridSettingsVisible.value = true;
+    };
+
 
     /**
      * Called when a row has been selected by the individual.
@@ -145,6 +165,18 @@
     }
 
     // #endregion
+
+    // region Watchers
+
+    watch(gridSettings, async () => {
+        preferences.setValue(PreferenceKey.FilterIncludeInactive, gridSettings.value.includeInactive ?? "");
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // endregion
 
     gridDataSource.value = loadGridData();
 </script>

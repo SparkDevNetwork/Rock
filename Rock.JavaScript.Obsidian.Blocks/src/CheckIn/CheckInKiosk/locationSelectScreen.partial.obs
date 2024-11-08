@@ -115,13 +115,20 @@
     function getLocationAdjustments(location: LocationOpportunityBag): LocationCountAdjustment[] {
         // Always snag this so we trigger updates from reactivity.
         const adjustments = props.configuration.locationCountAdjustments;
+        const currentAttendanceIds = props.session.attendances.map(a => a.attendance?.id);
         const timestamp = props.session.currentAttendeeSelectedTimestamp;
 
         if (!timestamp) {
             return [];
         }
 
-        return adjustments.filter(a => a.locationId === location.id && a.timestamp > timestamp);
+        // Filter this down to just adjustments for this location as well as
+        // only those changes since we got the data from the server.
+        // Additionally, filter out any adjustments for other people checked in
+        // this session, otherwise we end up double counting.
+        return adjustments
+            .filter(a => a.locationId === location.id && a.timestamp > timestamp)
+            .filter(a => !currentAttendanceIds.includes(a.id));
     }
 
     /**

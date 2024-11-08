@@ -68,9 +68,10 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         [DataRow( nameof( TemplateConfigurationData.MaximumNumberOfResults ), 5, "core_checkin_MaxSearchResults" )]
         [DataRow( nameof( TemplateConfigurationData.MaximumPhoneNumberLength ), 10, "core_checkin_MaximumPhoneSearchLength" )]
         [DataRow( nameof( TemplateConfigurationData.MinimumPhoneNumberLength ), 7, "core_checkin_MinimumPhoneSearchLength" )]
+        [DataRow( nameof( TemplateConfigurationData.PhoneNumberPattern ), "^test$", "core_checkin_RegularExpressionFilter" )]
+        // PhoneNumberRegex has its own test.
         [DataRow( nameof( TemplateConfigurationData.PhoneSearchType ), PhoneSearchMode.EndsWith, "core_checkin_PhoneSearchType" )]
         [DataRow( nameof( TemplateConfigurationData.RefreshInterval ), 60, "core_checkin_RefreshInterval" )]
-        [DataRow( nameof( TemplateConfigurationData.RegularExpressionFilter ), "^test$", "core_checkin_RegularExpressionFilter" )]
         [DataRow( nameof( TemplateConfigurationData.SecurityCodeAlphaLength ), 3, "core_checkin_SecurityCodeAlphaLength" )]
         [DataRow( nameof( TemplateConfigurationData.SecurityCodeAlphaNumericLength ), 2, "core_checkin_SecurityCodeLength" )]
         [DataRow( nameof( TemplateConfigurationData.SecurityCodeNumericLength ), 1, "core_checkin_SecurityCodeNumericLength" )]
@@ -189,7 +190,8 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
 
         [DataRow( nameof( TemplateConfigurationData.FamilySearchType ), FamilySearchMode.PhoneNumber )]
         [DataRow( nameof( TemplateConfigurationData.KioskCheckInType ), KioskCheckInMode.Individual )]
-        [DataRow( nameof( TemplateConfigurationData.RegularExpressionFilter ), "" )]
+        [DataRow( nameof( TemplateConfigurationData.PhoneNumberPattern ), "" )]
+        [DataRow( nameof( TemplateConfigurationData.PhoneNumberRegex ), null )]
         [DataRow( nameof( TemplateConfigurationData.AbilityLevelSelectHeaderLavaTemplate ), "" )]
         [DataRow( nameof( TemplateConfigurationData.ActionSelectHeaderLavaTemplate ), "" )]
         [DataRow( nameof( TemplateConfigurationData.CheckoutPersonSelectHeaderLavaTemplate ), "" )]
@@ -361,13 +363,55 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         }
 
         [TestMethod]
+        public void Constructor_WithEmptyRegularExpressionFilterAttributeValue_InitializesPhoneNumberRegexToNull()
+        {
+            var rockContextMock = GetRockContextMock();
+            rockContextMock.SetupDbSet<GroupType>();
+
+            SetupGroupTypeRoleMocks( rockContextMock );
+
+            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+
+            var groupTypeCache = new GroupTypeCache();
+            groupTypeCache.SetFromEntity( groupType.Object );
+
+            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+            Assert.IsNull( instance.PhoneNumberRegex );
+        }
+
+        [TestMethod]
+        public void Constructor_WithRegularExpressionFilterAttributeValue_InitializesPhoneNumberRegex()
+        {
+            var rockContextMock = GetRockContextMock();
+            rockContextMock.SetupDbSet<GroupType>();
+
+            SetupGroupTypeRoleMocks( rockContextMock );
+
+            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            groupType.SetMockAttributeValue( "core_checkin_RegularExpressionFilter", "[0]*(\\d*)" );
+
+            var groupTypeCache = new GroupTypeCache();
+            groupTypeCache.SetFromEntity( groupType.Object );
+
+            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+            Assert.IsNotNull( instance.PhoneNumberRegex );
+
+            var match = instance.PhoneNumberRegex.Match( "0003322" );
+
+            Assert.IsTrue( match.Success );
+            Assert.AreEqual( "3322", match.Groups[1].Value );
+        }
+
+        [TestMethod]
         public void DeclaredType_HasExpectedPropertyCount()
         {
             // This is a simple test to help us know when new properties are
             // added so we can update the other tests to check for those
             // properties.
             var type = typeof( TemplateConfigurationData );
-            var expectedPropertyCount = 70;
+            var expectedPropertyCount = 71;
 
             var propertyCount = type.GetProperties().Length;
 

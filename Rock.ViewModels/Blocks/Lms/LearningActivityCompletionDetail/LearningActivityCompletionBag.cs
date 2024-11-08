@@ -111,9 +111,9 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public bool IsFacilitatorCompleted { get; set; }
 
         /// <summary>
-        /// Indicates whether or not the related activity instance for the student is currently past due.
+        /// Indicates whether or not the activity was completed late or is late (if incomplete).
         /// </summary>
-        public bool IsPastDue => DueDate != null && DueDate <= DateTime.Now;
+        public bool IsLate { get; set; }
 
         /// <summary>
         /// Indicates whether or not student commenting is enabled for this activity.
