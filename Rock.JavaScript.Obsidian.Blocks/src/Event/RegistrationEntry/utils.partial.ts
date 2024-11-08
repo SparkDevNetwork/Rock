@@ -99,7 +99,8 @@ export function getRegistrantBasicInfo(registrant: RegistrantBag, registrantForm
         firstName: (registrant?.fieldValues?.[firstNameGuidOrEmptyString] || "") as string,
         lastName: (registrant?.fieldValues?.[lastNameGuidOrEmptyString] || "") as string,
         email: (registrant?.fieldValues?.[emailGuidOrEmptyString] || "") as string,
-        guid: registrant?.guid || ""
+        guid: registrant?.guid || "",
+        isOnWaitList: registrant.isOnWaitList
     };
 }
 
