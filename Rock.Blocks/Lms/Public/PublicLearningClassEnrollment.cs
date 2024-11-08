@@ -434,8 +434,7 @@ namespace Rock.Blocks.Lms
                 ["LearningCourseId"] = learningClass.LearningCourse.IdKey
             };
 
-
-            var courseWorkspaceParams = new Dictionary<string, string>
+            var classWorkspaceParams = new Dictionary<string, string>
             {
                 ["LearningProgramId"] = learningClass.LearningCourse.LearningProgram.IdKey,
                 ["LearningCourseId"] = learningClass.LearningCourse.IdKey,
@@ -446,7 +445,7 @@ namespace Rock.Blocks.Lms
             {
                 [NavigationUrlKey.CourseDetailPage] = this.GetLinkedPageUrl( AttributeKey.CourseDetailPage, courseDetailParams ),
                 [NavigationUrlKey.CourseListPage] = this.GetLinkedPageUrl( AttributeKey.CourseListPage, courseListParams ),
-                [NavigationUrlKey.ClassWorkspacePage] = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, courseWorkspaceParams )
+                [NavigationUrlKey.ClassWorkspacePage] = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, classWorkspaceParams )
             };
         }
 
@@ -491,7 +490,8 @@ namespace Rock.Blocks.Lms
         private Dictionary<string, object> GetMergeFields( Person currentPerson, Person registrant, out LearningClass learningClass, out List<LearningCourseRequirement> unmetRequirements )
         {
             var learningClassService = new LearningClassService( RockContext );
-            var learningClassId = learningClassService.GetSelect( PageParameter( PageParameterKey.LearningClassId ), c => c.Id );
+            var parameterValue = PageParameter( PageParameterKey.LearningClassId );
+            var learningClassId = learningClassService.GetSelect( parameterValue, c => c.Id );
             learningClass =
                 learningClassId == 0 ?
                 default :

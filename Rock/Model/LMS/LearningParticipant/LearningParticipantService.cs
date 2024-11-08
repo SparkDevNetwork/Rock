@@ -135,9 +135,10 @@ namespace Rock.Model
         /// <param name="personId">The <see cref="Person"/> identifier of the participant to retrieve.</param>
         /// <param name="classId">The identifier of the <see cref="LearningClass"/> within which to search for the participant.</param>
         /// <returns></returns>
-        public int GetFacilitatorId( int personId, int classId )
+        public int? GetFacilitatorId( int personId, int classId )
         {
             return GetParticipant( personId, classId )
+                .AreFacilitators()
                 .Select( p => p.Id )
                 .FirstOrDefault();
         }

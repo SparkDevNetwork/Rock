@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Lms.PublicLearningCourseList;
+using Rock.Web;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Lms
@@ -78,7 +79,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "4356febe-5efd-421a-bfc4-05942b6bd910" )]
     [Rock.SystemGuid.BlockTypeGuid( "5d6ba94f-342a-4ec1-b024-fc5046ffe14d" )]
-    public class PublicLearningCourseList : RockBlockType
+    public class PublicLearningCourseList : RockBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -314,6 +315,28 @@ namespace Rock.Blocks.Lms
             var semesterDates = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now );
 
             return new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson()?.Id, publicOnly, semesterDates.Start, semesterDates.End );
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbText = "Courses";
+
+            // Include only the parameters necessary to construct the breadcrumb
+            // (prevent unused/unnecessary query string parameters). 
+            var includedParamKeys = new[] { "learningprogramid" };
+            var paramsToInclude = pageReference.Parameters.Where( kv => includedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
+            var breadCrumb = new BreadCrumbLink( breadCrumbText ?? "", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                {
+                    breadCrumb
+                }
+            };
         }
 
         #endregion

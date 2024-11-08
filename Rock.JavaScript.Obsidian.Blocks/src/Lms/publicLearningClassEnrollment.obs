@@ -2,7 +2,7 @@
 <template>
     <div v-html="headerHtml"></div>
 
-    <div class="enrollment-block-container center-block">
+    <div class="enrollment-block-container d-flex flex-column justify-content-center center-block">
         <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
 
         <!-- Error screen if there's an error. -->
@@ -36,13 +36,12 @@
                 <JavaScriptAnchor class="text-center" @click.prevent="onNavigateToDetail">Back to Course Description</JavaScriptAnchor>
             </div>
         </template>
-
     </div>
 </template>
 
 <style scoped>
 .enrollment-block-container {
-    width: 545px;
+    max-width: 545px;
 }
 </style>
 

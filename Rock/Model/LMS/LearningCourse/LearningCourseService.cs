@@ -137,6 +137,9 @@ namespace Rock.Model
             // Get the earliest semester with open enrollment and a future start date for this course.
             course.NextSemester = nextSemesterQuery.OrderBy( c => c.StartDate ).FirstOrDefault();
 
+            // Remove any related classes that don't belong to this course.
+            course.NextSemester.LearningClasses = course.NextSemester.LearningClasses.Where( c => c.LearningCourseId == courseId ).ToList();
+
             course.UnmetPrerequisites = GetUnmetCourseRequirements( personId, course.CourseRequirements );
 
             if ( mostRecentParticipation != null )

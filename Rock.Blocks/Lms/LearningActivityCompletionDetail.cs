@@ -143,7 +143,7 @@ namespace Rock.Blocks.Lms
             }
 
             var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            box.IsEditable = IsAuthorizedToEdit();
 
             if ( entity.Id != 0 )
             {
@@ -342,6 +342,17 @@ namespace Rock.Blocks.Lms
             };
         }
 
+        private bool IsAuthorizedToEdit()
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            var learningClassKey = PageParameter( PageParameterKey.LearningClassId );
+            var learningClassId = new LearningClassService( RockContext ).GetSelect( learningClassKey, c => c.Id );
+            var facilitatorId = new LearningParticipantService( RockContext ).GetFacilitatorId( currentPerson.Id, learningClassId );
+
+            return BlockCache.IsAuthorized( Authorization.EDIT, currentPerson ) && facilitatorId.HasValue && facilitatorId.Value > 0;
+        }
+
         /// <inheritdoc/>
         protected override LearningActivityCompletionBag GetEntityBagForView( LearningActivityCompletion entity )
         {
@@ -524,7 +535,7 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !IsAuthorizedToEdit() )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${LearningActivityCompletion.FriendlyTypeName}." );
                 return false;

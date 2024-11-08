@@ -30,14 +30,29 @@
             <activityTypeComponent
                                    v-model:activityBag="activityBag"
                                    v-model:completionBag="completionBag"
-                                   :screenToShow="ComponentScreen.Scoring"
+                                   :screenToShow="screenToShow"
                                    @completed="onFacilitatorCompleted" />
+        </div>
+
+        <div ref="buttonsContainer" class="activity-footer-actions d-flex justify-content-end">
+            <RockButton
+                        v-if="screenToShow === ComponentScreen.Scoring"
+                        btnType="link"
+                        @click="switchToScreen(ComponentScreen.Summary)">
+                Summary
+            </RockButton>
+            <RockButton
+                        v-if="screenToShow === ComponentScreen.Summary"
+                        btnType="primary"
+                        @click="switchToScreen(ComponentScreen.Scoring)">
+                Score
+            </RockButton>
         </div>
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { Component, PropType, ref, watch } from "vue";
+    import { Component, nextTick, PropType, ref, watch } from "vue";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { defineAsyncComponent, propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -50,6 +65,7 @@
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const props = defineProps({
         modelValue: {
@@ -84,7 +100,9 @@
     const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointsEarned");
     const completionJson = propertyRef(completionBag.value.activityComponentCompletionJson, "ActivityComponentCompletionJson");
     const wasCompletedOnTime = propertyRef(completionBag.value.wasCompletedOnTime ?? true, "WasCompletedOnTime");
+    const screenToShow = ref(completionBag.value.requiresScoring ? ComponentScreen.Scoring : ComponentScreen.Summary);
 
+    const buttonsContainer = ref<HTMLDivElement>();
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -104,6 +122,15 @@
     // #endregion
 
     // #region Functions
+
+    function switchToScreen(toScreen: ComponentScreen): void {
+        screenToShow.value = toScreen;
+        nextTick(() => {
+            if (buttonsContainer.value) {
+                buttonsContainer.value.scrollIntoView({ behavior: "auto", block: "center" });
+            }
+        });
+    }
 
     // #endregion
 

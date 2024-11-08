@@ -120,7 +120,7 @@
                 <div class="assessment-item" v-for="(item, index) in completedItems">
                     <div class="well well-sm assessment-item-container" v-if="typeNamesWithSummaryScreen.includes(item.typeName)">
                         <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="completedItems[index]" :screenToShow="screenToShow" />
-                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
+                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" :hasBeenGraded="hasBeenGraded" />
                     </div>
                 </div>
             </div>
@@ -353,7 +353,7 @@ div.summary-sub-title {
         multipleChoiceWeightAtCompletion,
         panelTitle,
         showMissedQuestionsOnResults,
-        showResultsOnCompletion
+        showResultsOnCompletion,
     } = useLearningComponent<AssessmentActivityConfiguration, AssessmentActivityCompletion>(
         activityBag,
         completionBag,
