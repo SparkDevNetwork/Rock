@@ -141,7 +141,7 @@ body.rock-modal {
 // hard code the opacity in their CSS we override it here.
 .modal-backdrop,
 .modal-backdrop.fade.in {
-  background:   var(--color-interface-strongest);
+  background:   var(--modal-backdrop);
   filter:       alpha(opacity=70);
   opacity:      .5;
 }

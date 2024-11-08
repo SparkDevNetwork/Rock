@@ -2,12 +2,12 @@
   // ========================= COLOR =========================
 
   // INTERFACE COLORS 
-  --color-interface-strongest: #000000;
-  --color-interface-stronger:  #1C1C1E;
-  --color-interface-strong:    #5D5D6F;
+  --color-interface-strongest: #010409;
+  --color-interface-stronger:  #0d1117;
+  --color-interface-strong:    #3d444d;
   --color-interface-medium:    #8B8BA7;
-  --color-interface-soft:      #D9D9E3;
-  --color-interface-softer:    #E7E9EF;
+  --color-interface-soft:      #eff2f5;
+  --color-interface-softer:    #f6f8fa;
   --color-interface-softest:   #FFFFFF;
 
   // APPLICATION COLORS 
@@ -177,6 +177,7 @@
   // ========================== VISUAL APPEARANCES ===========================
   
   --adminbar-bg:              #45474c;
+  --modal-backdrop:           rgba(94, 94, 94, 0.6);
 
   --dropdown-box-shadow:      0 4px 8px 0 rgba(0,0,0,.1);
   --input-focus-box-shadow:   0 0 0 2px var(--color-primary-tint);
