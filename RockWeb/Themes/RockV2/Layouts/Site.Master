@@ -54,6 +54,35 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
     <script src="<%# ResolveRockUrl("~~/Assets/Scripts/theme.js", true) %>"></script>
 
+  <script>
+     function handleThemeChange() {
+        const attributeName = "theme";
+        const htmlElement = document.documentElement;
+
+        let theme = localStorage.getItem(attributeName);
+
+        if (theme === null) {
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                theme = "light";
+            } else {
+                theme = "dark"
+            }
+        } else {
+            if (theme === "dark") {
+                theme = "light";
+            } else {
+                theme = "dark";
+            }
+        }
+
+        localStorage.setItem(attributeName, theme)
+
+        const value = localStorage.getItem(attributeName);
+        htmlElement.setAttribute(attributeName, value);
+    }
+
+  </script>
+
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
@@ -80,6 +109,9 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
                 <div id="fixed-header" class="header-content" role="navigation">
                     <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
+                    <div>
+                        <button class="theme-toggle" type="button" onClick="handleThemeChange()"><i id="theme-icon" class="ti theme-mode-icon"></i></button>
+                    </div>
                     <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
                 </div>
             </nav>

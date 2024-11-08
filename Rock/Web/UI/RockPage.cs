@@ -1563,6 +1563,20 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         }
                     }
 
+                    var colorModeScript = @"
+(function initializeColorMode() {
+    let attributeName = ""theme""
+    var htmlElement = document.documentElement;
+
+    if ( localStorage.getItem(attributeName) != null ) {
+        const value = localStorage.getItem(attributeName);
+        htmlElement.setAttribute(attributeName, value);
+    }
+})();
+";
+                    ClientScript.RegisterStartupScript( this.Page.GetType(), "color-mode-init", colorModeScript, true );
+
+
                     /*
                      * 2020-06-17 - JH
                      *

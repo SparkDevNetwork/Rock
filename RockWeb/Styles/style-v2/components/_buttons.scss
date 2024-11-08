@@ -669,7 +669,7 @@
     }
   }
 }
-// ======================== END ALTERNAVTIVE BUTTON ========================
+// ======================== END ALTERNATIVE BUTTON ========================
 
 
 // ========================== OUTLINE ==========================
@@ -885,4 +885,49 @@ input[type="button"] {
 }
 .ant-select-selector .ant-select-selection-overflow .btn-link {
   color: var(--color-interface-medium);
+}
+
+.theme-toggle {
+  display: flex;
+  margin-left: var(--spacing-small);
+  padding: var(--spacing-xsmall) var(--spacing-xsmall);
+  
+  border: 1px solid var(--color-interface-softest);
+  border-radius: 99px;
+
+  color: var(--color-interface-strong);
+  background-color: var(--color-interface-softer);
+
+  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
+  &:hover {
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-soft);
+  }
+  
+  &:focus {
+    color: var(--color-interface-stronger);
+    border-color: var(--color-interface-stronger);
+  }
+  
+  &:focus:active {
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-soft);
+    border-color: var(--color-interface-stronger);
+
+  }
+}
+
+[theme="dark"] {
+  .theme-toggle {
+    .ti.theme-mode-icon:before {
+      content:"\eaf8"
+    }
+  }
+}
+[theme="light"] {
+  .theme-toggle {
+    .ti.theme-mode-icon:before {
+      content:"\eb30"
+    }
+  }
 }

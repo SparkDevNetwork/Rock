@@ -684,8 +684,12 @@
     <Compile Include="Achievement\Component\StreakAchievement.cs" />
     <Compile Include="Achievement\StreakSourcedAchievementComponent.cs" />
     <Compile Include="Address\Bing.cs" />
-    <Compile Include="Address\SmartyStreets.cs" />
-    <Compile Include="Address\VerificationComponent.cs" />
+    <Compile Include="Address\SmartyStreets.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Address\VerificationComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Address\VerificationContainer.cs" />
     <Compile Include="AI\Automations\AIAutomation.cs" />
     <Compile Include="AI\Automations\PrayerRequestAnalyzerResponse.cs" />
@@ -700,7 +704,9 @@
     <Compile Include="AI\Classes\Moderations\ModerationsRequest.cs" />
     <Compile Include="AI\Classes\Moderations\ModerationsResponseCategories.cs" />
     <Compile Include="AI\Classes\Moderations\ModerationsResponse.cs" />
-    <Compile Include="AI\Provider\AIProviderComponent.cs" />
+    <Compile Include="AI\Provider\AIProviderComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="AI\Provider\AIProviderContainer.cs" />
     <Compile Include="AI\Utilities\AIHelpers.cs" />
     <Compile Include="Attribute\AccountFieldAttribute.cs" />
@@ -1226,8 +1232,12 @@
     <Compile Include="Drawing\Avatar\AvatarSettings.cs" />
     <Compile Include="Drawing\Avatar\AvatarStyle.cs" />
     <Compile Include="Drawing\RockImage.cs" />
-    <Compile Include="Event\InteractiveExperiences\ActionTypeComponent.cs" />
-    <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\EmbedWebpage.cs" />
+    <Compile Include="Event\InteractiveExperiences\ActionTypeComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\EmbedWebpage.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\Poll.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\ShortAnswer.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeContainer.cs" />
@@ -1235,9 +1245,15 @@
     <Compile Include="Event\InteractiveExperiences\ExtensionMethods.cs" />
     <Compile Include="Event\InteractiveExperiences\RecordActionResponseStatus.cs" />
     <Compile Include="Event\InteractiveExperiences\ValidOccurrencesResult.cs" />
-    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponent.cs" />
-    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\BarChart.cs" />
-    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\WordCloud.cs" />
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\BarChart.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Event\InteractiveExperiences\VisualizerTypeComponents\WordCloud.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Event\InteractiveExperiences\VisualizerTypeContainer.cs" />
     <Compile Include="Field\IEntityContextFieldType.cs" />
     <Compile Include="Field\IEntityReferenceFieldType.cs" />
@@ -1517,7 +1533,9 @@
     <Compile Include="Observability\ObservabilityHelper.cs" />
     <Compile Include="Observability\RockActivitySource.cs" />
     <Compile Include="Observability\RockMetricSource.cs" />
-    <Compile Include="Obsidian\ObsidianComponent.cs" />
+    <Compile Include="Obsidian\ObsidianComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Obsidian\UI\GridActionUrlKey.cs" />
     <Compile Include="Obsidian\UI\GridBuilder.cs" />
     <Compile Include="Obsidian\UI\GridBuilderExtensions.cs" />
@@ -2273,7 +2291,9 @@
     <Compile Include="Tv\Classes\ApplicationSettings.cs" />
     <Compile Include="Tv\TvHelper.cs" />
     <Compile Include="Cms\ContentCollection\IndexDocuments\ContentChannelItemDocument.cs" />
-    <Compile Include="UniversalSearch\IndexComponent.cs" />
+    <Compile Include="UniversalSearch\IndexComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="UniversalSearch\IndexContainer.cs" />
     <Compile Include="UniversalSearch\IndexModels\EventItemIndex.cs" />
     <Compile Include="Cms\ContentCollection\IContentCollectionIndexer.cs" />
@@ -2513,7 +2533,9 @@
     <Compile Include="Plugin\HotFixes\107_MigrationRollupsFor10_3_1.cs" />
     <Compile Include="Plugin\HotFixes\108_UpdateSpiritualGifts.cs" />
     <Compile Include="Reporting\DataFilter\IRelatedChildDataView.cs" />
-    <Compile Include="Storage\AssetStorage\AzureCloudStorageComponent.cs" />
+    <Compile Include="Storage\AssetStorage\AzureCloudStorageComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="SystemGuid\Metric.cs" />
     <Compile Include="Transactions\RunReportTransaction.cs" />
     <Compile Include="Plugin\HotFixes\110_UpdateSpiritualGiftsResultsLava.cs" />
@@ -2785,12 +2807,20 @@
     <Compile Include="Chart\ChartJs\ChartJsTimeSeriesDataFactory.cs" />
     <Compile Include="Chart\FlotChartDataSet.cs" />
     <Compile Include="Chart\TimeSeriesChartDataPoint.cs" />
-    <Compile Include="Communication\SmsActions\SmsActionComponent.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Communication\SmsActions\SmsActionContainer.cs" />
-    <Compile Include="Communication\SmsActions\SmsActionGive.cs" />
-    <Compile Include="Communication\SmsActions\SmsActionLaunchWorkflow.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionGive.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Communication\SmsActions\SmsActionLaunchWorkflow.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Communication\SmsActions\SmsActionReply.cs" />
-    <Compile Include="Communication\SmsActions\SmsActionConversations.cs" />
+    <Compile Include="Communication\SmsActions\SmsActionConversations.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Communication\SmsActions\SmsActionOutcome.cs" />
     <Compile Include="Communication\SmsActions\SmsMessage.cs" />
     <Compile Include="Crm\ConnectionStatusChangeReport\ConnectionStatusChangeReportBuilder.cs" />
@@ -3341,9 +3371,13 @@
     <Compile Include="Lava\LavaHelper.cs" />
     <Compile Include="Lava\Shortcodes\BootstrapAlertShortcode.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
-    <Compile Include="MergeTemplates\MergeTemplateType.cs" />
+    <Compile Include="MergeTemplates\MergeTemplateType.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
-    <Compile Include="MergeTemplates\WordDocumentMergeTemplateType.cs" />
+    <Compile Include="MergeTemplates\WordDocumentMergeTemplateType.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Model\Reporting\AnalyticsDimAttendanceLocation\AnalyticsDimAttendanceLocation.cs" />
     <Compile Include="Model\Reporting\AnalyticsDimCampus\AnalyticsDimCampus.cs" />
     <Compile Include="Model\Reporting\AnalyticsSourceCampus\AnalyticsSourceCampus.cs" />
@@ -3861,9 +3895,13 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="Storage\AssetStorage\AmazonS3Component.cs" />
     <Compile Include="Storage\AssetStorage\Asset.cs" />
-    <Compile Include="Storage\AssetStorage\AssetStorageComponent.cs" />
+    <Compile Include="Storage\AssetStorage\AssetStorageComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Storage\AssetStorage\AssetStorageContainer.cs" />
-    <Compile Include="Storage\AssetStorage\FileSystemComponent.cs" />
+    <Compile Include="Storage\AssetStorage\FileSystemComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="SystemGuid\Block.cs" />
     <Compile Include="SystemGuid\Communication.cs" />
     <Compile Include="SystemGuid\InteractionChannel.cs" />
@@ -4224,10 +4262,18 @@
     <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Search\Person\Email.cs" />
-    <Compile Include="Search\Person\Name.cs" />
-    <Compile Include="Search\Person\Phone.cs" />
-    <Compile Include="Search\SearchComponent.cs" />
+    <Compile Include="Search\Person\Email.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Search\Person\Name.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Search\Person\Phone.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Search\SearchComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Search\SearchContainer.cs" />
     <Compile Include="Security\AuthenticationComponent.cs" />
     <Compile Include="Security\AuthenticationContainer.cs" />
@@ -4239,7 +4285,9 @@
     <Compile Include="Security\BackgroundCheckComponent.cs" />
     <Compile Include="Security\BackgroundCheckContainer.cs" />
     <Compile Include="Security\BackgroundCheck\ProtectMyMinistry.cs" />
-    <Compile Include="Security\DigitalSignatureComponent.cs" />
+    <Compile Include="Security\DigitalSignatureComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Security\DigitalSignatureContainer.cs" />
     <Compile Include="Security\Encryption.cs" />
     <Compile Include="Security\GlobalDefault.cs" />
@@ -4252,9 +4300,13 @@
     <Compile Include="Services\NuGet\RockProjectManager.cs" />
     <Compile Include="Services\NuGet\WebProjectManager.cs" />
     <Compile Include="Services\NuGet\WebProjectSystem.cs" />
-    <Compile Include="Storage\ProviderComponent.cs" />
+    <Compile Include="Storage\ProviderComponent.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Storage\ProviderContainer.cs" />
-    <Compile Include="Storage\Provider\Database.cs" />
+    <Compile Include="Storage\Provider\Database.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Storage\Provider\FileSystem.cs" />
     <Compile Include="Store\InstalledPackage.cs" />
     <Compile Include="Store\InstalledPackageService.cs" />
