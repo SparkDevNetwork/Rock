@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -497,7 +498,7 @@ namespace Rock.Lava
             }
 
             // OK, now let's look for any passed variables ala: name:variable
-            var variableTokens = Regex.Matches( resolvedMarkup.Text, @"\w*:\w+" )
+            var variableTokens = Regex.Matches( resolvedMarkup.Text, @"\w*:\w+(\[\d+\])?" )
                 .Cast<Match>()
                 .Select( m => m.Value )
                 .ToList();
@@ -508,13 +509,28 @@ namespace Rock.Lava
                 if ( itemParts.Length > 1 )
                 {
                     var scopeKey = itemParts[1].Trim();
+                    object scopeObject = null;
 
-                    var scopeObject = context.GetMergeField( scopeKey, null );
+                    // if scopeKey appears to be indexing a Collection
+                    if ( Regex.Match( scopeKey, @"\w+\[\d+\]" ).Success )
+                    {
+                        // Get the Collection name and index.
+                        string[] parts = scopeKey.Split( new char[] { '[', ']' }, StringSplitOptions.RemoveEmptyEntries );
+                        string arrayName = parts[0];
+                        int scopeObjectIndex = int.Parse( parts[1] );
+
+                        // Get the collection and the value at the index.
+                        var enumerable = context.GetMergeField( arrayName, null ) as IEnumerable;
+                        scopeObject = enumerable?.Cast<object>().ElementAtOrDefault( scopeObjectIndex );
+                    }
+                    else
+                    {
+                        scopeObject = context.GetMergeField( scopeKey, null );
+                    }
 
                     if ( scopeObject != null )
                     {
                         parameters.AddOrReplace( itemParts[0].Trim().ToLower(), scopeObject );
-                        break;
                     }
                 }
             }

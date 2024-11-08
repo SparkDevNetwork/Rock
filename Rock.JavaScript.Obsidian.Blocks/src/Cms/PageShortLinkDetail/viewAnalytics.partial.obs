@@ -1,0 +1,296 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-lg-6 col-md-7">
+            <SlidingDateRangePicker label="Date Range" v-model="dateRange" />
+        </div>
+
+        <div class="col-lg-3 col-md-2 col-sm-6">
+            <DropDownList label="Time Grouping"
+                          v-model="groupingBy"
+                          :items="groupingByItems"
+                          :showBlankItem="false" />
+        </div>
+
+        <!-- Will be made visible in v17. -->
+        <div v-if="true" class="col-lg-3 col-md-3 col-sm-6">
+            <DropDownList label="Partition By"
+                          v-model="partitionBy"
+                          :items="partitionByItems"
+                          :showBlankItem="false" />
+        </div>
+    </div>
+
+    <NotificationBox v-if="chartErrorMessage" alertType="warning">{{ chartErrorMessage }}</NotificationBox>
+
+    <div v-if="chartDataIsValid">
+        <div class="usage-chart">
+            <LineChart :data="chartData" />
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 col-md-push-6 col-lg-4 col-lg-push-8">
+                <Grid :data="partitionGridData" light>
+                    <TextColumn name="partition" title="Partition">
+                        <template #format="{ row }">
+                            <span :class="{ 'text-bold': row.isTotal }">
+                                {{ row.partition }}
+                            </span>
+                        </template>
+                    </TextColumn>
+
+                    <NumberColumn name="clicks" title="Clicks" width="90px">
+                        <template #format="{ row }">
+                            <span :class="{ 'text-bold': row.isTotal }">
+                                {{ row.clicks.toLocaleString() }}
+                            </span>
+                        </template>
+                    </NumberColumn>
+                </Grid>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.usage-chart {
+    height: 240px;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Grid, { TextColumn, NumberColumn } from "@Obsidian/Controls/grid";
+    import LineChart, { LineChartData } from "./lineChart.partial.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { calculateSlidingDateRange, RangeType, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { TimeUnitType } from "@Obsidian/Enums/Controls/timeUnitType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    type ChartRow = {
+        bucket: string;
+        partition: string;
+        count: number;
+    };
+
+    const props = defineProps({
+        shortLinkId: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const dateRange = ref<SlidingDateRange>({ rangeType: RangeType.Last, timeUnit: TimeUnitType.Week, timeValue: 2 });
+    const groupingBy = ref<"HOUR" | "DAY" | "WEEK" | "MONTH">("DAY");
+    const partitionBy = ref("PurposeKey");
+    const chartData = ref<LineChartData>();
+    const partitionGridData = ref<GridDataBag>();
+    const chartDataIsValid = ref(false);
+
+    const groupingByItems: ListItemBag[] = [
+        {
+            value: "HOUR",
+            text: "Hour"
+        },
+        {
+            value: "DAY",
+            text: "Day"
+        },
+        {
+            value: "WEEK",
+            text: "Week"
+        },
+        {
+            value: "MONTH",
+            text: "Month"
+        }
+    ];
+
+    const partitionByItems: ListItemBag[] = [
+        {
+            value: "PurposeKey",
+            text: "Purpose Key"
+        },
+        {
+            value: "Source",
+            text: "Source"
+        },
+        {
+            value: "Medium",
+            text: "Medium"
+        },
+        {
+            value: "Campaign",
+            text: "Campaign"
+        }
+    ];
+
+    const chartErrorMessage = ref("");
+    let dataCancellationToken = ref(false);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Iterates over all the items in the array and groups them by the value
+     * returned in the selector.
+     *
+     * @param items The items to be iterated over.
+     * @param selector The callback that will provide the value to use for the grouping operation.
+     *
+     * @returns An object whose keys are the groupings and values are the items associated with that group.
+     */
+    function groupBy<TItem, TValue extends string | number>(items: TItem[], selector: (item: TItem) => TValue): Record<TValue, TItem[]> {
+        return items.reduce<Record<TValue, TItem[]>>((storage, item) => {
+            const groupValue = selector(item);
+
+            storage[groupValue] = storage[groupValue] || [];
+            storage[groupValue].push(item);
+
+            return storage;
+        }, {} as Record<TValue, TItem[]>);
+    }
+
+    /**
+     * Iterates over all the items in the array and returns only the unique
+     * items. The order is maintained for the first instance of each item.
+     *
+     * @param items The items to be iterated over.
+     *
+     * @returns An array of items with unique values.
+     */
+    function unique<TItem>(items: TItem[]): TItem[] {
+        return items.filter((value, index) => {
+            return items.indexOf(value) === index;
+        });
+    }
+
+    /**
+     * Converts a {@link RockDateTime} into a friendly string based on the
+     * current time grouping. This helps make the chart easier to read by only
+     * displaying the dates in a format that matches the selections.
+     *
+     * @param date The {@link RockDateTime} to be made into a friendly string.
+     */
+    function toFriendlyDateString(date: RockDateTime | null): string {
+        if (!date) {
+            return "";
+        }
+        else if (groupingBy.value === "HOUR") {
+            return date.toASPString("g");
+        }
+        else if (groupingBy.value === "MONTH") {
+            return date.toASPString("MMM yyyy");
+        }
+        else {
+            return date.toASPString("d");
+        }
+    }
+
+    /**
+     * Updates the data that will be displayed in the chart. This makes a call
+     * to the server block to get the raw data and then further massages it to
+     * be in the format we need for the line chart.
+     */
+    async function updateChartData(): Promise<void> {
+        dataCancellationToken.value = true;
+
+        const cancellationToken = ref(false);
+        dataCancellationToken = cancellationToken;
+
+        const dates = calculateSlidingDateRange(dateRange.value);
+
+        if (!dates.start || !dates.end) {
+            chartDataIsValid.value = false;
+            return;
+        }
+
+        const data = {
+            shortLinkId: props.shortLinkId,
+            startDateTime: dates.start.toISOString(),
+            endDateTime: dates.end.toISOString(),
+            dateBucket: groupingBy.value,
+            partitionBy: partitionBy.value
+        };
+
+        const response = await invokeBlockAction<ChartRow[]>("GetShortLinkChartData", data);
+
+        // If another request was started after us, then abort our flow.
+        if (cancellationToken.value) {
+            return;
+        }
+
+        if (!response.isSuccess || !response.data) {
+            chartErrorMessage.value = response.errorMessage || "Unable to retrieve chart data.";
+            chartDataIsValid.value = false;
+            return;
+        }
+
+        chartErrorMessage.value = "";
+
+        // Fix any empty partitions.
+        response.data.forEach(r => r.partition = r.partition || "No Partition");
+
+        const groupData = groupBy(response.data, r => r.partition);
+        const partitionKeys = Object.keys(groupData).sort((a, b) => a.localeCompare(b));
+        const dateStrings = unique(response.data.map(r => r.bucket))
+            .map(d => toFriendlyDateString(RockDateTime.parseISO(d)));
+
+        const newChartData: LineChartData = {
+            labels: dateStrings,
+            datasets: []
+        };
+
+        for (const partitionKey of partitionKeys) {
+            newChartData.datasets.push({
+                label: partitionKey,
+                values: groupData[partitionKey].map(r => r.count)
+            });
+        }
+
+        // Calculate the totals for the grid.
+        const partitionTotals: Record<string, number> = {};
+        let totalClicks = 0;
+
+        for (const row of response.data) {
+            const oldValue = partitionTotals[row.partition] ?? 0;
+            partitionTotals[row.partition] = oldValue + row.count;
+
+            totalClicks = row.count;
+        }
+
+        const rows: Record<string, unknown>[] = Object.keys(partitionTotals).map(partitionKey => {
+            return {
+                partition: partitionKey,
+                clicks: partitionTotals[partitionKey]
+            };
+        });
+
+        rows.push({
+            partition: "Total",
+            clicks: totalClicks,
+            isTotal: true
+        });
+
+        // Update UI.
+        partitionGridData.value = { rows };
+        chartData.value = newChartData;
+        chartDataIsValid.value = true;
+    }
+
+    // #endregion
+
+    watch([dateRange, groupingBy, partitionBy], updateChartData);
+    watch(() => props.shortLinkId, updateChartData);
+
+    updateChartData();
+</script>

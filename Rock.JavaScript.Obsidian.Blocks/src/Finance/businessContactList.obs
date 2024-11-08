@@ -1,9 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="isVisible"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Business Contacts"
+          itemTerm="Contacts"
+          title="Business Contacts"
           :entityTypeGuid="EntityType.Person"
           stickyHeader
           liveUpdates
@@ -39,8 +41,9 @@
     import { BusinessContactBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessContactList/businessContactBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./BusinessContactList/types.partial";
-    import { reactive, ref, watch } from "vue";
+    import { computed, reactive, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<BusinessContactListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -51,6 +54,14 @@
     let gridData: GridDataBag | undefined;
     const isModalOpen = ref(false);
     const contact = ref<ListItemBag | undefined>();
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isVisible = computed((): boolean => {
+        return useStore().state.areSecondaryBlocksShown;
+    });
 
     // #endregion
 
@@ -113,6 +124,7 @@
      * Called when the Add button has been clicked by the individual.
      */
     function onAddItem(): void {
+        contact.value = undefined;
         isModalOpen.value = true;
     }
 

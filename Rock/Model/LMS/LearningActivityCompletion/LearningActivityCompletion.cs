@@ -173,6 +173,21 @@ namespace Rock.Model
         [DataMember]
         public int? BinaryFileId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="PersonAlias"/> identifier of the facilitator who graded the activity.
+        /// </summary>
+        [DataMember]
+        public int? GradedByPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Indicates whether or not the activity completion needs to be graded by a Facilitator.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the LearningActivityCompletion needs to be graded by a Facilitator; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RequiresGrading { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -195,10 +210,16 @@ namespace Rock.Model
         public virtual LearningParticipant Student { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> related to this completion.
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the person who completed this.
         /// </summary>
         [DataMember]
         public virtual PersonAlias CompletedByPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the faciltator that graded this completion.
+        /// </summary>
+        [DataMember]
+        public virtual PersonAlias GradedByPersonAlias { get; set; }
 
         #endregion
 

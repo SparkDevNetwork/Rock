@@ -955,7 +955,19 @@ namespace Rock.Communication
             
             if ( communication.ListGroupId.HasValue )
             {
-                recipientEmail.EmailHeaders[ListIdHeaderKey] = $"{communication.ListGroup?.Name ?? globalAttributes.GetValue( "OrganizationName" )} <{communication.ListGroupId.Value}.{hostDomain}>";
+                var listGroup = communication.ListGroup;
+                if ( listGroup.Attributes == null )
+                {
+                    listGroup.LoadAttributes();
+                }
+
+                var name = listGroup.GetAttributeValue( "PublicName" );
+                if ( name.IsNullOrWhiteSpace() )
+                {
+                    name = listGroup.Name;
+                }
+
+                recipientEmail.EmailHeaders[ListIdHeaderKey] = $"{name ?? globalAttributes.GetValue( "OrganizationName" )} <{communication.ListGroupId.Value}.{hostDomain}>";
             }
             else
             {

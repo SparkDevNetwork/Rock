@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Core
             base.OnLoad( e );
         }
 
-        #endregion
+        #endregion Control Methods
 
         #region Grid Events (main grid)
 
@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Core
             BindGrid();
         }
 
-        #endregion
+        #endregion Grid Events (main grid)
 
         #region Internal Methods
 
@@ -164,54 +164,71 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void BindGrid()
         {
-            var queryable = new SignatureDocumentTemplateService( new RockContext() ).Queryable();
+            var templateQry = new SignatureDocumentTemplateService( new RockContext() ).Queryable();
 
             SortProperty sortProperty = gSignatureDocumentTemplate.SortProperty;
-            if ( sortProperty != null )
+            if ( sortProperty == null )
             {
-                if ( sortProperty.Property == "Documents" )
+                templateQry = templateQry.OrderBy( a => a.Name );
+            }
+            else if ( sortProperty.Property != "Documents" )
+            {
+                templateQry = templateQry.Sort( sortProperty );
+            }
+
+            var templates = templateQry.Select( t => new SignatureDocumentTemplateViewModel { Template = t, DocumentCount = t.Documents.Count() } ).ToList();
+
+            if ( sortProperty != null && sortProperty.Property == "Documents" )
+            {
+                if ( sortProperty.Direction == SortDirection.Ascending )
                 {
-                    if ( sortProperty.Direction == SortDirection.Ascending )
-                    {
-                        queryable = queryable.OrderBy( a => a.Documents.Count() );
-                    }
-                    else
-                    {
-                        queryable = queryable.OrderByDescending( a => a.Documents.Count() );
-                    }
+                    templates = templates.OrderBy( t => t.DocumentCount ).ToList();
                 }
-
-                queryable = queryable.Sort( sortProperty );
-            }
-            else
-            {
-                queryable = queryable.OrderBy( a => a.Name );
-            }
-
-            var types = new List<SignatureDocumentTemplate>();
-            foreach ( var type in queryable )
-            {
-                if ( type.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                else
                 {
-                    types.Add( type );
+                    templates = templates.OrderByDescending( a => a.DocumentCount ).ToList();
                 }
             }
 
-            gSignatureDocumentTemplate.DataSource = types
+
+            var authorizedTemplates = new List<SignatureDocumentTemplateViewModel>();
+            foreach ( var template in templates )
+            {
+                if ( template.Template.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                {
+                    authorizedTemplates.Add( template );
+                }
+            }
+
+            gSignatureDocumentTemplate.DataSource = authorizedTemplates
                 .Select( a =>
                 new
                 {
-                    a.Id,
-                    a.Name,
-                    a.Description,
-                    BinaryFileType = a.BinaryFileType.Name,
-                    a.ProviderTemplateKey,
-                    Documents = a.Documents.Count()
+                    a.Template.Id,
+                    a.Template.Name,
+                    a.Template.Description,
+                    BinaryFileType = a.Template.BinaryFileType.Name,
+                    a.Template.ProviderTemplateKey,
+                    Documents = a.DocumentCount
                 } )
                 .ToList();
+
             gSignatureDocumentTemplate.DataBind();
         }
 
-        #endregion
+        #endregion Internal Methods
     }
+
+    #region Helper Class
+
+    /// <summary>
+    /// Viewmodel that adds DocumentCount to <see cref="SignatureDocumentTemplate"/>.
+    /// </summary>
+    public class SignatureDocumentTemplateViewModel
+    {
+        public SignatureDocumentTemplate Template { get; set; }
+        public int DocumentCount { get; set; }
+    }
+
+    #endregion Helper Class
 }

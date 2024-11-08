@@ -10,7 +10,6 @@
 
             <div class="col-md-6">
                 <CheckBox v-model="isActive"
-                          text="Yes"
                           label="Active" />
             </div>
         </div>

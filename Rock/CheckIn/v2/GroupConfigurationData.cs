@@ -110,6 +110,12 @@ namespace Rock.CheckIn.v2
         /// <value>The required gender.</value>
         public virtual Gender? Gender { get; }
 
+        /// <summary>
+        /// Gets a value that determines if this group is configured as a
+        /// special needs group.
+        /// </summary>
+        public virtual bool IsSpecialNeeds { get; }
+
         #endregion
 
         #region Constructors
@@ -137,6 +143,7 @@ namespace Rock.CheckIn.v2
             (MinimumBirthMonth, MaximumBirthMonth) = GetBirthMonthRange( groupCache );
             Gender = groupCache.GetAttributeValue( "Gender" ).ConvertToEnumOrNull<Gender>();
             DataViewGuids = groupCache.GetAttributeValue( "DataView" ).SplitDelimitedValues().AsGuidList();
+            IsSpecialNeeds = groupCache.IsSpecialNeeds;
         }
 
         #endregion

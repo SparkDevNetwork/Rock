@@ -6,14 +6,14 @@
         <div class="col-md-6">
             <TextBox v-model="firstName"
                      label="First Name"
-                     rules="required"
+                     :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']"
                      :validationTitle="`${title} First Name`"
                      :disabled="disabled" />
         </div>
         <div class="col-md-6">
             <TextBox v-model="lastName"
                      label="Last Name"
-                     rules="required"
+                     :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']"
                      :validationTitle="`${title} Last Name`"
                      :disabled="disabled" />
         </div>

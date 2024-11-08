@@ -58,6 +58,15 @@ export type ConfigurationTemplateBag = {
     isAutoSelect: boolean;
 
     /**
+     * Gets or sets a value indicating whether to allow self-checkout on
+     * public kiosks for this configuration. When enabled, if an individual
+     * in the family is already checked in then the kiosk will prompt if
+     * they want to check-in another family member of checkout existing
+     * individuals.
+     */
+    isCheckoutAtKioskAllowed: boolean;
+
+    /**
      * Gets a value indicating whether the current location occupancy
      * counts should be displayed when selecting a location.
      */
@@ -75,6 +84,20 @@ export type ConfigurationTemplateBag = {
      * on public kiosks.
      */
     isPhotoHidden: boolean;
+
+    /**
+     * Gets a value indicating whether removing people with a "can check-in"
+     * relationship from the family is allowed. This does not allow
+     * full family members to be removed.
+     */
+    isRemoveFromFamilyAtKioskAllowed: boolean;
+
+    /**
+     * Gets a value indicating whether to attempt to use the same options
+     * from the first service when a person is checking into more than one
+     * service schedule.
+     */
+    isSameOptionUsed: boolean;
 
     /**
      * Gets a value indicating whether the supervisor screen is available

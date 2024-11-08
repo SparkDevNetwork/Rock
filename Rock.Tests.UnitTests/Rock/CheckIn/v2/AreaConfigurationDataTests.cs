@@ -3,7 +3,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.CheckIn.v2;
+using Rock.Enums.CheckIn;
 using Rock.Model;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
@@ -23,13 +25,17 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         public void Constructor_WithGroupTypeCache_InitializesProperties()
         {
             var expectedAttendanceRule = AttendanceRule.AddOnCheckIn;
+            var expectedAlreadyEnrolledMatchingLogic = AlreadyEnrolledMatchingLogic.PreferEnrolledGroups;
             var expectedPrintTo = PrintTo.Location;
+            var expectedLocationSelectionStrategy = LocationSelectionStrategy.Balance;
 
             var rockContextMock = GetRockContextMock();
             var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
 
             groupType.Object.AttendanceRule = expectedAttendanceRule;
             groupType.Object.AttendancePrintTo = expectedPrintTo;
+            groupType.Object.AlreadyEnrolledMatchingLogic = expectedAlreadyEnrolledMatchingLogic;
+            groupType.SetMockAttributeValue( SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY, LocationSelectionStrategy.Balance.ConvertToInt().ToString() );
 
             var groupTypeCache = new GroupTypeCache();
             groupTypeCache.SetFromEntity( groupType.Object );
@@ -37,7 +43,9 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
             var instance = new AreaConfigurationData( groupTypeCache, rockContextMock.Object );
 
             Assert.AreEqual( expectedAttendanceRule, instance.AttendanceRule );
+            Assert.AreEqual( expectedAlreadyEnrolledMatchingLogic, instance.AlreadyEnrolledMatchingLogic );
             Assert.AreEqual( expectedPrintTo, instance.PrintTo );
+            Assert.AreEqual( expectedLocationSelectionStrategy, instance.LocationSelectionStrategy );
         }
 
         [TestMethod]
@@ -47,7 +55,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
             // added so we can update the other tests to check for those
             // properties.
             var type = typeof( AreaConfigurationData );
-            var expectedPropertyCount = 2;
+            var expectedPropertyCount = 4;
 
             var propertyCount = type.GetProperties().Length;
 

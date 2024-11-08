@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <i class="fa fa-bars reorder-handle" :style="iconStyle"></i>
+    <i class="fa fa-bars reorder-handle" :class="additionalClass" :style="iconStyle"></i>
 </template>
 
 <script setup lang="ts">
@@ -25,6 +25,14 @@
             cursor: disabled ? "not-allowed" : "grab",
             opacity: disabled ? "0.25" : "1"
         };
+    });
+
+    const additionalClass = computed((): string | undefined => {
+        const disabled = dropOperationInProgress.value || isFiltered.value || isSorted.value;
+
+        // If manual re-ordering is disabled then add a disabled class. This
+        // tells the native re-order logic to abort a drag request.
+        return disabled ? "disabled" : undefined;
     });
 
     function onIsFilteredChanged(grid: IGridState): void {

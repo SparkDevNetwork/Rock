@@ -80,8 +80,6 @@ namespace RockWeb.Blocks.Security
         /// <param name="e">The <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             pnlCode.Visible = false;
             pnlConfirmed.Visible = false;
             pnlResetPassword.Visible = false;
@@ -125,6 +123,8 @@ namespace RockWeb.Blocks.Security
                         break;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

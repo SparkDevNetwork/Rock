@@ -61,6 +61,27 @@ namespace Rock.CheckIn.v2.Filters
 
         #region Methods
 
+        public override void FilterSchedules( OpportunityCollection opportunities )
+        {
+            var startCount = opportunities.Schedules.Count;
+
+            if ( startCount == 0 )
+            {
+                return;
+            }
+
+            // Remove any schedules the attendee has already checked in for.
+            opportunities.Schedules.RemoveAll( s => !IsScheduleValid( s ) );
+
+            // If we removed the last schedule then mark them as unavailable
+            // and set a helpful message to display in the UI.
+            if ( opportunities.Schedules.Count == 0 && !Person.IsUnavailable )
+            {
+                Person.IsUnavailable = true;
+                Person.UnavailableMessage = "Already checked in.";
+            }
+        }
+
         /// <inheritdoc/>
         public override bool IsScheduleValid( ScheduleOpportunity schedule )
         {

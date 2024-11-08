@@ -19,15 +19,3 @@ export const enum NavigationUrlKey {
     DetailPage = "DetailPage",
     HistoryPage = "HistoryPage"
 }
-
-export const enum PreferenceKey {
-    FilterName = "filter-name",
-
-    FilterIsActive = "filter-is-active"
-}
-
-export type GridSettingsOptions = {
-    name?: string | null;
-
-    isActive?: string | null;
-};

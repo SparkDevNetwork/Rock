@@ -55,6 +55,12 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         /// </summary>
         private static FontFamily? _fontAwesomeBold = null;
 
+        /// <summary>
+        /// Holds a lookup table to quickly convert byte arrays to hex strings
+        /// for writing to the ZPL content.
+        /// </summary>
+        private static readonly uint[] _hexLookupTable = CreateLookup32();
+
         #endregion
 
         /// <summary>
@@ -283,6 +289,46 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             }
 
             return new ZplImageCache( SaveToGrf( image ).ToArray(), width, height );
+        }
+
+        /// <summary>
+        /// Creates a lookup table for fast byte to Hex conversion.
+        /// </summary>
+        /// <returns>An array of lookup values.</returns>
+        private static uint[] CreateLookup32()
+        {
+            var result = new uint[256];
+
+            for ( int i = 0; i < 256; i++ )
+            {
+                string s = i.ToString( "X2" );
+                result[i] = s[0] + ( ( uint ) s[1] << 16 );
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Converts an array of bytes into a hex string extremely fast. This
+        /// uses a lookup table and pre-allocates the character array to maximize
+        /// speed and reduce allocations.
+        /// </summary>
+        /// <param name="bytes">The array of bytes to convert to hex.</param>
+        /// <returns>A string that represents <paramref name="bytes"/> as a hexadecimal string.</returns>
+        internal static string ByteArrayToHexViaLookup32( byte[] bytes )
+        {
+            var lookup32 = _hexLookupTable;
+            var result = new char[bytes.Length * 2];
+
+            for ( int i = 0; i < bytes.Length; i++ )
+            {
+                var val = lookup32[bytes[i]];
+
+                result[2 * i] = ( char ) val;
+                result[2 * i + 1] = ( char ) ( val >> 16 );
+            }
+
+            return new string( result );
         }
     }
 }

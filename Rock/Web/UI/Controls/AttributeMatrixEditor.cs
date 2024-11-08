@@ -302,6 +302,19 @@ namespace Rock.Web.UI.Controls
 
         #endregion Properties
 
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeMatrixEditor"/> class.
+        /// </summary>
+        public AttributeMatrixEditor()
+            : base()
+        {
+            RockControlHelper.Init( this );
+        }
+
+        #endregion
+
         #region Overridden Control Methods
 
         /// <summary>
@@ -332,6 +345,19 @@ namespace Rock.Web.UI.Controls
                 }
 
                 BindGrid( attributeMatrixGuid );
+
+                var matrixItemId = _hfMatrixItemId.Value.AsIntegerOrNull();
+
+                // If the matrixItemId has value we are in edit mode, create the edit mode controls so their state can be preserved,
+                // this is necessary since they are created dynamically.
+                if ( matrixItemId.HasValue )
+                {
+                    var postBackControlId = this.Page.Request.Params["__EVENTTARGET"];
+                    if ( postBackControlId != _btnSaveMatrixItem.UniqueID )
+                    {
+                        EditMatrixItem( matrixItemId.Value );
+                    }
+                }
             }
         }
 
@@ -603,6 +629,7 @@ namespace Rock.Web.UI.Controls
 
             _gMatrixItems.Visible = true;
             _pnlEditMatrixItem.Visible = false;
+            _hfMatrixItemId.Value = null;
 
             BindGrid( this.AttributeMatrixGuid );
         }
@@ -616,6 +643,7 @@ namespace Rock.Web.UI.Controls
         {
             _gMatrixItems.Visible = true;
             _pnlEditMatrixItem.Visible = false;
+            _hfMatrixItemId.Value = null;
         }
 
         #endregion EditMatrixItem

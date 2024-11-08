@@ -726,8 +726,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // Reset warning/error messages
             nbMain.Visible = false;
             nbWaitingList.Visible = false;
@@ -828,6 +826,8 @@ namespace RockWeb.Blocks.Event
                     FindMatchingRegistrationInstance();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -2408,7 +2408,7 @@ namespace RockWeb.Blocks.Event
                 validationErrors.Add( "A discount code has not been applied! Please click the 'Apply' button to apply (or clear) a discount code." );
             }
 
-            decimal balanceDue = RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal;
+            decimal balanceDue = ( RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal ).AsCurrency();
             if ( RegistrationState.PaymentAmount > balanceDue )
             {
                 validationErrors.Add( "Amount To Pay is greater than the amount due. Please check the amount you have selected to pay." );
@@ -5982,7 +5982,7 @@ namespace RockWeb.Blocks.Event
                             if ( RegistrationState.DiscountPercentage > 0.0m )
                             {
                                 // If the DiscountPercentage is greater than 100% than set it to 0, otherwise compute the discount and set the DiscountedCost
-                                costSummary.DiscountedCost = RegistrationState.DiscountPercentage >= 1.0m ? 0.0m : costSummary.Cost - ( costSummary.Cost * RegistrationState.DiscountPercentage );
+                                costSummary.DiscountedCost = RegistrationState.DiscountPercentage >= 1.0m ? 0.0m : costSummary.Cost.AsDiscountedPercentage( RegistrationState.DiscountPercentage );
                             }
                             else if ( RegistrationState.DiscountAmount > 0 )
                             {
@@ -6040,7 +6040,7 @@ namespace RockWeb.Blocks.Event
                                 {
                                     if ( RegistrationState.DiscountPercentage > 0.0m )
                                     {
-                                        feeCostSummary.DiscountedCost = RegistrationState.DiscountPercentage >= 1.0m ? 0.0m : feeCostSummary.Cost - ( feeCostSummary.Cost * RegistrationState.DiscountPercentage );
+                                        feeCostSummary.DiscountedCost = RegistrationState.DiscountPercentage >= 1.0m ? 0.0m : feeCostSummary.Cost.AsDiscountedPercentage( RegistrationState.DiscountPercentage );
                                     }
                                     else if ( RegistrationState.DiscountAmount > 0 && discountAmountRemaining > 0 )
                                     {
@@ -6123,7 +6123,7 @@ namespace RockWeb.Blocks.Event
                     minimumPayment = minimumPayment.Value < 0 ? 0 : minimumPayment.Value;
 
                     // Calculate balance due, and if a partial payment is still allowed
-                    decimal balanceDue = RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal;
+                    decimal balanceDue = ( RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal ).AsCurrency();
 
                     // if there is a minimum amount defined (and it is less than the balance due), let a partial payment be specified
                     bool allowPartialPayment = balanceDue > 0 && minimumPayment.Value < balanceDue;
@@ -6297,7 +6297,7 @@ namespace RockWeb.Blocks.Event
             }
 
             // check if the cost has been paid if full and return false if true unless the registration ID is null or 0, in which case this is a new registration and the cost has not been calculated yet.
-            decimal balanceDue = RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal;
+            decimal balanceDue = ( RegistrationState.DiscountedCost - RegistrationState.PreviousPaymentTotal ).AsCurrency();
             if ( ( balanceDue <= ( decimal ) 0.00 ) && ( RegistrationState.RegistrationId != null ) )
             {
                 return false;

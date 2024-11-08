@@ -4,7 +4,9 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Fundraising Donations"
+          personKeyField="donorIdKey"
+          title="Fundraising Donations"
+          itemTerm="Donations"
           :entityTypeGuid="EntityType.FinancialTransactionDetail"
           stickyHeader
           liveUpdates
@@ -18,7 +20,9 @@
 
         <Column name="donor"
                 title="Donor"
+                field="donor"
                 width="10%"
+                :filter="pickExistingValueFilter"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div v-html="row.donor">
@@ -31,9 +35,12 @@
                 name="donorAddress"
                 title="Donor Address"
                 width="18%"
+                :filter="textValueFilter"
+                :filterValue="getDonorAddressFilterValue"
+                :quickFilterValue="getDonorAddressFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
-                <div v-html="row.donorAddress">
+                <div v-html="row.donorAddressHtml">
 
                 </div>
             </template>
@@ -50,7 +57,9 @@
         <Column v-if="!config.options?.columnsToHide?.includes(ColumnKey.Participant) && !config.options?.isContextEntityGroupMember"
                 name="participant"
                 title="Participant"
+                field="participant"
                 width="18%"
+                :filter="pickExistingValueFilter"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <div v-html="row.participant" />
@@ -61,7 +70,8 @@
                     title="Date"
                     field="date"
                     width="120"
-                    itemClass="grid-item-pull-left"
+                    headerClass="title-right"
+                    itemClass="justify-content-end text-right"
                     :filter="dateValueFilter"
                     visiblePriority="md" />
 
@@ -71,6 +81,8 @@
                         field="amount"
                         :filter="numberValueFilter"
                         width="3%"
+                        headerClass="title-right"
+                        itemClass="justify-content-end"
                         visiblePriority="xs">
             <template #format="{ row }">
                 <div class="flex-grow-1 text-right">
@@ -82,16 +94,15 @@
 </template>
 
 <style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
+.title-right .grid-column-title {
+    text-align: right;
 }
 </style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { numberValueFilter, textValueFilter, dateValueFilter, SelectColumn, TextColumn, DateColumn, Column, CurrencyColumn } from "@Obsidian/Controls/grid";
+    import Grid, { numberValueFilter, textValueFilter, dateValueFilter, SelectColumn, TextColumn, DateColumn, Column, CurrencyColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { FundraisingDonationListOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FundraisingDonationList/fundraisingDonationListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -136,6 +147,10 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    function getDonorAddressFilterValue(row: Record<string, unknown>): string {
+        return row.donorAddress as string ?? "";
     }
 
     // #endregion

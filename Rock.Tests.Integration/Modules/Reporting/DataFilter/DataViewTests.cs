@@ -31,6 +31,7 @@ using Rock.Web.Cache;
 namespace Rock.Tests.Integration.Modules.Reporting.DataFilter
 {
     [TestClass]
+    [TestCategory( TestFeatures.Reporting )]
     public class DataViewTests : DatabaseTestsBase
     {
         #region Tests
@@ -39,8 +40,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter
         /// Verify that all Data Views can be processed.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Reporting.Tests" )]
-        [TestProperty( "Feature", TestFeatures.Reporting )]
         public void DataView_AllDataViews_CanExecute()
         {
             var dataContext = new RockContext();
@@ -96,8 +95,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter
         /// Verify that all Data Views can be processed.
         /// </summary>
         [TestMethod]
-        [TestCategory( "Rock.Reporting.Tests" )]
-        [TestProperty( "Feature", TestFeatures.Reporting )]
         public void DataViewCache_AllDataViews_CanExecute()
         {
             var dataContext = new RockContext();

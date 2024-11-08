@@ -22,15 +22,14 @@
 //
 
 import { SavedCheckInConfigurationSettingsBag } from "@Obsidian/ViewModels/CheckIn/savedCheckInConfigurationSettingsBag";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** A representation of a saved check-in configuration on the server. */
 export type SavedCheckInConfigurationBag = {
     /**
-     * Gets or sets the campuses that this saved configuration can be
-     * used with.
+     * Gets or sets the campus identifiers that this saved configuration
+     * can be used with.
      */
-    campuses?: ListItemBag[] | null;
+    campuses?: string[] | null;
 
     /** Gets or sets the text that describes this saved configuration. */
     description?: string | null;

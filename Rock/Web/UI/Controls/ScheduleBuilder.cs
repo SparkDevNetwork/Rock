@@ -978,8 +978,8 @@ END:VCALENDAR
             {
                 EnsureChildControls();
 
-                //// iCal is stored as a list of Calendar's each with a list of Events, etc.
-                //// We just need one Calendar and one Event
+                // iCal is stored as a list of calendars, each with a list of events.
+                // Since Rock's schedule entity represents a single event, we just need one calendar and one event.
 
                 // set all rad to false to prevent multiple from being true
                 foreach ( var radControl in this.Controls.OfType<RockRadioButton>().ToList() )

@@ -110,10 +110,12 @@
         switch (props.field.personFieldType) {
             case RegistrationPersonFieldType.FirstName:
                 componentProps.label = "First Name";
+                componentProps.rules = [componentProps.rules, "nospecialcharacters", "noemojisorspecialfonts"];
                 break;
 
             case RegistrationPersonFieldType.LastName:
                 componentProps.label = "Last Name";
+                componentProps.rules = [componentProps.rules, "nospecialcharacters", "noemojisorspecialfonts"];
                 break;
 
             case RegistrationPersonFieldType.MiddleName:

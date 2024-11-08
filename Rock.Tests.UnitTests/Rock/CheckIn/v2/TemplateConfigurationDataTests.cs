@@ -44,6 +44,8 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         // Start Configuration Properties section.
         [DataRow( nameof( TemplateConfigurationData.AbilityLevelDetermination ), AbilityLevelDeterminationMode.DoNotAsk, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION )]
         [DataRow( nameof( TemplateConfigurationData.AchievementTypeGuids ), "d6b38cb2-eb9a-4f73-a4bc-978cf6b9d1a2,dc71b47f-35e9-4d26-b012-d7d6a6141c55", GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES )]
+        [DataRow( nameof( TemplateConfigurationData.AreNonSpecialNeedsGroupsRemoved ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS )]
+        [DataRow( nameof( TemplateConfigurationData.AreSpecialNeedsGroupsRemoved ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS )]
         [DataRow( nameof( TemplateConfigurationData.AutoSelectDaysBack ), 14, "core_checkin_AutoSelectDaysBack" )]
         [DataRow( nameof( TemplateConfigurationData.AutoSelect ), AutoSelectMode.PeopleAndAreaGroupLocation, "core_checkin_AutoSelectOptions" )]
         // KioskCheckInType has its own test.
@@ -59,15 +61,17 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         [DataRow( nameof( TemplateConfigurationData.IsOverrideAvailable ), true, "core_checkin_EnableOverride" )]
         [DataRow( nameof( TemplateConfigurationData.IsPhotoHidden ), true, "core_checkin_HidePhotos" )]
         [DataRow( nameof( TemplateConfigurationData.IsPresenceEnabled ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE )]
+        [DataRow( nameof( TemplateConfigurationData.IsRemoveFromFamilyAtKioskAllowed ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK )]
         [DataRow( nameof( TemplateConfigurationData.IsSameCodeUsedForFamily ), true, "core_checkin_ReuseSameCode" )]
         [DataRow( nameof( TemplateConfigurationData.IsSameOptionUsed ), true, "core_checkin_UseSameOptions" )]
         [DataRow( nameof( TemplateConfigurationData.IsSupervisorEnabled ), true, "core_checkin_EnableManagerOptions" )]
         [DataRow( nameof( TemplateConfigurationData.MaximumNumberOfResults ), 5, "core_checkin_MaxSearchResults" )]
         [DataRow( nameof( TemplateConfigurationData.MaximumPhoneNumberLength ), 10, "core_checkin_MaximumPhoneSearchLength" )]
         [DataRow( nameof( TemplateConfigurationData.MinimumPhoneNumberLength ), 7, "core_checkin_MinimumPhoneSearchLength" )]
+        [DataRow( nameof( TemplateConfigurationData.PhoneNumberPattern ), "^test$", "core_checkin_RegularExpressionFilter" )]
+        // PhoneNumberRegex has its own test.
         [DataRow( nameof( TemplateConfigurationData.PhoneSearchType ), PhoneSearchMode.EndsWith, "core_checkin_PhoneSearchType" )]
         [DataRow( nameof( TemplateConfigurationData.RefreshInterval ), 60, "core_checkin_RefreshInterval" )]
-        [DataRow( nameof( TemplateConfigurationData.RegularExpressionFilter ), "^test$", "core_checkin_RegularExpressionFilter" )]
         [DataRow( nameof( TemplateConfigurationData.SecurityCodeAlphaLength ), 3, "core_checkin_SecurityCodeAlphaLength" )]
         [DataRow( nameof( TemplateConfigurationData.SecurityCodeAlphaNumericLength ), 2, "core_checkin_SecurityCodeLength" )]
         [DataRow( nameof( TemplateConfigurationData.SecurityCodeNumericLength ), 1, "core_checkin_SecurityCodeNumericLength" )]
@@ -186,7 +190,8 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
 
         [DataRow( nameof( TemplateConfigurationData.FamilySearchType ), FamilySearchMode.PhoneNumber )]
         [DataRow( nameof( TemplateConfigurationData.KioskCheckInType ), KioskCheckInMode.Individual )]
-        [DataRow( nameof( TemplateConfigurationData.RegularExpressionFilter ), "" )]
+        [DataRow( nameof( TemplateConfigurationData.PhoneNumberPattern ), "" )]
+        [DataRow( nameof( TemplateConfigurationData.PhoneNumberRegex ), null )]
         [DataRow( nameof( TemplateConfigurationData.AbilityLevelSelectHeaderLavaTemplate ), "" )]
         [DataRow( nameof( TemplateConfigurationData.ActionSelectHeaderLavaTemplate ), "" )]
         [DataRow( nameof( TemplateConfigurationData.CheckoutPersonSelectHeaderLavaTemplate ), "" )]
@@ -358,13 +363,55 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         }
 
         [TestMethod]
+        public void Constructor_WithEmptyRegularExpressionFilterAttributeValue_InitializesPhoneNumberRegexToNull()
+        {
+            var rockContextMock = GetRockContextMock();
+            rockContextMock.SetupDbSet<GroupType>();
+
+            SetupGroupTypeRoleMocks( rockContextMock );
+
+            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+
+            var groupTypeCache = new GroupTypeCache();
+            groupTypeCache.SetFromEntity( groupType.Object );
+
+            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+            Assert.IsNull( instance.PhoneNumberRegex );
+        }
+
+        [TestMethod]
+        public void Constructor_WithRegularExpressionFilterAttributeValue_InitializesPhoneNumberRegex()
+        {
+            var rockContextMock = GetRockContextMock();
+            rockContextMock.SetupDbSet<GroupType>();
+
+            SetupGroupTypeRoleMocks( rockContextMock );
+
+            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+            groupType.SetMockAttributeValue( "core_checkin_RegularExpressionFilter", "[0]*(\\d*)" );
+
+            var groupTypeCache = new GroupTypeCache();
+            groupTypeCache.SetFromEntity( groupType.Object );
+
+            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+            Assert.IsNotNull( instance.PhoneNumberRegex );
+
+            var match = instance.PhoneNumberRegex.Match( "0003322" );
+
+            Assert.IsTrue( match.Success );
+            Assert.AreEqual( "3322", match.Groups[1].Value );
+        }
+
+        [TestMethod]
         public void DeclaredType_HasExpectedPropertyCount()
         {
             // This is a simple test to help us know when new properties are
             // added so we can update the other tests to check for those
             // properties.
             var type = typeof( TemplateConfigurationData );
-            var expectedPropertyCount = 67;
+            var expectedPropertyCount = 71;
 
             var propertyCount = type.GetProperties().Length;
 
@@ -383,27 +430,26 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         private void SetupGroupTypeRoleMocks( Mock<RockContext> rockContextMock )
         {
             var knownRelationshipsGroupType = CreateEntityMock<GroupType>( 2, SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+            var relationshipOne = CreateEntityMock<GroupTypeRole>( KnownRelationshipTypeOneId, KnownRelationshipTypeOneGuid );
+            var relationshipTwo = CreateEntityMock<GroupTypeRole>( KnownRelationshipTypeTwoId, KnownRelationshipTypeTwoGuid );
+            var relationshipThree = CreateEntityMock<GroupTypeRole>( KnownRelationshipTypeThreeId, KnownRelationshipTypeThreeGuid );
+
+            var relationshipOneCache = new GroupTypeRoleCache();
+            var relationshipTwoCache = new GroupTypeRoleCache();
+            var relationshipThreeCache = new GroupTypeRoleCache();
+
+            relationshipOneCache.SetFromEntity( relationshipOne.Object );
+            relationshipTwoCache.SetFromEntity( relationshipTwo.Object );
+            relationshipThreeCache.SetFromEntity( relationshipThree.Object );
 
             rockContextMock.SetupDbSet( knownRelationshipsGroupType.Object );
 
             var knownRelationshipsGroupTypeCache = GroupTypeCache.Get( knownRelationshipsGroupType.Object.Id, rockContextMock.Object );
             var roles = new List<GroupTypeRoleCache>
             {
-                new GroupTypeRoleCache( new GroupTypeRole
-                {
-                    Id = KnownRelationshipTypeOneId,
-                    Guid = KnownRelationshipTypeOneGuid
-                } ),
-                new GroupTypeRoleCache( new GroupTypeRole
-                {
-                    Id = KnownRelationshipTypeTwoId,
-                    Guid = KnownRelationshipTypeTwoGuid
-                } ),
-                new GroupTypeRoleCache( new GroupTypeRole
-                {
-                    Id = KnownRelationshipTypeThreeId,
-                    Guid = KnownRelationshipTypeThreeGuid
-                } )
+                relationshipOneCache,
+                relationshipTwoCache,
+                relationshipThreeCache
             };
 
             // Use reflection to set the backing field since we can't currently

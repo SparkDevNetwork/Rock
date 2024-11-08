@@ -50,6 +50,12 @@ export type LabelDesignerOptionsBag = {
     /** The identifier for the check-in label that is being designed. */
     idKey?: string | null;
 
+    /**
+     * Determines if the label is a system label. If so it can not be
+     * saved, but they can look around and run preview tests.
+     */
+    isSystem: boolean;
+
     /** The data that describes the check-in label that is being designed. */
     label?: LabelDetailBag | null;
 

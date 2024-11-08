@@ -1,0 +1,40 @@
+﻿<script setup lang="ts">
+    import { onBeforeUnmount } from "vue";
+    import {
+        onPaymentFailure,
+        onPaymentSubmitting,
+        onPaymentSuccess,
+        PaymentFailureEvent,
+        PaymentSubmittingEvent,
+        PaymentSuccessEvent
+    } from "@Obsidian/Core/Controls/financialGateway";
+
+    const emit = defineEmits<{
+        (e: "paymentSubmitting", value: PaymentSubmittingEvent): void;
+        (e: "paymentSuccess", value: PaymentSuccessEvent): void;
+        (e: "paymentFailure", value: PaymentFailureEvent): void;
+    }>();
+
+    const deregisterSubmittingCallback = onPaymentSubmitting(event => {
+        emit("paymentSubmitting", event);
+    });
+
+    const deregisterSuccessCallback = onPaymentSuccess(event => {
+        emit("paymentSuccess", event);
+    });
+
+    const deregisterFailureCallback = onPaymentFailure(event => {
+        emit("paymentFailure", event);
+    });
+
+    // #region Hooks
+
+    onBeforeUnmount(() => {
+        // Remove event handlers before unmounting this component.
+        deregisterSubmittingCallback();
+        deregisterSuccessCallback();
+        deregisterFailureCallback();
+    });
+
+    // #endregion
+</script>

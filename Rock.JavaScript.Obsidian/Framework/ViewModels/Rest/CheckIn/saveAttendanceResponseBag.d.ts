@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { ClientLabelBag } from "@Obsidian/ViewModels/CheckIn/Labels/clientLabelBag";
 import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAttendanceBag";
 
 /**
@@ -30,6 +31,9 @@ import { RecordedAttendanceBag } from "@Obsidian/ViewModels/CheckIn/recordedAtte
 export type SaveAttendanceResponseBag = {
     /** Gets or sets the attendance records that were created or updated. */
     attendances?: RecordedAttendanceBag[] | null;
+
+    /** The labels that need to be printed by the client device. */
+    labels?: ClientLabelBag[] | null;
 
     /** Gets or sets the messages for this check-in operation. */
     messages?: string[] | null;

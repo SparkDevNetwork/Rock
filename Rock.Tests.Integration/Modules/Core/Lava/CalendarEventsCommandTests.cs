@@ -36,6 +36,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
     /// These tests require the standard Rock sample data set to be present in the target database.
     /// </remarks>
     [TestClass]
+    [TestCategory( "Core.Events.CalendarFeed" )]
     public class CalendarEventsCommandTests : LavaIntegrationTestBase
     {
         private static string LavaTemplateCalendarEvents = @"
@@ -58,6 +59,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
+            EventsDataManager.Instance.UpdateSampleDataEventDates();
             EventsDataManager.Instance.AddDataForRockSolidFinancesClass();
         }
 
@@ -81,9 +83,9 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         [TestMethod]
         public void CalendarEventsCommand_WithCalendarAsName_RetrievesEventsInCorrectCalendar()
         {
-            var template = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
+            var template = GetTestTemplate( "calendarid:'Internal' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.AssertTemplateOutput( "<Calendars: Internal>",
+            TestHelper.AssertTemplateOutput( "<Calendars: Internal",
                 template,
                 new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
         }
@@ -104,7 +106,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         {
             var template = GetTestTemplate( $"calendarid:'{InternalCalendarGuidString}' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.AssertTemplateOutput( "<Calendars: Internal>",
+            TestHelper.AssertTemplateOutput( "<Calendars: Internal",
                 template,
                 new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
         }
@@ -133,7 +135,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         public void CalendarEventsCommand_WithAudienceAsName_RetrievesEventsWithMatchingAudience()
         {
             // This filter should return the Warrior Youth Event scheduled once on 2018-05-02.
-            var template = GetTestTemplate( "calendarid:'Public' audienceids:'Youth' startdate:'2018-1-1' daterange:'12m' maxoccurrences:2" );
+            var template = GetTestTemplate( "calendarid:'Public' audienceids:'Youth' daterange:'12m' maxoccurrences:2" );
 
             TestHelper.AssertTemplateOutput( "<Audiences: All Church, Adults, Youth>",
                 template,
@@ -239,11 +241,12 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         [TestMethod]
         public void CalendarEventsCommand_WithCampusSpecified_RetrievesEventsWithMatchingCampusAndUnspecifiedCampus()
         {
-            var rockContext = new RockContext();
+            var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
 
+            var rockContext = new RockContext();
             var campusId = new CampusService( rockContext ).Get( MainCampusGuidString.AsGuid() ).Id;
 
-            var template = GetTestTemplate( $"calendarid:'Public' campusids:'{campusId}' startdate:'2018-1-1'" );
+            var template = GetTestTemplate( $"calendarid:'Public' campusids:'{campusId}' startdate:'{effectiveDate:yyyy-MM-dd}'" );
 
             TestHelper.AssertTemplateOutput( new List<string> { "<Campus: Main Campus>", "<Campus: All Campuses>" },
                 template,
@@ -265,17 +268,17 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         {
             var template = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1' daterange:'3m'" );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            var validDates = new List<DateTime>
             {
-                var result = engine.RenderTemplate( template );
+                RockDateTime.New( 2020, 01, 4 ).Value,
+                RockDateTime.New( 2020, 03, 28 ).Value,
+            };
+            var invalidDates = new List<DateTime>
+            {
+                RockDateTime.New( 2020, 4, 4 ).Value
+            };
 
-                Assert.That.Contains( result.Text, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-                Assert.That.Contains( result.Text, "<<Staff Meeting|2020-02-26|12:00 AM|All Campuses>>" );
-                Assert.That.Contains( result.Text, "<<Staff Meeting|2020-03-25|12:00 AM|All Campuses>>" );
-
-                // Staff Meeting recurs every 2 weeks, so our date range of 3 months weeks should not include the meeting in month 4.
-                Assert.That.DoesNotContain( result.Text, "<<Staff Meeting|2020-04-08|12:00 AM|All Campuses>>" );
-            } );
+            AssertTestEventOccurrences( template, validDates, invalidDates );
         }
 
         [TestMethod]
@@ -283,33 +286,37 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         {
             var template = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1' daterange:'3w'" );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            var validDates = new List<DateTime>
             {
-                var result = engine.RenderTemplate( template );
+                RockDateTime.New( 2020, 1, 4 ).Value,
+                RockDateTime.New( 2020, 1, 11 ).Value,
+                RockDateTime.New( 2020, 1, 18 ).Value,
+            };
+            var invalidDates = new List<DateTime>
+            {
+                RockDateTime.New( 2020, 1, 25 ).Value
+            };
 
-                // Staff Meeting recurs every 2 weeks, so our date range should only include 2 occurrences.
-                Assert.That.Contains( result.Text, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-                Assert.That.Contains( result.Text, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
-
-                Assert.That.DoesNotContain( result.Text, "<<Staff Meeting|2020-01-29|12:00 AM|All Campuses>>" );
-            } );
+            AssertTestEventOccurrences( template, validDates, invalidDates );
         }
 
         [TestMethod]
         public void CalendarEventsCommand_WithDateRangeInDays_ReturnsExpectedEvents()
         {
-            var template = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1' daterange:'27d'" );
+            var template = GetTestTemplate( "calendarid:'Internal' startdate:'2020-1-1' daterange:'21d'" );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            var validDates = new List<DateTime>
             {
-                var result = engine.RenderTemplate( template );
+                RockDateTime.New( 2020, 1, 4 ).Value,
+                RockDateTime.New( 2020, 1, 11 ).Value,
+                RockDateTime.New( 2020, 1, 18 ).Value,
+            };
+            var invalidDates = new List<DateTime>
+            {
+                RockDateTime.New( 2020, 1, 25 ).Value
+            };
 
-                // Staff Meeting recurs every 2 weeks, so our date range of 27d should only include 2 occurrences.
-                Assert.That.Contains( result.Text, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-                Assert.That.Contains( result.Text, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
-
-                Assert.That.DoesNotContain( result.Text, "<<Staff Meeting|2020-01-29|12:00 AM|All Campuses>>" );
-            } );
+            AssertTestEventOccurrences( template, validDates, invalidDates );
         }
 
         [TestMethod]
@@ -416,6 +423,32 @@ Name=Rock Solid Finances Class<br>Date=2021-01-03<br>Time=12:00 PM<br>DateTime=2
             expectedOutput = expectedOutput.Replace( "<offset>", rockTimeOffset );
 
             TestHelper.AssertTemplateOutput( expectedOutput, input );
+        }
+
+        private void AssertTestEventOccurrences( string template, List<DateTime> validDateList, List<DateTime> invalidDateList = null )
+        {
+            var meetingName = "Rock Solid Finances Class";
+            var meetingTime = "4:30 PM";
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
+
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                foreach ( var validDate in validDateList )
+                {
+                    Assert.That.Contains( output, $"<<{meetingName}|{validDate:yyyy-MM-dd}|{meetingTime}|" );
+                }
+
+                if ( invalidDateList != null )
+                {
+                    foreach ( var invalidDate in invalidDateList )
+                    {
+                        Assert.That.DoesNotContain( output, $"<<{meetingName}|{invalidDate:yyyy-MM-dd}|{meetingTime}|" );
+                    }
+                }
+            } );
         }
     }
 }

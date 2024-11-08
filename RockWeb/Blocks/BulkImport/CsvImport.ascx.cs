@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.BulkImport
         protected override void OnLoad( EventArgs e )
         {
             propertiesMapping = ( Dictionary<string, string> ) ViewState[ViewStateKey.PropertiesMapping] ?? new Dictionary<string, string>();
-            base.OnLoad( e );
+            
             if ( !Page.IsPostBack )
             {
                 ListItem peopleDataTypeItem = new ListItem( "People" );
@@ -200,6 +200,8 @@ namespace RockWeb.Blocks.BulkImport
                 var recordStatusNames = Enum.GetNames( typeof( Slingshot.Core.Model.RecordStatus ) ).Take( 50 ).ToList();
                 lrecordStatusList.Text = $"({recordStatusNames.AsDelimited( ", " )})";
             }
+
+            base.OnLoad( e );
         }
 
         protected void fupCSVFile_FileUploaded( object sender, EventArgs e )

@@ -1,0 +1,303 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Cloud Print Proxies">
+        <div class="proxy-container">
+            <div v-for="proxy in proxies"
+                 class="proxy"
+                 :class="getProxyClass(proxy)"
+                 :key="proxy.id">
+                <div class="header">
+                    <i class="fa fa-cloud"></i>
+                    <span class="title">
+                        {{ proxy.name }}
+                    </span>
+                </div>
+
+                <div class="connections">
+                    <Grid v-if="proxy.connections.length > 0"
+                          :data="getGridData(proxy)"
+                          tooltipField="description"
+                          light>
+                        <TextColumn name="name"
+                                    title="Name"
+                                    field="name" />
+
+                        <NumberColumn name="labelCount"
+                                      title="Labels"
+                                      field="labelCount"
+                                      width="72px" />
+
+                        <TextColumn name="address"
+                                    title="Address"
+                                    field="address"
+                                    visiblePriority="sm"
+                                    width="150px" />
+
+                        <TextColumn name="server"
+                                    title="Server"
+                                    field="serverName" />
+                    </Grid>
+                </div>
+            </div>
+        </div>
+    </Panel>
+</template>
+
+<style scoped>
+.proxy-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.proxy {
+    border: 1px solid var(--theme-light);
+    border-top: 3px solid var(--theme-medium);
+    box-shadow: 1px 1px 2px rgba(128, 128, 128, 0.1);
+}
+
+.proxy .header {
+    border-bottom: 1px solid var(--theme-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 8px;
+}
+
+.proxy .title {
+    font-weight: 600;
+}
+
+.connections {
+    min-height: 75px;
+}
+
+.connection {
+    display: flex;
+    gap: 8px;
+}
+
+.proxy.online {
+    border-top-color: var(--color-success);
+}
+
+.proxy.offline {
+    background-color: var(--theme-light);
+    border-left-color: var(--theme-medium);
+    border-right-color: var(--theme-medium);
+    border-bottom-color: var(--theme-medium);
+    opacity: 0.5;
+}
+
+.proxy.offline .header {
+    border-bottom: 1px solid var(--theme-medium);
+}
+
+.connections :deep(.grid-footing) {
+    display: none;
+}
+
+.connections :deep(.grid-obsidian) {
+    --table-cell-padding-y: 8px;
+}
+
+@media only screen and (max-width: 1200px) {
+    .proxy-container {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import Grid, { TextColumn, NumberColumn } from "@Obsidian/Controls/grid";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { CloudPrintProxyStatusBag } from "@Obsidian/ViewModels/CheckIn/cloudPrintProxyStatusBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { onBeforeUnmount, onMounted, ref } from "vue";
+    import { getTopic } from "@Obsidian/Utility/realTime";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { CloudPrintProxyConnectionStatusBag } from "@Obsidian/ViewModels/CheckIn/cloudPrintProxyConnectionStatusBag";
+    import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    type ProxyConnection = CloudPrintProxyConnectionStatusBag & {
+        serverName?: string | null;
+        lastSeen: number;
+        description: string;
+    };
+
+    type Proxy = {
+        id: string;
+        name: string;
+        connections: ProxyConnection[];
+    };
+
+    const config = useConfigurationValues<{ proxies?: ListItemBag[] | null }>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const proxies = ref<Proxy[]>(config.proxies?.map(p => {
+        return {
+            id: p.value as string,
+            name: p.text as string,
+            connections: []
+        };
+    }) ?? []);
+
+    let updateTimer: number | undefined;
+
+    /**
+     * Timestamp that the last update was requested. This is used to expire old
+     * connections that no longer show up during the next update.
+     */
+    let lastUpdate: number = 0;
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Initialize the real-time engine and start monitoring for updates to the
+     * proxy connection status messages.
+     */
+    async function setupRealTime(): Promise<void> {
+        const topic = await getTopic("Rock.RealTime.Topics.CloudPrintTopic");
+
+        const request = {
+            connectionId: topic.connectionId
+        };
+
+        topic.on("proxyStatus", onProxyStatus);
+
+        const response = await invokeBlockAction("SubscribeToRealTime", request);
+
+        if (response.isSuccess) {
+            updateTimer = window.setInterval(updateProxyStatus, 10000);
+            updateProxyStatus();
+        }
+    }
+
+    /**
+     * Gets the class that represents the status of this proxy.
+     *
+     * @param proxy The proxy device.
+     */
+    function getProxyClass(proxy: Proxy): string {
+        if (proxy.connections.length === 0) {
+            return "offline";
+        }
+        else {
+            return "online";
+        }
+    }
+
+    /**
+     * Gets the data to show in the grid for the specified proxy.
+     *
+     * @param proxy The proxy to get the grid data for.
+     *
+     * @returns An instance of {@link GridDataBag} that contains the connections.
+     */
+    function getGridData(proxy: Proxy): GridDataBag {
+        return {
+            rows: proxy.connections
+        };
+    }
+
+    /**
+     * Requests an updated list of all proxy connections from the servers.
+     */
+    async function updateProxyStatus(): Promise<void> {
+        // Remove any connections that didn't get updated during the last
+        // update request. In other words, they are now offline.
+        if (lastUpdate > 0) {
+            for (const proxy of proxies.value) {
+                const connections = [...proxy.connections];
+
+                for (let i = 0; i < connections.length; i++) {
+                    if (connections[i].lastSeen < lastUpdate) {
+                        connections.splice(i, 1);
+                        i--;
+                    }
+                }
+
+                if (connections.length < proxy.connections.length) {
+                    proxy.connections = connections;
+                }
+            }
+        }
+
+        lastUpdate = Date.now();
+        await invokeBlockAction("UpdateProxyStatus");
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a RealTime message is received from any server node with
+     * updated status of a proxy.
+     */
+    function onProxyStatus(statuses: CloudPrintProxyStatusBag[]): void {
+        for (const proxyBag of statuses) {
+            const proxy = proxies.value.find(p => p.id === proxyBag.id);
+
+            if (!proxy) {
+                continue;
+            }
+
+            if (proxyBag.connections) {
+                const connections = [...proxy.connections];
+
+                // Multiple servers may have connections for the same proxy so
+                // we can't just remove all the existing proxies. Only update
+                // or add. Another section of code will handle removal.
+                for (const conn of proxyBag.connections) {
+                    const index = proxy.connections.findIndex(c => c.name === conn.name);
+                    const connectedSince = RockDateTime.parseISO(conn.connectedDateTime ?? "");
+
+                    const description = connectedSince
+                        ? `Connected since ${connectedSince.toLocaleString(DateTimeFormat.DateTimeShortWithSeconds)}`
+                        : "Connected";
+
+                    const connection: ProxyConnection = {
+                        name: conn.name,
+                        serverName: proxyBag.serverNode,
+                        address: conn.address,
+                        labelCount: conn.labelCount,
+                        description,
+                        lastSeen: Date.now()
+                    };
+
+                    if (index >= 0) {
+                        connections.splice(index, 1, connection);
+                    }
+                    else {
+                        connections.push(connection);
+                    }
+                }
+
+                proxy.connections = connections;
+            }
+        }
+    }
+
+    // #endregion
+
+    onMounted(() => {
+        setupRealTime();
+    });
+
+    onBeforeUnmount(() => {
+        if (updateTimer !== undefined) {
+            window.clearInterval(updateTimer);
+            updateTimer = undefined;
+        }
+    });
+</script>

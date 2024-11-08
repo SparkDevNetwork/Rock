@@ -198,7 +198,6 @@ btnCopyToClipboard.ClientID );
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             if ( !IsPostBack )
             {
                 LoadFilterFromUserPreferencesOrURL();
@@ -207,6 +206,8 @@ btnCopyToClipboard.ClientID );
                 lSlidingDateRangeHelp.Text = SlidingDateRangePicker.GetHelpHtml( RockDateTime.Now ) +
                     "<h3>Doughnut Chart</h3><p>This chart represents the combined total of decline reasons that were selected.  In some cases, decline reasons are provided so this chart may be empty.</p>";
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Overrides

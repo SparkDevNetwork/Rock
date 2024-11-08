@@ -80,6 +80,7 @@ namespace Rock.Cms.ContentCollection.Indexers
             var eventCalendarEntityTypeId = EntityTypeCache.GetId<EventCalendar>() ?? 0;
             var now = RockDateTime.Now;
             List<EventItem> eventItems;
+            List<int> unapprovedItems = new List<int>();
 
             // Make sure the source is valid.
             if ( contentCollectionSourceCache == null || contentCollectionSourceCache.EntityTypeId != eventCalendarEntityTypeId )
@@ -104,6 +105,14 @@ namespace Rock.Cms.ContentCollection.Indexers
                     return 0;
                 }
 
+                foreach( var eventItem in eventItems )
+                {
+                    if ( !eventItem.IsApproved )
+                    {
+                        unapprovedItems.Add( eventItem.Id );
+                    }
+                }
+
                 eventItems.LoadAttributes( rockContext );
             }
 
@@ -117,6 +126,12 @@ namespace Rock.Cms.ContentCollection.Indexers
             await processor.ExecuteAsync( eventItems, async eventItem =>
             {
                 var indexItem = await EventItemDocument.LoadByModelAsync( eventItem, contentCollectionSourceCache );
+
+                if( unapprovedItems.Contains( indexItem.EntityId ) )
+                {
+                    indexItem.IsApproved = false;
+                }
+
                 await ContentIndexContainer.IndexDocumentAsync( indexItem );
             } );
 
@@ -127,6 +142,7 @@ namespace Rock.Cms.ContentCollection.Indexers
         public async Task<int> IndexContentCollectionDocumentAsync( int id, IndexDocumentOptions options )
         {
             EventItem itemEntity;
+            var isApproved = true;
 
             using ( var rockContext = new RockContext() )
             {
@@ -139,6 +155,7 @@ namespace Rock.Cms.ContentCollection.Indexers
                     return 0;
                 }
 
+                isApproved = itemEntity.IsApproved;
                 itemEntity.LoadAttributes( rockContext );
             }
 
@@ -163,6 +180,8 @@ namespace Rock.Cms.ContentCollection.Indexers
             await processor.ExecuteAsync( sources, async source =>
             {
                 var indexItem = await EventItemDocument.LoadByModelAsync( itemEntity, source );
+                indexItem.IsApproved = isApproved;
+
                 await ContentIndexContainer.IndexDocumentAsync( indexItem );
             } );
 

@@ -33,7 +33,14 @@ export const AttendanceRule = {
     AddOnCheckIn: 1,
 
     /** User must already belong to the group before they will be allowed to check-in */
-    AlreadyBelongs: 2
+    /** @deprecated Use AlreadyEnrolledInGroup instead. */
+    AlreadyBelongs: 2,
+
+    /**
+     * The person must already be a member of the group before they will
+     * be allowed to check into the group.
+     */
+    AlreadyEnrolledInGroup: 2
 } as const;
 
 /** Represents and indicates the  attendance rule to use when a Rock.Model.Person checks in to a Rock.Model.Group of this Rock.Model.GroupType */
@@ -42,7 +49,7 @@ export const AttendanceRuleDescription: Record<number, string> = {
 
     1: "Add On Check In",
 
-    2: "Already Belongs"
+    2: "Already Enrolled In Group"
 };
 
 /** Represents and indicates the  attendance rule to use when a Rock.Model.Person checks in to a Rock.Model.Group of this Rock.Model.GroupType */

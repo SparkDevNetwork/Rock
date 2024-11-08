@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 using Docker.DotNet;
 using Docker.DotNet.Models;
-
+using Rock.Tests.Shared.Lava;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
@@ -18,11 +18,20 @@ namespace Rock.Tests.Shared.TestFramework
     /// for unit tests. It will automatically build a new docker image if required
     /// before starting up the first time.
     /// </summary>
-    public class TestDatabaseContainer
+    public class TestDatabaseContainer : ITestDatabaseContainer
     {
         private static bool? _hasValidImage;
 
         private MsSqlContainer _databaseContainer;
+        private bool _containerIsInitialized = false;
+
+        public bool HasCurrentInstance
+        {
+            get
+            {
+                return _hasValidImage.GetValueOrDefault();
+            }
+        }
 
         /// <summary>
         /// Starts a database container for the current version of Rock. This
@@ -56,6 +65,19 @@ namespace Rock.Tests.Shared.TestFramework
             TestHelper.ConfigureRockApp( csb.ConnectionString );
             RockCache.ClearAllCachedItems( false );
 
+            if ( !_containerIsInitialized )
+            {
+                // If this is the first database request, start the Lava Service and load shortcode definitions from the database.
+                // Re-initialization is not required for subsequent resets because the restored database has identical data.
+                _containerIsInitialized = true;
+
+                LogHelper.Log( $"Initializing Lava Database Elements..." );
+
+                LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: true, testDotLiquidEngine: false, testFluidEngine: true, loadShortcodes: true );
+
+                LogHelper.Log( $"Initializing Lava Database Elements: completed." );
+            }
+
             _databaseContainer = container;
         }
 
@@ -65,12 +87,16 @@ namespace Rock.Tests.Shared.TestFramework
         /// <returns>A task that indicates when the container has been removed.</returns>
         public async Task DisposeAsync()
         {
+            _hasValidImage = null;
+
             if ( _databaseContainer != null )
             {
                 RockCache.ClearAllCachedItems( false );
                 TestHelper.ConfigureRockApp( null );
 
                 await _databaseContainer.DisposeAsync().AsTask();
+
+                _databaseContainer = null;
             }
         }
 
@@ -94,6 +120,7 @@ namespace Rock.Tests.Shared.TestFramework
                     }
                     catch ( Exception ex )
                     {
+                        _hasValidImage = false;
                         throw new Exception( $"Test Database Container initialization failed. The Docker Client is not available; make sure that Docker Desktop is installed and configured correctly. Refer to the README document for more information. [Uri={dockerClient.Configuration.EndpointBaseUri}]", ex );
                     }
 

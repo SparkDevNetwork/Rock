@@ -135,8 +135,6 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
@@ -213,6 +211,8 @@ namespace RockWeb.Blocks.WorkFlow.FormBuilder
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

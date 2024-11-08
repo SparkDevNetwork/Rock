@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "CloudPrintService": {
+      "commandName": "Project",
+      "commandLineArgs": "--url http://localhost:6229 --id 05dc28c9-e3ed-4dce-b77d-0f27bbdb6a8d --name TestProxy",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": true
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  },
+  "$schema": "http://json.schemastore.org/launchsettings.json"
+}

@@ -177,7 +177,7 @@ namespace Rock.Lava.Blocks
         /// <returns>The resolved rock URL.</returns>
         private string ResolveRockUrl( ILavaRenderContext context, string url )
         {
-            // Some requests (i.e.Obsidian block action requests) won't have a RockPage,
+            // Some requests (i.e. Obsidian block action requests) won't have a RockPage,
             // so try to resolve the URL using the RockRequestContext first.
             var rockRequestContext = context?.GetRockRequestContext();
             if ( rockRequestContext != null )

@@ -2,10 +2,10 @@
 <template>
     <fieldset>
         <div class="row">
-            <div class="col-md-6">
-
-                <LocationPicker v-model="parentLocation"
-                                label="Parent Location" />
+            <div v-if="areNamedLocationFeaturesEnabled" class="col-md-6">
+                <LocationItemPicker v-model="parentLocation"
+                                    label="Parent Location"
+                                    class="input-width-sm" />
 
                 <TextBox v-model="name"
                          label="Name"
@@ -24,19 +24,23 @@
                               :enhanceForLongLists="false"
                               :grouped="false"
                               :multiple="false" />
+
+                <ImageEditor v-model="image" label="Image" noPictureUrl="/Assets/Images/no-picture.svg" :binaryFileTypeGuid="BinaryFiletype.LocationImage" />
+
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
             </div>
 
             <div class="col-md-6">
-                <CheckBox v-model="isActive"
+                <CheckBox v-if="areNamedLocationFeaturesEnabled"
+                          v-model="isActive"
                           label="Active" />
 
                 <AddressControl label="" v-model="addressFields" />
 
                 <NotificationBox v-if="standardizationResults" alertType="info" v-html="standardizationResults" />
 
-                <RockButton
-                            btnSize="sm"
-                            btnType="action"
+                <RockButton btnType="action"
+                            class="mb-3"
                             @click="onStandardizeClick"
                             autoDisable>
                     Verify Address
@@ -48,19 +52,34 @@
 
                 <div class="row">
                     <div class="col-sm-7">
-                        <TextBox label="Point" v-model="geoPointWellKnownText" readonly />
-                        <TextBox label="Geo-Fence" v-model="geoFenceWellKnownText" readonly />
+                        <GeoPicker v-model="geoPointWellKnownText"
+                                   label="Point"
+                                   drawingMode="Point"
+                                   :mapStyleValueGuid="mapStyleGuid"
+                                   class="input-width-sm" />
+                        <GeoPicker v-if="areNamedLocationFeaturesEnabled"
+                                   v-model="geoFenceWellKnownText"
+                                   label="Geo-Fence"
+                                   drawingMode="Polygon"
+                                   :mapStyleValueGuid="mapStyleGuid"
+                                   class="input-width-sm"/>
                     </div>
-                    <div class="col-sm-5">
-                        <NumberBox label="Threshold" v-model="softRoomThreshold" help="The maximum number of people that room allows before a check-in will require a manager override." />
-                        <NumberBox label="Threshold (Absolute)" v-model="firmRoomThreshold" help="The absolute maximum number of people that room allows. Check-in will not allow check-in after this number of people have checked in." />
+                    <div v-if="areNamedLocationFeaturesEnabled" class="col-sm-5">
+                        <TextBox label="Threshold"
+                                 v-model="softRoomThreshold"
+                                 :rules="validateThresholdValue"
+                                 help="The maximum number of people that room allows before a check-in will require a manager override." />
+
+                        <TextBox label="Threshold (Absolute)"
+                                 v-model="firmRoomThreshold"
+                                 :rules="validateThresholdValue"
+                                 help="The absolute maximum number of people that room allows. Check-in will not allow check-in after this number of people have checked in." />
                     </div>
                 </div>
 
             </div>
         </div>
 
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
     </fieldset>
 </template>
 
@@ -72,21 +91,25 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
+    import GeoPicker from "@Obsidian/Controls/geoPicker.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { LocationBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationBag";
     import { LocationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/locationDetailOptionsBag";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { AddressStandardizationResultBag } from "@Obsidian/ViewModels/Blocks/Core/LocationDetail/addressStandardizationResultBag";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<LocationBag>,
+            type: Object as PropType<ValidPropertiesBox<LocationBag>>,
             required: true
         },
 
@@ -97,28 +120,30 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: LocationBag): void;
+        (e: "update:modelValue", value: ValidPropertiesBox<LocationBag>): void;
         (e: "propertyChanged", value: string): void;
     }>();
 
     // #region Values
     const invokeBlockAction = useInvokeBlockAction();
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const parentLocation = propertyRef(props.modelValue.parentLocation ?? undefined, "ParentLocationId");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const locationTypeValue = propertyRef(props.modelValue.locationTypeValue ?? null, "LocationTypeValueId");
-    const printerDevice = propertyRef(props.modelValue.printerDevice?.value ?? "", "PrinterDeviceId");
-    const isGeoPointLocked = propertyRef(props.modelValue.isGeoPointLocked ?? false, "IsGeoPointLocked");
-    const softRoomThreshold = propertyRef(props.modelValue.softRoomThreshold ?? null, "SoftRoomThreshold");
-    const firmRoomThreshold = propertyRef(props.modelValue.firmRoomThreshold ?? null, "FirmRoomThreshold");
-    const addressFields = ref(props.modelValue.addressFields ?? {});
-    const geoPointWellKnownText = propertyRef(props.modelValue.geoPoint_WellKnownText ?? "", "GeoPoint");
-    const geoFenceWellKnownText = propertyRef(props.modelValue.geoFence_WellKnownText ?? "", "GeoFence");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const parentLocation = propertyRef(props.modelValue?.bag?.parentLocation ?? undefined, "ParentLocationId");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const locationTypeValue = propertyRef(props.modelValue?.bag?.locationTypeValue ?? null, "LocationTypeValueId");
+    const printerDevice = propertyRef(props.modelValue?.bag?.printerDevice?.value ?? "", "PrinterDeviceId");
+    const isGeoPointLocked = propertyRef(props.modelValue?.bag?.isGeoPointLocked ?? false, "IsGeoPointLocked");
+    const softRoomThreshold = propertyRef(props.modelValue?.bag?.softRoomThreshold ?? "", "SoftRoomThreshold");
+    const firmRoomThreshold = propertyRef(props.modelValue?.bag?.firmRoomThreshold ?? "", "FirmRoomThreshold");
+    const addressFields = ref(props.modelValue?.bag?.addressFields ?? {});
+    const geoPointWellKnownText = propertyRef(props.modelValue?.bag?.geoPoint_WellKnownText ?? "", "GeoPoint");
+    const geoFenceWellKnownText = propertyRef(props.modelValue?.bag?.geoFence_WellKnownText ?? "", "GeoFence");
+    const image = propertyRef(props.modelValue?.bag?.image ?? {}, "ImageId");
     const standardizeAttemptedResult = ref("");
     const geocodeAttemptedResult = ref("");
+    const mapStyleGuid = ref(props.options.mapStyleGuid ?? "");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -131,7 +156,8 @@
         softRoomThreshold,
         firmRoomThreshold,
         geoPointWellKnownText,
-        geoFenceWellKnownText
+        geoFenceWellKnownText,
+        image
     ];
 
     // #endregion
@@ -139,6 +165,10 @@
     // #region Computed Values
     const printerDeviceOptions = computed((): ListItemBag[] => {
         return props.options.printerDeviceOptions ?? [];
+    });
+
+    const areNamedLocationFeaturesEnabled = computed((): boolean => {
+        return !(props.options.isPersonIdAvailable || (props.modelValue?.bag?.idKey && isNullOrWhiteSpace(props.modelValue?.bag?.name)));
     });
 
     const standardizationResults = computed((): string => {
@@ -156,6 +186,27 @@
 
     // #region Functions
 
+    function validateThresholdValue(value: unknown): string | boolean {
+
+        const stringValue = value as string;
+
+        if (stringValue) {
+            const num = Number(value);
+            if (!isValidNumber(num)) {
+                return "must be a valid number.";
+            }
+            else if (num < 0) {
+                return "must have a value of 0 or more.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(num: number): boolean {
+        return !isNaN(num) && isFinite(num);
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -170,6 +221,7 @@
             updateRefValue(addressFields, result.data.addressFields ?? {});
             standardizeAttemptedResult.value = result.data.standardizeAttemptedResult ?? "";
             geocodeAttemptedResult.value = result.data.geocodeAttemptedResult ?? "";
+            geoPointWellKnownText.value = result.data.geoPointWellKnownText ?? "";
         }
     }
 
@@ -177,42 +229,43 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(addressFields, props.modelValue.addressFields ?? {});
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(parentLocation, props.modelValue.parentLocation ?? undefined);
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(locationTypeValue, props.modelValue.locationTypeValue ?? null);
-        updateRefValue(printerDevice, props.modelValue.printerDevice?.value ?? "");
+        updateRefValue(addressFields, props.modelValue?.bag?.addressFields ?? {});
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(parentLocation, props.modelValue?.bag?.parentLocation ?? undefined);
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(locationTypeValue, props.modelValue?.bag?.locationTypeValue ?? null);
+        updateRefValue(printerDevice, props.modelValue?.bag?.printerDevice?.value ?? "");
+        updateRefValue(image, props.modelValue?.bag?.image ?? {});
 
-        updateRefValue(isGeoPointLocked, props.modelValue.isGeoPointLocked ?? false);
-        updateRefValue(softRoomThreshold, props.modelValue.softRoomThreshold ?? null);
-        updateRefValue(firmRoomThreshold, props.modelValue.firmRoomThreshold ?? null);
+        updateRefValue(isGeoPointLocked, props.modelValue?.bag?.isGeoPointLocked ?? false);
+        updateRefValue(softRoomThreshold, props.modelValue?.bag?.softRoomThreshold ?? "");
+        updateRefValue(firmRoomThreshold, props.modelValue?.bag?.firmRoomThreshold ?? "");
 
-        // TODO, temporary code until we have a GeoPicker
-        updateRefValue(geoPointWellKnownText, props.modelValue.geoPoint_WellKnownText ?? "");
-        updateRefValue(geoFenceWellKnownText, props.modelValue.geoFence_WellKnownText ?? "");
+        updateRefValue(geoPointWellKnownText, props.modelValue?.bag?.geoPoint_WellKnownText ?? "");
+        updateRefValue(geoFenceWellKnownText, props.modelValue?.bag?.geoFence_WellKnownText ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, addressFields, ...propRefs], () => {
-        const newValue: LocationBag = {
-            ...props.modelValue,
-            addressFields: addressFields.value,
-            attributeValues: attributeValues.value,
-            isActive: isActive.value,
-            name: name.value,
-            locationTypeValue: locationTypeValue.value,
-            parentLocation: parentLocation.value,
-            printerDevice: { value: printerDevice.value },
-            isGeoPointLocked: isGeoPointLocked.value,
-            softRoomThreshold: softRoomThreshold.value,
-            firmRoomThreshold: firmRoomThreshold.value,
-            geoPoint_WellKnownText: geoPointWellKnownText.value,
-            geoFence_WellKnownText: geoFenceWellKnownText.value,
+        const newValue: ValidPropertiesBox<LocationBag> = {
+            bag: { ...props.modelValue. bag} as LocationBag
         };
+        setPropertiesBoxValue(newValue, "addressFields", addressFields.value),
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
+        setPropertiesBoxValue(newValue, "isActive", isActive.value),
+        setPropertiesBoxValue(newValue, "name", name.value),
+        setPropertiesBoxValue(newValue, "locationTypeValue", locationTypeValue.value),
+        setPropertiesBoxValue(newValue, "parentLocation", parentLocation.value),
+        setPropertiesBoxValue(newValue, "printerDevice", { value: printerDevice.value }),
+        setPropertiesBoxValue(newValue, "image", image.value),
+        setPropertiesBoxValue(newValue, "isGeoPointLocked", isGeoPointLocked.value),
+        setPropertiesBoxValue(newValue, "softRoomThreshold", softRoomThreshold.value),
+        setPropertiesBoxValue(newValue, "firmRoomThreshold", firmRoomThreshold.value),
+        setPropertiesBoxValue(newValue, "geoPoint_WellKnownText", geoPointWellKnownText.value),
+        setPropertiesBoxValue(newValue, "geoFence_WellKnownText", geoFenceWellKnownText.value),
 
         emit("update:modelValue", newValue);
     });

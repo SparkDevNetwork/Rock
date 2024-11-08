@@ -172,6 +172,12 @@ namespace Rock.Blocks.Cms
         Category = "CustomSetting",
         Key = AttributeKey.SegmentBoostAmount )]
 
+    [BooleanField("Show Unapproved Items",
+        Description = "Determines if unapproved items should be shown.",
+        DefaultBooleanValue = false,
+        Category = "CustomSetting",
+        Key = AttributeKey.IncludeUnapproved )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "16C3A9D7-DD61-4971-8FE0-EEE09AEF703F" )]
@@ -217,6 +223,8 @@ namespace Rock.Blocks.Cms
             public const string SegmentBoostAmount = "SegmentBoostAmount";
 
             public const string RequestFilterBoostAmount = "RequestFilterBoostAmount";
+
+            public const string IncludeUnapproved = "IncludeUnapproved";
         }
 
         private static class SortOrdersKey
@@ -822,6 +830,7 @@ namespace Rock.Blocks.Cms
             {
                 var sources = ContentCollectionSourceCache.All()
                     .Where( s => s.ContentCollectionId == contentCollection.Id )
+                    .OrderBy( s => s.Order )
                     .ToList();
 
                 foreach ( var source in sources )
@@ -1149,6 +1158,16 @@ namespace Rock.Blocks.Cms
                 } );
             }
 
+            var includeUnapproved = this.GetAttributeValue( AttributeKey.IncludeUnapproved ).AsBooleanOrNull() ?? false;
+            if( !includeUnapproved )
+            {
+                searchQuery.Add( new SearchField
+                {
+                    Name = nameof( IndexDocumentBase.IsApproved ),
+                    Value = "true"
+                } );
+            }
+
             var searchOptions = new SearchOptions
             {
                 Offset = offset,
@@ -1451,7 +1470,8 @@ namespace Rock.Blocks.Cms
                     SegmentBoostAmount = GetAttributeValue( AttributeKey.SegmentBoostAmount ).AsDecimalOrNull(),
                     RequestFilterBoostAmount = GetAttributeValue( AttributeKey.RequestFilterBoostAmount ).AsDecimalOrNull(),
                     GroupHeaderTemplate = GetAttributeValue( AttributeKey.GroupHeaderTemplate ),
-                    SiteType = ( PageCache?.Layout?.Site?.SiteType ?? Model.SiteType.Web ).ToString().ToLower()
+                    SiteType = ( PageCache?.Layout?.Site?.SiteType ?? Model.SiteType.Web ).ToString().ToLower(),
+                    IncludeUnapproved = GetAttributeValue( AttributeKey.IncludeUnapproved ).AsBoolean()
                 };
 
                 return ActionOk( new CustomSettingsBox<CustomSettingsBag, CustomSettingsOptionsBag>
@@ -1560,6 +1580,9 @@ namespace Rock.Blocks.Cms
 
                 box.IfValidProperty( nameof( box.Settings.GroupHeaderTemplate ),
                     () => block.SetAttributeValue( AttributeKey.GroupHeaderTemplate, box.Settings.GroupHeaderTemplate ) );
+
+                box.IfValidProperty( nameof( box.Settings.IncludeUnapproved ),
+                    () => block.SetAttributeValue( AttributeKey.IncludeUnapproved, box.Settings.IncludeUnapproved.ToString() ) );
 
                 block.SaveAttributeValues( rockContext );
 

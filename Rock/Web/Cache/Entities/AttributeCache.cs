@@ -325,6 +325,12 @@ namespace Rock.Web.Cache
         public bool IsPublic { get; private set; }
 
         /// <summary>
+        /// Gets or sets a flag indicating if changes to the attribute values should be recorded into the generic History log table.
+        /// </summary>
+        [DataMember]
+        public bool IsSuppressHistoryLogging { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether changes to this attribute's attribute values should be logged in AttributeValueHistorical
         /// </summary>
         /// <value>
@@ -565,6 +571,7 @@ namespace Rock.Web.Cache
             AbbreviatedName = attribute.AbbreviatedName;
             ShowOnBulk = attribute.ShowOnBulk;
             IsPublic = attribute.IsPublic;
+            IsSuppressHistoryLogging = attribute.IsSuppressHistoryLogging;
 
             ConfigurationValues = new Dictionary<string, string>( qualifiers );
             QualifierValues = new Dictionary<string, ConfigurationValue>();

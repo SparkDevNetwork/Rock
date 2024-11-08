@@ -131,8 +131,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 if ( string.IsNullOrWhiteSpace( _accountId ) )
@@ -241,6 +239,8 @@ namespace RockWeb.Blocks.Finance
             }
 
             hfexcludeInactiveGroups.Value = ( tglHideInactiveAccounts.Checked ).ToTrueFalse();
+
+            base.OnLoad( e );
         }
 
         #endregion

@@ -104,10 +104,14 @@ namespace Rock.Rest.Controllers
 
             var person = GetPerson();
             var tagItems = new List<Tag>();
+            var entity = Reflection.GetIEntityForEntityType( entityTypeId, entityGuid );
 
             foreach ( var tag in tags.OrderBy( t => t.Name ) )
             {
-                if ( tag.IsAuthorized( Rock.Security.Authorization.TAG, person ) )
+                // Include only tags that can be assigned to the entity
+                var shouldTagBeIncluded = tag.EntityTypeQualifierColumn.IsNullOrWhiteSpace() ||
+                    entity.GetPropertyValue( tag.EntityTypeQualifierColumn ).ToString() == tag.EntityTypeQualifierValue;
+                if ( shouldTagBeIncluded && tag.IsAuthorized( Rock.Security.Authorization.TAG, person ) )
                 {
                     tagItems.Add( tag );
                 }

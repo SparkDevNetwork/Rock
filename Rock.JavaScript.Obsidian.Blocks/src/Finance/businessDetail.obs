@@ -5,17 +5,20 @@
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
     <Panel if="!blockError" :title="panelName">
-
         <template #headerActions>
             <span v-if="businessDetailViewBag?.recordStatus?.value" :class="statusClass">{{ status }}</span>
-            <span v-if="showActions" class="action panel-action-context clickable" style="position: relative;" ref="headerSecondaryActionMenu">
-                <button type="button" class="btn btn-default" data-toggle="dropdown" @click="onActionContextDropdownClick">
+            <div v-if="showActions" :class="customActionClass" style="position: relative;">
+                <button type="button" class="btn btn-default" data-toggle="dropdown" aria-expanded="false" @click="onActionContextDropdownClick">
                     Actions <i class="fa fa-caret-down"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-right" v-html="customActions">
 
                 </ul>
-            </span>
+            </div>
+        </template>
+
+        <template v-if="panelMode == DetailPanelMode.View && showBadges" #subheaderRight>
+            <BadgeList :entityTypeGuid="EntityType.Person" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />
         </template>
 
         <template v-if="panelMode === DetailPanelMode.View">
@@ -23,7 +26,9 @@
         </template>
 
         <template v-else>
-            <EditPanel v-model="businessDetailEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <RockForm v-model:submit="submitForm" @submit="onSave">
+                <EditPanel v-model="businessDetailEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+            </RockForm>
         </template>
 
         <template #footerActions>
@@ -35,15 +40,14 @@
                         :btnSize="BtnSize.Default"
                         :btnType="BtnType.Primary"
                         :isLoading="isSaving"
-                        @click="onSave">
+                        @click="onSaveClick">
                 Save
             </RockButton>
-            <RockButton v-if="panelMode === DetailPanelMode.Edit"
+            <RockButton v-if="panelMode === DetailPanelMode.Edit || panelMode === DetailPanelMode.Add"
                         btnType="link"
                         @click="onCancelEdit"
                         autoDisable>Cancel</RockButton>
         </template>
-
     </Panel>
 </template>
 
@@ -57,44 +61,41 @@
     import EditPanel from "./BusinessDetail/editPanel.partial.obs";
     import ViewPanel from "./BusinessDetail/viewPanel.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./BusinessDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { BusinessDetailBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessDetail/businessDetailBag";
     import { BusinessDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BusinessDetail/businessDetailOptionsBag";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import BadgeList from "@Obsidian/Controls/badgeList.obs";
 
     const config = useConfigurationValues<DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
     const blockError = ref("");
     const errorMessage = ref("");
     const isSaving = ref(false);
+    const submitForm = ref(false);
+    const customActionClassList = ref(["action", "panel-action-context", "clickable"]);
 
     const businessDetailViewBag = ref(config.entity);
-    const businessDetailEditBag = ref<BusinessDetailBag>({} as BusinessDetailBag);
-    const headerSecondaryActionMenu = ref<HTMLElement | null>(null);
+    const businessDetailEditBag = ref<ValidPropertiesBox<BusinessDetailBag>>({
+        bag: {} as BusinessDetailBag
+    });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
     const customActions = businessDetailViewBag.value?.customActions;
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "businessName",
-        "recordStatus",
-        "recordStatusReason",
-        "emailAddress",
-        "emailPreference",
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(businessDetailEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: businessDetailEditBag
+    });
 
     // #endregion
 
@@ -137,20 +138,45 @@
     });
 
     const options = computed((): BusinessDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {} as BusinessDetailOptionsBag;
     });
 
     const showActions = computed((): boolean => {
         return customActions !== null && panelMode.value === DetailPanelMode.View;
     });
 
-    // #endregion
+    /**
+    * The identifier key value for this entity.
+    */
+    const entityKey = computed((): string => {
+        return businessDetailViewBag.value?.idKey ?? "";
+    });
 
-    // #region Functions
+    const badgeTypeGuids = computed((): string[] => {
+        return businessDetailViewBag.value?.badgeTypeGuids ?? [];
+    });
+
+    const showBadges = computed((): boolean => {
+        const badgeTypeGuids = businessDetailViewBag.value?.badgeTypeGuids ?? [];
+        return badgeTypeGuids.length > 0;
+    });
+
+    const customActionClass = computed((): string => {
+        return customActionClassList.value.join(" ");
+    });
+
 
     // #endregion
 
     // #region Event Handlers
+
+    /**
+    * Event handler for the Save button being clicked.
+    * Alerts the form to begin validation and submit form if no errors are found
+    */
+    const onSaveClick = (): void => {
+        submitForm.value = true;
+    };
 
     /**
      * Event handler for the Cancel button being clicked while in Edit mode.
@@ -159,7 +185,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<void> {
-        if (!businessDetailEditBag.value?.idKey) {
+        if (!businessDetailEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
             }
@@ -176,32 +202,18 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<void> {
-        const result = await invokeBlockAction<DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<BusinessDetailBag>>("Edit", {
             key: businessDetailViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            businessDetailEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            businessDetailEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
 
             panelMode.value = DetailPanelMode.Edit;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -212,21 +224,15 @@
         errorMessage.value = "";
         isSaving.value = true;
 
-        const data: DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag> = {
-            entity: businessDetailEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<BusinessDetailBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<BusinessDetailBag> | string>("Save", {
+            box: businessDetailEditBag.value
         });
 
         isSaving.value = false;
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                businessDetailViewBag.value = result.data;
+                businessDetailViewBag.value = result.data.bag;
                 panelMode.value = DetailPanelMode.View;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
@@ -236,21 +242,25 @@
         else {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to save Business.";
         }
+
+        submitForm.value = false;
     }
 
     /**
      * Event Handler for the Custom actions dropdown click. Toggles between opening and closing the dropdown list.
      */
-    function onActionContextDropdownClick(): void {
-        if (headerSecondaryActionMenu.value) {
-            headerSecondaryActionMenu.value.classList.toggle("open");
+    function onActionContextDropdownClick(event: MouseEvent): void {
+        event.stopPropagation();
+        if (!customActionClassList.value.includes("open")) {
+            customActionClassList.value.push("open");
+        }
+        else {
+            customActionClassList.value = customActionClassList.value.filter(c => c !== "open");
         }
     }
 
 
     // #endregion
-
-    provideSecurityGrant(securityGrant);
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
@@ -260,7 +270,10 @@
         blockError.value = "The specified business could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        businessDetailEditBag.value = config.entity;
+        businessDetailEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
+
+    onConfigurationValuesChanged(useReloadBlock());
+
 </script>

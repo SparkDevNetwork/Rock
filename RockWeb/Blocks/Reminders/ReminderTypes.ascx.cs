@@ -79,12 +79,12 @@ namespace RockWeb.Blocks.Reminders
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 InitializeBlock();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods

@@ -65,7 +65,6 @@ function getQuickFilterValue(row: Record<string, unknown>, column: ColumnDefinit
     }
 
     if (typeof column.props.detailField === "string") {
-        console.log("has detailField");
         const detailValue = row[column.props.detailField];
 
         if (typeof detailValue === "string") {
@@ -80,7 +79,6 @@ function getQuickFilterValue(row: Record<string, unknown>, column: ColumnDefinit
             grid
         };
 
-        console.log("has detailFormat", component);
         const detailValue = extractText(component, cellProps);
 
         return `${value} ${detailValue}`;

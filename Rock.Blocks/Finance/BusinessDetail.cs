@@ -20,14 +20,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Search.Person;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.BusinessDetail;
 using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -42,6 +43,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the given business." )]
     [IconCssClass( "fa fa-question" )]
+    [Rock.Web.UI.ContextAware]
 
     #region Block Attributes
 
@@ -113,7 +115,7 @@ namespace Rock.Blocks.Finance
 
     [SystemGuid.EntityTypeGuid( "d54d7307-40f2-4beb-819d-8112dfbfbb12" )]
     [SystemGuid.BlockTypeGuid( "729e1953-4cff-46f0-8715-9d7892badb4e" )]
-    public class BusinessDetail : RockDetailBlockType
+    public class BusinessDetail : RockEntityDetailBlockType<Person, BusinessDetailBag>
     {
         #region Keys
 
@@ -171,18 +173,14 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag>();
+            var box = new DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag>();
 
-                var entity = SetBoxInitialEntityState( box, rockContext );
+            var entity = SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext, entity );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Person>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable, entity );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -190,29 +188,21 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="business">The busniess entity.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private BusinessDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext, Person business )
+        private BusinessDetailOptionsBag GetBoxOptions( bool isEditable, Person business )
         {
             var options = new BusinessDetailOptionsBag();
 
-            if ( business != null )
-            {
-                var validSearchTypes = GetValidSearchKeyTypes();
-                var dvAlternateId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
-                var searchKeys = business.GetPersonSearchKeys()
-                    .Where( a => validSearchTypes.Contains( a.SearchTypeValue.Guid ) && a.SearchTypeValueId != dvAlternateId.Id )
-                    .ToList();
+            options.TagCategoryGuid = GetAttributeValue( AttributeKey.TagCategory ).AsGuidOrNull();
 
-                var searchValueTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
-                var searchTypesList = searchValueTypes.Where( dv => validSearchTypes.Contains( dv.Guid ) && dv.Id != dvAlternateId.Id ).ToList();
+            options.DisplayTags = GetAttributeValue( AttributeKey.DisplayTags ).AsBoolean();
 
-                options.SearchKeys = searchKeys.ConvertAll(a => new SearchKeyBag() { Guid = a.Guid, SearchType = a.SearchTypeValue.ToListItemBag(), SearchValue = a.SearchValue });
-                options.SearchTypesList = searchTypesList.ConvertAll( dv => new ViewModels.Utility.ListItemBag { Text = dv.Value, Value = dv.Guid.ToString() } );
+            var validSearchTypes = GetValidSearchKeyTypes();
+            var dvAlternateId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
 
-                options.TagCategoryGuid = GetAttributeValue( AttributeKey.TagCategory ).AsGuidOrNull();
-            }
+            var searchValueTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
+            var searchTypesList = searchValueTypes.Where( dv => validSearchTypes.Contains( dv.Guid ) && dv.Id != dvAlternateId.Id ).ToList();
+            options.SearchTypesList = searchTypesList.ConvertAll( dv => new ViewModels.Utility.ListItemBag { Text = dv.Value, Value = dv.Guid.ToString() } );
 
             return options;
         }
@@ -222,10 +212,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="business">The business to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the Business is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateBusiness( Person business, RockContext rockContext, out string errorMessage )
+        private bool ValidateBusiness( Person business, out string errorMessage )
         {
             errorMessage = null;
 
@@ -237,10 +226,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private Person SetBoxInitialEntityState( DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag> box, RockContext rockContext )
+        private Person SetBoxInitialEntityState( DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -251,18 +239,19 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             // Existing entity was found, prepare for view mode by default.
             if ( isViewable )
             {
-                box.Entity = GetEntityBagForView( entity, rockContext );
-                box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                box.Entity = GetEntityBagForView( entity );
             }
             else
             {
                 box.ErrorMessage = EditModeMessage.NotAuthorizedToView( Person.FriendlyTypeName );
             }
+
+            PrepareDetailBox( box, entity );
 
             return entity;
         }
@@ -297,7 +286,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 var phoneNumber = entity.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == workPhoneType.Id );
                 if ( phoneNumber != null )
                 {
-                    bag.PhoneNumber = phoneNumber.ToString();
+                    bag.PhoneNumber = phoneNumber.NumberFormatted;
+                    bag.DisplayPhoneNumber = phoneNumber.ToString();
                     bag.IsSmsChecked = phoneNumber.IsMessagingEnabled;
                     bag.IsUnlistedChecked = phoneNumber.IsUnlisted;
                     bag.CountryCode = phoneNumber.CountryCode;
@@ -307,12 +297,8 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="BusinessDetailBag"/> that represents the entity.</returns>
-        private BusinessDetailBag GetEntityBagForView( Person entity, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override BusinessDetailBag GetEntityBagForView( Person entity )
         {
             if ( entity == null )
             {
@@ -320,6 +306,22 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             }
 
             var bag = GetCommonEntityBag( entity );
+
+            bag.EmailTag = GetEmailTag( entity );
+
+            var badgeList = GetAttributeValue( AttributeKey.Badges );
+            if ( !string.IsNullOrWhiteSpace( badgeList ) )
+            {
+                bag.BadgeTypeGuids = new List<Guid>();
+                foreach ( string badgeGuid in badgeList.SplitDelimitedValues() )
+                {
+                    var guid = badgeGuid.AsGuid();
+                    if ( guid != Guid.Empty )
+                    {
+                        bag.BadgeTypeGuids.Add( guid );
+                    }
+                }
+            }
 
             // Get addresses
             var workLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
@@ -346,12 +348,39 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="BusinessDetailBag"/> that represents the entity.</returns>
-        private BusinessDetailBag GetEntityBagForEdit( Person entity, RockContext rockContext )
+        private string GetEmailTag( Person entity )
+        {
+            var communicationLinkedPageValue = this.GetAttributeValue( AttributeKey.CommunicationPage );
+            Rock.Web.PageReference communicationPageReference;
+            if ( communicationLinkedPageValue.IsNotNullOrWhiteSpace() )
+            {
+                communicationPageReference = new Rock.Web.PageReference( communicationLinkedPageValue );
+            }
+            else
+            {
+                communicationPageReference = null;
+            }
+
+            return entity.GetEmailTag( RequestContext.ResolveRockUrl( "/" ), communicationPageReference );
+        }
+
+        private List<SearchKeyBag> GetSearchKeyBags( Person business )
+        {
+            var validSearchTypes = GetValidSearchKeyTypes();
+            var dvAlternateId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() );
+
+            var searchKeys = business.GetPersonSearchKeys()
+                .Where( a => validSearchTypes.Contains( a.SearchTypeValue.Guid ) && a.SearchTypeValueId != dvAlternateId.Id )
+                .ToList();
+
+            var searchValueTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
+            var searchTypesList = searchValueTypes.Where( dv => validSearchTypes.Contains( dv.Guid ) && dv.Id != dvAlternateId.Id ).ToList();
+
+            return searchKeys.ConvertAll( a => new SearchKeyBag() { Guid = a.Guid, SearchType = a.SearchTypeValue.ToListItemBag(), SearchValue = a.SearchValue } );
+        }
+
+        /// <inheritdoc/>
+        protected override BusinessDetailBag GetEntityBagForEdit( Person entity )
         {
             if ( entity == null )
             {
@@ -361,6 +390,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             var bag = GetCommonEntityBag( entity );
 
             bag.EmailPreference = entity.EmailPreference.ToString();
+            bag.SearchKeys = GetSearchKeyBags( entity );
 
             // Get addresses
             var workLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK.AsGuid() );
@@ -385,7 +415,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 }
 
                 // Get Previous Addresses
-                var previousLocations = new GroupLocationHistoricalService( rockContext )
+                var previousLocations = new GroupLocationHistoricalService( RockContext )
                     .Queryable()
                     .Where( h => h.GroupId == entity.GivingGroup.Id && h.GroupLocationTypeValueId == workLocationType.Id )
                     .OrderBy( h => h.EffectiveDateTime )
@@ -408,52 +438,41 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( Person entity, DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( Person entity, ValidPropertiesBox<BusinessDetailBag> box)
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.BusinessName ),
-                () => entity.LastName = box.Entity.BusinessName );
+            box.IfValidProperty( nameof( box.Bag.BusinessName ),
+                () => entity.LastName = box.Bag.BusinessName );
 
-            box.IfValidProperty( nameof( box.Entity.RecordStatus ),
-                () => entity.RecordStatusValueId = box.Entity.RecordStatus.GetEntityId<DefinedValue>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.RecordStatus ),
+                () => entity.RecordStatusValueId = box.Bag.RecordStatus.GetEntityId<DefinedValue>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.EmailAddress ),
-                () => entity.Email = box.Entity.EmailAddress );
+            box.IfValidProperty( nameof( box.Bag.EmailAddress ),
+                () => entity.Email = box.Bag.EmailAddress );
 
-            box.IfValidProperty( nameof( box.Entity.EmailPreference ),
-                () => entity.EmailPreference = box.Entity.EmailPreference.ConvertToEnum<EmailPreference>() );
+            box.IfValidProperty( nameof( box.Bag.EmailPreference ),
+                () => entity.EmailPreference = box.Bag.EmailPreference.ConvertToEnum<EmailPreference>() );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="Person"/> to be viewed or edited on the page.</returns>
-        private Person GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override Person GetInitialEntity()
         {
-            return GetInitialEntity<Person, PersonService>( rockContext, PageParameterKey.BusinessId );
+            return GetInitialEntity<Person, PersonService>( RockContext, PageParameterKey.BusinessId );
         }
 
         /// <summary>
@@ -469,46 +488,9 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out Person entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( Person entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out Person entity, out BlockActionResult error )
-        {
-            var entityService = new PersonService( rockContext );
+            var entityService = new PersonService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -654,19 +636,16 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 hasWorkflowActions = true;
                 List<WorkflowType> workflowTypes = new List<WorkflowType>();
 
-                using ( var rockContext = new RockContext() )
+                var workflowTypeService = new WorkflowTypeService( RockContext );
+                foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                 {
-                    var workflowTypeService = new WorkflowTypeService( rockContext );
-                    foreach ( string guidValue in workflowActions.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                    Guid? guid = guidValue.AsGuidOrNull();
+                    if ( guid.HasValue )
                     {
-                        Guid? guid = guidValue.AsGuidOrNull();
-                        if ( guid.HasValue )
+                        var workflowType = workflowTypeService.Get( guid.Value );
+                        if ( workflowType != null && ( workflowType.IsActive ?? true ) && workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, GetCurrentPerson() ) )
                         {
-                            var workflowType = workflowTypeService.Get( guid.Value );
-                            if ( workflowType != null && ( workflowType.IsActive ?? true ) && workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, GetCurrentPerson() ) )
-                            {
-                                workflowTypes.Add( workflowType );
-                            }
+                            workflowTypes.Add( workflowType );
                         }
                     }
                 }
@@ -706,22 +685,20 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<BusinessDetailBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -730,197 +707,199 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<BusinessDetailBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new PersonService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var business, out var actionError ) )
             {
-                var entityService = new PersonService( rockContext );
+                return actionError;
+            }
 
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var business, out var actionError ) )
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( business, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            var isNew = business.Id == 0;
+
+            // Phone Number
+            var businessPhoneTypeId = new DefinedValueService( RockContext ).GetByGuid( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
+
+            var phoneNumber = business.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == businessPhoneTypeId );
+
+            if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( box.Bag.PhoneNumber ) ) )
+            {
+                if ( phoneNumber == null )
                 {
-                    return actionError;
+                    phoneNumber = new PhoneNumber { NumberTypeValueId = businessPhoneTypeId };
+                    business.PhoneNumbers.Add( phoneNumber );
                 }
 
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( business, box, rockContext ) )
+                phoneNumber.CountryCode = PhoneNumber.CleanNumber( box.Bag.CountryCode );
+                phoneNumber.Number = PhoneNumber.CleanNumber( box.Bag.PhoneNumber );
+                phoneNumber.IsMessagingEnabled = box.Bag.IsSmsChecked;
+                phoneNumber.IsUnlisted = box.Bag.IsUnlistedChecked;
+            }
+            else
+            {
+                if ( phoneNumber != null )
                 {
-                    return ActionBadRequest( "Invalid data." );
+                    business.PhoneNumbers.Remove( phoneNumber );
+                    new PhoneNumberService( RockContext ).Delete( phoneNumber );
                 }
+            }
 
-                var isNew = business.Id == 0;
+            // Record Type - this is always "business". it will never change.
+            business.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
 
-                // Phone Number
-                var businessPhoneTypeId = new DefinedValueService( rockContext ).GetByGuid( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK ) ).Id;
+            // Record Status Reason
+            int? newRecordStatusReasonId = null;
+            if ( business.RecordStatusValueId.HasValue && business.RecordStatusValueId.Value == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
+            {
+                newRecordStatusReasonId = box.Bag.RecordStatusReason.GetEntityId<DefinedValue>( RockContext );
+            }
+            business.RecordStatusReasonValueId = newRecordStatusReasonId;
 
-                var phoneNumber = business.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == businessPhoneTypeId );
+            // Email
+            business.IsEmailActive = true;
 
-                if ( !string.IsNullOrWhiteSpace( PhoneNumber.CleanNumber( box.Entity.PhoneNumber ) ) )
+            // Ensure everything is valid before saving.
+            if ( !ValidateBusiness( business, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+
+                // Add/Update Family Group
+                var familyGroupType = GroupTypeCache.GetFamilyGroupType();
+                int adultRoleId = familyGroupType.Roles
+                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
+                var adultFamilyMember = UpdateGroupMember( business.Id, familyGroupType, business.LastName + " Business", box.Bag.Campus.GetEntityId<Campus>( RockContext ), adultRoleId, RockContext );
+                business.GivingGroup = adultFamilyMember.Group;
+
+                // Add/Update Known Relationship Group Type
+                var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
+                int knownRelationshipOwnerRoleId = knownRelationshipGroupType.Roles
+                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
+                var knownRelationshipOwner = UpdateGroupMember( business.Id, knownRelationshipGroupType, "Known Relationship", null, knownRelationshipOwnerRoleId, RockContext );
+
+                // Add/Update Implied Relationship Group Type
+                var impliedRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK.AsGuid() );
+                int impliedRelationshipOwnerRoleId = impliedRelationshipGroupType.Roles
+                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ) )
+                    .Select( r => r.Id )
+                    .FirstOrDefault();
+                var impliedRelationshipOwner = UpdateGroupMember( business.Id, impliedRelationshipGroupType, "Implied Relationship", null, impliedRelationshipOwnerRoleId, RockContext );
+
+                RockContext.SaveChanges();
+
+                // Location
+                int workLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK ).Id;
+
+                var groupLocationService = new GroupLocationService( RockContext );
+                var workLocation = groupLocationService.Queryable( "Location" )
+                    .Where( gl =>
+                        gl.GroupId == adultFamilyMember.Group.Id &&
+                        gl.GroupLocationTypeValueId == workLocationTypeId )
+                    .FirstOrDefault();
+
+                if ( string.IsNullOrWhiteSpace( box.Bag.Address.Street1 ) )
                 {
-                    if ( phoneNumber == null )
+                    if ( workLocation != null )
                     {
-                        phoneNumber = new PhoneNumber { NumberTypeValueId = businessPhoneTypeId };
-                        business.PhoneNumbers.Add( phoneNumber );
-                    }
+                        if ( box.Bag.SaveFormerAddressAsPreviousAddress )
+                        {
+                            GroupLocationHistorical.CreateCurrentRowFromGroupLocation( workLocation, RockDateTime.Now );
+                        }
 
-                    phoneNumber.CountryCode = PhoneNumber.CleanNumber( box.Entity.CountryCode );
-                    phoneNumber.Number = PhoneNumber.CleanNumber( box.Entity.PhoneNumber );
-                    phoneNumber.IsMessagingEnabled = box.Entity.IsSmsChecked;
-                    phoneNumber.IsUnlisted = box.Entity.IsUnlistedChecked;
+                        groupLocationService.Delete( workLocation );
+                    }
                 }
                 else
                 {
-                    if ( phoneNumber != null )
+                    var newLocation = new LocationService( RockContext ).Get( box.Bag.Address.Street1, box.Bag.Address.Street2, box.Bag.Address.City, box.Bag.Address.State, box.Bag.Address.PostalCode, box.Bag.Address.Country );
+                    if ( workLocation == null )
                     {
-                        business.PhoneNumbers.Remove( phoneNumber );
-                        new PhoneNumberService( rockContext ).Delete( phoneNumber );
-                    }
-                }
-
-                // Record Type - this is always "business". it will never change.
-                business.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
-
-                // Record Status Reason
-                int? newRecordStatusReasonId = null;
-                if ( business.RecordStatusValueId.HasValue && business.RecordStatusValueId.Value == DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id )
-                {
-                    newRecordStatusReasonId = box.Entity.RecordStatusReason.GetEntityId<DefinedValue>( rockContext );
-                }
-                business.RecordStatusReasonValueId = newRecordStatusReasonId;
-
-                // Email
-                business.IsEmailActive = true;
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateBusiness( business, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-
-                    // Add/Update Family Group
-                    var familyGroupType = GroupTypeCache.GetFamilyGroupType();
-                    int adultRoleId = familyGroupType.Roles
-                        .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ) )
-                        .Select( r => r.Id )
-                        .FirstOrDefault();
-                    var adultFamilyMember = UpdateGroupMember( business.Id, familyGroupType, business.LastName + " Business", box.Entity.Campus.GetEntityId<Campus>( rockContext ), adultRoleId, rockContext );
-                    business.GivingGroup = adultFamilyMember.Group;
-
-                    // Add/Update Known Relationship Group Type
-                    var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid() );
-                    int knownRelationshipOwnerRoleId = knownRelationshipGroupType.Roles
-                        .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) )
-                        .Select( r => r.Id )
-                        .FirstOrDefault();
-                    var knownRelationshipOwner = UpdateGroupMember( business.Id, knownRelationshipGroupType, "Known Relationship", null, knownRelationshipOwnerRoleId, rockContext );
-
-                    // Add/Update Implied Relationship Group Type
-                    var impliedRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK.AsGuid() );
-                    int impliedRelationshipOwnerRoleId = impliedRelationshipGroupType.Roles
-                        .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ) )
-                        .Select( r => r.Id )
-                        .FirstOrDefault();
-                    var impliedRelationshipOwner = UpdateGroupMember( business.Id, impliedRelationshipGroupType, "Implied Relationship", null, impliedRelationshipOwnerRoleId, rockContext );
-
-                    rockContext.SaveChanges();
-
-                    // Location
-                    int workLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_WORK ).Id;
-
-                    var groupLocationService = new GroupLocationService( rockContext );
-                    var workLocation = groupLocationService.Queryable( "Location" )
-                        .Where( gl =>
-                            gl.GroupId == adultFamilyMember.Group.Id &&
-                            gl.GroupLocationTypeValueId == workLocationTypeId )
-                        .FirstOrDefault();
-
-                    if ( string.IsNullOrWhiteSpace( box.Entity.Address.Street1 ) )
-                    {
-                        if ( workLocation != null )
-                        {
-                            if ( box.Entity.SaveFormerAddressAsPreviousAddress )
-                            {
-                                GroupLocationHistorical.CreateCurrentRowFromGroupLocation( workLocation, RockDateTime.Now );
-                            }
-
-                            groupLocationService.Delete( workLocation );
-                        }
+                        workLocation = new GroupLocation();
+                        groupLocationService.Add( workLocation );
+                        workLocation.GroupId = adultFamilyMember.Group.Id;
+                        workLocation.GroupLocationTypeValueId = workLocationTypeId;
                     }
                     else
                     {
-                        var newLocation = new LocationService( rockContext ).Get( box.Entity.Address.Street1, box.Entity.Address.Street2, box.Entity.Address.City, box.Entity.Address.State, box.Entity.Address.PostalCode, box.Entity.Address.Country );
-                        if ( workLocation == null )
+                        // Save this to history if the box is checked and the new info is different than the current one.
+                        if ( box.Bag.SaveFormerAddressAsPreviousAddress && newLocation.Id != workLocation.Location.Id )
                         {
-                            workLocation = new GroupLocation();
-                            groupLocationService.Add( workLocation );
-                            workLocation.GroupId = adultFamilyMember.Group.Id;
-                            workLocation.GroupLocationTypeValueId = workLocationTypeId;
+                            new GroupLocationHistoricalService( RockContext ).Add( GroupLocationHistorical.CreateCurrentRowFromGroupLocation( workLocation, RockDateTime.Now ) );
                         }
-                        else
-                        {
-                            // Save this to history if the box is checked and the new info is different than the current one.
-                            if ( box.Entity.SaveFormerAddressAsPreviousAddress && newLocation.Id != workLocation.Location.Id )
-                            {
-                                new GroupLocationHistoricalService( rockContext ).Add( GroupLocationHistorical.CreateCurrentRowFromGroupLocation( workLocation, RockDateTime.Now ) );
-                            }
-                        }
-
-                        workLocation.Location = newLocation;
-                        workLocation.IsMailingLocation = true;
                     }
 
-                    rockContext.SaveChanges();
-                } );
-
-                /* Ethan Drotning 2022-01-11
-                 * Need save the PersonSearchKeys outside of the transaction since the DB might not have READ_COMMITTED_SNAPSHOT enabled.
-                 */
-
-                // PersonSearchKey
-                if ( !isNew )
-                {
-                    var personSearchKeyService = new PersonSearchKeyService( rockContext );
-                    var validSearchTypes = GetValidSearchKeyTypes();
-                    var databaseSearchKeys = personSearchKeyService.Queryable().Where( a => a.PersonAlias.PersonId == business.Id && validSearchTypes.Contains( a.SearchTypeValue.Guid ) ).ToList();
-
-                    foreach ( var deletedSearchKey in databaseSearchKeys.Where( a => !box.Entity.SearchKeys.Any( p => p.Guid == a.Guid ) ) )
-                    {
-                        personSearchKeyService.Delete( deletedSearchKey );
-                    }
-
-                    foreach ( var searchKeyBag in box.Entity.SearchKeys.Where( a => !databaseSearchKeys.Any( d => d.Guid == a.Guid ) ) )
-                    {
-                        personSearchKeyService.Add( new PersonSearchKey { SearchValue = searchKeyBag.SearchValue, SearchTypeValueId = searchKeyBag.SearchType.GetEntityId<DefinedValue>(rockContext) ?? 0, Guid = Guid.NewGuid(), PersonAliasId = business.PrimaryAliasId.Value } );
-                    }
+                    workLocation.Location = newLocation;
+                    workLocation.IsMailingLocation = true;
                 }
 
-                rockContext.SaveChanges();
+                RockContext.SaveChanges();
+            } );
 
-                business.SaveAttributeValues();
+            /* Ethan Drotning 2022-01-11
+             * Need save the PersonSearchKeys outside of the transaction since the DB might not have READ_COMMITTED_SNAPSHOT enabled.
+             */
 
-                rockContext.WrapTransaction( () =>
+            // PersonSearchKey
+            if ( !isNew )
+            {
+                var personSearchKeyService = new PersonSearchKeyService( RockContext );
+                var validSearchTypes = GetValidSearchKeyTypes();
+                var databaseSearchKeys = personSearchKeyService.Queryable().Where( a => a.PersonAlias.PersonId == business.Id && validSearchTypes.Contains( a.SearchTypeValue.Guid ) ).ToList();
+
+                foreach ( var deletedSearchKey in databaseSearchKeys.Where( a => !box.Bag.SearchKeys.Any( p => p.Guid == a.Guid ) ) )
                 {
-                    rockContext.SaveChanges();
-                    business.SaveAttributeValues( rockContext );
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.BusinessId] = business.IdKey
-                    } ) );
+                    personSearchKeyService.Delete( deletedSearchKey );
                 }
 
-                // Ensure navigation properties will work now.
-                business = entityService.Get( business.Id );
-                business.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( business, rockContext ) );
+                foreach ( var searchKeyBag in box.Bag.SearchKeys.Where( a => !databaseSearchKeys.Any( d => d.Guid == a.Guid ) ) )
+                {
+                    personSearchKeyService.Add( new PersonSearchKey { SearchValue = searchKeyBag.SearchValue, SearchTypeValueId = searchKeyBag.SearchType.GetEntityId<DefinedValue>( RockContext ) ?? 0, Guid = Guid.NewGuid(), PersonAliasId = business.PrimaryAliasId.Value } );
+                }
             }
+
+            RockContext.SaveChanges();
+
+            business.SaveAttributeValues();
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                business.SaveAttributeValues( RockContext );
+            } );
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.BusinessId] = business.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            business = entityService.Get( business.Id );
+            business.LoadAttributes( RockContext );
+            var bag = GetEntityBagForView( business );
+
+            return ActionOk( new ValidPropertiesBox<BusinessDetailBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -931,79 +910,22 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new PersonService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new PersonService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<BusinessDetailBag, BusinessDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         #endregion

@@ -73,6 +73,12 @@ namespace RockWeb.Blocks.Finance
 
         #endregion
 
+        #region Fields
+
+        private HashSet<int> _benevolenceTypesWithRequests = null;
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -82,24 +88,42 @@ namespace RockWeb.Blocks.Finance
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            lbAddBenevolenceType.Visible = UserCanAdministrate;
 
             gBenevolenceType.DataKeyNames = new string[] { "Id" };
             gBenevolenceType.Actions.ShowAdd = true;
             gBenevolenceType.Actions.AddClick += gBenevolenceType_Add;
-            gBenevolenceType.GridReorder += gBenevolenceType_GridReorder;
             gBenevolenceType.GridRebind += gBenevolenceType_GridRebind;
+            gBenevolenceType.RowDataBound += gBenevolenceType_RowDataBound;
 
             // Block Security and special attributes (RockPage takes care of View)
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
-            gBenevolenceType.Actions.ShowAdd = UserCanAdministrate;
-            gBenevolenceType.IsDeleteEnabled = UserCanAdministrate;
-
-            // Only display reordering column if user can edit the block
-            gBenevolenceType.ColumnsOfType<ReorderField>().First().Visible = UserCanAdministrate;
+            gBenevolenceType.Actions.ShowAdd = canEditBlock;
+            gBenevolenceType.IsDeleteEnabled = canEditBlock;
 
             SecurityField securityField = gBenevolenceType.ColumnsOfType<SecurityField>().First();
             securityField.EntityTypeId = EntityTypeCache.GetId<Rock.Model.BenevolenceType>().Value;
+
+            // We will implement a custom delete confirmation dialog
+            gBenevolenceType.ShowConfirmDeleteDialog = false;
+
+            string deleteScript = @"
+    $('table.js-grid-benevolence-type-list a.grid-delete-button').on('click', function( e ){
+        var $btn = $(this);
+        e.preventDefault();
+
+        var confirmMsg = 'Are you sure you want to delete this benevolence type?';
+        if ($btn.closest('tr').hasClass('js-has-request')) {
+            confirmMsg = 'This benevolence type has benevolence requests. Deleting it will result in the deletion of those requests. ' + confirmMsg;
+        }
+
+        Rock.dialogs.confirm(confirmMsg, function (result) {
+            if (result) {
+                window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+            }
+        });
+    });
+";
+            ScriptManager.RegisterStartupScript( gBenevolenceType, gBenevolenceType.GetType(), "deleteBenevolenceTypeScript", deleteScript, true );
         }
 
         /// <summary>
@@ -108,12 +132,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -128,32 +152,6 @@ namespace RockWeb.Blocks.Finance
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             BindGrid();
-        }
-
-        /// <summary>
-        /// Handles the ItemCommand event of the rptBenevolenceTypes control.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rptBenevolenceTypes_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            int? benevolenceTypeId = e.CommandArgument.ToString().AsIntegerOrNull();
-            if ( benevolenceTypeId.HasValue )
-            {
-                NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.BenevolenceTypeId, benevolenceTypeId.Value );
-            }
-
-            BindGrid();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbAddBenevolenceType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddBenevolenceType_Click( object sender, EventArgs e )
-        {
-            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.BenevolenceTypeId, 0 );
         }
 
         /// <summary>
@@ -187,9 +185,7 @@ namespace RockWeb.Blocks.Finance
             {
                 rockContext.WrapTransaction( action: () =>
                  {
-                     var benevolenceWorkflowService = new BenevolenceWorkflowService( rockContext );
                      var benevolenceTypeService = new BenevolenceTypeService( rockContext );
-                     var authService = new AuthService( rockContext );
                      BenevolenceType benevolenceType = benevolenceTypeService.Get( e.RowKeyId );
 
                      if ( benevolenceType != null )
@@ -201,21 +197,20 @@ namespace RockWeb.Blocks.Finance
                              return;
                          }
 
-                         // var benevolenceRequests = new Service<BenevolenceRequest>( rockContext ).Queryable().All( a => a.BenevolenceTypeId == BenevolenceType.Id );
                          var benevolenceRequests = benevolenceType.BenevolenceRequests.ToList();
                          var benevolenceRequestService = new BenevolenceRequestService( rockContext );
 
                          string errorMessageBenevolenceRequest = string.Empty;
 
-                         foreach ( var benvolenceRequest in benevolenceRequests )
+                         foreach ( var benevolenceRequest in benevolenceRequests )
                          {
-                             if ( !benevolenceRequestService.CanDelete( benvolenceRequest, out errorMessageBenevolenceRequest ) )
+                             if ( !benevolenceRequestService.CanDelete( benevolenceRequest, out errorMessageBenevolenceRequest ) )
                              {
                                  mdGridWarning.Show( errorMessageBenevolenceRequest, ModalAlertType.Information );
                                  return;
                              }
 
-                             benevolenceRequestService.Delete( benvolenceRequest );
+                             benevolenceRequestService.Delete( benevolenceRequest );
                          }
 
                          // Save deleting the benevolence requests for the benevolence type id
@@ -231,28 +226,9 @@ namespace RockWeb.Blocks.Finance
                          benevolenceTypeService.Delete( benevolenceType );
                          rockContext.SaveChanges();
 
-                         // ToDo: benevolenceWorkflowService.RemoveCachedTriggers();
+                         BenevolenceWorkflowService.RemoveCachedTriggers();
                      }
                  } );
-            }
-
-            BindGrid();
-        }
-
-        /// <summary>
-        /// Handles the GridReorder event of the gBenevolenceType control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
-        protected void gBenevolenceType_GridReorder( object sender, GridReorderEventArgs e )
-        {
-            var rockContext = new RockContext();
-
-            var benevolenceTypes = GetBenevolenceTypes( rockContext );
-            if ( benevolenceTypes != null )
-            {
-                new BenevolenceTypeService( rockContext ).Reorder( benevolenceTypes, e.OldIndex, e.NewIndex );
-                rockContext.SaveChanges();
             }
 
             BindGrid();
@@ -268,6 +244,22 @@ namespace RockWeb.Blocks.Finance
             BindGrid();
         }
 
+        /// <summary>
+        /// Handles the RowDataBound event of the gBenevolenceType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        private void gBenevolenceType_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow
+                && e.Row.DataItem is BenevolenceType benevolenceType
+                && _benevolenceTypesWithRequests.Contains( benevolenceType.Id ) )
+            {
+                e.Row.AddCssClass( "js-has-request" );
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -277,19 +269,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindGrid()
         {
-            var selectQry = GetBenevolenceTypes( new RockContext() )
-              .Select( b => new
-              {
-                  b.Id,
-                  b.Name,
-                  b.Description,
-                  b.ShowFinancialResults,
-                  b.IsActive
-              } );
-
-            bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
-            gBenevolenceType.Actions.ShowAdd = canAddEditDelete;
-            gBenevolenceType.IsDeleteEnabled = canAddEditDelete;
+            var selectQry = GetBenevolenceTypes( new RockContext() );
 
             // The default benevolence type should not be edited or removed
             gBenevolenceType.EntityTypeId = EntityTypeCache.GetId<BenevolenceType>();
@@ -301,22 +281,21 @@ namespace RockWeb.Blocks.Finance
         /// Gets the Benevolence types.
         /// </summary>
         /// <returns></returns>
-        private List<BenevolenceType> GetBenevolenceTypes( RockContext rockContext )
+        private IEnumerable<BenevolenceType> GetBenevolenceTypes( RockContext rockContext )
         {
             var allBenevolenceTypes = new BenevolenceTypeService( rockContext ).Queryable()
-                .OrderBy( g => g.Name )
-                .ToList();
+                .OrderBy( g => g.Name );
 
-            var authorizedBenevolenceTypes = new List<BenevolenceType>();
-            foreach ( var benevolenceType in allBenevolenceTypes )
-            {
-                if ( UserCanEdit || benevolenceType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
-                {
-                    authorizedBenevolenceTypes.Add( benevolenceType );
-                }
-            }
+            // populate _benevolenceTypesWithRequests so that a warning can be displayed if a benevolence type with requests is deleted.
+            var benevolenceTypeIds = allBenevolenceTypes.Select( a => a.Id ).ToList();
+            var benevolenceTypesWithRequestsQry = new BenevolenceRequestService( rockContext )
+                .Queryable()
+                .Where( a => benevolenceTypeIds.Contains( a.BenevolenceTypeId ) )
+                .Select( a => a.BenevolenceTypeId );
 
-            return authorizedBenevolenceTypes;
+            _benevolenceTypesWithRequests = new HashSet<int>( benevolenceTypesWithRequestsQry.Distinct().ToList() );
+
+            return allBenevolenceTypes;
         }
 
         #endregion

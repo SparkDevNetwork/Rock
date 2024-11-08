@@ -46,7 +46,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [BlockTemplateField( "Schedule Sign Up Landing Template",
         Description = "The XAML passed into the landing page, where the user's groups are listed.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_SCHEDULE_SIGNUP_LANDING_PAGE,
-        DefaultValue = "C4BFED3A-C2A1-4A68-A646-44C3B499C75A",
+        DefaultValue = "2204D103-A145-4003-9DA0-1C9461D6BAA1",
         IsRequired = true,
         Key = AttributeKey.LandingTemplate,
         Order = 0 )]

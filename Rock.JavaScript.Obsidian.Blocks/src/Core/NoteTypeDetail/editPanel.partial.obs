@@ -47,22 +47,18 @@
             <div class="col-md-6">
 
                 <CheckBox v-model="userSelectable"
-                          label="User Selectable"
-                          text="Yes" />
+                          label="User Selectable" />
 
                 <CheckBox v-model="allowsWatching"
                           label="Allows Watching"
-                          text="Yes"
                           help="If enabled, an option to watch individual notes will appear, and note watch notifications will be sent on watched notes." />
 
                 <CheckBox v-model="autoWatchAuthors"
                           label="Auto Watch Authors"
-                          text="Yes"
                           help="If enabled, the author of a note will get notifications for direct replies to the note. In other words, a 'watch' will be automatically enabled on the note." />
 
                 <CheckBox v-model="allowsReplies"
-                          label="Allow Replies"
-                          text="Yes" />
+                          label="Allow Replies" />
 
                 <TransitionVerticalCollapse>
                     <div v-if="allowsReplies">
@@ -75,7 +71,6 @@
 
                 <CheckBox v-model="allowsAttachments"
                           label="Allows Attachments"
-                          text="Yes"
                           help="If enabled, then this note type will allow attachments. However, not all UI components will currently allow file uploads." />
 
                 <TransitionVerticalCollapse>
@@ -91,7 +86,6 @@
                     <div v-if="showEnableMentions">
                         <CheckBox v-model="isMentionEnabled"
                                   label="Enable Mentions"
-                                  text="Yes"
                                   help="Mentions allow a person to be mentioned in the text of a note. Once saved the mentioned person will be notified." />
                     </div>
                 </TransitionVerticalCollapse>
@@ -184,17 +178,19 @@
         const stringValue = value as string;
 
         if (stringValue) {
-            if (!isValidNumber(stringValue)) {
+            const num = Number(value);
+            if (!isValidNumber(num)) {
                 return "must be a valid number.";
+            }
+            else if (num < 0 || num > 9999) {
+                return "must have a value between 0 and 9999.";
             }
         }
 
         return true;
     }
 
-    function isValidNumber(value: string): boolean {
-        if(!value) return false;
-        const num = Number(value);
+    function isValidNumber(num: number): boolean {
         return !isNaN(num) && isFinite(num);
     }
 

@@ -162,8 +162,6 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( ! Page.IsPostBack )
             {
                 if ( CurrentPerson != null && (GetAttributeValue( AttributeKey.AutofillUserInfo ).AsBoolean()) )
@@ -173,6 +171,8 @@ namespace RockWeb.Blocks.Prayer
                     dtbEmail.Text = CurrentPerson.Email;
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

@@ -60,6 +60,12 @@ namespace Rock.ViewModels.Utility
         public string CreatedRelativeTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the date and time that the model was created.
+        /// </summary>
+        /// <value>The date and time the model was created.</value>
+        public DateTimeOffset? CreatedDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the identifier of the person that modified the model.
         /// </summary>
         /// <value>The identifier of the person that modified the model.</value>
@@ -76,5 +82,11 @@ namespace Rock.ViewModels.Utility
         /// </summary>
         /// <value>The time the model was modified relative to now.</value>
         public string ModifiedRelativeTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time that the model was modified.
+        /// </summary>
+        /// <value>The date and time the model was modified.</value>
+        public DateTimeOffset? ModifiedDateTime { get; set; }
     }
 }

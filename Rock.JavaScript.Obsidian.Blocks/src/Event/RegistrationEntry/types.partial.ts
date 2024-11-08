@@ -58,6 +58,7 @@ export type PaymentPlanFrequency = {
     getValidTransactionDate(desiredDate: RockDateTime): RockDateTime | null;
     /** Returns the next valid date following the previous date or null if there are no valid dates. */
     getNextTransactionDate(previousDate: RockDateTime): RockDateTime | null;
+    getNPaymentsOfAmountMessage(numberOfPayments: number, amountPerPayment: RockCurrency): string;
 };
 
 export type RegistrationEntryState = {
@@ -134,6 +135,24 @@ export type TransactionFrequency = {
     getNextTransactionDate(firstDateTime: RockDateTime, secondDateTime: RockDateTime, previousDate: RockDateTime): RockDateTime | null;
 
     maxNumberOfPaymentsForOneYear: number;
+
+    /** Gets a string in the format, "Two Weekly Payments of $146.50". */
+    getNPaymentsOfAmountMessage(numberOfPayments: number, amount: RockCurrency): string;
 };
 
 export type GetNextDayOption = "end-of-month";
+
+export type RegistrationEntryTerminology = {
+    discountCodeSingularLowerCase: string;
+    discountCodeSingularTitleCase: string;
+    feePluralLowerCase: string;
+    feePluralTitleCase: string;
+    feeSingularLowerCase: string;
+    registrantPluralLowerCase: string;
+    registrantSingularLowerCase: string;
+    registrantSingularTitleCase: string;
+    registrationPluralLowerCase: string;
+    registrationSingularLowerCase: string;
+    registrationSingularTitleCase: string;
+    signatureDocumentSingularTitleCase: string;
+};

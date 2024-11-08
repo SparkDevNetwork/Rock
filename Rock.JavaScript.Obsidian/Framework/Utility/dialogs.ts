@@ -16,20 +16,42 @@
 //
 
 import { Guid } from "@Obsidian/Types";
+import { ICancellationToken } from "./cancellation";
 import { trackModalState } from "./page";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
 declare const Rock: any;
 
-type DialogOptions = {
+/** The options that describe the dialog. */
+export type DialogOptions = {
+    /** The text to display inside the dialog. */
     message: string;
+
+    /** A list of buttons to display, rendered left to right. */
     buttons: ButtonOptions[];
+
+    /**
+     * An optional container element for the dialog. If not specified then one
+     * will be chosen automatically.
+     */
     container?: string | Element;
+
+    /**
+     * An optional cancellation token that will dismiss the dialog automatically
+     * and return `cancel` as the button clicked.
+     */
+    cancellationToken?: ICancellationToken;
 };
 
-type ButtonOptions = {
+/** The options that describe a single button in the dialog. */
+export type ButtonOptions = {
+    /** The key that uniquely identifies this button. */
     key: string;
+
+    /** The text to display in the button. */
     label: string;
+
+    /** The CSS classes to assign to the button, such as `btn btn-primary`. */
     className: string;
 };
 
@@ -147,7 +169,7 @@ function createBackdrop(): HTMLElement {
  *
  * @returns The key of the button that was clicked, or "cancel" if the cancel button was clicked.
  */
-function showDialog(options: DialogOptions): Promise<string> {
+export function showDialog(options: DialogOptions): Promise<string> {
     return new Promise<string>(resolve => {
         let timer: NodeJS.Timeout | null = null;
         const container = document.fullscreenElement || document.body;
@@ -226,6 +248,11 @@ function showDialog(options: DialogOptions): Promise<string> {
         // Show the backdrop and the modal.
         backdrop.classList.add("in");
         modal.classList.add("in");
+
+        // Handle dismissal of the dialog by cancellation token.
+        options.cancellationToken?.onCancellationRequested(() => {
+            clearDialog("cancel");
+        });
     });
 }
 
@@ -307,4 +334,12 @@ export function confirmDelete(typeName: string, additionalMessage?: string): Pro
  */
 export function showSecurity(entityTypeIdKey: Guid | string | number, entityIdKey: Guid | string | number, entityTitle: string = "Item"): void {
     Rock.controls.modal.show(undefined, `/Secure/${entityTypeIdKey}/${entityIdKey}?t=Secure ${entityTitle}&pb=&sb=Done`);
+}
+
+/**
+ * Shows the child pages for the given page.
+ * @param pageId The page identifier
+ */
+export function showChildPages(pageId: Guid | string | number): void {
+    Rock.controls.modal.show(undefined, `/pages/${pageId}?t=Child Pages&amp;pb=&amp;sb=Done`);
 }

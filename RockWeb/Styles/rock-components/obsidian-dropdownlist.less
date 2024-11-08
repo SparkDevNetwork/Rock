@@ -76,3 +76,17 @@
 .ant-select-clear {
   right: 30px;
 }
+
+// Prevent the text from being truncated in dropdown lists.
+.ant-select {
+  &-dropdown {
+    .ant-select-item {
+      &-option {
+        &-content {
+          white-space: normal;
+          word-wrap: break-word;
+        }
+      }
+    }
+  }
+}

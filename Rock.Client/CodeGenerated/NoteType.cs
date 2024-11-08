@@ -35,6 +35,9 @@ namespace Rock.Client
         public int Id { get; set; }
 
         /// <summary />
+        public string AdditionalSettingsJson { get; set; }
+
+        /// <summary />
         public bool AllowsAttachments { get; set; }
 
         /// <summary />
@@ -159,6 +162,7 @@ namespace Rock.Client
         public void CopyPropertiesFrom( NoteType source )
         {
             this.Id = source.Id;
+            this.AdditionalSettingsJson = source.AdditionalSettingsJson;
             this.AllowsAttachments = source.AllowsAttachments;
             this.AllowsReplies = source.AllowsReplies;
             this.AllowsWatching = source.AllowsWatching;

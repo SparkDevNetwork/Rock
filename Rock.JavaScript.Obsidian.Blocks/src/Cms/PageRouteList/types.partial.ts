@@ -22,7 +22,3 @@ export const enum NavigationUrlKey {
 export type GridSettingsOptions = {
     site?: string | null;
 };
-
-export const enum PreferenceKey {
-    FilterSite = "filter-site"
-}

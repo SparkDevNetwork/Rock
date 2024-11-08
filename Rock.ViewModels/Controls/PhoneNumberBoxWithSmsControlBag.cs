@@ -31,10 +31,10 @@ namespace Rock.ViewModels.Controls
         public string Number { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is messaging enbabled.
+        /// Gets or sets a value indicating whether this instance is messaging enabled.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is messaging enbabled; otherwise, <c>false</c>.
+        ///   <c>true</c> if this instance is messaging enabled; otherwise, <c>false</c>.
         /// </value>
         public bool IsMessagingEnabled { get; set; }
 

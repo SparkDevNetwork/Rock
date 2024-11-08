@@ -73,6 +73,12 @@ export type PersonBag = {
     /** Gets or sets the identifier of the Person. */
     id?: string | null;
 
+    /**
+     * Determines the value of the person's Is Special Needs attribute
+     * value.
+     */
+    isSpecialNeeds: boolean;
+
     /** Gets or sets the last name. */
     lastName?: string | null;
 

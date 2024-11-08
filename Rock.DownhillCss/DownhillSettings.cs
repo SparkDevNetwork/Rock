@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Rock.DownhillCss
 {
@@ -29,22 +28,32 @@ namespace Rock.DownhillCss
         /// <value>
         /// The spacing units.
         /// </value>
-        public Dictionary<int,string> SpacingValues
+        public Dictionary<int, string> SpacingValues
         {
             get
             {
-                if (this.Platform == DownhillPlatform.Mobile )
+                if ( this.Platform == DownhillPlatform.Mobile )
                 {
                     return new Dictionary<int, string>()
                     {
+                        // Starting in later versions of the shell,
+                        // we want to advocate to limit your spacing
+                        // to these five values (and zero).
+                        // 
+                        // We will continue to support the legacy values
+                        // as you can see below.
                         { 0, "0" },
-                        { 1, "1" },
-                        { 2, "2" },
                         { 4, "4" },
                         { 8, "8" },
-                        { 12, "12" },
                         { 16, "16" },
                         { 24, "24" },
+                        { 48, "48" },
+                        { 80, "80" },
+
+                        // Legacy Values
+                        { 1, "1" },
+                        { 2, "2" },
+                        { 12, "12" },
                         { 32, "32" },
                         { 64, "64" },
                     };
@@ -273,8 +282,103 @@ namespace Rock.DownhillCss
         /// </summary>
         /// <value>The additional downhill colors.</value>
         public Dictionary<string, string> AdditionalCssToParse { get; set; } = new Dictionary<string, string>();
+
+        /// <summary>
+        /// Whether or not to supply the Tailwind CSS.
+        /// </summary>
+        public bool SupplyTailwindCss { get; set; } = true;
+
+        /// <summary>
+        /// The mobile style framework to use.
+        /// </summary>
+        public MobileStyleFramework MobileStyleFramework { get; set; } = MobileStyleFramework.Standard;
     }
 
+    /// <summary>
+    /// Used to define the style framework to use for the mobile shell.
+    /// </summary>
+    public enum MobileStyleFramework
+    {
+        Legacy,
+        Blended,
+        Standard
+    }
+
+    /// <summary>
+    /// A class used to represent a named text style.
+    /// </summary>
+    public class NamedTextStyle
+    {
+        /// <summary>
+        /// Mappings of the https://developer.apple.com/design/human-interface-guidelines/typography#Specificationstypography styles (in Default).
+        /// </summary>
+        public static readonly List<NamedTextStyle> AppleStyles = new List<NamedTextStyle>
+        {
+            new NamedTextStyle( "LargeTitle", 34, 41 ),
+            new NamedTextStyle( "Title1", 28, 34 ),
+            new NamedTextStyle( "Title2", 22, 28 ),
+            new NamedTextStyle( "Title3", 20, 25 ),
+            new NamedTextStyle( "Headline", 17, 22 ),
+            new NamedTextStyle( "Body", 17, 22 ),
+            new NamedTextStyle( "Callout", 16, 21 ),
+            new NamedTextStyle( "Subheadline", 15, 20 ),
+            new NamedTextStyle( "Footnote", 13, 18 ),
+            new NamedTextStyle( "Caption1", 12, 16 ),
+            new NamedTextStyle( "Caption2", 11, 13 ),
+        };
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NamedTextStyle"/> class.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="size"></param>
+        /// <param name="leading"></param>
+        public NamedTextStyle( string name, int size, int leading )
+        {
+            Name = name;
+            Size = size;
+            Leading = leading;
+        }
+
+        /// <summary>
+        /// Sets the name of the style.
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Sets the size of the style.
+        /// </summary>
+        public int Size { get; set; }
+
+        /// <summary>
+        /// Sets the leading (in points) of the style.
+        /// </summary>
+        public int Leading { get; set; }
+
+        /// <summary>
+        /// Calculates the line height based on the size and leading.
+        /// </summary>
+        public double LineHeight => GetLineHeight();
+
+        /// <summary>
+        /// Calculates the line height based on the size and leading.
+        /// </summary>
+        /// <returns></returns>
+        private double GetLineHeight()
+        {
+            if ( Leading == 0 || Size == 0 )
+            {
+                return 0;
+            }
+
+            var lineHeight = Leading / ( double ) Size;
+            return Math.Round( lineHeight );
+        }
+    }
+
+    /// <summary>
+    /// An enum representing the platform of the application.
+    /// </summary>
     public enum DownhillPlatform
     {
         Mobile = 0,

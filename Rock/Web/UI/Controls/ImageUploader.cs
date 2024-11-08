@@ -620,7 +620,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _hfContentFileSource );
 
             _aRemove = new HtmlAnchor();
-            _aRemove.ID = "rmv";
+            _aRemove.ID = this.ID + "_rmv";
             _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
             Controls.Add( _aRemove );
 

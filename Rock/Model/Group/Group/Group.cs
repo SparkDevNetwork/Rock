@@ -23,6 +23,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Lava;
@@ -276,8 +277,39 @@ namespace Rock.Model
         /// <value>
         /// The schedule cancellation person alias identifier.
         /// </value>
+        [Obsolete( "Use ScheduleCoordinatorPersonAliasId instead." )]
+        [RockObsolete( "1.16" )]
         [DataMember]
-        public int? ScheduleCancellationPersonAliasId { get; set; }
+        [NotMapped]
+        public int? ScheduleCancellationPersonAliasId
+        {
+            get => this.ScheduleCoordinatorPersonAliasId;
+            set => this.ScheduleCoordinatorPersonAliasId = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> of the person who receives
+        /// notifications about changes to scheduled individuals.
+        /// </summary>
+        /// <value>
+        /// The schedule coordinator person alias identifier.
+        /// </value>
+        /// <remarks>
+        /// The notification types specified in this group's <see cref="GroupType.ScheduleCoordinatorNotificationTypes"/>
+        /// (or overridden in this group's own <see cref="ScheduleCoordinatorNotificationTypes"/>) will determine which
+        /// notifications - if any - are sent to this person.
+        /// </remarks>
+        [DataMember]
+        public int? ScheduleCoordinatorPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the types of notifications the coordinator receives about scheduled individuals.
+        /// </summary>
+        /// <value>
+        /// The schedule coordinator notification types.
+        /// </value>
+        [DataMember]
+        public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the group administrator <see cref="Rock.Model.PersonAlias"/> identifier.
@@ -473,6 +505,23 @@ namespace Rock.Model
         [DecimalPrecision( 8, 2 )]
         public decimal? NonLeaderToLeaderRelationshipMultiplierOverride { get; set; }
 
+        /// <summary>
+        /// <para>
+        /// Gets or sets a value that indicates if this group is a special needs
+        /// group.
+        /// </para>
+        /// <para>
+        /// For a check-in group, this indicates that the group is intended for
+        /// people with special needs. It can be used in other contexts to have
+        /// different meaning for "special needs".
+        /// </para>
+        /// </summary>
+        /// <value>
+        /// A value that indicates if this gorup is a special needs group.
+        /// </value>
+        [DataMember]
+        public bool IsSpecialNeeds { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -628,7 +677,28 @@ namespace Rock.Model
         /// <value>
         /// The schedule cancellation person alias.
         /// </value>
-        public virtual PersonAlias ScheduleCancellationPersonAlias { get; set; }
+        [Obsolete( "Use ScheduleCoordinatorPersonAlias instead." )]
+        [RockObsolete( "1.16" )]
+        [NotMapped]
+        public virtual PersonAlias ScheduleCancellationPersonAlias
+        {
+            get => this.ScheduleCoordinatorPersonAlias;
+            set => this.ScheduleCoordinatorPersonAlias = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the person who receives notifications about changes
+        /// to scheduled individuals.
+        /// </summary>
+        /// <value>
+        /// The schedule coordinator person alias.
+        /// </value>
+        /// <remarks>
+        /// The notification types specified in this group's <see cref="GroupType.ScheduleCoordinatorNotificationTypes"/>
+        /// (or overridden in this group's own <see cref="ScheduleCoordinatorNotificationTypes"/>) will determine which
+        /// notifications - if any - are sent to this person.
+        /// </remarks>
+        public virtual PersonAlias ScheduleCoordinatorPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the inactive group reason.
@@ -699,7 +769,7 @@ namespace Rock.Model
             this.HasOptional( p => p.RequiredSignatureDocumentTemplate ).WithMany().HasForeignKey( p => p.RequiredSignatureDocumentTemplateId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ArchivedByPersonAlias ).WithMany().HasForeignKey( p => p.ArchivedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.StatusValue ).WithMany().HasForeignKey( p => p.StatusValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.ScheduleCancellationPersonAlias ).WithMany().HasForeignKey( p => p.ScheduleCancellationPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ScheduleCoordinatorPersonAlias ).WithMany().HasForeignKey( p => p.ScheduleCoordinatorPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.InactiveReasonValue ).WithMany().HasForeignKey( p => p.InactiveReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
 

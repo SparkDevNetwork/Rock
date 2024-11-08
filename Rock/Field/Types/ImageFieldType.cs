@@ -226,7 +226,6 @@ namespace Rock.Field.Types
             var cbFormatAsLink = new RockCheckBox();
             cbFormatAsLink.Label = "Format as Link";
             cbFormatAsLink.Help = "Enable this to navigate to a full size image when the image is clicked";
-            cbFormatAsLink.Text = "Yes";
             controls.Add( cbFormatAsLink );
 
             var codeEditorImageTabTemplate = new CodeEditor();

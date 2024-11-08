@@ -174,7 +174,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             RockPage.AddScriptLink( "~/Scripts/jquery.visible.min.js" );
 
             string eventTarget = this.Page.Request.Params["__EVENTTARGET"] ?? string.Empty;
@@ -229,6 +228,8 @@ namespace RockWeb.Blocks.Cms
                 // if we got a PostBack from the Grid (or child controls) make sure the Grid is bound
                 GetData();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

@@ -123,6 +123,15 @@ namespace Rock.Web.Cache
         public string CriteriaValue { get; private set; }
 
         /// <summary>
+        /// Gets or sets the boolean value that determines if an action should be completed if criteria is unmet.
+        /// </summary>
+        /// <value>
+        /// The boolean value determining if an action should be completed if criteria is unmet.
+        /// </value>
+        [DataMember]
+        public bool IsActionCompletedIfCriteriaUnmet { get; set; }
+
+        /// <summary>
         /// Gets the type of the activity.
         /// </summary>
         /// <value>
@@ -185,6 +194,7 @@ namespace Rock.Web.Cache
             CriteriaAttributeGuid = workflowActionType.CriteriaAttributeGuid;
             CriteriaComparisonType = workflowActionType.CriteriaComparisonType;
             CriteriaValue = workflowActionType.CriteriaValue;
+            IsActionCompletedIfCriteriaUnmet = workflowActionType.IsActionCompletedIfCriteriaUnmet;
         }
 
         /// <summary>

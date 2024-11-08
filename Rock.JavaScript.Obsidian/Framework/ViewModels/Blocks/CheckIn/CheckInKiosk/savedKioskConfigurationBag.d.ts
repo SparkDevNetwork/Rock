@@ -43,4 +43,7 @@ export type SavedKioskConfigurationBag = {
 
     /** The check-in configuration template identifier. */
     templateId?: string | null;
+
+    /** The web theme that should be used for this configuration. */
+    theme?: string | null;
 };

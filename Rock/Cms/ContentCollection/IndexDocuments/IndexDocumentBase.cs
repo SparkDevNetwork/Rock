@@ -241,6 +241,12 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
         public string IndexModelType { get; set; }
 
         /// <summary>
+        /// Gets whether or not this document is approved.
+        /// </summary>
+        [IndexField]
+        public bool IsApproved { get; set; } = true;
+
+        /// <summary>
         /// Gets the IndexModelAssembly name of the IndexModel that this was when it was stored to the Index server.
         /// </summary>
         /// <value>

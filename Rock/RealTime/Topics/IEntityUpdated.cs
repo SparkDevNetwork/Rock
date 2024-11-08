@@ -53,7 +53,8 @@ namespace Rock.RealTime.Topics
         /// Called when an Attendance record has been deleted.
         /// </summary>
         /// <param name="attendanceGuid">The attendance unique identifier.</param>
-        Task AttendanceDeleted( Guid attendanceGuid );
+        /// <param name="bag">The message bag that represents the attendance, may be <c>null</c> in some cases.</param>
+        Task AttendanceDeleted( Guid attendanceGuid, AttendanceUpdatedMessageBag bag );
 
         #endregion
 

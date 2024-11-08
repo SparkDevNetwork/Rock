@@ -126,25 +126,17 @@ namespace Rock.Tests
                 DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day )
             };
 
-            if ( eventDuration.HasValue )
-            {
-                var dtStart = new CalDateTime( eventStartDate );
-                dtStart.HasTime = true;
-                calendarEvent.DtStart = dtStart;
+            var dtStart = new CalDateTime( eventStartDate );
+            dtStart.HasTime = true;
+            calendarEvent.DtStart = dtStart;
 
-                var dtEnd = dtStart.Add( eventDuration.Value );
-                dtEnd.HasTime = true;
-                calendarEvent.DtEnd = dtEnd;
-            }
-            else
+            // Mimic Rock's ScheduleBuilder control, which defaults to a minimum of 1 second.
+            if ( !eventDuration.HasValue || eventDuration.Value.TotalSeconds < 1 )
             {
-                // If duration is not specified, assume this is an all-day event and ignore the start time.
-                var dtStart = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day );
-                dtStart.HasTime = false;
-                calendarEvent.DtStart = dtStart;
-
-                calendarEvent.IsAllDay = true;
+                eventDuration = new TimeSpan( 0, 0, 1 );
             }
+
+            calendarEvent.Duration = eventDuration.Value;
 
             return calendarEvent;
         }
@@ -152,23 +144,9 @@ namespace Rock.Tests
         public static CalendarEvent GetCalendarEvent( DateTimeOffset eventStartDate, TimeSpan? eventDuration )
         {
             // Convert the start date to Rock time.
-            var startDate = TimeZoneInfo.ConvertTime( eventStartDate, RockDateTime.OrgTimeZoneInfo );
-            eventDuration = eventDuration ?? new TimeSpan( 1, 0, 0 );
+            var rockStartDate = TimeZoneInfo.ConvertTime( eventStartDate, RockDateTime.OrgTimeZoneInfo );
 
-            var dtStart = new CalDateTime( startDate.DateTime );
-            dtStart.HasTime = true;
-
-            var dtEnd = dtStart.Add( eventDuration.Value );
-            dtEnd.HasTime = true;
-
-            var calendarEvent = new CalendarEvent
-            {
-                DtStart = dtStart,
-                DtEnd = dtEnd,
-                DtStamp = new CalDateTime( eventStartDate.Year, eventStartDate.Month, eventStartDate.Day ),
-            };
-
-            return calendarEvent;
+            return GetCalendarEvent( rockStartDate, eventDuration );
         }
 
         public static RecurrencePattern GetDailyRecurrencePattern( DateTimeOffset? recurrenceEndDate = null, int? occurrenceCount = null, int? interval = 1 )

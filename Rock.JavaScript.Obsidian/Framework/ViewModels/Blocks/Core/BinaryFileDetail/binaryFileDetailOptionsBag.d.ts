@@ -21,5 +21,8 @@
 // </copyright>
 //
 
+/** Additional Configuration details for the Binary File Detail Block. */
 export type BinaryFileDetailOptionsBag = {
+    /** Gets or sets a value indicating whether this instance is block visible. */
+    isBlockVisible: boolean;
 };

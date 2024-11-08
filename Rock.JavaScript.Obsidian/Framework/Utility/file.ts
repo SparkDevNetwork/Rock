@@ -15,27 +15,16 @@
 // </copyright>
 //
 
-import { Workbook } from "exceljs";
-
-
 /**
- * Triggers an automatic download of the workbook so it can be saved to
- * the filesystem.
+ * Triggers an automatic download of the data so it can be saved to the
+ * filesystem.
  *
- * @param workbook The workbook to be downloaded by the browser.
- * @param title The title of the workbook, this is used as the base for the filename.
- * @param format The format to use when downloading the workbook.
+ * @param data The data to be downloaded by the browser.
+ * @param filename The name of the filename to suggest to the browser.
  */
-export async function downloadWorkbook(workbook: Workbook, title: string, format: "csv" | "xlsx"): Promise<void> {
-    // Get the export data.
-    const buffer = format === "xlsx"
-        ? await workbook.xlsx.writeBuffer()
-        : await workbook.csv.writeBuffer();
-
+export async function downloadFile(data: Blob, filename: string): Promise<void> {
     // Create the URL that contains the file data.
-    const url = URL.createObjectURL(new Blob([buffer], {
-        type: "application/octet-stream"
-    }));
+    const url = URL.createObjectURL(data);
 
     // Create a fake hyperlink to simulate an attempt to download a file.
     const element = document.createElement("a");
@@ -44,7 +33,7 @@ export async function downloadWorkbook(workbook: Workbook, title: string, format
     element.style.top = "-100px";
     element.style.left = "0";
     element.href = url;
-    element.download = `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.${format}`;
+    element.download = filename;
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);

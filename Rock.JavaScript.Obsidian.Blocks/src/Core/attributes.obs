@@ -166,11 +166,7 @@
 
     /** The title to display in the edit attribute modal. */
     const editAttributeModalTitle = computed((): string => {
-        if (editableAttribute.value) {
-            return `Edit ${editableAttribute.value.name}`;
-        }
-
-        return "";
+        return editableAttribute.value?.name ? `Edit ${editableAttribute.value.name}` : "Add Attribute";
     });
 
     const usedKeyNames = ref<string[]>([]);

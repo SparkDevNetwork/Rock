@@ -8,22 +8,6 @@
 
         <div class="row">
             <div class="col-md-4">
-                <TextBox v-model="name"
-                         label="Name" />
-            </div>
-
-            <div class="col-md-4">
-                <PersonPicker v-model="initiator"
-                              label="Initiator" />
-            </div>
-
-            <div class="col-md-4">
-                <TextBox v-model="status"
-                         label="Status Text" />
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-4">
                 <DateRangePicker v-model="activatedDateRange"
                                  label="Activated" />
             </div>
@@ -32,28 +16,17 @@
                 <DateRangePicker v-model="completedDateRange"
                                  label="Completed" />
             </div>
-
-            <div class="col-md-4">
-                <CheckBoxList v-model="state"
-                              label="State"
-                              :items="stateOptions"
-                              :horizontal="true" />
-            </div>
         </div>
     </Modal>
 </template>
 
 <script setup lang="ts">
-    import TextBox from "@Obsidian/Controls/textBox.obs";
-    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import { ref, PropType, watch } from "vue";
     import { GridSettingsOptions } from "./types.partial";
     import { deepEqual } from "@Obsidian/Utility/util";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DateRangeParts } from "@Obsidian/Types/Controls/dateRangePicker";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
@@ -75,9 +48,6 @@
         (e: "close"): void;
     }>();
 
-    const name = ref(props.modelValue.name ?? "");
-    const initiator = ref<ListItemBag | undefined>(props.modelValue.initiator);
-    const status = ref(props.modelValue.status ?? "");
     const activatedDateRange = ref<DateRangeParts>({
         lowerValue: props.modelValue.activatedDateRangeLowerValue,
         upperValue: props.modelValue.activatedDateRangeUpperValue,
@@ -86,29 +56,15 @@
         lowerValue: props.modelValue.completedDateRangeLowerValue,
         upperValue: props.modelValue.completedDateRangeUpperValue,
     });
-    const state = ref(props.modelValue.state);
-    const stateOptions = [
-        {
-            text: "Active",
-            value: "Active"
-        },
-        {
-            text: "Completed",
-            value: "Completed"
-        }
-    ];
+
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
     function onSave(): void {
         const value: GridSettingsOptions = {
-            name: name.value,
-            initiator: initiator.value,
-            status: status.value,
-            activatedDateRangeLowerValue: activatedDateRange.value?.upperValue,
-            activatedDateRangeUpperValue: activatedDateRange.value?.lowerValue,
-            completedDateRangeLowerValue: completedDateRange.value?.upperValue,
-            completedDateRangeUpperValue: completedDateRange.value?.lowerValue,
-            state: state.value
+            activatedDateRangeLowerValue: activatedDateRange.value?.lowerValue,
+            activatedDateRangeUpperValue: activatedDateRange.value?.upperValue,
+            completedDateRangeLowerValue: completedDateRange.value?.lowerValue,
+            completedDateRangeUpperValue: completedDateRange.value?.upperValue,
         };
 
         if (!deepEqual(value, props.modelValue, true)) {
@@ -119,18 +75,14 @@
     }
 
     watch(() => props.modelValue, () => {
-        name.value = props.modelValue.name ?? "";
-        initiator.value = props.modelValue.initiator;
-        status.value = props.modelValue.status ?? "";
         activatedDateRange.value = {
             lowerValue: props.modelValue.activatedDateRangeLowerValue,
             upperValue: props.modelValue.activatedDateRangeUpperValue,
         };
         completedDateRange.value = {
             lowerValue: props.modelValue.completedDateRangeLowerValue,
-            upperValue: props.modelValue.completedDateRangeLowerValue,
+            upperValue: props.modelValue.completedDateRangeUpperValue,
         };
-        state.value = props.modelValue.state;
     });
 
     watch(isVisible, () => {

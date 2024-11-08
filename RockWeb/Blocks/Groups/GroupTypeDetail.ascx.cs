@@ -269,8 +269,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "GroupTypeId" ).AsInteger() );
@@ -286,6 +284,8 @@ namespace RockWeb.Blocks.Groups
                 nbInvalidWorkflowType.Visible = false;
                 ShowDialog();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -566,6 +566,20 @@ namespace RockWeb.Blocks.Groups
             groupType.ScheduleReminderSystemCommunicationId = ddlScheduleReminderSystemCommunication.SelectedValue.AsIntegerOrNull();
             groupType.ScheduleReminderEmailOffsetDays = nbScheduleReminderOffsetDays.Text.AsIntegerOrNull();
             groupType.ScheduleConfirmationLogic = ddlScheduleConfirmationLogic.SelectedValueAsEnum<ScheduleConfirmationLogic>();
+
+            ScheduleCoordinatorNotificationType? notificationTypes = null;
+            foreach ( var li in cblScheduleCoordinatorNotificationTypes.Items.Cast<ListItem>() )
+            {
+                if ( li.Selected )
+                {
+                    var selectedType = ( ScheduleCoordinatorNotificationType ) li.Value.AsInteger();
+                    notificationTypes = notificationTypes.HasValue
+                        ? notificationTypes | selectedType
+                        : selectedType;
+                }
+            }
+
+            groupType.ScheduleCoordinatorNotificationTypes = notificationTypes;
 
             // if GroupHistory is turned off, we'll delete group and group member history for this group type
             bool deleteGroupHistory = false;
@@ -997,6 +1011,12 @@ namespace RockWeb.Blocks.Groups
             wtpScheduleCancellationWorkflowType.SetValue( groupType.ScheduleCancellationWorkflowTypeId );
             ddlScheduleReminderSystemCommunication.SetValue( groupType.ScheduleReminderSystemCommunicationId );
             nbScheduleReminderOffsetDays.Text = groupType.ScheduleReminderEmailOffsetDays.ToString();
+
+            foreach ( var li in cblScheduleCoordinatorNotificationTypes.Items.Cast<ListItem>() )
+            {
+                var notificationType = ( ScheduleCoordinatorNotificationType ) li.Value.AsInteger();
+                li.Selected = ( groupType.ScheduleCoordinatorNotificationTypes & notificationType ) == notificationType;
+            }
 
             // Attributes
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
@@ -1622,6 +1642,7 @@ namespace RockWeb.Blocks.Groups
             cbCanView.Checked = groupTypeRole.CanView;
             cbCanEdit.Checked = groupTypeRole.CanEdit;
             cbCanManageMembers.Checked = groupTypeRole.CanManageMembers;
+            cbIsCheckInAllowed.Checked = groupTypeRole.IsCheckInAllowed;
 
             nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : string.Empty;
             nbMinimumRequired.Help = string.Format(
@@ -1709,6 +1730,7 @@ namespace RockWeb.Blocks.Groups
             groupTypeRole.CanView = cbCanView.Checked;
             groupTypeRole.CanEdit = cbCanEdit.Checked;
             groupTypeRole.CanManageMembers = cbCanManageMembers.Checked;
+            groupTypeRole.IsCheckInAllowed = cbIsCheckInAllowed.Checked;
             groupTypeRole.MinCount = nbMinimumRequired.Text.AsIntegerOrNull();
             groupTypeRole.MaxCount = nbMaximumAllowed.Text.AsIntegerOrNull();
             groupTypeRole.LoadAttributes();

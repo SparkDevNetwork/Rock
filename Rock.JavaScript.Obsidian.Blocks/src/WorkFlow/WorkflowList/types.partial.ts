@@ -15,31 +15,19 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage",
     EntryPage = "EntryPage",
 }
 
 export const enum PreferenceKey {
-    FilterName = "filter-name",
-    FilterInitiator = "filter-initiator",
-    FilterStatus = "filter-status",
     FilterActivatedDateRangeUpperValue = "filter-activated-date-range-upper-value",
     FilterActivatedDateRangeLowerValue = "filter-activated-date-range-lower-value",
     FilterCompletedDateRangeUpperValue = "filter-completed-date-range-upper-value",
     FilterCompletedDateRangeLowerValue = "filter-completed-date-range-lower-value",
-    FilterState = "filter-state",
 }
 
 export type GridSettingsOptions = {
-    name?: string | null;
-
-    initiator?: ListItemBag;
-
-    status?: string | null;
-
     activatedDateRangeUpperValue?: string | null;
 
     activatedDateRangeLowerValue?: string | null;
@@ -47,6 +35,4 @@ export type GridSettingsOptions = {
     completedDateRangeUpperValue?: string | null;
 
     completedDateRangeLowerValue?: string | null;
-
-    state?: string[];
 };

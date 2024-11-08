@@ -1,6 +1,24 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
 import { List } from "./linq";
 import { padLeft, padRight } from "./stringUtils";
 import { RockDateTime } from "./rockDateTime";
+import { LocaleDateFormatter } from "./localeDateFormatter";
 
 /**
  * Returns a blank string if the string value is 0.
@@ -117,8 +135,10 @@ const dateFormatterKeys = new List<string>(Object.keys(dateFormatters))
     .orderByDescending(k => k.length)
     .toArray();
 
+const currentLocaleDateFormatter = LocaleDateFormatter.fromCurrent();
+
 const standardDateFormats: Record<string, DateFormatterCommand> = {
-    "d": date => formatAspDate(date, getLocalDateFormatString()),
+    "d": date => formatAspDate(date, currentLocaleDateFormatter.aspDateFormat),
     "D": date => formatAspDate(date, "dddd, MMMM dd, yyyy"),
     "t": date => formatAspDate(date, "h:mm tt"),
     "T": date => formatAspDate(date, "h:mm:ss tt"),
@@ -227,22 +247,4 @@ export function formatAspDate(date: RockDateTime, format: string): string {
     else {
         return formatAspCustomDate(date, format);
     }
-}
-
- /**
-  * Gets a format string that matches the current browser locale settings.
-  *
-  * @returns A string that represents the date format of the client browser.
-  */
-function getLocalDateFormatString(): string {
-
-    // Create an arbitrary date with recognizable numeric parts, format the date using the current locale settings
-    // then replace the numeric parts with date format placeholders to get the local date format string.
-    // Note that the month is specified as an index in the Date constructor, so "9" represents month "10".
-    const refDate = new Date(2000,9,20);
-
-    return refDate.toLocaleDateString(undefined, { year:"numeric", month:"2-digit", day:"2-digit"  })
-    .replace("20","d")
-    .replace("10","M")
-    .replace("2000","yyyy");
 }

@@ -6,7 +6,7 @@
                 <TextBox v-model="title" label="Title" rules="required" />
             </div>
             <div class="col-md-6">
-                <CheckBox v-model="isActive" label="Active" text="Yes" />
+                <CheckBox v-model="isActive" label="Active" />
             </div>
         </div>
 
@@ -18,14 +18,17 @@
 
         <div class="row">
             <div class="col-md-3">
-                <NumberBox v-model="minimumDaysToRetake" label="Minimum Days To Retake" help="The minimum number of days after the test has been taken before it can be taken again.">
+                <NumberBox v-model="minimumDaysToRetake"
+                    label="Minimum Days To Retake"
+                    help="The minimum number of days after the test has been taken before it can be taken again."
+                    :minimumValue="0" >
                     <template v-slot:inputGroupAppend>
                         <span class="input-group-addon">days</span>
                     </template>
                 </NumberBox>
             </div>
             <div class="col-md-6 col-md-offset-3">
-                <CheckBox v-model="requiresRequest" label="Requires Request" text="Yes" help="Is a person required to receive a request before this test can be taken?" />
+                <CheckBox v-model="requiresRequest" label="Requires Request" help="Is a person required to receive a request before this test can be taken?" />
             </div>
         </div>
 

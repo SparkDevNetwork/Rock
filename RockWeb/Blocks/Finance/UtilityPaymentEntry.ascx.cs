@@ -37,6 +37,7 @@ using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Constants;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -1013,8 +1014,6 @@ mission. We are so grateful for your commitment.</p>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // Hide the messages on every postback
             nbMessage.Visible = false;
             nbSelectionMessage.Visible = false;
@@ -1026,6 +1025,7 @@ mission. We are so grateful for your commitment.</p>
 
             if ( !LoadGatewayOptions() )
             {
+                base.OnLoad( e );
                 return;
             }
 
@@ -1100,6 +1100,7 @@ mission. We are so grateful for your commitment.</p>
             divSaveAccount.Style[HtmlTextWriterStyle.Display] = cbSaveAccount.Checked ? "block" : "none";
 
             ResolveHeaderFooterTemplates();
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -2311,7 +2312,9 @@ mission. We are so grateful for your commitment.</p>
             bool givingAsBusiness = !enableTextToGiveSetup && GetAttributeValue( AttributeKey.EnableBusinessGiving ).AsBoolean() && !tglGiveAsOption.Checked;
             bool userLoggedIn = CurrentPerson != null;
 
-            acAddress.Label = givingAsBusiness ? "Business Address" : "Address";
+            var addressTypeGuid = GetAttributeValue( AttributeKey.AddressType ).AsGuid();
+            var addressType = DefinedValueCache.Get( addressTypeGuid );
+            acAddress.Label = givingAsBusiness ? "Business Address" : addressType.Value + " Address";
             pnbPhone.Label = givingAsBusiness ? "Business Phone" : "Phone";
             txtEmail.Label = givingAsBusiness ? "Business Email" : "Email";
 
@@ -3065,6 +3068,16 @@ mission. We are so grateful for your commitment.</p>
                     errorMessages.Add( "Make sure to enter both a first and last name" );
                 }
 
+                if ( System.Text.RegularExpressions.Regex.IsMatch( txtFirstName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtLastName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
+                {
+                    errorMessages.Add( "Make sure to enter a first and last name that does not contain special characters such as quotes, parentheses, etc." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( txtFirstName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtLastName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+                {
+                    errorMessages.Add( "Make sure to enter a first and last name that does not contain emojis or special fonts." );
+                }
+
                 if ( !txtFirstName.IsValid )
                 {
                     errorMessages.Add( txtFirstName.CustomValidator.ErrorMessage );
@@ -3099,6 +3112,21 @@ mission. We are so grateful for your commitment.</p>
                 if ( string.IsNullOrWhiteSpace( txtBusinessContactFirstName.Text ) || string.IsNullOrWhiteSpace( txtBusinessContactLastName.Text ) )
                 {
                     errorMessages.Add( "Make sure to enter both a first and last name for Business Contact" );
+                }
+
+                if ( !txtBusinessContactFirstName.IsValid )
+                {
+                    errorMessages.Add( txtBusinessContactFirstName.CustomValidator.ErrorMessage );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( txtBusinessContactFirstName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtBusinessContactLastName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
+                {
+                    errorMessages.Add( "Make sure to enter a first and last name that does not contain special characters such as quotes, parentheses, etc for Business Contact." );
+                }
+
+                if ( System.Text.RegularExpressions.Regex.IsMatch( txtBusinessContactFirstName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtBusinessContactLastName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+                {
+                    errorMessages.Add( "Make sure to enter a first and last name that does not contain emojis or special fonts for Business Contact." );
                 }
 
                 if ( DisplayPhone && string.IsNullOrWhiteSpace( pnbBusinessContactPhone.Number ) )

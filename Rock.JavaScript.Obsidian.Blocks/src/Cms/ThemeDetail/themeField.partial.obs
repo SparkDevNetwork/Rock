@@ -1,0 +1,86 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TextThemeField v-if="field.type === ThemeFieldType.Literal"
+                    :field="field"
+                    :value="value"
+                    @updateValue="onUpdateValue" />
+
+    <ColorThemeField v-else-if="field.type === ThemeFieldType.Color"
+                     :field="field"
+                     :value="value"
+                     @updateValue="onUpdateValue" />
+
+    <ImageThemeField v-else-if="field.type === ThemeFieldType.Image"
+                     :field="field"
+                     :value="value"
+                     @updateValue="onUpdateValue" />
+
+    <TextThemeField v-else-if="field.type === ThemeFieldType.Text"
+                    :field="field"
+                    :value="value"
+                    @updateValue="onUpdateValue" />
+
+    <FileThemeField v-else-if="field.type === ThemeFieldType.File"
+                    :field="field"
+                    :value="value"
+                    @updateValue="onUpdateValue" />
+
+    <SwitchThemeField v-else-if="field.type === ThemeFieldType.Switch"
+                    :field="field"
+                    :value="value"
+                    @updateValue="onUpdateValue" />
+
+    <HeadingThemeField v-else-if="field.type === ThemeFieldType.Heading"
+                       :field="field" />
+
+    <div v-else-if="field.type === ThemeFieldType.Spacer">
+        <br>
+        <br>
+    </div>
+
+    <PanelThemeField v-else-if="field.type === ThemeFieldType.Panel"
+                     :field="field"
+                     :values="props.values"
+                     @updateValue="onUpdateValue" />
+
+    <div v-else>Unknown field type: {{ field.type }}</div>
+</template>
+
+<script setup lang="ts">
+    import ColorThemeField from "./colorThemeField.partial.obs";
+    import FileThemeField from "./fileThemeField.partial.obs";
+    import HeadingThemeField from "./headingThemeField.partial.obs";
+    import ImageThemeField from "./imageThemeField.partial.obs";
+    import PanelThemeField from "./panelThemeField.partial.obs";
+    import SwitchThemeField from "./switchThemeField.partial.obs";
+    import TextThemeField from "./textThemeField.partial.obs";
+    import { ThemeFieldType } from "@Obsidian/Enums/Cms/themeFieldType";
+    import { ThemeFieldBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeDetail/themeFieldBag";
+    import { PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        field: {
+            type: Object as PropType<ThemeFieldBag>,
+            required: true
+        },
+
+        values: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "updateValue", key: string, value: string | null): void;
+    }>();
+
+    const value = ref<string>(props.values[props.field.variable ?? ""] ?? null);
+
+    function onUpdateValue(key: string, val: string | null): void {
+        emit("updateValue", key, val);
+    }
+
+    watch([() => props.field, () => props.values], () => {
+        value.value = props.values[props.field.variable ?? ""] ?? null;
+    });
+</script>

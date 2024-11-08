@@ -221,7 +221,6 @@ namespace Rock.Field.Types
             cbIncludeInactive.AutoPostBack = true;
             cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
             cbIncludeInactive.Label = "Include Inactive";
-            cbIncludeInactive.Text = "Yes";
             cbIncludeInactive.Help = "When set, inactive items will be included in the list.";
 
             var controls = base.ConfigurationControls();
@@ -345,20 +344,23 @@ namespace Rock.Field.Types
             var editControl = control as ListControl;
             if ( editControl != null )
             {
-                var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
-                if ( !includeInactive )
+                if ( configurationValues != null )
                 {
-                    var listItem = editControl.Items.FindByValue( value );
-                    if ( listItem == null )
+                    var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+                    if ( !includeInactive )
                     {
-                        var valueGuid = value.AsGuid();
-                        var systemCommunication = new SystemCommunicationService( new RockContext() )
-                           .Queryable().AsNoTracking()
-                           .Where( o => o.Guid == valueGuid )
-                           .FirstOrDefault();
-                        if ( systemCommunication != null )
+                        var listItem = editControl.Items.FindByValue( value );
+                        if ( listItem == null )
                         {
-                            editControl.Items.Add( new ListItem( systemCommunication.Title, systemCommunication.Guid.ToString() ) );
+                            var valueGuid = value.AsGuid();
+                            var systemCommunication = new SystemCommunicationService( new RockContext() )
+                               .Queryable().AsNoTracking()
+                               .Where( o => o.Guid == valueGuid )
+                               .FirstOrDefault();
+                            if ( systemCommunication != null )
+                            {
+                                editControl.Items.Add( new ListItem( systemCommunication.Title, systemCommunication.Guid.ToString() ) );
+                            }
                         }
                     }
                 }

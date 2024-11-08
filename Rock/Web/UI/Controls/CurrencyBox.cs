@@ -49,6 +49,15 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the placeholder should be disabled. When disabled, the placeholder will be blank.
+        /// </summary>
+        /// <value>
+        /// Sets the placeholder to an empty string when <see langword="true"/>;
+        /// otherwise, uses the default placeholder value when <see langword="false"/>.
+        /// </value>
+        public bool DisablePlaceholder { get; set; }
+
+        /// <summary>
         /// Updates the currency code.
         /// </summary>
         /// <param name="currencyCodeDefinedValueId">The currency code defined value identifier.</param>
@@ -135,13 +144,13 @@ namespace Rock.Web.UI.Controls
             if ( _currencyDecimalPlaces == 0 )
             {
                 this.NumberType = ValidationDataType.Integer;
-                this.Placeholder = "0";
+                this.Placeholder = this.DisablePlaceholder ? string.Empty : "0";
                 this.Attributes.Remove( "step" );
             }
             else
             {
                 var decimalSeperator = System.Globalization.CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
-                this.Placeholder = $"0{decimalSeperator}{ new string( '0', _currencyDecimalPlaces ) }";
+                this.Placeholder = this.DisablePlaceholder ? string.Empty : $"0{decimalSeperator}{ new string( '0', _currencyDecimalPlaces ) }";
 
                 var step = $"0.{ new string( '0', _currencyDecimalPlaces - 1 ) }1";
                 this.Attributes["step"] = step;

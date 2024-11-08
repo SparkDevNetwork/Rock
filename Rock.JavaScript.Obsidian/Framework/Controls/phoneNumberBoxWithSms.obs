@@ -1,6 +1,6 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-model="number"
+    <RockFormField :modelValue="number"
                    v-bind="formFieldProps"
                    @change="onChange"
                    formGroupClasses="rock-phonenumber-box"
@@ -62,8 +62,8 @@
 
     const formFieldProps = useStandardRockFormFieldProps(props);
     const configuration = ref<PhoneNumberBoxGetConfigurationResultsBag | null>(null);
-    const number = ref(formatPhoneNumber(props.modelValue?.number?.toString() ?? ""));
-    const countryCode = ref(props.modelValue?.countryCode?.toString() ?? "");
+    const number = ref(props.modelValue?.number ?? "");
+    const countryCode = ref(props.modelValue?.countryCode ?? "");
     const isMessagingEnabled = ref(props.modelValue?.isMessagingEnabled ?? false);
 
     /** Used to temporarily disable emitting the modelValue when something changes. */
@@ -73,6 +73,11 @@
 
     // #region Computed Values
 
+    /** The rules for the specified country code */
+    const configuredRules = computed<PhoneNumberCountryCodeRulesConfigurationBag[]>(() => {
+        return configuration.value?.rules?.[countryCode.value] ?? [];
+    });
+
     const rules = computed(() => {
         const rules = normalizeRules(props.rules);
         rules.push(validatePhoneNumber);
@@ -80,7 +85,7 @@
     });
 
     const availableCountryCodes = computed<string[]>(() => {
-        return Object.keys(configuration.value?.rules ?? {});
+        return configuration.value?.countryCodes ?? [];
     });
 
     const availableCountryCodeOptions = computed<ListItemBag[]>(() => {
@@ -105,16 +110,22 @@
 
     /** Uses the configuration we received from the server to determine whether the entered number is valid */
     function validatePhoneNumber(value: unknown): string | boolean {
-        const rules = getConfiguredRules();
+        const rules = configuredRules.value;
 
         if (!value || typeof (value) !== "string" || rules.length == 0) {
             return true;
         }
 
+        const val = stripPhoneNumber(value as string);
+
+        if (rules.length == 0) {
+            return true;
+        }
+
         for (let rule of rules) {
             const regex = new RegExp(rule.match ?? "");
-            const unformattedPhoneNumberToValidate = stripPhoneNumber(value);
-            if (regex.test(unformattedPhoneNumberToValidate)) {
+
+            if (regex.test(val)) {
                 return true;
             }
         }
@@ -140,12 +151,6 @@
         }
     }
 
-    /** Get the rules for the selected countryCode */
-    function getConfiguredRules(): PhoneNumberCountryCodeRulesConfigurationBag[] {
-        const temp = configuration.value?.rules?.[countryCode.value] ?? [];
-        return temp;
-    }
-
     // #endregion
 
     // #region Event Handlers
@@ -158,27 +163,35 @@
 
     // #region Watchers
     watch(() => props.modelValue, () => {
-        console.log("watch() props.modelValue");
         autoSyncModelValue = false;
-        countryCode.value = props.modelValue?.countryCode?.toString() ?? "";
-        number.value = formatPhoneNumber(props.modelValue?.number?.toString() ?? "");
+        countryCode.value = props.modelValue?.countryCode ?? "";
+        number.value = formatPhoneNumber(stripPhoneNumber(props.modelValue?.number ?? ""), configuredRules.value);
         isMessagingEnabled.value = props.modelValue?.isMessagingEnabled ?? false;
         autoSyncModelValue = true;
-    });
+    }, { immediate: true });
 
     watch([countryCode, number, isMessagingEnabled], () => {
-        console.log("watch([countryCode, number, isMessagingEnabled]");
         if (!autoSyncModelValue) {
             return;
         }
 
         const value: PhoneNumberBoxWithSmsControlBag = {
-            countryCode: countryCode.value ?? undefined,
-            number: number.value ?? undefined,
+            countryCode: countryCode.value,
+            number: formatPhoneNumber(stripPhoneNumber(number.value), configuredRules.value),
             isMessagingEnabled: isMessagingEnabled.value
         };
 
         emit("update:modelValue", value);
+    });
+
+    watch([configuration, availableCountryCodes], () => {
+        // If we don't have any country codes from the server, ignore
+        if (configuration.value == null || availableCountryCodes.value.length == 0) return;
+
+        // If no country code set or the set country code isn't in the list of available codes, then change it to the default
+        if (countryCode.value == null || !availableCountryCodes.value.includes(countryCode.value)) {
+            countryCode.value = availableCountryCodes.value[0];
+        }
     });
 
     // #endregion

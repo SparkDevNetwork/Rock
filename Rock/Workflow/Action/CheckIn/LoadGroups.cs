@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,7 +62,9 @@ namespace Rock.Workflow.Action.CheckIn
                         var memberGroupIds = new GroupMemberService( rockContext )
                             .Queryable()
                             .AsNoTracking()
-                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && m.PersonId == person.Person.Id )
+                            .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active
+                                && m.PersonId == person.Person.Id
+                                && m.GroupRole.IsCheckInAllowed )
                             .Select( m => m.GroupId )
                             .ToList();
 
@@ -84,7 +86,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         validGroup = configuredKioskGroup.Contains( kioskGroup.Group.Id );
                                     }
 
-                                    if ( validGroup && groupType.GroupType.AttendanceRule == AttendanceRule.AlreadyBelongs )
+                                    if ( validGroup && groupType.GroupType.AttendanceRule == AttendanceRule.AlreadyEnrolledInGroup )
                                     {
                                         validGroup = memberGroupIds.Contains( kioskGroup.Group.Id );
                                     }

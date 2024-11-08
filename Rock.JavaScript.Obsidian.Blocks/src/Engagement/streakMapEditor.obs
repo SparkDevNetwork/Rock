@@ -1,0 +1,146 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="panelTitle" class="panel panel-block" v-if="isBlockVisible">
+        <NotificationBox v-if="showNotificationBox" :alertType="notificationMessageType">{{ notificationMessage }}</NotificationBox>
+        <div class="well">
+            <SlidingDateRangePicker v-model="dateRange"
+                                    formGroupClasses="margin-b-sm"
+                                    label="Date Range"
+                                    :enabledTimeUnits="[TimeUnit.Day, TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
+                                    :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]" />
+            <RockButton btnType="default" btnSize="xs" @click="refreshCheckboxData">
+                <i class="fa fa-refresh"></i> Update
+            </RockButton>
+        </div>
+        <CheckBoxList :label="checkBoxListLabel"
+                      v-model="selectedDates"
+                      :items="dateItems"
+                      vertical />
+        <div class="actions">
+            <RockButton btnType="primary" shortcutKey="s" @click="saveRecord">
+                Save
+            </RockButton>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { StreakMapEditorBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakMapEditor/streakMapEditorBag";
+    import { RangeType, SlidingDateRange, TimeUnit, parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PreferenceKey } from "./StreakMapEditor/types.partial";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { useStore } from "@Obsidian/PageState";
+
+    const box = useConfigurationValues<StreakMapEditorBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    const dateRange = ref<SlidingDateRange>(
+        parseSlidingDateRangeString(preferences.getValue(PreferenceKey.DateRange)) ??
+        {
+            rangeType: RangeType.Last,
+            timeUnit: box.isStreakTypeDaily ? TimeUnit.Day : TimeUnit.Week,
+            timeValue: 7
+        } as SlidingDateRange
+    );
+    const panelTitle = ref<string>(box.mapTitle ?? "");
+    const checkBoxListLabel = ref<string>(box.checkboxLabel ?? "");
+    const selectedDates = ref<Array<string>>(box.selectedDates ?? []);
+    const dateItems = ref<Array<ListItemBag>>(box.checkboxItems ?? []);
+    const showNotificationBox = ref<boolean>(false);
+    const notificationMessageType = ref<string>("info");
+    const notificationMessage = ref<string>("");
+    const isPanelHidden = ref<boolean>(box.isPanelHidden);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isBlockVisible = computed((): boolean => {
+        return useStore().state.areSecondaryBlocksShown && !isPanelHidden.value;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Shows the notification box with the passed in message and alert type.
+     * @param message The message shown by the notification box
+     * @param alertType The alert type of the notification box
+     */
+    function processNotificationBoxMessage(message: string, alertType: string): void {
+        showNotificationBox.value = true;
+        notificationMessageType.value = alertType;
+        notificationMessage.value = message;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Refreshes the check box data with respected to the selected sliding date range.
+     */
+    async function refreshCheckboxData(): Promise<void> {
+        showNotificationBox.value = false;
+        const result = await invokeBlockAction<StreakMapEditorBag>("RefreshCheckboxData", {
+            delimitedDateValues: dateRange.value ? slidingDateRangeToString(dateRange.value as SlidingDateRange) : ""
+        });
+        if (result.isSuccess && result.data) {
+            if (result.data.isPanelHidden) {
+                isPanelHidden.value = true;
+                return;
+            }
+
+            selectedDates.value = result.data.selectedDates ?? [];
+            dateItems.value = result.data.checkboxItems ?? [];
+            panelTitle.value = result.data.mapTitle ?? "";
+            checkBoxListLabel.value = result.data.checkboxLabel ?? "";
+        }
+        else {
+            processNotificationBoxMessage(result.errorMessage ?? "An error occurred.", "danger");
+            return;
+        }
+
+        preferences.setValue(PreferenceKey.DateRange, dateRange.value ? slidingDateRangeToString(dateRange.value as SlidingDateRange) : "");
+        await preferences.save();
+    }
+
+    /**
+     * Saves the record of selected and unselected checkboxes.
+     */
+    async function saveRecord(): Promise<void> {
+        showNotificationBox.value = false;
+        const result = await invokeBlockAction<StreakMapEditorBag>("SaveRecord", {
+            selectedDates: selectedDates.value,
+            checkboxItems: dateItems.value
+        });
+
+        if (result.isSuccess && result.data) {
+            processNotificationBoxMessage(result.data.successMessage ?? "Saved successfully", "success");
+        }
+        else {
+            processNotificationBoxMessage(result.errorMessage ?? "An error occurred.", "danger");
+        }
+    }
+
+    // #endregion
+
+    // Handle any initial error conditions.
+    if (box.errorMessage) {
+        processNotificationBoxMessage(box.errorMessage, "info");
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+</script>

@@ -1,0 +1,97 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="error" alertType="danger">{{ error }}</NotificationBox>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          exportTitle="RockLogs"
+          liveUpdates
+          itemTerm="Log"
+          title="Logs"
+          :showMergeTemplate="false"
+          :showLaunchWorkflow="false"
+          :isCountMessageVisible="false"
+          :customActions="customActions">
+
+        <DateTimeColumn name="dateTime"
+            title="Date"
+            field="datetime"
+            visiblePriority="xs"
+            width="15%" />
+
+        <TextColumn name="level"
+            title="Level"
+            field="level"
+            visiblePriority="md"
+            width="15%" />
+
+        <TextColumn name="domain"
+            title="Domain"
+            field="domain"
+            visiblePriority="md"
+            width="15%" />
+
+        <TextColumn name="message"
+            title="Message"
+            field="message"
+            visiblePriority="xs"
+            width="75%" />
+
+        <TextColumn name="exception"
+            title="Exception"
+            field="exception"
+            visiblePriority="md"
+            width="10%" />
+
+    </Grid>
+</template>
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction, useBlockActionUrl } from "@Obsidian/Utility/block";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import Grid, { DateTimeColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import { ref, reactive } from "vue";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { RockLogEventsBag } from "@Obsidian/ViewModels/Blocks/Core/LogViewer/RockLogEventsBag";
+    import { GridAction } from "@Obsidian/Types/Controls/grid";
+
+    // #region Values
+
+    const config = useConfigurationValues<ListBlockBox<RockLogEventsBag>>();
+    const blockActionUrl = useBlockActionUrl();
+    const invokeBlockAction = useInvokeBlockAction();
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const customActions = [{
+        title: "Download",
+        iconCssClass: "fa fa-download",
+        tooltip: "Download Logs",
+        handler: onDownloadClick,
+    } as GridAction];
+    const error = ref("");
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+    * Called when the grid is requesting the row data be loaded.
+    */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (!result.isSuccess || !result.data) {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+
+        gridData = reactive(result.data);
+        return gridData;
+    }
+
+    function onDownloadClick(): void {
+        const url = blockActionUrl("DownloadLogs");
+        window.location.href = url;
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

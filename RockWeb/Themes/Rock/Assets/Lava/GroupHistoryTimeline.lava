@@ -268,9 +268,9 @@
                         {%- endif -%}
                             {%- case historySummaryListByEntityTypeAndVerb.Verb -%}
                                 {%- when 'MODIFY' -%}
-                                    {%- if PrimaryEntityTypeName == historySummaryListByEntityTypeAndVerb.EntityTypeName -%}
+                                    {% if PrimaryEntityTypeName == historySummaryListByEntityTypeAndVerb.EntityTypeName %}
                                         updated the {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | Downcase }}
-                                    {%- else -%}
+                                    {% else %}
                                         updated {% if byVerbPluralizeCount > 1 %}{{ byVerbPluralizeCount }}{% else %}a{% endif %} {{ historySummaryListByEntityTypeAndVerb.EntityTypeName | PluralizeForQuantity:byVerbPluralizeCount | Downcase }}
                                     {%- endif -%}
                                     {%- assign showHistoryDetails = true -%}
@@ -321,7 +321,7 @@
                                 {% comment %} showHistoryDetails for complex sets of changes {% endcomment %}
                                 {%- if showHistoryDetails -%}
                                     {%- if forloop.index == 10 -%}</ul>
-                                    <a href="#" class="btn-read-more">And {{ forloop.length | Minus:forloop.index }} other changes...</a>
+                                    <a href="#" class="btn-read-more">And {{ forloop.length | Minus:forloop.index0 }} other change(s)...</a>
                                     <ul class="list-unstyled read-more-content standby">{%- endif -%}
                                     <li>
                                         {%- for history in historySummary.HistoryList offset:historySkipOffset -%}
@@ -342,24 +342,24 @@
                                                     {%- capture historyVerb -%}
                                                         {%- case history.Verb -%}
                                                             {%- when 'MODIFY' -%}
-                                                                {%- if history.OldValue -%}
+                                                                {% if history.OldValue %}
                                                                     changed
-                                                                    {%- if historySummary.Entity.Guid != PrimaryEntity.Guid -%}
+                                                                    {% if historySummary.Entity.Guid != PrimaryEntity.Guid %}
                                                                         {%- assign timelineOtherEntity = historySummary.Entity | ToString -%}
                                                                         {%- assign parsedGroupMemberHistoryPage = GroupMemberHistoryPage | Replace:'{GroupMemberId}',historySummary.EntityId -%}
                                                                         <a href='{{ parsedGroupMemberHistoryPage }}' class='history-otherentity'>{{ timelineOtherEntity | Possessive }}</a>
-                                                                    {%- else -%}
+                                                                    {% else %}
                                                                         the
-                                                                    {%- endif -%}
+                                                                    {% endif %}
                                                                     {{ history.EntityType.FriendlyName | Downcase }}
-                                                                {%- else -%}
+                                                                {% else %}
                                                                     set the
-                                                                {%- endif -%}
-                                                            {%- when 'ADD' -%}
+                                                                {% endif %}
+                                                            {% when 'ADD' %}
                                                                 added
-                                                            {%- when 'DELETE' -%}
+                                                            {% when 'DELETE' %}
                                                                deleted
-                                                            {%- else -%}
+                                                            {% else %}
                                                             {% comment %} Some unexpected Verb {% endcomment %}
                                                         {%- endcase -%}
                                                     {%- endcapture -%}
@@ -375,7 +375,7 @@
                                                 {%- capture timelineAction -%}
                                                     {%- assign historyValueName = history.ValueName | Downcase | Replace:'location location','location' -%}
                                                     {%- if sameValues and historyValueName == prevHistoryValueName -%}
-                                                        <span class='history-verb' title='{{ historySummary.CreatedDateTime }}'>and</span>
+                                                        <span class='history-verb' title='{{ historySummary.CreatedDateTime }}'>and </span> 
                                                         {%- if history.NewValue -%}
                                                             {%- assign historyNewValueSize = history.NewValue | Size -%}
                                                             <span class='history-oldvalue'><a {% if historyNewValueSize > 80 -%}tabindex="0" role="button" data-toggle="popover" data-trigger="focus" data-placement="top" title="Full {{ historyValueName }}" data-content="{{ history.NewValue | StripNewlines }}"{%- endif -%}>{{ history.NewValue | Trim | Truncate:80,'...' }}</a></span>

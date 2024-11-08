@@ -1,0 +1,18 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SectionHeader :title="props.field.name ?? undefined"
+                   :description="props.field.description ?? undefined" />
+</template>
+
+<script setup lang="ts">
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { ThemeFieldBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeDetail/themeFieldBag";
+    import { PropType } from "vue";
+
+    const props = defineProps({
+        field: {
+            type: Object as PropType<ThemeFieldBag>,
+            required: true
+        }
+    });
+</script>

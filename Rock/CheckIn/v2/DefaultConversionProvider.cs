@@ -100,7 +100,7 @@ namespace Rock.CheckIn.v2
                     .OrderByDescending( gm => gm.GroupId == familyIdNumber )
                     .ThenBy( gm => gm.RoleOrder );
 
-            members.Select( fm => fm.Person ).LoadAttributes( RockContext );
+            members.Select( fm => fm.Person ).DistinctBy( p => p.Id ).LoadAttributes( RockContext );
 
             foreach ( var member in members )
             {
@@ -114,6 +114,7 @@ namespace Rock.CheckIn.v2
                 {
                     Person = GetPersonBag( member.Person ),
                     FamilyId = member.GroupId.HasValue ? IdHasher.Instance.GetHash( member.GroupId.Value ) : string.Empty,
+                    IsInPrimaryFamily = member.GroupId == familyIdNumber,
                     RoleOrder = member.RoleOrder
                 } );
             }
@@ -162,7 +163,8 @@ namespace Rock.CheckIn.v2
                 GradeOffset = person.GradeOffset,
                 GradeFormatted = person.GradeFormatted,
                 AbilityLevel = abilityLevel,
-                Gender = person.Gender
+                Gender = person.Gender,
+                IsSpecialNeeds = person.GetAttributeValue( "core_SpecialNeeds" ).AsBoolean()
             };
         }
 
@@ -171,22 +173,23 @@ namespace Rock.CheckIn.v2
         /// gathers all required information to later perform filtering on the
         /// attendees.
         /// </summary>
-        /// <param name="people">The <see cref="PersonBag"/> objects to be used when constructing the <see cref="Attendee"/> objects that will wrap them.</param>
+        /// <param name="members">The <see cref="FamilyMemberBag"/> objects to be used when constructing the <see cref="Attendee"/> objects that will wrap them.</param>
         /// <param name="baseOpportunities">The opportunities collection to be cloned onto each attendee.</param>
         /// <param name="recentAttendance">The recent attendance data for these family members.</param>
         /// <returns>A collection of <see cref="Attendee"/> objects.</returns>
-        public virtual List<Attendee> GetAttendeeItems( IReadOnlyCollection<PersonBag> people, OpportunityCollection baseOpportunities, IReadOnlyCollection<RecentAttendance> recentAttendance )
+        public virtual List<Attendee> GetAttendeeItems( IReadOnlyCollection<FamilyMemberBag> members, OpportunityCollection baseOpportunities, IReadOnlyCollection<RecentAttendance> recentAttendance )
         {
-            return people
+            return members
                 .Select( fm =>
                 {
                     var attendeeAttendances = recentAttendance
-                        .Where( a => a.PersonId == fm.Id )
+                        .Where( a => a.PersonId == fm.Person.Id )
                         .ToList();
 
                     return new Attendee
                     {
-                        Person = fm,
+                        Person = fm.Person,
+                        IsInPrimaryFamily = fm.IsInPrimaryFamily,
                         RecentAttendances = attendeeAttendances,
                         Opportunities = baseOpportunities.Clone()
                     };
@@ -347,6 +350,7 @@ namespace Rock.CheckIn.v2
             return new AttendeeBag
             {
                 Person = attendee.Person,
+                IsInPrimaryFamily = attendee.IsInPrimaryFamily,
                 IsPreSelected = attendee.IsPreSelected,
                 IsUnavailable = attendee.IsUnavailable,
                 IsMultipleSelectionsAvailable = attendee.IsMultipleSelectionsAvailable,
@@ -392,7 +396,9 @@ namespace Rock.CheckIn.v2
             return new AbilityLevelOpportunityBag
             {
                 Id = abilityLevel.Id,
-                Name = abilityLevel.Name
+                Name = abilityLevel.Name,
+                IsDisabled = abilityLevel.IsDisabled,
+                IsDeprioritized = abilityLevel.IsDeprioritized
             };
         }
 
@@ -406,7 +412,8 @@ namespace Rock.CheckIn.v2
             return new AreaOpportunityBag
             {
                 Id = area.Id,
-                Name = area.Name
+                Name = area.Name,
+                LocationSelectionStrategy = area.LocationSelectionStrategy
             };
         }
 
@@ -422,7 +429,7 @@ namespace Rock.CheckIn.v2
                 AbilityLevelId = group.AbilityLevelId,
                 AreaId = group.AreaId,
                 Id = group.Id,
-                LocationIds = group.LocationIds,
+                Locations = group.Locations,
                 Name = group.Name
             };
         }
@@ -439,8 +446,7 @@ namespace Rock.CheckIn.v2
                 Capacity = location.Capacity,
                 CurrentCount = location.CurrentCount,
                 Id = location.Id,
-                Name = location.Name,
-                ScheduleIds = location.ScheduleIds
+                Name = location.Name
             };
         }
 

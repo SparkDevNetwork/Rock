@@ -20,11 +20,12 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Mobile;
 using Rock.Data;
 using Rock.Model;
 using Rock.Model.Connection.ConnectionRequest.Options;
 using Rock.Security;
-
+using ConnectionRequestViewModelSortProperty = Rock.Common.Mobile.Enums.ConnectionRequestViewModelSortProperty;
 namespace Rock.Blocks.Types.Mobile.Connection
 {
     /// <summary>
@@ -51,7 +52,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     [BlockTemplateField( "Request Template",
         Description = "The template used to render the connection requests.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_REQUEST_LIST,
-        DefaultValue = "787BFAA8-FF61-49BA-80DD-67074DC362C2",
+        DefaultValue = "2E36BC98-A18A-4524-8AC1-F14A1AC9DE2F",
         IsRequired = true,
         Key = AttributeKey.RequestTemplate,
         Order = 1 )]
@@ -170,12 +171,18 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     var filterOptions = new ConnectionRequestQueryOptions
                     {
                         ConnectionOpportunityGuids = new List<Guid> { connectionOpportunityGuid },
-                        ConnectionStates = filterViewModel.ConnectionStates
+                        ConnectionStates = filterViewModel.ConnectionStates,
+                        IsFutureFollowUpPastDueOnly = filterViewModel.OnlyPastDue,
                     };
 
                     if ( filterViewModel.OnlyMyConnections )
                     {
                         filterOptions.ConnectorPersonIds = new List<int> { RequestContext.CurrentPerson.Id };
+                    }
+
+                    if( filterViewModel.CampusGuid.HasValue )
+                    {
+                        filterOptions.CampusGuid = filterViewModel.CampusGuid;
                     }
 
                     var qry = connectionRequestService.GetConnectionRequestsQuery( filterOptions );
@@ -197,6 +204,67 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     // limit the requests to the correct amount.
                     hasMore = requests.Count > MaxRequestsToShow;
                     requests = requests.Take( MaxRequestsToShow ).ToList();
+                }
+
+                var sortProperty = filterViewModel.SortProperty;
+                if ( sortProperty != null )
+                {
+                    // Sort by the selected sorting property
+                    switch ( sortProperty )
+                    {
+                        case ConnectionRequestViewModelSortProperty.Requestor:
+                            requests = requests
+                                .OrderBy( cr => cr.PersonAlias.Person.LastName )
+                                .ThenBy( cr => cr.PersonAlias.Person.NickName )
+                                .ThenBy( cr => cr.Order )
+                                .ThenBy( cr => cr.Id )
+                                .ToList();
+                            break;
+
+                        case ConnectionRequestViewModelSortProperty.Connector:
+                            requests = requests
+                                .OrderBy( cr => cr.ConnectorPersonAlias?.Person.FirstName )
+                                .ThenBy( cr => cr.ConnectorPersonAlias?.Person.NickName )
+                                .ThenBy( cr => cr.Order )
+                                .ThenBy( cr => cr.Id )
+                                .ToList();
+                            break;
+
+                        case ConnectionRequestViewModelSortProperty.DateAdded:
+                            requests = requests
+                                .OrderBy( cr => cr.CreatedDateTime )
+                                .ThenBy( cr => cr.Order )
+                                .ThenBy( cr => cr.Id )
+                                .ToList();
+                            break;
+
+                        case ConnectionRequestViewModelSortProperty.DateAddedDesc:
+                            requests = requests
+                                .OrderByDescending( cr => cr.CreatedDateTime )
+                                .ThenByDescending( cr => cr.Order )
+                                .ThenByDescending( cr => cr.Id )
+                                .ToList();
+                            break;
+
+                        case ConnectionRequestViewModelSortProperty.LastActivity:
+                            requests = requests
+                                .OrderBy( cr => cr.ConnectionRequestActivities.Max( cra => cra.CreatedDateTime ) )
+                                .ThenBy( cr => cr.Order )
+                                .ThenBy( cr => cr.Id )
+                                .ToList();
+                            break;
+
+                        case ConnectionRequestViewModelSortProperty.LastActivityDesc:
+                            requests = requests
+                                .OrderByDescending( cr => cr.ConnectionRequestActivities.Max( cra => cra.CreatedDateTime ) )
+                                .ThenByDescending( cr => cr.Order )
+                                .ThenByDescending( cr => cr.Id )
+                                .ToList();
+                            break;
+
+                        default:
+                            break;
+                    }
                 }
 
                 // Process the connection requests with the template.
@@ -274,6 +342,22 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// The states that results will be limited to.
             /// </value>
             public List<ConnectionState> ConnectionStates { get; set; }
+
+            /// <summary>
+            /// Gets or sets the campus to limit the results to.
+            /// </summary>
+            /// <value>The value of the campus to limit to, or null if you want to include all campuses.</value>
+            public Guid? CampusGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether to only show past due requests.
+            /// </summary>
+            public bool OnlyPastDue { get; set; }
+
+            /// <summary>
+            /// Gets or sets the sort property.
+            /// </summary>
+            public Rock.Common.Mobile.Enums.ConnectionRequestViewModelSortProperty? SortProperty { get; set; }
         }
 
         /// <summary>

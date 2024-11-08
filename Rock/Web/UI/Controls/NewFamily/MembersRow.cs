@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
     {
         private RockRadioButtonList _rblRole;
         private DefinedValuePicker _dvpTitle;
-        private RockTextBox _tbFirstName;
+        private FirstNameTextBox _tbFirstName;
         private RockTextBox _tbNickName;
         private RockTextBox _tbMiddleName;
         private RockTextBox _tbLastName;
@@ -400,7 +400,7 @@ namespace Rock.Web.UI.Controls
         {
             _rblRole = new RockRadioButtonList();
             _dvpTitle = new DefinedValuePicker();
-            _tbFirstName = new RockTextBox();
+            _tbFirstName = new FirstNameTextBox();
             _tbNickName = new RockTextBox();
             _tbMiddleName = new RockTextBox();
             _tbLastName = new RockTextBox();
@@ -464,18 +464,34 @@ namespace Rock.Web.UI.Controls
             _tbFirstName.Placeholder = "First Name";
             _tbFirstName.Required = true;
             _tbFirstName.RequiredErrorMessage = "First Name is required for all group members";
+            _tbFirstName.NoSpecialCharacters = true;
+            _tbFirstName.NoSpecialCharactersErrorMessage = "First Name cannot contain special characters such as quotes, parentheses, etc.";
+            _tbFirstName.NoEmojisOrSpecialFonts = true;
+            _tbFirstName.NoEmojisOrSpecialFontsErrorMessage = "First Name cannot contain emojis or special fonts.";
 
             _tbNickName.CssClass = "form-control";
             _tbNickName.Placeholder = "Nick Name";
+            _tbNickName.NoSpecialCharacters = true;
+            _tbNickName.NoSpecialCharactersErrorMessage = "Nick Name cannot contain special characters such as quotes, parentheses, etc.";
+            _tbNickName.NoEmojisOrSpecialFonts = true;
+            _tbNickName.NoEmojisOrSpecialFontsErrorMessage = "Nick Name cannot contain emojis or special fonts.";
 
             _tbMiddleName.CssClass = "form-control";
             _tbMiddleName.Placeholder = "Middle Name";
             _tbMiddleName.Required = false;
+            _tbMiddleName.NoSpecialCharacters = true;
+            _tbMiddleName.NoSpecialCharactersErrorMessage = "Middle Name cannot contain special characters such as quotes, parentheses, etc.";
+            _tbMiddleName.NoEmojisOrSpecialFonts = true;
+            _tbMiddleName.NoEmojisOrSpecialFontsErrorMessage = "Middle Name cannot contain emojis or special fonts.";
 
             _tbLastName.CssClass = "form-control";
             _tbLastName.Placeholder = "Last Name";
             _tbLastName.Required = true;
             _tbLastName.RequiredErrorMessage = "Last Name is required for all group members";
+            _tbLastName.NoSpecialCharacters = true;
+            _tbLastName.NoSpecialCharactersErrorMessage = "Last Name cannot contain special characters such as quotes, parentheses, etc.";
+            _tbLastName.NoEmojisOrSpecialFonts = true;
+            _tbLastName.NoEmojisOrSpecialFontsErrorMessage = "Last Name cannot contain emojis or special fonts.";
 
             _dvpSuffix.CssClass = "form-control";
             _dvpSuffix.DefinedTypeId = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ).Id;

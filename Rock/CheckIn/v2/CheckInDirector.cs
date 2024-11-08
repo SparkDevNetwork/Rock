@@ -19,10 +19,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 using Rock.Data;
 using Rock.Model;
 using Rock.Observability;
+using Rock.RealTime;
+using Rock.RealTime.Topics;
+using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
@@ -353,6 +357,7 @@ namespace Rock.CheckIn.v2
                 .Where( a => a.PersonAlias != null
                     && a.Occurrence.Group != null
                     && a.Occurrence.Schedule != null
+                    && a.Occurrence.Location != null
                     && a.StartDateTime >= cutoffDateTime
                     && a.DidAttend.HasValue
                     && a.DidAttend.Value == true
@@ -370,6 +375,7 @@ namespace Rock.CheckIn.v2
                 .Select( a => new
                 {
                     AttendanceId = a.Id,
+                    AttendanceGuid = a.Guid,
                     Status = a.CheckInStatus,
                     a.StartDateTime,
                     a.EndDateTime,
@@ -383,6 +389,7 @@ namespace Rock.CheckIn.v2
                 .ToList()
                 .Select( a => new RecentAttendance
                 {
+                    AttendanceGuid = a.AttendanceGuid,
                     AttendanceId = IdHasher.Instance.GetHash( a.AttendanceId ),
                     Status = a.Status,
                     StartDateTime = a.StartDateTime,
@@ -400,18 +407,17 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
-        /// Gets the current attendance for a set of locations. This includes
-        /// pending attendance records.
+        /// Gets the current attendance query for the date specified. This
+        /// includes pending attendance records.
         /// </summary>
         /// <param name="startDateTime">Attendance records must start on this date.</param>
-        /// <param name="locationIds">The location identifiers to load attendance data for.</param>
         /// <param name="rockContext">The database context to execute the query on.</param>
-        /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
-        public static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IReadOnlyList<int> locationIds, RockContext rockContext )
+        /// <returns>A queryable of <see cref="Attendance"/> records.</returns>
+        public static IQueryable<Attendance> GetCurrentAttendanceQuery( DateTime startDateTime, RockContext rockContext )
         {
             var attendanceService = new AttendanceService( rockContext );
 
-            var personAttendanceQuery = attendanceService.Queryable()
+            return attendanceService.Queryable()
                 .Where( a =>
                     a.Occurrence.OccurrenceDate == startDateTime.Date
                     && a.Occurrence.LocationId.HasValue
@@ -421,6 +427,19 @@ namespace Rock.CheckIn.v2
                     && a.DidAttend.HasValue
                     && a.DidAttend.Value == true
                     && !a.EndDateTime.HasValue );
+        }
+
+        /// <summary>
+        /// Gets the current attendance for a set of locations. This includes
+        /// pending attendance records.
+        /// </summary>
+        /// <param name="startDateTime">Attendance records must start on this date.</param>
+        /// <param name="locationIds">The location identifiers to load attendance data for.</param>
+        /// <param name="rockContext">The database context to execute the query on.</param>
+        /// <returns>A collection of <see cref="RecentAttendance"/> records.</returns>
+        public static List<RecentAttendance> GetCurrentAttendance( DateTime startDateTime, IReadOnlyList<int> locationIds, RockContext rockContext )
+        {
+            var personAttendanceQuery = GetCurrentAttendanceQuery( startDateTime, rockContext );
 
             personAttendanceQuery = WhereContains( personAttendanceQuery, locationIds, a => a.Occurrence.Location.Id );
 
@@ -428,6 +447,7 @@ namespace Rock.CheckIn.v2
                 .Select( a => new
                 {
                     AttendanceId = a.Id,
+                    AttendanceGuid = a.Guid,
                     Status = a.CheckInStatus,
                     a.StartDateTime,
                     a.EndDateTime,
@@ -441,6 +461,7 @@ namespace Rock.CheckIn.v2
                 .ToList()
                 .Select( a => new RecentAttendance
                 {
+                    AttendanceGuid = a.AttendanceGuid,
                     AttendanceId = IdHasher.Instance.GetHash( a.AttendanceId ),
                     Status = a.Status,
                     StartDateTime = a.StartDateTime,
@@ -502,7 +523,7 @@ namespace Rock.CheckIn.v2
 
             if ( !checkinTemplateTypeId.HasValue )
             {
-                throw new Exception( "Check-in Template Purpose was not found in the database, please check your installation." );
+                throw new CheckInMessageException( "Check-in Template Purpose was not found in the database, please check your installation." );
             }
 
             return GroupTypeCache.All( RockContext )
@@ -533,14 +554,112 @@ namespace Rock.CheckIn.v2
                 FamilySearchType = configuration.FamilySearchType,
                 IsAutoSelect = configuration.KioskCheckInType == Enums.CheckIn.KioskCheckInMode.Family
                     && configuration.AutoSelect == Enums.CheckIn.AutoSelectMode.PeopleAndAreaGroupLocation,
+                IsCheckoutAtKioskAllowed = configuration.IsCheckoutAtKioskAllowed,
                 IsLocationCountDisplayed = configuration.IsLocationCountDisplayed,
                 IsOverrideAvailable = configuration.IsOverrideAvailable,
                 IsPhotoHidden = configuration.IsPhotoHidden,
+                IsRemoveFromFamilyAtKioskAllowed = configuration.IsRemoveFromFamilyAtKioskAllowed,
                 IsSupervisorEnabled = configuration.IsSupervisorEnabled,
+                IsSameOptionUsed = configuration.IsSameOptionUsed,
                 MaximumPhoneNumberLength = configuration.MaximumPhoneNumberLength,
                 MinimumPhoneNumberLength = configuration.MinimumPhoneNumberLength,
                 PhoneSearchType = configuration.PhoneSearchType
             };
+        }
+
+        /// <summary>
+        /// Deletes the pending attendance records for the specified session.
+        /// </summary>
+        /// <param name="sessionGuid">The session's unique identifier.</param>
+        public void DeletePendingAttendance( Guid sessionGuid )
+        {
+            var attendanceService = new AttendanceService( RockContext );
+            var attendanceItems = attendanceService.Queryable()
+                .Where( a => a.AttendanceCheckInSession.Guid == sessionGuid
+                    && a.CheckInStatus == Enums.Event.CheckInStatus.Pending )
+                .ToList();
+
+            if ( !attendanceItems.Any() )
+            {
+                return;
+            }
+
+            attendanceService.DeleteRange( attendanceItems );
+
+            RockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Tries to authenticate the PIN code provided.
+        /// </summary>
+        /// <param name="pinCode">The PIN code to be authenticated.</param>
+        /// <param name="errorMessage">On return contains any error message that should be displayed.</param>
+        /// <returns><c>true</c> if the PIN code was valid and trusted; otherwise <c>false</c>.</returns>
+        public virtual bool TryAuthenticatePin( string pinCode, out string errorMessage )
+        {
+            var pinAuth = AuthenticationContainer.GetComponent( typeof( Rock.Security.Authentication.PINAuthentication ).FullName );
+
+            // Make sure PIN authentication is enabled.
+            if ( pinAuth == null || !pinAuth.IsActive )
+            {
+                errorMessage = "Sorry, we couldn't find an account matching that PIN.";
+                return false;
+            }
+
+            var userLoginService = new UserLoginService( RockContext );
+            var userLogin = userLoginService.GetByUserName( pinCode );
+
+            // Make sure this is a PIN auth user login.
+            if ( userLogin == null || !userLogin.EntityTypeId.HasValue || userLogin.EntityTypeId.Value != pinAuth.TypeId )
+            {
+                errorMessage = "Sorry, we couldn't find an account matching that PIN.";
+                return false;
+            }
+
+            // This should always return true, but just in case something changes
+            // in the future.
+            if ( !pinAuth.Authenticate( userLogin, null ) )
+            {
+                errorMessage = "Sorry, we couldn't find an account matching that PIN.";
+                return false;
+            }
+
+            if ( !( userLogin.IsConfirmed ?? true ) )
+            {
+                errorMessage = "Sorry, account needs to be confirmed.";
+                return false;
+            }
+            else if ( userLogin.IsLockedOut ?? false )
+            {
+                errorMessage = "Sorry, account is locked-out.";
+                return false;
+            }
+            else
+            {
+                errorMessage = string.Empty;
+                return true;
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Sends a <see cref="ICheckIn.RefreshKioskConfiguration"/> message
+        /// to the RealTime engine to let kiosks know that their configuration
+        /// may have changed.
+        /// </para>
+        /// <para>
+        /// The RealTime message will be sent in the background. This method
+        /// will return before it has been sent or even queued up.
+        /// </para>
+        /// </summary>
+        public static void SendRefreshKioskConfiguration()
+        {
+            Task.Run( () =>
+            {
+                var topicClients = RealTimeHelper.GetTopicContext<ICheckIn>().Clients;
+
+                return topicClients.All.RefreshKioskConfiguration();
+            } );
         }
 
         #endregion

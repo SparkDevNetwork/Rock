@@ -15,11 +15,11 @@
 
                 <div class="row">
                     <div class="col-sm-6">
-                        <Rock:RockTextBox ID="tbFirstName" runat="server" Required="false" Label="First Name" ValidationGroup="CaptivePortal" />
+                        <Rock:RockTextBox ID="tbFirstName" runat="server" Required="false" Label="First Name" ValidationGroup="CaptivePortal" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                     </div>
 
                     <div class="col-sm-6">
-                        <Rock:RockTextBox ID="tbLastName" runat="server" Required="false" Label="Last Name" ValidationGroup="CaptivePortal" />
+                        <Rock:RockTextBox ID="tbLastName" runat="server" Required="false" Label="Last Name" ValidationGroup="CaptivePortal" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                     </div>
                 </div>
 

@@ -78,6 +78,12 @@ namespace Rock.Model
                     entityTypeId = this.EntityType.Id;
                 }
 
+                // The first Parent of an Attribute should be the default Entity Type security for Rock.Model.Attribute so we return a new Attribute with an Id of 0 and we preserve the EntityTypeId to achieve that. (See AttributeCache.ParentAuthority)
+                if ( this.Id > 0 && entityTypeId.HasValue )
+                {
+                    return new Attribute { Id = 0, EntityTypeId = entityTypeId.Value };
+                }
+
                 if ( entityTypeId.HasValue )
                 {
                     var entityType = EntityTypeCache.Get( entityTypeId.Value );

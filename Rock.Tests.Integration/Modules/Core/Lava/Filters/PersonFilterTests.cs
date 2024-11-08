@@ -39,6 +39,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Filters
     /// These tests require the standard Rock sample data set to be present in the target database.
     /// </remarks>
     [TestClass]
+    [TestCategory( "Core.Crm.Person" )]
     public class PersonFilterTests : LavaIntegrationTestBase
     {
         #region Address

@@ -16,8 +16,6 @@
 //
 using System.Collections.Generic;
 
-using Rock.ViewModels.Utility;
-
 namespace Rock.ViewModels.CheckIn
 {
     /// <summary>
@@ -44,11 +42,11 @@ namespace Rock.ViewModels.CheckIn
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the campuses that this saved configuration can be
-        /// used with.
+        /// Gets or sets the campus identifiers that this saved configuration
+        /// can be used with.
         /// </summary>
-        /// <value>The campuses.</value>
-        public List<ListItemBag> Campuses { get; set; }
+        /// <value>The campus identifiers.</value>
+        public List<string> Campuses { get; set; }
 
         /// <summary>
         /// Gets or sets the settings for this saved configuration.

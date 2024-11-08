@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.AchievementAttemptDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Engagement
@@ -35,24 +36,26 @@ namespace Rock.Blocks.Engagement
     /// Displays the details of a particular achievement attempt.
     /// </summary>
 
-    [DisplayName( "Achievement Attempt Detail" )]
-    [Category( "Engagement" )]
-    [Description( "Displays the details of a particular achievement attempt." )]
+    [DisplayName( "Attempt Detail" )]
+    [Category( "Achievements" )]
+    [Description( "Displays the details of the given attempt for editing." )]
     [IconCssClass( "fa fa-question" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
+
     [LinkedPage(
         "Achievement Type Page",
         Description = "Page used for viewing the achievement type that this attempt is toward.",
         Key = AttributeKey.AchievementPage,
         IsRequired = false,
         Order = 2 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "a80564d5-701b-4f3a-8ba1-20baa2304da6" )]
     [Rock.SystemGuid.BlockTypeGuid( "fbe75c18-7f71-4d23-a546-7a17cf944ba6" )]
-    public class AchievementAttemptDetail : RockDetailBlockType
+    public class AchievementAttemptDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -85,6 +88,33 @@ namespace Rock.Blocks.Engagement
         private AchievementTypeCache _achievementTypeCache = null;
 
         #region Methods
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var key = pageReference.GetPageParameter( PageParameterKey.AchievementAttemptId );
+                var pageParameters = new Dictionary<string, string>();
+                var name = "New Attempt";
+
+                var date = new AchievementAttemptService( rockContext ).GetSelect( key, l => l.AchievementAttemptStartDateTime );
+
+                if ( date != null )
+                {
+                    pageParameters.Add( PageParameterKey.AchievementAttemptId, key );
+                    name = date.ToShortDateString();
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( name, breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+                };
+            }
+        }
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
@@ -196,18 +226,14 @@ namespace Rock.Blocks.Engagement
             var bag = new AchievementAttemptBag
             {
                 IdKey = entity.IdKey,
-                AchievementAttemptEndDateTime = entity.AchievementAttemptEndDateTime,
-                AchievementAttemptStartDateTime = entity.Id == 0 ? RockDateTime.Now : entity.AchievementAttemptStartDateTime,
+                AchievementAttemptEndDateTime = entity.AchievementAttemptEndDateTime.HasValue ? entity.AchievementAttemptEndDateTime.Value.ToRockDateTimeOffset() : ( DateTimeOffset? ) null,
+                AchievementAttemptStartDateTime = entity.Id == 0 ? RockDateTime.Now : entity.AchievementAttemptStartDateTime.ToRockDateTimeOffset(),
                 AchievementType = GetAchievementTypeCache().ToListItemBag(),
                 IsClosed = entity.IsClosed,
                 IsSuccessful = entity.IsSuccessful,
-                Progress = entity.Progress
+                Progress = entity.Progress.ToString(),
+                AchieverEntityId = entity.AchieverEntityId == 0 ? null : entity.AchieverEntityId.ToString()
             };
-
-            if ( entity.Id != 0 )
-            {
-                bag.AchieverEntityId = entity.Id;
-            }
 
             return bag;
         }
@@ -277,13 +303,13 @@ namespace Rock.Blocks.Engagement
             }
 
             box.IfValidProperty( nameof( box.Entity.AchievementAttemptStartDateTime ),
-                () => entity.AchievementAttemptStartDateTime = box.Entity.AchievementAttemptStartDateTime );
+                () => entity.AchievementAttemptStartDateTime = box.Entity.AchievementAttemptStartDateTime.DateTime );
 
             box.IfValidProperty( nameof( box.Entity.AchievementType ),
                 () => entity.AchievementTypeId = box.Entity.AchievementType.GetEntityId<AchievementType>( rockContext ).Value );
 
             box.IfValidProperty( nameof( box.Entity.AchieverEntityId ),
-                () => entity.AchieverEntityId = box.Entity.AchieverEntityId.GetValueOrDefault() );
+                () => entity.AchieverEntityId = box.Entity.AchieverEntityId.AsInteger() );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -408,7 +434,7 @@ namespace Rock.Blocks.Engagement
 
             if ( achiever is PersonAlias personAlias )
             {
-                personImageStringBuilder.AppendFormat( photoFormat, personAlias.PersonId, personAlias.Person.PhotoUrl, RequestContext.ResolveRockUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) );
+                personImageStringBuilder.AppendFormat( photoFormat, personAlias.PersonId, personAlias.Person.PhotoUrl, personAlias.Person.PhotoUrl );
                 personImageStringBuilder.AppendFormat( nameLinkFormat, personAlias.Person.FullName, personAlias.PersonId );
             }
             else
@@ -593,7 +619,7 @@ namespace Rock.Blocks.Engagement
                 }
 
                 var achievementType = AchievementTypeCache.Get( entity.AchievementTypeId );
-                var progress = box.Entity.Progress;
+                var progress = box.Entity.Progress.AsDecimal();
 
                 if ( progress < 0m )
                 {
@@ -618,8 +644,8 @@ namespace Rock.Blocks.Engagement
                 }
 
                 entity.IsClosed = ( box.Entity.AchievementAttemptEndDateTime.HasValue && box.Entity.AchievementAttemptEndDateTime.Value < RockDateTime.Today ) || ( isSuccess && !achievementType.AllowOverAchievement );
-                entity.AchievementAttemptStartDateTime = box.Entity.AchievementAttemptStartDateTime;
-                entity.AchievementAttemptEndDateTime = box.Entity.AchievementAttemptEndDateTime;
+                entity.AchievementAttemptStartDateTime = box.Entity.AchievementAttemptStartDateTime.DateTime;
+                entity.AchievementAttemptEndDateTime = box.Entity.AchievementAttemptEndDateTime?.DateTime;
                 entity.Progress = progress;
                 entity.IsSuccessful = isSuccess;
 
@@ -690,10 +716,15 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( errorMessage );
                 }
 
+                var parameters = new Dictionary<string, string>
+                {
+                    [PageParameterKey.AchievementTypeId] = entity.AchievementTypeId.ToString()
+                };
+
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                return ActionOk( this.GetParentPageUrl( parameters ) );
             }
         }
 

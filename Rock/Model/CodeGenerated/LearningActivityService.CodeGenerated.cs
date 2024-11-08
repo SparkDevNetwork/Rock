@@ -114,12 +114,12 @@ namespace Rock.Model
             target.ActivityComponentId = source.ActivityComponentId;
             target.ActivityComponentSettingsJson = source.ActivityComponentSettingsJson;
             target.AssignTo = source.AssignTo;
-            target.AvailableDateCalculationMethod = source.AvailableDateCalculationMethod;
+            target.AvailabilityCriteria = source.AvailabilityCriteria;
             target.AvailableDateDefault = source.AvailableDateDefault;
             target.AvailableDateOffset = source.AvailableDateOffset;
             target.CompletionWorkflowTypeId = source.CompletionWorkflowTypeId;
             target.Description = source.Description;
-            target.DueDateCalculationMethod = source.DueDateCalculationMethod;
+            target.DueDateCriteria = source.DueDateCriteria;
             target.DueDateDefault = source.DueDateDefault;
             target.DueDateOffset = source.DueDateOffset;
             target.ForeignGuid = source.ForeignGuid;

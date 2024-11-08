@@ -41,6 +41,7 @@
                     <Rock:HiddenFieldWithClass ID="hfHasClientPrinter" runat="server" CssClass="js-has-client-printer" />
                     <Rock:NotificationBox ID="nbReprintMessage" runat="server" CssClass="js-reprintlabel-notification" Visible="false"></Rock:NotificationBox>
                     <Rock:ModalAlert ID="maNoLabelsFound" runat="server"></Rock:ModalAlert>
+                    <Rock:ModalAlert ID="maPrintResult" runat="server"></Rock:ModalAlert>
                     <asp:HiddenField ID="hfCurrentAttendanceIds" runat="server" />
                     <asp:HiddenField ID="hfPersonId" runat="server" />
                     <div>

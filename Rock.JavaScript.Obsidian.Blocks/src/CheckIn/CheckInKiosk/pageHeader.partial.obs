@@ -1,12 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <header class="check-in-panel page-header">
-        <div class="title">{{ props.title }}</div>
+        <div class="logo"></div>
 
-        <RockButton v-if="!hideNavigation"
+        <span v-if="isOverrideMode"
+                class="label label-warning text-lg">
+            Override
+        </span>
+
+        <RockButton v-if="!hideNavigation && props.hasBack"
                     btnType="default"
+                    btnSize="sm"
                     class="back-button"
-                    :disabled="!hasBack"
                     @click="onBack">
             <i class="fa fa-chevron-left"></i>
         </RockButton>
@@ -26,12 +31,6 @@
     import { PropType } from "vue";
 
     const props = defineProps({
-        /** The title to display in the header. */
-        title: {
-            type: String as PropType<string>,
-            required: true
-        },
-
         /** True if the back button is valid. */
         hasBack: {
             type: Boolean as PropType<boolean>,
@@ -42,6 +41,11 @@
         hideNavigation: {
             type: Boolean as PropType<boolean>,
             required: false
+        },
+
+        isOverrideMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

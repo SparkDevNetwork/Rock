@@ -283,7 +283,7 @@ namespace Rock.Model
                         s.RecipientPersonAliasId,
                         s.RecipientPersonGuid
                     } ).OrderByDescending( s => s.CreatedDateTime ).FirstOrDefault()
-                );
+                ).OrderByDescending( s => s.CreatedDateTime );
 
             var mostRecentCommunicationResponseList = mostRecentCommunicationResponseQuery
                 .Select( r => new

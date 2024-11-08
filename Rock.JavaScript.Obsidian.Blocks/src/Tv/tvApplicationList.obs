@@ -1,0 +1,167 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="TV Application"
+          :entityTypeGuid="EntityType.Site"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="description"
+                    title="Description"
+                    field="description"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="platform"
+                    title="Platform"
+                    field="tvPlatform"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <SecurityColumn />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { SiteListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteList/siteListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./TvApplicationList/types.partial";
+    import { ButtonOptions } from "@Obsidian/Utility/dialogs";
+    import { showDialog } from "@Obsidian/Utility/dialogs";
+    import { DialogOptions } from "@Obsidian/Utility/dialogs";
+    import { reactive, ref } from "vue";
+
+    const config = useConfigurationValues<ListBlockBox<SiteListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        var rowItem = gridData?.rows?.find(r => r["idKey"] === key);
+        if (!rowItem || !rowItem["tvPlatform"]) {
+            return;
+        }
+
+        var platform = rowItem["tvPlatform"];
+        if (platform === "Roku" && config.navigationUrls?.[NavigationUrlKey.RokuDetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.RokuDetailPage].replace("((Key))", key);
+        }
+        else if (platform === "Apple Tv" && config.navigationUrls?.[NavigationUrlKey.AppleTvDetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.AppleTvDetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete site.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    async function onAddItem(): Promise<void> {
+        var cancelButtonOptions = {
+            label: "Cancel",
+            key: "cancel",
+            className: "btn btn-link"
+        } as ButtonOptions;
+
+        var addRokuButtonOptions = {
+            label: "Roku",
+            key: "addRoku",
+            className: "btn btn-primary"
+        } as ButtonOptions;
+
+        var addAppleTvButtonOptions = {
+            label: "Apple TV",
+            key: "addAppleTv",
+            className: "btn btn-primary"
+        } as ButtonOptions;
+
+        const options = {
+            message: "Select TV platform to add",
+            buttons: [addRokuButtonOptions, addAppleTvButtonOptions, cancelButtonOptions]
+        } as DialogOptions;
+
+        var result = await showDialog(options);
+
+        if (result === "addRoku" && config.navigationUrls?.[NavigationUrlKey.RokuDetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.RokuDetailPage].replace("((Key))", "0");
+        }
+        else if (result === "addAppleTv" && config.navigationUrls?.[NavigationUrlKey.AppleTvDetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.AppleTvDetailPage].replace("((Key))", "0");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

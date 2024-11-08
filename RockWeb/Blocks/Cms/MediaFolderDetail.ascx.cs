@@ -75,12 +75,12 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( PageParameterKey.MediaFolderId ).AsInteger(), PageParameter( PageParameterKey.MediaAccountId ).AsIntegerOrNull() );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

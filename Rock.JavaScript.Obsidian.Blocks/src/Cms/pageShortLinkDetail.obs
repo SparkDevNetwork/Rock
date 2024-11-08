@@ -17,6 +17,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  :footerSecondaryActions="internalFooterSecondaryActions"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
@@ -27,7 +28,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="pageShortLinkEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="pageShortLinkEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -41,12 +42,12 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./PageShortLinkDetail/editPanel.partial.obs";
     import ViewPanel from "./PageShortLinkDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./PageShortLinkDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<PageShortLinkBag, PageShortLinkDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -58,25 +59,16 @@
     const errorMessage = ref("");
 
     const pageShortLinkViewBag = ref(config.entity);
-    const pageShortLinkEditBag = ref<PageShortLinkBag>({} as PageShortLinkBag);
+    const pageShortLinkEditBag = ref<ValidPropertiesBox<PageShortLinkBag>>({
+        bag: {} as PageShortLinkBag
+    });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "site",
-        "token",
-        "url",
-        "utmSourceValue",
-        "utmMediumValue",
-        "utmCampaignValue",
-        "utmTerm",
-        "utmContent"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(pageShortLinkEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: pageShortLinkEditBag
+    });
 
     // #endregion
 
@@ -147,7 +139,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!pageShortLinkEditBag.value?.idKey) {
+        if (!pageShortLinkEditBag.value.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -188,12 +180,12 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<PageShortLinkBag, PageShortLinkDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<PageShortLinkBag>>("Edit", {
             key: pageShortLinkViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            pageShortLinkEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data) {
+            pageShortLinkEditBag.value = result.data;
 
             return true;
         }
@@ -209,23 +201,6 @@
     }
 
     /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
-    }
-
-    /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.
      *
@@ -234,14 +209,8 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<PageShortLinkBag, PageShortLinkDetailOptionsBag> = {
-            entity: pageShortLinkEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
         const result = await invokeBlockAction<PageShortLinkBag | string>("Save", {
-            box: data
+            box: pageShortLinkEditBag.value
         });
 
         if (result.isSuccess && result.data) {
@@ -272,7 +241,7 @@
         blockError.value = "The specified page short link could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        pageShortLinkEditBag.value = config.entity;
+        pageShortLinkEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

@@ -131,15 +131,6 @@
                          MouseDoubleClick="RestFolderTextBox_MouseDoubleClick"
                          Text="{Binding RestFolder}" />
 
-                <CheckBox Grid.Row="2"
-                          Grid.Column="0"
-                          IsChecked="{Binding IsClientChecked}">Client</CheckBox>
-                <TextBox Grid.Row="2"
-                         Grid.Column="1"
-                         Margin="5,0,0,5"
-                         MouseDoubleClick="ClientFolderTextBox_MouseDoubleClick"
-                         Text="{Binding ClientFolder}" />
-
                 <CheckBox Grid.Row="3"
                           Grid.Column="0"
                           IsChecked="{Binding IsDatabaseProcsChecked}">Database Procs</CheckBox>

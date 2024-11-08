@@ -339,10 +339,12 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <param name="userLoginInfo">The username of the person to look for or create. This is usually dependent on the
         /// authentication provider. For instance, an Auth0 related username is "AUTH0_{FOREIGN_KEY}. It is up to the person
         /// implementing this method into an external authentication provider to make sure the username is formatted correctly."</param>
+        /// <param name="connectionStatusValueId">The connection status to use when generating a new person.</param>
+        /// <param name="recordStatusValueId">The record status to use when generating a </param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
         [RockInternal( "1.15.1" )]
-        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag personInfo, ExternalAuthUserLoginBag userLoginInfo, RockContext rockContext = null )
+        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag personInfo, ExternalAuthUserLoginBag userLoginInfo, RockContext rockContext = null, int? connectionStatusValueId = null, int? recordStatusValueId = null )
         {
             rockContext = rockContext ?? new RockContext();
             UserLogin user = null;
@@ -356,7 +358,16 @@ namespace Rock.Blocks.Types.Mobile.Cms
             if ( user == null )
             {
                 var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                var personStatusPending = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+
+                if( connectionStatusValueId == null )
+                {
+                    connectionStatusValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id;
+                }
+
+                if( recordStatusValueId == null )
+                {
+                    recordStatusValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+                }
 
                 //
                 // Build the person match query based off of the data the external authentication returned.
@@ -381,7 +392,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 var personService = new PersonService( rockContext );
 
                 person = personService.FindPerson( personMatchQuery, true );
-
                 rockContext.WrapTransaction( () =>
                 {
                     // If we couldn't match a person, we should create a new one.
@@ -390,7 +400,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         person = new Person();
                         person.IsSystem = false;
                         person.RecordTypeValueId = personRecordTypeId;
-                        person.RecordStatusValueId = personStatusPending;
+                        person.RecordStatusValueId = recordStatusValueId;
+                        person.ConnectionStatusValueId = connectionStatusValueId;
                         person.FirstName = firstName;
                         person.LastName = lastName;
                         person.Email = email;
@@ -671,7 +682,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 }
 
                 // Create or retrieve a Person using the information provided in the external authentication info bag.
-                var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerInfo, rockContext );
+                var additionalSettings = this.PageCache.Layout.Site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+                var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerInfo, rockContext, additionalSettings?.Auth0ConnectionStatusValueId, additionalSettings?.Auth0RecordStatusValueId );
 
                 // Something went wrong or we didn't receive enough information to create a Person.
                 if ( userLogin == null )

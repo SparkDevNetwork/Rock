@@ -1,9 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <div v-if="!achieverId" class="row">
+        <div v-if="!hasValidIdkey" class="row">
             <div class="col-md-6" id="divAchiever" runat="server">
-                <NumberBox v-model="achieverId" rules="required" label="Achiever Id" />
+                <TextBox v-model="achieverId"
+                         :rules="achieverIdRules"
+                         label="Achiever Id" />
             </div>
             <div class="col-md-6" id="divAchievement" runat="server">
                 <AchievementTypePicker v-model="achievementType" rules="required" label="Achievement" :multiple="false" />
@@ -23,10 +25,11 @@
                             help="The date that progress toward this attempt ended." />
             </div>
             <div class="col-md-6">
-                <NumberBox v-model="progress"
-                           class="input-width-md"
-                           label="Progress"
-                           help="The percent towards completion of this attempt. 0.5 is 50%, 1 is 100%, etc." />
+                <TextBox v-model="progress"
+                         class="input-width-md"
+                         :rules="validateNumberValue"
+                         label="Progress"
+                         help="The percent towards completion of this attempt. 0.5 is 50%, 1 is 100%, etc." />
             </div>
         </div>
 
@@ -35,15 +38,16 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AchievementAttemptBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptDetail/achievementAttemptBag";
     import { AchievementAttemptDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementAttemptDetail/achievementAttemptDetailOptionsBag";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import AchievementTypePicker from "@Obsidian/Controls/achievementTypePicker.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
+import { ValidationRule } from "@Obsidian/Types/validationRules";
 
     const props = defineProps({
         modelValue: {
@@ -66,11 +70,11 @@
 
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const achieverId = propertyRef(props.modelValue.achieverEntityId ?? null, "AchieverEntityId");
+    const achieverId = propertyRef(props.modelValue.achieverEntityId ?? "", "AchieverEntityId");
     const achievementType = propertyRef(props.modelValue.achievementType ?? {}, "AchievementType");
     const achievementAttemptStartDateTime = propertyRef(props.modelValue.achievementAttemptStartDateTime ?? "", "AchievementAttemptStartDateTime");
     const achievementAttemptEndDateTime = propertyRef(props.modelValue.achievementAttemptEndDateTime ?? "", "AchievementAttemptEndDateTime");
-    const progress = propertyRef(props.modelValue.progress, "Progress");
+    const progress = propertyRef(props.modelValue.progress ?? "", "Progress");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -80,13 +84,39 @@
 
     // #region Computed Values
 
+    const hasValidIdkey = computed((): boolean => {
+        return !!props.modelValue.idKey;
+    });
+
+    const achieverIdRules = computed((): ValidationRule[] => {
+        const rules: ValidationRule[] = ["required", validateNumberValue];
+        return rules;
+    });
+
     // #endregion
 
     // #region Functions
 
-    // #endregion
+    function validateNumberValue(value: unknown): string | boolean {
 
-    // #region Event Handlers
+        const stringValue = value as string;
+
+        if (stringValue) {
+            const num = Number(value);
+            if (!isValidNumber(num)) {
+                return "must be a valid number.";
+            }
+            else if (num < 0) {
+                return "must be a valid number.";
+            }
+        }
+
+        return true;
+    }
+
+    function isValidNumber(num: number): boolean {
+        return !isNaN(num) && isFinite(num);
+    }
 
     // #endregion
 
@@ -94,11 +124,11 @@
     watch(() => props.modelValue, () => {
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(achieverId, props.modelValue.achieverEntityId ?? null);
+        updateRefValue(achieverId, props.modelValue.achieverEntityId ?? "");
         updateRefValue(achievementType, props.modelValue.achievementType ?? {});
         updateRefValue(achievementAttemptStartDateTime, props.modelValue.achievementAttemptStartDateTime ?? "");
         updateRefValue(achievementAttemptEndDateTime, props.modelValue.achievementAttemptEndDateTime ?? "");
-        updateRefValue(progress, props.modelValue.progress);
+        updateRefValue(progress, props.modelValue.progress ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the

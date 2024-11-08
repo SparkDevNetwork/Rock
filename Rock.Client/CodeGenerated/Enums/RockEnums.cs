@@ -1865,6 +1865,31 @@ namespace Rock.Client.Enums.Blocks.Security.Login
 
 }
 
+namespace Rock.Client.Enums.WebFarm
+{
+    /// <summary>
+    /// </summary>
+    public enum LogSeverity
+    {
+        Info = 0x0,
+        Warning = 0x1,
+        Critical = 0x2,
+    }
+
+    /// <summary>
+    /// </summary>
+    public enum LogType
+    {
+        Availability = 0x0,
+        Ping = 0x1,
+        Pong = 0x2,
+        Startup = 0x3,
+        Shutdown = 0x4,
+        Error = 0x5,
+    }
+
+}
+
 namespace Rock.Client.Enums.Blocks.Engagement.SignUp
 {
     /// <summary>

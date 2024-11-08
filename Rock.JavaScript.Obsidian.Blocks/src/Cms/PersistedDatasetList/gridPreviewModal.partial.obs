@@ -27,7 +27,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ref, watch, defineProps, defineEmits, PropType } from "vue";
+    import { ref, watch, PropType } from "vue";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 

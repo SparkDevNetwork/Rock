@@ -124,6 +124,7 @@ namespace Rock.Model
             target.EntityTypeId = source.EntityTypeId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsActionCompletedIfCriteriaUnmet = source.IsActionCompletedIfCriteriaUnmet;
             target.IsActionCompletedOnSuccess = source.IsActionCompletedOnSuccess;
             target.IsActivityCompletedOnSuccess = source.IsActivityCompletedOnSuccess;
             target.Name = source.Name;

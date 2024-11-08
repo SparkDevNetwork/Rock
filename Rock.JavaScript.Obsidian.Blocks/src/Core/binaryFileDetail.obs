@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
+    <RockForm v-if="isBlockVisible" v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
 
         <Panel :title="panelName" :headerSecondaryActions="headerSecondaryActions" type="block">
 
@@ -121,6 +121,10 @@
         return config.isEditable === true;
     });
 
+    const isBlockVisible = computed((): boolean => {
+        return config.options?.isBlockVisible === true;
+    });
+
     /**
      * The entity name to display in the block panel.
      */
@@ -135,7 +139,7 @@
     });
 
     const options = computed((): BinaryFileDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {} as BinaryFileDetailOptionsBag;
     });
 
     const headerSecondaryActions = computed((): PanelAction[] => {
@@ -284,9 +288,9 @@
      * Redirects the user to the Edit Label page is the page has been configured via the block settings.
      */
     function onEditLabelClick(): void {
-        if (isEditable.value === true && binaryFileEditBag.value.file?.value) {
+        if (isEditable.value === true && binaryFileEditBag.value.fileId) {
             if (config.navigationUrls?.[NavigationUrlKey.EditLabelPage]) {
-                window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.EditLabelPage]);
+                window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.EditLabelPage].replace("((Key))", binaryFileEditBag.value.fileId));
             }
         }
     }

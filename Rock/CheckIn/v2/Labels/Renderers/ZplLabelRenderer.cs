@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -34,12 +35,6 @@ namespace Rock.CheckIn.v2.Labels.Renderers
     /// </summary>
     internal class ZplLabelRenderer : TextLabelRenderer
     {
-        /// <summary>
-        /// Holds a lookup table to quickly convert byte arrays to hex strings
-        /// for writing to the ZPL content.
-        /// </summary>
-        private static readonly uint[] _hexLookupTable = CreateLookup32();
-
         /// <summary>
         /// The DPI of the printer. If not known we default to 203.
         /// </summary>
@@ -115,8 +110,8 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             if ( config.CollectionFormat == TextCollectionFormat.TwoColumn )
             {
-                var col1Value = string.Join( "\\&", values.Where( ( _, idx ) => idx % 1 == 0 ) );
-                var col2Value = string.Join( "\\&", values.Where( ( _, idx ) => idx % 1 == 1 ) );
+                var col1Value = string.Join( "\\&", values.Where( ( _, idx ) => idx % 2 == 0 ) );
+                var col2Value = string.Join( "\\&", values.Where( ( _, idx ) => idx % 2 == 1 ) );
 
                 // Calculate column width with 1/4 inch gutter between.
                 var gutter = 0.25;
@@ -184,7 +179,13 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                 writer.Write( "^FR" );
             }
 
-            var fontSize = GetFontDotSize( config.FontSize );
+            if ( config.MaxLength > 0 )
+            {
+                textValue = textValue.Truncate( config.MaxLength );
+            }
+
+            var fontSizeInPoints = GetFontSize( textValue.Length, config.FontSize, config.AdaptiveFontSize );
+            var fontSize = GetFontDotSize( fontSizeInPoints );
             var horizontalFontSize = fontSize;
             var lineCount = Math.Max( 1, ( int ) Math.Round( ToDots( height ) / ( double ) fontSize ) );
             var alignment = "L";
@@ -192,6 +193,9 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             if ( config.HorizontalAlignment == HorizontalTextAlignment.Center )
             {
                 alignment = "C";
+                // If the text does not end in a ZPL newline then the alignment
+                // doesn't work exactly as expected.
+                textValue += "\\&";
             }
             else if ( config.HorizontalAlignment == HorizontalTextAlignment.Right )
             {
@@ -205,11 +209,6 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             else if ( config.IsCondensed )
             {
                 horizontalFontSize = ( int ) Math.Floor( fontSize * 0.8 );
-            }
-
-            if ( config.MaxLength > 0 )
-            {
-                textValue = textValue.Truncate( config.MaxLength );
             }
 
             writer.WriteLine( $"^FB{ToDots( width )},{lineCount},0,{alignment}^A0,{horizontalFontSize},{fontSize}^FD{textValue}^FS" );
@@ -381,7 +380,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             writer.Write( $"^GFA,{image.ImageData.Length},{image.ImageData.Length},{( width + 7 ) / 8}," );
 
-            writer.Write( ByteArrayToHexViaLookup32( image.ImageData ) );
+            writer.Write( image.ZplContent );
 
             writer.WriteLine( "^FS" );
         }
@@ -409,7 +408,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             try
             {
-                image = GetImage( config.ImageData, options, false );
+                image = GetImage( config.ImageData, config.ImageId?.ToString(), options );
             }
             catch
             {
@@ -425,7 +424,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             writer.Write( $"^GFA,{image.ImageData.Length},{image.ImageData.Length},{( width + 7 ) / 8}," );
 
-            writer.Write( ByteArrayToHexViaLookup32( image.ImageData ) );
+            writer.Write( image.ZplContent );
 
             writer.WriteLine( "^FS" );
         }
@@ -458,6 +457,11 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                 return;
             }
 
+            if ( image == null )
+            {
+                return;
+            }
+
             WriteFieldOrigin( writer, field );
 
             if ( config.IsColorInverted )
@@ -467,7 +471,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             writer.Write( $"^GFA,{image.ImageData.Length},{image.ImageData.Length},{( width + 7 ) / 8}," );
 
-            writer.Write( ByteArrayToHexViaLookup32( image.ImageData ) );
+            writer.Write( image.ZplContent );
 
             writer.WriteLine( "^FS" );
         }
@@ -482,9 +486,17 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             var config = field.GetConfiguration<BarcodeFieldConfiguration>();
             string content = null;
 
-            if ( config.IsDynamic )
+            if ( config.IsDynamic && config.DynamicTextTemplate.IsNotNullOrWhiteSpace() )
             {
-                content = config.DynamicTextTemplate;
+                if ( config.DynamicTextTemplate.IsLavaTemplate() )
+                {
+                    var mergeFields = PrintRequest.GetMergeFields();
+                    content = config.DynamicTextTemplate.ResolveMergeFields( mergeFields );
+                }
+                else
+                {
+                    content = config.DynamicTextTemplate;
+                }
             }
             else if ( PrintRequest.LabelData is ILabelDataHasPerson personData )
             {
@@ -528,7 +540,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                     // a dot width in multiples of 8 to match the GRF format.
                     writer.Write( $"^GFA,{grf.Length},{grf.Length},{( size + 7 ) / 8}," );
 
-                    writer.Write( ByteArrayToHexViaLookup32( grf ) );
+                    writer.Write( ZplImageHelper.ByteArrayToHexViaLookup32( grf ) );
                 }
 
                 writer.WriteLine( "^FS" );
@@ -569,6 +581,31 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         }
 
         /// <summary>
+        /// Gets the font size to use for the given text value length.
+        /// </summary>
+        /// <param name="textLength">The length of the text string to be rendered.</param>
+        /// <param name="baseFontSize">The base font size that will be used if no adaptive size is found.</param>
+        /// <param name="adaptiveFontSizes">The table of adaptive font sizes.</param>
+        /// <returns>The font size to use.</returns>
+        private double GetFontSize( int textLength, double baseFontSize, Dictionary<int, double> adaptiveFontSizes )
+        {
+            if ( adaptiveFontSizes != null )
+            {
+                var size = adaptiveFontSizes
+                    .Where( a => textLength >= a.Key )
+                    .OrderByDescending( a => a.Key )
+                    .FirstOrDefault();
+
+                if ( size.Value > 0 )
+                {
+                    return size.Value;
+                }
+            }
+
+            return baseFontSize;
+        }
+
+        /// <summary>
         /// Gets the font size in dot units that the printer understands.
         /// </summary>
         /// <param name="fontSizeInPoints">The font size from the field.</param>
@@ -589,16 +626,22 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         /// specified in the options.
         /// </summary>
         /// <param name="imageData">The source image data.</param>
+        /// <param name="dataKey">The key to uniquely identify the image data amongst other label images.</param>
         /// <param name="options">The options to apply to the conversion process.</param>
-        /// <param name="ignoreCache"><c>true</c> if the cache should be ignored.</param>
         /// <returns>An instance of <see cref="ZplImageCache"/>.</returns>
         [ExcludeFromCodeCoverage]
-        protected internal virtual ZplImageCache GetImage( byte[] imageData, ZplImageOptions options, bool ignoreCache )
+        protected internal virtual ZplImageCache GetImage( byte[] imageData, string dataKey, ZplImageOptions options )
         {
-            using ( var stream = new MemoryStream( imageData ) )
+            var dataHash = dataKey.IsNotNullOrWhiteSpace() ? dataKey : xxHashSharp.xxHash.CalculateHash( imageData ).ToString();
+            var cacheKey = $"{dataHash}_{options.Width}_{options.Height}_{options.Brightness}_{options.Dithering}";
+
+            return ZplImageCache.GetOrAddExisting( cacheKey, () =>
             {
-                return ZplImageHelper.CreateImage( stream, options );
-            }
+                using ( var stream = new MemoryStream( imageData ) )
+                {
+                    return ZplImageHelper.CreateImage( stream, options );
+                }
+            } );
         }
 
         /// <summary>
@@ -611,7 +654,12 @@ namespace Rock.CheckIn.v2.Labels.Renderers
         [ExcludeFromCodeCoverage]
         protected internal virtual ZplImageCache GetIcon( int width, int height, LabelIcon icon )
         {
-            return ZplImageHelper.CreateIcon( width, height, icon );
+            var cacheKey = $"{icon.Value}_{width}_{height}";
+
+            return ZplImageCache.GetOrAddExisting( cacheKey, () =>
+            {
+                return ZplImageHelper.CreateIcon( width, height, icon );
+            } );
         }
 
         /// <summary>
@@ -701,46 +749,6 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             }
 
             return grf;
-        }
-
-        /// <summary>
-        /// Creates a lookup table for fast byte to Hex conversion.
-        /// </summary>
-        /// <returns>An array of lookup values.</returns>
-        private static uint[] CreateLookup32()
-        {
-            var result = new uint[256];
-
-            for ( int i = 0; i < 256; i++ )
-            {
-                string s = i.ToString( "X2" );
-                result[i] = s[0] + ( ( uint ) s[1] << 16 );
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Converts an array of bytes into a hex string extremely fast. This
-        /// uses a lookup table and pre-allocates the character array to maximize
-        /// speed and reduce allocations.
-        /// </summary>
-        /// <param name="bytes">The array of bytes to convert to hex.</param>
-        /// <returns>A string that represents <paramref name="bytes"/> as a hexadecimal string.</returns>
-        private static string ByteArrayToHexViaLookup32( byte[] bytes )
-        {
-            var lookup32 = _hexLookupTable;
-            var result = new char[bytes.Length * 2];
-
-            for ( int i = 0; i < bytes.Length; i++ )
-            {
-                var val = lookup32[bytes[i]];
-
-                result[2 * i] = ( char ) val;
-                result[2 * i + 1] = ( char ) ( val >> 16 );
-            }
-
-            return new string( result );
         }
 
         /// <summary>

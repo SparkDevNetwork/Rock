@@ -5400,6 +5400,22 @@ END
         }
 
         /// <summary>
+        /// Adds the security authentication for rest controller by the full class name.
+        /// This is temporary until we can fully migrate to Guids. Please don't make public.
+        /// </summary>
+        /// <param name="restControllerClass">The rest controller full class name.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        internal void AddSecurityAuthForRestControllerByFullClassName( string restControllerClass, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        {
+            AddSecurityAuthForEntityBase( "Rock.Model.RestController", "RestController", restControllerClass, order, action, allow, groupGuid, specialRole, authGuid, nameof( RestController.ClassName ) );
+        }
+
+        /// <summary>
         /// Adds the security authentication for content channel.
         /// </summary>
         /// <param name="contentChannelGuid">The content channel unique identifier.</param>

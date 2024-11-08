@@ -64,6 +64,12 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInLabelDetail
         public LabelFormat LabelFormat { get; set; }
 
         /// <summary>
+        /// The label content to be edited. This is only valid if LabelFormat
+        /// is ZPL.
+        /// </summary>
+        public string LabelContent { get; set; }
+
+        /// <summary>
         /// The size of the label specified in inches in the format "WxH".
         /// </summary>
         public string LabelSize { get; set; }

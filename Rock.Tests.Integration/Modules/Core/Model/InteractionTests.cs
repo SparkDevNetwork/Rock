@@ -25,7 +25,7 @@ using Rock.Tests.Shared.TestFramework;
 namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    [TestCategory( "Interactions" )]
+    [TestCategory( "Cms.Interactions" )]
     public class InteractionTests : DatabaseTestsBase
     {
         private readonly string interactionForeignKey = $"Test {Guid.NewGuid()}";

@@ -30,12 +30,12 @@ namespace Rock.ViewModels.Blocks.Engagement.AchievementAttemptDetail
         /// <summary>
         /// Gets or sets the achievement attempt end date time.
         /// </summary>
-        public DateTime? AchievementAttemptEndDateTime { get; set; }
+        public DateTimeOffset? AchievementAttemptEndDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the achievement attempt start date time.
         /// </summary>
-        public DateTime AchievementAttemptStartDateTime { get; set; }
+        public DateTimeOffset AchievementAttemptStartDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the Rock.Model.AchievementType of this attempt.
@@ -47,7 +47,7 @@ namespace Rock.ViewModels.Blocks.Engagement.AchievementAttemptDetail
         /// NOTE: In the case of a Person achievement, this could either by PersonAliasId or PersonId (but probably PersonAliasId)
         /// depending on Rock.Model.AchievementType.AchievementEntityType
         /// </summary>
-        public int? AchieverEntityId { get; set; }
+        public string AchieverEntityId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this attempt is closed.
@@ -62,7 +62,7 @@ namespace Rock.ViewModels.Blocks.Engagement.AchievementAttemptDetail
         /// <summary>
         /// Gets or sets the progress. This is a percentage so .25 is 25% and 1 is 100%.
         /// </summary>
-        public decimal Progress { get; set; }
+        public string Progress { get; set; }
 
         /// <summary>
         /// Gets or sets the achiever HTML.

@@ -152,13 +152,13 @@ namespace Rock.Model
                 {
                     verb = "is scheduled to attend";
                 }
-                else if ( this.RequestedToAttend == true )
-                {
-                    verb = "has been requested to attend";
-                }
                 else if ( this.DeclineReasonValueId.HasValue )
                 {
                     verb = "has declined to attend";
+                }
+                else if ( this.RequestedToAttend == true )
+                {
+                    verb = "has been requested to attend";
                 }
                 else
                 {

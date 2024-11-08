@@ -166,14 +166,14 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             LoadDropdowns();
 
             if ( GetAttributeValue( AttributeKey.Alignment ) == "2" )
             {
                 ulDropdownMenu.AddCssClass( "dropdown-menu-right" );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

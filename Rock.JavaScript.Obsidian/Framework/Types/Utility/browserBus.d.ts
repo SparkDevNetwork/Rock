@@ -55,4 +55,9 @@ export type BlockEndEditData = void;
 
 // #region Page Framework Messages
 
+/**
+ * The data that is available in a page queryStringChanged message.
+ */
+export type QueryStringChangedData = URLSearchParams;
+
 // #endregion

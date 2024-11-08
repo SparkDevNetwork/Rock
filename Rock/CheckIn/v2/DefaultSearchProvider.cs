@@ -100,7 +100,7 @@ namespace Rock.CheckIn.v2
 
                     return searchTerm.Any( c => char.IsLetter( c ) )
                         ? SearchForFamiliesByName( searchTerm )
-                        : SearchForFamiliesByPhoneNumber( searchTerm);
+                        : SearchForFamiliesByPhoneNumber( searchTerm );
 
                 case FamilySearchMode.ScannedId:
                     return SearchForFamiliesByScannedId( searchTerm );
@@ -155,7 +155,7 @@ namespace Rock.CheckIn.v2
         }
 
         /// <summary>
-        /// Gets the family member query that contains all the family members
+        /// Gets the family member query that contains all the family members that
         /// are valid for check-in and a member of one of the specified families.
         /// </summary>
         /// <param name="familyIdQry">The family identifier query specifying which families to include.</param>
@@ -183,7 +183,7 @@ namespace Rock.CheckIn.v2
         /// <summary>
         /// Gets the family search item bags from the queryable.
         /// </summary>
-        /// <param name="familyMemberQry">The family member query.</param>
+        /// <param name="familyMemberQry">The family member query, this should only contain people in the primary family and not "can check-in" relationships.</param>
         /// <returns>A list of <see cref="FamilyBag"/> instances.</returns>
         public virtual List<FamilyBag> GetFamilySearchItemBags( IQueryable<GroupMember> familyMemberQry )
         {
@@ -199,7 +199,14 @@ namespace Rock.CheckIn.v2
                 } )
                 .ToList();
 
-            familyMembers.Select( fm => fm.Person ).LoadAttributes( Session.RockContext );
+            // Load all attributes in one query. We need attributes for the
+            // ability level. DistinctBy person identifier because some people
+            // may be in multiple families which means they may be in our set
+            // multiple times and LoadAttributes() doesn't like duplicates.
+            familyMembers
+                .Select( fm => fm.Person )
+                .DistinctBy( p => p.Id )
+                .LoadAttributes( Session.RockContext );
 
             // Convert the raw database data into the bags that are understood
             // by different elements of the check-in system.
@@ -226,6 +233,7 @@ namespace Rock.CheckIn.v2
                             .Select( member => new FamilyMemberBag
                             {
                                 Person = Session.Director.ConversionProvider.GetPersonBag( member.Person ),
+                                IsInPrimaryFamily = true,
                                 FamilyId = IdHasher.Instance.GetHash( member.GroupId ),
                                 RoleOrder = member.RoleOrder
                             } )
@@ -368,12 +376,12 @@ namespace Rock.CheckIn.v2
             var personRecordTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid(), Session.RockContext )?.Id;
             var numericSearchTerm = searchTerm.AsNumeric();
 
-            if ( TemplateConfiguration.MinimumPhoneNumberLength.HasValue && searchTerm.Length < TemplateConfiguration.MinimumPhoneNumberLength.Value )
+            if ( TemplateConfiguration.MinimumPhoneNumberLength.HasValue && numericSearchTerm.Length < TemplateConfiguration.MinimumPhoneNumberLength.Value )
             {
                 throw new CheckInMessageException( $"Search term must be at least {TemplateConfiguration.MinimumPhoneNumberLength} digits." );
             }
 
-            if ( TemplateConfiguration.MaximumPhoneNumberLength.HasValue && searchTerm.Length > TemplateConfiguration.MaximumPhoneNumberLength.Value )
+            if ( TemplateConfiguration.MaximumPhoneNumberLength.HasValue && numericSearchTerm.Length > TemplateConfiguration.MaximumPhoneNumberLength.Value )
             {
                 throw new CheckInMessageException( $"Search term must be at most {TemplateConfiguration.MaximumPhoneNumberLength} digits." );
             }
@@ -381,6 +389,13 @@ namespace Rock.CheckIn.v2
             if ( !personRecordTypeId.HasValue )
             {
                 throw new Exception( "Person record type was not found in the database, please check your installation." );
+            }
+
+            var match = Session.TemplateConfiguration.PhoneNumberRegex?.Match( numericSearchTerm );
+
+            if ( match?.Success == true && match.Groups.Count == 2 )
+            {
+                numericSearchTerm = match.Groups[1].Value;
             }
 
             var phoneQry = new PhoneNumberService( Session.RockContext )
@@ -445,7 +460,11 @@ namespace Rock.CheckIn.v2
         /// <returns>A queryable of family <see cref="Group"/> objects.</returns>
         protected virtual IQueryable<Group> SearchForFamiliesByFamilyId( string searchTerm )
         {
-            var searchFamilyIds = searchTerm.SplitDelimitedValues().AsIntegerList();
+            var searchFamilyIds = searchTerm.SplitDelimitedValues()
+                .Select( id => IdHasher.Instance.GetId( id ) )
+                .Where( id => id.HasValue )
+                .Select( id => id.Value )
+                .ToList();
 
             return GetFamilyGroupMemberQuery()
                 .Where( gm => searchFamilyIds.Contains( gm.GroupId ) )
@@ -513,7 +532,7 @@ namespace Rock.CheckIn.v2
             }
 
             var knownRelationshipsOwnerGuid = SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
-            var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid == knownRelationshipsOwnerGuid );
+            var ownerRole = GroupTypeRoleCache.Get( knownRelationshipsOwnerGuid );
 
             if ( ownerRole == null )
             {
@@ -524,7 +543,7 @@ namespace Rock.CheckIn.v2
                 .Select( fm => fm.PersonId );
             var groupMemberService = new GroupMemberService( Session.RockContext );
             var canCheckInRoleIds = knownRelationshipGroupType.Roles
-                .Where( r => TemplateConfiguration.CanCheckInKnownRelationshipRoleGuids.Contains( r.Guid ) )
+                .Where( r => r.GetAttributeValue( "CanCheckin" ).AsBoolean() )
                 .Select( r => r.Id )
                 .ToList();
 
@@ -540,7 +559,8 @@ namespace Rock.CheckIn.v2
             var canCheckInFamilyMemberQry = groupMemberService
                 .Queryable()
                 .AsNoTracking()
-                .Where( gm => relationshipGroupIdQry.Contains( gm.GroupId ) );
+                .Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Active
+                    && relationshipGroupIdQry.Contains( gm.GroupId ) );
 
             canCheckInFamilyMemberQry = CheckInDirector.WhereContains( canCheckInFamilyMemberQry, canCheckInRoleIds, gm => gm.GroupRoleId );
 

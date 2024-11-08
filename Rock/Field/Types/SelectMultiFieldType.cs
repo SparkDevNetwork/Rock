@@ -390,7 +390,6 @@ namespace Rock.Field.Types
             cbEnhanced.AutoPostBack = true;
             cbEnhanced.CheckedChanged += OnQualifierUpdated;
             cbEnhanced.Label = "Enhance For Long Lists";
-            cbEnhanced.Text = "Yes";
             cbEnhanced.Help = "When set, will render a searchable selection of options.";
             controls.Add( cbEnhanced );
 

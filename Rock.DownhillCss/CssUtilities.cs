@@ -14,571 +14,1343 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.DownhillCss.Utility;
+
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
-using Rock.DownhillCss.Utility;
 
 namespace Rock.DownhillCss
 {
-    /*
-     * FUTURE IDEAS
-     * 1. Add settings the DownhillSettings to control whether to include pallete colors in:
-     *    + Backgrounds
-     *    + Borders
-     *    + Tex
-     *    + etc.
-    */
-
     /// <summary>
-    /// A set of utility methods for building and using Downhill
+    /// This class is used to define styles for Rock applications that run on other platforms.
+    /// It follows the provided <see cref="DownhillSettings"/> to generate a large amount
+    /// of utility classes (CSS) that can be used to style an application.
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         This utility was primarily written for Rock Mobile, which runs on .NET MAUI (https://github.com/dotnet/maui).
+    ///         It may not be perfect for all platforms without additional work.
+    ///     </para>
+    /// </remarks>
     public static class CssUtilities
     {
         /// <summary>
-        /// Builds the base framework.
+        /// The internal instance of the CSS utilities.
         /// </summary>
+        private static CssUtilitiesInternal Instance { get; set; }
+
+        /// <summary>
+        /// Builds the Downhill CSS framework.\
+        /// </summary>
+        /// <param name="settings"></param>
         /// <returns></returns>
         public static string BuildFramework( DownhillSettings settings )
         {
-            // Get application color properties by reading the property names from the ApplicationColors class
-            PropertyInfo[] applicationColorProperties = typeof( ApplicationColors ).GetProperties();
-
-            StringBuilder frameworkCss = new StringBuilder();
-
-            // Apply Reset & Base CSS First - It is import that this is first so that the utility classes outrank the base CSS
-            if (settings.Platform == DownhillPlatform.Mobile)
+            if ( Instance == null )
             {
-                frameworkCss.Append( baseStylesMobile );
+                Instance = new CssUtilitiesInternal( settings );
             }
             else
             {
-                frameworkCss.Append( baseStylesWeb );
+                Instance.Settings = settings;
             }
 
-            // Alerts
-            AlertStyles( frameworkCss, settings, applicationColorProperties ); /* somewhat mobile specific now */
-
-            // Text sizes
-            TextSizes( frameworkCss, settings, applicationColorProperties );
-
-            // Text colors
-            TextColors( frameworkCss, settings, applicationColorProperties );
-
-            // Background colors
-            BackgroundColors( frameworkCss, settings, applicationColorProperties );
-
-            // Build border color utilities
-            BorderColors( frameworkCss, settings, applicationColorProperties );
-
-            // Build Margin Utilities
-            Margins( frameworkCss, settings, applicationColorProperties );
-
-            // Build Padding Utilities
-            Paddings( frameworkCss, settings, applicationColorProperties );
-
-            // Build Border Width Utilities
-            BorderWidths( frameworkCss, settings, applicationColorProperties ); /* somewhat mobile specific now */
-
-            
-
-            return CssUtilities.ParseCss( frameworkCss.ToString(), settings );
+            return Instance.BuildFramework();
         }
 
         /// <summary>
-        /// Parses custom CSS to replace Downhill variables.
+        /// Builds the Downhill CSS framework with additional CSS.
         /// </summary>
-        /// <param name="baseStyles">The custom CSS.</param>
+        /// <param name="settings"></param>
+        /// <param name="additionalCss"></param>
         /// <returns></returns>
-        public static string ParseCss( string cssStyles, DownhillSettings settings )
+        public static string BuildFramework( DownhillSettings settings, string additionalCss )
         {
-            // Variables are prefixed with ? (e.g. ?orange-100) to allow for using pre-processors such as Sass or Less
+            Instance = new CssUtilitiesInternal( settings, additionalCss );
+            return Instance.BuildFramework();
+        }
 
-            // Replace application colors
-            PropertyInfo[] applicationColorProperties = typeof( ApplicationColors ).GetProperties();
-            foreach ( PropertyInfo colorProperty in applicationColorProperties )
+        /// <summary>
+        /// The internal class for the CSS utilities.
+        /// </summary>
+        internal class CssUtilitiesInternal
+        {
+            #region Properties
+
+            /// <summary>
+            /// The settings for the Downhill framework.
+            /// </summary>
+            public DownhillSettings Settings { get; internal set; }
+
+            /// <summary>
+            /// The platform for the Downhill framework. Retrieved from the settings.
+            /// </summary>
+            protected DownhillPlatform Platform => Settings.Platform;
+
+            #endregion
+
+            #region Fields
+
+            /// <summary>
+            /// The CSS builder.
+            /// </summary>
+            private StringBuilder _cssBuilder;
+
+            /// <summary>
+            /// Additional CSS to parse.
+            /// </summary>
+            private string _additionalCss;
+
+            #endregion
+
+            #region Constructors
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CssUtilities"/> class.
+            /// </summary>
+            /// <param name="settings"></param>
+            /// <param name="additionalCss"></param>
+            public CssUtilitiesInternal( DownhillSettings settings, string additionalCss = "" )
             {
-                var value = colorProperty.GetValue( settings.ApplicationColors ).ToString();
+                Settings = settings;
+                _cssBuilder = new StringBuilder();
+                _additionalCss = additionalCss;
+            }
 
-                // Replace application color deviations (backgrounds/borders/notification text colors)
-                // These are based off of the bootstrap recipes
+            #endregion
 
-                // Background
-                cssStyles = cssStyles.Replace( $"?color-{colorProperty.Name.ToLower()}-background", MixThemeColor( value, -10 ) );
+            #region Methods
 
-                // Border
-                cssStyles = cssStyles.Replace( $"?color-{colorProperty.Name.ToLower()}-border", MixThemeColor( value, -9 ) );
-
-                // Text
-                cssStyles = cssStyles.Replace( $"?color-{colorProperty.Name.ToLower()}-text", MixThemeColor( value, 6 ) );
-
-                var selector = $"?color-{colorProperty.Name.ToLower()}";
-                cssStyles = cssStyles.Replace( selector, value );
-
-                // If warning then also make a set for validation
-                if ( colorProperty.Name == "Warning" )
+            /// <summary>
+            /// Builds the CSS framework for the specified settings.
+            /// </summary>
+            /// <returns></returns>
+            public string BuildFramework()
+            {
+                if ( Platform == DownhillPlatform.Mobile )
                 {
-                    // Background
-                    cssStyles = cssStyles.Replace( $"?color-validation-background", MixThemeColor( value, -10 ) );
-
-                    // Border
-                    cssStyles = cssStyles.Replace( $"?color-validation-border", MixThemeColor( value, -9 ) );
-
-                    // Text
-                    cssStyles = cssStyles.Replace( $"?color-validation-text", MixThemeColor( value, 6 ) );
-                }
-            }
-
-            // Replace palette colors
-            foreach ( var color in ColorPalette.ColorMaps )
-            {
-                foreach ( var colorSaturation in color.ColorSaturations )
-                {
-                    var selector = $"?color-{color.Color.ToLower()}-{colorSaturation.Intensity}";
-                    var value = colorSaturation.ColorValue;
-
-                    cssStyles = cssStyles.Replace( selector, value );
-                }
-            }
-
-            // Run a few other replaces across the CSS
-            if ( settings.Platform == DownhillPlatform.Mobile )
-            {
-                // Most Xamarin.Forms controls only support integer values for border-radius.
-                cssStyles = cssStyles.Replace( "?radius-base", ( ( int ) Math.Floor( settings.RadiusBase ) ).ToString() );
-            }
-            else
-            {
-                cssStyles = cssStyles.Replace( "?radius-base", settings.RadiusBase.ToString() );
-            }
-            cssStyles = cssStyles.Replace( "?font-size-default", settings.FontSizeDefault.ToString() );
-
-            // Text and heading colors
-            cssStyles = cssStyles.Replace( "?color-text", settings.TextColor );
-            cssStyles = cssStyles.Replace( "?color-heading", settings.HeadingColor );
-            cssStyles = cssStyles.Replace( "?color-background", settings.BackgroundColor );
-
-            foreach ( var extraCss in settings.AdditionalCssToParse )
-            {
-                var key = extraCss.Key;
-                var value = extraCss.Value;
-
-                cssStyles = cssStyles.Replace( key, value );
-            }
-
-            // Note for future... Xamarin Forms doesn't like minified CSS (at least that that's created with the minified method below)
-            return cssStyles;
-        }
-
-        #region Alerts
-        private static void AlertStyles( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
-        {
-            frameworkCss.AppendLine( "" );
-            frameworkCss.AppendLine( $"/* Alert Styles */" );
-
-            // Base alert styles
-            frameworkCss.AppendLine( $".alert {{" );
-            frameworkCss.AppendLine( $"    margin: 0 0 12{settings.SpacingUnits} 0;" );
-            frameworkCss.AppendLine( "}" );
-
-            // Color specific styles
-            foreach ( PropertyInfo colorProperty in applicationColorProperties )
-            {
-                var colorName = colorProperty.Name.ToLower();
-                var colorValue = colorProperty.GetValue( settings.ApplicationColors ).ToString();
-
-                CreateAlertByColor( colorProperty.Name.ToLower(), frameworkCss );
-            }
-
-            // Create one more for validation
-            CreateAlertByColor( "validation", frameworkCss );
-        }
-
-        private static void CreateAlertByColor( string colorName, StringBuilder frameworkCss )
-        {
-            frameworkCss.AppendLine( $".alert.alert-{colorName} {{" );
-            frameworkCss.AppendLine( $"    border-color: ?color-{colorName.ToLower()}-border;" );
-            frameworkCss.AppendLine( $"    background-color: ?color-{colorName.ToLower()}-background;" );
-            frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()}-text;" );
-            frameworkCss.AppendLine( "}" );
-
-            frameworkCss.AppendLine( $".alert.alert-{colorName} .alert-heading {{" );
-            frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()}-text;" );
-            frameworkCss.AppendLine( "}" );
-
-            frameworkCss.AppendLine( $".alert.alert-{colorName} .alert-message {{" );
-            frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()}-text;" );
-            frameworkCss.AppendLine( "}" );
-        }
-        #endregion
-
-        #region Text
-        private static void TextSizes( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
-        {
-            // Mobile won't be using the text sizes. Instead it will use named sizes
-            if (settings.Platform == DownhillPlatform.Mobile)
-            {
-                return;
-            }
-
-            frameworkCss.AppendLine("/*");
-            frameworkCss.AppendLine("// Text Size Utilities");
-            frameworkCss.AppendLine("*/");
-
-            foreach (var size in settings.FontSizes)
-            {
-                frameworkCss.AppendLine($".text-{size.Key.ToLower()} {{");
-                frameworkCss.AppendLine($"    font-size: {size.Value * settings.FontSizeDefault}{settings.FontUnits};");
-                frameworkCss.AppendLine("}");
-            }
-            
-        }
-
-        private static void TextColors( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
-        {
-            // Build text colors
-            frameworkCss.AppendLine( "/*" );
-            frameworkCss.AppendLine( "// Text Color Utilities" );
-            frameworkCss.AppendLine( "*/" );
-
-            // Application colors
-            frameworkCss.AppendLine( "" );
-            frameworkCss.AppendLine( $"/* Application Colors */" );
-            foreach ( PropertyInfo colorProperty in applicationColorProperties )
-            {
-                var colorName = colorProperty.Name.ToLower();
-                var colorValue = colorProperty.GetValue( settings.ApplicationColors ).ToString();
-
-                frameworkCss.AppendLine( $".text-{colorName} {{" );
-                frameworkCss.AppendLine( $"    color: {colorValue.ToLower()};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // Palette colors
-            foreach ( var color in ColorPalette.ColorMaps )
-            {
-                frameworkCss.AppendLine( "" );
-                frameworkCss.AppendLine( $"/* {color.Color} */" );
-
-                foreach ( var colorSaturation in color.ColorSaturations )
-                {
-                    frameworkCss.AppendLine( $".text-{color.Color.ToLower()}-{colorSaturation.Intensity} {{" );
-                    frameworkCss.AppendLine( $"    color: {colorSaturation.ColorValue.ToLower()};" );
-                    frameworkCss.AppendLine( "}" );
-                }
-            }
-        }
-        #endregion
-
-        #region Backgrounds
-        private static void BackgroundColors( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
-        {
-            // Build background color utilities
-            frameworkCss.AppendLine( "/*" );
-            frameworkCss.AppendLine( "// Background Color Utilities" );
-            frameworkCss.AppendLine( "*/" );
-
-            // Application colors
-            frameworkCss.AppendLine( "" );
-            frameworkCss.AppendLine( $"/* Application Colors */" );
-            foreach ( PropertyInfo colorProperty in applicationColorProperties )
-            {
-                var colorName = colorProperty.Name.ToLower();
-                var colorValue = colorProperty.GetValue( settings.ApplicationColors ).ToString();
-
-                frameworkCss.AppendLine( $".bg-{colorName} {{" );
-                frameworkCss.AppendLine( $"    background-color: {colorValue.ToLower()};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // Palette colors
-            foreach ( var color in ColorPalette.ColorMaps )
-            {
-                frameworkCss.AppendLine( "" );
-                frameworkCss.AppendLine( $"/* {color.Color} */" );
-
-                foreach ( var colorSaturation in color.ColorSaturations )
-                {
-                    frameworkCss.AppendLine( $".bg-{color.Color.ToLower()}-{colorSaturation.Intensity} {{" );
-                    frameworkCss.AppendLine( $"    background-color: {colorSaturation.ColorValue.ToLower()};" );
-                    frameworkCss.AppendLine( "}" );
-                }
-            }
-        }
-        #endregion
-
-        #region Spacing - Margins and Padding
-        private static void Margins( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
-        {
-            var spacingValues = settings.SpacingValues;
-
-            frameworkCss.AppendLine( "" );
-            frameworkCss.AppendLine( "/*" );
-            frameworkCss.AppendLine( "// Margin Utilities" );
-            frameworkCss.AppendLine( "*/" );
-
-            // m- (all)
-            foreach( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".m-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    margin: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // mt- (top)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".mt-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    margin-top: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // mb- (bottom)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".mb-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    margin-bottom: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // ml- (left)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".ml-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    margin-left: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // mr- (right)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".mr-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    margin-right: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // mx- (left and right)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".mx-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    margin-right: {value.Value};" );
-                frameworkCss.AppendLine( $"    margin-left: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // my- (top and bottom)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".my-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    margin-top: {value.Value};" );
-                frameworkCss.AppendLine( $"    margin-bottom: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-        }
-
-        private static void Paddings( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
-        {
-            var spacingValues = settings.SpacingValues;
-
-            frameworkCss.AppendLine( "" );
-            frameworkCss.AppendLine( "/*" );
-            frameworkCss.AppendLine( "// Padding Utilities" );
-            frameworkCss.AppendLine( "*/" );
-
-            // p- (all)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".p-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    padding: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // pt- (top)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".pt-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    padding-top: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // pb- (bottom)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".pb-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    padding-bottom: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // pl- (left)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".pl-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    padding-left: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // pr- (right)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".pr-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    padding-right: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // px- (left and right)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".px-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    padding-left: {value.Value};" );
-                frameworkCss.AppendLine( $"    padding-right: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-
-            // py- (top and bottom)
-            foreach ( var value in spacingValues )
-            {
-                frameworkCss.AppendLine( $".py-{value.Key} {{" );
-                frameworkCss.AppendLine( $"    padding-top: {value.Value};" );
-                frameworkCss.AppendLine( $"    padding-bottom: {value.Value};" );
-                frameworkCss.AppendLine( "}" );
-            }
-        }
-        #endregion
-
-        #region Borders
-        private static void BorderWidths( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
-        {
-            var borderWidths = settings.BorderWidths;
-
-            int borderWidthCount = borderWidths.Count;
-
-            frameworkCss.AppendLine( "" );
-            frameworkCss.AppendLine( "/*" );
-            frameworkCss.AppendLine( "// Border Widths" );
-            frameworkCss.AppendLine( "*/" );
-
-            for ( int i = 0; i < borderWidthCount; i++ )
-            {
-                if ( borderWidths[i] == 1 )
-                {
-                    // When the unit is 1 then we drop the unit from the class name .border (not .border-1)
-                    // This is the pattern of both Bootstrap and Tailwind
-                    // Tailwind and Bootstrap deviate here from t vs top. Bootstrap uses the full 'top' but since
-                    // Tailwind uses t AND Bootstrap used t for margins and padding, decided to use just t.
-
-                    // Xamarin Forms 4.0 does not allow for separate widths on borders
-                    // https://github.com/xamarin/Xamarin.Forms/blob/4.3.0/Xamarin.Forms.Core/Properties/AssemblyInfo.cs
-
-                    // border (all)
-                    frameworkCss.AppendLine( $".border {{" );
-                    frameworkCss.AppendLine( $"    border-width: {borderWidths[i]}{settings.BorderUnits};" );
-                    frameworkCss.AppendLine( "}" );
+                    if ( Settings.MobileStyleFramework == MobileStyleFramework.Legacy || Settings.MobileStyleFramework == MobileStyleFramework.Blended )
+                    {
+                        _cssBuilder.Append( legacyStylesMobile );
+                    }
+                    else if ( Settings.MobileStyleFramework == MobileStyleFramework.Standard || Settings.MobileStyleFramework == MobileStyleFramework.Blended )
+                    {
+                        _cssBuilder.Append( baseStylesMobile );
+                    }
                 }
                 else
                 {
-                    // border- (all)
-                    frameworkCss.AppendLine( $".border-{i} {{" );
-                    frameworkCss.AppendLine( $"    border-width: {borderWidths[i]}{settings.BorderUnits};" );
-                    frameworkCss.AppendLine( "}" );
+                    _cssBuilder.Append( baseStylesWeb );
                 }
+
+                BuildTypographyUtilities();
+                BuildColorUtilities();
+                BuildSpacingUtilities();
+                BuildSizeUtilities();
+                BuildBorderWidthUtilities();
+
+                if ( !string.IsNullOrWhiteSpace( _additionalCss ) )
+                {
+                    _cssBuilder.Append( _additionalCss );
+                }
+
+                return ParseCss();
             }
-        }
 
-        private static void BorderColors( StringBuilder frameworkCss, DownhillSettings settings, PropertyInfo[] applicationColorProperties )
-        {
-            frameworkCss.AppendLine( "/*" );
-            frameworkCss.AppendLine( "// Border Color Utilities" );
-            frameworkCss.AppendLine( "*/" );
-
-            // Application colors
-            frameworkCss.AppendLine( "" );
-            frameworkCss.AppendLine( $"/* Application Colors */" );
-            foreach ( PropertyInfo colorProperty in applicationColorProperties )
+            /// <summary>
+            /// Parses the CSS by replacing '?' variables.
+            /// </summary>
+            /// <returns></returns>
+            public string ParseCss()
             {
-                var colorName = colorProperty.Name.ToLower();
-                var colorValue = colorProperty.GetValue( settings.ApplicationColors ).ToString();
+                var cssStyles = _cssBuilder.ToString();
 
-                frameworkCss.AppendLine( $".border-{colorName} {{" );
-                frameworkCss.AppendLine( $"    border-color: {colorValue.ToLower()};" );
+                // Replace application colors
+                PropertyInfo[] applicationColorProperties = typeof( ApplicationColors ).GetProperties();
+                foreach ( PropertyInfo colorProperty in applicationColorProperties )
+                {
+                    var value = colorProperty.GetValue( Settings.ApplicationColors ).ToString();
+
+                    var colorName = colorProperty.Name;
+
+                    // Background
+                    cssStyles = cssStyles.Replace( $"?color-{colorName.ToLower()}-background", MixThemeColor( value, -10 ) );
+
+                    // Border
+                    cssStyles = cssStyles.Replace( $"?color-{colorName.ToLower()}-border", MixThemeColor( value, -9 ) );
+
+                    // Text
+                    cssStyles = cssStyles.Replace( $"?color-{colorName.ToLower()}-text", MixThemeColor( value, 6 ) );
+
+                    // If warning then also make a set for validation
+                    if ( colorName == "Warning" )
+                    {
+                        // Background
+                        cssStyles = cssStyles.Replace( $"?color-validation-background", MixThemeColor( value, -10 ) );
+
+                        // Border
+                        cssStyles = cssStyles.Replace( $"?color-validation-border", MixThemeColor( value, -9 ) );
+
+                        // Text
+                        cssStyles = cssStyles.Replace( $"?color-validation-text", MixThemeColor( value, 6 ) );
+                    }
+
+                    // In the future, we could add a setting
+                    // to disable tailwind colors. For now,
+                    // just always include them.
+                    if ( Settings.SupplyTailwindCss || true )
+                    {
+                        foreach ( var color in ColorPalette.ColorMaps )
+                        {
+                            foreach ( var saturatedColor in color.ColorSaturations )
+                            {
+                                cssStyles = ReplaceCssVariable( cssStyles, $"?color-{color.Color.ToLower()}-{saturatedColor.Intensity}", saturatedColor.ColorValue.ToLower() );
+                            }
+                        }
+                    }
+
+                    // Split the property names by capitalization
+                    // and join them with a hyphen.
+                    var colorNameHyphenated = GetHyphenatedPropertyName( colorName );
+
+                    // Ex: ?color-interface-strongest
+                    cssStyles = ReplaceCssVariable( cssStyles, $"?color-{colorNameHyphenated}", value );
+                }
+
+                cssStyles = ParseLegacyCss( cssStyles );
+
+                foreach ( var extraCss in Settings.AdditionalCssToParse )
+                {
+                    var key = extraCss.Key;
+                    var value = extraCss.Value;
+
+                    cssStyles = ReplaceCssVariable( cssStyles, key, value );
+                }
+
+                return cssStyles;
+            }
+
+            /// <summary>
+            /// Replaces the specified CSS variable with the value.
+            /// </summary>
+            /// <param name="cssStyles"></param>
+            /// <param name="name"></param>
+            /// <param name="value"></param>
+            /// <returns></returns>
+            private string ReplaceCssVariable( string cssStyles, string name, string value )
+            {
+                if ( string.IsNullOrWhiteSpace( name ) || string.IsNullOrWhiteSpace( value ) )
+                {
+                    return cssStyles;
+                }
+
+                if ( !name.StartsWith( "?" ) )
+                {
+                    name = $"?{name}";
+                }
+
+                name = Regex.Escape( name.Substring( 1 ) );
+
+                // Use regex to match the ? variable and replace it with the value.
+                // Add negative lookahead to ensure the variable is not followed by '-'.
+                return Regex.Replace( cssStyles, $@"\?{name}\b(?!-)", value );
+            }
+
+            /// <summary>
+            /// Creates the CSS for the alert component.
+            /// </summary>
+            /// <param name="colorName"></param>
+            /// <param name="frameworkCss"></param>
+            private static void CreateAlertByColor( string colorName, StringBuilder frameworkCss )
+            {
+                frameworkCss.AppendLine( $".alert.alert-{colorName} {{" );
+                frameworkCss.AppendLine( $"    border-color: ?color-{colorName.ToLower()}-border;" );
+                frameworkCss.AppendLine( $"    background-color: ?color-{colorName.ToLower()}-background;" );
+                frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()}-text;" );
+                frameworkCss.AppendLine( "}" );
+
+                frameworkCss.AppendLine( $".alert.alert-{colorName} .alert-heading {{" );
+                frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()}-text;" );
+                frameworkCss.AppendLine( "}" );
+
+                frameworkCss.AppendLine( $".alert.alert-{colorName} .alert-message {{" );
+                frameworkCss.AppendLine( $"    color: ?color-{colorName.ToLower()}-text;" );
                 frameworkCss.AppendLine( "}" );
             }
 
-            // Palette colors
-            foreach ( var color in ColorPalette.ColorMaps )
+            /// <summary>
+            /// Mixes the color of the theme.
+            /// </summary>
+            /// <param name="color">The color.</param>
+            /// <param name="level">The level.</param>
+            /// <returns></returns>
+            private static string MixThemeColor( string color, decimal level )
             {
-                frameworkCss.AppendLine( "" );
-                frameworkCss.AppendLine( $"/* {color.Color} */" );
-
-                foreach ( var colorSaturation in color.ColorSaturations )
+                var mixcolor = "#ffffff";
+                if ( level > 0 )
                 {
-                    frameworkCss.AppendLine( $".border-{color.Color.ToLower()}-{colorSaturation.Intensity} {{" );
-                    frameworkCss.AppendLine( $"    border-color: {colorSaturation.ColorValue.ToLower()};" );
-                    frameworkCss.AppendLine( "}" );
+                    mixcolor = "#000000";
+                }
+
+                var originalColor = new RockColor( color );
+
+                var mixColor = RockColor.FromHex( mixcolor );
+
+                var mixPercent = ( int ) ( ( Math.Abs( level ) * .08m ) * 100 );
+
+                originalColor.Mix( mixColor, mixPercent );
+
+                if ( originalColor.Alpha < 1 )
+                {
+                    return originalColor.ToRGBA();
+                }
+
+                return originalColor.ToHex();
+            }
+
+            /// <summary>
+            /// Replaces the legacy colors with the old values from settings.
+            /// </summary>
+            /// <param name="cssStyles"></param>
+            /// <returns></returns>
+            private string ParseLegacyCss( string cssStyles )
+            {
+                if ( Settings.MobileStyleFramework == MobileStyleFramework.Legacy || Settings.MobileStyleFramework == MobileStyleFramework.Blended )
+                {
+                    // Text and heading colors
+                    cssStyles = cssStyles.Replace( "?color-text", Settings.TextColor );
+                    cssStyles = cssStyles.Replace( "?color-heading", Settings.HeadingColor );
+                    cssStyles = cssStyles.Replace( "?color-background", Settings.BackgroundColor );
+                }
+
+                if ( Settings.Platform == DownhillPlatform.Mobile )
+                {
+                    // Most Xamarin.Forms controls only support integer values for border-radius.
+                    cssStyles = cssStyles.Replace( "?radius-base", ( ( int ) Math.Floor( Settings.RadiusBase ) ).ToString() );
+                }
+                else
+                {
+                    cssStyles = cssStyles.Replace( "?radius-base", Settings.RadiusBase.ToString() );
+                }
+
+                cssStyles = cssStyles.Replace( "?font-size-default", Settings.FontSizeDefault.ToString() );
+
+                return cssStyles;
+            }
+
+            /// <summary>
+            /// Adds utility classes for all of our named text styles.
+            /// Such as .title, .caption, .title2 etc.
+            /// </summary>
+            private void BuildTypographyUtilities()
+            {
+                foreach ( var namedTextStyle in NamedTextStyle.AppleStyles )
+                {
+                    _cssBuilder.AppendLine( $"/* {namedTextStyle.Name} */" );
+
+                    AddUtilityClass( string.Empty, namedTextStyle.Name.ToLower(), new Dictionary<string, string>
+                    {
+                        ["font-size"] = namedTextStyle.Size.ToString(),
+                        ["line-height"] = namedTextStyle.LineHeight.ToString()
+                    } );
+                }
+
+                AddUtilityClass( string.Empty, "bold", new Dictionary<string, string>
+                {
+                    ["font-style"] = "bold"
+                } );
+
+                AddUtilityClass( string.Empty, "italic", new Dictionary<string, string>
+                {
+                    ["font-style"] = "italic"
+                } );
+            }
+
+            /// <summary>
+            /// Adds utility classes for all of the application colors.
+            /// Such as .bg-x, .text-x, .border-x, etc.
+            /// </summary>
+            private void BuildColorUtilities()
+            {
+                var defaultColors = Settings.ApplicationColors;
+                var flippedColors = FlipColors( defaultColors );
+                var colorProperties = typeof( ApplicationColors ).GetProperties();
+
+                AddColorUtilityClasses( defaultColors, string.Empty );
+                AddColorUtilityClasses( flippedColors, "dark-mode" );
+
+                if ( Settings.SupplyTailwindCss || true )
+                {
+                    foreach ( var color in ColorPalette.ColorMaps )
+                    {
+                        foreach ( var saturatedColor in color.ColorSaturations )
+                        {
+                            AddUtilityClass( "bg", $"{color.Color.ToLower()}-{saturatedColor.Intensity}", new Dictionary<string, string>
+                            {
+                                ["background-color"] = saturatedColor.ColorValue.ToLower()
+                            } );
+
+                            AddUtilityClass( "text", $"{color.Color.ToLower()}-{saturatedColor.Intensity}", new Dictionary<string, string>
+                            {
+                                ["color"] = saturatedColor.ColorValue.ToLower()
+                            } );
+
+                            AddUtilityClass( "border", $"{color.Color.ToLower()}-{saturatedColor.Intensity}", new Dictionary<string, string>
+                            {
+                                ["border-color"] = saturatedColor.ColorValue.ToLower()
+                            } );
+                        }
+                    }
+                }
+
+                void AddColorUtilityClasses( ApplicationColors colors, string prefix )
+                {
+                    // Colors
+                    foreach ( var color in colorProperties )
+                    {
+                        var colorName = GetHyphenatedPropertyName( color.Name );
+                        var colorValue = color.GetValue( colors ).ToString();
+
+                        // There is kind of some unique logic to manage all states of compatibility for
+                        // the downhill generated.
+                        // If the Style Framework is set to Legacy, we want to skip any new colors.
+                        // If the Style Framework is set to Standard, we want to skip any legacy colors.
+                        // If the Style Framework is set to Blended, we want to include all colors.
+                        if ( Settings.MobileStyleFramework == MobileStyleFramework.Legacy )
+                        {
+                            var obsoleteAttribute = color.GetCustomAttribute<ObsoleteAttribute>();
+
+                            // Skip all NON obsolete attributes.
+                            if ( obsoleteAttribute == null )
+                            {
+                                continue;
+                            }
+
+                            CreateAlertByColor( colorName, _cssBuilder );
+                        }
+                        else if( Settings.MobileStyleFramework == MobileStyleFramework.Blended )
+                        {
+                            CreateAlertByColor( colorName, _cssBuilder );
+                        }
+                        else if ( Settings.MobileStyleFramework == MobileStyleFramework.Standard )
+                        {
+                            var obsoleteAttribute = color.GetCustomAttribute<ObsoleteAttribute>();
+
+                            // Skip all obsolete attributes.
+                            if ( obsoleteAttribute != null )
+                            {
+                                continue;
+                            }
+                        }
+
+                        _cssBuilder.AppendLine( $"/* Color: {colorName} {prefix} */" );
+
+                        // Background Color
+                        var bgClass = string.IsNullOrWhiteSpace( prefix ) ? "bg" : $"{prefix} .bg";
+                        AddUtilityClass( bgClass, colorName, new Dictionary<string, string>
+                        {
+                            ["background-color"] = colorValue
+                        } );
+
+                        // Text Color
+                        var textClass = string.IsNullOrWhiteSpace( prefix ) ? "text" : $"{prefix} .text";
+                        AddUtilityClass( textClass, colorName, new Dictionary<string, string>
+                        {
+                            ["color"] = colorValue
+                        } );
+
+                        // Border Color
+                        var borderClass = string.IsNullOrWhiteSpace( prefix ) ? "border" : $"{prefix} .border";
+                        AddUtilityClass( borderClass, colorName, new Dictionary<string, string>
+                        {
+                            ["border-color"] = colorValue
+                        } );
+                    }
+
+                    // Create one more for validation
+                    CreateAlertByColor( "validation", _cssBuilder );
                 }
             }
-        }
-        #endregion
 
-        #region Private Helpers
-
-        /// <summary>
-        /// Mixes the color of the theme.
-        /// </summary>
-        /// <param name="color">The color.</param>
-        /// <param name="level">The level.</param>
-        /// <returns></returns>
-        private static string MixThemeColor( string color, decimal level )
-        {
-            var mixcolor = "#ffffff";
-            if ( level > 0 )
+            /// <summary>
+            /// Adds utility classes for all of the spacing values.
+            /// This includes margin, padding and spacing.
+            /// </summary>
+            private void BuildSpacingUtilities()
             {
-                mixcolor = "#000000";
+                var spacings = Settings.SpacingValues;
+
+                foreach ( var spacing in spacings )
+                {
+                    _cssBuilder.AppendLine( $"/* Spacing Unit: {spacing.Value} */" );
+
+                    // m-
+                    AddUtilityClass( "m", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["margin"] = spacing.Value
+                    } );
+
+                    // ml-
+                    AddUtilityClass( "ml", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["margin-left"] = spacing.Value
+                    } );
+
+                    // mt-
+                    AddUtilityClass( "mt", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["margin-top"] = spacing.Value
+                    } );
+
+                    // mr-
+                    AddUtilityClass( "mr", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["margin-right"] = spacing.Value
+                    } );
+
+                    // mb-
+                    AddUtilityClass( "mb", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["margin-bottom"] = spacing.Value
+                    } );
+
+                    // my-
+                    AddUtilityClass( "my", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["margin-top"] = spacing.Value,
+                        ["margin-bottom"] = spacing.Value
+                    } );
+
+                    // mx-
+                    AddUtilityClass( "mx", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["margin-left"] = spacing.Value,
+                        ["margin-right"] = spacing.Value
+                    } );
+
+                    // p-
+                    AddUtilityClass( "p", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["padding"] = spacing.Value
+                    } );
+
+                    // pl-
+                    AddUtilityClass( "pl", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["padding-left"] = spacing.Value
+                    } );
+
+                    // pt-
+                    AddUtilityClass( "pt", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["padding-top"] = spacing.Value
+                    } );
+
+                    // pr-
+                    AddUtilityClass( "pr", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["padding-right"] = spacing.Value
+                    } );
+
+                    // pb-
+                    AddUtilityClass( "pb", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["padding-bottom"] = spacing.Value
+                    } );
+
+                    // py-
+                    AddUtilityClass( "py", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["padding-top"] = spacing.Value,
+                        ["padding-bottom"] = spacing.Value
+                    } );
+
+                    // px-
+                    AddUtilityClass( "px", spacing.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["padding-left"] = spacing.Value,
+                        ["padding-right"] = spacing.Value
+                    } );
+
+                    var useStandardStyles = Settings.MobileStyleFramework == MobileStyleFramework.Standard || Settings.MobileStyleFramework == MobileStyleFramework.Blended;
+
+                    // We only want to include these styles
+                    // if we aren't in legacy mode.
+                    // In the shell, what used to be defined in CSS
+                    // is now defined with a spacing- class, so we want
+                    // to make sure that does not conflict with any legacy
+                    // styles.
+                    if( useStandardStyles )
+                    {
+                        // spacing-
+                        AddUtilityClass( "spacing", spacing.Key.ToString(), new Dictionary<string, string>
+                        {
+                            ["-maui-spacing"] = spacing.Value
+                        } );
+
+                        // gap-
+                        AddUtilityClass( "gap", spacing.Key.ToString(), new Dictionary<string, string>
+                        {
+                            ["row-gap"] = spacing.Value,
+                            ["column-gap"] = spacing.Value,
+                            ["-rock-responsive-layout-row-spacing"] = spacing.Value,
+                            ["-rock-responsive-layout-column-spacing"] = spacing.Value
+                        } );
+
+                        // gap-row-
+                        AddUtilityClass( "gap-row", spacing.Key.ToString(), new Dictionary<string, string>
+                        {
+                            ["row-gap"] = spacing.Value,
+                            ["-rock-responsive-layout-row-spacing"] = spacing.Value
+                        }
+                        );
+
+                        // gap-column-
+                        AddUtilityClass( "gap-column", spacing.Key.ToString(), new Dictionary<string, string>
+                        {
+                            ["column-gap"] = spacing.Value,
+                            ["-rock-responsive-layout-column-spacing"] = spacing.Value
+                        } );
+                    }
+                }
             }
 
-            var originalColor = new RockColor( color );
-            
-            var mixColor = RockColor.FromHex( mixcolor );
-
-            var mixPercent = ( int ) ( ( Math.Abs( level ) * .08m ) * 100 );
-
-            originalColor.Mix( mixColor, mixPercent );
-
-            if( originalColor.Alpha < 1 )
+            /// <summary>
+            /// Adds utility classes for all of the border widths.
+            /// </summary>
+            private void BuildBorderWidthUtilities()
             {
-                return originalColor.ToRGBA();
+                foreach ( var width in Settings.BorderWidths )
+                {
+                    // We also want to supply a .border class that will apply a 1px border.
+                    if ( width == 1 )
+                    {
+                        AddUtilityClass( string.Empty, "border", new Dictionary<string, string>
+                        {
+                            ["border-width"] = $"{width}{Settings.BorderUnits}"
+                        } );
+                    }
+
+                    AddUtilityClass( "border", width.ToString(), new Dictionary<string, string>
+                    {
+                        ["border-width"] = $"{width}{Settings.BorderUnits}"
+                    } );
+                }
             }
 
-            return originalColor.ToHex();
-        }
+            /// <summary>
+            /// Adds utility classes for all of the size values.
+            /// Such as h-{value} and w-{value}.
+            /// </summary>
+            private void BuildSizeUtilities()
+            {
+                foreach ( var size in Settings.SpacingValues )
+                {
+                    AddUtilityClass( "h", size.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["height"] = size.Value
+                    } );
 
-        /// <summary>
-        /// Minifies the CSS.
-        /// </summary>
-        /// <param name="css">The CSS.</param>
-        /// <returns></returns>
-        private static string MinifyCss( string css )
-        {
-            css = Regex.Replace( css, @"[a-zA-Z]+#", "#" );
-            css = Regex.Replace( css, @"[\n\r]+\s*", string.Empty );
-            css = Regex.Replace( css, @"\s+", " " );
-            css = Regex.Replace( css, @"\s?([:,;{}])\s?", "$1" );
-            css = css.Replace( ";}", "}" );
-            css = Regex.Replace( css, @"([\s:]0)(px|pt|%|em)", "$1" );
+                    AddUtilityClass( "w", size.Key.ToString(), new Dictionary<string, string>
+                    {
+                        ["width"] = size.Value
+                    } );
+                }
+            }
 
-            // Remove comments from CSS
-            css = Regex.Replace( css, @"/\*[\d\D]*?\*/", string.Empty );
+            /// <summary>
+            /// Adds a utility class to the specified CSS.
+            /// </summary>
+            /// <param name="classPrefix">The class prefix, essentially whatever comes before the utility name. For ex: "bg" would be used here for a class like '.bg-blue'.</param>
+            /// <param name="className">The name of the class. This is typically the specific color/spacing unit.</param>
+            /// <param name="propertyValues">The properties to set for this utility class.</param>
+            private void AddUtilityClass( string classPrefix, string className, Dictionary<string, string> propertyValues )
+            {
+                string classSelector = className;
+                if ( !string.IsNullOrEmpty( classPrefix ) )
+                {
+                    classSelector = $"{classPrefix}-{className}";
+                }
 
-            return css;
-         
-        }
-        #endregion
+                _cssBuilder.AppendLine( $".{classSelector} {{" );
+                foreach ( var property in propertyValues )
+                {
+                    _cssBuilder.AppendLine( $"    {property.Key}: {property.Value};" );
+                }
+                _cssBuilder.AppendLine( "}" );
+                _cssBuilder.AppendLine( $"" );
+            }
 
-        #region Platform Base Styles
-        private static string baseStylesWeb = @"";
+            /// <summary>
+            /// Flips the application colors to the other theme.
+            /// </summary>
+            /// <param name="colors"></param>
+            /// <returns></returns>
+            private static ApplicationColors FlipColors( ApplicationColors colors )
+            {
+                var flippedColors = new ApplicationColors
+                {
+                    // Soft = Strong & Strong = Soft
+                    BrandSoft = colors.BrandStrong,
+                    BrandStrong = colors.BrandSoft,
 
-        private static string baseStylesMobile = @"/*
+                    SuccessSoft = colors.SuccessStrong,
+                    SuccessStrong = colors.SuccessSoft,
+
+                    WarningSoft = colors.WarningStrong,
+                    WarningStrong = colors.WarningSoft,
+
+                    DangerSoft = colors.DangerStrong,
+                    DangerStrong = colors.DangerSoft,
+
+                    PrimaryStrong = colors.PrimarySoft,
+                    PrimarySoft = colors.PrimaryStrong,
+
+                    InfoStrong = colors.InfoSoft,
+                    InfoSoft = colors.InfoStrong,
+
+                    SecondarySoft = colors.SecondaryStrong,
+                    SecondaryStrong = colors.SecondarySoft,
+
+                    InterfaceStrongest = colors.InterfaceSoftest,
+                    InterfaceStronger = colors.InterfaceSofter,
+                    InterfaceStrong = colors.InterfaceSoft,
+                    InterfaceMedium = colors.InterfaceMedium,
+                    InterfaceSoft = colors.InterfaceStrong,
+
+                    // These two are an exception
+                    // to the traditional swap, we want
+                    // the background to be pure black on dark mode.
+                    InterfaceSofter = colors.InterfaceStrongest,
+                    InterfaceSoftest = colors.InterfaceStronger
+                };
+
+                return flippedColors;
+            }
+
+            /// <summary>
+            /// Takes a property name (in PascalCase) and returns a hyphenated version of the name in lowercase.
+            /// For example, "InterfaceStrongest" would return "interface-strongest".
+            /// </summary>
+            /// <param name="propertyName"></param>
+            /// <returns></returns>
+            private string GetHyphenatedPropertyName( string propertyName )
+            {
+                return string.Join( "-", Regex.Split( propertyName, @"(?<!^)(?=[A-Z])" ) ).ToLower();
+            }
+
+            #endregion
+
+            #region Platform Base Styles
+
+            private static string baseStylesMobile = @"/* Fixes frame backgrounds from being black while in dark mode */
+^editor {
+    background-color: transparent;
+}
+
+^frame {
+    background-color: transparent;
+}
+
+^radiobutton {
+    background-color: transparent;
+}
+
+^border {
+    background-color: transparent;
+}
+
+^Page {
+    -rock-status-bar-text: light;
+}
+
+^ContentPage {
+    background-color: ?color-interface-softer;
+}
+
+.dark-mode ^ContentPage {
+    background-color: ?color-interface-strongest;
+}
+
+^label {
+    font-size: ?font-size-default;
+    color: ?color-interface-medium;
+}
+
+icon {
+    color: ?color-interface-medium;
+}
+
+.link {
+    color: ?color-primary-strong;
+}
+
+/*** Buttons ***/
+/* Primary */
+.btn.btn-primary {
+    background-color: ?color-primary-strong;
+    color: ?color-interface-softest;
+}
+
+/* Success */
+.btn.btn-success {
+    background-color: ?color-success-strong;
+    color: ?color-interface-softest;
+}
+
+/* Info */
+.btn.btn-info {
+    background-color: ?color-info-strong;
+    color: ?color-interface-softest;
+}
+
+/* Warning */
+.btn.btn-warning {
+    background-color: ?color-warning-strong;
+    color: ?color-interface-softest;
+}
+
+/* Danger */
+.btn.btn-danger {
+    background-color: ?color-danger-strong;
+    color: ?color-interface-softest;
+}
+
+
+/* Dark */
+.btn.btn-dark {
+    color: ?color-interface-soft;
+    background-color: ?color-interface-strong;
+}
+
+/* Light */
+.btn.btn-light {
+    color: ?color-interface-strong;
+    background-color: ?color-interface-soft;
+}
+
+/* Secondary */
+.btn.btn-secondary {
+    color: ?color-interface-softest;
+    background-color: ?color-secondary-strong;
+}
+
+/* Brand */
+.btn.btn-brand {
+    color: ?color-interface-softest;
+    background-color: ?color-brand-strong;
+}
+
+/* Default */
+.btn.btn-default {
+    color: ?color-primary-strong;
+    border-color: ?color-primary-strong;
+    border-width: 1;
+    background-color: transparent;
+}
+
+/* Link Buttons */
+
+/* Link primary */
+.btn.btn-link {
+    color: ?color-primary-strong;
+    border-width: 0;
+    background-color: transparent;
+}
+
+/* Link secondary */
+.btn.btn-link-secondary {
+    color: ?color-secondary-strong;
+    border-width: 0;
+    background-color: transparent;
+}
+
+/* Link success */
+.btn.btn-link-success {
+    color: ?color-success-strong;
+    border-width: 0;
+    background-color: transparent;
+}
+
+/* Link danger */
+.btn.btn-link-danger {
+    color: ?color-danger-strong;
+    border-width: 0;
+    background-color: transparent;
+}
+
+/* Link warning */
+.btn.btn-link-warning {
+    color: ?color-warning-strong;
+    border-width: 0;
+    background-color: transparent;
+}
+
+/* Link info */
+.btn.btn-link-info {
+    color: ?color-info-strong;
+    border-width: 0;
+    background-color: transparent;
+}
+
+/* Link light */
+.btn.btn-link-light {
+    color: ?color-interface-soft;
+    border-width: 0;
+    background-color: transparent;
+}
+
+/* Link dark */
+.btn.btn-link-dark {
+    color: ?color-interface-strong;
+    border-width: 0;
+    background-color: transparent;
+}
+
+/* Link brand */
+.btn.btn-link-brand {
+    color: ?color-brand-strong;
+    border-width: 0;
+    background-color: transparent;
+}
+
+/* Outline Buttons */
+
+/* Outline primary */
+.btn.btn-outline-primary {
+    color: ?color-primary-strong;
+    border-color: ?color-primary-strong;
+    border-width: 1;
+    background-color: transparent;
+}
+
+/* Outline secondary */
+.btn.btn-outline-secondary {
+    color: ?color-secondary-strong;
+    border-color: ?color-secondary-strong;
+    border-width: 1;
+    background-color: transparent;
+}
+
+/* Outline success */
+.btn.btn-outline-success {
+    color: ?color-success-strong;
+    border-color: ?color-success-strong;
+    border-width: 1;
+    background-color: transparent;
+}
+
+/* Outline danger */
+.btn.btn-outline-danger {
+    color: ?color-danger-strong;
+    border-color: ?color-danger-strong;
+    border-width: 1;
+    background-color: transparent;
+}
+
+/* Outline warning */
+.btn.btn-outline-warning {
+    color: ?color-warning-strong;
+    border-color: ?color-warning-strong;
+    border-width: 1;
+    background-color: transparent;
+}
+
+/* Outline info */
+.btn.btn-outline-info {
+    color: ?color-info-strong;
+    border-color: ?color-info-strong;
+    border-width: 1;
+    background-color: transparent;
+}
+
+/* Outline light */
+.btn.btn-outline-light {
+    color: ?color-interface-medium;
+    border-color: ?color-interface-soft;
+    border-width: 1;
+    background-color: transparent;
+}
+
+/* Outline dark */
+.btn.btn-outline-dark {
+    color: ?color-interface-strong;
+    border-color: ?color-interface-strong;
+    border-width: 1;
+    background-color: transparent;
+}
+
+/* Outline brand */
+.btn.btn-outline-brand {
+    color: ?color-brand-strong;
+    border-color: ?color-brand-strong;
+    border-width: 1;
+    background-color: transparent;
+}
+
+.flyout-menu ^listview {
+    background-color: ?color-brand;
+}
+
+.flyout-menu ^boxview {
+    background-color: #fff;
+    opacity: 0.4;
+}
+
+.flyout-menu-item {
+    font-size: 21;
+}
+
+/* Button Sizes */
+.btn {
+    font-size: 17;
+    padding: 16;
+    font-style: bold;
+    border-radius: 8;
+}
+
+.btn.btn-sm {
+    font-size: 17;
+    padding: 8 16;
+    font-style: bold;
+}
+
+.btn.btn-lg {
+    font-size: 17;
+    padding: 24 16;
+    font-style: bold;
+}
+
+/* Visibility Classes */
+.visible {
+    visibility: visible;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.collapse {
+    visibility: collapse;
+}
+
+.text {
+    font-size: ?font-size-default;
+    color: ?color-interface-medium;
+}
+
+/* Opacity */
+.o-00, .o-0 {
+    opacity: 0;
+}
+
+.o-10 {
+    opacity: .1;
+}
+
+.o-20 {
+    opacity: .2;
+}
+
+.o-30 {
+    opacity: .3;
+}
+
+.o-40 {
+    opacity: .4;
+}
+
+.o-50 {
+    opacity: .5;
+}
+
+.o-60 {
+    opacity: .6;
+}
+
+.o-70 {
+    opacity: .7;
+}
+
+.o-80 {
+    opacity: .8;
+}
+
+.o-90 {
+    opacity: .9;
+}
+
+/* Leading */
+.leading-none {
+    line-height: 1;
+}
+
+.leading-tight {
+    line-height: 1.1;
+}
+
+.leading-snug {
+    line-height: 1.2;
+}
+
+.leading-normal {
+    line-height: 1.25;
+}
+
+.leading-relaxed {
+    line-height: 1.4;
+}
+
+.leading-loose {
+    line-height: 1.6;
+}
+
+/* Text Alignment */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: end;
+}
+
+.text-left {
+    text-align: start;
+}
+
+.text-start {
+    text-align: start;
+}
+
+.text-end {
+    text-align: end;
+}
+
+/* Border Radius */
+.rounded-none {
+    border-radius: 0;
+}
+
+.rounded-sm {
+    border-radius: 4;
+}
+
+.rounded {
+    border-radius: 8;
+}
+
+.rounded-lg {
+    border-radius: 16;
+}
+
+.rounded-full {
+    border-radius: 1000;
+}
+
+/* Text Alignment */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: end;
+}
+
+.text-left {
+    text-align: start;
+}
+
+.text-start {
+    text-align: start;
+}
+
+.text-end {
+    text-align: end;
+}
+
+ /* Fields */
+fieldgroupheader .required-indicator {
+    margin-top: 2;    
+}
+
+.required-indicator {
+    color: transparent;
+    width: 6;
+    height: 6;
+    border-radius: 3;
+}
+
+fieldgroupheader.required .required-indicator,
+formfield.required .required-indicator,
+.unlabeled.required {
+    color: ?color-danger-strong;
+}
+
+.dark-mode fieldgroupheader.required .required-indicator,
+.dark-mode formfield.required .required-indicator  {
+    color: ?color-danger-soft;
+}
+
+^picker,
+^datepicker,
+^personpicker {
+    -rock-picker-placeholder-color: ?color-interface-medium;
+    rock-placeholder-text-color: ?color-interface-medium;
+}
+
+^borderlessentry,
+^datepicker,
+^picker,
+^entry,
+^editor,
+^personpicker {
+    color: ?color-interface-strong;
+    rock-placeholder-text-color: ?color-interface-medium;
+}
+
+.dark-mode ^borderlessentry,
+.dark-mode ^picker,
+.dark-mode ^editor,
+.dark-mode ^datepicker,
+.dark-mode ^entry {
+    color: ?color-interface-soft;
+}
+
+^TabbedShell {
+    -maui-bar-background-color: ?color-interface-softest;
+    -rock-unselected-tab-color: ?color-interface-medium;
+    -rock-selected-tab-color: ?color-primary-strong;
+}
+
+^TabbedShell.dark-mode {
+    -maui-bar-background-color: ?color-interface-stronger;
+    -rock-selected-tab-color: ?color-primary-strong;
+}
+
+.navigation-bar {
+    -maui-bar-background-color: ?color-interface-softest;
+    -maui-bar-text-color: ?color-interface-stronger;
+}
+
+.dark-mode .navigation-bar {
+    -maui-bar-background-color: ?color-interface-stronger;
+    -maui-bar-text-color: ?color-interface-softer;
+}
+
+/*** Cover Sheets ***/
+.cover-sheet .cover-sheet-title {
+  color: ?color-interface-stronger;
+  font-style: bold;
+  font-size: 17;
+}
+
+.dark-mode.cover-sheet .cover-sheet-title {
+  color: ?color-interface-softer;
+}
+
+.cover-sheet {
+    -maui-bar-background-color: ?color-interface-softest;
+    -maui-bar-text-color: ?color-interface-stronger;
+}
+
+.dark-mode.cover-sheet {
+  -maui-bar-background-color: ?color-interface-stronger;
+  -maui-bar-text-color: ?color-interface-softer;
+}
+
+.cover-sheet .cover-sheet-toolbar-button {
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  color: ?color-primary-strong;
+  font-size: 17;
+}
+
+.dark-mode.cover-sheet .cover-sheet-toolbar-button {
+  color: ?color-primary-soft;
+}
+
+.android.cover-sheet .cover-sheet-toolbar-button {
+  margin: 12, 0;    
+}
+
+/* Divider */
+.divider {
+    background-color: ?color-interface-soft;
+    height: 1;
+}
+
+.dark-mode .divider {
+    background-color: ?color-interface-strong;
+}
+
+.divider-thick {
+    height: 2;
+}
+
+.divider-thicker {
+    height: 4;
+}
+
+.divider-thickest {
+    height: 8;
+}
+
+^MessageBubble {
+    -rock-outbound-background-color: ?color-info-strong;
+    -rock-outbound-text-color: ?color-interface-softest;
+    -rock-inbound-background-color: ?color-interface-softest;
+    -rock-inbound-text-color: ?color-interface-strong;
+}
+
+.dark-mode ^MessageBubble {
+    -rock-outbound-background-color: ?color-info-soft;
+    -rock-outbound-text-color: ?color-interface-stronger;
+    -rock-inbound-background-color: ?color-interface-stronger;
+    -rock-inbound-text-color: ?color-interface-soft;
+}
+
+/* Hero Block */
+.hero .hero-title {
+    font-size: 24;
+    color: white;
+    -rock-text-shadow: 2 2 4 black;
+}
+
+.hero .hero-subtitle {
+    font-size: 18;
+    color: white;
+    -rock-text-shadow: 2 2 4 black;
+}
+
+.tablet .hero .hero-title {
+    font-size: 36;
+}
+
+.tablet .hero .hero-subtitle {
+    font-size: 28;
+}
+
+/* HTML Parser CSS */
+^grid.ordered-list,
+^grid.unordered-list {
+    margin-bottom: 24;
+}
+
+^grid.ordered-list ^grid.ordered-list,
+^grid.ordered-list ^grid.unordered-list,
+^grid.unordered-list ^grid.ordered-list,
+^grid.unordered-list ^grid.unordered-list {
+    margin-bottom: 0;
+}";
+            private static string baseStylesWeb = @"";
+
+            private static string legacyStylesMobile = @"/*
+/*
 Resets
 -----------------------------------------------------------
 */
@@ -890,12 +1662,15 @@ icon {
     border-radius: 1000;
 }
 
+.alert {
+    margin: 0 0 12 0;
+}
+
 /*
     Control CSS
     -----------------------------------------------------------
 */
 /* MobileInsertMark - Used by Mobile Shell to insert it's own standard control CSS */
-
 /* Flyout Styling */
 
 .flyout-menu ^listview {
@@ -1506,7 +2281,7 @@ formfield.required .required-indicator {
 }
 
 /* Field Stacks */
-^fieldstack {
+^fieldstack, .form-field-stack {
     border-radius: 0;
     border-color: ?color-secondary;
     border-width: 1;
@@ -1705,9 +2480,6 @@ formfield .required-indicator {
 .connection-type-list-layout .connection-type-name {
     font-style: bold;
 }
-
-
-
 
 /*** Connection Opportunity List block ***/
 .connection-opportunity-list-layout .connection-opportunities {
@@ -2217,8 +2989,8 @@ the .filter-card-icon class */
 .person-profile-email-edit-sheet.email-field-container ^SwitchList ^Divider {
   padding: 0, 8;
   margin: 0;
-}
-";
-        #endregion
+}";
+            #endregion
+        }
     }
 }

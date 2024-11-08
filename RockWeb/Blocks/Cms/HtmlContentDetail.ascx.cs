@@ -222,8 +222,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             /*
              * 2020-06-10 - JH
              *
@@ -251,6 +249,8 @@ namespace RockWeb.Blocks.Cms
             {
                 nbApprovalRequired.Visible = false;
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

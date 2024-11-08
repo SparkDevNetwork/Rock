@@ -36,13 +36,10 @@ namespace Rock.CheckIn.v2.Labels
     /// labels.
     /// </para>
     /// </summary>
-    internal class CheckoutLabelData : ILabelDataHasPerson
+    internal class CheckoutLabelData : ILabelDataHasPerson, ILabelDataHasAttendance
     {
-        /// <summary>
-        /// The data that describes the attendance record this label is being
-        /// printed for.
-        /// </summary>
-        public AttendanceLabel Attendance { get; set; }
+        /// <inheritdoc/>
+        public LabelAttendanceDetail Attendance { get; set; }
 
         /// <inheritdoc/>
         public Person Person => Attendance.Person;
@@ -63,12 +60,17 @@ namespace Rock.CheckIn.v2.Labels
         /// <summary>
         /// The date and time this person was checked in for this label.
         /// </summary>
-        public DateTime CheckInTime { get; }
+        public DateTime CheckInDateTime { get; }
+
+        /// <summary>
+        /// The date and time this person was checked out for this label.
+        /// </summary>
+        public DateTime CheckoutDateTime { get; }
 
         /// <summary>
         /// The current date and time the label is being printed at.
         /// </summary>
-        public DateTime CurrentTime { get; }
+        public DateTime CurrentDateTime { get; }
 
         /// <summary>
         /// The names of any group roles for any group membership records
@@ -84,19 +86,17 @@ namespace Rock.CheckIn.v2.Labels
         /// <param name="attendance">The attendance data for the label that is being generated.</param>
         /// <param name="family">The family group used during the check-in process.</param>
         /// <param name="rockContext">The <see cref="RockContext"/> for data operations.</param>
-        public CheckoutLabelData( AttendanceLabel attendance, Group family, RockContext rockContext )
+        public CheckoutLabelData( LabelAttendanceDetail attendance, Group family, RockContext rockContext )
         {
             Attendance = attendance;
-            Family = family ?? attendance.Person.PrimaryFamily;
+            Family = family ?? attendance.Person?.PrimaryFamily;
 
-            CheckInTime = Attendance.StartDateTime;
-            CurrentTime = RockDateTime.Now;
+            CheckInDateTime = Attendance.StartDateTime;
+            CheckoutDateTime = Attendance.EndDateTime ?? RockDateTime.Now;
+            CurrentDateTime = RockDateTime.Now;
 
             GroupRoleNames = Attendance.GroupMembers
-                .Select( gm => GroupTypeCache.Get( gm.GroupTypeId, rockContext )
-                    ?.Roles
-                    .FirstOrDefault( r => r.Id == gm.GroupRoleId )
-                    ?.Name )
+                ?.Select( gm => GroupTypeRoleCache.Get( gm.GroupRoleId, rockContext )?.Name )
                 .Where( n => n != null )
                 .ToList();
         }

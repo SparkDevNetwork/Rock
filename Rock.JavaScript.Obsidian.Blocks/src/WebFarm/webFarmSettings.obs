@@ -16,6 +16,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -129,10 +130,6 @@
     const options = computed((): WebFarmSettingsDetailOptionsBag => {
         return config.options ?? {} as WebFarmSettingsDetailOptionsBag;
     });
-
-    // #endregion
-
-    // #region Functions
 
     // #endregion
 

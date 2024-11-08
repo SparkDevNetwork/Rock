@@ -51,7 +51,7 @@
                             <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.AssessmentType, Rock" PropertyName="Title" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbIsActive" runat="server" SourceTypeName="Rock.Model.AssessmentType, Rock" PropertyName="IsActive" Label="Active" Checked="true" Text="Yes" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" SourceTypeName="Rock.Model.AssessmentType, Rock" PropertyName="IsActive" Label="Active" Checked="true" />
                         </div>
                     </div>
 
@@ -80,7 +80,6 @@
                                 SourceTypeName="Rock.Model.AssessmentType, Rock"
                                 PropertyName="RequiresRequest"
                                 Label="Requires Request"
-                                Text="Yes"
                                 Help="Is a person required to receive a request before this test can be taken?" />
                         </div>
                     </div>

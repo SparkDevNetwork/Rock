@@ -235,7 +235,7 @@
                     <h3>Challenges</h3>
                     <asp:Literal ID="lChallenges" runat="server"></asp:Literal>
 
-                    <asp:Panel id="pnlAdditionalInformation" runat="server" Visible="false">
+                    <asp:Panel id="pnlAdditionalInformation" runat="server" Visible="true">
                         <h3>Under Pressure</h3>
                         <asp:Literal ID="lUnderPressure" runat="server"></asp:Literal>
 

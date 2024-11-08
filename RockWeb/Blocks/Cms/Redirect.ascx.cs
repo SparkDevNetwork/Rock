@@ -87,12 +87,12 @@ namespace RockWeb.Blocks.Cms
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if (!Page.IsPostBack)
             {
                 RefreshContent();
             }
+
+            base.OnLoad( e );
         }
 
         protected void Block_BlockUpdated( object sender, EventArgs e )

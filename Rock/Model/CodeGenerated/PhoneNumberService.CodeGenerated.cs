@@ -117,8 +117,10 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsMessagingEnabled = source.IsMessagingEnabled;
+            target.IsMessagingOptedOut = source.IsMessagingOptedOut;
             target.IsSystem = source.IsSystem;
             target.IsUnlisted = source.IsUnlisted;
+            target.MessagingOptedOutDateTime = source.MessagingOptedOutDateTime;
             target.Number = source.Number;
             target.NumberFormatted = source.NumberFormatted;
             target.NumberTypeValueId = source.NumberTypeValueId;

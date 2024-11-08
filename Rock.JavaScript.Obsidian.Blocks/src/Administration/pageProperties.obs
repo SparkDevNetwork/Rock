@@ -1,0 +1,411 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template v-if="isBlockVisible">
+    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+
+    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+
+    <DetailBlock v-if="!blockError && isBlockVisible && enableFullEditMode"
+                 v-model:mode="panelMode"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :isAuditHidden="panelMode !== DetailPanelMode.View"
+                 :isBadgesVisible="true"
+                 :isDeleteVisible="false"
+                 :isEditVisible="isEditable"
+                 :isFollowVisible="false"
+                 :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
+                 :footerActions="footerActions"
+                 :footerSecondaryActions="footerSecondaryActions"
+                 :disableDeleteConfirmation="true"
+                 @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
+                 @save="onSave">
+        <template #view>
+            <ViewPanel :modelValue="pageViewBag" :options="options" :navigationUrls="navigationUrls" />
+        </template>
+
+        <template #edit>
+            <EditPanel v-model="pageEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :validationError="validationError" />
+        </template>
+    </DetailBlock>
+
+    <div v-if="!enableFullEditMode">
+        <EditPanel v-model="pageEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :validationError="validationError" />
+    </div>
+
+    <Modal v-model="isCopyModalVisible"
+           saveText="Copy"
+           @save="onCopyConfirmed">
+        <NotificationBox alertType="warning">
+            Verify all the block setting's values because they are not duplicates but point to the exact same item. You may want to create copies of certain things like images, so block copies are not referencing the same items.
+        </NotificationBox>
+        <CheckBox v-model="copyPageIncludeChildPages" text="Include Child Pages" label="" />
+    </Modal>
+
+    <Modal v-model="isDeleteModalVisible"
+           title="Are you sure?"
+           saveText="Delete"
+           @save="onDeleteConfirmed">
+        <p>Are you sure you want to delete this page?</p>
+        <CheckBox v-model="deleteInteractions" text="Delete any interactions for this page" label="" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DetailBlock from "@Obsidian/Templates/detailBlock";
+    import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import EditPanel from "./PageProperties/editPanel.partial.obs";
+    import ViewPanel from "./PageProperties/viewPanel.partial.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { NavigationUrlKey } from "./PageProperties/types.partial";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { PagePropertiesBag } from "@Obsidian/ViewModels/Blocks/Administration/PageProperties/pagePropertiesBag";
+    import { PagePropertiesOptionsBag } from "@Obsidian/ViewModels/Blocks/Administration/PageProperties/pagePropertiesOptionsBag";
+    import { PagePropertiesValidationResponseBag } from "@Obsidian/ViewModels/Blocks/Administration/PageProperties/pagePropertiesValidationResponseBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { showChildPages, showSecurity } from "@Obsidian/Utility/dialogs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const config = useConfigurationValues<DetailBlockBox<PagePropertiesBag, PagePropertiesOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const blockError = ref("");
+    const errorMessage = ref("");
+    const validationError = ref<PagePropertiesValidationResponseBag | undefined>();
+
+    const isDeleteModalVisible = ref(false);
+    const deleteInteractions = ref(true);
+
+    const isCopyModalVisible = ref(false);
+    const copyPageIncludeChildPages = ref(true);
+
+    const pageViewBag = ref(config.entity);
+    const pageEditBag = ref<ValidPropertiesBox<PagePropertiesBag>>({
+        bag: config.options?.enableFullEditMode == true ? {} as PagePropertiesBag : pageViewBag.value
+    });
+
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: pageEditBag
+    });
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * The entity name to display in the block panel.
+     */
+    const panelName = computed((): string => {
+        return pageViewBag.value?.internalName ?? "Page";
+    });
+
+    /**
+     * The identifier key value for this entity.
+     */
+    const entityKey = computed((): string => {
+        return pageViewBag.value?.idKey ?? "";
+    });
+
+    /**
+     * Additional labels to display in the block panel.
+     */
+    const blockLabels = computed((): PanelAction[] | undefined => {
+        const labels: PanelAction[] = [];
+
+        if (panelMode.value !== DetailPanelMode.View) {
+            return undefined;
+        }
+
+        if (options.value.siteName) {
+            labels.push({
+                title: `Site: ${options.value.siteName}`,
+                type: "default"
+            });
+        }
+
+        return labels;
+    });
+
+    const footerActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [];
+
+        if (panelMode.value === DetailPanelMode.View && isDeleteVisible.value) {
+            actions.push({
+                type: "link",
+                title: "Delete",
+                handler: onDelete
+            });
+        }
+
+        return actions;
+    });
+
+    /**
+     * Additional Buttons displayed at the bottom of the Panel.
+     */
+    const footerSecondaryActions = computed((): PanelAction[] => {
+        const actions: PanelAction[] = [];
+
+        if (panelMode.value === DetailPanelMode.View) {
+            actions.push({
+                iconCssClass: "fa fa-sitemap",
+                title: "Child Pages",
+                type: "default",
+                handler: onChildPagesClick
+            });
+            actions.push({
+                iconCssClass: "fa fa-clone",
+                title: "Copy",
+                type: "default",
+                handler: onCopyClick
+            });
+
+            if (config.options?.canAdministrate) {
+                actions.push({
+                    iconCssClass: "fa fa-lock",
+                    title: pageViewBag.value?.internalName ?? "Edit Security",
+                    type: "default",
+                    handler: onSecurityClick
+                });
+            }
+        }
+        return actions;
+    });
+
+    /**
+     * Returns true if the user can edit the current page.
+     */
+    const isEditable = computed((): boolean => {
+        return config.isEditable === true;
+    });
+
+    /**
+     * Returns true if the delete button should be rendered.
+     */
+    const isDeleteVisible = computed((): boolean => {
+        return pageViewBag.value?.isSystem !== true;
+    });
+
+    /**
+     * Additional block configuration details.
+     */
+    const options = computed((): PagePropertiesOptionsBag => {
+        return config.options ?? {} as PagePropertiesOptionsBag;
+    });
+
+    /**
+     * Key value pair of various URL this block can navigate to.
+     */
+    const navigationUrls = computed((): Record<string, string> => {
+        return config.navigationUrls ?? {} as Record<string, string>;
+    });
+
+    /**
+     * Returns false if all the required details needed to render this block are not available.
+     */
+    const isBlockVisible = computed((): boolean => {
+        return config.options?.isBlockVisible ?? false;
+    });
+
+    /**
+    * Returns true if block is not configured to render in full edit mode.
+    */
+    const enableFullEditMode = computed((): boolean => {
+        return config.options?.enableFullEditMode ?? false;
+    });
+
+
+    // #endregion
+
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the Copy button click event.
+     */
+    function onCopyClick(): void {
+        isCopyModalVisible.value = true;
+    }
+
+    /**
+    * Event handler for the Child Pages button click event.
+    */
+    function onChildPagesClick(): void {
+        if (pageViewBag.value?.pageId) {
+            showChildPages(pageViewBag.value.pageId);
+        }
+    }
+
+    /**
+    * Event handler for the Child Pages button click event.
+    */
+    function onSecurityClick(): void {
+        if (entityKey.value) {
+            showSecurity(EntityType.Page, entityKey.value, pageViewBag.value?.internalName ?? "Page");
+        }
+    }
+
+    /**
+     * Event triggered once the user clicks ok on the copy confirmation dialog.
+     */
+    async function onCopyConfirmed(): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("CopyPage", {
+            bag: {
+                key: pageViewBag.value?.idKey,
+                includeChildPages: copyPageIncludeChildPages.value
+            }
+        });
+
+        if (result.isSuccess && result.data) {
+            if (typeof result.data === "string") {
+                window.location.href = makeUrlRedirectSafe(result.data);
+            }
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to copy page.";
+            isCopyModalVisible.value = false;
+        }
+    }
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit mode.
+     * Handles redirect to parent page if creating a new entity.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onCancelEdit(): Promise<boolean | string> {
+        if (!pageEditBag.value.bag?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Event handler for the Delete button being clicked. Sends the
+     * delete request to the server and then redirects to the target page.
+     *
+     * @returns false if it should stay on the page; or a string containing a redirect URL.
+     */
+    async function onDeleteConfirmed(): Promise<void> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<string>("Delete", {
+            bag: {
+                key: pageViewBag.value?.idKey,
+                deleteInteractions: deleteInteractions.value
+            }
+        });
+
+        if (result.isSuccess && result.data) {
+            if (typeof result.data === "string") {
+                window.location.href = makeUrlRedirectSafe(result.data);
+            }
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete page.";
+            isDeleteModalVisible.value = false;
+        }
+    }
+
+    /**
+     * Event handler for the Delete button being clicked. Shows the delete confirmation modal
+     *
+     */
+    function onDelete(): void {
+        isDeleteModalVisible.value = true;
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<PagePropertiesBag>>("Edit", {
+            key: pageViewBag.value?.idKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            pageEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<boolean | string> {
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction<ValidPropertiesBox<PagePropertiesBag> | string>("Save", {
+            box: pageEditBag.value
+        });
+
+        if (result.isSuccess && result.data) {
+            if (typeof result.data === "string") {
+                return result.data;
+            }
+        }
+
+        try {
+            const parsedError = JSON.parse(result.errorMessage || "") as PagePropertiesValidationResponseBag;
+
+            if (parsedError) {
+                validationError.value = parsedError;
+                return false;
+            }
+        }
+        catch {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save page.";
+        }
+
+        return false;
+    }
+
+    // #endregion
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified page could not be viewed.";
+    }
+    else if (!config.entity.idKey) {
+        pageEditBag.value = { bag: config.entity };
+        panelMode.value = DetailPanelMode.Add;
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

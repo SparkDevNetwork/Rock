@@ -21,7 +21,7 @@
                         <slot v-else name="header" />
                     </div>
 
-                    <RockForm @submit="onSubmit" hideErrors @visibleValidationChanged="onVisibleValidationChanged">
+                    <RockForm v-model:submit="internalSubmit" @submit="onSubmit" hideErrors @visibleValidationChanged="onVisibleValidationChanged">
                         <div class="modal-body">
                             <RockValidation :errors="validationErrors" />
 
@@ -34,6 +34,7 @@
 
                         <div v-if="!isFooterHidden" class="modal-footer">
                             <RockButton v-if="cancelText" @click="onClose" btnType="link">{{ cancelText }}</RockButton>
+                            <RockButton v-if="saveThenAddText" @click="onSaveThenAdd" btnType="link">{{ saveThenAddText }}</RockButton>
                             <RockButton v-if="saveText" type="submit" btnType="primary" :disabled="isSaveButtonDisabled">{{ saveText }}</RockButton>
                             <slot name="customButtons" />
                         </div>
@@ -51,6 +52,8 @@
     import RockValidation from "./rockValidation.obs";
     import { trackModalState } from "@Obsidian/Utility/page";
     import { FormError } from "@Obsidian/Utility/form";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
 
     const props = defineProps({
         modelValue: {
@@ -83,6 +86,11 @@
             default: ""
         },
 
+        saveThenAddText: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
         isFooterHidden: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -101,6 +109,17 @@
         clickBackdropToClose: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        onSave: {
+            type: Function as PropType<(() => void | PromiseLike<void>)>,
+            required: false
+        },
+
+        /** True if the form should attempt to submit. */
+        submit: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -108,6 +127,8 @@
         (e: "update:modelValue", value: boolean): void;
         (e: "closeModal"): void;
         (e: "save"): void;
+        (e: "saveThenAdd"): void;
+        (e: "update:submit", value: boolean): void;
     }>();
 
     // #region Values
@@ -115,6 +136,7 @@
     const internalModalVisible = ref(props.modelValue);
     const container = ref(document.fullscreenElement ?? document.body);
     const validationErrors = ref<FormError[]>([]);
+    const internalSubmit = useVModelPassthrough(props, "submit", emit);
 
     /** Used to determine if shaking should be currently performed. */
     const isShaking = ref(false);
@@ -200,9 +222,23 @@
     /**
      * Event handler for when the form has been submitted.
      */
-    function onSubmit(): void {
-        emit("save");
+    async function onSubmit(): Promise<void> {
+        if (props.onSave) {
+            const result = props.onSave();
+
+            if (isPromise(result)) {
+                await result;
+            }
+        }
     }
+
+    /**
+     * Event handler for when the Save Then Add Button is clicked.
+     */
+    function onSaveThenAdd(): void {
+        emit("saveThenAdd");
+    }
+
 
     /**
      * Event handler for when the visible validation errors have changed.

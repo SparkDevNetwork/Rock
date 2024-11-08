@@ -106,7 +106,7 @@
                     </div>
 
                     <div v-if="isPaymentPlanConfigurationSupported && !isPaymentPlanConfigured && !registrationEntryState.viewModel.session?.activePaymentPlan" class="form-group">
-                        <RockButton btnType="default" btnSize="sm" @click="onOpenConfigurePaymentPlanModal">Set Up Payment Plan</RockButton>
+                        <RockButton btnType="default" btnSize="sm" @click="onOpenConfigurePaymentPlanModal" :disabled="registrationEntryState.amountToPayToday >= discountedTotal">Set Up Payment Plan</RockButton>
                     </div>
                 </template>
 
@@ -363,8 +363,9 @@
             rules.push("notblank");
         }
 
-        rules.push(`gte:${min}`);
-        rules.push(`lte:${max}`);
+        // excluding the grouping separators (or the thousands separators) as they were not compactible with the rules engine.
+        rules.push(`gte:${min.format({excludeGroupingSeparators: true})}`);
+        rules.push(`lte:${max.format({excludeGroupingSeparators: true})}`);
 
         return rules;
     });

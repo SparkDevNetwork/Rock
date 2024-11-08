@@ -276,12 +276,12 @@ namespace RockWeb.Blocks.Crm
         {
             nbValidation.Visible = false;
 
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindData();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

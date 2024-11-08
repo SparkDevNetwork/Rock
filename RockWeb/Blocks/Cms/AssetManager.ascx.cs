@@ -228,8 +228,6 @@ upnlFiles.ClientID // {2}
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             string postbackArgs = Request.Params["__EVENTARGUMENT"];
 
             /*
@@ -275,6 +273,7 @@ upnlFiles.ClientID // {2}
             if ( !this.IsPostBack || !hasAssetStorageId )
             {
                 hfAssetStorageId.Value = NullSelectedId;
+                base.OnLoad( e );
                 return;
             }
 
@@ -284,6 +283,8 @@ upnlFiles.ClientID // {2}
             {
                 ListFiles();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Control Overrides

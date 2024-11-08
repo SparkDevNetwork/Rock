@@ -43,6 +43,14 @@ namespace Rock.ViewModels.Blocks.Core.BinaryFileDetail
         public ListItemBag File { get; set; }
 
         /// <summary>
+        /// Gets or sets the file identifier.
+        /// </summary>
+        /// <value>
+        /// The file identifier.
+        /// </value>
+        public string FileId { get; set; }
+
+        /// <summary>
         /// Gets or sets the name of the file, including any extensions. This name is usually captured when the file is uploaded to Rock and this same name will be used when the file is downloaded. This property is required.
         /// </summary>
         public string FileName { get; set; }

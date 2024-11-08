@@ -80,5 +80,10 @@ namespace Rock.SystemGuid
         /// The Note to display the errors particular to the profile that occurred while importing the people CSV.
         /// </summary>
         public const string PERSON_CSV_IMPORT_ERROR_NOTE = "4E22E9DA-06A7-45DB-9EB3-BFCB7A2A7F21";
+
+        /// <summary>
+        /// The note to use for quick notes, which often have no associated entity.
+        /// </summary>
+        public const string QUICK_NOTE = "A3F5982F-C4D0-4345-8021-EB38C4C9AA18";
     }
 }

@@ -661,9 +661,9 @@ function destroyService(service: DragDropService): void {
  *
  * @returns An options object that conforms to IDragTargetOptions.
  */
-function getTargetOptions(value: string | IDragTargetOptions): IDragTargetOptions | null {
+function getTargetOptions(value: string | IDragTargetOptions | undefined): IDragTargetOptions | null | undefined{
     if (!value) {
-        return null;
+        return undefined;
     }
 
     if (typeof value === "string") {
@@ -685,17 +685,24 @@ function getTargetOptions(value: string | IDragTargetOptions): IDragTargetOption
  * When using a v-for to display the items, ensure you use a unique :key. Otherwise
  * when you .splice() after a drop weird things will happen.
  */
-export const DragSource: Directive<HTMLElement, IDragSourceOptions> = {
+export const DragSource: Directive<HTMLElement, IDragSourceOptions | undefined> = {
     mounted(element, binding) {
-        if (!binding.value || !binding.value.id) {
+
+        const value = binding.value;
+
+        if (!value) {
+            return;
+        }
+
+        if (!value.id) {
             console.error("DragSource must have a valid identifier.");
             return;
         }
 
         dragulaScriptPromise.then(() => {
-            const service = getDragDropService(binding.value.id);
+            const service = getDragDropService(value.id);
 
-            service.addSourceContainer(element, binding.value);
+            service.addSourceContainer(element, value);
         });
     },
 
@@ -722,9 +729,14 @@ export const DragSource: Directive<HTMLElement, IDragSourceOptions> = {
  * When using a v-for to display the items, ensure you use a unique :key. Otherwise
  * when you .splice() after a drop weird things will happen.
  */
-export const DragTarget: Directive<HTMLElement, string | IDragTargetOptions> = {
+export const DragTarget: Directive<HTMLElement, string | IDragTargetOptions | undefined> = {
     mounted(element, binding) {
+
         const options = getTargetOptions(binding.value);
+
+        if (options === undefined) {
+            return;
+        }
 
         if (!options) {
             console.error("DragTarget must have a valid identifier.");
@@ -819,6 +831,13 @@ export function useDragReorder<T>(values: Ref<T[] | undefined | null>, reorder?:
         handleSelector: ".reorder-handle",
         startDrag(operation, handle) {
             if (dragState !== "none") {
+                return false;
+            }
+
+            // If the handle has a disabled class then do not allow a drag
+            // operation to begin. This allows for dynamically disabled reorder
+            // operations such as is used by the grid when sorting columns.
+            if (handle.classList.contains("disabled")) {
                 return false;
             }
 

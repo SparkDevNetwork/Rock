@@ -37,7 +37,7 @@
 
                         <template #notFoundContent>
                             <div style="color:#999">
-                                <slot name="empty">No Data</slot>
+                                <slot name="empty">No results match {{ searchText }}</slot>
                             </div>
                         </template>
 
@@ -159,6 +159,7 @@
     const internalValue = ref(props.modelValue ? props.modelValue : null);
     const controlWrapper = ref<HTMLElement | null>(null);
     const standardFieldProps = useStandardRockFormFieldProps(props);
+    const searchText = ref("");
 
     // #endregion
 
@@ -323,6 +324,7 @@
      * @returns true if the option should be included in the list, otherwise false.
      */
     const filterItem = (input: string, option: SelectOption): boolean => {
+        searchText.value = input;
         return (option.label || "").toLocaleLowerCase().indexOf(input.toLocaleLowerCase()) >= 0;
     };
 

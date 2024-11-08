@@ -341,23 +341,7 @@ namespace Rock.CodeGeneration.Utility
                 // If the file doesn't already exist in the project file then add it.
                 if ( !project.Items.Any( pi => pi.EvaluatedInclude == relativeFilePath ) )
                 {
-                    if ( relativeFilePath.EndsWith( ".ts" ) )
-                    {
-                        // Special handling for TypeScript files since the
-                        // project format is slightly different.
-                        var folderRelativePath = Path.GetDirectoryName( relativeFilePath ) + "\\";
-
-                        if ( !project.Items.Any( pi => pi.EvaluatedInclude == folderRelativePath && pi.ItemType == "Folder" ) )
-                        {
-                            project.AddItem( "Folder", folderRelativePath );
-                        }
-
-                        project.AddItem( "TypeScriptCompile", relativeFilePath );
-                    }
-                    else
-                    {
-                        project.AddItem( "Compile", relativeFilePath );
-                    }
+                    project.AddItem( "Compile", relativeFilePath );
 
                     // Mark the project as dirty if it isn't already.
                     if ( !_dirtyOfflineProjects.Contains( project ) )

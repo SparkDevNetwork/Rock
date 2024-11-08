@@ -84,6 +84,9 @@
 
                             <div class="actions">
                                 <asp:PlaceHolder ID="phActions" runat="server" />
+                                <div id="pnlCaptcha" runat="server" class="form-group">
+                                    <Rock:Captcha ID="cpCaptcha" runat="server" OnTokenReceived="cpCaptcha_TokenReceived" />
+                                </div>
                             </div>
 
                         </asp:Panel>
@@ -142,5 +145,3 @@
 
     </ContentTemplate>
 </asp:UpdatePanel>
-
-<Rock:Captcha ID="cpCaptcha" runat="server" OnTokenReceived="cpCaptcha_TokenReceived" />

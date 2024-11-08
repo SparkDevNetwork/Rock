@@ -137,12 +137,12 @@ namespace RockWeb.Blocks.Cms
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             string feedItemId = System.Web.HttpUtility.UrlDecode( PageParameter( PageParameterKey.FeedItemId ) );
             SetNotificationBox( String.Empty, String.Empty );
 
             LoadFeedItem( feedItemId );
+
+            base.OnLoad( e );
         }
         #endregion
 

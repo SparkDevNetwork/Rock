@@ -84,8 +84,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 RockContext rockContext = new RockContext();
@@ -123,6 +121,7 @@ namespace RockWeb.Blocks.Groups
                 if ( group == null )
                 {
                     lAlerts.Text = "Could not determine the group to add to.";
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -136,6 +135,7 @@ namespace RockWeb.Blocks.Groups
                     if ( !groupTypeMatch )
                     {
                         lAlerts.Text = "Invalid group specified.";
+                        base.OnLoad( e );
                         return;
                     }
                 }
@@ -165,6 +165,7 @@ namespace RockWeb.Blocks.Groups
                 if ( groupMemberRole == null )
                 {
                     lAlerts.Text += "Could not determine the group role to use for the add.";
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -177,6 +178,7 @@ namespace RockWeb.Blocks.Groups
                 if ( personGuid == Guid.Empty )
                 {
                     lAlerts.Text += "A valid person identifier was not found in the page address.";
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -184,6 +186,7 @@ namespace RockWeb.Blocks.Groups
                 if ( ! group.GroupType.Roles.Contains( groupMemberRole ) )
                 {
                     lAlerts.Text += "The group you have provided does not have the group member role configured.";
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -193,6 +196,7 @@ namespace RockWeb.Blocks.Groups
                 if ( person == null )
                 {
                     lAlerts.Text += "A person could not be found for the identifier provided.";
+                    base.OnLoad( e );
                     return;
                 }
 
@@ -215,10 +219,10 @@ namespace RockWeb.Blocks.Groups
                 {
                     string templateInGroup = GetAttributeValue( "AlreadyInGroupMessage" );
                     lContent.Text = templateInGroup.ResolveMergeFields( mergeFields );
+                    base.OnLoad( e );
                     return;
 
                 }
-
                 
                 // add person to group
                 GroupMember groupMember = new GroupMember();
@@ -241,6 +245,8 @@ namespace RockWeb.Blocks.Groups
                 string templateSuccess = GetAttributeValue( "SuccessMessage" );
                 lContent.Text = templateSuccess.ResolveMergeFields( mergeFields );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

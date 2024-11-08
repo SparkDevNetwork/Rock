@@ -120,8 +120,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             var isVisible = Person != null && Person.Id != 0;
 
             pnlContent.Visible = isVisible;
@@ -130,6 +128,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 RockPage.AddCSSLink( "~/Styles/Blocks/Crm/GivingOverview.css", true );
                 ShowDetail();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods

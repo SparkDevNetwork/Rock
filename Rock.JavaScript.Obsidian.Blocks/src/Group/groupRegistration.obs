@@ -1,22 +1,24 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel type="block">
+    <RockForm @submit="onSave">
+        <Panel type="block">
 
-        <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
-        <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+            <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+            <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
-        <div v-if="!blockError">
-            <div v-if="resultLavaTemplate" v-html="resultLavaTemplate"></div>
-            <EditPanel v-else v-model="groupRegistrationBag" :options="options" />
-        </div>
+            <div v-if="!blockError">
+                <div v-if="resultLavaTemplate" v-html="resultLavaTemplate"></div>
+                <EditPanel v-else v-model="groupRegistrationBag" :options="options" />
+            </div>
 
-        <template #footerActions v-if="!resultLavaTemplate && !blockError">
-            <RockButton :btnSize="BtnSize.Default" :btnType="BtnType.Primary" :disabled="isRegistering" @click="onSave">
-                {{ buttonText }}
-            </RockButton>
-        </template>
+            <template #footerActions v-if="!resultLavaTemplate && !blockError">
+                <RockButton :btnSize="BtnSize.Default" :btnType="BtnType.Primary" :disabled="isRegistering" type="submit">
+                    {{ buttonText }}
+                </RockButton>
+            </template>
 
-    </Panel>
+        </Panel>
+    </RockForm>
 </template>
 
 <script setup lang="ts">
@@ -30,6 +32,7 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 
     const config = useConfigurationValues<GroupRegistrationBlockBox>();

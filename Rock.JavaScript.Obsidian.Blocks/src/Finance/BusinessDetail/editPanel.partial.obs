@@ -26,7 +26,7 @@
                     </div>
                 </div>
 
-                <TextBox label="Name" v-model="businessName" />
+                <TextBox label="Name" v-model="businessName" rules="required" />
 
                 <div class="panel panel-section">
                     <div class="panel-heading">
@@ -54,7 +54,7 @@
                                 <CheckBox label="Unlisted" v-model="isUnlisted" />
                             </div>
                         </div>
-                        <EmailBox label="Email" v-model="email" />
+                        <EmailBox label="Email" v-model="email" rules="email" />
                         <RadioButtonList label="Email Preference" v-model="emailPreference" :items="emailPreferences" horizontal :repeatColumns="0" />
                     </div>
                 </div>
@@ -67,34 +67,25 @@
                        :isFullscreenPageOnly="true">
                     <RockLabel help="Search keys provide alternate ways to search for an individual.">Search Keys</RockLabel>
 
-                    <div class="table-responsive">
-                        <table class="grid-table table table-bordered table-striped table-hover">
-                            <thead>
-                                <tr align="left">
-                                    <th data-priority="1" scope="col">Search Type</th>
-                                    <th data-priority="1" scope="col">Search Value</th>
-                                    <th class="grid-columncommand" data-priority="1" scope="col">&nbsp;</th>
-                                </tr>
-                            </thead>
+                    <Grid light
+                          liveUpdates
+                          keyField="key"
+                          itemTerm="Search Key"
+                          :data="searchKeyGridData"
+                          @addItem="onAddSearchKey">
 
-                            <tbody>
-                                <tr v-if="searchKeys.length > 0" v-for="searchKey in searchKeys" align="left">
-                                    <td data-priority="1">{{ searchKey.searchType?.text }}</td>
-                                    <td data-priority="1">{{ searchKey.searchValue }}</td>
-                                    <td class="grid-columncommand" data-priority="1" align="center">
-                                        <a title="Delete" @click.prevent.stop="onDeleteSearchKey(searchKey)"><i class="fa fa-times"></i></a>
-                                    </td>
-                                </tr>
+                        <TextColumn name="searchType"
+                                    field="searchType"
+                                    title="Search Type"
+                                    visiblePriority="xs" />
 
-                                <div v-else>
-                                    No Search Keys Found
-                                </div>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="grid-actions border-bottom border-panel">
-                        <RockButton class="btn-add btn-grid-action" btnType="link" @click="onAddSearchKey"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
-                    </div>
+                        <TextColumn name="searchValue"
+                                    field="searchValue"
+                                    title="Search Value"
+                                    visiblePriority="xs" />
+
+                        <DeleteColumn :onClick="onDeleteSearchKey" disableConfirmation />
+                    </Grid>
                 </Panel>
 
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
@@ -122,9 +113,9 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed, ref, watch } from "vue";
+    import { PropType, computed, ref, watch, reactive } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
@@ -144,11 +135,14 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import Grid, { TextColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<BusinessDetailBag>,
+            type: Object as PropType<ValidPropertiesBox<BusinessDetailBag>>,
             required: true
         },
 
@@ -159,27 +153,27 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: BusinessDetailBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<BusinessDetailBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const businessName = propertyRef(props.modelValue.businessName ?? "", "FirstName");
-    const recordStatus = propertyRef(props.modelValue.recordStatus ?? {}, "RecordStatusValueId");
-    const recordStatusReason = propertyRef(props.modelValue.recordStatusReason ?? {}, "RecordStatusReasonValueId");
-    const email = propertyRef(props.modelValue.emailAddress ?? "", "Email");
-    const emailPreference = propertyRef(props.modelValue.emailPreference ?? "", "EmailPreference");
-    const phoneNumber = ref(props.modelValue.phoneNumber ?? "");
-    const countryCode = ref(props.modelValue.countryCode ?? "");
-    const address = ref(props.modelValue.address ?? {});
-    const campus = propertyRef(props.modelValue.campus ?? {}, "CampusId");
-    const saveFormerAddress = ref(props.modelValue.saveFormerAddressAsPreviousAddress);
-    const isSms = ref(props.modelValue.isSmsChecked);
-    const isUnlisted = ref(props.modelValue.isUnlistedChecked);
-    const searchKeys = ref(props.options.searchKeys ?? []);
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const businessName = propertyRef(props.modelValue?.bag?.businessName ?? "", "FirstName");
+    const recordStatus = propertyRef(props.modelValue?.bag?.recordStatus ?? {}, "RecordStatusValueId");
+    const recordStatusReason = propertyRef(props.modelValue?.bag?.recordStatusReason ?? {}, "RecordStatusReasonValueId");
+    const email = propertyRef(props.modelValue?.bag?.emailAddress ?? "", "Email");
+    const emailPreference = propertyRef(props.modelValue?.bag?.emailPreference ?? "EmailAllowed", "EmailPreference");
+    const phoneNumber = ref(props.modelValue?.bag?.phoneNumber ?? "");
+    const countryCode = ref(props.modelValue?.bag?.countryCode ?? "");
+    const address = ref(props.modelValue?.bag?.address ?? {});
+    const campus = propertyRef(props.modelValue?.bag?.campus ?? {}, "CampusId");
+    const saveFormerAddress = ref(props.modelValue?.bag?.saveFormerAddressAsPreviousAddress ?? false);
+    const isSms = ref(props.modelValue?.bag?.isSmsChecked ?? false);
+    const isUnlisted = ref(props.modelValue?.bag?.isUnlistedChecked ?? false);
+    const searchKeys = ref(props.modelValue?.bag?.searchKeys ?? []);
     const searchKeyTypeList = ref(props.options.searchTypesList ?? []);
     const searchKeyType = ref("");
     const searchKeyValue = ref("");
@@ -197,12 +191,26 @@
     // #endregion
 
     // #region Computed Values
+
     const isReasonVisible = computed((): boolean => {
         return recordStatus.value.value?.toUpperCase() == DefinedValue.PersonRecordStatusInactive;
     });
+
+    const searchKeyGridData: GridDataBag = reactive<GridDataBag>({
+        rows: searchKeys.value.map((searchKey: SearchKeyBag) => toRowItem(searchKey))
+    });
+
     // #endregion
 
     // #region Functions
+
+    function toRowItem(searchKey: SearchKeyBag): Record<string, unknown> {
+        return {
+            key: searchKey.guid,
+            searchType: searchKey.searchType?.text,
+            searchValue: searchKey.searchValue
+        };
+    }
 
     // #endregion
 
@@ -214,20 +222,32 @@
 
     const onSaveSearchKey = (): void => {
         isModalOpen.value = false;
-        const searchType = searchKeyTypeList.value.find(x => x.value === searchKeyType.value);
-        searchKeys.value.push({ guid: emptyGuid, searchType: searchType, searchValue: searchKeyValue.value });
 
+        // Create new value.
+        const searchType = searchKeyTypeList.value.find(x => x.value === searchKeyType.value);
+        const searchKey = { guid: newGuid(), searchType: searchType, searchValue: searchKeyValue.value } as SearchKeyBag;
+
+        // Update Grid.
+        searchKeys.value.push(searchKey);
+        const rowItem = toRowItem(searchKey);
+        searchKeyGridData.rows?.push(rowItem);
+
+        // Clear saved values.
         searchKeyValue.value = "";
         searchKeyType.value = "";
     };
 
-    const onDeleteSearchKey = async (searchKey: SearchKeyBag): Promise<void> => {
+    const onDeleteSearchKey = (key: string): void => {
         isModalOpen.value = false;
-        if (!searchKey.guid) {
-            searchKeys.value = searchKeys.value.filter(s => s.searchType?.value !== searchKey.searchType?.value && s.searchValue !== searchKey.searchValue);
-        }
-        else {
-            searchKeys.value = searchKeys.value.filter(s => s.guid != searchKey.guid);
+        searchKeys.value = searchKeys.value.filter(s => s.guid !== key);
+
+        // Update the grid.
+        if (searchKeyGridData.rows) {
+            const index = searchKeyGridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                searchKeyGridData.rows?.splice(index, 1);
+            }
         }
     };
 
@@ -235,37 +255,38 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(businessName, props.modelValue.businessName ?? "");
-        updateRefValue(recordStatus, props.modelValue.recordStatus ?? {});
-        updateRefValue(recordStatusReason, props.modelValue.recordStatusReason ?? {});
-        updateRefValue(email, props.modelValue.emailAddress ?? "");
-        updateRefValue(emailPreference, props.modelValue.emailPreference ?? "");
-        updateRefValue(phoneNumber, props.modelValue.phoneNumber ?? "");
-        updateRefValue(campus, props.modelValue.campus ?? {});
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(businessName, props.modelValue?.bag?.businessName ?? "");
+        updateRefValue(recordStatus, props.modelValue?.bag?.recordStatus ?? {});
+        updateRefValue(recordStatusReason, props.modelValue?.bag?.recordStatusReason ?? {});
+        updateRefValue(email, props.modelValue?.bag?.emailAddress ?? "");
+        updateRefValue(emailPreference, props.modelValue?.bag?.emailPreference ?? "");
+        updateRefValue(phoneNumber, props.modelValue?.bag?.phoneNumber ?? "");
+        updateRefValue(campus, props.modelValue?.bag?.campus ?? {});
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, searchKeys, phoneNumber, saveFormerAddress, isSms, isUnlisted, address, ...propRefs], () => {
-        const newValue: BusinessDetailBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            businessName: businessName.value,
-            recordStatus: recordStatus.value,
-            recordStatusReason: recordStatusReason.value,
-            emailAddress: email.value,
-            campus: campus.value,
-            emailPreference: emailPreference.value,
-            phoneNumber: phoneNumber.value,
-            saveFormerAddressAsPreviousAddress: saveFormerAddress.value,
-            isSmsChecked: isSms.value,
-            isUnlistedChecked: isUnlisted.value,
-            address: address.value,
-            searchKeys: searchKeys.value,
-            countryCode: countryCode.value
+    watch([attributeValues, searchKeys, phoneNumber, saveFormerAddress, isSms, isUnlisted, address, countryCode, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<BusinessDetailBag> = {
+            bag: { ...props.modelValue.bag } as BusinessDetailBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value),
+        setPropertiesBoxValue(newValue, "businessName", businessName.value),
+        setPropertiesBoxValue(newValue, "recordStatus", recordStatus.value),
+        setPropertiesBoxValue(newValue, "recordStatusReason", recordStatusReason.value),
+        setPropertiesBoxValue(newValue, "emailAddress", email.value),
+        setPropertiesBoxValue(newValue, "campus", campus.value),
+        setPropertiesBoxValue(newValue, "emailPreference", emailPreference.value),
+        setPropertiesBoxValue(newValue, "phoneNumber", phoneNumber.value),
+        setPropertiesBoxValue(newValue, "saveFormerAddressAsPreviousAddress", saveFormerAddress.value),
+        setPropertiesBoxValue(newValue, "isSmsChecked", isSms.value),
+        setPropertiesBoxValue(newValue, "isUnlistedChecked", isUnlisted.value),
+        setPropertiesBoxValue(newValue, "address", address.value),
+        setPropertiesBoxValue(newValue, "searchKeys", searchKeys.value),
+        setPropertiesBoxValue(newValue, "countryCode", countryCode.value),
 
         emit("update:modelValue", newValue);
     }, { deep: true });

@@ -448,8 +448,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbNotice.Visible = false;
 
             if ( Request["PersonGuid"] != null )
@@ -484,6 +482,8 @@ namespace RockWeb.Blocks.Groups
                     ShowView();
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -1550,7 +1550,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             // Resolve info window lava template
                             var linkedPageParams = new Dictionary<string, string> { { "GroupId", group.Id.ToString() } };
-                            var mergeFields = new Dictionary<string, object>();
+                            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
                             mergeFields.Add( "Group", gl.Group );
                             mergeFields.Add( "Location", gl.Location );
 
@@ -1646,7 +1646,7 @@ namespace RockWeb.Blocks.Groups
             {
                 string template = GetAttributeValue( AttributeKey.LavaOutput );
 
-                var mergeFields = new Dictionary<string, object>();
+                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, CurrentPerson );
                 if ( fences != null )
                 {
                     mergeFields.Add( "Fences", fences.Select( f => f.Group ).ToList() );

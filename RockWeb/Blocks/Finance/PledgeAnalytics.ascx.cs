@@ -92,12 +92,12 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 LoadSettingsFromUserPreferences();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -157,9 +157,10 @@ namespace RockWeb.Blocks.Finance
         {
             pnlUpdateMessage.Visible = false;
             pnlResults.Visible = true;
+            pnlSummary.Visible = true;
 
-            int? accountId = apAccount.SelectedValue.AsIntegerOrNull();
-            if ( !accountId.HasValue )
+            int[] accountIds = apAccounts.SelectedIds;
+            if ( accountIds.Length == 0 )
             {
                 return;
             }
@@ -184,7 +185,7 @@ namespace RockWeb.Blocks.Finance
             var rockContextAnalytics = new RockContextAnalytics();
             rockContextAnalytics.Database.CommandTimeout = this.GetAttributeValue( AttributeKeys.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
 
-            DataSet ds = new FinancialPledgeService( rockContextAnalytics ).GetPledgeAnalyticsDataSet( accountId.Value, start, end,
+            DataSet ds = new FinancialPledgeService( rockContextAnalytics ).GetPledgeAnalyticsDataSet( accountIds, start, end,
                 minPledgeAmount, maxPledgeAmount, minComplete, maxComplete, minGiftAmount, maxGiftAmount,
                 includePledges, includeGifts );
             System.Data.DataView dv = ds.Tables[0].DefaultView;
@@ -212,7 +213,24 @@ namespace RockWeb.Blocks.Finance
 
             gList.DataSource = dv;
             gList.DataBind();
-            
+
+            decimal pledgeTotal = 0;
+            decimal totalGivingAmount = 0;
+            foreach ( DataRow row in ds.Tables[0].Rows )
+            {
+                if ( !DBNull.Value.Equals( row["PledgeAmount"] ) )
+                {
+                    pledgeTotal += ( decimal ) row["PledgeAmount"];
+                }
+
+                if ( !DBNull.Value.Equals( row["GiftAmount"] ) )
+                {
+                    totalGivingAmount += ( decimal ) row["GiftAmount"];
+                }
+            }
+
+            lPledgeTotal.Text = pledgeTotal.FormatAsCurrencyWithDecimalPlaces( 2 );
+            lTotalGivingAmount.Text = totalGivingAmount.FormatAsCurrencyWithDecimalPlaces( 2 );
         }
 
         /// <summary>
@@ -222,7 +240,7 @@ namespace RockWeb.Blocks.Finance
         {
             var preferences = GetBlockPersonPreferences();
 
-            preferences.SetValue( "apAccount", apAccount.SelectedValue );
+            preferences.SetValue( "apAccounts", apAccounts.SelectedIds.ToList().AsDelimited( "," ) );
 
             preferences.SetValue( "drpDateRange", drpSlidingDateRange.DelimitedValues );
 
@@ -242,11 +260,9 @@ namespace RockWeb.Blocks.Finance
         {
             var preferences = GetBlockPersonPreferences();
 
-            string accountSetting = preferences.GetValue( "apAccount" );
-            if ( !string.IsNullOrWhiteSpace( accountSetting ) )
-            {
-                apAccount.SetValue( Int32.Parse( accountSetting ) );
-            }
+            var accountSettings = preferences.GetValue( "apAccounts" ).SplitDelimitedValues().AsIntegerList();
+
+            apAccounts.SetValues( accountSettings );
 
             string slidingDateRangeSettings = preferences.GetValue( "drpDateRange" );
             if ( string.IsNullOrWhiteSpace( slidingDateRangeSettings ) )

@@ -2162,7 +2162,8 @@ INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
 
         /// <summary>
         /// Bulk updates the persisted values for all the values of an attribute
-        /// that have the specified value.
+        /// that have the specified value. This updates whether they are marked
+        /// as <see cref="AttributeValue.IsPersistedValueDirty"/> or not.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -2215,15 +2216,17 @@ WHERE [AttributeId] = @AttributeId
         /// <param name="attributeId">The attribute identifier.</param>
         /// <param name="valueIds">The value identifiers that should be updated.</param>
         /// <param name="persistedValues">The persisted values to use during the update.</param>
+        /// <param name="onlyDirty">Only update the <see cref="AttributeValue"/> objects if they marked dirty.</param>
         /// <param name="rockContext">The database context to use when updating.</param>
         /// <returns>The number of attribute value rows that were updated.</returns>
-        internal static int BulkUpdateAttributeValuePersistedValues( int attributeId, IEnumerable<int> valueIds, Rock.Field.PersistedValues persistedValues, RockContext rockContext )
+        internal static int BulkUpdateAttributeValuePersistedValues( int attributeId, IEnumerable<int> valueIds, Rock.Field.PersistedValues persistedValues, bool onlyDirty, RockContext rockContext )
         {
             var textValueParameter = new SqlParameter( "@TextValue", ( object ) persistedValues.TextValue ?? DBNull.Value );
             var htmlValueParameter = new SqlParameter( "@HtmlValue", ( object ) persistedValues.HtmlValue ?? DBNull.Value );
             var condensedTextValueParameter = new SqlParameter( "@CondensedTextValue", ( object ) persistedValues.CondensedTextValue ?? DBNull.Value );
             var condensedHtmlValueParameter = new SqlParameter( "@CondensedHtmlValue", ( object ) persistedValues.CondensedHtmlValue ?? DBNull.Value );
             var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
+            var onlyDirtyParameter = new SqlParameter( "@OnlyDirty", onlyDirty );
 
             // Initialize the ValueId SQL parameter.
             var attributeIdsTable = new DataTable();
@@ -2250,12 +2253,13 @@ SET [AV].[PersistedTextValue] = @TextValue,
 FROM [AttributeValue] AS [AV]
 INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]
 WHERE [AV].[AttributeId] = @AttributeId
-  AND [AV].[IsPersistedValueDirty] = 1",
+  AND (@OnlyDirty = 0 OR [AV].[IsPersistedValueDirty] = 1)",
                 textValueParameter,
                 htmlValueParameter,
                 condensedTextValueParameter,
                 condensedHtmlValueParameter,
                 attributeIdParameter,
+                onlyDirtyParameter,
                 valueIdParameter );
         }
 
@@ -2272,7 +2276,7 @@ WHERE [AV].[AttributeId] = @AttributeId
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public static void UpdateAttributeValueEntityReferences( AttributeValue attributeValue, RockContext rockContext )
         {
             var referencedEntitySet = rockContext.Set<AttributeValueReferencedEntity>();
@@ -2424,7 +2428,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public static void UpdateAttributeEntityReferences( Rock.Model.Attribute attribute, RockContext rockContext )
         {
             var referencedEntitySet = rockContext.Set<AttributeReferencedEntity>();
@@ -2486,7 +2490,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public static void UpdateAttributeValuePersistedValues( Rock.Model.AttributeValue attributeValue, AttributeCache attribute )
         {
             var field = attribute?.FieldType?.Field;
@@ -2524,7 +2528,6 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         internal static void UpdateDependantAttributesAndValues( IReadOnlyList<int> attributeIds, int entityTypeId, int entityId, RockContext rockContext )
         {
             var qry = rockContext.Set<AttributeReferencedEntity>()
-                .AsNoTracking()
                 .Where( re => re.EntityTypeId == entityTypeId && re.EntityId == entityId );
 
             if ( attributeIds != null && attributeIds.Any() )
@@ -2636,7 +2639,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                         };
                     }
 
-                    BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, rockContext );
+                    BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, false, rockContext );
                 }
             }
         }

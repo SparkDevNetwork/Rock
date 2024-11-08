@@ -6,57 +6,59 @@
            :isSaveButtonDisabled="isCloningDisabled"
            @save="onSave">
 
-        <NotificationBox :alertType="AlertType.Info">
-            Configure the settings below to clone schedules for a different week.
-        </NotificationBox>
-
         <NotificationBox v-if="loadCloneSettingsErrorMessage" :alertType="AlertType.Warning">
             {{ loadCloneSettingsErrorMessage }}
         </NotificationBox>
 
-        <div v-else class="row">
+        <template v-else>
+            <NotificationBox :alertType="AlertType.Info">
+                Configure the settings below to clone schedules for a different week.
+            </NotificationBox>
 
-            <div class="col-md-6">
-                <h3>Source Settings</h3>
+            <div class="row">
 
-                <DropDownList v-model="selectedSourceDate"
-                              label="Source Week Of"
-                              rules="required"
-                              :items="availableSourceDates"
-                              :loading="isBusy" />
+                <div class="col-md-6">
+                    <h3>Source Settings</h3>
 
-                <DropDownList v-model="selectedGroups"
-                              label="Groups"
-                              :items="availableGroups"
-                              :multiple="true"
-                              :loading="isBusy" />
+                    <DropDownList v-model="selectedSourceDate"
+                                  label="Source Week Of"
+                                  rules="required"
+                                  :items="availableSourceDates"
+                                  :loading="isBusy" />
 
-                <DropDownList v-model="selectedLocations"
-                              label="Locations"
-                              :items="availableLocations"
-                              :multiple="true"
-                              :loading="isBusy" />
+                    <DropDownList v-model="selectedGroups"
+                                  label="Groups"
+                                  :items="availableGroups"
+                                  :multiple="true"
+                                  :loading="isBusy" />
 
-                <DropDownList v-model="selectedSchedules"
-                              label="Schedules"
-                              :items="availableSchedules"
-                              :multiple="true"
-                              :loading="isBusy" />
+                    <DropDownList v-model="selectedLocations"
+                                  label="Locations"
+                                  :items="availableLocations"
+                                  :multiple="true"
+                                  :loading="isBusy" />
+
+                    <DropDownList v-model="selectedSchedules"
+                                  label="Schedules"
+                                  :items="availableSchedules"
+                                  :multiple="true"
+                                  :loading="isBusy" />
+
+                </div>
+
+                <div class="col-md-6">
+                    <h3>Destination Settings</h3>
+
+                    <DropDownList v-model="selectedDestinationDate"
+                                  label="Destination Week Of"
+                                  rules="required"
+                                  :items="availableDestinationDates"
+                                  :loading="isBusy" />
+
+                </div>
 
             </div>
-
-            <div class="col-md-6">
-                <h3>Destination Settings</h3>
-
-                <DropDownList v-model="selectedDestinationDate"
-                              label="Destination Week Of"
-                              rules="required"
-                              :items="availableDestinationDates"
-                              :loading="isBusy" />
-
-            </div>
-
-        </div>
+        </template>
 
     </Modal>
 </template>
@@ -89,7 +91,8 @@
 
     const emit = defineEmits<{
         (e: "update:isVisible"): void,
-        (e: "cloneSchedules", cloneSettings: GroupSchedulerCloneSettingsBag): void
+        (e: "cloneSchedules", cloneSettings: GroupSchedulerCloneSettingsBag): void,
+        (e: "disableCloneSchedules"): void
     }>();
 
     // #region Values
@@ -161,6 +164,11 @@
 
         if (!result.isSuccess) {
             loadCloneSettingsErrorMessage.value = result.errorMessage || "Unknown error while trying to load clone settings.";
+
+            if (result.statusCode === 403) {
+                emit("disableCloneSchedules");
+            }
+
             return;
         }
 

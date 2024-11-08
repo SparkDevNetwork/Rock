@@ -1,30 +1,41 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <DataRow v-if="hasRows"
-             v-for="(row, index) in props.rows"
-             :key="props.grid.getRowKey(row)"
-             :columns="props.columns"
-             :row="row"
-             :grid="props.grid"
-             :tooltipField="props.tooltipField"
-             :isSelectable="isSelectable"
-             :isEven="(index + 1) % 2 === 0"
-             :markInactiveRows="markInactiveRows"
-             :class="getRowClass(row)"
-             @click="onRowClick" />
+    <div class="grid-body" ref="element" v-dragSource="dragOptions" v-dragTarget="dragOptions">
+        <DataRow v-if="hasRows"
+                 v-for="(row, index) in props.rows"
+                 :key="props.grid.getRowKey(row)"
+                 :columns="props.columns"
+                 :row="row"
+                 :grid="props.grid"
+                 :tooltipField="props.tooltipField"
+                 :isSelectable="isSelectable"
+                 :isEven="(index + 1) % 2 === 0"
+                 :markInactiveRows="markInactiveRows"
+                 :class="getRowClass(row)"
+                 @click="onRowClick" />
 
-    <div class="grid-row" v-else>
-        <div class="grid-cell table-empty">
-            No {{ pluralItemTerm }} Found
+        <div class="grid-row" v-else-if="emptyDataText">
+            <div class="grid-cell table-empty">
+                {{ emptyDataText }}
+            </div>
+        </div>
+
+        <div class="grid-row" v-else>
+            <div class="grid-cell table-empty">
+                No {{ pluralItemTerm }} Found
+            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed } from "vue";
+    import { PropType, computed, onBeforeUnmount, onMounted, ref } from "vue";
     import DataRow from "./dataRow.partial.obs";
     import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+
+    const element = ref<HTMLElement>();
 
     const props = defineProps({
         /**
@@ -35,6 +46,11 @@
         columns: {
             type: Array as PropType<ReadonlyArray<ColumnDefinition>>,
             required: true
+        },
+
+        dragOptions: {
+            type: Object as PropType<IDragSourceOptions>,
+            required: false
         },
 
         /** The rows that contain the data to be displayed. */
@@ -85,11 +101,21 @@
         rowClass: {
             type: [String, Function] as PropType<string | ((row: Record<string, unknown>) => string)>,
             default: undefined
+        },
+
+        /**
+         * The text to display in the empty data row. The default is an empty string (""), which indicates that this property is not set.
+         */
+        emptyDataText: {
+            type: String,
+            default: "",
+            required: false,
         }
     });
 
     const emit = defineEmits<{
         (e: "click", key: string): void
+        (e: "width", width: { offsetWidth: number, scrollWidth: number }): void
     }>();
 
     /** Whether or not there are any rows given */
@@ -125,4 +151,27 @@
 
         return undefined;
     }
+
+    let resizeObserver: ResizeObserver | undefined;
+
+    onMounted(() => {
+
+        if (typeof ResizeObserver !== "undefined" && element.value) {
+
+            resizeObserver = new ResizeObserver(() => {
+                const payload = { offsetWidth: element.value?.offsetWidth ?? 0, scrollWidth: element.value?.scrollWidth ?? 0 };
+                emit("width", payload);
+            });
+
+            resizeObserver.observe(element.value);
+        }
+    });
+
+    onBeforeUnmount(() => {
+        if (resizeObserver) {
+            resizeObserver.disconnect();
+            resizeObserver = undefined;
+        }
+    });
+
 </script>

@@ -17,6 +17,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @edit="onEdit"
                  @save="onSave">
@@ -127,11 +128,12 @@
      */
     async function onCancelEdit(): Promise<boolean | string> {
         const siteId = layoutEditBag.value?.siteId?.toString();
-            if (siteId) {
-                const qryString = new URLSearchParams();
-                qryString.append("SiteId", siteId);
-                return `${config.navigationUrls?.[NavigationUrlKey.ParentPage]}?${qryString.toString()}`;
-            }
+
+        if (siteId) {
+            const qryString = new URLSearchParams();
+            qryString.append("SiteId", siteId);
+            return `${config.navigationUrls?.[NavigationUrlKey.ParentPage]}?${qryString.toString()}`;
+        }
 
         if (!layoutEditBag.value?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {

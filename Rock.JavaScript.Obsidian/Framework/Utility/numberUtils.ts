@@ -117,7 +117,10 @@ export function toOrdinalSuffix(num?: number | null): string {
 
 /**
  * Convert a number to an ordinal.
- * Ex: 1 => first
+ * Ex: 1 => first, 10 => tenth
+ *
+ * Anything larger than 10 will be converted to the number with an ordinal suffix.
+ * Ex: 123 => 123rd, 1000 => 1000th
  * @param num
  */
 export function toOrdinal(num?: number | null): string {
@@ -142,7 +145,10 @@ export function toOrdinal(num?: number | null): string {
 
 /**
  * Convert a number to a word.
- * Ex: 1 => one
+ * Ex: 1 => "one", 10 => "ten"
+ *
+ * Anything larger than 10 will be returned as a number string instead of a word.
+ * Ex: 123 => "123", 1000 => "1000"
  * @param num
  */
 export function toWord(num?: number | null): string {
@@ -179,6 +185,208 @@ export function toDecimalPlaces(num: number, decimalPlaces: number): number {
     decimalPlaces = Math.floor(decimalPlaces); // ensure it's an integer
 
     return Math.round(num * 10 ** decimalPlaces) / 10 ** decimalPlaces;
+}
+
+/**
+ * Returns the string representation of an integer.
+ * Ex: 1 => "1", 123456 => "one hundred twenty-three thousand four hundred fifty-six"
+ *
+ * Not reliable for numbers in the quadrillions and greater.
+ *
+ * @example
+ * numberToWord(1)      // one
+ * numberToWord(2)      // two
+ * numberToWord(123456) // one hundred twenty-three thousand four hundred fifty-six
+ * @param numb The number for which to get the string representation.
+ * @returns "one", "two", ..., "one thousand", ..., (up to the max number allowed for JS).
+ */
+export function toWordFull(numb: number): string {
+    const numberWords = {
+        0: "zero",
+        1: "one",
+        2: "two",
+        3: "three",
+        4: "four",
+        5: "five",
+        6: "six",
+        7: "seven",
+        8: "eight",
+        9: "nine",
+        10: "ten",
+        11: "eleven",
+        12: "twelve",
+        13: "thirteen",
+        14: "fourteen",
+        15: "fifteen",
+        16: "sixteen",
+        17: "seventeen",
+        18: "eighteen",
+        19: "nineteen",
+        20: "twenty",
+        30: "thirty",
+        40: "forty",
+        50: "fifty",
+        60: "sixty",
+        70: "seventy",
+        80: "eighty",
+        90: "ninety",
+        100: "one hundred",
+        1000: "one thousand",
+        1000000: "one million",
+        1000000000: "one billion",
+        1000000000000: "one trillion",
+        1000000000000000: "one quadrillion"
+    };
+
+    // Store constants for these since it is hard to distinguish between them at larger numbers.
+    const oneHundred = 100;
+    const oneThousand = 1000;
+    const oneMillion = 1000000;
+    const oneBillion = 1000000000;
+    const oneTrillion = 1000000000000;
+    const oneQuadrillion = 1000000000000000;
+
+    if (numberWords[numb]) {
+        return numberWords[numb];
+    }
+
+    function quadrillionsToWord(numb: number): string {
+        const trillions = trillionsToWord(numb);
+        if (numb >= oneQuadrillion) {
+            const quadrillions = hundredsToWord(Number(numb.toString().slice(-18, -15)));
+            if (trillions) {
+                return `${quadrillions} quadrillion ${trillions}`;
+            }
+            else {
+                return `${quadrillions} quadrillion`;
+            }
+        }
+        else {
+            return trillions;
+        }
+    }
+
+    function trillionsToWord(numb: number): string {
+        numb = Number(numb.toString().slice(-15));
+        const billions = billionsToWord(numb);
+        if (numb >= oneTrillion) {
+            const trillions = hundredsToWord(Number(numb.toString().slice(-15, -12)));
+            if (billions) {
+                return `${trillions} trillion ${billions}`;
+            }
+            else {
+                return `${trillions} trillion`;
+            }
+        }
+        else {
+            return billions;
+        }
+    }
+
+    function billionsToWord(numb: number): string {
+        numb = Number(numb.toString().slice(-12));
+        const millions = millionsToWord(numb);
+        if (numb >= oneBillion) {
+            const billions = hundredsToWord(Number(numb.toString().slice(-12, -9)));
+            if (millions) {
+                return `${billions} billion ${millions}`;
+            }
+            else {
+                return `${billions} billion`;
+            }
+        }
+        else {
+            return millions;
+        }
+    }
+
+    function millionsToWord(numb: number): string {
+        numb = Number(numb.toString().slice(-9));
+        const thousands = thousandsToWord(numb);
+        if (numb >= oneMillion) {
+            const millions = hundredsToWord(Number(numb.toString().slice(-9, -6)));
+            if (thousands) {
+                return `${millions} million ${thousands}`;
+            }
+            else {
+                return `${millions} million`;
+            }
+        }
+        else {
+            return thousands;
+        }
+    }
+
+    function thousandsToWord(numb: number): string {
+        numb = Number(numb.toString().slice(-6));
+        const hundreds = hundredsToWord(numb);
+        if (numb >= oneThousand) {
+            const thousands = hundredsToWord(Number(numb.toString().slice(-6, -3)));
+            if (hundreds) {
+                return `${thousands} thousand ${hundreds}`;
+            }
+            else {
+                return `${thousands} thousandths`;
+            }
+        }
+        else {
+            return hundreds;
+        }
+    }
+
+    function hundredsToWord(numb: number): string {
+        numb = Number(numb.toString().slice(-3));
+
+        if (numberWords[numb]) {
+            return numberWords[numb];
+        }
+
+        const tens = tensToWord(numb);
+
+        if (numb >= oneHundred) {
+            const hundreds = Number(numb.toString().slice(-3, -2));
+            if (tens) {
+                return `${numberWords[hundreds]} hundred ${tens}`;
+            }
+            else {
+                return `${numberWords[hundreds]} hundred`;
+            }
+        }
+        else {
+            return tens;
+        }
+    }
+
+    function tensToWord(numb: number): string {
+        numb = Number(numb.toString().slice(-2));
+
+        if (numberWords[numb]) {
+            return numberWords[numb];
+        }
+
+        const ones = onesToWord(numb);
+
+        if (numb >= 20) {
+            const tens = Number(numb.toString().slice(-2, -1));
+
+            if (ones) {
+                return `${numberWords[tens * 10]}-${ones}`;
+            }
+            else {
+                return numberWords[tens * 10];
+            }
+        }
+        else {
+            return ones;
+        }
+    }
+
+    function onesToWord(numb: number): string {
+        numb = Number(numb.toString().slice(-1));
+        return numberWords[numb];
+    }
+
+    return quadrillionsToWord(numb);
 }
 
 export default {

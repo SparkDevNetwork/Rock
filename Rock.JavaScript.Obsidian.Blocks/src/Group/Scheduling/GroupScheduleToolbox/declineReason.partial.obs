@@ -74,7 +74,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:isVisible"): void
+        (e: "update:isVisible"): void;
     }>();
 
     // #region Values

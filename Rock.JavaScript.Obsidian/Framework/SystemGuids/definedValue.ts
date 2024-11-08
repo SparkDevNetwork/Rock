@@ -23,6 +23,12 @@
 
 /** Static Guids used by the Rock application */
 export const DefinedValue = {
+    /** The attendance record came from a kiosk. */
+    AttendanceSourceKiosk: "9A21D7EB-BCB5-4466-B62F-70EC5008B6B9",
+    /** The attendance record came from a legacy kiosk. */
+    AttendanceSourceLegacyKiosk: "0B25A627-679B-4B73-AA84-305DEF24815A",
+    /** The attendance record came from a mobile check-in. */
+    AttendanceSourceMobile: "972E8841-A3C9-4DDD-BD24-A414C0290331",
     /** Benevolence Approved */
     BenevolenceApproved: "18D3A2DA-F2BA-49AE-83EB-7E60DCD18A3B",
     /** Benevolence Denied */
@@ -73,6 +79,8 @@ export const DefinedValue = {
     BlockTemplateMobileGroupView: "559346FB-C684-42CF-8F4C-CF4A1C278AD6",
     /** The block template for the mobile group finder. */
     BlockTemplateMobileGroupsGroupFinder: "1B6D540A-2E40-44F6-8AE9-2857DE913459",
+    /** The block template for the mobile my notes block. */
+    BlockTemplateMobileMyNotes: "652A4E12-6C15-407D-9620-ED39190899A5",
     /** The block template for mobile my prayer requests. */
     BlockTemplateMobileMyPrayerRequests: "198F3006-5F0F-48AB-9EA0-2FA56F633753",
     /** The block template for the mobile notes block. */
@@ -177,10 +185,14 @@ export const DefinedValue = {
     DefaultRssChannel: "D6149581-9EFC-40D8-BD38-E92C0717BEDA",
     /** Check-in Kiosk device type */
     DeviceTypeCheckinKiosk: "BC809626-1389-4543-B8BB-6FAC79C27AFD",
+    /** Cloud Print Proxy device type */
+    DeviceTypeCloudPrintProxy: "EF5BF148-C9E0-4F96-8152-BB23CD85D845",
     /** Giving Kiosk device type */
     DeviceTypeGivingKiosk: "64A1DBE5-10AD-42F1-A9BA-646A781D4112",
     /** Printer device type */
     DeviceTypePrinter: "8284B128-E73B-4863-9FC2-43E6827B65E6",
+    /** Proxy device type */
+    DeviceTypeProxy: "EF5BF148-C9E0-4F96-8152-BB23CD85D845",
     /** Entity Set for the purpose of doing a Person Merge request */
     EntitySetPurposePersonMergeRequest: "214EB26F-5493-4540-B2EF-F0887C8FBB9E",
     /** Amazon External Link Type */

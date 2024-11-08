@@ -23,6 +23,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Observability;
@@ -756,8 +757,6 @@ INNER JOIN @DuplicateRecipients dr
 
         #region Static Methods
 
-        private static object _obj = new object();
-
         /// <summary>
         /// Sends the specified communication.
         /// </summary>
@@ -914,37 +913,79 @@ INNER JOIN @DuplicateRecipients dr
         }
 
         /// <summary>
-        /// Gets the next pending.
+        /// Gets the next pending communication recipient for the specified communication and medium entity type.
         /// </summary>
         /// <param name="communicationId">The communication identifier.</param>
-        /// <param name="mediumEntityId">The medium entity identifier.</param>
+        /// <param name="mediumEntityId">The medium entity type identifier.</param>
         /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        public static Rock.Model.CommunicationRecipient GetNextPending( int communicationId, int mediumEntityId, Rock.Data.RockContext rockContext )
+        /// <returns>The next pending communication recipient or <see langword="null"/> if there are no more non-expired,
+        /// pending recipients.</returns>
+        public static CommunicationRecipient GetNextPending( int communicationId, int mediumEntityId, RockContext rockContext )
         {
             CommunicationRecipient recipient = null;
 
-            var delayTime = RockDateTime.Now.AddMinutes( -240 );
+            var previousSendLockExpiredDateTime = RockDateTime.Now.AddMinutes( CommunicationService.PreviousSendLockExpiredMinutes );
 
-            lock ( _obj )
+            /*
+                9/27/2024 - JPH
+
+                By wrapping the following in a transaction and using table hints within our query, we instruct SQL Server
+                to lock the next pending communication recipient row, knowing that multiple Rock instances (in a web farm
+                environment) + multiple threads and tasks (within each Rock instance) can simultaneously access this block
+                of code.
+
+                XLOCK: This hint places an exclusive lock on the rows read by the SELECT. The exclusive lock prevents
+                       other transactions from reading or modifying those rows until the current transaction completes.
+                       This is key in preventing simultaneous updates to the same rows.
+
+                ROWLOCK: This ensures that locks are applied at the row level, which is efficient when working with
+                         smaller sets of data (as we are in this case: seeking only one row at a time).
+
+                READPAST: This hint skips rows that are locked by other transactions. It prevents the current transaction
+                          from blocking or waiting on locked rows, but it will skip over them and continue processing
+                          other rows.
+
+                Reason: Ensure each recipient receives only a singly copy of each communication.
+             */
+
+            rockContext.WrapTransaction( () =>
             {
-                recipient = new CommunicationRecipientService( rockContext ).Queryable().Include( r => r.Communication ).Include( r => r.PersonAlias.Person )
-                    .Where( r =>
-                        r.CommunicationId == communicationId &&
-                        ( r.Status == CommunicationRecipientStatus.Pending ||
-                            ( r.Status == CommunicationRecipientStatus.Sending && r.ModifiedDateTime < delayTime )
-                        ) &&
-                        r.MediumEntityTypeId.HasValue &&
-                        r.MediumEntityTypeId.Value == mediumEntityId )
-                    .FirstOrDefault();
+                var recipientId = rockContext.Database.SqlQuery<int?>( @"
+UPDATE cr
+SET cr.[ModifiedDateTime] = @Now
+    , cr.[Status] = @SendingStatus
+OUTPUT INSERTED.[Id]
+FROM [CommunicationRecipient] cr
+WHERE cr.[Id] IN (
+    SELECT TOP 1 next.[Id]
+    FROM [CommunicationRecipient] next WITH (XLOCK, ROWLOCK, READPAST)
+    WHERE next.[CommunicationId] = @CommunicationId
+        AND next.[MediumEntityTypeId] = @MediumEntityTypeId
+        AND (
+            next.[Status] = @PendingStatus
+            OR (
+                next.[Status] = @SendingStatus
+                AND next.[ModifiedDateTime] < @PreviousSendLockExpiredDateTime
+            )
+        )
+);",
+                        new SqlParameter( "@CommunicationId", communicationId ),
+                        new SqlParameter( "@MediumEntityTypeId", mediumEntityId ),
+                        new SqlParameter( "@PendingStatus", CommunicationRecipientStatus.Pending ),
+                        new SqlParameter( "@SendingStatus", CommunicationRecipientStatus.Sending ),
+                        new SqlParameter( "@PreviousSendLockExpiredDateTime", previousSendLockExpiredDateTime ),
+                        new SqlParameter( "@Now", RockDateTime.Now )
+                    ).FirstOrDefault();
 
-                if ( recipient != null )
+                if ( recipientId.HasValue )
                 {
-                    recipient.ModifiedDateTime = RockDateTime.Now;
-                    recipient.Status = CommunicationRecipientStatus.Sending;
-                    rockContext.SaveChanges();
+                    recipient = new CommunicationRecipientService( rockContext )
+                        .Queryable()
+                        .Include( r => r.Communication )
+                        .Include( r => r.PersonAlias.Person )
+                        .FirstOrDefault( r => r.Id == recipientId.Value );
                 }
-            }
+            } );
 
             return recipient;
         }

@@ -27,7 +27,9 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.AssessmentTypeDetail;
+using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Crm
 {
@@ -47,7 +49,7 @@ namespace Rock.Blocks.Crm
 
     [Rock.SystemGuid.EntityTypeGuid( "83d4c6ca-a605-44d3-8bea-99b3e881baa0" )]
     [Rock.SystemGuid.BlockTypeGuid( "3b8b5ae5-4139-44a6-8eaa-99d48e51134e" )]
-    public class AssessmentTypeDetail : RockDetailBlockType
+    public class AssessmentTypeDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -79,6 +81,33 @@ namespace Rock.Blocks.Crm
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<AssessmentType>();
                 return box;
             }
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+            var assessmentTypeId = pageReference.GetPageParameter( PageParameterKey.AssessmentTypeId );
+
+            // Show no bread crumbs when creating new Assessments - Copied over this logic from the previous webforms block.
+            if ( assessmentTypeId == null)
+            {
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>()
+                };
+            }
+
+            var title = new AssessmentTypeService( new RockContext() ).Get( assessmentTypeId )?.Title ?? "New Assessment Type";
+            var breadCrumb = new BreadCrumbLink( title, breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                   {
+                       breadCrumb
+                   }
+            };
         }
 
         /// <summary>

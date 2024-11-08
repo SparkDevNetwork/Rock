@@ -609,6 +609,8 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( errorMessage );
                 }
 
+                // unregister the shortcode
+                LavaService.DeregisterShortcode( entity.TagName );
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 

@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.CMS.PageShortLinkDetail
+namespace Rock.ViewModels.Blocks.Cms.PageShortLinkDetail
 {
     /// <summary>
     /// 

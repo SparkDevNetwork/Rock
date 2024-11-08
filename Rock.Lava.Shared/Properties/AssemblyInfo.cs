@@ -16,3 +16,5 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid( "70fb2e72-8d4b-42fd-848f-f29e469c087e" )]
 
+[assembly: InternalsVisibleTo( "Rock" )]
+[assembly: InternalsVisibleTo( "Rock.Blocks" )]

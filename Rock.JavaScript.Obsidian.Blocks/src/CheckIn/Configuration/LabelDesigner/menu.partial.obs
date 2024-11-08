@@ -108,6 +108,11 @@
                 </div>
             </Modal>
         </div>
+
+        <NotificationBox v-if="systemLabel"
+                         alertType="info">
+            Because this check in label is used by Rock, editing is not enabled.
+        </NotificationBox>
     </div>
 </template>
 
@@ -178,6 +183,10 @@
 .field-settings :deep(.panel-heading) {
     border-radius: 0;
 }
+
+.menu > .alert {
+    margin-top: auto;
+}
 </style>
 
 <script setup lang="ts">
@@ -207,10 +216,16 @@
     import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
     import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
     import { LabelDesignerOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/LabelDesigner/labelDesignerOptionsBag";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
     const props = defineProps({
         labelManager: {
             type: Object as PropType<LabelUndoManager>,
+            required: true
+        },
+
+        systemLabel: {
+            type: Boolean as PropType<boolean>,
             required: true
         }
     });

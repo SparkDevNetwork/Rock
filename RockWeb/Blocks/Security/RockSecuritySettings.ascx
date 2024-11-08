@@ -74,7 +74,7 @@
                             runat="server"
                             ID="cblIgnoredAccountProtectionProfiles"
                             Label="Disable Duplicate Checking for the Following Protection Profiles"
-                            Help="This disables duplication protection checks for individuals with the selected Account Protection Profiles. People with these checked values will always create duplicates (i.e., they will not match existing records.) We highly recommend enabling this for all but the low profile."
+                            Help="This disables duplication protection checks for individuals with the selected Account Protection Profiles. People with these checked values will always create duplicates (i.e., they will not match existing records.) We highly recommend enabling this for the High and the Extreme profile."
                             RepeatDirection="Horizontal"
                             CssClass="js-ignored-protection-profile" />
                     </div>
@@ -175,6 +175,15 @@
                                     DataValueField="Guid"
                                     EnhanceForLongLists="true"
                                     Help="The system communication template to use for passwordless confirmations." />
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <Rock:DateTimePicker
+                                    runat="server"
+                                    ID="dtpRejectAuthenticationCookiesIssuedBefore"
+                                    Label="Reject Authentication Cookies Issued Before"
+                                    Help="If a date and time are entered here, any authentication cookies issued before then will be rejected." />
                             </div>
                         </div>
                     </Body>

@@ -308,7 +308,7 @@ namespace Rock.Badge
             }
 
             return
-$@"(function () {{
+$@";(function () {{
     {script}
 }})();";
         }

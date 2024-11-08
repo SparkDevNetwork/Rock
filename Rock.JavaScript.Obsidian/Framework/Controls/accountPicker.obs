@@ -67,7 +67,8 @@
                   v-model:items="treeItems"
                   @treeitem-expanded="getChildItems"
                   autoExpand
-                  :showChildCount="displayChildItemCountLabel" />
+                  :showChildCount="displayChildItemCountLabel"
+                  :isVisible="showPopup" />
 
         <template #primaryButtonLabel>
             <Loading :isLoading="isLoading">Select</Loading>
@@ -492,6 +493,13 @@
     // When we select new values, make sure they're in the tree
     watch(selectedGuids, (): void => {
         getRootItems(false);
+    });
+
+    // The picker should select on item click when we are not selecting multiple and we are not in search mode.
+    watch(internalValues, (): void => {
+        if(!props.multiple && mode.value !== "search") {
+            select();
+        }
     });
 
     // #endregion

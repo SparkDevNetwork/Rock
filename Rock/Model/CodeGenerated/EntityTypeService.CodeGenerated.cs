@@ -52,6 +52,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<AIProvider>( Context ).Queryable().Any( a => a.ProviderComponentEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, AIProvider.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<AssetStorageProvider>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, AssetStorageProvider.FriendlyTypeName );
@@ -422,6 +428,7 @@ namespace Rock.Model
             target.IsEntity = source.IsEntity;
             target.IsIndexingEnabled = source.IsIndexingEnabled;
             target.IsMessageBusEventPublishEnabled = source.IsMessageBusEventPublishEnabled;
+            target.IsRelatedToInteractionTrackedOnCreate = source.IsRelatedToInteractionTrackedOnCreate;
             target.IsSecured = source.IsSecured;
             target.LinkUrlLavaTemplate = source.LinkUrlLavaTemplate;
             target.MultiValueFieldTypeId = source.MultiValueFieldTypeId;

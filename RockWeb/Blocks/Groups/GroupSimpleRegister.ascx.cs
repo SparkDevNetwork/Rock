@@ -22,6 +22,7 @@ using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -65,7 +66,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             nbError.Visible = false;
 
             if ( !Page.IsPostBack &&
@@ -77,6 +77,7 @@ namespace RockWeb.Blocks.Groups
                 txtEmail.Text = CurrentPerson.Email;
             }
 
+            base.OnLoad( e );
         }
 
         #endregion
@@ -93,6 +94,14 @@ namespace RockWeb.Blocks.Groups
                 string.IsNullOrWhiteSpace( txtEmail.Text ) )
             {
                 ShowError( "Missing Information", "Please enter a value for First Name, Last Name, and Email" );
+            }
+            else if ( System.Text.RegularExpressions.Regex.IsMatch( txtFirstName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtLastName.Text, RegexPatterns.SpecialCharacterRemovalPattern ) )
+            {
+                ShowError( "First and Last Name", "cannot contain special characters such as quotes, parentheses, etc." );
+            }
+            else if ( System.Text.RegularExpressions.Regex.IsMatch( txtFirstName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) || System.Text.RegularExpressions.Regex.IsMatch( txtLastName.Text, RegexPatterns.EmojiAndSpecialFontRemovalPattern ) )
+            {
+                ShowError( "First and Last Name", "cannot contain emojis or special fonts." );
             }
             else
             {

@@ -41,7 +41,7 @@
                                     </div>
                                 </div>
 
-                                <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" />
+                                <Rock:DataTextBox ID="tbBusinessName" runat="server" Label="Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="FirstName" Required="true" />
 
                                 <%-- Address Section --%>
                                 <div class="panel panel-section">

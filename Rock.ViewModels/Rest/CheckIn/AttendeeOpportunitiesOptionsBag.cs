@@ -54,5 +54,12 @@ namespace Rock.ViewModels.Rest.CheckIn
         /// </summary>
         /// <value>The family identifier.</value>
         public string FamilyId { get; set; }
+
+        /// <summary>
+        /// When set and valid, this specifies the PIN code to use for authentication
+        /// to enable the override mode in kiosk check-in. Opportunity filtering
+        /// will not be performed when in this mode.
+        /// </summary>
+        public string OverridePinCode { get; set; }
     }
 }

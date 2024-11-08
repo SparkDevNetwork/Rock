@@ -236,40 +236,6 @@ namespace Rock.Tests.Shared.Lava
             return engine;
         }
 
-        /// <summary>
-        /// Set a Lava Engine instance to be used for subsequent tests.
-        /// Only one engine of each type can be active at any time.
-        /// </summary>
-        /// <param name="engine"></param>
-        /// <returns></returns>
-        public static ILavaEngine SetEngineInstance( ILavaEngine engine )
-        {
-            var engineType = engine?.GetType();
-
-            if ( engineType == typeof( DotLiquidEngine ) )
-            {
-                _dotliquidEngine = engine;
-            }
-            else if ( engineType == typeof( FluidEngine ) )
-            {
-                _fluidEngine = engine;
-            }
-            else if ( engineType == typeof( RockLiquidEngine ) )
-            {
-                _rockliquidEngine = engine;
-            }
-
-            if ( engine == null )
-            {
-                throw new Exception( $"Lava Engine instance not available. Engine Type \"{engineType}\" is not configured for this test run." );
-            }
-
-            // Set the global instance of the engine to ensure that it is available to Lava components.
-            LavaService.SetCurrentEngine( engine );
-
-            return engine;
-        }
-
         private static void RegisterFilters( ILavaEngine engine )
         {
             // Register the common Rock.Lava filters first, then overwrite with the web-specific filters.

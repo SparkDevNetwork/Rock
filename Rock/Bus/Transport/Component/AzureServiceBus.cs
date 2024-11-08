@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -18,7 +18,6 @@ using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using MassTransit;
-using MassTransit.AzureServiceBusTransport;
 using Microsoft.ServiceBus;
 using Rock.Attribute;
 using Rock.Data;
@@ -188,8 +187,14 @@ namespace Rock.Bus.Transport
         /// <returns></returns>
         public override ISendEndpoint GetSendEndpoint( IBusControl bus, string queueName )
         {
-            var url = $"sb://{GetHost()}{queueName}";
-            return bus.GetSendEndpoint( new Uri( url ) ).Result;
+            var address = GetDestinationAddressForQueue( bus, queueName );
+            return bus.GetSendEndpoint( address ).Result;
+        }
+
+        /// <inheritdoc/>
+        public override Uri GetDestinationAddressForQueue( IBusControl bus, string queueName )
+        {
+            return new Uri( $"sb://{GetHost()}{queueName}" );
         }
 
         /// <summary>

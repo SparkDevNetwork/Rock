@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 namespace Rock.ViewModels.CheckIn.Labels
 {
     /// <summary>
@@ -22,6 +24,12 @@ namespace Rock.ViewModels.CheckIn.Labels
     /// </summary>
     public class ImageFieldConfigurationBag
     {
+        /// <summary>
+        /// A unique value to identify this image data. Any time the image data
+        /// is changed, this value must also be changed.
+        /// </summary>
+        public Guid? ImageId { get; set; }
+
         /// <summary>
         /// The PNG image data encoded in base 64.
         /// </summary>

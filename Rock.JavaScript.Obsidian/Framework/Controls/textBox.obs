@@ -82,6 +82,10 @@
             type: String as PropType<string>,
             default: ""
         },
+        inputGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
         rows: {
             type: Number as PropType<number>,
             default: 3
@@ -137,6 +141,7 @@
     const controlContainerClass = computed((): Record<string, boolean> => {
         return {
             "input-group col-xs-12": isInputGroup.value,
+            [props.inputGroupClasses]: isInputGroup.value,
             "input-group-sm": isInputGroup.value && props.size == "small",
             "input-group-lg": isInputGroup.value && props.size == "large"
         };

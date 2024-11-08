@@ -230,6 +230,13 @@ namespace Rock.Jobs
                             .FirstOrDefault()
                             .ScheduleReminderEmailOffsetDays.HasValue );
 
+                // filter out any Group Member that has selected "Do not send a reminder"
+                sendReminderAttendancesQuery = sendReminderAttendancesQuery
+                    .Where( a => a.Occurrence.Group.Members.Where( m => m.PersonId == a.PersonAlias.PersonId )
+                            .OrderBy( r => r.GroupRole.IsLeader )
+                            .FirstOrDefault()
+                            .ScheduleReminderEmailOffsetDays != -1 );
+
                 // limit to ones within offset
                 sendReminderAttendancesQuery = sendReminderAttendancesQuery
                     .Where( a =>

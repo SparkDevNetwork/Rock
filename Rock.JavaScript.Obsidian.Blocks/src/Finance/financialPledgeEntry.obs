@@ -56,7 +56,7 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import EditPanel from "./FinancialPledgeEntry/editPanel.partial.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { debounce } from "@Obsidian/Utility/util";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { FinancialPledgeEntryBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryBag";
@@ -208,4 +208,7 @@
         financialPledgeEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
+
+    onConfigurationValuesChanged(useReloadBlock());
+
 </script>

@@ -160,9 +160,9 @@ namespace RockWeb.Blocks.Connection
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             GetConnectionTypes();
+
+            base.OnLoad( e );
         }
         #endregion Base Control Events
 

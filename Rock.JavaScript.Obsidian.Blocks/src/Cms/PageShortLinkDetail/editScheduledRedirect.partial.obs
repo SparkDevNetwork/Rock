@@ -1,0 +1,219 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal :modelValue="true"
+           title="Scheduled Redirect"
+           saveText="OK"
+           @save="onSave"
+           @closeModal="onClose">
+        <div class="row">
+            <div class="col-md-6">
+                <RadioButtonList label="Schedule Type"
+                                 v-model="scheduleType"
+                                 :items="scheduleTypeItems" />
+            </div>
+
+            <div class="col-md-6">
+                <SchedulePicker v-if="scheduleType === 'named'"
+                                label="Named Schedule"
+                                v-model="namedSchedule"
+                                rules="required" />
+
+                <ScheduleBuilder v-else
+                                 label="Schedule"
+                                 v-model="customCalendarContent"
+                                 rules="required" />
+            </div>
+        </div>
+
+        <TextBox label="URL"
+                 v-model="url"
+                 help=""
+                 rules="required" />
+
+        <TextBox label="Purpose Key"
+                 v-model="purposeKey"
+                 help="Optional parameter to describe what this URL represents in the interaction." />
+
+        <!-- The Advanced Settings Panel would be toggled on in v17-->
+        <Panel v-show="false" title="Advanced Settings" hasCollapse>
+            <div class="row">
+                <div class="col-md-6">
+                    <DefinedValuePicker
+                                        v-model="utmSource"
+                                        label="UTM Source"
+                                        :definedTypeGuid="DefinedType.UtmSource"
+                                        help="The UTM source parameter identifies the origin of your traffic, like a search engine, newsletter, or specific website, helping to pinpoint which platforms are directing visitors to your site."
+                                        showBlankItem
+                                        allowAdd />
+                    <DefinedValuePicker
+                                        v-model="utmCampaign"
+                                        label="UTM Campaign"
+                                        :definedTypeGuid="DefinedType.UtmCampaign"
+                                        help="The UTM campaign parameter tags your traffic with specific campaign names, enabling you to measure the performance of individual marketing campaigns and understand their impact on your traffic."
+                                        showBlankItem
+                                        allowAdd />
+                </div>
+
+                <div class="col-md-6">
+                    <DefinedValuePicker
+                                        v-model="utmMedium"
+                                        label="UTM Medium"
+                                        :definedTypeGuid="DefinedType.UtmMedium"
+                                        help='The UTM medium parameter is used to identify the marketing or advertising medium that directed a user to your site. Examples include "email", "social", "cpc" (cost per click), or "organic" for non-paid search engine traffic.'
+                                        showBlankItem
+                                        allowAdd />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox
+                             v-model="utmTerm"
+                             label="UTM Term"
+                             help="The UTM term parameter is used to track the keywords or terms in a paid search campaign, providing insights into which specific words or phrases are most effective in driving traffic to your website." />
+                </div>
+                <div class="col-md-6">
+                    <TextBox
+                             v-model="utmContent"
+                             label="UTM Content"
+                             help="The UTM content parameter helps differentiate between links that point to the same URL within the same ad or campaign, allowing you to test the effectiveness of various content elements, like text or images, in your marketing efforts." />
+                </div>
+            </div>
+        </Panel>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
+    import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { ScheduledRedirectBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/scheduledRedirectBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PropType, ref, watch } from "vue";
+    import { ScheduledRedirect } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ScheduledRedirect>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "save", value: ScheduledRedirect): void;
+        (e: "close"): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    const scheduleType = ref<"named" | "custom">(props.modelValue.namedSchedule ? "named" : "custom");
+    const namedSchedule = ref(props.modelValue.namedSchedule);
+    const customCalendarContent = ref<string | null | undefined>(props.modelValue.customCalendarContent);
+    const url = ref(props.modelValue.url ?? "");
+    const purposeKey = ref(props.modelValue.purposeKey ?? "");
+    const utmSource = ref(props.modelValue.utmSettings?.utmSource ?? {});
+    const utmMedium = ref(props.modelValue.utmSettings?.utmMedium ?? {});
+    const utmCampaign = ref(props.modelValue.utmSettings?.utmCampaign ?? {});
+    const utmTerm = ref(props.modelValue.utmSettings?.utmTerm ?? "");
+    const utmContent = ref(props.modelValue.utmSettings?.utmContent ?? "");
+
+    const scheduleTypeItems: ListItemBag[] = [
+        {
+            value: "custom",
+            text: "Custom Schedule"
+        },
+        {
+            value: "named",
+            text: "Named Schedule"
+        }
+    ];
+
+    // #region Event Handlers
+
+    /**
+     * Called when the individual manually closes the modal.
+     */
+    function onClose(): void {
+        emit("close");
+    }
+
+    /**
+     * Called when the individual clicks the "OK" button in the modal. Construct
+     * the new value and emit our own save event.
+     */
+    async function onSave(): Promise<void> {
+        const newValue: ScheduledRedirect = {
+            ...props.modelValue,
+            namedSchedule: scheduleType.value === "named" ? namedSchedule.value : undefined,
+            customCalendarContent: scheduleType.value === "custom" ? customCalendarContent.value : undefined,
+            url: url.value,
+            purposeKey: purposeKey.value,
+            utmSettings: {
+                utmSource: utmSource.value,
+                utmMedium: utmMedium.value,
+                utmCampaign: utmCampaign.value,
+                utmTerm: utmTerm.value,
+                utmContent: utmContent.value
+            }
+        };
+
+        if (scheduleType.value === "named") {
+            newValue.scheduleText = namedSchedule.value?.text ?? "Named Schedule";
+
+            try {
+                const response = await invokeBlockAction<string>("GetNamedScheduleRange", { scheduleGuid: namedSchedule.value?.value });
+
+                if (response.isSuccess) {
+                    newValue.scheduleRangeText = response.data;
+                }
+                else {
+                    newValue.scheduleRangeText = "Unknown";
+                }
+            }
+            catch (error) {
+                newValue.scheduleRangeText = "Unknown";
+            }
+        }
+        else {
+            try {
+                const response = await invokeBlockAction<ScheduledRedirectBag>("GetCustomScheduleRange", { calendarContent: customCalendarContent.value });
+
+                if (response.isSuccess && response.data) {
+                    newValue.scheduleText = response.data.scheduleText;
+                    newValue.scheduleRangeText = response.data.scheduleRangeText;
+                }
+                else {
+                    newValue.scheduleText = "Unknown";
+                    newValue.scheduleRangeText = "Unknown";
+                }
+            }
+            catch (error) {
+                newValue.scheduleText = "Unknown";
+                newValue.scheduleRangeText = "Unknown";
+            }
+        }
+
+        emit("save", newValue);
+    }
+
+    // #endregion
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(scheduleType, props.modelValue.namedSchedule ? "named" : "custom");
+        updateRefValue(namedSchedule, props.modelValue.namedSchedule);
+        updateRefValue(customCalendarContent, props.modelValue.customCalendarContent);
+        updateRefValue(url, props.modelValue.url ?? "");
+        updateRefValue(purposeKey, props.modelValue.purposeKey ?? "");
+        updateRefValue(utmSource, props.modelValue.utmSettings?.utmSource ?? {});
+        updateRefValue(utmMedium, props.modelValue.utmSettings?.utmMedium ?? {});
+        updateRefValue(utmCampaign, props.modelValue.utmSettings?.utmCampaign ?? {});
+        updateRefValue(utmTerm, props.modelValue.utmSettings?.utmTerm ?? "");
+        updateRefValue(utmContent, props.modelValue.utmSettings?.utmContent ?? "");
+    });
+</script>

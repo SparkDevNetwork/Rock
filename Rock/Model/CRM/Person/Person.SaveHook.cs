@@ -18,6 +18,7 @@
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -145,6 +146,11 @@ namespace Rock.Model
                     this.Entity.FirstName = this.Entity.FirstName.StandardizeQuotes();
                     this.Entity.LastName = this.Entity.LastName.StandardizeQuotes();
                     this.Entity.NickName = this.Entity.NickName.StandardizeQuotes();
+
+                    this.Entity.FirstName = this.Entity.FirstName != null ? Regex.Replace( this.Entity.FirstName, RegexPatterns.EmojiAndSpecialFontRemovalPattern, string.Empty ) : null;
+                    this.Entity.LastName = this.Entity.LastName != null ? Regex.Replace( this.Entity.LastName, RegexPatterns.EmojiAndSpecialFontRemovalPattern, string.Empty ) : null;
+                    this.Entity.NickName = this.Entity.NickName != null ? Regex.Replace( this.Entity.NickName, RegexPatterns.EmojiAndSpecialFontRemovalPattern, string.Empty ) : null;
+                    this.Entity.MiddleName = this.Entity.MiddleName != null ? Regex.Replace( this.Entity.MiddleName, RegexPatterns.EmojiAndSpecialFontRemovalPattern, string.Empty ) : null;
 
                     // Remove extra spaces between words (Issue #2990)
                     this.Entity.FirstName = this.Entity.FirstName != null ? Regex.Replace( this.Entity.FirstName, @"\s+", " " ).Trim() : null;

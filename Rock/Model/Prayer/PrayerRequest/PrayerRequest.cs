@@ -238,6 +238,21 @@ namespace Rock.Model
         [DataMember]
         public int? LanguageValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Original Text of the PrayerRequest.
+        /// </summary>
+        public string OriginalRequest { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identified emotional sentiment DefinedValueId (if any).
+        /// </summary>
+        public int? SentimentEmotionValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the bitmask of moderation flags for the PrayerRequest.
+        /// </summary>
+        public long ModerationFlags { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

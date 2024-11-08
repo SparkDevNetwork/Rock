@@ -8,7 +8,7 @@
                          alertType="warning"></NotificationBox>
 
         <div v-else>
-            <div class="form-group" v-if="currentPerson">
+            <div class="form-group" v-if="currentPerson.text">
                 <RockLabel>Name</RockLabel>
                 <div>
                     {{ currentPerson.text }}
@@ -16,9 +16,10 @@
             </div>
 
             <div v-else>
-                <TextBox label="First Name" v-model="firstName" />
-                <TextBox label="Last Name" v-model="lastName" />
-                <EmailBox label="Email" v-model="email" />
+                <TextBox label="First Name" v-model="firstName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
+                <TextBox label="Last Name" v-model="lastName" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
+                <EmailBox label="Email" v-model="email" rules="required" />
+                <PhoneNumberDetails v-for="(value, key) in phoneNumbers" :key="key" v-model="phoneNumbers[key]" />
             </div>
 
             <DropDownList v-if="selectGroupTypeGuidOrEmptyString"
@@ -63,8 +64,10 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PhoneNumberDetails from "./phoneNumberDetails.partial.obs";
     import { FinancialPledgeEntryBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryBag";
     import { FinancialPledgeEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryOptionsBag";
+    import { FinancialPledgeEntryPhoneNumberBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialPledgeEntry/financialPledgeEntryPhoneNumberBag";
 
     const props = defineProps({
         modelValue: {
@@ -92,7 +95,7 @@
     const email = ref(props.modelValue.email ?? "");
     const currentPerson = ref(props.modelValue.currentPerson ?? {});
     const personAlias = propertyRef(props.modelValue.personAlias ?? {}, "PersonAliasId");
-    const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
+    const startDate = propertyRef(props.modelValue.startDate || (props.modelValue.endDate ? new Date().toISOString() : ""), "StartDate");
     const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
     const totalAmount = propertyRef(props.modelValue.totalAmount ?? null, "TotalAmount");
     const groupGuidOrEmptyString = propertyRef(props.modelValue.group?.value ?? "", "GroupId");
@@ -105,6 +108,7 @@
     const duplicatePledgeWarningText = ref(props.modelValue.duplicatePledgeWarningText);
     const account = propertyRef(props.modelValue.account ?? {}, "AccountId");
     const selectedDateRange = ref<DateRangeParts | undefined>(startDate.value || endDate.value ? { lowerValue: startDate.value, upperValue: endDate.value } : undefined);
+    const phoneNumbers = ref<FinancialPledgeEntryPhoneNumberBag[]>(props.modelValue?.phoneNumbers ?? []);
     const showDateRange = ref(props.options.showDateRange);
     const pledgeTerm = ref(props.options.pledgeTerm);
 
@@ -135,7 +139,7 @@
         updateRefValue(attributes, props.modelValue.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(startDate, props.modelValue.startDate ?? "");
-        updateRefValue(endDate, props.modelValue.startDate ?? "");
+        updateRefValue(endDate, props.modelValue.endDate ?? "");
         updateRefValue(totalAmount, props.modelValue.totalAmount ?? null);
         updateRefValue(groupGuidOrEmptyString, props.modelValue.group?.value ?? "");
         updateRefValue(pledgeFrequencyValue, props.modelValue.pledgeFrequencyValue?.value ?? "");
@@ -147,7 +151,7 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, selectedDateRange, ...propRefs], () => {
+    watch([attributeValues, selectedDateRange, firstName, lastName, email, phoneNumbers, ...propRefs], () => {
         const newValue: FinancialPledgeEntryBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -158,14 +162,18 @@
             pledgeFrequencyValue: {
                 value: pledgeFrequencyValue.value
             },
+            firstName: firstName.value,
+            lastName: lastName.value,
+            email: email.value,
             startDate: selectedDateRange.value?.lowerValue,
             endDate: selectedDateRange.value?.upperValue,
             personAlias: personAlias.value,
-            account: account.value
+            account: account.value,
+            phoneNumbers: phoneNumbers.value
         };
 
         emit("update:modelValue", newValue);
-    });
+    }, { deep: true });
 
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.

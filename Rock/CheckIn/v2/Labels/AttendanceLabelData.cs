@@ -35,13 +35,10 @@ namespace Rock.CheckIn.v2.Labels
     /// attendance labels.
     /// </para>
     /// </summary>
-    internal class AttendanceLabelData : ILabelDataHasPerson
+    internal class AttendanceLabelData : ILabelDataHasPerson, ILabelDataHasAttendance
     {
-        /// <summary>
-        /// The data that describes the attendance record this label is being
-        /// printed for.
-        /// </summary>
-        public AttendanceLabel Attendance { get; set; }
+        /// <inheritdoc/>
+        public LabelAttendanceDetail Attendance { get; set; }
 
         /// <inheritdoc/>
         public Person Person => Attendance.Person;
@@ -56,14 +53,14 @@ namespace Rock.CheckIn.v2.Labels
         /// The attendance records for the <see cref="Person"/> during this
         /// check-in session. This includes the <see cref="Attendance"/> record.
         /// </summary>
-        public List<AttendanceLabel> PersonAttendance { get; set; }
+        public List<LabelAttendanceDetail> PersonAttendance { get; set; }
 
         /// <summary>
         /// All attendance records for this session, including those from
         /// other people being checked in as well as those from
         /// <see cref="PersonAttendance"/>.
         /// </summary>
-        public List<AttendanceLabel> AllAttendance { get; set; }
+        public List<LabelAttendanceDetail> AllAttendance { get; set; }
 
         /// <summary>
         /// The family object that was determined via either kiosk search
@@ -115,12 +112,12 @@ namespace Rock.CheckIn.v2.Labels
         /// <summary>
         /// The date and time this person was checked in for this label.
         /// </summary>
-        public DateTime CheckInTime { get; }
+        public DateTime CheckInDateTime { get; }
 
         /// <summary>
         /// The current date and time the label is being printed at.
         /// </summary>
-        public DateTime CurrentTime { get; }
+        public DateTime CurrentDateTime { get; }
 
         /// <summary>
         /// The names of any group roles for any group membership records
@@ -137,27 +134,24 @@ namespace Rock.CheckIn.v2.Labels
         /// <param name="family">The family group used during the check-in process.</param>
         /// <param name="allAttendance">The list of all attendance labels.</param>
         /// <param name="rockContext">The <see cref="RockContext"/> for data operations.</param>
-        public AttendanceLabelData( AttendanceLabel attendance, Group family, List<AttendanceLabel> allAttendance, RockContext rockContext )
+        public AttendanceLabelData( LabelAttendanceDetail attendance, Group family, List<LabelAttendanceDetail> allAttendance, RockContext rockContext )
         {
             Attendance = attendance;
-            Family = family ?? attendance.Person.PrimaryFamily;
+            Family = family ?? attendance.Person?.PrimaryFamily;
             AllAttendance = allAttendance;
 
             PersonAttendance = allAttendance
-                .Where( a => a.Person.Id == attendance.Person.Id )
+                .Where( a => a.Person != null && a.Person.Id == attendance.Person.Id )
                 .ToList();
 
-            CheckInTime = PersonAttendance.Count > 0
+            CheckInDateTime = PersonAttendance.Count > 0
                 ? PersonAttendance.Min( a => a.StartDateTime )
                 : RockDateTime.Now;
-            CurrentTime = RockDateTime.Now;
+            CurrentDateTime = RockDateTime.Now;
 
             GroupRoleNames = PersonAttendance
                 .SelectMany( a => a.GroupMembers )
-                .Select( gm => GroupTypeCache.Get( gm.GroupTypeId, rockContext )
-                    ?.Roles
-                    .FirstOrDefault( r => r.Id == gm.GroupRoleId )
-                    ?.Name )
+                .Select( gm => GroupTypeRoleCache.Get( gm.GroupRoleId, rockContext )?.Name )
                 .Where( n => n != null )
                 .ToList();
 

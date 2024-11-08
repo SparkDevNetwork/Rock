@@ -8,6 +8,7 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
+          :title="gridTitle"
           :itemTerm="config.options?.itemTerm ?? 'Workflow'"
           :entityTypeGuid="EntityType.Workflow"
           stickyHeader
@@ -32,7 +33,7 @@
                     field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="35%" />
+                    width="20%" />
 
         <PersonColumn name="initiator"
                       title="Initiated By"
@@ -50,7 +51,7 @@
                 field="activities"
                 :filterValue="getActivitiesRowFilterValue"
                 :quickFilterValue="getActivitiesRowFilterValue"
-                :filter="textValueFilter"
+                :filter="pickExistingValueFilter"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div class="text-lg">
@@ -72,8 +73,10 @@
                         title="Created"
                         field="createdDateTime"
                         :filter="dateValueFilter"
+                        :quickFilterValue="createdRowFilterValue"
                         visiblePriority="md"
-                        itemClass="grid-item-pull-left"
+                        headerClass="title-right"
+                        itemClass="justify-content-end text-right"
                         width="150">
             <template #format="{ row }">
                 <span>{{ getElapsed(row.createdDateTime) }}</span>
@@ -118,6 +121,7 @@
         </Column>
 
         <Column v-if="config.options?.canView"
+                :excludeFromExport="true"
                 name="view"
                 itemClass="grid-columncommand"
                 width="52"
@@ -149,9 +153,8 @@
 </template>
 
 <style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
+.title-right .grid-column-title {
+    text-align: right;
 }
 </style>
 
@@ -174,7 +177,8 @@
     import { Guid } from "@Obsidian/Types";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
 
     const config = useConfigurationValues<ListBlockBox<WorkflowListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -190,14 +194,10 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
-        name: preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterName)),
-        initiator: JSON.parse(preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterInitiator)) || "{}"),
-        status: preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterStatus)),
         activatedDateRangeLowerValue: preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterActivatedDateRangeLowerValue)),
         activatedDateRangeUpperValue: preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterActivatedDateRangeUpperValue)),
         completedDateRangeLowerValue: preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterCompletedDateRangeLowerValue)),
         completedDateRangeUpperValue: preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterCompletedDateRangeUpperValue)),
-        state: JSON.parse(preferences.getValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterState)) || '["Active","Completed"]'),
     });
 
     // #endregion
@@ -206,14 +206,14 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.name
-            || !!gridSettings.value.initiator?.value
-            || !!gridSettings.value.status
-            || !!gridSettings.value.activatedDateRangeLowerValue
+        return !!gridSettings.value.activatedDateRangeLowerValue
             || !!gridSettings.value.activatedDateRangeUpperValue
             || !!gridSettings.value.completedDateRangeLowerValue
-            || !!gridSettings.value.completedDateRangeUpperValue
-            || (!!gridSettings.value.state && gridSettings.value.state.length > 0);
+            || !!gridSettings.value.completedDateRangeUpperValue;
+    });
+
+    const gridTitle = computed((): string => {
+        return pluralize(config.options?.itemTerm ?? "Workflow");
     });
 
     // #endregion
@@ -282,6 +282,16 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     }
 
     /**
+    * Gets the filter value text to use for the created column.
+    *
+    * @param row The row to be filtered.
+    */
+    function createdRowFilterValue(row: Record<string, unknown>): string {
+        const createdDateTime = row.createdDateTime as string;
+        return createdDateTime ? getElapsed(createdDateTime) : "";
+    }
+
+    /**s
     * Makes the key unique to the current workflowType.
     *
     * @param row The preference key.
@@ -396,14 +406,10 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     // #endregion
 
     watch(gridSettings, async () => {
-        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterName), gridSettings.value?.name ?? "");
-        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterInitiator), JSON.stringify(gridSettings.value.initiator));
-        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterStatus), gridSettings.value?.status ?? "");
         preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterActivatedDateRangeLowerValue), gridSettings.value.activatedDateRangeLowerValue ?? "");
         preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterActivatedDateRangeUpperValue), gridSettings.value.activatedDateRangeUpperValue ?? "");
         preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterCompletedDateRangeLowerValue), gridSettings.value.completedDateRangeLowerValue ?? "");
         preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterCompletedDateRangeUpperValue), gridSettings.value.completedDateRangeUpperValue ?? "");
-        preferences.setValue(makeKeyUniqueToWorkflowType(PreferenceKey.FilterState), JSON.stringify(gridSettings.value.state));
 
         await preferences.save();
 

@@ -73,8 +73,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ddlBatchSchedule.DataSource = new[] { BatchDaily, BatchWeekly };
@@ -82,6 +80,8 @@ namespace RockWeb.Blocks.Finance
 
                 ShowDetail( PageParameter( "GatewayId" ).AsInteger() );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

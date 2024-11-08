@@ -1,0 +1,552 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isSettingsModalOpen"
+           title="Page Parameter Filter Settings"
+           :saveText="saveSettingsButtonText"
+           @save="onSaveSettings">
+
+        <NotificationBox v-if="loadSettingsErrorMessage" :alertType="AlertType.Warning">
+            {{ loadSettingsErrorMessage }}
+        </NotificationBox>
+
+        <LoadingIndicator v-else-if="isLoadingSettings" :delay="500" />
+
+        <template v-else>
+
+            <NotificationBox v-if="blockActionErrorMessage" :alertType="AlertType.Warning">
+                {{ blockActionErrorMessage }}
+            </NotificationBox>
+
+            <SectionHeader title="Block Title Settings" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="blockTitleText"
+                             label="Block Title Text"
+                             help="The text to display as the block title." />
+                    <TextBox v-model="blockTitleIconCssClass"
+                             label="Block Title Icon CSS Class"
+                             help="The CSS class name to use for the block title icon." />
+                </div>
+                <div class="col-md-6">
+                    <CheckBox v-model="isBlockTitleVisible"
+                              label="Show Block Title"
+                              help="Determines if the block title should be displayed." />
+                </div>
+            </div>
+
+            <SectionHeader title="Filter Settings" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="filterButtonText"
+                             label="Filter Button Text"
+                             help="The text to display on the filter button." />
+                    <DropDownList v-model="filterButtonSize"
+                                  label="Filter Button Size"
+                                  help="The size of the filter button."
+                                  :items="filterButtonSizeItems"
+                                  :showBlankItem="false" />
+                    <NumberBox v-model="filtersPerRow"
+                               label="Filters Per Row"
+                               help="The number of filters to display per row. Maximum is 12."
+                               :minimumValue="1"
+                               :maximumValue="12" />
+                    <DropDownList v-model="filterSelectionAction"
+                                  label="Filter Selection Action"
+                                  help='Describes the action to take when a non-textbox filter is selected by the individual. If "Apply Filters", all filters are applied instantly without the need to click the filter button. If "Update Filters", any filters whose available values rely on the selected values of other filters will be updated, but the user must click the filter button to apply them. If "Do Nothing", no updates happen, and the user must click the button to apply filters.'
+                                  :items="filterSelectionActionItems"
+                                  :showBlankItem="false" />
+                </div>
+                <div class="col-md-6">
+                    <PagePicker v-model="redirectPage"
+                                label="Redirect Page"
+                                help="If set, will redirect to the selected page when applying filters."
+                                :promptForPageRoute="promptForPageRoute"
+                                :showSelectCurrentPage="true"
+                                :securityGrant="securityGrantToken" />
+                    <CheckBox v-model="isFilterButtonVisible"
+                              label="Show Filter Button"
+                              help="Determines if the filter button should be displayed." />
+                    <CheckBox v-model="isResetFiltersButtonVisible"
+                              label="Show Reset Filters Button"
+                              help="Determines if the reset filters button should be displayed." />
+                    <CheckBox v-model="isLegacyReloadEnabled"
+                              label="Enable Legacy Reload"
+                              help="If enabled, a full page reload will be triggered to apply the filter selections (helpful when using this block to drive the behavior of legacy blocks on the page). If disabled, the filter selections will be communicated directly to any Obsidian blocks listening for these filters, so they can respond accordingly." />
+                </div>
+            </div>
+
+            <SectionHeader title="Filters" />
+
+            <Grid v-if="filtersGridDefinition"
+                  :definition="filtersGridDefinition"
+                  :entityTypeGuid="EntityType.Attribute"
+                  :data="filtersGridDataSource"
+                  :onAddItem="onAddFilter"
+                  :expectedRowCount="2"
+                  keyField="guid"
+                  itemTerm="Filter"
+                  liveUpdates
+                  light>
+
+                <ReorderColumn @orderChanged="onFilterOrderChanged" />
+
+                <TextColumn name="name"
+                            field="name"
+                            title="Name" />
+
+                <TextColumn name="description"
+                            field="description"
+                            title="Description"
+                            visiblePriority="sm" />
+
+                <TextColumn name="filterType"
+                            field="filterType"
+                            title="Filter Type"
+                            visiblePriority="sm" />
+
+                <TextColumn name="defaultValue"
+                            field="defaultValue"
+                            title="Default Value"
+                            visiblePriority="sm" />
+
+                <EditColumn @click="onEditFilter" />
+
+                <SecurityColumn itemTitle="name" />
+
+                <DeleteColumn @click="onDeleteFilter" />
+
+            </Grid>
+
+        </template>
+
+    </Modal>
+
+    <Modal v-model="isFilterModalOpen"
+           :title="filterModalTitle"
+           :saveText="saveFilterButtonText"
+           @save="onSaveFilter"
+           @closeModal="onCloseFilterModal">
+
+        <NotificationBox v-if="saveFilterErrorMessage" :alertType="AlertType.Warning">
+            {{ saveFilterErrorMessage }}
+        </NotificationBox>
+
+        <AttributeEditor v-model="editableFilter"
+                         :attributeEntityTypeGuid="EntityType.Block"
+                         :isCategoriesVisible="false"
+                         :isAnalyticsVisible="false"
+                         :isShowInGridVisible="false"
+                         :isShowOnBulkVisible="false"
+                         :isHistoryEnabledVisible="false"
+                         :isAllowSearchVisible="false"
+                         :isIndexingEnabledVisible="false"
+                         :reservedKeyNames="filtersReservedKeyNames" />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import { FilterSelectionAction } from "./PageParameterFilter/types.partial";
+    import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Grid, { DeleteColumn, EditColumn, ReorderColumn, SecurityColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { Guid } from "@Obsidian/Types";
+    import { getSecurityGrant, provideSecurityGrant, setCustomSettingsBoxValue, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CustomSettingsBox } from "@Obsidian/ViewModels/Blocks/customSettingsBox";
+    import { EditableFilterBag } from "@Obsidian/ViewModels/Blocks/Reporting/PageParameterFilter/editableFilterBag";
+    import { PageParameterFilterCustomSettingsBag } from "@Obsidian/ViewModels/Blocks/Reporting/PageParameterFilter/pageParameterFilterCustomSettingsBag";
+    import { PageParameterFilterCustomSettingsOptionsBag } from "@Obsidian/ViewModels/Blocks/Reporting/PageParameterFilter/pageParameterFilterCustomSettingsOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { emptyGuid, normalize as normalizeGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
+
+    type GridRow = {
+        guid: Guid;
+        name?: string | null;
+        description?: string | null;
+        filterType?: string | null;
+        defaultValue?: string | null;
+    };
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(null);
+    const reloadBlock = useReloadBlock();
+
+    const emit = defineEmits<{
+        (e: "close"): void
+    }>();
+
+    // #region Values
+
+    const isSettingsModalOpen = ref(true);
+    const isLoadingSettings = ref(true);
+    const loadSettingsErrorMessage = ref("");
+
+    const blockTitleText = ref("");
+    const blockTitleIconCssClass = ref("");
+    const isBlockTitleVisible = ref(false);
+
+    const filterButtonText = ref("");
+    const filterButtonSize = ref("");
+    const isFilterButtonVisible = ref(false);
+    const isResetFiltersButtonVisible = ref(false);
+    const filtersPerRow = ref<number | null>(null);
+    const redirectPage = ref<PageRouteValueBag | null>(null);
+    const filterSelectionAction = ref<string>(FilterSelectionAction.DoNothing);
+    const isLegacyReloadEnabled = ref(false);
+
+    const filterButtonSizeItems = ref<ListItemBag[]>([]);
+    const filterSelectionActionItems = ref<ListItemBag[]>([]);
+
+    const filtersGridDefinition = ref<GridDefinitionBag | null>(null);
+    const filtersGridDataSource = ref<Promise<GridDataBag>>();
+    let filtersGridData: GridDataBag | undefined;
+
+    const blockActionErrorMessage = ref("");
+
+    const isLoadingEditableFilter = ref(false);
+    const editableFilter = ref<PublicEditableAttributeBag | null>(null);
+    const filtersReservedKeyNames = ref<string[]>([]);
+
+    const isFilterModalOpen = ref(false);
+    const isSavingFilter = ref(false);
+    const saveFilterErrorMessage = ref("");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const saveSettingsButtonText = computed((): string => {
+        return !loadSettingsErrorMessage.value && !isLoadingSettings.value ? "Save" : "";
+    });
+
+    const promptForPageRoute = computed((): boolean => {
+        /*
+            10/7/2024 - JPH
+
+            We are purposefully disallowing the selection of a page route here,
+            to prevent confusion and to match the behavior of the legacy version
+            of this block, which always hard-coded a `~/page/{Id}` route for this
+            redirect. If a route were to be selected that happens to embed one
+            or more of the resulting filter parameter key/value pairs, it could
+            get messy; better to keep it simple for this redirect.
+
+            Reason: Match behavior of legacy block.
+            https://github.com/SparkDevNetwork/Rock/blob/1c15fe075623c842a532bbe2cc4c93337b9a96ab/RockWeb/Blocks/Reporting/PageParameterFilter.ascx.cs#L864
+        */
+        return false;
+    });
+
+    const isNewFilter = computed((): boolean => {
+        return !editableFilter.value?.guid;
+    });
+
+    const filterModalTitle = computed((): string => {
+        return `${(isNewFilter.value ? "Add" : "Edit")} Filter`;
+    });
+
+    const saveFilterButtonText = computed((): string => {
+        return !isSavingFilter.value ? "Save" : "";
+    });
+
+    const securityGrantToken = computed((): string | null => {
+        return securityGrant.token.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Begins loading the current settings in the background so that the UI can be displayed.
+     */
+    async function startLoadingSettings(): Promise<void> {
+        const result = await invokeBlockAction<CustomSettingsBox<PageParameterFilterCustomSettingsBag, PageParameterFilterCustomSettingsOptionsBag>>("GetCustomSettings");
+
+        if (result.isSuccess && result.data && result.data.settings && result.data.options) {
+            blockTitleText.value = result.data.settings.blockTitleText ?? "";
+            blockTitleIconCssClass.value = result.data.settings.blockTitleIconCssClass ?? "";
+            isBlockTitleVisible.value = result.data.settings.isBlockTitleVisible;
+
+            filterButtonText.value = result.data.settings.filterButtonText ?? "";
+            filterButtonSize.value = result.data.settings.filterButtonSize ?? "";
+            isFilterButtonVisible.value = result.data.settings.isFilterButtonVisible;
+            isResetFiltersButtonVisible.value = result.data.settings.isResetFiltersButtonVisible;
+            filtersPerRow.value = result.data.settings.filtersPerRow;
+            redirectPage.value = result.data.settings.redirectPage ?? null;
+            filterSelectionAction.value = result.data.settings.filterSelectionAction || FilterSelectionAction.DoNothing;
+            isLegacyReloadEnabled.value = result.data.settings.isLegacyReloadEnabled;
+
+            // Load any additional information required by the UI to paint the custom settings interface.
+            securityGrant.updateToken(result.data.securityGrantToken);
+            filterButtonSizeItems.value = result.data.options.filterButtonSizeItems ?? [];
+            filterSelectionActionItems.value = result.data.options.filterSelectionActionItems ?? [];
+
+            filtersGridDefinition.value = result.data.options.filtersGridDefinition ?? null;
+            if (filtersGridDefinition.value) {
+                filtersGridDataSource.value = loadFiltersGridData();
+            }
+
+            filtersReservedKeyNames.value = result.data.options.filtersReservedKeyNames ?? [];
+        }
+        else {
+            loadSettingsErrorMessage.value = result.errorMessage || "Unknown error while loading custom settings.";
+        }
+
+        isLoadingSettings.value = false;
+    }
+
+    /**
+     * Called when the filters grid is requesting the row data be loaded.
+     */
+    async function loadFiltersGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetFiltersGridRowData");
+
+        if (result.isSuccess && result.data) {
+            filtersGridData = reactive(result.data);
+            return filtersGridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load filters grid data.");
+        }
+    }
+
+    /**
+     * Add new or edit existing filter.
+     *
+     * @param guid The unique identifier of the filter to edit or undefined if adding a new filter.
+     */
+    async function addOrEditFilter(guid?: Guid): Promise<void> {
+        if (isLoadingEditableFilter.value) {
+            return;
+        }
+
+        isLoadingEditableFilter.value = true;
+        blockActionErrorMessage.value = "";
+
+        const data: {
+            filterGuid: Guid
+        } = {
+            filterGuid: toGuidOrNull(guid) ?? emptyGuid
+        };
+
+        const isAddingNewFilter = !guid;
+        const result = await invokeBlockAction<EditableFilterBag>("AddOrEditFilter", data);
+
+        if (!result.isSuccess || !result.data) {
+            blockActionErrorMessage.value = result.errorMessage || `Unknown error while trying to ${isAddingNewFilter ? "add" : "edit"} filter.`;
+            isLoadingEditableFilter.value = false;
+            return;
+        }
+
+        if (isAddingNewFilter || !result.data.filter) {
+            editableFilter.value = {
+                fieldTypeGuid: normalizeGuid(FieldType.Text),
+                isActive: true,
+                isAllowSearch: false,
+                isAnalytic: false,
+                isAnalyticHistory: false,
+                isEnableHistory: false,
+                isIndexEnabled: false,
+                isPublic: false,
+                isRequired: false,
+                isShowInGrid: false,
+                isShowOnBulk: false,
+                isSystem: false
+            };
+        }
+        else {
+            editableFilter.value = result.data.filter;
+        }
+
+        filtersReservedKeyNames.value = result.data.filtersReservedKeyNames ?? [];
+
+        saveFilterErrorMessage.value = "";
+        isFilterModalOpen.value = true;
+        isSettingsModalOpen.value = false;
+        isLoadingEditableFilter.value = false;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Called when saving block settings.
+     */
+    async function onSaveSettings(): Promise<void> {
+        const box: CustomSettingsBox<PageParameterFilterCustomSettingsBag, PageParameterFilterCustomSettingsOptionsBag> = {};
+
+        setCustomSettingsBoxValue(box, "blockTitleText", blockTitleText.value);
+        setCustomSettingsBoxValue(box, "blockTitleIconCssClass", blockTitleIconCssClass.value);
+        setCustomSettingsBoxValue(box, "isBlockTitleVisible", isBlockTitleVisible.value);
+
+        setCustomSettingsBoxValue(box, "filterButtonText", filterButtonText.value);
+        setCustomSettingsBoxValue(box, "filterButtonSize", filterButtonSize.value);
+        setCustomSettingsBoxValue(box, "isFilterButtonVisible", isFilterButtonVisible.value);
+        setCustomSettingsBoxValue(box, "isResetFiltersButtonVisible", isResetFiltersButtonVisible.value);
+        setCustomSettingsBoxValue(box, "filtersPerRow", filtersPerRow.value || 2);
+        setCustomSettingsBoxValue(box, "redirectPage", redirectPage.value);
+        setCustomSettingsBoxValue(box, "filterSelectionAction", filterSelectionAction.value);
+        setCustomSettingsBoxValue(box, "isLegacyReloadEnabled", isLegacyReloadEnabled.value);
+
+        const data = {
+            box
+        };
+
+        const result = await invokeBlockAction("SaveCustomSettings", data);
+
+        if (result.isSuccess) {
+            isSettingsModalOpen.value = false;
+            reloadBlock();
+        }
+        else {
+            alert(result.errorMessage || "Unable to save block settings.");
+        }
+    }
+
+    /**
+     * Called when adding a new filter.
+     */
+    async function onAddFilter(): Promise<void> {
+        await addOrEditFilter();
+    }
+
+    /**
+     * Called when editing a filter.
+     *
+     * @param guid The unique identifier of the filter to edit.
+     */
+    async function onEditFilter(guid: Guid): Promise<void> {
+        await addOrEditFilter(guid);
+    }
+
+    /**
+     * Called when saving a filter.
+     */
+    async function onSaveFilter(): Promise<void> {
+        if (isSavingFilter.value) {
+            return;
+        }
+
+        isSavingFilter.value = true;
+        saveFilterErrorMessage.value = "";
+
+        const data = {
+            bag: editableFilter.value
+        };
+
+        const result = await invokeBlockAction<GridRow>("SaveFilter", data);
+        if (!result.isSuccess || !result.data) {
+            saveFilterErrorMessage.value = result.errorMessage || `Unknown error while trying to ${isNewFilter.value ? "add" : "edit"} filter.`;
+            isSavingFilter.value = false;
+            return;
+        }
+
+        isFilterModalOpen.value = false;
+        isSettingsModalOpen.value = true;
+        editableFilter.value = null;
+        isSavingFilter.value = false;
+
+        if (!filtersGridData?.rows) {
+            return;
+        }
+
+        const index = filtersGridData.rows.findIndex(f => f.guid === result.data?.guid);
+
+        if (index !== -1) {
+            filtersGridData.rows.splice(index, 1, result.data);
+        }
+        else {
+            filtersGridData.rows.push(result.data);
+        }
+    }
+
+    /**
+     * Called when the filter modal is closed.
+     */
+    function onCloseFilterModal(): void {
+        isSettingsModalOpen.value = true;
+    }
+
+    /**
+     * Called when the individual changes the order of a filter.
+     *
+     * @param item The item that was moved.
+     * @param beforeItem The other item it was moved in front of.
+     */
+    async function onFilterOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        blockActionErrorMessage.value = "";
+
+        const result = await invokeBlockAction("ReorderFilter", {
+            filterKey: item["guid"],
+            beforeFilterKey: beforeItem?.["guid"] ?? null
+        });
+
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to reorder filters.";
+        }
+
+        return result.isSuccess;
+    }
+
+    /**
+     * Called when deleting a filter.
+     *
+     * @param guid The unique identifier of the filter to delete.
+     */
+    async function onDeleteFilter(guid: Guid): Promise<void> {
+        blockActionErrorMessage.value = "";
+
+        const data: {
+            filterGuid: Guid
+        } = {
+            filterGuid: toGuidOrNull(guid) ?? emptyGuid
+        };
+
+        const result = await invokeBlockAction("DeleteFilter", data);
+        if (!result.isSuccess) {
+            blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to delete filter.";
+            return;
+        }
+
+        if (!filtersGridData?.rows?.length) {
+            return;
+        }
+
+        const index = filtersGridData.rows.findIndex(f => f.guid === guid);
+
+        if (index !== -1) {
+            filtersGridData.rows.splice(index, 1);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    provideSecurityGrant(securityGrant);
+
+    watch(isSettingsModalOpen, () => {
+        if (!isSettingsModalOpen.value && !isFilterModalOpen.value) {
+            emit("close");
+        }
+    });
+
+    startLoadingSettings();
+</script>

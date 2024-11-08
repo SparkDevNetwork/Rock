@@ -69,7 +69,7 @@ namespace Rock.Blocks.Types.Mobile.Events
         Description = "The template to use when rendering the content.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_LIVE_EXPERIENCE_OCCURRENCES,
         IsRequired = true,
-        DefaultValue = "0C75B833-E710-45AE-B3B2-3FAC97A79BB2",
+        DefaultValue = "B26B0C69-8B11-4C5B-B24A-AB57A433FC33",
         Key = AttributeKeys.Template,
         Order = 4 )]
 

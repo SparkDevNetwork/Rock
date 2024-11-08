@@ -88,6 +88,7 @@
 		"files.trimTrailingWhitespace": true,
 		"html.format.wrapAttributes": "preserve-aligned",
 		"html.format.wrapLineLength": 0,
+		"vue.format.wrapAttributes": "preserve-aligned",
 		"editor.codeActionsOnSave": {
 			"source.fixAll.eslint": "explicit"
 		},
@@ -99,7 +100,11 @@
 			"vue"
 		],
 		"[vue]": {
-			"editor.defaultFormatter": "Vue.volar"
+			"editor.defaultFormatter": "Vue.volar",
+			"editor.formatOnSave": true
+		},
+		"[typescript]": {
+			"editor.formatOnSave": true
 		},
 		"css.format.spaceAroundSelectorSeparator": true,
 		"typescript.tsdk": "node_modules/typescript/lib",

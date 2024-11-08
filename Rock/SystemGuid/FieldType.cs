@@ -14,8 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -512,6 +510,11 @@ namespace Rock.SystemGuid
         /// Media Selector field type
         /// </summary>
         public const string MEDIA_SELECTOR = "243E40FC-04D0-48AD-B379-25A400CB0CAC";
+
+        /// <summary>
+        /// Mobile Navigation Action field type
+        /// </summary>
+        public const string MOBILE_NAVIGATION_ACTION = "8AF3E49F-4FF1-47D8-BCD2-150201B7F1B8";
 
         /// <summary>
         /// Month Day field type

@@ -262,7 +262,21 @@ namespace Rock.CheckIn
         /// <value>
         /// The ability level determination.
         /// </value>
-        public AbilityLevelDeterminationOptions AbilityLevelDetermination => ( AbilityLevelDeterminationOptions ) GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ).AsInteger();
+        public AbilityLevelDeterminationOptions AbilityLevelDetermination
+        {
+            get
+            {
+                var value = ( AbilityLevelDeterminationOptions ) GetSetting( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ).AsInteger();
+
+                // Ensure the next-gen only value isn't used by v1 check-in.
+                if ( value != AbilityLevelDeterminationOptions.DoNotAsk && value != AbilityLevelDeterminationOptions.DoNotAskIfThereIsNoAbilityLevel )
+                {
+                    value = AbilityLevelDeterminationOptions.Ask;
+                }
+
+                return value;
+            }
+        }
 
         /// <summary>
         /// Gets a value indicating whether [display location count].

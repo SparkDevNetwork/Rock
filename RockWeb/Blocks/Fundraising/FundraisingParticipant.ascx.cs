@@ -210,8 +210,6 @@ namespace RockWeb.Blocks.Fundraising
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 int? groupId = this.PageParameter( "GroupId" ).AsIntegerOrNull();
@@ -246,6 +244,8 @@ namespace RockWeb.Blocks.Fundraising
                     CreateDynamicControls( groupMember );
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

@@ -21,10 +21,22 @@
 // </copyright>
 //
 
+import { AgeClassification } from "@Obsidian/Enums/Crm/ageClassification";
+import { Gender } from "@Obsidian/Enums/Crm/gender";
+
 /** Bag for person-related data in the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityPersonBag = {
+    /** Gets or sets the person's age */
+    age?: number | null;
+
+    /** Gets or sets the person's age classification */
+    ageClassification?: AgeClassification | null;
+
     /** Gets or sets the person's connection status */
     connectionStatus?: string | null;
+
+    /** Gets or sets the person's gender */
+    gender: Gender;
 
     /** Gets or sets the person's last name. */
     lastName?: string | null;
@@ -35,6 +47,9 @@ export type VolunteerGenerosityPersonBag = {
     /** Gets or sets the person ID. */
     personId: number;
 
-    /** Gets or sets the person's photo URL. */
+    /** Gets or sets the person's photo Id. */
+    photoId?: number | null;
+
+    /** Gets or sets the person's photo Id. */
     photoUrl?: string | null;
 };

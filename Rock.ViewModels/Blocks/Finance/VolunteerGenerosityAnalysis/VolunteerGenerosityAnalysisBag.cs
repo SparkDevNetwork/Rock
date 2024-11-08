@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis
 {
@@ -45,6 +46,22 @@ namespace Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis
         /// Gets or sets the person's photo URL.
         /// </summary>
         public string PhotoUrl { get; set; }
+        /// <summary>
+        /// Gets or sets the person's photo Id.
+        /// </summary>
+        public int? PhotoId { get; set; }
+        /// <summary>
+        /// Gets or sets the person's gender
+        /// </summary>
+        public Gender Gender { get; set; }
+        /// <summary>
+        /// Gets or sets the person's age
+        /// </summary>
+        public int? Age { get; set; }
+        /// <summary>
+        /// Gets or sets the person's age classification
+        /// </summary>
+        public AgeClassification? AgeClassification { get; set; }
         /// <summary>
         /// Gets or sets the person's giving identifier.
         /// </summary>
@@ -84,7 +101,7 @@ namespace Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis
         /// <summary>
         /// Gets or sets the person's bit mask
         /// </summary>
-        public string DonationMonthYearBitmask { get; set; }
+        public string DonationDateKeys { get; set; }
 
     }
 
@@ -106,9 +123,25 @@ namespace Rock.ViewModels.Blocks.Finance.VolunteerGenerosityAnalysis
         /// </summary>
         public string NickName { get; set; }
         /// <summary>
-        /// Gets or sets the person's photo URL.
+        /// Gets or sets the person's photo Id.
         /// </summary>
         public string PhotoUrl { get; set; }
+        /// <summary>
+        /// Gets or sets the person's photo Id.
+        /// </summary>
+        public int? PhotoId { get; set; }
+        /// <summary>
+        /// Gets or sets the person's gender
+        /// </summary>
+        public Gender Gender { get; set; }
+        /// <summary>
+        /// Gets or sets the person's age
+        /// </summary>
+        public int? Age { get; set; }
+        /// <summary>
+        /// Gets or sets the person's age classification
+        /// </summary>
+        public AgeClassification? AgeClassification { get; set; }
         /// <summary>
         /// Gets or sets the person's connection status
         /// </summary>

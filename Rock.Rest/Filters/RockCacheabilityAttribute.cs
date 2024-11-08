@@ -45,6 +45,14 @@ namespace Rock.Rest.Filters
         {
             base.OnActionExecuted( actionExecutedContext );
 
+            // If an exception is thrown by the API handler then the Response
+            // object will be null. In that case we can't modify the response
+            // headers to add the cache information.
+            if ( actionExecutedContext.Response == null )
+            {
+                return;
+            }
+
             var reflectedHttpActionDescriptor = ( ReflectedHttpActionDescriptor ) actionExecutedContext.ActionContext.ActionDescriptor;
             var actionMethod = actionExecutedContext.Request.Method.Method;
             var controller = actionExecutedContext.ActionContext.ActionDescriptor.ControllerDescriptor;
@@ -57,7 +65,9 @@ namespace Rock.Rest.Filters
             }
             else
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 restActionCache = RestActionCache.Get( apiId );
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             if ( restActionCache != null && restActionCache.CacheControlHeader != null )

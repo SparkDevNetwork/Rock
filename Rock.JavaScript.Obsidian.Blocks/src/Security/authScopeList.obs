@@ -9,9 +9,6 @@
           :showLaunchWorkflow="false"
           stickyHeader
           liveUpdates
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
@@ -33,60 +30,42 @@
                        field="isActive"
                        :filter="booleanValueFilter"
                        visiblePriority="xs"
-                       width="120" />
+                       width="150"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center"/>
 
         <BooleanColumn name="isSystem"
                        title="System"
                        field="isSystem"
                        :filter="booleanValueFilter"
                        visiblePriority="md"
-                       width="120" />
+                       width="150"
+                       headerClass="text-center"
+                       itemClass="justify-content-center text-center" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 
-    <GridSettingsModal v-model="gridSettings"
-        v-model:visible="isGridSettingsVisible" />
-
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { BooleanColumn, TextColumn, textValueFilter, booleanValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AuthScopeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/AuthScopeList/authScopeListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { NavigationUrlKey, PreferenceKey, GridSettingsOptions } from "./AuthScopeList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
-    import GridSettingsModal from "./AuthScopeList/gridSettingsModal.partial.obs";
+    import { NavigationUrlKey } from "./AuthScopeList/types.partial";
+    import { reactive, ref, watch } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<AuthScopeListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        name: preferences.getValue(PreferenceKey.FilterName),
-        isActive: preferences.getValue(PreferenceKey.FilterActiveStatus),
-    });
-
-    // #endregion
-
-    // #region Computed Values
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.name
-            || !!gridSettings.value.publicName
-            || !!gridSettings.value.isActive;
-    });
 
     // #endregion
 
@@ -153,25 +132,6 @@
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
     }
-
-    /**
-    * Called when the grid setting icon is clicked, displays the block filters.
-    */
-    function onGridSettingsClick(): void {
-        isGridSettingsVisible.value = true;
-    }
-
-    // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterName, gridSettings.value.name ?? "");
-        preferences.setValue(PreferenceKey.FilterPublicName, gridSettings.value.publicName ?? "");
-        preferences.setValue(PreferenceKey.FilterActiveStatus, gridSettings.value.isActive ?? "");
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>

@@ -148,6 +148,8 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="apiId">The API identifier.</param>
         /// <returns></returns>
+        [Obsolete( "Use Get method that takes integer identifier, this method will be removed once action Guids are required." )]
+        [RockObsolete( "1.16.7" )]
         public new static RestActionCache Get( string apiId )
         {
             return Get( apiId, null );
@@ -159,6 +161,8 @@ namespace Rock.Web.Cache
         /// <param name="apiId">The API identifier.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+        [Obsolete( "Use Get method that takes integer identifier, this method will be removed once action Guids are required." )]
+        [RockObsolete( "1.16.7" )]
         public static RestActionCache Get( string apiId, RockContext rockContext )
         {
             return apiId.IsNotNullOrWhiteSpace()
@@ -221,6 +225,8 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="entityId">The entity identifier.</param>
         /// <param name="entityState">State of the entity. If unknown, use <see cref="EntityState.Detached" /></param>
+        [Obsolete( "Use UpdateCachedEntity method that takes integer identifier, this method will be removed once action Guids are required." )]
+        [RockObsolete( "1.16.7" )]
         public static void UpdateCachedEntity( string entityId, EntityState entityState )
         {
             // NOTE: Don't read the Item into the Cache here since it could be part of a transaction that could be rolled back.

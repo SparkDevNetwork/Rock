@@ -47,28 +47,28 @@ namespace Rock.ViewModels.Blocks.WebFarm.WebFarmSettings
         /// <value>
         /// The lower polling limit.
         /// </value>
-        public int LowerPollingLimit { get; set; }
+        public int? LowerPollingLimit { get; set; }
         /// <summary>
         /// Gets or sets the upper polling limit.
         /// </summary>
         /// <value>
         /// The upper polling limit.
         /// </value>
-        public int UpperPollingLimit { get; set; }
+        public int? UpperPollingLimit { get; set; }
         /// <summary>
         /// Gets or sets the maximum polling wait seconds.
         /// </summary>
         /// <value>
         /// The maximum polling wait seconds.
         /// </value>
-        public int MaxPollingWaitSeconds { get; set; }
+        public int? MaxPollingWaitSeconds { get; set; }
         /// <summary>
         /// Gets or sets the minimum polling difference.
         /// </summary>
         /// <value>
         /// The minimum polling difference.
         /// </value>
-        public int MinimumPollingDifference { get; set; }
+        public int? MinimumPollingDifference { get; set; }
 
         /// <summary>
         /// Gets or sets the nodes.

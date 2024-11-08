@@ -144,7 +144,6 @@ namespace Rock.Field.Types
             cbAllowMultipleValues.Checked = true;
             cbAllowMultipleValues.CheckedChanged += OnQualifierUpdated;
             cbAllowMultipleValues.Label = "Allow Multiple Values";
-            cbAllowMultipleValues.Text = "Yes";
             cbAllowMultipleValues.Help = "When set, allows multiple document types to be selected.";
 
             return controls;

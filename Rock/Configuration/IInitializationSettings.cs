@@ -105,7 +105,7 @@ namespace Rock.Configuration
         bool IsCacheStatisticsEnabled { get; }
 
         /// <summary>
-        /// Gets the name of the service to use when writing Ovbservability
+        /// Gets the name of the service to use when writing Observability
         /// records.
         /// </summary>
         /// <value>The observability service name.</value>

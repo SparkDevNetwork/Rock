@@ -116,7 +116,6 @@ namespace Rock.Field.Types
             {
                 AutoPostBack = true,
                 Label = "Hide Filter mode",
-                Text = "Yes",
                 Help = "When set, filter mode will be hidden."
             };
             cbHideFilterMode.CheckedChanged += OnQualifierUpdated;

@@ -42,7 +42,7 @@ export type AchievementAttemptBag = {
      * NOTE: In the case of a Person achievement, this could either by PersonAliasId or PersonId (but probably PersonAliasId)
      * depending on Rock.Model.AchievementType.AchievementEntityType
      */
-    achieverEntityId?: number | null;
+    achieverEntityId?: string | null;
 
     /** Gets or sets the achiever HTML. */
     achieverHtml?: string | null;
@@ -66,7 +66,7 @@ export type AchievementAttemptBag = {
     isSuccessful: boolean;
 
     /** Gets or sets the progress. This is a percentage so .25 is 25% and 1 is 100%. */
-    progress: number;
+    progress?: string | null;
 
     /** Gets or sets the progress HTML. */
     progressHtml?: string | null;

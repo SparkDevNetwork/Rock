@@ -77,6 +77,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsMappedLocation { get; private set; }
 
+        /// <inheritdoc cref="Rock.Model.GroupLocation.IsOverflowLocation"/>
+        [DataMember]
+        public bool IsOverflowLocation { get; private set; }
+
         /// <inheritdoc cref="Rock.Model.GroupLocation.GroupMemberPersonAliasId"/>
         [DataMember]
         public int? GroupMemberPersonAliasId { get; private set; }
@@ -175,6 +179,7 @@ namespace Rock.Web.Cache
             GroupLocationTypeValueId = groupLocation.GroupLocationTypeValueId;
             IsMailingLocation = groupLocation.IsMailingLocation;
             IsMappedLocation = groupLocation.IsMappedLocation;
+            IsOverflowLocation = groupLocation.IsOverflowLocation;
             GroupMemberPersonAliasId = groupLocation.GroupMemberPersonAliasId;
             Order = groupLocation.Order;
             ScheduleIds = groupLocation.Schedules.Select( s => s.Id ).ToList();

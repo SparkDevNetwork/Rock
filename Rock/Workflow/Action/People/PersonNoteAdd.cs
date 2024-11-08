@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -149,6 +149,7 @@ namespace Rock.Workflow.Action
                 if ( author != null )
                 {
                     note.CreatedByPersonAliasId = author.PrimaryAlias.Id;
+                    note.EditedByPersonAliasId = author.PrimaryAlias.Id;
                 }
 
                 noteService.Add( note );

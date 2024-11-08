@@ -76,12 +76,11 @@ import { updateRefValue } from "@Obsidian/Utility/component";
     // #endregion
 
     watch(() => props.modelValue, () => {
-
         updateRefValue(signalType, signalType.value);
         updateRefValue(ownerAlias, ownerAlias.value);
         updateRefValue(expirationDate, expirationDate.value);
         updateRefValue(note, note.value);
-        });
+    });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
