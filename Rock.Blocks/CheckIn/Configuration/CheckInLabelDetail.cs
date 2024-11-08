@@ -560,13 +560,13 @@ namespace Rock.Blocks.CheckIn.Configuration
                     return ActionBadRequest( "Attendance record was not found." );
                 }
 
-                var attendanceLabel = new AttendanceLabel( attendance, RockContext );
+                var attendanceLabel = new LabelAttendanceDetail( attendance, RockContext );
                 var director = new CheckInDirector( RockContext );
 
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 var data = director.LabelProvider.RenderLabelUnconditionally( checkInLabel,
                     attendanceLabel,
-                    new List<AttendanceLabel> { attendanceLabel },
+                    new List<LabelAttendanceDetail> { attendanceLabel },
                     attendance.SearchResultGroup,
                     null );
                 sw.Stop();

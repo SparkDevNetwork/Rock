@@ -947,7 +947,7 @@
     <Compile Include="CheckIn\v2\Filters\PreferredGroupsOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\SpecialNeedsOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\IValidPropertiesBoxExtensions.cs" />
-    <Compile Include="CheckIn\v2\Labels\AttendanceLabel.cs" />
+    <Compile Include="CheckIn\v2\Labels\LabelAttendanceDetail.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendanceLabelData.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendeePhotoFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\BarcodeFieldConfiguration.cs" />
@@ -4883,6 +4883,7 @@
     <None Include="Resources\updateGoogleStaticMap.sql" />
     <None Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
     <None Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql" />
+    <Content Include="Plugin\HotFixes\216_open_bible_on_notebook.jpg" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">

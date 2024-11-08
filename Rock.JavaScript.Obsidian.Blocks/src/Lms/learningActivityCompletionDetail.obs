@@ -106,7 +106,7 @@
 
         const pointsEarned = learningActivityCompletionEditBag.value?.bag?.pointsEarned ?? 0;
         const pointsPossible = learningActivityCompletionViewBag.value?.activityBag?.points ?? 0;
-        const percentEarned = pointsPossible > 0 ? pointsEarned / pointsPossible * 100 : 0;
+        const percentEarned = pointsPossible > 0 ? Math.round(pointsEarned / pointsPossible * 100) : 0;
         const grade = gradingScales.value?.find(s => percentEarned >= s.thresholdPercentage);
         const hasGradeScale = grade != null;
 

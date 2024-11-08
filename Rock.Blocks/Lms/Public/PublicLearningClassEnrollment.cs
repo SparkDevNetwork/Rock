@@ -46,7 +46,7 @@ namespace Rock.Blocks.Lms
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
-        IsRequired = true,
+        IsRequired = false,
         DefaultValue = AttributeDefault.HeaderLavaTemplate,
         Order = 1 )]
 
@@ -55,7 +55,7 @@ namespace Rock.Blocks.Lms
         Description = "The Lava template to use when displaying the confirmation messaging to the individual. Merge fields include: UnmetRequirements, LearningClass, Facilitators, Registrant, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>", EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
-        IsRequired = true,
+        IsRequired = false,
         DefaultValue = AttributeDefault.ConfirmationLavaTemplate,
         Order = 2 )]
 
@@ -64,7 +64,7 @@ namespace Rock.Blocks.Lms
         Description = "The Lava template to use to show the completed message. Merge fields include: UnmetRequirements, LearningClass, Facilitators, Registrant, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>", EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
-        IsRequired = true,
+        IsRequired = false,
         DefaultValue = AttributeDefault.CompletionLavaTemplate,
         Order = 3 )]
 
@@ -135,91 +135,29 @@ namespace Rock.Blocks.Lms
         private static class AttributeDefault
         {
             public const string HeaderLavaTemplate = @"
-//- Styles
-{% stylesheet %}
-        .page-header-section {
-            height: 300px; 
-        align-items: center; 
-        border-radius: 12px; 
-        background-image: url('/GetImage.ashx?guid={{LearningClass.LearningCourse.ImageBinaryFile.Guid}}'); 
-        background-size: cover;
-        background-position: center;
-        position: relative;
-        margin-bottom: 32px;
-    }
-    
-    .header-block {
-        height: max-content;
-        position: absolute;
-        left: 50%;
-        bottom: -24px;
-        -webkit-transform: translateY(-15%);
-        transform: translateY(-15%);
-        transform: translatex(-50%);
-        background-color: white; 
-        border-radius: 12px; 
-        width: 80%;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        padding: 1.5rem; 
-    }
-    
-    .page-sub-header {
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 4;
-        text-overflow: ellipsis;
-        text-align: center;
-        overflow: hidden;
-        padding-bottom: 0;
-    }
-
-{% endstylesheet %}
-
-<div class=""page-header-section"">
-    <div class=""header-block text-center border border-gray-400"">
-        <h1 class=""text-bold"">
-            {{ LearningClass.LearningCourse.PublicName }}
-        </h1>
-        <p class=""page-sub-header"">
-            {{ LearningClass.LearningCourse.Summary }}
-        </p>
+<div class=""hero-section"">
+    <div class=""hero-section-image"" style=""background-image: url('/GetImage.ashx?guid={{ LearningClass.LearningCourse.ImageBinaryFile.Guid }}')""></div>
+    <div class=""hero-section-content"">
+        <h1 class=""hero-section-title""> {{ LearningClass.LearningCourse.PublicName }} </h1>
+        <p class=""hero-section-description""> {{ LearningClass.LearningCourse.Summary }} </p>
     </div>
 </div>
 ";
             public const string ConfirmationLavaTemplate = @"
-{% stylesheet %}
-    .confirmation-details {
-        width: 545px;
-    }
-
-    .enrollment-participant-row,
-    .enrollment-class-row {
-        border: 1px solid var(--theme-light);
-        padding: 8px;
-    }
-{% endstylesheet %}
-
+//-Variable Assignments
 {% assign facilitatorCount = Facilitators | Size %}
-
 {% assign facilitatorsText = '' %}
+
 {% for f in Facilitators %}
     {%- capture name -%}
         {{f | Property:'Name'}}{%- unless forloop.last -%}, {% endunless %}
     {%- endcapture -%}
-
     {% assign facilitatorsText = facilitatorsText | Append:name %}
 {% endfor %}
 
 {% if facilitatorsText == empty %}
     {% assign facilitatorsText = 'TBD' %}
 {% endif %}
-
 {% assign credits = LearningClass.LearningCourse.Credits | AsInteger %}
 {% assign location = LearningClass.GroupLocations | First %}
 {% assign locationNameLength = location.Name | Size %}
@@ -228,139 +166,179 @@ namespace Rock.Blocks.Lms
 {% assign hasLocation = locationNameLength > 0 %}
 {% assign hasSchedule = scheduleNameLength > 0 %}
 
-<div class=""confirmation-container d-flex flex-column justify-content-center"">
-    <h3 class=""enrollment-review-header text-center"">Enrollment Review</h3>
-    <div class=""enrollment-review-sub-header text-center"">Please review class details before confirming enrollment:</div>
 
-    <div class=""confirmation-details d-flex flex-column mt-3"">
-        <h5 class=""participant-details-header"">Participant Details</h5>
-        <div class=""enrollment-participant-row participant-name d-flex justify-content-between"">
-            <div class=""field-title participant-name"">
-                Name
-            </div>
-            <div class=""field-value participant-name"">
-                {{Registrant.FullName}}
-            </div>
-        </div>
-        <div class=""enrollment-participant-row participant-email d-flex justify-content-between"">
-            <div class=""field-title participant-email"">
-                Email
-            </div>
-            <div class=""field-value participant-email"">
-                {{Registrant.Email}}
-            </div>
-        </div>
+{% stylesheet %}
+    .confirmation-details {
+        width: 100%;
+        max-width: 545px;
+    }
+    
+    .detail-table {
+        border: 1px solid var(--color-interface-softer);
+        width: 100%;
+    }
+    
+    .detail-row {
+        border-bottom: 1px solid var(--color-interface-softer);
+        padding: 8px;
+        width: 100%;
+    }
+    
+    .detail-row:last-child {
+        border-bottom: none;
+    }
 
-        <h5 class=""class-details-header"">Class Details</h5>
-        <div class=""enrollment-class-row course-code d-flex justify-content-between"">
-            <div class=""field-title course-name"">
-                Course Name
-            </div>
-            <div class=""field-value course-name"">
-                {{LearningClass.LearningCourse.PublicName}}
-            </div>
-        </div>
-        {% if LearningClass.LearningCourse.CourseCode != empty %}
-        <div class=""enrollment-class-row course-code d-flex justify-content-between"">
-            <div class=""field-title course-code"">
-                Course Code
-            </div>
-            <div class=""field-value course-code"">
-                {{LearningClass.LearningCourse.CourseCode}}
-            </div>
-        </div>
-        {% endif %}
+    
+{% endstylesheet %}
 
-        <div class=""enrollment-class-row course-configuration d-flex justify-content-between"">
-            <div class=""field-title course-code"">
-                Course Configuration
+
+
+<div class=""d-flex flex-column w-100 justify-content-center gap-4 my-4"">
+    
+    //- 1 REVIEW HEADING
+    <div>
+        <h3 class=""text-center"">Enrollment Review</h3>
+        <div class=""text-center"">Please review class details before confirming enrollment:</div>
+    </div>
+    
+    //- 2 TABLE
+    <div class=""d-flex flex-column mt-3 gap-3"">
+        <div>
+            <h5>Participant Details</h5>
+            <div class=""detail-table"">
+                <div class=""detail-row d-flex justify-content-between"">
+                    <div class=""field-title"">
+                        Name
+                    </div>
+                    <div class=""field-value"">
+                        {{Registrant.FullName}}
+                    </div>
+                </div>
+                <div class=""detail-row participant-email d-flex justify-content-between"">
+                    <div class=""field-title"">
+                        Email
+                    </div>
+                    <div class=""field-value"">
+                        {{Registrant.Email}}
+                    </div>
+                </div>
             </div>
-            <div class=""field-value course-code"">
-                {% if LearningClass.LearningCourse.LearningProgram.ConfigurationMode == 0 %}
-                    Academic Calendar
-                {% elseif LearningClass.LearningCourse.LearningProgram.ConfigurationMode == 1 %}
-                    On-Demand
+        </div>
+        
+        <div>
+            <h5>Class Details</h5>
+            <div class=""detail-table"">
+                <div class=""detail-row  d-flex justify-content-between"">
+                    <div class=""field-title"">
+                        Course Name
+                    </div>
+                    <div class=""field-value"">
+                        {{LearningClass.LearningCourse.PublicName}}
+                    </div>
+                </div>
+                {% if LearningClass.LearningCourse.CourseCode != empty %}
+                <div class=""detail-row  d-flex justify-content-between"">
+                    <div class=""field-title"">
+                        Course Code
+                    </div>
+                    <div class=""field-value"">
+                        {{LearningClass.LearningCourse.CourseCode}}
+                    </div>
+                </div>
+                {% endif %}
+        
+                <div class=""detail-row d-flex justify-content-between"">
+                    <div class=""field-title"">
+                        Course Configuration
+                    </div>
+                    <div class=""field-value "">
+                        {% if LearningClass.LearningCourse.LearningProgram.ConfigurationMode == 0 %}
+                            Academic Calendar
+                        {% elseif LearningClass.LearningCourse.LearningProgram.ConfigurationMode == 1 %}
+                            On-Demand
+                        {% endif %}
+                    </div>
+                </div>
+        
+                <div class=""detail-row d-flex justify-content-between"">
+                    <div class=""field-title"">
+                        {{ 'Facilitator' | PluralizeForQuantity:facilitatorCount }}:
+                    </div>
+                    <div class=""field-value"">
+                        {{facilitatorsText}}
+                    </div>
+                </div>
+        
+                {% if credits > 0 %}
+                    <div class=""detail-row d-flex justify-content-between"">
+                        <div class=""field-title"">
+                            Credits
+                        </div>
+                        <div class=""field-value"">
+                            {{LearningClass.LearningCourse.Credits}}
+                        </div>
+                    </div>
+                {% endif %}
+        
+                <div class=""detail-row d-flex justify-content-between"">
+                    <div class=""field-title"">
+                        Grading System
+                    </div>
+                    <div class=""field-value"">
+                        {{LearningClass.LearningGradingSystem.Name}}
+                    </div>
+                </div>
+        
+                <div class=""detail-row d-flex justify-content-between"">
+                    <div class=""field-title"">
+                        Semester
+                    </div>
+                    <div class=""field-value"">
+                        {{LearningClass.LearningSemester.Name}}
+                    </div>
+                </div>
+        
+                {% if hasLocation %}
+                    <div class=""detail-row d-flex justify-content-between"">
+                        <div class=""field-title"">
+                            Location
+                        </div>
+                        <div class=""field-value"">
+                            {{location.Name}}
+                        </div>
+                    </div>
+                {% endif %}
+        
+                {% if hasSchedule %}
+                    <div class=""detail-row d-flex justify-content-between"">
+                        <div class=""field-title"">
+                            Schedule
+                        </div>
+                        <div class=""field-value"">
+                            {{schedule.Name}}
+                        </div>
+                    </div>
+                {% endif %}
+        
+                {% if LearningClass.LearningSemester.StartDate %}
+                    <div class=""detail-row d-flex justify-content-between"">
+                        <div class=""field-title"">
+                            Starts
+                        </div>
+                        <div class=""field-value"">
+                            {{LearningClass.LearningSemester.StartDate |  Date:'sd' }}
+                        </div>
+                    </div>
                 {% endif %}
             </div>
         </div>
-
-        <div class=""enrollment-class-row facilitator d-flex justify-content-between"">
-            <div class=""field-title facilitator"">
-                {{ 'Facilitator' | PluralizeForQuantity:facilitatorCount }}:
-            </div>
-            <div class=""field-value facilitator"">
-                {{facilitatorsText}}
-            </div>
-        </div>
-
-        {% if credits > 0 %}
-            <div class=""enrollment-class-row credits d-flex justify-content-between"">
-                <div class=""field-title credits"">
-                    Credits
-                </div>
-                <div class=""field-value credits"">
-                    {{LearningClass.LearningCourse.Credits}}
-                </div>
-            </div>
-        {% endif %}
     </div>
-
-    <div class=""enrollment-class-row grading-system d-flex justify-content-between"">
-        <div class=""field-title grading-system"">
-            Grading System
-        </div>
-        <div class=""field-value grading-system"">
-            {{LearningClass.LearningGradingSystem.Name}}
-        </div>
-    </div>
-
-    <div class=""enrollment-class-row semester d-flex justify-content-between"">
-        <div class=""field-title semester"">
-            Semester
-        </div>
-        <div class=""field-value semester"">
-            {{LearningClass.LearningSemester.Name}}
-        </div>
-    </div>
-
-    {% if hasLocation %}
-        <div class=""enrollment-class-row location d-flex justify-content-between"">
-            <div class=""field-title location"">
-                Location
-            </div>
-            <div class=""field-value location"">
-                {{location.Name}}
-            </div>
-        </div>
-    {% endif %}
-
-    {% if hasSchedule %}
-        <div class=""enrollment-class-row schedule d-flex justify-content-between"">
-            <div class=""field-title schedule"">
-                Schedule
-            </div>
-            <div class=""field-value schedule"">
-                {{schedule.Name}}
-            </div>
-        </div>
-    {% endif %}
-
-    {% if LearningClass.LearningSemester.StartDate %}
-        <div class=""enrollment-class-row location d-flex justify-content-between"">
-            <div class=""field-title location"">
-                Starts
-            </div>
-            <div class=""field-value location"">
-                {{LearningClass.LearningSemester.StartDate |  Date:'sd' }}
-            </div>
-        </div>
-    {% endif %}
 
 </div>
 
 ";
             public const string CompletionLavaTemplate = @"
-<div class=""completion-container d-flex flex-column justify-content-center"">
+<div class=""completion-container d-flex flex-column justify-content-center my-5"">
     <i class=""fa fa-check-circle fa-4x text-success text-center""></i>
     <h3 class=""completion-header text-center"">Successfully Enrolled!</h3>
     <div class=""completion-sub-header text-center"">
@@ -371,7 +349,7 @@ namespace Rock.Blocks.Lms
 </div>
 ";
             public const string EnrollmentErrorLavaTemplate = @"
-<div class=""error-container d-flex flex-column justify-content-center"">
+<div class=""error-container d-flex flex-column justify-content-center my-5"">
     <i class=""fa fa-exclamation-triangle fa-4x text-danger text-center""></i>
     <h3 class=""error-header text-center"">Cannot Enroll in Class</h3>
     <div class=""error-sub-header text-center"">
@@ -456,8 +434,7 @@ namespace Rock.Blocks.Lms
                 ["LearningCourseId"] = learningClass.LearningCourse.IdKey
             };
 
-
-            var courseWorkspaceParams = new Dictionary<string, string>
+            var classWorkspaceParams = new Dictionary<string, string>
             {
                 ["LearningProgramId"] = learningClass.LearningCourse.LearningProgram.IdKey,
                 ["LearningCourseId"] = learningClass.LearningCourse.IdKey,
@@ -468,7 +445,7 @@ namespace Rock.Blocks.Lms
             {
                 [NavigationUrlKey.CourseDetailPage] = this.GetLinkedPageUrl( AttributeKey.CourseDetailPage, courseDetailParams ),
                 [NavigationUrlKey.CourseListPage] = this.GetLinkedPageUrl( AttributeKey.CourseListPage, courseListParams ),
-                [NavigationUrlKey.ClassWorkspacePage] = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, courseWorkspaceParams )
+                [NavigationUrlKey.ClassWorkspacePage] = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, classWorkspaceParams )
             };
         }
 
@@ -513,7 +490,8 @@ namespace Rock.Blocks.Lms
         private Dictionary<string, object> GetMergeFields( Person currentPerson, Person registrant, out LearningClass learningClass, out List<LearningCourseRequirement> unmetRequirements )
         {
             var learningClassService = new LearningClassService( RockContext );
-            var learningClassId = learningClassService.GetSelect( PageParameter( PageParameterKey.LearningClassId ), c => c.Id );
+            var parameterValue = PageParameter( PageParameterKey.LearningClassId );
+            var learningClassId = learningClassService.GetSelect( parameterValue, c => c.Id );
             learningClass =
                 learningClassId == 0 ?
                 default :

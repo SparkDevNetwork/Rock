@@ -15,6 +15,10 @@
 // </copyright>
 
 using System;
+using System.Data;
+using System.Data.SqlClient;
+using System.Drawing;
+using System.IO;
 
 using Rock.Common.Mobile.Enums;
 
@@ -86,11 +90,19 @@ UPDATE [Page] SET
     [DisplayInNavWhen] = {( int ) DisplayInNavWhen.WhenAllowed}
 WHERE [Guid] IN ('{publicLearnPageGuid}', '{programListPageGuid}');
 " );
+            // Remove default breadcrumbs for the public pages
+            // so that breadcrumbs continue to work even after a server restart
+            // (because those blocks are implementing IBreadCrumbBlock).
+            Sql( $@"
+UPDATE [dbo].[Page] SET
+    [BreadCrumbDisplayName] = 0
+WHERE [Guid] IN ('{publicCourseListPageGuid}', '{publicCourseDetailPageGuid}')
+" );
 
             // Add the enrollment page, route, block and initial attributes/values.
-            RockMigrationHelper.AddPage( publicCourseDetailPageGuid, SystemGuid.Layout.FULL_WIDTH, "Enroll", "", enrollPageGuid, "", "" );
+            RockMigrationHelper.AddPage( true, publicCourseDetailPageGuid, SystemGuid.Layout.FULL_WIDTH, "Enroll", "", enrollPageGuid, "", "" );
 
-            RockMigrationHelper.AddOrUpdatePageRoute( enrollPageGuid , "learn/{LearningProgramId}/courses/{LearningCourseId}/enroll/{LearningClassId}", enrollPageRouteGuid );
+            RockMigrationHelper.AddOrUpdatePageRoute( enrollPageGuid, "learn/{LearningProgramId}/courses/{LearningCourseId}/enroll/{LearningClassId}", enrollPageRouteGuid );
 
             RockMigrationHelper.AddSecurityAuthForPage(
                 enrollPageGuid,
@@ -105,7 +117,6 @@ WHERE [Guid] IN ('{publicLearnPageGuid}', '{programListPageGuid}');
             // Add/Update Obsidian Block Entity Type
             //   EntityType:Rock.Blocks.Lms.PublicLearningClassEnrollment
             RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Lms.PublicLearningClassEnrollment", "Public Learning Class Enrollment", "Rock.Blocks.Lms.PublicLearningClassEnrollment, Rock.Blocks, Version=1.17.0.31, Culture=neutral, PublicKeyToken=null", false, false, "4F9F2B15-14EF-47AB-858B-641858674AC7" );
-
 
             // Add/Update Obsidian Block Type
             //   Name:Public Learning Class Enrollment
@@ -177,6 +188,48 @@ WHERE [Guid] IN ('{publicLearnPageGuid}', '{programListPageGuid}');
             /*   Attribute Value: 61be63c7-6611-4235-a6f2-b22456620f35,e2ef9fac-3e9b-4ec8-a21f-d01178416247 */
             RockMigrationHelper.AddBlockAttributeValue( "E921788F-38EA-48F2-B80A-9B7181AB70A5", "96644CEF-4FC7-4986-B591-D6675AA38C2C", $@"{enrollPageGuid},{enrollPageRouteGuid}" );
 
+            var programCoursesPageMenuBlockGuid = "B3C55400-76E9-42D9-9ECA-842FBFC7C123";
+            var coursePageMenuTemplate = @"
+{% comment %}
+   Only show the Page Menu when the program is not an On-Demand ConfigurationMode.
+{% endcomment %}
+
+{% assign programId = PageParameter[""LearningProgramId""] | FromIdHash %}
+
+{% if programId > 0 %}
+    {% sql %}
+        SELECT 1
+        FROM [LearningProgram] 
+        WHERE [Id] = '{{ programId }}'
+            AND [ConfigurationMode] <> 1 -- On-Demand
+    {% endsql %}
+    
+    {% for item in results %}
+        <div class=""mb-3"">
+            {% include '~~/Assets/Lava/PageListAsTabs.lava' %}
+        </div>
+    {% endfor %}
+{% endif %}
+";
+
+            // Add Block Attribute Value
+            //   Block: Page Menu
+            //   BlockType: Page Menu
+            //   Category: CMS
+            //   Block Location: Page=Courses, Site=Rock RMS
+            //   Attribute: Template
+            /*   Attribute Value: [see coursePageMenuTemplate variable] */
+            RockMigrationHelper.AddBlockAttributeValue( programCoursesPageMenuBlockGuid, "1322186A-862A-4CF1-B349-28ECB67229BA", coursePageMenuTemplate );
+
+            // Add Block Attribute Value
+            //   Block: Page Menu
+            //   BlockType: Page Menu
+            //   Category: CMS
+            //   Block Location: Page=Courses, Site=Rock RMS
+            //   Attribute: EnabledLavaCommands
+            /*   Attribute Value: 'Sql '*/
+            RockMigrationHelper.AddBlockAttributeValue( programCoursesPageMenuBlockGuid, "EF10B2F9-93E5-426F-8D43-8C020224670F", "Sql" );
+
             Sql( $@"
 -- Update LMS internal page routes to use people/learn/ instead of learning/
 UPDATE pr SET
@@ -217,6 +270,70 @@ UPDATE bft SET
 FROM [dbo].[BinaryFileType] bft
 WHERE bft.[Guid] = '4F55987B-5279-4D10-8C38-F320046B4BBB' -- Learning Management
 " );
+
+            var sqlCommandText = @"
+-- Add the Banner Image for the External Learn Page.
+DECLARE @binaryFileGuid NVARCHAR(40) = '605FD4B7-2DCA-4782-8826-95AAC6C6BAB6';
+DECLARE @unsecuredFileTypeId INT = (SELECT [Id] FROM [dbo].[BinaryFileType] WHERE [Guid] = 'C1142570-8CD6-4A20-83B1-ACB47C1CD377');
+DECLARE @databaseStorageEntityTypeId INT = (SELECT [Id] FROM [dbo].[EntityType] WHERE [Guid] = '0AA42802-04FD-4AEC-B011-FEB127FC85CD');
+DECLARE @now DATETIMEOFFSET = SYSDATETIMEOFFSET();
+
+INSERT [BinaryFile] ( [IsTemporary], [IsSystem], [BinaryFileTypeId], [FileName], [Description], [MimeType], [StorageEntityTypeId], [Guid], [StorageEntitySettings], [Path], [CreatedDateTime], [ModifiedDateTime], [ContentLastModified] )
+SELECT [IsTemporary], [IsSystem], [BinaryFileTypeId], [FileName], [Description], [MimeType], [StorageEntityTypeId], [Guid], [StorageEntitySettings], [Path], [CreatedDateTime], [ModifiedDateTime], [ContentLastModified]
+FROM (
+    SELECT 
+        0 [IsTemporary], 
+        1 [IsSystem], 
+        @unsecuredFileTypeId [BinaryFileTypeId], 
+        'open_bible_on_notebook.jpg' [FileName], 
+        'An open bible on a notebook. This is the default image for the Learning Hub.' [Description], 
+        'image/jpeg' [MimeType], 
+        @databaseStorageEntityTypeId [StorageEntityTypeId],
+        @binaryFileGuid [Guid],
+        '{}' [StorageEntitySettings],
+        CONCAT('/GetImage.ashx?guid=', @binaryFileGuid) [Path],
+        729642 [FileSize], 
+        2400 [Width], 
+        1600 [Height],
+        @now [CreatedDateTime], 
+        @now [ModifiedDateTime],
+        @now [ContentLastModified]
+) [seed]
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM [BinaryFile] [ex]
+    WHERE [ex].[Guid] = [seed].[Guid]
+)
+
+DECLARE @binaryFileId INT = (SELECT [Id] FROM [dbo].[BinaryFile] WHERE [Guid] = @binaryFileGuid);
+DECLARE @binaryFileDataGuid NVARCHAR(40) = '85FAE5A9-C28D-41FB-B5AA-5B5BB0499B3C';
+
+DELETE d
+from BinaryFile f
+join BinaryFileData d on d.Id = f.Id
+where f.[Guid] = @binaryFileGuid
+
+INSERT [BinaryFileData] ( [Id], [Guid], [Content], [CreatedDateTime], [ModifiedDateTime] )
+SELECT @binaryFileId [Id],  @binaryFileDataGuid [Guid], @fileContent [Content], @now [CreatedDateTime], @now [ModifiedDateTime]
+WHERE @binaryFileId IS NOT NULL
+";
+            // To ensure the [BinaryFileData].[Content] value is not altered during the insert
+            // we first need to read the file in as a byte[] and pass it as a parameter to the insert.
+            // Reason: Raw SQL insert was changing the [Content] value on insert.
+            var imageConverter = new ImageConverter();
+            var fileData = ( byte[] ) imageConverter.ConvertTo( HotFixMigrationResource._216_open_bible_on_notebook, typeof( byte[] ) );
+            if ( SqlConnection != null || SqlTransaction != null )
+            {
+                using ( SqlCommand sqlCommand = new SqlCommand( sqlCommandText, SqlConnection, SqlTransaction ) )
+                {
+                    var sqlParam = new SqlParameter( "@fileContent", SqlDbType.VarBinary );
+                    sqlParam.Value = fileData;
+                    sqlCommand.Parameters.Add( sqlParam );
+
+                    sqlCommand.CommandType = CommandType.Text;
+                    sqlCommand.ExecuteNonQuery();
+                }
+            }
         }
     }
 }

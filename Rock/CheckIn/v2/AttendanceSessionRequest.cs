@@ -48,6 +48,7 @@ namespace Rock.CheckIn.v2
         public AttendanceSessionRequest( AttendanceSessionRequestBag requestBag )
         {
             Guid = requestBag.Guid;
+            IsCapacityThresholdEnforced = requestBag.IsCapacityThresholdEnforced;
             IsPending = requestBag.IsPending;
             FamilyId = requestBag.FamilyId;
             SearchMode = requestBag.SearchMode;

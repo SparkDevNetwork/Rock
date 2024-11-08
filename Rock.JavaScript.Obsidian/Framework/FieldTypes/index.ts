@@ -224,13 +224,13 @@ registerFieldType(FieldTypeGuids.EventCalendar, new EventCalendarFieldType());
 import { EventItemFieldType } from "./eventItemField.partial";
 registerFieldType(FieldTypeGuids.EventItem, new EventItemFieldType());
 
-import { FinancialAccountFieldType  } from "./financialAccountField.partial";
+import { FinancialAccountFieldType } from "./financialAccountField.partial";
 registerFieldType(FieldTypeGuids.FinancialAccount, new FinancialAccountFieldType());
 
 import { FinancialAccountsFieldType } from "./financialAccountsField.partial";
 registerFieldType(FieldTypeGuids.FinancialAccounts, new FinancialAccountsFieldType());
 
-import { FinancialGatewayFieldType  } from "./financialGatewayField.partial";
+import { FinancialGatewayFieldType } from "./financialGatewayField.partial";
 registerFieldType(FieldTypeGuids.FinancialGateway, new FinancialGatewayFieldType());
 
 import { FileFieldType } from "./fileField.partial";
@@ -253,6 +253,9 @@ registerFieldType(FieldTypeGuids.GroupRole, new GroupRoleFieldType());
 
 import { GroupMemberFieldType } from "./groupMemberField.partial";
 registerFieldType(FieldTypeGuids.GroupMember, new GroupMemberFieldType());
+
+import { GroupMemberRequirementFieldType } from "./groupMemberRequirementField.partial";
+registerFieldType(FieldTypeGuids.GroupMemberRequirement, new GroupMemberRequirementFieldType());
 
 import { GroupTypeField } from "./groupTypeField.partial";
 registerFieldType(FieldTypeGuids.GroupType, new GroupTypeField());

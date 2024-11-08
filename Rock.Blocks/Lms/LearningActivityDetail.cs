@@ -228,7 +228,10 @@ namespace Rock.Blocks.Lms
 
             // Get the current persons info.
             var currentPerson = GetCurrentPerson();
-            var isClassFacilitator = new LearningParticipantService( RockContext ).GetFacilitatorId( currentPerson.Id, entity.LearningClassId ) > 0;
+            var facilitatorId = new LearningParticipantService( RockContext )
+                .GetFacilitatorId( currentPerson.Id, entity.LearningClassId );
+
+            var isClassFacilitator = facilitatorId.HasValue && facilitatorId.Value > 0;
             var currentPersonBag = new LearningActivityParticipantBag
             {
                 Name = currentPerson.FullName,

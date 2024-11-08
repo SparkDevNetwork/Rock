@@ -30,14 +30,29 @@
             <activityTypeComponent
                                    v-model:activityBag="activityBag"
                                    v-model:completionBag="completionBag"
-                                   :screenToShow="ComponentScreen.Scoring"
+                                   :screenToShow="screenToShow"
                                    @completed="onFacilitatorCompleted" />
+        </div>
+
+        <div ref="buttonsContainer" class="activity-footer-actions d-flex justify-content-end">
+            <RockButton
+                        v-if="screenToShow === ComponentScreen.Scoring"
+                        btnType="link"
+                        @click="switchToScreen(ComponentScreen.Summary)">
+                Summary
+            </RockButton>
+            <RockButton
+                        v-if="screenToShow === ComponentScreen.Summary"
+                        btnType="primary"
+                        @click="switchToScreen(ComponentScreen.Scoring)">
+                Score
+            </RockButton>
         </div>
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { Component, PropType, ref, watch } from "vue";
+    import { Component, nextTick, PropType, ref, watch } from "vue";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { defineAsyncComponent, propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -49,8 +64,8 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { deepEqual } from "@Obsidian/Utility/util";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
 
     const props = defineProps({
         modelValue: {
@@ -77,17 +92,17 @@
     const completionBag = ref(props.modelValue.bag ?? {} as LearningActivityCompletionBag);
 
     const dueDate = ref(completionBag.value.dueDate);
-    const completedDate = ref(completionBag.value.completedDate);
     const isStudentCommentingEnabled = ref(completionBag.value.isStudentCommentingEnabled ?? false);
     const studentComment = ref(completionBag.value.studentComment ?? "");
     const pointsPossible = ref(activityBag.value?.points);
-    const assignTo = ref(activityBag.value.assignTo);
     const isFacilitatorCompleted = propertyRef(completionBag.value.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
     const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
     const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointsEarned");
     const completionJson = propertyRef(completionBag.value.activityComponentCompletionJson, "ActivityComponentCompletionJson");
     const wasCompletedOnTime = propertyRef(completionBag.value.wasCompletedOnTime ?? true, "WasCompletedOnTime");
+    const screenToShow = ref(completionBag.value.requiresScoring ? ComponentScreen.Scoring : ComponentScreen.Summary);
 
+    const buttonsContainer = ref<HTMLDivElement>();
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -108,6 +123,15 @@
 
     // #region Functions
 
+    function switchToScreen(toScreen: ComponentScreen): void {
+        screenToShow.value = toScreen;
+        nextTick(() => {
+            if (buttonsContainer.value) {
+                buttonsContainer.value.scrollIntoView({ behavior: "auto", block: "center" });
+            }
+        });
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -125,21 +149,6 @@
 
     // #endregion
 
-    // If the due date changes re-evaluate whether the assignment was late.
-    watch(dueDate, () => {
-        const dueAsRockDate = RockDateTime.parseISO(dueDate.value ?? "");
-        const isFacilitatorAssigned = assignTo.value === AssignTo.Facilitator;
-        let completedAsRockDate = RockDateTime.parseISO(completedDate.value ?? "");
-
-        if (!completedAsRockDate && isFacilitatorAssigned) {
-            completedAsRockDate = RockDateTime.now();
-        }
-
-        if (dueAsRockDate && completedAsRockDate) {
-            wasCompletedOnTime.value = dueAsRockDate.date.isLaterThan(completedAsRockDate.date);
-        }
-    });
-
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
         updateRefValue(completionJson, props.modelValue.bag?.activityComponentCompletionJson ?? "");
@@ -147,7 +156,6 @@
         updateRefValue(facilitatorComment, props.modelValue.bag?.facilitatorComment ?? "");
         updateRefValue(pointsEarned, props.modelValue.bag?.pointsEarned ?? 0);
         updateRefValue(dueDate, props.modelValue.bag?.dueDate);
-        updateRefValue(wasCompletedOnTime, props.modelValue.bag?.wasCompletedOnTime ?? true);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -162,7 +170,6 @@
         setPropertiesBoxValue(newValue, "facilitatorComment", facilitatorComment.value);
         setPropertiesBoxValue(newValue, "pointsEarned", pointsEarned.value);
         setPropertiesBoxValue(newValue, "dueDate", dueDate.value);
-        setPropertiesBoxValue(newValue, "wasCompletedOnTime", wasCompletedOnTime.value);
 
         emit("update:modelValue", newValue);
     });
