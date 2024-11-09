@@ -369,13 +369,12 @@ div.summary-sub-title {
     // Add drag reorder functionality, updating the order on successful drop.
     const dragOptions = useDragReorder(items);
     dragOptions.dragDrop = (operation: DragOperation) => {
-        if (!operation.targetIndex) {
-            return;
-        }
+        const sourceIndex = Number(operation.sourceIndex);
+        const targetIndex = Number(operation.targetIndex);
 
         // Swap the order of the source and target.
-        items.value[operation.sourceIndex].order = operation.targetIndex;
-        items.value[operation.targetIndex].order = operation.sourceIndex;
+        items.value[sourceIndex].order = targetIndex;
+        items.value[targetIndex].order = sourceIndex;
     };
 
     const typeNamesWithSummaryScreen = ref([AssessmentItemType.MultipleChoice.toString(), AssessmentItemType.ShortAnswer.toString()]);
