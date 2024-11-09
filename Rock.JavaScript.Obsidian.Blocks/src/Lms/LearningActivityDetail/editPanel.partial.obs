@@ -233,12 +233,12 @@
 
     // #endregion
 
-    const activityTypeComponent = computed((): Component | null => {
+    const activityTypeComponent = computed((): Promise<Component> | null => {
         activityComponent.value = activityComponents.value.find(c => c.guid === activityComponentValue.value) ?? {};
 
         const componentUrl = activityComponent.value?.componentUrl ?? "";
         if (componentUrl.length > 0) {
-            return defineAsyncComponent(() => import(componentUrl));
+            return defineAsyncComponent(async () => await import(componentUrl));
         }
         return null;
     });
@@ -256,7 +256,9 @@
         // Look for a configuration for the new activity type if there was a previous one.
         // Otherwise clear it out so the default constructor can be used to
         // properly generate the refs in the dynamic component.
-        activityBag.value.activityComponentSettingsJson = typeConfigMap.has(newValue) ? typeConfigMap.get(newValue) : "";
+        const newConfiguration = typeConfigMap.has(newValue) ? typeConfigMap.get(newValue) ?? "" : "";
+        activityComponentSettingsJson.value = newConfiguration;
+        activityBag.value.activityComponentSettingsJson = newConfiguration;
     });
 
     // Watch for parental changes in our model value and update all our values.
