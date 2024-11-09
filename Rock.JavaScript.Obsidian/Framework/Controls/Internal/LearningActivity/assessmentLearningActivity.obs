@@ -514,12 +514,12 @@ div.summary-sub-title {
     });
 
     const headerSubText = computed(() => {
-        if (multipleChoiceItems.value.length === 0) {
+        if (multipleChoiceItems.value.length === 0 || !showResultsOnCompletion.value) {
             return `Thank you for completing this ${assessmentTerm.value}`;
         }
-        return toValue(completionBag)?.isFacilitatorCompleted === true ?
-            `Below are your ${assessmentTerm.value} results.` :
-            `Below are your ${assessmentTerm.value} results, including any missed questions.`;
+        return showMissedQuestionsOnResults.value === true ?
+            `Below are your ${assessmentTerm.value} results, including any missed questions.` :
+            `Below are your ${assessmentTerm.value} results.`;
     });
 
     const resultSummarySubHeader = computed(() =>
@@ -536,7 +536,7 @@ div.summary-sub-title {
 
     const multipleChoiceSummaryText = computed(() => {
         const questionsCorrectSentence = `You answered ${correctMultipleChoiceItemCount.value} out of ${multipleChoiceItemCount.value} multiple choice questions correctly.`;
-        const missedQuestionSentence = hasIncorrectResponses.value === true ?
+        const missedQuestionSentence = hasIncorrectResponses.value === true && showMissedQuestionsOnResults.value === true ?
             "Below are the questions you missed, along with the correct answers." :
             "";
 
