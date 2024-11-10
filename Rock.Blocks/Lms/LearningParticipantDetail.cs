@@ -618,7 +618,7 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"The {LearningParticipant.FriendlyTypeName} was not found." );
             }
 
-            var now = DateTime.Now;
+            var now = RockDateTime.Now;
             var participantService = new LearningParticipantService( RockContext );
 
             // Get the grade scales first since we'll need them for the grade caluculations.
@@ -630,7 +630,7 @@ namespace Rock.Blocks.Lms
                 .OrderByDescending( g => g.ThresholdPercentage );
 
             var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
-            var personId = GetCurrentPerson()?.Id ?? 0;
+            var personId = participantService.GetSelect( PageParameter( PageParameterKey.LearningParticipantId ), p => p.PersonId );
             var learningPlan = participantService.GetStudentLearningPlan( classId, personId );
 
             var components = LearningActivityContainer.Instance.Components;

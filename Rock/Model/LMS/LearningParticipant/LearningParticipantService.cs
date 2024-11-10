@@ -64,8 +64,8 @@ namespace Rock.Model
                 .Include( p => p.Person )
                 .Include( p => p.LearningClass )
                 .Include( p => p.LearningClass.LearningSemester )
-                .Where( p => p.LearningClassId == activity.LearningClassId )
                 .AreStudents()
+                .Where( p => p.LearningClassId == activity.LearningClassId )
                 .ToList();
 
             // Get any of the completions that exist for this participant.
