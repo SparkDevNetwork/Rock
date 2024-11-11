@@ -280,7 +280,7 @@
         });
 
         if (result.isSuccess && result.data && result.data.bag) {
-            learningProgramEditBag.value.bag = result.data.bag;
+            learningProgramEditBag.value = result.data;
 
             return true;
         }
