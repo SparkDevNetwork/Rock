@@ -512,11 +512,6 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
-            var isOnDemandProgram = ConfigurationMode.OnDemandLearning == new LearningProgramService( RockContext ).GetSelect( programId, p => p.ConfigurationMode );
-            if ( isOnDemandProgram )
-            {
-                return null;
-            }
             // Exclude the auto edit and return URL parameters from the page reference parameters (if any).
             var excludedParamKeys = new[] { "autoedit", "returnurl" };
             var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
