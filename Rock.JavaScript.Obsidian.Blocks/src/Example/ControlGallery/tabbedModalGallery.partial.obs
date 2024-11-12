@@ -5,7 +5,8 @@
 
         <TabbedModal v-model="isModalOpen" v-model:selectedTab="selectedTab" :tabs="tabs" @save="onSave" saveText="Save" title="Bible Book Type">
             <template #tabpane="{ item }">
-                <div>
+                <!-- This v-if prevents the tab panes that aren't shown from rendering, so they can't have required fields making the form invalid. -->
+                <div v-if="item === selectedTab">
                     <DropDownList v-model="bookType" :items="options[item]" :label="`Book Type: ${item}`" rules="required" />
                 </div>
             </template>
@@ -13,9 +14,9 @@
 
         <template #props>
             <p>
-                This component is a wrapper around a <a href="ModalGallery">Modal</a> component, with a
+                This component is a wrapper around a <a href="#ModalGallery">Modal</a> component, with a
                 <a href="#TabbedContentGallery">TabbedContent</a> component inside it. See Modal for usage
-                information. The following props are available for this component, which a
+                information. The following props are available for this component.
             </p>
             <table class="table table-striped mb-4">
                 <thead>
