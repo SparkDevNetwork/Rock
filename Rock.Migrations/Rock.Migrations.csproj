@@ -64,6 +64,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411121524262_FixRateLimitPeriodDurationSecondsColumnName.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411121524262_FixRateLimitPeriodDurationSecondsColumnName.Designer.cs">
+      <DependentUpon>202411121524262_FixRateLimitPeriodDurationSecondsColumnName.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels.Designer.cs">
       <DependentUpon>202411062044462_AddDefaultNextGenCheckInLabels.cs</DependentUpon>
@@ -2310,6 +2314,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411121524262_FixRateLimitPeriodDurationSecondsColumnName.resx">
+      <DependentUpon>202411121524262_FixRateLimitPeriodDurationSecondsColumnName.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels.resx">
       <DependentUpon>202411062044462_AddDefaultNextGenCheckInLabels.cs</DependentUpon>
     </EmbeddedResource>
