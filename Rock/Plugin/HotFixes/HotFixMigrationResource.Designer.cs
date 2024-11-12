@@ -867,7 +867,7 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to ALTER PROCEDURE[dbo].[spCheckin_BadgeAttendance]
         ///                  @PersonId int
@@ -879,8 +879,7 @@ namespace Rock.Plugin.HotFixes {
         ///              BEGIN
         ///                  DECLARE @cROLE_ADULT uniqueidentifier = &apos;2639F9A5-2AAE-4E48-A8C3-4FFE86681E42&apos;
         ///              
-        ///                  DECLARE @cROLE_CHILD uniqueidentifier = &apos;C8B1814F-6AA7-4055-B2D7-48FE20429CB9&apos;
-        ///      [rest of string was truncated]&quot;;.
+        ///                  DECLARE @cROLE_CHILD uniqueidentifier = &apos;C8B1814F-6AA7-4055-B2D7-48FE20429 [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge {
             get {
@@ -889,12 +888,12 @@ namespace Rock.Plugin.HotFixes {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static System.Drawing.Bitmap _216_open_bible_on_notebook {
+        public static byte[] _216_open_bible_on_notebook_jpg {
             get {
-                object obj = ResourceManager.GetObject("_216_open_bible_on_notebook", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                object obj = ResourceManager.GetObject("_216_open_bible_on_notebook_jpg", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

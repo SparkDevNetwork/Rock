@@ -537,7 +537,7 @@ namespace Rock.Blocks.Lms
 
             if ( !IsAuthorizedToEdit() )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningActivityCompletion.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningActivityCompletion.FriendlyTypeName}." );
                 return false;
             }
 
