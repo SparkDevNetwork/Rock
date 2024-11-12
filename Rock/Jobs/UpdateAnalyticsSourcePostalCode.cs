@@ -201,6 +201,12 @@ namespace Rock.Jobs
                 UpdateLastStatusMessage( "Reading PostalCode census data." );
                 var zipCodeCensusData = AnalyticsSourcePostalCode.GetZipCodeCensusData();
 
+                if ( zipCodeCensusData.Count == 0 )
+                {
+                    this.Result = $"Census data was not found at {System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, AnalyticsSourcePostalCode.CensusDataPath )}.";
+                    throw new RockJobWarningException( this.Result );
+                }
+
                 UpdateLastStatusMessage( "Saving AnalyticsSourcePostalCode." );
                 AnalyticsSourcePostalCode.SaveBoundaryAndCensusData( zipCodeCensusData );
 
