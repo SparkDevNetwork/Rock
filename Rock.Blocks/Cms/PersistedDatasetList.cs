@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -193,10 +193,20 @@ namespace Rock.Blocks.Cms
                     return ActionNotFound();
                 }
 
+                var result = new PersistedDataset.UpdateResult()
+                {
+                    IsSuccess = persistedDataset.LastRefreshDateTime != null
+                };
+
                 // Ensure data is refreshed if needed
                 if ( persistedDataset.LastRefreshDateTime == null )
                 {
-                    persistedDataset.UpdateResultData();
+                    result = persistedDataset.UpdateResultData();
+                }
+
+                if ( !result.IsSuccess )
+                {
+                    return ActionBadRequest( result.WarningMessage );
                 }
 
                 // Get max preview size from block settings (default 1MB)
@@ -206,7 +216,7 @@ namespace Rock.Blocks.Cms
 
                 // Truncate data if it exceeds max size
                 var previewData = persistedDataset.ResultData;
-                if ( previewData.Length > maxPreviewSizeLength )
+                if ( previewData?.Length > maxPreviewSizeLength )
                 {
                     previewData = previewData.Substring( 0, maxPreviewSizeLength );
                 }
