@@ -1610,6 +1610,7 @@
     <Compile Include="Plugin\HotFixes\207_MigrationRollupsForV17_0_14.cs" />
     <Compile Include="Plugin\HotFixes\206_MigrationRollupsForV17_0_13.cs" />
     <Compile Include="Plugin\HotFixes\205_MigrationRollupsForV17_0_12.cs" />
+    <Compile Include="Plugin\HotFixes\217_DefaultGradeScaleHighlightColors.cs" />
     <Compile Include="Plugin\HotFixes\216_LMSRoutes.cs" />
     <Compile Include="Plugin\HotFixes\214_UpdateGradingScaleDescriptions.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">

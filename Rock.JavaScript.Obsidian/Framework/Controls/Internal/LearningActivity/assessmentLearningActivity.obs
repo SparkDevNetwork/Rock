@@ -541,7 +541,7 @@ div.summary-sub-title {
             "";
 
         return hasShortAnswerQuestions.value === true ?
-            `${questionsCorrectSentence} ${missedQuestionSentence} The short answer questions will be graded shortly.` :
+            `${questionsCorrectSentence} ${missedQuestionSentence} Grade will be released upon short answers being graded by facilitator.` :
             `${questionsCorrectSentence} ${missedQuestionSentence}`;
     });
 
