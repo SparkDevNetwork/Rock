@@ -39,7 +39,7 @@
                         v-if="screenToShow === ComponentScreen.Scoring"
                         btnType="link"
                         @click="switchToScreen(ComponentScreen.Summary)">
-                Summary
+                Show Summary
             </RockButton>
             <RockButton
                         v-if="screenToShow === ComponentScreen.Summary"

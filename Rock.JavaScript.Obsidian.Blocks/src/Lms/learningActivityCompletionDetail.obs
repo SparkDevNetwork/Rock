@@ -186,6 +186,7 @@
             return true;
         }
         else {
+            blockError.value = result.errorMessage ?? "Unknown error while trying to edit learning activity completion.";
             return false;
         }
     }
