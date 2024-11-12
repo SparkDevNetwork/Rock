@@ -141,7 +141,7 @@
 
                             <div class="activity-item-details">
                                 <h5>{{ item?.activityBag?.name }}</h5>
-                                <div class="activity-item-time" >
+                                <div class="activity-item-time">
                                     <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
                                     <div v-if="item.facilitatorComment" class="label label-default"><i class="fa fa-comment"></i> Comments</div>
                                 </div>
@@ -460,7 +460,9 @@
      * of the completedPromiseSource.
      */
     async function onClosed(): Promise<void> {
-        await completedPromiseSource.promise;
+        if (!isCompleted(viewingCompletionBag.value)) {
+            await completedPromiseSource.promise;
+        }
 
         const currentIndex = activities.value.findIndex(a => a.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey);
         const nextAvailableActivity = activities.value?.find((a, i) => i > currentIndex && a.isAvailable && !isCompleted(a));
