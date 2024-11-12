@@ -336,7 +336,7 @@ namespace Rock.Model
             using ( var rockContext = new RockContext() )
             {
                 var phoneNumberService = new PhoneNumberService( rockContext );
-                var phoneNumbers = phoneNumberService.Queryable().Where( p => p.Number == cleanedNumber || p.FullNumber == message.FromNumber ).ToList();
+                var phoneNumbers = phoneNumberService.Queryable().Where( p => p.Number == cleanedNumber || p.FullNumber == cleanedNumber || p.FullNumber == message.FromNumber ).ToList();
 
                 foreach ( var phoneNumber in phoneNumbers )
                 {
@@ -407,7 +407,7 @@ namespace Rock.Model
             using ( var rockContext = new RockContext() )
             {
                 var phoneNumberService = new PhoneNumberService( rockContext );
-                var phoneNumbers = phoneNumberService.Queryable().Where( p => p.Number == cleanedNumber || p.FullNumber == message.FromNumber ).ToList();
+                var phoneNumbers = phoneNumberService.Queryable().Where( p => p.Number == cleanedNumber || p.FullNumber == cleanedNumber || p.FullNumber == message.FromNumber ).ToList();
 
                 foreach ( var phoneNumber in phoneNumbers )
                 {
