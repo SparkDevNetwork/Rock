@@ -229,6 +229,15 @@
                                         <asp:ListItem Value="special-needs" Text="Remove Special Needs Groups" />
                                         <asp:ListItem Value="non-special-needs" Text="Remove Non-Special Needs Groups" />
                                     </Rock:RockCheckBoxList>
+
+                                    <Rock:RockDropDownList ID="ddlGradeAndAgeMatchingBehavior"
+                                        runat="server"
+                                        Label="Grade and Age Matching Behavior"
+                                        Required="true"
+                                        Help="Only supported in next-gen check-in. Defines how the Grade Range and Age Range/Birthdate Range values are used (blank ranges are still allowed in all cases). See documentation for edge cases not described here.
+                                            &quot;Grade And Age Must Match&quot; means Grade Range and one of Age Range or Birthdate Range must match.
+                                            &quot;Age Match Not Required&quot; means that if a Grade Range is specified on the group and the person has a matching Grade then that will be considered sufficient and neither Age Range nor Birthdate Range will be checked even if they are specified.
+                                            &quot;Prioritize Grade Over Age&quot; will use the same filtering logic as Age Match Not Required. After that, if any groups were matched by grade then all groups that were not matched by grade will be excluded." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required"

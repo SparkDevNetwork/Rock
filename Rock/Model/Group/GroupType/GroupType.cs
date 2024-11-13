@@ -779,6 +779,13 @@ namespace Rock.Model
         [DecimalPrecision( 8, 2 )]
         public decimal NonLeaderToLeaderRelationshipMultiplier { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value that groups in this area should not be available
+        /// when a person already has a check-in for the same schedule.
+        /// </summary>
+        [DataMember]
+        public bool IsConcurrentCheckInPrevented { get; set; }
+
         #endregion Entity Properties
 
         #region Group Scheduling Related
