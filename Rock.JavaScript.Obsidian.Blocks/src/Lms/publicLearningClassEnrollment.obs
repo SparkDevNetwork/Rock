@@ -29,7 +29,7 @@
 
         <!-- Confirmation/initial screen if there's no error or completion. -->
         <template v-else>
-            <div class="block-confirmation-content d-flex flex-column">
+            <div class="block-confirmation-content d-flex flex-column mb-2">
                 <div class="block-confirmation-lava" v-html="confirmationHtml"></div>
 
                 <RockButton class="btn btn-primary mt-4 mb-2" @click.prevent="onEnroll">Confirm</RockButton>

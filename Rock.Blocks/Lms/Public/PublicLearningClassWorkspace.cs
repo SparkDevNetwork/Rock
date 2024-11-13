@@ -230,6 +230,13 @@ namespace Rock.Blocks.Lms
             // Get all the components once rather than loading each one inside the foreach loop.
             var components = LearningActivityContainer.Instance.Components.Values.ToList();
 
+            // For any graded activities get the PersonAlias for all graders.
+            var personAliasIds = activities.Where( a => a.GradedByPersonAliasId.HasValue && a.GradedByPersonAliasId > 0)
+                .Select( a => (int)a.GradedByPersonAliasId )
+                .Distinct()
+                .ToList();
+            var personAliases = new PersonAliasService( RockContext ).GetByIds( personAliasIds );
+
             // We need to track the previous completion for activities that become available upon completion of the previous.
             LearningActivityCompletionBag previousActivityCompletion = null;
 
@@ -539,7 +546,7 @@ namespace Rock.Blocks.Lms
                 {
                     Content = $"A facilitator commented on {a.ActivityBag.ActivityComponent.Name}: {a.ActivityBag.Name}.",
                     LabelText = "Comment",
-                    LabelType = "info",
+                    LabelType = "default",
                     NotificationDateTime = a.CompletedDate ?? DateTime.MaxValue,
                     Title = "Facilitator Comment"
                 } )
