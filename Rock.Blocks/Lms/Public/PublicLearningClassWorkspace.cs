@@ -62,7 +62,7 @@ namespace Rock.Blocks.Lms
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
-        IsRequired = true,
+        IsRequired = false,
         DefaultValue = AttributeDefault.HeaderTemplate,
         Order = 2 )]
 
@@ -93,59 +93,12 @@ namespace Rock.Blocks.Lms
         private static class AttributeDefault
         {
             public const string HeaderTemplate = @"
-{% assign imageFileNameLength = Course.ImageFileGuid | Size %}
-
-//- Styles
-{% stylesheet %}
-    .header-container {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 12px;
-    }
-    
-    .page-header-section {
-        {% if imageFileNameLength > 0 %}
-            height: 280px;
-            background-image: url('/GetImage.ashx?guid={{Course.ImageFileGuid}}'); 
-            background-size: cover;
-        {% endif %}
-        align-items: center; 
-        border-radius: 12px; 
-    }
-    
-    .header-block {
-        display: flex;
-        flex-direction: column;
-        position: relative;
-        left: 10%;
-        {% if imageFileNameLength > 0 %}
-            bottom: -85%;
-            -webkit-transform: translateY(-30%);
-            transform: translateY(-30%);
-        {% endif %}
-        background-color: white; 
-        border-radius: 12px; 
-        width: 80%; 
-    }
-    
-    .page-sub-header {
-        padding-left: 10%; 
-        padding-right: 10%; 
-        padding-bottom: 12px;
-        margin-bottom: 12px;
-    }
-{% endstylesheet %}
-<div class=""header-container"">
-	<div class=""page-header-section mb-5"">
-		<div class=""header-block text-center"">
-			<h2>
-				{{ Course.PublicName }}
-			</h2>
-			<div class=""page-sub-header"">
-				{{ Course.Summary }}
-			</div>
-		</div>
-	</div>
+<div class=""hero-section mb-5"">
+    <div class=""hero-section-image"" style=""background-image: url('/GetImage.ashx?guid={{ Course.ImageBinaryFile.Guid }}')""></div>
+    <div class=""hero-section-content"">
+        <h1 class=""hero-section-title""> {{ Course.PublicName }} </h1>
+        <p class=""hero-section-description""> {{ Course.Summary }} </p>
+    </div>
 </div>
 ";
         }

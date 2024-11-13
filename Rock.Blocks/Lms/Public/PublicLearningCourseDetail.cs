@@ -159,11 +159,11 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
             <div class=""col-xs-12 col-sm-12 col-md-8""> //- LEFT CONTAINER
 
-                <div class=""card""> //-COURSE DESCRIPTION
+                <div class=""card rounded-lg""> //-COURSE DESCRIPTION
 
                     <div class=""card-body"">
                         <div class=""card-title"">
-                            <h4>Course Description</h4>
+                            <h4 class=""m-0"">Course Description</h4>
                         </div>
                         <div class=""card-text"">
                             <div class=""text-muted"">
@@ -201,11 +201,11 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                     {% case Course.LearningCompletionStatus %}
 
                         {% when 'Incomplete' %}
-                        <div class=""card"">
+                        <div class=""card rounded-lg"">
                             <div class=""card-body"">
                                 <div class=""card-title d-flex align-items-center"">
                                     <i class=""fa fa-user-check mr-2""></i>
-                                    <h4>Currently Enrolled</h4>
+                                    <h4 class=""m-0"">Currently Enrolled</h4>
                                 </div>
                                 <div class=""card-text text-muted"">
                                     <p>You are currently enrolled in this course.</p>
@@ -219,12 +219,12 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
 
                         {% when 'Pass' or 'Fail' %}
-                        <div class=""card"">
+                        <div class=""card rounded-lg"">
                             
                             <div class=""card-body"">
                                 <div class=""card-title d-flex align-items-center"">
                                     <i class=""fa fa-rotate-left mr-2""></i>
-                                    <h4>History</h4>
+                                    <h4 class=""m-0"">History</h4>
                                 </div>
                                 <div class=""text-muted"">You completed this class on {{
                                     Course.MostRecentParticipation.LearningCompletionDateTime | Date: 'MMMM dd, yyyy' }}</div>
@@ -238,12 +238,12 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
                         {% else %}
 
-                        <div class=""card"">
+                        <div class=""card rounded-lg"">
 
                             <div class=""card-body"">
                                 <div class=""card-title d-flex align-items-center"">
                                     <i class=""fa fa-calendar-alt mr-2""></i>
-                                    <h4>Upcoming Schedule</h4>
+                                    <h4 class=""m-0"">Upcoming Schedule</h4>
                                 </div>
 
                                 <div class=""card-text d-flex flex-column gap-1"">
@@ -303,6 +303,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
         </div>
     </div>
 </div>
+
 ";
         }
 
