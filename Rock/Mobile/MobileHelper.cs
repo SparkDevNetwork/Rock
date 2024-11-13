@@ -307,9 +307,7 @@ namespace Rock.Mobile
                 throw new Exception( "Invalid or non-existing AdditionalSettings property on site." );
             }
 
-            //
             // Get all the system phone formats.
-            //
             var phoneFormats = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE )
                 .DefinedValues
                 .Select( dv => new MobilePhoneFormat
@@ -320,9 +318,7 @@ namespace Rock.Mobile
                 } )
                 .ToList();
 
-            //
             // Get all the defined values.
-            //
             var definedTypeGuids = new[]
             {
                 SystemGuid.DefinedType.LOCATION_COUNTRIES,
@@ -344,9 +340,7 @@ namespace Rock.Mobile
                     } ) );
             }
 
-            //
             // Build CSS Styles
-            //
             var settings = additionalSettings.DownhillSettings;
             settings.Platform = DownhillPlatform.Mobile; // ensure the settings are set to mobile
 
@@ -370,9 +364,7 @@ namespace Rock.Mobile
                 ?? timeZoneMapping.GetValueOrNull( TimeZoneInfo.Local.Id )
                 ?? "GMT";
 
-            //
             // Initialize the base update package settings.
-            //
             var package = new UpdatePackage
             {
                 ApplicationType = additionalSettings.ShellType ?? ShellType.Blank,
@@ -395,12 +387,12 @@ namespace Rock.Mobile
                 EntraClientId = additionalSettings.EntraClientId,
             };
 
-            package.UseStandardStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Standard || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
-            package.UseLegacyStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Legacy || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
+            var useLegacyStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Legacy || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
+            var useStandardStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Standard || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
+            package.UseStandardStyles = useStandardStyles;
+            package.UseLegacyStyles = useLegacyStyles;
 
-            //
             // Setup the appearance settings.
-            //
             package.AppearanceSettings.BarBackgroundColor = additionalSettings.BarBackgroundColor;
             package.AppearanceSettings.IOSEnableNavbarTransparency = additionalSettings.IOSEnableBarTransparency;
             package.AppearanceSettings.IOSNavbarBlurStyle = additionalSettings.IOSBarBlurStyle;
@@ -414,52 +406,60 @@ namespace Rock.Mobile
 
             var applicationColors = additionalSettings.DownhillSettings.ApplicationColors;
 
-            // Interface Colors
-            package.AppearanceSettings.PaletteColors.Add( "interface-strongest", applicationColors.InterfaceStrongest );
-            package.AppearanceSettings.PaletteColors.Add( "interface-stronger", applicationColors.InterfaceStronger );
-            package.AppearanceSettings.PaletteColors.Add( "interface-strong", applicationColors.InterfaceStrong );
-            package.AppearanceSettings.PaletteColors.Add( "interface-medium", applicationColors.InterfaceMedium );
-            package.AppearanceSettings.PaletteColors.Add( "interface-soft", applicationColors.InterfaceSoft );
-            package.AppearanceSettings.PaletteColors.Add( "interface-softer", applicationColors.InterfaceSofter );
-            package.AppearanceSettings.PaletteColors.Add( "interface-softest", applicationColors.InterfaceSoftest );
+            if( useStandardStyles )
+            {
+                // Interface Colors
+                package.AppearanceSettings.PaletteColors.Add( "interface-strongest", applicationColors.InterfaceStrongest );
+                package.AppearanceSettings.PaletteColors.Add( "interface-stronger", applicationColors.InterfaceStronger );
+                package.AppearanceSettings.PaletteColors.Add( "interface-strong", applicationColors.InterfaceStrong );
+                package.AppearanceSettings.PaletteColors.Add( "interface-medium", applicationColors.InterfaceMedium );
+                package.AppearanceSettings.PaletteColors.Add( "interface-soft", applicationColors.InterfaceSoft );
+                package.AppearanceSettings.PaletteColors.Add( "interface-softer", applicationColors.InterfaceSofter );
+                package.AppearanceSettings.PaletteColors.Add( "interface-softest", applicationColors.InterfaceSoftest );
 
-            // Accent Colors
-            package.AppearanceSettings.PaletteColors.Add( "app-primary-soft", applicationColors.PrimarySoft );
-            package.AppearanceSettings.PaletteColors.Add( "app-primary-strong", applicationColors.PrimaryStrong );
-            package.AppearanceSettings.PaletteColors.Add( "app-secondary-soft", applicationColors.SecondarySoft );
-            package.AppearanceSettings.PaletteColors.Add( "app-secondary-strong", applicationColors.SecondaryStrong );
-            package.AppearanceSettings.PaletteColors.Add( "app-brand-soft", applicationColors.BrandSoft );
-            package.AppearanceSettings.PaletteColors.Add( "app-brand-strong", applicationColors.BrandStrong );
+                // Accent Colors
+                package.AppearanceSettings.PaletteColors.Add( "app-primary-soft", applicationColors.PrimarySoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-primary-strong", applicationColors.PrimaryStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-secondary-soft", applicationColors.SecondarySoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-secondary-strong", applicationColors.SecondaryStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-brand-soft", applicationColors.BrandSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-brand-strong", applicationColors.BrandStrong );
 
-            // Functional Colors
-            package.AppearanceSettings.PaletteColors.Add( "app-success-soft", applicationColors.SuccessSoft );
-            package.AppearanceSettings.PaletteColors.Add( "app-success-strong", applicationColors.SuccessStrong );
-            package.AppearanceSettings.PaletteColors.Add( "app-info-soft", applicationColors.InfoSoft );
-            package.AppearanceSettings.PaletteColors.Add( "app-info-strong", applicationColors.InfoStrong );
-            package.AppearanceSettings.PaletteColors.Add( "app-danger-soft", applicationColors.DangerSoft );
-            package.AppearanceSettings.PaletteColors.Add( "app-danger-strong", applicationColors.DangerStrong );
-            package.AppearanceSettings.PaletteColors.Add( "app-warning-soft", applicationColors.WarningSoft );
-            package.AppearanceSettings.PaletteColors.Add( "app-warning-strong", applicationColors.WarningStrong );
+                // Functional Colors
+                package.AppearanceSettings.PaletteColors.Add( "app-success-soft", applicationColors.SuccessSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-success-strong", applicationColors.SuccessStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-info-soft", applicationColors.InfoSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-info-strong", applicationColors.InfoStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-danger-soft", applicationColors.DangerSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-danger-strong", applicationColors.DangerStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-warning-soft", applicationColors.WarningSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-warning-strong", applicationColors.WarningStrong );
+            }
 
-            //
-            // Legacy colors.
-            //
-            package.AppearanceSettings.PaletteColors.Add( "text-color", additionalSettings.DownhillSettings.TextColor );
-            package.AppearanceSettings.PaletteColors.Add( "heading-color", additionalSettings.DownhillSettings.HeadingColor );
-            package.AppearanceSettings.PaletteColors.Add( "background-color", additionalSettings.DownhillSettings.BackgroundColor );
-            package.AppearanceSettings.PaletteColors.Add( "app-primary", additionalSettings.DownhillSettings.ApplicationColors.PrimaryStrong );
-            package.AppearanceSettings.PaletteColors.Add( "app-secondary", additionalSettings.DownhillSettings.ApplicationColors.SecondaryStrong );
-            package.AppearanceSettings.PaletteColors.Add( "app-success", additionalSettings.DownhillSettings.ApplicationColors.SuccessStrong );
-            package.AppearanceSettings.PaletteColors.Add( "app-info", additionalSettings.DownhillSettings.ApplicationColors.InfoStrong );
-            package.AppearanceSettings.PaletteColors.Add( "app-danger", additionalSettings.DownhillSettings.ApplicationColors.DangerStrong );
-            package.AppearanceSettings.PaletteColors.Add( "app-warning", additionalSettings.DownhillSettings.ApplicationColors.WarningStrong );
-            package.AppearanceSettings.PaletteColors.Add( "app-light", additionalSettings.DownhillSettings.ApplicationColors.InterfaceSoftest );
-            package.AppearanceSettings.PaletteColors.Add( "app-dark", additionalSettings.DownhillSettings.ApplicationColors.InterfaceStrongest );
-            package.AppearanceSettings.PaletteColors.Add( "app-brand", additionalSettings.DownhillSettings.ApplicationColors.BrandStrong );
+            // These colors are "obsolete" and can be
+            // removed when the new style guide becomes
+            // mandatory.
+            if ( useLegacyStyles )
+            {
+                // Legacy colors.
+                package.AppearanceSettings.PaletteColors.Add( "text-color", additionalSettings.DownhillSettings.TextColor );
+                package.AppearanceSettings.PaletteColors.Add( "heading-color", additionalSettings.DownhillSettings.HeadingColor );
+                package.AppearanceSettings.PaletteColors.Add( "background-color", additionalSettings.DownhillSettings.BackgroundColor );
 
-            //
+#pragma warning disable CS0618 // Type or member is obsolete
+                package.AppearanceSettings.PaletteColors.Add( "app-primary", additionalSettings.DownhillSettings.ApplicationColors.Primary );
+                package.AppearanceSettings.PaletteColors.Add( "app-secondary", additionalSettings.DownhillSettings.ApplicationColors.Secondary );
+                package.AppearanceSettings.PaletteColors.Add( "app-success", additionalSettings.DownhillSettings.ApplicationColors.Success );
+                package.AppearanceSettings.PaletteColors.Add( "app-info", additionalSettings.DownhillSettings.ApplicationColors.Info );
+                package.AppearanceSettings.PaletteColors.Add( "app-danger", additionalSettings.DownhillSettings.ApplicationColors.Danger );
+                package.AppearanceSettings.PaletteColors.Add( "app-warning", additionalSettings.DownhillSettings.ApplicationColors.Warning );
+                package.AppearanceSettings.PaletteColors.Add( "app-light", additionalSettings.DownhillSettings.ApplicationColors.Light );
+                package.AppearanceSettings.PaletteColors.Add( "app-dark", additionalSettings.DownhillSettings.ApplicationColors.Dark );
+                package.AppearanceSettings.PaletteColors.Add( "app-brand", additionalSettings.DownhillSettings.ApplicationColors.Brand );
+#pragma warning restore CS0618 // Type or member is obsolete
+            }
+
             // Setup the deep link settings.
-            //
             package.DeepLinkSettings.DeepLinkRoutes = additionalSettings.DeepLinkRoutes;
 
             if ( site.FavIconBinaryFileId.HasValue )
@@ -467,9 +467,7 @@ namespace Rock.Mobile
                 package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value );
             }
 
-            //
             // Load all the layouts.
-            //
             foreach ( var layout in LayoutCache.All().Where( l => l.SiteId == site.Id ) )
             {
                 var mobileLayout = new MobileLayout
@@ -482,9 +480,7 @@ namespace Rock.Mobile
                 package.Layouts.Add( mobileLayout );
             }
 
-            //
             // Load all the pages.
-            //
             var blockIds = new List<int>();
             using ( var rockContext = new RockContext() )
             {
@@ -497,9 +493,7 @@ namespace Rock.Mobile
                     .ToList();
             }
 
-            //
             // Load all the blocks.
-            //
             foreach ( var blockId in blockIds )
             {
                 var block = BlockCache.Get( blockId );
@@ -559,9 +553,7 @@ namespace Rock.Mobile
                 }
             }
 
-            //
             // Load all the campuses.
-            //
             foreach ( var campus in CampusCache.All().Where( c => c.IsActive ?? true ) )
             {
                 var mobileCampus = new MobileCampus
