@@ -180,6 +180,9 @@
 }
 
 .check-in-page .btn .title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: var(--font-size-h4);
     font-weight: var(--font-weight-semibold);
 }
