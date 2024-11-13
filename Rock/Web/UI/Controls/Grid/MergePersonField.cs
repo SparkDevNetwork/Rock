@@ -458,6 +458,29 @@ namespace Rock.Web.UI.Controls
                             headerSummary.Controls.Add( new LiteralControl( string.Format( "<small>Last Modified {0}</small>", created ) ) );
                         }
 
+                        HtmlGenericControl viewProfileContainer = new HtmlGenericControl( "p" );
+                        viewProfileContainer.Attributes.Add( "class", "margin-t-sm" );
+
+                        HtmlGenericControl smallTag = new HtmlGenericControl( "small" );
+
+                        HyperLink viewProfileLink = new HyperLink
+                        {
+                            NavigateUrl = $"/person/{mergeField.PersonId}",
+                            CssClass = "cursor-pointer",
+                            Text = "View Profile",
+                            ToolTip = "View Profile",
+                            Target = "_blank"
+                        };
+
+                        viewProfileLink.Attributes.Add( "onclick", "window.open(this.href, '_blank', 'scrollbars=1,resizable=1,toolbar=1'); return false;" );
+                        viewProfileLink.Attributes.Add( "data-toggle", "tooltip" );
+                        viewProfileLink.Attributes.Add( "tabindex", "-1" );
+
+                        smallTag.Controls.Add( viewProfileLink );
+                        viewProfileContainer.Controls.Add( smallTag );
+
+                        headerSummary.Controls.Add( viewProfileContainer );
+
                         cell.Controls.Add( headerSummary );
                     }
                 }
