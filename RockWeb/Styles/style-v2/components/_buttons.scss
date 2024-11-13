@@ -931,3 +931,11 @@ input[type="button"] {
     }
   }
 }
+[theme="system"] {
+  .theme-toggle {
+    .ti.theme-mode-icon:before {
+      content:"\f23a"
+    }
+  }
+}
+
