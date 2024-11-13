@@ -369,13 +369,12 @@ div.summary-sub-title {
     // Add drag reorder functionality, updating the order on successful drop.
     const dragOptions = useDragReorder(items);
     dragOptions.dragDrop = (operation: DragOperation) => {
-        if (!operation.targetIndex) {
-            return;
-        }
+        const sourceIndex = Number(operation.sourceIndex);
+        const targetIndex = Number(operation.targetIndex);
 
         // Swap the order of the source and target.
-        items.value[operation.sourceIndex].order = operation.targetIndex;
-        items.value[operation.targetIndex].order = operation.sourceIndex;
+        items.value[sourceIndex].order = targetIndex;
+        items.value[targetIndex].order = sourceIndex;
     };
 
     const typeNamesWithSummaryScreen = ref([AssessmentItemType.MultipleChoice.toString(), AssessmentItemType.ShortAnswer.toString()]);
@@ -515,12 +514,12 @@ div.summary-sub-title {
     });
 
     const headerSubText = computed(() => {
-        if (multipleChoiceItems.value.length === 0) {
+        if (multipleChoiceItems.value.length === 0 || !showResultsOnCompletion.value) {
             return `Thank you for completing this ${assessmentTerm.value}`;
         }
-        return toValue(completionBag)?.isFacilitatorCompleted === true ?
-            `Below are your ${assessmentTerm.value} results.` :
-            `Below are your ${assessmentTerm.value} results, including any missed questions.`;
+        return showMissedQuestionsOnResults.value === true ?
+            `Below are your ${assessmentTerm.value} results, including any missed questions.` :
+            `Below are your ${assessmentTerm.value} results.`;
     });
 
     const resultSummarySubHeader = computed(() =>
@@ -537,12 +536,12 @@ div.summary-sub-title {
 
     const multipleChoiceSummaryText = computed(() => {
         const questionsCorrectSentence = `You answered ${correctMultipleChoiceItemCount.value} out of ${multipleChoiceItemCount.value} multiple choice questions correctly.`;
-        const missedQuestionSentence = hasIncorrectResponses.value === true ?
+        const missedQuestionSentence = hasIncorrectResponses.value === true && showMissedQuestionsOnResults.value === true ?
             "Below are the questions you missed, along with the correct answers." :
             "";
 
         return hasShortAnswerQuestions.value === true ?
-            `${questionsCorrectSentence} ${missedQuestionSentence} The short answer questions will be graded shortly.` :
+            `${questionsCorrectSentence} ${missedQuestionSentence} Grade will be released upon short answers being graded by facilitator.` :
             `${questionsCorrectSentence} ${missedQuestionSentence}`;
     });
 

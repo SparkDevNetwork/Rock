@@ -15,6 +15,13 @@
 // </copyright>
 //
 
+////////////////////////////////////////////////////////////////////////////////
+//
+// This file needs to stay in feature-parity with the mobile CheckInSession.cs.
+// Any updates to this file should be mirrored in the C# file.
+//
+////////////////////////////////////////////////////////////////////////////////
+
 import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
 import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
 import { Guid } from "@Obsidian/Types";

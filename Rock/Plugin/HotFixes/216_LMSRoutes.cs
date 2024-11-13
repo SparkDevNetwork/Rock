@@ -271,7 +271,9 @@ FROM [dbo].[BinaryFileType] bft
 WHERE bft.[Guid] = '4F55987B-5279-4D10-8C38-F320046B4BBB' -- Learning Management
 " );
 
-            var sqlCommandText = @"
+            var fileData = BitConverter.ToString( HotFixMigrationResource._216_open_bible_on_notebook_jpg ).Replace( "-", "" );
+
+            Sql( $@"
 -- Add the Banner Image for the External Learn Page.
 DECLARE @binaryFileGuid NVARCHAR(40) = '605FD4B7-2DCA-4782-8826-95AAC6C6BAB6';
 DECLARE @unsecuredFileTypeId INT = (SELECT [Id] FROM [dbo].[BinaryFileType] WHERE [Guid] = 'C1142570-8CD6-4A20-83B1-ACB47C1CD377');
@@ -290,7 +292,7 @@ FROM (
         'image/jpeg' [MimeType], 
         @databaseStorageEntityTypeId [StorageEntityTypeId],
         @binaryFileGuid [Guid],
-        '{}' [StorageEntitySettings],
+        '{{}}' [StorageEntitySettings],
         CONCAT('/GetImage.ashx?guid=', @binaryFileGuid) [Path],
         729642 [FileSize], 
         2400 [Width], 
@@ -314,26 +316,9 @@ join BinaryFileData d on d.Id = f.Id
 where f.[Guid] = @binaryFileGuid
 
 INSERT [BinaryFileData] ( [Id], [Guid], [Content], [CreatedDateTime], [ModifiedDateTime] )
-SELECT @binaryFileId [Id],  @binaryFileDataGuid [Guid], @fileContent [Content], @now [CreatedDateTime], @now [ModifiedDateTime]
+SELECT @binaryFileId [Id],  @binaryFileDataGuid [Guid], 0x{fileData} [Content], @now [CreatedDateTime], @now [ModifiedDateTime]
 WHERE @binaryFileId IS NOT NULL
-";
-            // To ensure the [BinaryFileData].[Content] value is not altered during the insert
-            // we first need to read the file in as a byte[] and pass it as a parameter to the insert.
-            // Reason: Raw SQL insert was changing the [Content] value on insert.
-            var imageConverter = new ImageConverter();
-            var fileData = ( byte[] ) imageConverter.ConvertTo( HotFixMigrationResource._216_open_bible_on_notebook, typeof( byte[] ) );
-            if ( SqlConnection != null || SqlTransaction != null )
-            {
-                using ( SqlCommand sqlCommand = new SqlCommand( sqlCommandText, SqlConnection, SqlTransaction ) )
-                {
-                    var sqlParam = new SqlParameter( "@fileContent", SqlDbType.VarBinary );
-                    sqlParam.Value = fileData;
-                    sqlCommand.Parameters.Add( sqlParam );
-
-                    sqlCommand.CommandType = CommandType.Text;
-                    sqlCommand.ExecuteNonQuery();
-                }
-            }
+" );
         }
     }
 }

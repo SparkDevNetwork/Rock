@@ -66,11 +66,11 @@ namespace Rock.Blocks.Lms
         DefaultValue = AttributeDefault.HeaderTemplate,
         Order = 2 )]
 
-    [IntegerField( "The Number of Notifications to Show",
+    [IntegerField( "Default Number of Notification/Announcement Items to Show",
         Key = AttributeKey.NumberOfNotificationsToShow,
-        Description = "The number of notifications to show on the class overview page",
+        Description = "The default number of notifications and announcements to show on the class overview page.",
         IsRequired = true,
-        DefaultIntegerValue = 3,
+        DefaultIntegerValue = 5,
         Order = 3 )]
 
     [CustomDropdownListField(
@@ -378,6 +378,7 @@ namespace Rock.Blocks.Lms
                     IsStudentCompleted = activity.IsStudentCompleted,
                     LearningActivityIdKey = activity.LearningActivity.IdKey,
                     PointsEarned = activity.PointsEarned,
+                    RequiresScoring = activity.RequiresGrading,
                     Student = currentPersonParticipantBag,
                     StudentComment = activity.StudentComment,
                     WasCompletedOnTime = activity.WasCompletedOnTime
@@ -555,7 +556,7 @@ namespace Rock.Blocks.Lms
                 {
                     Content = a.IsDueSoon || a.IsLate ? $"Due on {a.DueDate.ToShortDateString()}" : $"Available on {a.AvailableDate.ToShortDateString()}",
                     LabelText = a.IsDueSoon ? "Due Soon" : a.IsLate ? "Late" : "Available",
-                    LabelType = a.IsDueSoon ? "warning" : a.IsLate ? "danger" : "default",
+                    LabelType = a.IsDueSoon ? "warning" : a.IsLate ? "danger" : "success",
                     NotificationDateTime = a.DueDate ?? DateTime.MaxValue,
                     Title = a.ActivityBag.Name
                 } )
@@ -570,7 +571,7 @@ namespace Rock.Blocks.Lms
             {
                 box.Notifications.Add( new PublicLearningClassWorkspaceNotificationBag
                 {
-                    Content = nextAvailableActivity.ActivityBag.Name,
+                    Content = nextAvailableActivity.ActivityBag.Description,
                     LabelText = "Available Soon",
                     LabelType = "default",
                     NotificationDateTime = nextAvailableActivity.AvailableDate ?? DateTime.MaxValue,
@@ -584,8 +585,8 @@ namespace Rock.Blocks.Lms
                 .Select( a => new PublicLearningClassWorkspaceNotificationBag
                 {
                     Content = $"A facilitator commented on {a.ActivityBag.ActivityComponent.Name}: {a.ActivityBag.Name}.",
-                    LabelText = "Notification",
-                    LabelType = a.IsDueSoon ? "warning" : "default",
+                    LabelText = "Comment",
+                    LabelType = "info",
                     NotificationDateTime = a.CompletedDate ?? DateTime.MaxValue,
                     Title = "Facilitator Comment"
                 } )
@@ -654,6 +655,7 @@ namespace Rock.Blocks.Lms
 
             // Let the Activity component decide if it needs to be graded.
             activity.RequiresGrading = activityComponent.RequiresGrading( activity );
+            activityCompletionBag.RequiresScoring = activity.RequiresGrading;
 
             // Only allow student updating completion and points if this hasn't yet been graded by a facilitator.
             if ( !activity.GradedByPersonAliasId.HasValue )

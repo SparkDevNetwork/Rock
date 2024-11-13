@@ -170,6 +170,15 @@
     color: var(--color-interface-strong);
 }
 
+.check-in-page .btn.btn-info {
+    background: color-mix(in srgb, var(--color-primary) 100%, #000000 10%);
+    color: var(--color-interface-softest);
+}
+
+.check-in-page .btn.btn-info:hover {
+    background: color-mix(in srgb, var(--color-primary) 100%, #000000 19%);
+}
+
 .check-in-page .btn .title {
     font-size: var(--font-size-h4);
     font-weight: var(--font-weight-semibold);

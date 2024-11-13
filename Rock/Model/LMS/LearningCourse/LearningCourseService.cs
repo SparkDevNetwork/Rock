@@ -208,8 +208,8 @@ namespace Rock.Model
 
                     // Get the person's completion status for this course.
                     LearningCompletionStatus = !personId.HasValue ?
-                        LearningCompletionStatus.Incomplete :
-                        orderedPersonCompletions
+                        null :
+                        (LearningCompletionStatus?)orderedPersonCompletions
                         .FirstOrDefault( p => p.LearningClass.LearningCourseId == c.Id )
                         .LearningCompletionStatus,
 

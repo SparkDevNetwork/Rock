@@ -385,18 +385,18 @@ namespace Rock.Web.Cache
         /// <value>
         /// The rate limit period (in seconds).
         /// </value>
-        [Obsolete( "Use RateLimitPeriodDuration instead." )]
+        [Obsolete( "Use RateLimitPeriodDurationSeconds instead." )]
         [RockObsolete( "1.16.7" )]
         [DataMember]
         public virtual int? RateLimitPeriod
         {
             get
             {
-                return this.RateLimitPeriodDuration;
+                return this.RateLimitPeriodDurationSeconds;
             }
             set
             {
-                this.RateLimitPeriodDuration = value;
+                this.RateLimitPeriodDurationSeconds = value;
             }
         }
 
@@ -407,7 +407,7 @@ namespace Rock.Web.Cache
         /// The rate limit period (in seconds).
         /// </value>
         [DataMember]
-        public int? RateLimitPeriodDuration { get; set; }
+        public int? RateLimitPeriodDurationSeconds { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is rate limited.
@@ -420,7 +420,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                return RateLimitPeriodDuration != null && RateLimitRequestPerPeriod != null;
+                return RateLimitPeriodDurationSeconds != null && RateLimitRequestPerPeriod != null;
             }
         }
 
@@ -830,7 +830,7 @@ namespace Rock.Web.Cache
 #pragma warning restore CS0618
             AdditionalSettingsJson = page.AdditionalSettingsJson;
             MedianPageLoadTimeDurationSeconds = page.MedianPageLoadTimeDurationSeconds;
-            RateLimitPeriodDuration = page.RateLimitPeriodDuration;
+            RateLimitPeriodDurationSeconds = page.RateLimitPeriodDurationSeconds;
             RateLimitRequestPerPeriod = page.RateLimitRequestPerPeriod;
 
             PageContexts = new Dictionary<string, string>();

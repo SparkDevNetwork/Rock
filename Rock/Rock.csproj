@@ -1628,6 +1628,7 @@
     <Compile Include="Plugin\HotFixes\207_MigrationRollupsForV17_0_14.cs" />
     <Compile Include="Plugin\HotFixes\206_MigrationRollupsForV17_0_13.cs" />
     <Compile Include="Plugin\HotFixes\205_MigrationRollupsForV17_0_12.cs" />
+    <Compile Include="Plugin\HotFixes\217_DefaultGradeScaleHighlightColors.cs" />
     <Compile Include="Plugin\HotFixes\216_LMSRoutes.cs" />
     <Compile Include="Plugin\HotFixes\214_UpdateGradingScaleDescriptions.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
@@ -4935,7 +4936,7 @@
     <None Include="Resources\updateGoogleStaticMap.sql" />
     <None Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
     <None Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql" />
-    <Content Include="Plugin\HotFixes\216_open_bible_on_notebook.jpg" />
+    <None Include="Plugin\HotFixes\216_open_bible_on_notebook.jpg.bin" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">
