@@ -5,16 +5,25 @@
 
             <Registrar />
 
-            <div v-if="hasPaymentCost">
+            <div v-if="hasPaymentCost && hasRegistrantNotOnWaitList">
                 <h4>Payment Summary</h4>
                 <DiscountCodeForm />
                 <CostSummary />
             </div>
 
-            <div v-else class="margin-b-md">
+            <div v-if="!hasPaymentCost && hasRegistrantNotOnWaitList" class="margin-b-md">
                 <p>The following {{ registrantOrRegistrantsTermLowerCase }} will be registered for {{ instanceName }}:</p>
                 <ul>
                     <li v-for="r in registrantInfos" :key="r.guid">
+                        <strong>{{ r.firstName }} {{ r.lastName }}</strong>
+                    </li>
+                </ul>
+            </div>
+
+            <div v-if="hasRegistrantOnWaitList" class="margin-b-md">
+                <p>The following {{ registrantOrRegistrantsTermLowerCase }} will be added to the waiting list for {{ instanceName }}:</p>
+                <ul>
+                    <li v-for="r in registrantInfos.filter(r => r.isOnWaitList)" :key="r.guid">
                         <strong>{{ r.firstName }} {{ r.lastName }}</strong>
                     </li>
                 </ul>
@@ -159,6 +168,16 @@
         else {
             return "Finish";
         }
+    });
+
+    /** Were any registrants put on the waitlist when submitting the registration. */
+    const hasRegistrantOnWaitList = computed<boolean>(() => {
+        return registrantInfos.value.some(r => r.isOnWaitList);
+    });
+
+    /** Were any registrants successfully registered when submitting the registration. */
+    const hasRegistrantNotOnWaitList = computed<boolean>(() => {
+        return registrantInfos.value.some(r => !r.isOnWaitList);
     });
 
     // #endregion
