@@ -45,7 +45,8 @@
         (e: "update:modelValue", value: string): void;
     }>();
 
-    const internalValue = ref(props.modelValue);
+    // The color picker wants things in lower case.
+    const internalValue = ref(props.modelValue.toLowerCase());
     const colorPicker = ref<HTMLElement>();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,6 +69,12 @@
         internalValue.value = props.modelValue;
     });
 
+    watch(internalValue, () => {
+        if (props.modelValue !== internalValue.value) {
+            emit("update:modelValue", internalValue.value);
+        }
+    });
+
     onMounted(() => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         $colorPicker = (<any>window[<any>"$"])(colorPicker.value);
@@ -80,7 +87,6 @@
             const newValue = <string>$colorPicker.find("> input").val();
             if (internalValue.value !== newValue) {
                 internalValue.value = newValue;
-                emit("update:modelValue", newValue);
             }
         });
     });
