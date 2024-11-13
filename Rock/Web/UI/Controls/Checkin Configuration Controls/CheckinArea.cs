@@ -384,7 +384,7 @@ namespace Rock.Web.UI.Controls
             {
                 ID = $"{ID}_cbPreventConcurrentCheckIn",
                 Label = "Prevent Concurrent Check-in",
-                Help = "Prevents checking into groups in this area if the person already has an attendance record for the same scheduled service."
+                Help = "Prevents checking into groups in this area if the person already has an attendance record for the same scheduled service. Only supported in next-gen check-in."
             };
 
             _ddlPrintTo = new RockDropDownList();
