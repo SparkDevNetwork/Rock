@@ -211,6 +211,7 @@
     <Compile Include="Rock\CheckIn\v2\Filters\DataViewOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\DuplicateCheckInOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\GenderOpportunityFilterTests.cs" />
+    <Compile Include="Rock\CheckIn\v2\Filters\GradeAndAgeOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\GradeOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\LocationClosedOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\LocationOverflowOpportunityFilterTests.cs" />

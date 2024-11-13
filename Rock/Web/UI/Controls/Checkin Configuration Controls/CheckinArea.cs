@@ -40,6 +40,7 @@ namespace Rock.Web.UI.Controls
         private RockDropDownList _ddlGroupTypeInheritFrom;
         private RockDropDownList _ddlAttendanceRule;
         private RockRadioButtonList _rblMatchingLogic;
+        private RockCheckBox _cbPreventConcurrentCheckIn;
         private RockDropDownList _ddlPrintTo;
 
         private PlaceHolder _phGroupTypeAttributes;
@@ -281,6 +282,7 @@ namespace Rock.Web.UI.Controls
             groupType.InheritedGroupTypeId = _ddlGroupTypeInheritFrom.SelectedValueAsId();
             groupType.AttendanceRule = _ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
             groupType.AlreadyEnrolledMatchingLogic = _rblMatchingLogic.SelectedValueAsEnum<AlreadyEnrolledMatchingLogic>();
+            groupType.IsConcurrentCheckInPrevented = _cbPreventConcurrentCheckIn.Checked;
             groupType.AttendancePrintTo = _ddlPrintTo.SelectedValueAsEnum<PrintTo>();
 
             // Reload Attributes
@@ -306,6 +308,7 @@ namespace Rock.Web.UI.Controls
                 _ddlGroupTypeInheritFrom.SetValue( groupType.InheritedGroupTypeId );
                 _ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
                 _rblMatchingLogic.SetValue( ( int ) groupType.AlreadyEnrolledMatchingLogic );
+                _cbPreventConcurrentCheckIn.Checked = groupType.IsConcurrentCheckInPrevented;
                 _ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
 
                 CreateGroupTypeAttributeControls( groupType, rockContext );
@@ -377,6 +380,13 @@ namespace Rock.Web.UI.Controls
             };
             _rblMatchingLogic.BindToEnum<AlreadyEnrolledMatchingLogic>();
 
+            _cbPreventConcurrentCheckIn = new RockCheckBox
+            {
+                ID = $"{ID}_cbPreventConcurrentCheckIn",
+                Label = "Prevent Concurrent Check-in",
+                Help = "Prevents checking into groups in this area if the person already has an attendance record for the same scheduled service."
+            };
+
             _ddlPrintTo = new RockDropDownList();
             _ddlPrintTo.ID = this.ID + "_ddlPrintTo";
             _ddlPrintTo.Label = "Print To";
@@ -391,6 +401,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _ddlGroupTypeInheritFrom );
             Controls.Add( _ddlAttendanceRule );
             Controls.Add( _rblMatchingLogic );
+            Controls.Add( _cbPreventConcurrentCheckIn );
             Controls.Add( _ddlPrintTo );
             Controls.Add( _tbGroupTypeName );
             Controls.Add( _phGroupTypeAttributes );
@@ -485,6 +496,7 @@ namespace Rock.Web.UI.Controls
                 _ddlGroupTypeInheritFrom.RenderControl( writer );
                 _ddlAttendanceRule.RenderControl( writer );
                 _rblMatchingLogic.RenderControl( writer );
+                _cbPreventConcurrentCheckIn.RenderControl( writer );
                 _ddlPrintTo.RenderControl( writer );
 
                 _phGroupTypeAttributes.RenderControl( writer );

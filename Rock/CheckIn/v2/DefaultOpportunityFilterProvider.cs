@@ -39,9 +39,11 @@ namespace Rock.CheckIn.v2
             typeof( AgeOpportunityFilter ),
             typeof( BirthMonthOpportunityFilter ),
             typeof( GradeOpportunityFilter ),
+            typeof( GradeAndAgeOpportunityFilter ),
             typeof( GenderOpportunityFilter ),
             typeof( AbilityLevelOpportunityFilter ),
             typeof( SpecialNeedsOpportunityFilter ),
+            typeof( DuplicateCheckInOpportunityFilter ),
             typeof( MembershipOpportunityFilter ),
             typeof( DataViewOpportunityFilter ),
             typeof( PreferredGroupsOpportunityFilter )

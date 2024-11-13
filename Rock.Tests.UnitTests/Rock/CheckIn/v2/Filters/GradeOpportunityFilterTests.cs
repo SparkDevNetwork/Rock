@@ -4,6 +4,7 @@ using Moq;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
+using Rock.Enums.CheckIn;
 using Rock.ViewModels.CheckIn;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
@@ -228,6 +229,22 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
             Assert.IsFalse( isIncluded );
         }
 
+        [TestMethod]
+        public void GradeFilter_WithBehaviorOtherThanGradeAndAgeMustMatch_SkipsFilter()
+        {
+            // This test would normally fail, so we use this along with the
+            // behavior to verify that it doesn't actually filter anything.
+            var personGrade = 2;
+            var minGrade = 3;
+
+            var filter = CreateGradeFilter( personGrade, false, GradeAndAgeMatchingMode.PrioritizeGradeOverAge );
+            var groupOpportunity = CreateGroupOpportunity( minGrade, null );
+
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
+
+            Assert.IsTrue( isIncluded );
+        }
+
         #endregion
 
         #region Support Methods
@@ -238,13 +255,15 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         /// </summary>
         /// <param name="grade">The grade to give the person if not <c>null</c>.</param>
         /// <param name="isGradeRequired"><c>true</c> if the configuration template should indicate that grade is required.</param>
+        /// <param name="gradeAndAgeMatchingBehavior">The configuration value to use for the template.</param>
         /// <returns>An instance of <see cref="GradeOpportunityFilter"/>.</returns>
-        private GradeOpportunityFilter CreateGradeFilter( int? grade, bool isGradeRequired )
+        private GradeOpportunityFilter CreateGradeFilter( int? grade, bool isGradeRequired, GradeAndAgeMatchingMode gradeAndAgeMatchingBehavior = GradeAndAgeMatchingMode.GradeAndAgeMustMatch )
         {
             // Create the template configuration.
             var templateConfigurationMock = new Mock<TemplateConfigurationData>( MockBehavior.Strict );
 
             templateConfigurationMock.Setup( m => m.IsGradeRequired ).Returns( isGradeRequired );
+            templateConfigurationMock.Setup( m => m.GradeAndAgeMatchingBehavior ).Returns( gradeAndAgeMatchingBehavior );
 
             // Create the filter.
             var filter = new GradeOpportunityFilter
@@ -265,7 +284,8 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         /// Creates a group opportunity with the specified grade range
         /// attribute value.
         /// </summary>
-        /// <param name="gradeRange">The grade range.</param>
+        /// <param name="minGradeOffset">The minimum grade offset for this group opportunity.</param>
+        /// <param name="maxGradeOffset">The maximum grade offset for this group opportunity.</param>
         /// <returns>A new instance of <see cref="GroupOpportunity"/>.</returns>
         private GroupOpportunity CreateGroupOpportunity( int? minGradeOffset, int? maxGradeOffset )
         {

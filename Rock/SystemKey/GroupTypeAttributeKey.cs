@@ -190,6 +190,12 @@ namespace Rock.SystemKey
         public const string CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES = "core_checkin_AchievementTypes";
 
         /// <summary>
+        /// Attribute key for check-in configuration template to specify the
+        /// behavior of matching Grade and Age for groups.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_GRADE_AND_AGE_MATCHING_BEHAVIOR = "core_checkin_GradeAndAgeMatchingBehavior";
+
+        /// <summary>
         /// Attribute key for grouptypes location selection strategy (Ask, Fill in order, balance).
         /// </summary>
         public const string CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY = "core_LocationSelectionStrategy";
