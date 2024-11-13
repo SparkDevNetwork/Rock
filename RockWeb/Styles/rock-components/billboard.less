@@ -1,14 +1,19 @@
-.image-with-icon-container {
-  height: 150px;
+.billboard {
   position: relative;
-  background-position: center;
-  background-size: cover;
-  border-radius: var(--rounded-small);
-  background-color: var(--color-interface-softer);
+  margin-bottom: var(--spacing-medium);
+  height: 182px;
 
-  .icon-stack-container {
+  .billboard-image {
+    background-position: center;
+    background-size: cover;
+    height: 150px;
+    border-radius: var(--rounded-small);
+    background-color: var(--color-interface-softer);
+  }
+
+  .billboard-icon {
     position: absolute;
-    bottom: -32px;
+    bottom: 0;
     left: 24px;
     height: 64px;
     width: 64px;
