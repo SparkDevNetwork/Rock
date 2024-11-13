@@ -301,6 +301,10 @@ namespace Rock.Mobile
             var site = SiteCache.Get( applicationId );
             string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+            var imageUrlOptions = new GetImageUrlOptions
+            {
+                PublicAppRoot = applicationRoot
+            };
 
             if ( additionalSettings == null )
             {
@@ -485,7 +489,7 @@ namespace Rock.Mobile
 
             if ( site.FavIconBinaryFileId.HasValue )
             {
-                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value );
+                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value, imageUrlOptions );
             }
 
             // Load all the layouts.
