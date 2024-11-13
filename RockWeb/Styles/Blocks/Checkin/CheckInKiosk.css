@@ -188,6 +188,9 @@
 }
 
 .check-in-page .btn .subtitle {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: var(--font-size-regular);
     font-weight: var(--font-weight-regular);
 }
