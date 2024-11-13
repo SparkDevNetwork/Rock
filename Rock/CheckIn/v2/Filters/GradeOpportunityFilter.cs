@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.Enums.CheckIn;
+
 namespace Rock.CheckIn.v2.Filters
 {
     /// <summary>
@@ -27,6 +29,13 @@ namespace Rock.CheckIn.v2.Filters
         /// <inheritdoc/>
         public override bool IsGroupValid( GroupOpportunity group )
         {
+            // We only handle GradeAndAgeMustMatch. Other behaviors are handled
+            // by GradeAndAgeOpportunityFilter.
+            if ( TemplateConfiguration.GradeAndAgeMatchingBehavior != GradeAndAgeMatchingMode.GradeAndAgeMustMatch )
+            {
+                return true;
+            }
+
             var gradeRangeMatch = CheckGradeMatches( Person.Person.GradeOffset,
                 group.CheckInData.MinimumGradeOffset,
                 group.CheckInData.MaximumGradeOffset,
@@ -36,13 +45,13 @@ namespace Rock.CheckIn.v2.Filters
         }
 
         /// <summary>
-        /// Checks if the grade matches the specified age range.
+        /// Checks if the grade matches the specified grade range.
         /// </summary>
         /// <param name="gradeOffset">The known grade offset of the person..</param>
         /// <param name="minimumGradeOffset">The minimum grade offset.</param>
         /// <param name="maximumGradeOffset">The maximum grade offset.</param>
         /// <returns><c>true</c> if <paramref name="gradeOffset"/> matches <paramref name="minimumGradeOffset"/> and <paramref name="maximumGradeOffset"/>, <c>false</c> otherwise.</returns>
-        protected static bool CheckGradeMatches( int gradeOffset, int? minimumGradeOffset, int? maximumGradeOffset )
+        internal static bool CheckGradeMatches( int gradeOffset, int? minimumGradeOffset, int? maximumGradeOffset )
         {
             if ( minimumGradeOffset.HasValue && gradeOffset < minimumGradeOffset.Value )
             {
@@ -58,14 +67,14 @@ namespace Rock.CheckIn.v2.Filters
         }
 
         /// <summary>
-        /// Checks if the grade matches the specified age range.
+        /// Checks if the grade matches the specified grade range.
         /// </summary>
         /// <param name="gradeOffset">The known grade offset of the person..</param>
         /// <param name="minimumGradeOffset">The minimum grade offset.</param>
         /// <param name="maximumGradeOffset">The maximum grade offset.</param>
         /// <param name="isGradeRequired">if set to <c>true</c> and no grade is provided then <c>false</c> will be returned.</param>
         /// <returns><c>true</c> if <paramref name="gradeOffset"/> matches <paramref name="minimumGradeOffset"/> and <paramref name="maximumGradeOffset"/>, <c>false</c> if it doesn't or <c>null</c> it could not be determined.</returns>
-        protected static bool? CheckGradeMatches( int? gradeOffset, int? minimumGradeOffset, int? maximumGradeOffset, bool isGradeRequired )
+        internal static bool? CheckGradeMatches( int? gradeOffset, int? minimumGradeOffset, int? maximumGradeOffset, bool isGradeRequired )
         {
             if ( !minimumGradeOffset.HasValue && !maximumGradeOffset.HasValue )
             {

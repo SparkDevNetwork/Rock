@@ -94,6 +94,12 @@ namespace Rock.CheckIn.v2
         public virtual FamilySearchMode FamilySearchType { get; }
 
         /// <summary>
+        /// The matching behavior that will be used when matching on Grade
+        /// and Age (Age Range and Birthdate Range) for groups.
+        /// </summary>
+        public virtual GradeAndAgeMatchingMode GradeAndAgeMatchingBehavior { get; }
+
+        /// <summary>
         /// Gets a value indicating whether age is required for check-in.
         /// If an area and/or group has an age requirement, enabling this
         /// option will prevent people without an age from checking in to
@@ -595,6 +601,7 @@ namespace Rock.CheckIn.v2
             AutoSelect = ( AutoSelectMode ) groupTypeCache.GetAttributeValue( "core_checkin_AutoSelectOptions" ).AsInteger();
             KioskCheckInType = groupTypeCache.GetAttributeValue( "core_checkin_CheckInType" ) == "1" ? KioskCheckInMode.Family : KioskCheckInMode.Individual;
             FamilySearchType = GetFamilySearchType( groupTypeCache.GetAttributeValue( "core_checkin_SearchType" ).AsGuid() );
+            GradeAndAgeMatchingBehavior = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_GRADE_AND_AGE_MATCHING_BEHAVIOR ).ConvertToEnum<GradeAndAgeMatchingMode>( GradeAndAgeMatchingMode.GradeAndAgeMustMatch );
             IsAgeRequired = groupTypeCache.GetAttributeValue( "core_checkin_AgeRequired" ).AsBoolean( true );
             IsCheckoutAtKioskAllowed = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK ).AsBoolean();
             IsCheckoutInManagerAllowed = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER ).AsBoolean();

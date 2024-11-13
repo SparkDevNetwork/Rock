@@ -49,6 +49,12 @@ namespace Rock.CheckIn.v2
         public virtual AlreadyEnrolledMatchingLogic AlreadyEnrolledMatchingLogic { get; }
 
         /// <summary>
+        /// Gets a value that groups in this area should not be available
+        /// when a person already has a check-in for the same schedule.
+        /// </summary>
+        public virtual bool IsConcurrentCheckInPrevented { get; }
+
+        /// <summary>
         /// Gets where labels should be printed for groups in this area.
         /// </summary>
         /// <value>The printed label destination.</value>
@@ -83,6 +89,7 @@ namespace Rock.CheckIn.v2
         {
             AttendanceRule = groupTypeCache.AttendanceRule;
             AlreadyEnrolledMatchingLogic = groupTypeCache.AlreadyEnrolledMatchingLogic;
+            IsConcurrentCheckInPrevented = groupTypeCache.IsConcurrentCheckInPrevented;
             PrintTo = groupTypeCache.AttendancePrintTo;
             LocationSelectionStrategy = groupTypeCache
                 .GetAttributeValue( SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY )

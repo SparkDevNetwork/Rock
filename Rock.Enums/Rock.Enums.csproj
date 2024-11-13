@@ -53,6 +53,9 @@
     <Compile Include="Blocks\Communication\CommunicationEntry\Mode.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\MediumType.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\PushOpenActionType.cs" />
+    <Compile Include="CheckIn\GradeAndAgeMatchingMode.cs" />
+    <Compile Include="CheckIn\LocationSelectionStrategy.cs" />
+    <Compile Include="Cms\ThemeFieldType.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\CommunicationPreference.cs" />
     <Compile Include="Blocks\Group\Scheduling\ToolboxActionType.cs" />
     <Compile Include="Blocks\Group\Scheduling\ToolboxScheduleRowActionType.cs" />

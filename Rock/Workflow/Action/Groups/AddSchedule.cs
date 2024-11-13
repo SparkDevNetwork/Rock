@@ -205,6 +205,11 @@ namespace Rock.Workflow.Action.Groups
             };
             calendarEvent.DtStart.HasTime = true;
 
+            if (calendarEvent.DtEnd != null)
+            {
+                calendarEvent.DtEnd.HasTime = true;
+            }
+
             var calendar = new Calendar();
             calendar.Events.Add( calendarEvent );
 

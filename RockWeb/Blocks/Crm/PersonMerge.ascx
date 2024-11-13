@@ -39,6 +39,8 @@
 
                     <asp:HiddenField ID="hfSelectedColumnPersonId" runat="server" />
 
+                    <asp:HiddenField ID="hfSwitchState" runat="server" />
+
                     <Rock:NotificationBox runat="server"
                         ID="nbSecurityAlert"
                         NotificationBoxType="danger"
@@ -54,6 +56,8 @@
                         Text="You do not have permission to view an attribute that has a conflicting value. Proceeding will use the value from the primary merge candidate. If you are unsure that this is the correct value then please contact someone with rights to view all attributes." />
 
                     <Rock:NotificationBox ID="nbGroupMemberAttributeConflict" Heading="Conflicting Group Member Attribute Values:" runat="server" NotificationBoxType="Warning" Visible="false" />
+
+                    <Rock:Switch ID="swShowMatchingData" runat="server" Text="Show Matching Data" />
 
                     <div class="grid">
                         <Rock:Grid ID="gValues" TableStriped="false" CssClass="sticky-headers js-sticky-headers js-person-merge-table" RowStyle-CssClass="js-merge-field-row" runat="server" EnableResponsiveTable="false" AllowSorting="false" EmptyDataText="No Results" />
@@ -117,8 +121,39 @@
                     $(this).closest('.js-merge-field-row').find('.js-selection-control[type=radio]').not($(this)).closest('.js-merge-field-cell').removeClass('selected')
                     $(this).closest('.js-merge-field-cell').addClass('selected')
                 });
+
+                $switchControl = $('#<%=swShowMatchingData.ClientID%>').closest('.custom-control');
+                $(".show-matching-data-switch").append($switchControl);
+
+                $('#<%= swShowMatchingData.ClientID %>').on('change', function () {
+                    var isChecked = $(this).is(':checked');
+                    if (isChecked) {
+                        $('#<%= gValues.ClientID %>').addClass('show-matching-data');
+                    }
+                    else {
+                        $('#<%= gValues.ClientID %>').removeClass('show-matching-data');
+                    }
+                    // Update the hidden field switch state
+                    $('#<%= hfSwitchState.ClientID %>').val(isChecked);
+                });
+
             });
+
         </script>
+
+        <style>
+            .show-matching-data-switch {
+                vertical-align: bottom !important;
+            }
+
+            .show-matching-data .matching-data {
+                visibility: visible;
+            }
+
+            .matching-data {
+                visibility: collapse;
+            }
+        </style>
 
     </ContentTemplate>
 </asp:UpdatePanel>
