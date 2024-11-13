@@ -30,6 +30,7 @@ namespace Rock.Plugin.HotFixes
         {
             RemovePublicLavaTemplateAttributeValues();
             SetGradingColors();
+            SetFacilitatorPortalPage();
 
             // Update the layout for the Public Class Workspace to use the Full Width
             // layout so that breadcrumbs are shown.
@@ -42,6 +43,29 @@ namespace Rock.Plugin.HotFixes
         /// </summary>
         public override void Down()
         {
+        }
+
+        private void SetFacilitatorPortalPage()
+        {
+            // Attribute for BlockType
+            //   BlockType: Public Learning Class Workspace
+            //   Category: LMS
+            //   Attribute: Facilitator Portal Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "55F2E89B-DE57-4E24-AC6C-576956FB97C5", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Facilitator Portal Page", "FacilitatorPortalPage", "Facilitator Portal Page", @"The page that will be navigated to when clicking facilitator portal link.", 1, @"", "72DFE773-DA2F-45A8-976A-6C19FD0AFE28" );
+            var facilitatorPortalPageAttributeGuid = "72DFE773-DA2F-45A8-976A-6C19FD0AFE28";
+            var classWorkspaceBlockGuid = "D46C2787-60BA-4776-BE6E-7F785A984922";
+            var internalClassDetailPageGuid = "23D5076E-C062-4987-9985-B3A4792BF3CE";
+            var interalClassDetailPageRouteGuid = "5FCE29A7-4530-4CCE-9891-C95242923EFE";
+
+            // Add Block Attribute Value
+            //   Block: Public Learning Class Workspace
+            //   BlockType: Public Learning Class Workspace
+            //   Category: LMS
+            //   Block Location: Page=Workspace, Site=External Site
+            //   Attribute: Facilitator Portal Page
+            /*   Attribute Value: PAGE_GUID,ROUTE_GUID */
+            //   Skip If Already Exists: false
+            RockMigrationHelper.AddBlockAttributeValue( false, classWorkspaceBlockGuid, facilitatorPortalPageAttributeGuid, $@"{internalClassDetailPageGuid},{interalClassDetailPageRouteGuid}" );
         }
 
         /// <summary>

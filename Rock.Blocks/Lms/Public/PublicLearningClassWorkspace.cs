@@ -66,11 +66,11 @@ namespace Rock.Blocks.Lms
         DefaultValue = AttributeDefault.HeaderTemplate,
         Order = 2 )]
 
-    [IntegerField( "The Number of Notifications to Show",
+    [IntegerField( "Default Number of Notification/Announcement Items to Show",
         Key = AttributeKey.NumberOfNotificationsToShow,
-        Description = "The number of notifications to show on the class overview page",
+        Description = "The default number of notifications and announcements to show on the class overview page.",
         IsRequired = true,
-        DefaultIntegerValue = 3,
+        DefaultIntegerValue = 5,
         Order = 3 )]
 
     [CustomDropdownListField(
@@ -378,7 +378,7 @@ namespace Rock.Blocks.Lms
                     IsStudentCompleted = activity.IsStudentCompleted,
                     LearningActivityIdKey = activity.LearningActivity.IdKey,
                     PointsEarned = activity.PointsEarned,
-                    RequiresScoring = activityComponent.RequiresGrading(activity),
+                    RequiresScoring = activity.RequiresGrading,
                     Student = currentPersonParticipantBag,
                     StudentComment = activity.StudentComment,
                     WasCompletedOnTime = activity.WasCompletedOnTime
@@ -571,7 +571,7 @@ namespace Rock.Blocks.Lms
             {
                 box.Notifications.Add( new PublicLearningClassWorkspaceNotificationBag
                 {
-                    Content = nextAvailableActivity.ActivityBag.Name,
+                    Content = nextAvailableActivity.ActivityBag.Description,
                     LabelText = "Available Soon",
                     LabelType = "default",
                     NotificationDateTime = nextAvailableActivity.AvailableDate ?? DateTime.MaxValue,
@@ -585,7 +585,7 @@ namespace Rock.Blocks.Lms
                 .Select( a => new PublicLearningClassWorkspaceNotificationBag
                 {
                     Content = $"A facilitator commented on {a.ActivityBag.ActivityComponent.Name}: {a.ActivityBag.Name}.",
-                    LabelText = "Notification",
+                    LabelText = "Comment",
                     LabelType = "info",
                     NotificationDateTime = a.CompletedDate ?? DateTime.MaxValue,
                     Title = "Facilitator Comment"
