@@ -301,6 +301,10 @@ namespace Rock.Mobile
             var site = SiteCache.Get( applicationId );
             string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+            var imageUrlOptions = new GetImageUrlOptions
+            {
+                PublicAppRoot = applicationRoot
+            };
 
             if ( additionalSettings == null )
             {
@@ -396,8 +400,6 @@ namespace Rock.Mobile
             package.AppearanceSettings.BarBackgroundColor = additionalSettings.BarBackgroundColor;
             package.AppearanceSettings.IOSEnableNavbarTransparency = additionalSettings.IOSEnableBarTransparency;
             package.AppearanceSettings.IOSNavbarBlurStyle = additionalSettings.IOSBarBlurStyle;
-            package.AppearanceSettings.MenuButtonColor = additionalSettings.MenuButtonColor;
-            package.AppearanceSettings.ActivityIndicatorColor = additionalSettings.ActivityIndicatorColor;
             package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;
 
             package.AppearanceSettings.NavigationBarActionsXaml = additionalSettings.NavigationBarActionXaml;
@@ -434,6 +436,26 @@ namespace Rock.Mobile
                 package.AppearanceSettings.PaletteColors.Add( "app-danger-strong", applicationColors.DangerStrong );
                 package.AppearanceSettings.PaletteColors.Add( "app-warning-soft", applicationColors.WarningSoft );
                 package.AppearanceSettings.PaletteColors.Add( "app-warning-strong", applicationColors.WarningStrong );
+
+                // This helps maintain backward compatibility.
+                // If someone uses a palette color that no longer exists,
+                // the page will break. So we map our new colors to the
+                // legacy ones.
+                if( !useLegacyStyles )
+                {
+                    package.AppearanceSettings.PaletteColors.Add( "text-color", applicationColors.InterfaceStronger );
+                    package.AppearanceSettings.PaletteColors.Add( "heading-color", applicationColors.InterfaceStrongest );
+                    package.AppearanceSettings.PaletteColors.Add( "background-color", applicationColors.InterfaceSofter );
+                    package.AppearanceSettings.PaletteColors.Add( "app-primary", applicationColors.PrimaryStrong );
+                    package.AppearanceSettings.PaletteColors.Add( "app-secondary", applicationColors.SecondaryStrong );
+                    package.AppearanceSettings.PaletteColors.Add( "app-success", applicationColors.SuccessStrong );
+                    package.AppearanceSettings.PaletteColors.Add( "app-info", applicationColors.InfoStrong);
+                    package.AppearanceSettings.PaletteColors.Add( "app-danger", applicationColors.DangerStrong );
+                    package.AppearanceSettings.PaletteColors.Add( "app-warning", applicationColors.WarningStrong );
+                    package.AppearanceSettings.PaletteColors.Add( "app-light", applicationColors.InterfaceSofter );
+                    package.AppearanceSettings.PaletteColors.Add( "app-dark", applicationColors.InterfaceStronger );
+                    package.AppearanceSettings.PaletteColors.Add( "app-brand", applicationColors.BrandStrong );
+                }
             }
 
             // These colors are "obsolete" and can be
@@ -441,6 +463,9 @@ namespace Rock.Mobile
             // mandatory.
             if ( useLegacyStyles )
             {
+                package.AppearanceSettings.MenuButtonColor = additionalSettings.MenuButtonColor;
+                package.AppearanceSettings.ActivityIndicatorColor = additionalSettings.ActivityIndicatorColor;
+
                 // Legacy colors.
                 package.AppearanceSettings.PaletteColors.Add( "text-color", additionalSettings.DownhillSettings.TextColor );
                 package.AppearanceSettings.PaletteColors.Add( "heading-color", additionalSettings.DownhillSettings.HeadingColor );
@@ -464,7 +489,7 @@ namespace Rock.Mobile
 
             if ( site.FavIconBinaryFileId.HasValue )
             {
-                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value );
+                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value, imageUrlOptions );
             }
 
             // Load all the layouts.
