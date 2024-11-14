@@ -69,7 +69,7 @@
                                                 Help="Allows check-out to be enabled in the Check-in Manager." />
 
                                             <Rock:RockCheckBox ID="cbAllowRemoveFromFamilyAtKiosk" runat="server" Label="Enable Remove From Family at Kiosk"
-                                                Help="Only supported in next-gen check-in. Allows can check-in relationships to be removed at the kiosk without requiring a supervisor login." />
+                                                Help="Only supported in next-gen check-in. Allows can check-in relationships to be removed at the kiosk without requiring a supervisor login. This action removes all known relationships marked as &quot;Can Check-in&quot;." />
 
                                             <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override"
                                                 Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
