@@ -687,6 +687,11 @@ namespace Rock.SystemGuid
         public const string SCHEDULES = "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B";
 
         /// <summary>
+        /// Secondary auths field type
+        /// </summary>
+        public const string SECONDARY_AUTHS = "98F57599-2DC3-4022-BE33-14A22C3043E1";
+
+        /// <summary>
         /// Security Role field type
         /// </summary>
         public const string SECURITY_ROLE = "7BD25DC9-F34A-478D-BEF9-0C787F5D39B8";

@@ -392,6 +392,9 @@ registerFieldType(FieldTypeGuids.Schedule, new ScheduleFieldType());
 import { SchedulesFieldType } from "./schedulesField.partial";
 registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
 
+import { SecondaryAuthsFieldType } from "./secondaryAuthsField.partial";
+registerFieldType(FieldTypeGuids.SecondaryAuths, new SecondaryAuthsFieldType());
+
 import { SecurityRoleFieldType } from "./securityRoleField.partial";
 registerFieldType(FieldTypeGuids.SecurityRole, new SecurityRoleFieldType());
 
