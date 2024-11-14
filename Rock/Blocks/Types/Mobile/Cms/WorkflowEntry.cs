@@ -26,7 +26,6 @@ using Rock.Common.Mobile.Enums;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
-using Rock.Net;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -1269,26 +1268,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
             }
 
             return mobileForm;
-        }
-
-        #endregion
-
-        #region Helper Classes
-
-        /// <summary>
-        /// A POCO describing the field value of a phone number attribute.
-        /// </summary>
-        private class PhoneNumberFieldValue
-        {
-            /// <summary>
-            /// The number.
-            /// </summary>
-            public string Number { get; set; }
-
-            /// <summary>
-            /// The country code.
-            /// </summary>
-            public string CountryCode { get; set; }
         }
 
         #endregion
