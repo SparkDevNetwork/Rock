@@ -152,7 +152,9 @@ namespace Rock.Blocks.Lms
             {
                 var programService = new LearningProgramService( RockContext );
                 var configurationMode = programService.GetSelect( programId, p => p.ConfigurationMode );
+                var enableAnnouncements = new LearningClassService( RockContext ).GetSelect( classId, c => c.LearningCourse.EnableAnnouncements );
 
+                options.CourseAllowsAnnouncements = enableAnnouncements;
                 options.ProgramConfigurationMode = configurationMode;
                 options.ActiveClassesUsingDefaultGradingSystem = GetProgramActiveClassesWithDefaultGradingSystem( classId ).Count();
 

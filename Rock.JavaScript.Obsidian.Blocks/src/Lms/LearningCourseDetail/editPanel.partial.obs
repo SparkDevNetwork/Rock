@@ -40,8 +40,6 @@
                             <TextBox v-model="publicName"
                                      label="Public Name" />
 
-
-
                             <ImageUploader v-model="imageBinaryFile"
                                            label="Image"
                                            :binaryFileTypeGuid="imageFileTypeGuid" />
@@ -137,6 +135,7 @@
                                     </div>
                                     <div class="col-md-6">
                                         <CheckBox
+                                                  v-if="isAcademicCalendarMode"
                                                   v-model="enableAnnouncements"
                                                   label="Enable Announcements" />
                                     </div>
@@ -181,6 +180,7 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import Grid, { Column, textValueFilter } from "@Obsidian/Controls/Grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -231,6 +231,8 @@
     const enableAnnouncements = propertyRef(props.modelValue.bag?.enableAnnouncements ?? false, "EnableAnnouncements");
     const imageBinaryFile = propertyRef(props.modelValue.bag?.imageBinaryFile ?? null, "ImageBinaryFile");
     const courseRequirements = propertyRef(props.modelValue.bag?.courseRequirements ?? [], "CourseRequirements");
+
+    const isAcademicCalendarMode = ref(props.options.configurationMode === ConfigurationMode.AcademicCalendar);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
