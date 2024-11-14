@@ -393,14 +393,16 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            var breadCrumbText = "Course Description";
+            var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningCourseId ) ?? "";
+            var entityName = entityKey.Length > 0 ? new LearningCourseService( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Course";
+
             // Include only the parameters necessary to construct the breadcrumb
             // (prevent unused/unnecessary query string parameters). 
             var includedParamKeys = new[] { "learningprogramid", "learningcourseid" };
             var paramsToInclude = pageReference.Parameters.Where( kv => includedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
-
+            
             var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
-            var breadCrumb = new BreadCrumbLink( breadCrumbText ?? "", breadCrumbPageRef );
+            var breadCrumb = new BreadCrumbLink( entityName ?? "Course Description", breadCrumbPageRef );
 
             return new BreadCrumbResult
             {

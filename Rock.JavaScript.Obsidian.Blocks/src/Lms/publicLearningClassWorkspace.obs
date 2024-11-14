@@ -193,6 +193,9 @@
                     <div class="facilitator-comments-container" v-if="viewingCompletionBag.facilitatorComment">
                         <NotificationBox
                                          alertType="default">
+                            <div class="facilitator-comment-label">
+                                Facilitator Comment:
+                            </div>
                             {{ viewingCompletionBag.facilitatorComment }}
                         </NotificationBox>
 
@@ -267,6 +270,11 @@
 
 .facilitator-comment-container {
     padding: 8px;
+}
+
+.facilitator-comment-label {
+    color: var(--color-interface-medium);
+    margin-bottom: 4px;
 }
 
 /* Workspace Activities */
