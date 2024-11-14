@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays a list of person signals." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "db2e3ce3-94bd-4d12-8add-598bf938e8e1" )]
     [Rock.SystemGuid.BlockTypeGuid( "653052a0-ca1c-41b8-8340-4b13149c6e66" )]
