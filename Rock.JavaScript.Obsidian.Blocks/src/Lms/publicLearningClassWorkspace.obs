@@ -36,7 +36,7 @@
             </div>
 
             <div class="workspace-class-overview row" v-if="selectedTab === overviewTab">
-                <div class="col-md-3 workspace-class-sidebar overview-container">
+                <div class="workspace-class-sidebar overview-container" :class="overviewColumnClasses">
 
                     <div class="overview-section">
                         <h3 class="title">
@@ -48,8 +48,8 @@
 
                             <div class="facilitators-list d-flex flex-column">
                                 <span v-for="f in facilitators" :key="f.idKey ?? ''" class="facilitator-list-item">
-                                    <a v-if="f.facilitatorEmail" :href="'mailto:' + f.facilitatorEmail"> {{ f.facilitatorEmail }}</a>
-                                    {{ f.facilitatorName }}
+                                    <div class="facilitator-name">{{ f.facilitatorName }}</div>
+                                    <a class="facilitator-email" v-if="f.facilitatorEmail" :href="'mailto:' + f.facilitatorEmail"> {{ f.facilitatorEmail }}</a>
                                 </span>
                             </div>
                         </div>
@@ -65,7 +65,7 @@
                             </div>
                         </div>
 
-                        <div class="section section-progress" v-if="showGrades">
+                        <div class="section section-grade" v-if="showGrades">
                             <h4 class="mt-0">{{ currentGradeLabel }}</h4>
 
                             <div class="current-grade" v-if="showGrades && currentGrade">
@@ -78,7 +78,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-3 col-md-push-6 notifications-container">
+                <div class="notifications-container" :class="notificationsColumnClasses">
                     <div class="d-flex flex-column">
                         <div class="notifications-section">
                             <h3 class="title">
@@ -87,7 +87,7 @@
 
                             <div class="notification-cards notification-section">
                                 <template v-for="(notification, index) in notifications">
-                                    <div class="card card-notification d-flex flex-column"
+                                    <div class="card card-notification d-flex flex-column" :class="getRowCssClass(index, notifications.length)"
                                          v-if="index < maxOverviewItemsToShow || isViewingAllNotifications">
                                         <div class="card-body">
                                             <span :class="'badge badge-' + notification.labelType">
@@ -103,11 +103,11 @@
                                     </div>
                                 </template>
 
-                                <div class="view-all-button d-flex justify-content-center" v-if="hasNotificationsOverflow">
+                                <div class="view-all-button d-flex justify-content-center" :class="notificationsOverflowContainerClass" v-if="hasNotificationsOverflow">
                                     <RockButton
                                                 btnType="link"
                                                 @click="isViewingAllNotifications = !isViewingAllNotifications">
-                                        {{ notificationsOverflowText }} <i :class="notificationsOverflowIconClass"></i>
+                                        {{ notificationsOverflowText }} &nbsp; <i :class="notificationsOverflowIconClass"></i>
                                     </RockButton>
                                 </div>
                             </div>
@@ -115,14 +115,14 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 col-md-pull-3 announcements-container">
+                <div class="col-md-6 col-md-pull-3 announcements-container" v-if="enableAnnouncements">
                     <div class="announcements-section row">
                         <div class="d-flex flex-column">
                             <h3 class="title">
                                 Announcements
                             </h3>
                             <template v-for="(announcement, index) in announcements" :key="announcement.idKey">
-                                <div class="card card-announcement"
+                                <div class="card card-announcement" :class="getRowCssClass(index, announcements.length)"
                                      v-if="index < maxOverviewItemsToShow || isViewingAllAnnouncements">
                                     <div class="card-body">
                                         <small class="text-bold card-date">
@@ -138,11 +138,11 @@
                                 </div>
                             </template>
 
-                            <div class="view-all-button d-flex justify-content-center" v-if="hasAnnouncementOverflow">
+                            <div class="view-all-button d-flex justify-content-center" :class="announcementOverflowContainerClass" v-if="hasAnnouncementOverflow">
                                 <RockButton
                                             btnType="link"
                                             @click="isViewingAllAnnouncements = !isViewingAllAnnouncements">
-                                    {{ announcementsOverflowText }} <i :class="announcementsOverflowIconClass"></i>
+                                    {{ announcementsOverflowText }} &nbsp; <i :class="announcementsOverflowIconClass"></i>
                                 </RockButton>
                             </div>
                         </div>
@@ -224,7 +224,8 @@
 }
 
 /* Workspace Class Overview */
-.workspace-class-sidebar .section:not(:last-child) {
+.workspace-class-sidebar .section-facilitators,
+.workspace-class-sidebar .section-progress {
     margin-bottom: var(--spacing-large) 0;
     padding-bottom: var(--spacing-large);
 }
@@ -243,17 +244,25 @@
 
 .card-notification,
 .card-announcement {
-    margin-bottom: var(--spacing-large);
     background-color: var(--color-interface-softer);
+}
+
+.card-notification.not-last,
+.card-announcement.not-last {
+    margin-bottom: var(--spacing-large);
+}
+
+/**
+    Expanded Notifications/Announcements need to add their our margin
+    The .card-announcement.not-last spacing should handle when there's
+    no Show All button.
+ */
+.show-less {
+    margin-top: var(--spacing-large);
 }
 
 .card-date {
     color: var(--color-interface-medium);
-}
-
-.notification-section:not(:last-child),
-.announcment-section:not(:last-child) {
-    margin-bottom: var(--spacing-large);
 }
 
 .overview-section .title,
@@ -404,6 +413,7 @@
     const notifications = ref(config.notifications?.filter((_, i) => i < maxOverviewItemsToShow.value) ?? []);
     const showGrades = ref(config.showGrades);
     const currentGrade = ref(config.currentGrade);
+    const enableAnnouncements = ref(true); //config.enableAnnouncements);
 
     const overviewTab = ref("Class Overview");
     const activitiesTab = ref("Activities / Assignments");
@@ -415,8 +425,11 @@
 
     // #region Computed Values
 
+    /** The container classes used for the Show All/Show Less button (announcements). */
+    const announcementOverflowContainerClass = computed(() => isViewingAllAnnouncements.value === true ? "show-less" : "show-all");
+
     /** The icon class to use for the announcements overflow toggle button. */
-    const announcementsOverflowIconClass = computed(() => isViewingAllAnnouncements.value === true ? "ml-1 fa fa-chevron-up" : "ml-1 fa fa-chevron-down");
+    const announcementsOverflowIconClass = computed(() => isViewingAllAnnouncements.value === true ? "fa fa-chevron-up" : "fa fa-chevron-down");
 
     /** The text to display for the announcements overflow toggle button. */
     const announcementsOverflowText = computed(() => isViewingAllAnnouncements.value === true ? "Show Less" : "Show All");
@@ -441,11 +454,14 @@
     /** Considered complete if there aren't any activities that are not completed or require scoring */
     const isClassCompletedByStudent = computed(() => !activities.value.some(a => !isCompleted(a)));
 
-    /** Considered complete if there aren't any activities that are not completed or require scoring */
+    /** Considered complete if there are no activities that are incomplete or require scoring */
     const isClassCompletedAndGraded = computed(() => !activities.value.some(a => !isCompleted(a) || a.requiresScoring));
 
+    /** The container classes used for the Show All/Show Less button (notifications). */
+    const notificationsOverflowContainerClass = computed(() => isViewingAllNotifications.value === true ? "show-less" : "show-all");
+
     /** The icon class to use for the notifications overflow toggle button. */
-    const notificationsOverflowIconClass = computed(() => isViewingAllNotifications.value === true ? "ml-1 fa fa-chevron-up" : "ml-1 fa fa-chevron-down");
+    const notificationsOverflowIconClass = computed(() => isViewingAllNotifications.value === true ? "fa fa-chevron-up" : "fa fa-chevron-down");
 
     /** The text to display for the notifications overflow toggle button. */
     const notificationsOverflowText = computed(() => isViewingAllNotifications.value === true ? "Show Less" : "Show All");
@@ -488,6 +504,19 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets css classes for the index position in an array: index-#, is-first, is-last
+     * @param index the current index in the array.
+     * @param arraySize The total length of the array.
+     */
+    function getRowCssClass(index: number, arraySize: number): string[] {
+        return [
+            `index-${index}`,
+            index === 0 ? "is-first" : "not-first",
+            index === arraySize - 1 ? "is-last" : "not-last"
+        ];
+    }
 
     function isCompleted(activity): boolean {
         return activity.isStudentCompleted || activity.isFacilitatorCompleted;
@@ -532,6 +561,16 @@
 
         return classes.join(" ");
     }
+
+    const notificationsColumnClasses = computed(() =>
+        enableAnnouncements.value === true ?
+            "col-md-3 col-md-push-6" :
+            "col-md-6");
+
+    const overviewColumnClasses = computed(() =>
+        enableAnnouncements.value === true ?
+            "col-md-3" :
+            "col-md-6");
 
     function showFacilitators(): boolean {
         if (facilitators.value.length > 0) {

@@ -410,6 +410,8 @@ namespace Rock.Blocks.Lms
                 return box;
             }
 
+            box.EnableAnnouncements = course.EnableAnnouncements;
+
             var now = RockDateTime.Now;
             box.ContentPages = new LearningClassContentPageService( RockContext ).Queryable()
                 .Where( c => c.LearningClassId == classId && ( !c.StartDateTime.HasValue || c.StartDateTime <= now ) )
