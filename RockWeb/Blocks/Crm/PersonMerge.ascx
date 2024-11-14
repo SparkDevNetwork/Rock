@@ -152,6 +152,7 @@
 
             .matching-data {
                 visibility: collapse;
+                background-color: var(--color-interface-softer);
             }
         </style>
 
