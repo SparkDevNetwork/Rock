@@ -593,7 +593,13 @@
         }
 
         const currentIndex = activities.value.findIndex(a => a.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey);
-        const nextAvailableActivity = activities.value?.find((a, i) => i > currentIndex && a.isAvailable && !isCompleted(a));
+        let nextAvailableActivity = activities.value?.find((a, i) => i > currentIndex && a.isAvailable);
+
+        // If there was no available activity after our index look for one before it (starting at the beginning).
+        if (!nextAvailableActivity) {
+            nextAvailableActivity = activities.value?.find((a, i) => i < currentIndex && a.isAvailable);
+        }
+
         if (nextAvailableActivity) {
             viewingCompletionBag.value = nextAvailableActivity;
         }

@@ -56,9 +56,9 @@
                 <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
             </div>
             <div class="footer-buttons">
-                <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold || isStudentCompleted"
+                <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold"
                             @click="onCompletedAndClosed">
-                    {{ isStudentCompleted ? 'Completed' : 'Complete' }}
+                    completeButtonText
                 </RockButton>
             </div>
         </fieldset>
@@ -100,6 +100,7 @@
         defaultAssigneeDescription,
         footerContent,
         headerContent,
+        isCompleted,
         panelTitle,
         pointsPossibleAtCompletion,
         video,
@@ -123,14 +124,19 @@
             completionThreshold.value
     ));
 
+    function onCompletedAndClosed(): void {
+        if (isCompleted.value === false) {
+            emits("completed", true);
+        }
+
+        emits("closed");
+    }
+
+    const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");
+
     watch(completionThresholdForView, () => {
         completionThreshold.value = completionThresholdForView.value / 100;
     });
-
-    function onCompletedAndClosed(): void {
-        emits("completed", true);
-        emits("closed");
-    }
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
