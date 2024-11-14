@@ -52,6 +52,15 @@ namespace Rock.CheckIn.v2
         public virtual IReadOnlyCollection<Guid> AchievementTypeGuids { get; }
 
         /// <summary>
+        /// Defines the age restriction for this check-in configuration. This applies
+        /// a filter when considering which people can be listed on the family
+        /// member selection screen. Using one of the Hide modes will hide those
+        /// people from the screen even if there is a valid opportunity for them to
+        /// check into.
+        /// </summary>
+        public virtual AgeRestrictionMode AgeRestriction { get; }
+
+        /// <summary>
         /// Gets a value indicating whether groups not marked as special needs
         /// should be removed from a person's opportunity list if the person
         /// <strong>is</strong> marked as special needs.
@@ -595,6 +604,7 @@ namespace Rock.CheckIn.v2
         {
             AbilityLevelDetermination = ( AbilityLevelDeterminationMode ) groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ).AsInteger();
             AchievementTypeGuids = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES ).SplitDelimitedValues().AsGuidList();
+            AgeRestriction = ( AgeRestrictionMode ) groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_AGE_RESTRICTION ).AsInteger();
             AreNonSpecialNeedsGroupsRemoved = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS ).AsBoolean();
             AreSpecialNeedsGroupsRemoved = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS ).AsBoolean();
             AutoSelectDaysBack = groupTypeCache.GetAttributeValue( "core_checkin_AutoSelectDaysBack" ).AsInteger();
