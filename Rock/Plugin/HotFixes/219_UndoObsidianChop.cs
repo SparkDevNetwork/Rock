@@ -1,0 +1,115 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System.Collections.Generic;
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Plug-in migration
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 219, "1.17.0" )]
+    public class UndoObsidianChop : Migration
+    {
+        /// <summary>
+        /// Up methods
+        /// </summary>
+        public override void Up()
+        {
+            SwapBlockUp();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override void Down()
+        {
+        }
+
+        private void SwapBlockUp()
+        {
+            RegisterBlockAttributesForSwap();
+            SwapObsidianBlocks();
+        }
+
+        private void RegisterBlockAttributesForSwap()
+        {
+            RockMigrationHelper.UpdateBlockType( "Defined Type Detail", "Displays the details of the given defined type.", "~/Blocks/Core/DefinedTypeDetail.ascx", "Core", "08C35F15-9AF7-468F-9D50-CDFD3D21220C" );
+
+            RockMigrationHelper.DeleteAttribute( "0305EF98-C791-4626-9996-F189B9BB674C" );
+
+            // Attribute for BlockType
+            //   BlockType: Defined Type Detail
+            //   Category: Core
+            //   Attribute: DefinedType
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "08C35F15-9AF7-468F-9D50-CDFD3D21220C", "BC48720C-3610-4BCF-AE66-D255A17F1CDF", "Defined Type", "DefinedType", "Defined Type", @"If a Defined Type is set, only details for it will be displayed (regardless of the querystring parameters).", 0, @"", "0305EF98-C791-4626-9996-F189B9BB674C" );
+
+            RockMigrationHelper.UpdateBlockType( "Defined Value List", "Block for viewing values for a defined type.", "~/Blocks/Core/DefinedValueList.ascx", "Core", "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" );
+
+            RockMigrationHelper.DeleteAttribute( "9280D61F-C4F3-4A3E-A9BB-BCD67FF78637" );
+            RockMigrationHelper.DeleteAttribute( "87DAF7ED-AAF5-4D5C-8339-CB30B16CC9FF" );
+            RockMigrationHelper.DeleteAttribute( "0A3F078E-8A2A-4E9D-9763-3758E123E042" );
+            RockMigrationHelper.DeleteAttribute( "80765648-83B0-4B75-A296-851384C41CAB" );
+            RockMigrationHelper.DeleteAttribute( "DF5BE156-A4B8-4FA5-A730-0579733F42F5" );
+
+            // Attribute for BlockType
+            //   BlockType: Defined Value List
+            //   Category: Core
+            //   Attribute: Defined Type
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE", "BC48720C-3610-4BCF-AE66-D255A17F1CDF", "Defined Type", "DefinedType", "", @"If a Defined Type is set, only its Defined Values will be displayed (regardless of the querystring parameters).", 0, @"", "9280D61F-C4F3-4A3E-A9BB-BCD67FF78637" );
+
+            // Attribute for BlockType
+            //   BlockType: Defined Value List
+            //   Category: Core
+            //   Attribute: core.CustomGridColumnsConfig
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomGridColumnsConfig", "core.CustomGridColumnsConfig", "", @"", 0, @"", "87DAF7ED-AAF5-4D5C-8339-CB30B16CC9FF" );
+
+            // Attribute for BlockType
+            //   BlockType: Defined Value List
+            //   Category: Core
+            //   Attribute: core.CustomActionsConfigs
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE", "9C204CD0-1233-41C5-818A-C5DA439445AA", "core.CustomActionsConfigs", "core.CustomActionsConfigs", "core.CustomActionsConfigs", @"", 0, @"", "0A3F078E-8A2A-4E9D-9763-3758E123E042" );
+
+            // Attribute for BlockType
+            //   BlockType: Defined Value List
+            //   Category: Core
+            //   Attribute: core.EnableDefaultWorkflowLauncher
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.EnableDefaultWorkflowLauncher", "core.EnableDefaultWorkflowLauncher", "core.EnableDefaultWorkflowLauncher", @"", 0, @"True", "80765648-83B0-4B75-A296-851384C41CAB" );
+
+            // Attribute for BlockType
+            //   BlockType: Defined Value List
+            //   Category: Core
+            //   Attribute: core.CustomGridEnableStickyHeaders
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "core.CustomGridEnableStickyHeaders", "core.CustomGridEnableStickyHeaders", "core.CustomGridEnableStickyHeaders", @"", 0, @"False", "DF5BE156-A4B8-4FA5-A730-0579733F42F5" );
+        }
+
+        private void SwapObsidianBlocks()
+        {
+            // Custom swap to replace Obsidian DefinedTypeDetail with Webforms DefinedTypeDetail.
+            RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
+                "Swap DefinedTypeDetail Block",
+                blockTypeReplacements: new Dictionary<string, string> {
+                { "f431f950-f007-493e-81c8-16559fe4c0f0", "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" }, // DefinedValueList -> DefinedValueList.ascx
+                { "73fd23b4-fa3a-49ea-b271-ffb228c6a49e", "08C35F15-9AF7-468F-9D50-CDFD3D21220C" }, // DefinedTypeDetail -> DefinedTypeDetail.ascx
+                },
+                migrationStrategy: "Swap",
+                jobGuid: SystemGuid.ServiceJob.DATA_MIGRATIONS_170_SWAP_WEBFORMS_BLOCKS,
+                blockAttributeKeysToIgnore: null );
+        }
+
+    }
+}

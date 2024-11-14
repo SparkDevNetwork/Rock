@@ -432,5 +432,10 @@ namespace Rock.SystemGuid
         /// The job for updating the IX_EntityTypeId_EntityId index on the History table.
         /// </summary>
         public const string POST_170_UPDATE_HISTORY_ENTITYTYPEID_INDEX = "48D7629C-1FB5-425A-AFAB-E8F220ABADB0";
+
+        /// <summary>
+        /// The job for swapping DefinedTypeDetail and DefinedValueList with Webforms Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_SWAP_WEBFORMS_BLOCKS = "AD8A38F7-1FCC-47CD-893F-9B4335DD7E08";
     }
 }
