@@ -34,6 +34,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 using GradeAndAgeMatchingMode = Rock.Enums.CheckIn.GradeAndAgeMatchingMode;
+using AgeRestrictionMode = Rock.Enums.CheckIn.AgeRestrictionMode;
 
 namespace RockWeb.Blocks.CheckIn.Config
 {
@@ -384,6 +385,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS, cblSpecialNeeds.SelectedValues.Contains( "special-needs" ).ToString() );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS, cblSpecialNeeds.SelectedValues.Contains( "non-special-needs" ).ToString() );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_GRADE_AND_AGE_MATCHING_BEHAVIOR, ddlGradeAndAgeMatchingBehavior.SelectedValue );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_AGE_RESTRICTION, ddlAgeRestriction.SelectedValue );
 
                 // Save group type and attributes
                 rockContext.WrapTransaction( () =>
@@ -658,6 +660,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 cblSpecialNeeds.SetValues( specialNeedsValues );
 
                 ddlGradeAndAgeMatchingBehavior.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_GRADE_AND_AGE_MATCHING_BEHAVIOR ) );
+                ddlAgeRestriction.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_AGE_RESTRICTION ) );
 
                 // Other GroupType Attributes
                 BuildAttributeEdits( groupType, true );
@@ -747,6 +750,7 @@ namespace RockWeb.Blocks.CheckIn.Config
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK );
             excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_GRADE_AND_AGE_MATCHING_BEHAVIOR );
+            excludeList.Add( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_AGE_RESTRICTION );
 
             if ( groupType.Attributes.Any( t => !excludeList.Contains( t.Value.Key ) ) )
             {
@@ -981,6 +985,8 @@ namespace RockWeb.Blocks.CheckIn.Config
 
             ddlGradeAndAgeMatchingBehavior.Items.Clear();
             ddlGradeAndAgeMatchingBehavior.BindToEnum<GradeAndAgeMatchingMode>();
+            ddlAgeRestriction.Items.Clear();
+            ddlAgeRestriction.BindToEnum<AgeRestrictionMode>();
         }
 
         #endregion

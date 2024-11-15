@@ -100,7 +100,7 @@ namespace Rock.Blocks.Event
 
             if ( definedType != null )
             {
-                audiences = definedType.DefinedValues.ConvertAll( dv => dv.ToListItemBag() );
+                audiences = definedType.DefinedValues.Where( a => a.IsActive ).ToList().ConvertAll( dv => dv.ToListItemBag() );
             }
 
             var options = new EventItemDetailOptionsBag()

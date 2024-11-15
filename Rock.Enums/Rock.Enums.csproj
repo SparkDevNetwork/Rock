@@ -53,6 +53,7 @@
     <Compile Include="Blocks\Communication\CommunicationEntry\Mode.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\MediumType.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\PushOpenActionType.cs" />
+    <Compile Include="CheckIn\AgeRestrictionMode.cs" />
     <Compile Include="CheckIn\GradeAndAgeMatchingMode.cs" />
     <Compile Include="CheckIn\LocationSelectionStrategy.cs" />
     <Compile Include="Cms\ThemeFieldType.cs" />

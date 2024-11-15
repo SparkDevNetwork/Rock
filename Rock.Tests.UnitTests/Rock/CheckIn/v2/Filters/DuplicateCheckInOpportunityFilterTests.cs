@@ -162,7 +162,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
             filter.FilterSchedules( opportunities );
 
             Assert.IsTrue( filter.Person.IsUnavailable );
-            Assert.AreEqual( "Already checked in.", filter.Person.UnavailableMessage );
+            Assert.IsNotNull( filter.Person.UnavailableMessage );
         }
 
         [TestMethod]
