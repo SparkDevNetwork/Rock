@@ -685,7 +685,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var clientLabelBags = labels.Where( l => l.PrintFrom == PrintFrom.Client )
                 .Select( l => new ClientLabelBag
                 {
-                    PrinterAddress = l.PrintTo.IPAddress,
+                    PrinterAddress = l.PrintTo?.IPAddress,
                     Data = Convert.ToBase64String( l.Data )
                 } )
                 .ToList();
