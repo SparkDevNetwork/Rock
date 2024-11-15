@@ -10,6 +10,7 @@
             <RockForm>
                 <TextBox v-model="pinCode"
                          class="pin-code"
+                         type="password"
                          @keypress.enter="onLoginClick" />
             </RockForm>
 
