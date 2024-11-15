@@ -39,6 +39,9 @@ namespace Rock.Model
     /// </summary>
     public partial class AnalyticsSourcePostalCode
     {
+        /// <summary>
+        /// The Census Data Path
+        /// </summary>
         public const string CensusDataPath = "App_Data\\Formatted_Census_Data.xlsx";
 
         /// <summary>
