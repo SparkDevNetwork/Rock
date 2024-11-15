@@ -138,11 +138,12 @@
  * Styles for the page body.
  */
 .check-in-page .messages {
-    margin-top: var(--spacing-large);
+    align-self: center;
+    margin-top: var(--spacing-huge);
     width: fit-content;
     color: var(--color-warning-strong);
     background: var(--color-warning-soft);
-    padding: var(--spacing-small);
+    padding: var(--spacing-xlarge);
     border-radius: var(--rounded-small);
 }
 
