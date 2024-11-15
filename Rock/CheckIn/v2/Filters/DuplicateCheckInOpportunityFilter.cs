@@ -79,7 +79,7 @@ namespace Rock.CheckIn.v2.Filters
             if ( opportunities.Schedules.Count == 0 && !Person.IsUnavailable )
             {
                 Person.IsUnavailable = true;
-                Person.UnavailableMessage = "Already checked in.";
+                Person.UnavailableMessage = "Already Checked In.";
             }
         }
 
@@ -114,7 +114,7 @@ namespace Rock.CheckIn.v2.Filters
             if ( opportunities.Groups.Count == 0 && !Person.IsUnavailable )
             {
                 Person.IsUnavailable = true;
-                Person.UnavailableMessage = "Already checked in.";
+                Person.UnavailableMessage = "Already Checked In.";
             }
         }
 
