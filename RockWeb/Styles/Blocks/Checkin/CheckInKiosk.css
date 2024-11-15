@@ -137,6 +137,19 @@
 /*
  * Styles for the page body.
  */
+.check-in-page .messages {
+    margin-top: var(--spacing-large);
+    width: fit-content;
+    color: var(--color-warning-strong);
+    background: var(--color-warning-soft);
+    padding: var(--spacing-small);
+    border-radius: var(--rounded-small);
+}
+
+.check-in-page .messages:empty {
+    padding:0;
+}
+
 .check-in-page .page-body {
     flex-grow: 1;
     overflow: auto;
