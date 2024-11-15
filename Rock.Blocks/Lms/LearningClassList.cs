@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningClassList;
 using Rock.Web.Cache;
@@ -152,7 +153,14 @@ namespace Rock.Blocks.Lms
             
             var programKey = PageParameter( PageParameterKey.LearningProgramId ) ?? string.Empty;
             var isNewProgram = programKey == "0";
-            var program = !isNewProgram && programKey.Length > 0 ? new LearningProgramService( RockContext ).Get( programKey ) : course?.LearningProgram;
+            var isOnDemandConfigurationMode = false;
+            if (!isNewProgram && programKey.Length > 0)
+            {
+                var configurationMode = new LearningProgramService( RockContext )
+                    .GetSelect( programKey, p => p.ConfigurationMode, !PageCache.Layout.Site.DisablePredictableIds );
+
+                isOnDemandConfigurationMode = configurationMode == Enums.Lms.ConfigurationMode.OnDemandLearning;
+            }
             
             // Only add the course column if the results aren't filtered to a course already.
             options.ShowCourseColumn = course == null;
@@ -160,7 +168,7 @@ namespace Rock.Blocks.Lms
 
             options.ShowLocationColumn = GetAttributeValue( AttributeKey.ShowLocationColumn ).AsBoolean();
             options.ShowScheduleColumn = GetAttributeValue( AttributeKey.ShowScheduleColumn ).AsBoolean();
-            options.ShowSemesterColumn = GetAttributeValue( AttributeKey.ShowSemesterColumn ).AsBoolean();
+            options.ShowSemesterColumn = GetAttributeValue( AttributeKey.ShowSemesterColumn ).AsBoolean() && !isOnDemandConfigurationMode;
 
             return options;
         }
@@ -228,12 +236,13 @@ namespace Rock.Blocks.Lms
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddField( "facilitators", a => a.LearningParticipants.Where( p => p.GroupRole.IsLeader ).Select( p => p.Person.FullName ).JoinStrings( ", " ) )
-                .AddTextField( "category", a => a.LearningCourse.CategoryId.HasValue ? CategoryCache.Get( a.LearningCourse.CategoryId.Value )?.Name : null )
-                .AddTextField( "categoryColor", a => a.LearningCourse.CategoryId.HasValue ? CategoryCache.Get( a.LearningCourse.CategoryId.Value )?.HighlightColor : null )
                 .AddField( "students", a => a.LearningParticipants.Count( p => !p.GroupRole?.IsLeader ?? false ) )
                 .AddTextField( "course", a => a.LearningCourse.Name )
                 .AddTextField( "learningCourseIdKey", a => a.LearningCourse.IdKey )
                 .AddTextField( "code", a => a.LearningCourse.CourseCode )
+                .AddTextField( "className", a => a.Name )
+                .AddField( "isActive", a => a.IsActive )
+                .AddField( "isPublic", a => a.IsPublic )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
 
             if ( GetAttributeValue( AttributeKey.ShowSemesterColumn ).AsBoolean() )
@@ -296,10 +305,14 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult HasStudentCompletions( string key )
         {
-            var entityService = new LearningClassService( RockContext );
-            var hasCompletions = entityService.GetSelect( key, c => c.LearningActivities.Any(), !PageCache.Layout.Site.DisablePredictableIds );
+            var classId = IdHasher.Instance.GetId( key );
+            var hasCompletions = new LearningParticipantService( RockContext )
+                .Queryable()
+                .Any( p =>
+                    p.LearningClassId == classId
+                    && p.LearningActivities.Any() );
 
-            return ActionOk(hasCompletions);
+            return ActionOk( hasCompletions );
         }
 
         #endregion

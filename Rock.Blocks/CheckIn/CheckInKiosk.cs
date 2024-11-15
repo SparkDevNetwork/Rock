@@ -234,7 +234,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
             // Get the campus to filter for as well as the current date.
             var campus = campusId.HasValue
-                ? CampusCache.Get( campusId.Value )
+                ? CampusCache.Get( campusId.Value, RockContext )
                 : null;
             var campusGuid = campus?.Guid ?? Guid.Empty;
             var now = campus?.CurrentDateTime ?? RockDateTime.Now;
@@ -257,8 +257,8 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
             // Order the items.
             promotionItems = contentChannel.ItemsManuallyOrdered
-                ? contentChannel.Items.OrderBy( item => item.Order )
-                : contentChannel.Items.OrderBy( item => item.StartDateTime );
+                ? promotionItems.OrderBy( item => item.Order )
+                : promotionItems.OrderBy( item => item.StartDateTime );
 
             return promotionItems
                 .Select( item => new PromotionBag
@@ -444,8 +444,11 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                     Id = IdHasher.Instance.GetHash( g.Key.Id ),
                     Name = g.Key.Name,
                     AreaId = IdHasher.Instance.GetHash( g.Key.GroupTypeId ),
-                    LocationIds = g.Where( l => l.LocationId.HasValue )
-                        .Select( l => IdHasher.Instance.GetHash( l.LocationId.Value ) )
+                    Locations = g.Where( l => l.LocationId.HasValue )
+                        .Select( l => new LocationAndScheduleBag
+                        {
+                            LocationId = IdHasher.Instance.GetHash( l.LocationId.Value )
+                        } )
                         .ToList()
                 } )
                 .ToList();
@@ -960,13 +963,15 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 .Select( fm => fm.PersonId )
                 .ToList();
 
-            var canCheckInRoleId = GroupTypeRoleCache
-                .Get( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN.AsGuid(), RockContext )
-                .Id;
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            var canCheckInRoleIds = knownRelationshipGroupType.Roles
+                .Where( r => r.GetAttributeValue( "CanCheckin" ).AsBoolean() )
+                .Select( r => r.Id )
+                .ToList();
 
             foreach ( var familyMemberPersonId in familyMemberPersonIds )
             {
-                groupMemberService.DeleteKnownRelationship( familyMemberPersonId, attendeeIdNumber.Value, canCheckInRoleId );
+                groupMemberService.DeleteKnownRelationships( familyMemberPersonId, attendeeIdNumber.Value, canCheckInRoleIds );
             }
 
             RockContext.SaveChanges();
@@ -1398,6 +1403,15 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 group.LoadAttributes( RockContext );
                 group.Members.Select( gm => gm.Person ).LoadAttributes( RockContext );
             }
+            else
+            {
+                group = new Model.Group
+                {
+                    GroupTypeId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid(), RockContext ).Id
+                };
+
+                group.LoadAttributes( RockContext );
+            }
 
             if ( template == null )
             {
@@ -1435,7 +1449,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
             var response = new EditFamilyResponseBag
             {
-                Family = group != null ? registration.GetFamilyBag( group ) : null,
+                Family = registration.GetFamilyBag( group ),
                 People = group != null ? registration.GetFamilyMemberBags( group ) : null,
                 IsAlternateIdFieldVisibleForAdults = template.IsAlternateIdFieldVisibleForAdults,
                 IsAlternateIdFieldVisibleForChildren = template.IsAlternateIdFieldVisibleForChildren,

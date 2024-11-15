@@ -152,7 +152,9 @@ namespace Rock.Blocks.Lms
             {
                 var programService = new LearningProgramService( RockContext );
                 var configurationMode = programService.GetSelect( programId, p => p.ConfigurationMode );
+                var enableAnnouncements = new LearningClassService( RockContext ).GetSelect( classId, c => c.LearningCourse.EnableAnnouncements );
 
+                options.CourseAllowsAnnouncements = enableAnnouncements;
                 options.ProgramConfigurationMode = configurationMode;
                 options.ActiveClassesUsingDefaultGradingSystem = GetProgramActiveClassesWithDefaultGradingSystem( classId ).Count();
 
@@ -395,10 +397,13 @@ namespace Rock.Blocks.Lms
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
             {
+                var programId = PageParameter( PageParameterKey.LearningProgramId );
                 return new LearningClass
                 {
                     Id = 0,
-                    Guid = Guid.Empty
+                    Guid = Guid.Empty,
+                    LearningGradingSystemId = new LearningProgramService( RockContext )
+                        .GetSelect( programId, p => p.DefaultLearningGradingSystemId, !PageCache.Layout.Site.DisablePredictableIds ) ?? 0
                 };
             }
 
@@ -512,11 +517,6 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
-            var isOnDemandProgram = ConfigurationMode.OnDemandLearning == new LearningProgramService( RockContext ).GetSelect( programId, p => p.ConfigurationMode );
-            if ( isOnDemandProgram )
-            {
-                return null;
-            }
             // Exclude the auto edit and return URL parameters from the page reference parameters (if any).
             var excludedParamKeys = new[] { "autoedit", "returnurl" };
             var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
@@ -902,6 +902,7 @@ namespace Rock.Blocks.Lms
 
             var components = LearningActivityContainer.Instance.Components.Values;
             var now = DateTime.Now;
+            var studentCount = new LearningParticipantService( RockContext ).GetStudents( entity.Id ).Count();
 
             // Return all activities for the course.
             var gridBuilder = new GridBuilder<LearningActivity>()
@@ -910,9 +911,9 @@ namespace Rock.Blocks.Lms
                 .AddField( "assignTo", a => a.AssignTo )
                 .AddField( "type", a => a.ActivityComponentId )
                 .AddField( "dates", a => a.DatesDescription )
-                .AddField( "isPastDue", a => a.DueDateCalculated == null ? false : a.DueDateCalculated <= now )
-                .AddField( "count", a => a.LearningActivityCompletions.Count() )
-                .AddField( "completedCount", a => a.LearningActivityCompletions.Count( c => c.IsStudentCompleted ) )
+                .AddField( "isPastDue", a => a.IsPastDue )
+                .AddField( "count", a => studentCount )
+                .AddField( "completedCount", a => a.LearningActivityCompletions.Count( c => c.IsStudentCompleted || c.IsFacilitatorCompleted ) )
                 .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.IconCssClass )
                 .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.HighlightColor )
                 .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.Name )
@@ -1126,10 +1127,12 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// 
+        /// Updates the active LearningClasses for the <see cref="LearningProgram"/>
+        /// so that they use the <see cref="LearningGradingSystem"/>
+        /// specified by the <paramref name="newGradingSystemGuid"/>.
         /// </summary>
         /// <param name="newGradingSystemGuid">The Guid of the <see cref="LearningGradingSystem"/> to use for all active classes.</param>
-        /// <returns>An Ok response with status message or </returns>
+        /// <returns>An Ok response with status message.</returns>
         [BlockAction]
         public BlockActionResult UpdateActiveClassGradingSystems( Guid newGradingSystemGuid )
         {

@@ -97,6 +97,14 @@
         startInCodeEditorMode: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        /**
+         * When set to true, the code editor allows toggling even if the content includes Lava commands,
+         * bypassing any usual restrictions related to such content.
+         */
+        isTogglableCodeEditorForced: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -130,7 +138,7 @@
 
     /** Determines whether the code editor should be forced to display. */
     const isCodeEditorForced = computed<boolean>(() => {
-        return hasLavaCommandFields(internalValue.value) || hasLavaShortcodeFields(internalValue.value);
+        return (hasLavaCommandFields(internalValue.value) || hasLavaShortcodeFields(internalValue.value)) && !props.isTogglableCodeEditorForced;
     });
 
     //#endregion

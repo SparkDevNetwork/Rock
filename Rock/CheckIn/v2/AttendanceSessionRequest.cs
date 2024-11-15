@@ -26,13 +26,6 @@ namespace Rock.CheckIn.v2
     internal class AttendanceSessionRequest : AttendanceSessionRequestBag
     {
         /// <summary>
-        /// Gets or sets a value indicating whether this session should enforce
-        /// location capacity limits on the locations.
-        /// </summary>
-        /// <value><c>true</c> if this instance should enforce location capacity; otherwise, <c>false</c>.</value>
-        public bool IsCapacityThresholdEnforced { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this session is for an
         /// administrative override.
         /// </summary>
@@ -55,6 +48,7 @@ namespace Rock.CheckIn.v2
         public AttendanceSessionRequest( AttendanceSessionRequestBag requestBag )
         {
             Guid = requestBag.Guid;
+            IsCapacityThresholdEnforced = requestBag.IsCapacityThresholdEnforced;
             IsPending = requestBag.IsPending;
             FamilyId = requestBag.FamilyId;
             SearchMode = requestBag.SearchMode;

@@ -155,6 +155,12 @@ namespace Rock.SystemKey
         public const string CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION = "core_checkin_AbilityLevelDetermination";
 
         /// <summary>
+        /// Attribute key for check-in configuration template to specify if
+        /// certain age groups should be excluded from check-in.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_AGE_RESTRICTION = "core_AgeRestriction";
+
+        /// <summary>
         /// Attribute key for GroupTypes that allow checkout
         /// </summary>
         [RockObsolete( "1.14" )]
@@ -188,6 +194,12 @@ namespace Rock.SystemKey
         ///  Stored as a list of <see cref="Rock.Model.AchievementType"/> Guids
         /// </summary>
         public const string CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES = "core_checkin_AchievementTypes";
+
+        /// <summary>
+        /// Attribute key for check-in configuration template to specify the
+        /// behavior of matching Grade and Age for groups.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_GRADE_AND_AGE_MATCHING_BEHAVIOR = "core_checkin_GradeAndAgeMatchingBehavior";
 
         /// <summary>
         /// Attribute key for grouptypes location selection strategy (Ask, Fill in order, balance).

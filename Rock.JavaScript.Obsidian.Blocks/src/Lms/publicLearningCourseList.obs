@@ -5,7 +5,7 @@
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
-    import { PublicLearningCourseListBlockBox } from "@Obsidian/ViewModels/block/Lms/publicLearningCourseListBlockBox";
+    import { PublicLearningCourseListBlockBox } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningCourseList/publicLearningCourseListBlockBox";
     import { ref } from "vue";
 
     const config = useConfigurationValues<PublicLearningCourseListBlockBox>();

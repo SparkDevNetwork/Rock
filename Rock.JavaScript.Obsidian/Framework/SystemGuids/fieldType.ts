@@ -183,6 +183,8 @@ export const FieldType = {
     GroupLocationType: "48624B0B-6A58-45B8-9E47-B67B67898D25",
     /** Group Member field type */
     GroupMember: "D092B5BB-A7F4-45B7-AB01-72CC4FC589A9",
+    /** Group Member Requirement field type */
+    GroupMemberRequirement: "C0797A18-B489-46C7-8C30-F5E4F8246E23",
     /** Group Role field type */
     GroupRole: "3BB25568-E793-4D12-AE80-AC3FDA6FD8A8",
     /** Group Type field type */
@@ -287,6 +289,8 @@ export const FieldType = {
     Schedule: "E9C12C59-98EA-4977-8318-647435BE9A9C",
     /** Schedules field type */
     Schedules: "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B",
+    /** Secondary auths field type */
+    SecondaryAuths: "98F57599-2DC3-4022-BE33-14A22C3043E1",
     /** Security Role field type */
     SecurityRole: "7BD25DC9-F34A-478D-BEF9-0C787F5D39B8",
     /** Single-Select field type */

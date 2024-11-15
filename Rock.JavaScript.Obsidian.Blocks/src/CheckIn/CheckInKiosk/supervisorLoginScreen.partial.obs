@@ -3,9 +3,16 @@
     <div class="supervisor-login-screen">
         <MainPanel title="Supervisor Login"
                    subtitle="Enter your PIN to login as a supervisor">
-            <TextBox v-model="pinCode"
-                     class="pin-code"
-                     @keypress.enter="onLoginClick" />
+            <!--
+                The form is here to prevent iOS from causing the Return key
+                to become a Go key and triggering a WebForms postback.
+            -->
+            <RockForm>
+                <TextBox v-model="pinCode"
+                         class="pin-code"
+                         type="password"
+                         @keypress.enter="onLoginClick" />
+            </RockForm>
 
             <NumberPad v-model="pinCode"
                        documentListener
@@ -41,6 +48,7 @@
     import { alert } from "@Obsidian/Utility/dialogs";
     import { SupervisorScreen, SupervisorScreenData, AttendanceCountGroup, KioskButton } from "./types.partial";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
 
     const props = defineProps({
         configuration: {
@@ -123,7 +131,7 @@
 
                 areaCounts.children.push(groupCounts);
 
-                for (const locId of group.locationIds ?? []) {
+                for (const locId of group.locations?.map(gl => gl.locationId) ?? []) {
                     const location = data.locations?.find(l => l.id === locId);
 
                     if (!location || !location.id || !location.name) {
@@ -157,7 +165,7 @@
         const locations: AttendanceCountGroup[] = [];
 
         for (const location of data.locations ?? []) {
-            if (!location.id || !location.name || !data.groups?.some(g => g.locationIds?.includes(location.id ?? ""))) {
+            if (!location.id || !location.name || !data.groups?.some(g => g.locations?.some(gl => gl.locationId === location.id))) {
                 continue;
             }
 
@@ -170,7 +178,7 @@
 
             locations.push(locationCounts);
 
-            for (const group of data.groups?.filter(g => g.locationIds?.includes(location.id ?? "")) ?? []) {
+            for (const group of data.groups?.filter(g => g.locations?.some(gl => gl.locationId === location.id)) ?? []) {
                 if (!group.id || !group.name) {
                     continue;
                 }

@@ -2,8 +2,12 @@
 <template>
     <div v-if="loginRequiredUrl" class="p-4">
         <NotificationBox alertType="warning">
-            Check-in is not configured for anonymous access and you are not logged in.
-            Please update block settings or <a :href="loginRequiredUrl">login</a>.
+            <div>
+                Check-in is not configured for anonymous access and you are not logged in.
+                Please update block settings or login.
+            </div>
+
+            <a :href="loginRequiredUrl" class="btn btn-primary mt-3">Login</a>
         </NotificationBox>
     </div>
 
@@ -96,7 +100,8 @@
                 <SuccessScreen v-if="currentScreen === Screen.Success"
                                :configuration="configuration"
                                :session="currentSession"
-                               @updateActions="onUpdateActions($event, Screen.Success)" />
+                               @updateActions="onUpdateActions($event, Screen.Success)"
+                               @checkInFamily="onRegistrationCheckInFamily" />
 
                 <CheckoutSuccessScreen v-if="currentScreen === Screen.CheckoutSuccess"
                                        :configuration="configuration"
@@ -638,6 +643,12 @@
 
         session = await session.withFamily(familyId);
         session = await session.withNextScreen();
+
+        // If we are on the action select screen, skip it and go straight to
+        // family member screen.
+        if (session.currentScreen === Screen.ActionSelect) {
+            session = await session.withNextScreen();
+        }
 
         // Make the back button go back to the welcome screen.
         currentSession.value = blankSession;

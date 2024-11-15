@@ -27,6 +27,8 @@
                 field="person"
                 :filter="pickExistingValueFilter"
                 :filterValue="getNameFilterValue"
+                :quickFilterValue="getNameFilterValue"
+                :sortValue="getNameFilterValue"
                 visiblePriority="xs"
                 width="25%">
             <template #format="{ row }">
@@ -122,7 +124,6 @@
 </template>
 
 <style>
-
 .grid-item-pull-right {
     flex-direction: column;
     align-items: start;

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -86,7 +86,7 @@ namespace Rock.Model
                                     {
                                         LogError( $"PersistedDataset (Id: {this.Id}) build script created invalid result data: {output}" );
                                         result.IsSuccess = false;
-                                        result.WarningMessage = $"Invalid result data for dataset {this.Id}";
+                                        result.WarningMessage = $"Invalid result data for dataset {this.Id}, {output}";
                                     }
                                     else
                                     {

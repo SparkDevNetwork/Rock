@@ -577,7 +577,7 @@ namespace RockWeb.Blocks.Administration
             cbAllowIndexing.Checked = page.AllowIndexing;
 
             cbEnableRateLimiting.Checked = page.IsRateLimited;
-            nbRateLimitPeriodDuration.IntegerValue = page.RateLimitPeriodDuration;
+            nbRateLimitPeriodDurationSeconds.IntegerValue = page.RateLimitPeriodDurationSeconds;
             nbRequestPerPeriod.IntegerValue = page.RateLimitRequestPerPeriod;
 
             if ( page.CacheControlHeaderSettings != null )
@@ -806,12 +806,12 @@ namespace RockWeb.Blocks.Administration
 
             if ( cbEnableRateLimiting.Checked )
             {
-                page.RateLimitPeriodDuration = nbRateLimitPeriodDuration.IntegerValue;
+                page.RateLimitPeriodDurationSeconds = nbRateLimitPeriodDurationSeconds.IntegerValue;
                 page.RateLimitRequestPerPeriod = nbRequestPerPeriod.IntegerValue;
             }
             else
             {
-                page.RateLimitPeriodDuration = null;
+                page.RateLimitPeriodDurationSeconds = null;
                 page.RateLimitRequestPerPeriod = null;
             }
 

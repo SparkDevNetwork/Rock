@@ -214,7 +214,7 @@
             key
         });
 
-        if (result.isSuccess && result.data) {
+        if (result.isSuccess) {
             return asBoolean(result.data);
         }
         else {

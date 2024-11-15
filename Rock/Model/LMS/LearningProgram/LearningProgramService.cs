@@ -81,10 +81,11 @@ namespace Rock.Model
         /// <returns></returns>
         public LearningSemester GetDefaultSemester( int learningProgramId )
         {
+            var now = RockDateTime.Now;
             return learningProgramId > 0 ? Queryable()
                 .Where( p => p.Id == learningProgramId )
                 .Include( p => p.LearningSemesters )
-                .Select( p => p.LearningSemesters.FirstOrDefault() )
+                .Select( p => p.LearningSemesters.FirstOrDefault( s=> !s.EndDate.HasValue || s.EndDate >= now ) )
                 .FirstOrDefault() :
                 default;
         }
@@ -158,7 +159,7 @@ namespace Rock.Model
                 .Queryable()
                 .AsNoTracking()
                 .Include( c => c.PersonAlias )
-                .Where( c => c.PersonAlias.PersonId == includeCompletionsForPersonId );
+                .Where( c => c.PersonAlias.PersonId == includeCompletionsForPersonId ) ?? default;
 
                 return baseQuery
                     .Select( p => new PublicLearningProgramBag

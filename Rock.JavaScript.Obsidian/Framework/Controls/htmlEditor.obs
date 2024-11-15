@@ -25,6 +25,7 @@
                                                   :mergeFields="mergeFields"
                                                   ref="editSourceCodePlugin"
                                                   :startInCodeEditorMode="startInCodeEditorMode"
+                                                  :isTogglableCodeEditorForced="isTogglableCodeEditorForced"
                                                   @preventToggleOff="onPreventCodeEditorToggleOff">
                                 <template #default="{ isEditorShown }">
                                     <div v-show="!updateIsEditorShown(isEditorShown)"
@@ -202,6 +203,15 @@
          * does not exist, it will be created.
          */
         userSpecificRoot: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * When set to true, the code editor allows toggling even if the content includes Lava commands,
+         * bypassing any usual restrictions related to such content.
+         */
+        isTogglableCodeEditorForced: {
             type: Boolean,
             default: false
         }

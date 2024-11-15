@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 #if WEBFORMS
 using System.Web.UI;
@@ -23,6 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Media;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -31,7 +33,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) <see cref="MediaElement"/>.
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MEDIA_ELEMENT )]
     public class MediaElementFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
@@ -61,6 +63,106 @@ namespace Rock.Field.Types
         /// Configuration Key for when to enable <see cref="MediaElementPicker.IsRefreshAllowed"/>.
         /// </summary>
         public static readonly string CONFIG_ALLOW_REFRESH = "allowRefresh";
+
+        /// <summary>
+        /// Configuration Key for the Media element thumbnail.
+        /// </summary>
+        public static readonly string CONFIG_THUMBNAIL_URL = "thumbnailUrl";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+            using ( var rockContext = new RockContext() )
+            {
+                if ( usage == ConfigurationValueUsage.View )
+                {
+                    if ( !string.IsNullOrWhiteSpace( value ) )
+                    {
+                        var (_, thumbnailUrl) = GetNameAndThumbnail( value, false );
+                        publicConfigurationValues[CONFIG_THUMBNAIL_URL] = thumbnailUrl;
+                    }
+                }
+                else
+                {
+                    if ( privateConfigurationValues.TryGetValue( CONFIG_LIMIT_TO_ACCOUNT, out string accountId ) )
+                    {
+                        var mediaAccountId = accountId.AsIntegerOrNull();
+                        if ( mediaAccountId.HasValue )
+                        {
+                            var mediaAccount = new MediaAccountService( rockContext ).Queryable()
+                                .AsNoTracking()
+                                .Where( m => m.Id == mediaAccountId.Value )
+                                .Select( m => new ListItemBag()
+                                {
+                                    Text = m.Name,
+                                    Value = m.Guid.ToString()
+                                } )
+                                .FirstOrDefault();
+
+                            publicConfigurationValues[CONFIG_LIMIT_TO_ACCOUNT] = mediaAccount?.ToCamelCaseJson( false, true );
+                        }
+                    }
+
+                    if ( privateConfigurationValues.TryGetValue( CONFIG_LIMIT_TO_FOLDER, out string folderId ) )
+                    {
+                        var mediaFolderId = folderId.AsIntegerOrNull();
+                        if ( mediaFolderId.HasValue )
+                        {
+                            var mediaFolder = new MediaFolderService( rockContext ).Queryable()
+                                .AsNoTracking()
+                                .Where( m => m.Id == mediaFolderId.Value )
+                                .Select( m => new ListItemBag()
+                                {
+                                    Text = m.Name,
+                                    Value = m.Guid.ToString()
+                                } )
+                                .FirstOrDefault();
+
+                            publicConfigurationValues[CONFIG_LIMIT_TO_FOLDER] = mediaFolder?.ToCamelCaseJson( false, true );
+                        }
+                    }
+                }
+            }
+
+            return publicConfigurationValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
+
+            using ( var rockContext = new RockContext() )
+            {
+                if ( publicConfigurationValues.TryGetValue( CONFIG_LIMIT_TO_ACCOUNT, out string accountBag ) )
+                {
+                    var mediaAccountBag = accountBag.FromJsonOrNull<ListItemBag>();
+                    if ( mediaAccountBag != null )
+                    {
+                        var mediaAccountId = new MediaAccountService( rockContext ).GetSelect( mediaAccountBag.Value.AsGuid(), m => m.Id );
+                        privateConfigurationValues[CONFIG_LIMIT_TO_ACCOUNT] = mediaAccountId.ToString();
+                    }
+                }
+
+                if ( publicConfigurationValues.TryGetValue( CONFIG_LIMIT_TO_FOLDER, out string folderBag ) )
+                {
+                    var mediaFolderBag = folderBag.FromJsonOrNull<ListItemBag>();
+                    if ( mediaFolderBag != null )
+                    {
+                        var mediaFolderId = new MediaFolderService( rockContext ).GetSelect( mediaFolderBag.Value.AsGuid(), m => m.Id );
+                        privateConfigurationValues[CONFIG_LIMIT_TO_FOLDER] = mediaFolderId.ToString();
+                    }
+                }
+            }
+
+            return privateConfigurationValues;
+        }
 
         #endregion
 
@@ -111,6 +213,33 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
+            var (name, thumbnailUrl) = GetNameAndThumbnail( privateValue, condensed );
+
+            if ( condensed )
+            {
+                return $"<img src='{thumbnailUrl}' alt='{name.EncodeXml( true )}' class='img-responsive grid-img' />";
+            }
+            else
+            {
+                return $"<img src='{thumbnailUrl}' alt='{name.EncodeXml( true )}' class='img-responsive' />";
+            }
+        }
+
+        /// <summary>
+        /// Gets the name and thumbnail of the selected media element.
+        /// </summary>
+        /// <param name="value">The value of the field in the database, in this case the media element guid</param>
+        /// <param name="condensed">If set to <c>true</c> then the output should be condensed for rendering to a small space.</param>
+        /// <returns></returns>
+        private (string name, string thumbNailUrl) GetNameAndThumbnail( string value, bool condensed )
+        {
+            var mediaElementGuid = value.AsGuidOrNull();
+
+            if ( !mediaElementGuid.HasValue )
+            {
+                return (string.Empty, string.Empty);
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var mediaInfo = new MediaElementService( rockContext ).Queryable()
@@ -124,7 +253,7 @@ namespace Rock.Field.Types
 
                 if ( mediaInfo == null )
                 {
-                    return string.Empty;
+                    return (string.Empty, string.Empty);
                 }
 
                 var thumbnails = mediaInfo.ThumbnailDataJson.FromJsonOrNull<List<MediaElementThumbnailData>>();
@@ -159,20 +288,93 @@ namespace Rock.Field.Types
                     }
                 }
 
-                if ( condensed )
-                {
-                    return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive grid-img' />";
-                }
-                else
-                {
-                    return $"<img src='{thumbnailUrl}' alt='{mediaInfo.Name.EncodeXml( true )}' class='img-responsive' />";
-                }
+                return (mediaInfo.Name, thumbnailUrl);
             }
         }
 
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var mediaElementGuid = privateValue.AsGuidOrNull();
+            var publicValue = string.Empty;
+
+            if ( mediaElementGuid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var mediaElementInfo = new MediaElementService( rockContext ).Queryable()
+                        .Where( a => a.Guid == mediaElementGuid.Value )
+                        .Select( a => new
+                        {
+                            a.Id,
+                            a.Guid,
+                            a.Name,
+                            a.MediaFolderId,
+                            a.MediaFolder.MediaAccountId
+                        } )
+                        .SingleOrDefault();
+
+                    if ( mediaElementInfo != null )
+                    {
+                        var limitAccountId = privateConfigurationValues[CONFIG_LIMIT_TO_ACCOUNT]?.AsIntegerOrNull();
+                        var limitFolderId = privateConfigurationValues[CONFIG_LIMIT_TO_FOLDER]?.AsIntegerOrNull();
+
+                        bool accountOk = limitAccountId.IsNullOrZero() || limitAccountId.Value == mediaElementInfo.MediaAccountId;
+                        bool folderOk = limitFolderId.IsNullOrZero() || limitFolderId.Value == mediaElementInfo.MediaFolderId;
+
+                        // This is a little odd, but here is the logic.
+                        // If the admin has limited to a specific folder or account
+                        // then we need to enforce that. Which means if the old
+                        // value is for a different folder/account then we
+                        // basically just don't set the value because they won't
+                        // be able to save it anyway. Similar logic to a custom
+                        // drop down list where the admin removes one of the
+                        // options. The next time the value is edited it won't
+                        // be selected anymore because it doesn't exist.
+                        if ( accountOk && folderOk )
+                        {
+                            var mediaElementBag = new ListItemBag()
+                            {
+                                Text = mediaElementInfo.Name,
+                                Value = mediaElementInfo.Guid.ToString()
+                            };
+
+                            publicValue = mediaElementBag.ToCamelCaseJson( false, true );
+                        }
+                    }
+                }
+            }
+
+            return publicValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var mediaElementGuid = privateValue.AsGuidOrNull();
+            var publicValue = string.Empty;
+
+            if ( mediaElementGuid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    publicValue = new MediaElementService( rockContext ).GetSelect( mediaElementGuid.Value, m => m.Name );
+                }
+            }
+
+            return publicValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var mediaElementGuid = publicValue.FromJsonOrNull<ListItemBag>()?.Value;
+            return mediaElementGuid;
+        }
 
         #endregion
 

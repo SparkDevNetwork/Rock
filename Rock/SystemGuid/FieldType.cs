@@ -422,6 +422,11 @@ namespace Rock.SystemGuid
         public const string GROUP_MEMBER = "D092B5BB-A7F4-45B7-AB01-72CC4FC589A9";
 
         /// <summary>
+        /// Group Member Requirement field type
+        /// </summary>
+        public const string GROUP_MEMBER_REQUIREMENT = "C0797A18-B489-46C7-8C30-F5E4F8246E23";
+
+        /// <summary>
         /// Group Role field type
         /// </summary>
         public const string GROUP_ROLE = "3BB25568-E793-4D12-AE80-AC3FDA6FD8A8";
@@ -680,6 +685,11 @@ namespace Rock.SystemGuid
         /// Schedules field type
         /// </summary>
         public const string SCHEDULES = "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B";
+
+        /// <summary>
+        /// Secondary auths field type
+        /// </summary>
+        public const string SECONDARY_AUTHS = "98F57599-2DC3-4022-BE33-14A22C3043E1";
 
         /// <summary>
         /// Security Role field type

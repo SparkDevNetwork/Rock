@@ -275,9 +275,13 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 EmailAddress = entity.Email,
                 RecordStatus = entity.RecordStatusValue.ToListItemBag(),
                 RecordStatusReason = entity.RecordStatusReasonValue.ToListItemBag(),
-                Campus = entity.PrimaryCampus.ToListItemBag(),
                 CustomActions = CreateActionMenu( entity.Id )
             };
+
+            if ( entity.GivingGroup != null )
+            {
+                bag.Campus = entity.GivingGroup.Campus.ToListItemBag();
+            }
 
             // Get Phone Number
             var workPhoneType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
@@ -372,9 +376,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
             var searchKeys = business.GetPersonSearchKeys()
                 .Where( a => validSearchTypes.Contains( a.SearchTypeValue.Guid ) && a.SearchTypeValueId != dvAlternateId.Id )
                 .ToList();
-
-            var searchValueTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_SEARCH_KEYS ).DefinedValues;
-            var searchTypesList = searchValueTypes.Where( dv => validSearchTypes.Contains( dv.Guid ) && dv.Id != dvAlternateId.Id ).ToList();
 
             return searchKeys.ConvertAll( a => new SearchKeyBag() { Guid = a.Guid, SearchType = a.SearchTypeValue.ToListItemBag(), SearchValue = a.SearchValue } );
         }

@@ -940,13 +940,15 @@
     <Compile Include="CheckIn\v2\DefaultSaveProvider.cs" />
     <Compile Include="CheckIn\v2\FamilyRegistration.cs" />
     <Compile Include="CheckIn\v2\FamilyRegistrationSaveResult.cs" />
+    <Compile Include="CheckIn\v2\Filters\AbilityLevelOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\BirthMonthOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\GradeAndAgeOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationOverflowOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\PreferredGroupsOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\SpecialNeedsOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\IValidPropertiesBoxExtensions.cs" />
-    <Compile Include="CheckIn\v2\Labels\AttendanceLabel.cs" />
+    <Compile Include="CheckIn\v2\Labels\LabelAttendanceDetail.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendanceLabelData.cs" />
     <Compile Include="CheckIn\v2\Labels\AttendeePhotoFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\BarcodeFieldConfiguration.cs" />
@@ -968,11 +970,13 @@
     <Compile Include="CheckIn\v2\Labels\Formatters\WeekdayDateDataFormatter.cs" />
     <Compile Include="CheckIn\v2\Labels\IconFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\IFieldConfiguration.cs" />
+    <Compile Include="CheckIn\v2\Labels\ILabelDataHasAttendance.cs" />
     <Compile Include="CheckIn\v2\Labels\ILabelDataHasPerson.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelPrintProvider.cs" />
     <Compile Include="CheckIn\v2\Labels\ImageFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelField.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelIcon.cs" />
+    <Compile Include="CheckIn\v2\Labels\PersonLocationLabelData.cs" />
     <Compile Include="CheckIn\v2\Labels\RenderedLabel.cs" />
     <Compile Include="CheckIn\v2\Labels\LineFieldConfiguration.cs" />
     <Compile Include="CheckIn\v2\Labels\MultiValueFieldDataSource.cs" />
@@ -1607,6 +1611,11 @@
     <Compile Include="Plugin\HotFixes\207_MigrationRollupsForV17_0_14.cs" />
     <Compile Include="Plugin\HotFixes\206_MigrationRollupsForV17_0_13.cs" />
     <Compile Include="Plugin\HotFixes\205_MigrationRollupsForV17_0_12.cs" />
+    <Compile Include="Plugin\HotFixes\219_UndoObsidianChop.cs" />
+    <Compile Include="Plugin\HotFixes\220_CompletionGradingSystem.cs" />
+    <Compile Include="Plugin\HotFixes\218_MigrationRollupsForV17_0_19.cs" />
+    <Compile Include="Plugin\HotFixes\217_DefaultGradeScaleHighlightColors.cs" />
+    <Compile Include="Plugin\HotFixes\216_LMSRoutes.cs" />
     <Compile Include="Plugin\HotFixes\214_UpdateGradingScaleDescriptions.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -4879,6 +4888,7 @@
     <None Include="Resources\updateGoogleStaticMap.sql" />
     <None Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
     <None Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql" />
+    <None Include="Plugin\HotFixes\216_open_bible_on_notebook.jpg.bin" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">

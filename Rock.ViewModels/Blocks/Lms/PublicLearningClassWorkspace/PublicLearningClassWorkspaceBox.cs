@@ -78,6 +78,11 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         public LearningGradingSystemScaleBag CurrentGrade {  get; set; }
 
         /// <summary>
+        /// Whether announcements are enabled.
+        /// </summary>
+        public bool EnableAnnouncements { get; set; }
+
+        /// <summary>
         /// Gets or sets the list of facilitators for the learning class.
         /// </summary>
         public List<LearningClassFacilitatorBag> Facilitators { get; set; }

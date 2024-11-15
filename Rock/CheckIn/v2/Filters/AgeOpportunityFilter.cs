@@ -17,6 +17,8 @@
 
 using System;
 
+using Rock.Enums.CheckIn;
+
 namespace Rock.CheckIn.v2.Filters
 {
     /// <summary>
@@ -60,28 +62,66 @@ namespace Rock.CheckIn.v2.Filters
         /// <inheritdoc/>
         public override bool IsGroupValid( GroupOpportunity group )
         {
-            var ageRangeMatch = CheckAgeMatches( PersonAge.Value,
-                group.CheckInData.MinimumAge,
-                group.CheckInData.MaximumAge,
+            // We only handle GradeAndAgeMustMatch. Other behaviors are handled
+            // by GradeAndAgeOpportunityFilter.
+            if ( TemplateConfiguration.GradeAndAgeMatchingBehavior != GradeAndAgeMatchingMode.GradeAndAgeMustMatch )
+            {
+                return true;
+            }
+
+            var ageOrBirthdateRangeMatch = CheckAgeOrBirthdateMatches( PersonAge.Value,
+                Person.Person.BirthDate?.DateTime,
+                group.CheckInData,
                 TemplateConfiguration.IsAgeRequired );
+
+            if ( ageOrBirthdateRangeMatch == false )
+            {
+                return false;
+            }
+
+            // Either had a definitive yes, or a "we don't know" which also
+            // means yes.
+            return true;
+        }
+
+        /// <summary>
+        /// Determines if either the age or birthdate restrictions on the group
+        /// match the person.
+        /// </summary>
+        /// <param name="age">The age of the person or <c>null</c> if not known.</param>
+        /// <param name="birthdate">The known birthdate of the person.</param>
+        /// <param name="checkInData">The configuration for the group.</param>
+        /// <param name="isAgeRequired">if set to <c>true</c> and no age is provided then <c>false</c> will be returned.</param>
+        /// <returns><c>true</c> if either age or birthdate definitely match; <c>false</c> if either age or birthdate definitively don't match; <c>null</c> if a definitive answer could not be determined.</returns>
+        internal static bool? CheckAgeOrBirthdateMatches( decimal? age, DateTime? birthdate, GroupConfigurationData checkInData, bool isAgeRequired )
+        {
+            var ageRangeMatch = CheckAgeMatches( age,
+                checkInData.MinimumAge,
+                checkInData.MaximumAge,
+                isAgeRequired );
 
             if ( ageRangeMatch == true )
             {
                 return true;
             }
 
-            var birthdateRangeMatch = CheckBirthdateMatches( Person.Person.BirthDate?.DateTime,
-                group.CheckInData.MinimumBirthdate,
-                group.CheckInData.MaximumBirthdate,
-                TemplateConfiguration.IsAgeRequired );
+            var birthdateRangeMatch = CheckBirthdateMatches( birthdate,
+                checkInData.MinimumBirthdate,
+                checkInData.MaximumBirthdate,
+                isAgeRequired );
 
             if ( birthdateRangeMatch == true )
             {
                 return true;
             }
 
-            // If all checks are indeterminate, then consider it a match.
-            return !ageRangeMatch.HasValue && !birthdateRangeMatch.HasValue;
+            if ( ageRangeMatch == false || birthdateRangeMatch == false )
+            {
+                return false;
+            }
+
+            // All checks are indeterminate.
+            return null;
         }
 
         /// <summary>
@@ -91,7 +131,7 @@ namespace Rock.CheckIn.v2.Filters
         /// <param name="minimumAge">The minimum age.</param>
         /// <param name="maximumAge">The maximum age.</param>
         /// <returns><c>true</c> if <paramref name="age"/> matches <paramref name="minimumAge"/> and <paramref name="maximumAge"/>, <c>false</c> otherwise.</returns>
-        protected static bool CheckAgeMatches( decimal age, decimal? minimumAge, decimal? maximumAge )
+        internal static bool CheckAgeMatches( decimal age, decimal? minimumAge, decimal? maximumAge )
         {
             if ( minimumAge.HasValue )
             {
@@ -126,7 +166,7 @@ namespace Rock.CheckIn.v2.Filters
         /// <param name="maximumAge">The maximum age.</param>
         /// <param name="isAgeRequired">if set to <c>true</c> and no age is provided then <c>false</c> will be returned.</param>
         /// <returns><c>true</c> if <paramref name="age"/> matches <paramref name="minimumAge"/> and <paramref name="maximumAge"/>, <c>false</c> if it doesn't or <c>null</c> it could not be determined.</returns>
-        protected static bool? CheckAgeMatches( decimal? age, decimal? minimumAge, decimal? maximumAge, bool isAgeRequired )
+        internal static bool? CheckAgeMatches( decimal? age, decimal? minimumAge, decimal? maximumAge, bool isAgeRequired )
         {
             if ( !minimumAge.HasValue && !maximumAge.HasValue )
             {
@@ -151,7 +191,7 @@ namespace Rock.CheckIn.v2.Filters
         /// <param name="minimumBirthdate">The minimum age.</param>
         /// <param name="maximumBirthdate">The maximum age.</param>
         /// <returns><c>true</c> if <paramref name="birthdate"/> matches <paramref name="minimumBirthdate"/> and <paramref name="maximumBirthdate"/>, <c>false</c> otherwise.</returns>
-        protected static bool CheckBirthdateMatches( DateTime birthdate, DateTime? minimumBirthdate, DateTime? maximumBirthdate )
+        internal static bool CheckBirthdateMatches( DateTime birthdate, DateTime? minimumBirthdate, DateTime? maximumBirthdate )
         {
             if ( minimumBirthdate.HasValue && birthdate < minimumBirthdate.Value )
             {
@@ -174,7 +214,7 @@ namespace Rock.CheckIn.v2.Filters
         /// <param name="maximumBirthdate">The maximum age.</param>
         /// <returns><c>true</c> if <paramref name="birthdate"/> matches <paramref name="minimumBirthdate"/> and <paramref name="maximumBirthdate"/>, <c>false</c> otherwise.</returns>
         /// <param name="isBirthdateRequired">if set to <c>true</c> and no age is provided then <c>false</c> will be returned.</param>
-        protected static bool? CheckBirthdateMatches( DateTime? birthdate, DateTime? minimumBirthdate, DateTime? maximumBirthdate, bool isBirthdateRequired )
+        internal static bool? CheckBirthdateMatches( DateTime? birthdate, DateTime? minimumBirthdate, DateTime? maximumBirthdate, bool isBirthdateRequired )
         {
             if ( !minimumBirthdate.HasValue && !maximumBirthdate.HasValue )
             {

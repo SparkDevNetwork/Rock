@@ -434,8 +434,7 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52
-        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {
@@ -880,12 +879,21 @@ namespace Rock.Plugin.HotFixes {
         ///              BEGIN
         ///                  DECLARE @cROLE_ADULT uniqueidentifier = &apos;2639F9A5-2AAE-4E48-A8C3-4FFE86681E42&apos;
         ///              
-        ///                  DECLARE @cROLE_CHILD uniqueidentifier = &apos;C8B1814F-6AA7-4055-B2D7-48FE20429CB9&apos;
-        ///      [rest of string was truncated]&quot;;.
+        ///                  DECLARE @cROLE_CHILD uniqueidentifier = &apos;C8B1814F-6AA7-4055-B2D7-48FE20429 [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge {
             get {
                 return ResourceManager.GetString("_177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] _216_open_bible_on_notebook_jpg {
+            get {
+                object obj = ResourceManager.GetObject("_216_open_bible_on_notebook_jpg", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

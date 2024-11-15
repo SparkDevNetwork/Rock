@@ -64,8 +64,8 @@ namespace Rock.Model
                 .Include( p => p.Person )
                 .Include( p => p.LearningClass )
                 .Include( p => p.LearningClass.LearningSemester )
-                .Where( p => p.LearningClassId == activity.LearningClassId )
                 .AreStudents()
+                .Where( p => p.LearningClassId == activity.LearningClassId )
                 .ToList();
 
             // Get any of the completions that exist for this participant.
@@ -135,9 +135,10 @@ namespace Rock.Model
         /// <param name="personId">The <see cref="Person"/> identifier of the participant to retrieve.</param>
         /// <param name="classId">The identifier of the <see cref="LearningClass"/> within which to search for the participant.</param>
         /// <returns></returns>
-        public int GetFacilitatorId( int personId, int classId )
+        public int? GetFacilitatorId( int personId, int classId )
         {
             return GetParticipant( personId, classId )
+                .AreFacilitators()
                 .Select( p => p.Id )
                 .FirstOrDefault();
         }
@@ -290,6 +291,7 @@ namespace Rock.Model
         {
             // Get the participant based on class and person identifiers.
             var participant = Queryable()
+                .AreStudents()
                 .Include( p => p.LearningClass )
                 .Include( p => p.LearningClass.LearningActivities )
                 .Include( p => p.LearningClass.LearningSemester )
@@ -297,7 +299,7 @@ namespace Rock.Model
                 .FirstOrDefault( p => p.PersonId == personId && p.LearningClassId == classId );
 
             // If the participant has a completion for this activity return it.
-            var existingCompletion = participant.LearningActivities.FirstOrDefault( c => c.LearningActivityId == learningActivityId );
+            var existingCompletion = participant?.LearningActivities?.FirstOrDefault( c => c.LearningActivityId == learningActivityId );
             if ( existingCompletion != null )
             {
                 return existingCompletion;

@@ -42,8 +42,8 @@
             </div>
 
             <div class="footer-content-section">
-                <RockButton :btnType="BtnType.Primary" :disabled="(isConfirmationRequired && !isConfirmed) || completionBag.isStudentCompleted" @click="onCompletedAndClosed">
-                    Complete
+                <RockButton :btnType="BtnType.Primary" :disabled="(isConfirmationRequired && !isConfirmed)" @click="onCompletedAndClosed">
+                    {{ completeButtonText }}
                 </RockButton>
             </div>
         </fieldset>
@@ -84,6 +84,7 @@
         content,
         dateConfirmed,
         defaultAssigneeDescription,
+        isCompleted,
         isConfirmed,
         isConfirmationRequired,
         panelTitle,
@@ -96,9 +97,14 @@
     );
 
     function onCompletedAndClosed(): void {
-        emits("completed", true);
+        if (isCompleted.value === false) {
+            emits("completed", true);
+        }
+
         emits("closed");
     }
+
+    const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {

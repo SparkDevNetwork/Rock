@@ -64,6 +64,18 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
+      <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411121524262_FixRateLimitPeriodDurationSecondsColumnName.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411121524262_FixRateLimitPeriodDurationSecondsColumnName.Designer.cs">
+      <DependentUpon>202411121524262_FixRateLimitPeriodDurationSecondsColumnName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels.Designer.cs">
+      <DependentUpon>202411062044462_AddDefaultNextGenCheckInLabels.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202410311824406_CodeGenerated_20241031.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202410311824406_CodeGenerated_20241031.designer.cs">
       <DependentUpon>202410311824406_CodeGenerated_20241031.cs</DependentUpon>
@@ -2301,11 +2313,28 @@
     <Compile Include="Migrations\Version 13.0\Version 1.13.0\202112152202412_GivingAchievements.Designer.cs">
       <DependentUpon>202112152202412_GivingAchievements.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411141824585_RemoveLegacyAppleTvPages.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411141824585_RemoveLegacyAppleTvPages.Designer.cs">
+      <DependentUpon>202411141824585_RemoveLegacyAppleTvPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.Designer.cs">
+      <DependentUpon>202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RockStartup\DataMigrationsStartup.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
+      <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411121524262_FixRateLimitPeriodDurationSecondsColumnName.resx">
+      <DependentUpon>202411121524262_FixRateLimitPeriodDurationSecondsColumnName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels.resx">
+      <DependentUpon>202411062044462_AddDefaultNextGenCheckInLabels.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202410311824406_CodeGenerated_20241031.resx">
       <DependentUpon>202410311824406_CodeGenerated_20241031.cs</DependentUpon>
     </EmbeddedResource>
@@ -3983,6 +4012,12 @@
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.0\202112152202412_GivingAchievements.resx">
       <DependentUpon>202112152202412_GivingAchievements.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411141824585_RemoveLegacyAppleTvPages.resx">
+      <DependentUpon>202411141824585_RemoveLegacyAppleTvPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.resx">
+      <DependentUpon>202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">
@@ -4200,6 +4235,10 @@
     <Content Include="Migrations\Version 14.0\Version 1.14.1\202301062147044_Rollup_20230106_UpdateAnalyticsStoredProcedure_spCrm_FamilyAnalyticsUpdateVisitDates.sql">
       <DependentUpon>202301062147044_Rollup_20230106.cs</DependentUpon>
     </Content>
+    <Content Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels_ChildLabel.png" />
+    <Content Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels_NameTag.png" />
+    <Content Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels_NoteLabel.png" />
+    <Content Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels_ParentLabel.png" />
     <Content Include="SqlServerTypes\readme.htm" />
     <None Include="Migrations\Version 14.0\Version 1.14.1\202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge.sql">
       <DependentUpon>202211072054502_UpdateValueAsAttributeValueColumns.cs</DependentUpon>
@@ -4222,6 +4261,10 @@
     <None Include="Migrations\Version 12.0\Version 1.12.4\202105280103566_StatementGenerator_RockDefaultTemplateReportSettings.json">
       <DependentUpon>202105280103566_StatementGenerator.cs</DependentUpon>
     </None>
+    <None Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels_ChildLabel.json" />
+    <None Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels_NameTag.json" />
+    <None Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels_NoteLabel.json" />
+    <None Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels_ParentLabel.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

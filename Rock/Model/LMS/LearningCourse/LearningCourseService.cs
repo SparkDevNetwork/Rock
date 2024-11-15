@@ -51,10 +51,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="courseId">The identifier of the course to get.</param>
         /// <param name="personId">The identifier of the <see cref="Person"/> to include completion status for.</param>
+        /// <param name="publicOnly"><c>true</c> to include <see cref="LearningClass"/> records whose IsPublic property is true; <c>false</c> to include regardless of IsPublic.</param>
         /// <param name="semesterStartFrom">Optional filter for the next session Semester Start. Only Start Dates greater than this date will be included.</param>
         /// <param name="semesterStartTo">Optional filter for the next session Semester Start. Only Start Dates less than this date will be included.</param>
         /// <returns>A <see cref="PublicLearningCourseDetailBag"/> containing the data necessary for rendering the details.</returns>
-        public PublicLearningCourseDetailBag GetPublicCourseDetails( int courseId, int? personId, DateTime? semesterStartFrom = null, DateTime? semesterStartTo = null )
+        public PublicLearningCourseDetailBag GetPublicCourseDetails( int courseId, int? personId, bool publicOnly = true, DateTime? semesterStartFrom = null, DateTime? semesterStartTo = null )
         {
             var rockContext = ( RockContext ) Context;
             var participantService = new LearningParticipantService( rockContext );
@@ -76,7 +77,8 @@ namespace Rock.Model
                 .Include( c => c.Category )
                 .Include( c => c.LearningCourseRequirements )
                 .Include( c => c.LearningClasses )
-                .Where( c => c.IsActive && c.IsPublic && c.Id == courseId )
+                .Where( c => c.IsActive && c.Id == courseId )
+                .Where( c => !publicOnly || c.IsPublic )
                 .Select( c => new PublicLearningCourseDetailBag
                 {
                     Entity = c,
@@ -86,8 +88,10 @@ namespace Rock.Model
                     ImageFileGuid = c.ImageBinaryFile.Guid,
                     Program = c.LearningProgram,
 
-                    // Get the earliest semester with open enrollment and a future start date for this course.
+                    // Limit the learning classes to only
+                    // active and (optionally) only public.
                     NextSemester = c.LearningClasses
+                        .Where( c2 => c2.IsActive && ( !publicOnly || c2.IsPublic ) )
                         .Select( cl => cl.LearningSemester )
                         .FirstOrDefault( s =>
                             ( s.EnrollmentCloseDate == null || s.EnrollmentCloseDate >= now ) &&
@@ -113,29 +117,30 @@ namespace Rock.Model
                 };
             }
 
-            if ( course.CourseRequirements.Any() )
+            var nextSemesterQuery = new LearningClassService( rockContext )
+                .Queryable()
+                .Where( c => c.LearningCourseId == course.Entity.Id )
+                .Select( c => c.LearningSemester );
+
+            if ( semesterStartFrom.HasValue )
             {
-                var requiredCourseIds = course.CourseRequirements.Select( r => r.RequiredLearningCourseId );
-                var requiredCourses = Queryable().Where( c => requiredCourseIds.Contains( c.Id ) );
-
-                course.CourseRequirements.ForEach( cr =>
-                    cr.RequiredLearningCourse =
-                        requiredCourses.FirstOrDefault( r => r.Id == cr.RequiredLearningCourseId ) );
-
-                var completedClasses =
-                    !personId.HasValue ?
-                    default
-                    : new LearningParticipantService( rockContext )
-                    .GetClasses( personId.Value )
-                    .AsNoTracking();
-
-                // Any Equivalent or PreRequisite classes that aren't already passed.
-                var unmetPrerequisiteTypes = new List<RequirementType> { RequirementType.Prerequisite, RequirementType.Equivalent };
-                course.UnmetPrerequisites = course.CourseRequirements.Where( cr =>
-                    unmetPrerequisiteTypes.Contains( cr.RequirementType ) &&
-                    !completedClasses.Any( c => c.LearningClass.LearningCourseId == cr.RequiredLearningCourseId && c.LearningCompletionStatus == LearningCompletionStatus.Pass )
-                    ).ToList();
+                nextSemesterQuery = nextSemesterQuery
+                    .Where( s => s.StartDate >= semesterStartFrom.Value );
             }
+
+            if ( semesterStartTo.HasValue )
+            {
+                nextSemesterQuery = nextSemesterQuery
+                    .Where( s => s.StartDate <= semesterStartTo.Value );
+            }
+
+            // Get the earliest semester with open enrollment and a future start date for this course.
+            course.NextSemester = nextSemesterQuery.OrderBy( c => c.StartDate ).FirstOrDefault();
+
+            // Remove any related classes that don't belong to this course.
+            course.NextSemester.LearningClasses = course.NextSemester.LearningClasses.Where( c => c.LearningCourseId == courseId ).ToList();
+
+            course.UnmetPrerequisites = GetUnmetCourseRequirements( personId, course.CourseRequirements );
 
             if ( mostRecentParticipation != null )
             {
@@ -155,11 +160,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="programId">The identifier of the <see cref="LearningProgram"/> for which to return courses.</param>
         /// <param name="personId">The identifier of the <see cref="Person"/> to include completion status for.</param>
+        /// <param name="publicOnly"><c>true</c> to include <see cref="LearningCourse"/> and <see cref="LearningClass"/> records whose IsPublic property is true; <c>false</c> to include regardless of IsPublic.</param>
         /// <param name="semesterStartFrom">Optional filter for the next session Semester Start. Only Start Dates greater than this date will be included.</param>
         /// <param name="semesterStartTo">Optional filter for the next session Semester Start. Only Start Dates less than this date will be included.</param>
-        /// <param name="publicOnly"><c>true</c> to include <see cref="LearningCourse"/> records whose IsPublic property is true; <c>false</c> to include regardless of IsPublic.</param>
         /// <returns>An enumerable of PublicLearningCourseBag.</returns>
-        public List<PublicLearningCourseBag> GetPublicCourses( int programId, int? personId, DateTime? semesterStartFrom = null, DateTime? semesterStartTo = null, bool publicOnly = true )
+        public List<PublicLearningCourseBag> GetPublicCourses( int programId, int? personId, bool publicOnly = true, DateTime? semesterStartFrom = null, DateTime? semesterStartTo = null )
         {
             var rockContext = ( RockContext ) Context;
             var orderedPersonCompletions =
@@ -203,8 +208,8 @@ namespace Rock.Model
 
                     // Get the person's completion status for this course.
                     LearningCompletionStatus = !personId.HasValue ?
-                        LearningCompletionStatus.Incomplete :
-                        orderedPersonCompletions
+                        null :
+                        (LearningCompletionStatus?)orderedPersonCompletions
                         .FirstOrDefault( p => p.LearningClass.LearningCourseId == c.Id )
                         .LearningCompletionStatus,
 
@@ -214,7 +219,7 @@ namespace Rock.Model
                         s.StartDate >= now &&
                         ( !semesterStartFrom.HasValue || s.StartDate >= semesterStartFrom.Value ) &&
                         ( !semesterStartTo.HasValue || s.StartDate <= semesterStartTo.Value ) &&
-                        s.LearningClasses.Any( sc => sc.LearningCourseId == c.Id )
+                        s.LearningClasses.Any( sc => sc.LearningCourseId == c.Id && sc.IsActive && ( !publicOnly || sc.IsPublic ) )
                         ),
 
                     // Only Prerequisites/Equivalents where the course completions for the student aren't 'Passed'.
@@ -254,6 +259,48 @@ namespace Rock.Model
             }
 
             return courses.ToList();
+        }
+
+        /// <summary>
+        /// Gets a list of LearningCourseRequirements where the <see cref="Person"/> specified by the <paramref name="personId"/>
+        /// hasn't completed the course.
+        /// </summary>
+        /// <param name="personId">The identifier of the <see cref="Person"/> to check requirement completions for.</param>
+        /// <param name="courseRequirements">The List of <see cref="LearningCourseRequirement"/> records to check completions for.</param>
+        /// <returns>A List of <see cref="LearningCourseRequirement"/> records that haven't been completed by the <see cref="Person"/>.</returns>
+        public List<LearningCourseRequirement> GetUnmetCourseRequirements( int? personId, IEnumerable<LearningCourseRequirement> courseRequirements )
+        {
+            if ( courseRequirements.Any() )
+            {
+                var hasMissingCourseDetails = courseRequirements.Any( cr => cr.RequiredLearningCourse == null || cr.RequiredLearningCourse.Id == 0 );
+                if ( hasMissingCourseDetails )
+                {
+                    // If there were provided LearningCourseRequirements that aren't populated with their
+                    // related RequiredLearningCourse then go get that data.
+                    var requiredCourseIds = courseRequirements.Select( r => r.RequiredLearningCourseId );
+                    var requiredCourses = Queryable().Where( c => requiredCourseIds.Contains( c.Id ) );
+
+                    courseRequirements.ForEach( cr =>
+                    cr.RequiredLearningCourse =
+                        requiredCourses.FirstOrDefault( r => r.Id == cr.RequiredLearningCourseId ) );
+                }
+
+                var completedClasses =
+                    !personId.HasValue ?
+                    default
+                    : new LearningParticipantService( ( RockContext ) Context )
+                    .GetClasses( personId.Value )
+                    .AsNoTracking();
+
+                // Any Equivalent or PreRequisite classes that aren't already passed.
+                var unmetPrerequisiteTypes = new List<RequirementType> { RequirementType.Prerequisite, RequirementType.Equivalent };
+                return courseRequirements.Where( cr =>
+                    unmetPrerequisiteTypes.Contains( cr.RequirementType ) &&
+                    !completedClasses.Any( c => c.LearningClass.LearningCourseId == cr.RequiredLearningCourseId && c.LearningCompletionStatus == LearningCompletionStatus.Pass )
+                    ).ToList();
+            }
+
+            return new List<LearningCourseRequirement>();
         }
 
         #region Nested Classes

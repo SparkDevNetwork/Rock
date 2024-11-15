@@ -26,7 +26,8 @@
                         :filter="dateValueFilter"
                         visiblePriority="md"
                         headerClass="title-right"
-                        itemClass="no-x-padding" />
+                        itemClass="no-x-padding"
+                        width="9%" />
 
         <DateTimeColumn name="lastRunDateTime"
                         title="Last Run Date"
@@ -34,7 +35,8 @@
                         :filter="dateValueFilter"
                         visiblePriority="md"
                         headerClass="title-right"
-                        itemClass="no-x-padding" />
+                        itemClass="no-x-padding"
+                        width="9%" />
 
         <TextColumn name="lastRunDurationSeconds"
                     title="Last Run Duration"

@@ -224,13 +224,13 @@ registerFieldType(FieldTypeGuids.EventCalendar, new EventCalendarFieldType());
 import { EventItemFieldType } from "./eventItemField.partial";
 registerFieldType(FieldTypeGuids.EventItem, new EventItemFieldType());
 
-import { FinancialAccountFieldType  } from "./financialAccountField.partial";
+import { FinancialAccountFieldType } from "./financialAccountField.partial";
 registerFieldType(FieldTypeGuids.FinancialAccount, new FinancialAccountFieldType());
 
-import { FinancialAccountsFieldType  } from "./financialAccountsField.partial";
+import { FinancialAccountsFieldType } from "./financialAccountsField.partial";
 registerFieldType(FieldTypeGuids.FinancialAccounts, new FinancialAccountsFieldType());
 
-import { FinancialGatewayFieldType  } from "./financialGatewayField.partial";
+import { FinancialGatewayFieldType } from "./financialGatewayField.partial";
 registerFieldType(FieldTypeGuids.FinancialGateway, new FinancialGatewayFieldType());
 
 import { FileFieldType } from "./fileField.partial";
@@ -253,6 +253,9 @@ registerFieldType(FieldTypeGuids.GroupRole, new GroupRoleFieldType());
 
 import { GroupMemberFieldType } from "./groupMemberField.partial";
 registerFieldType(FieldTypeGuids.GroupMember, new GroupMemberFieldType());
+
+import { GroupMemberRequirementFieldType } from "./groupMemberRequirementField.partial";
+registerFieldType(FieldTypeGuids.GroupMemberRequirement, new GroupMemberRequirementFieldType());
 
 import { GroupTypeField } from "./groupTypeField.partial";
 registerFieldType(FieldTypeGuids.GroupType, new GroupTypeField());
@@ -304,6 +307,9 @@ registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
 
 import { MatrixFieldType } from "./matrixField.partial";
 registerFieldType(FieldTypeGuids.Matrix, new MatrixFieldType());
+
+import { MediaElementFieldType } from "./mediaElementField.partial";
+registerFieldType(FieldTypeGuids.MediaElement, new MediaElementFieldType());
 
 import { MediaSelectorFieldType } from "./mediaSelectorField.partial";
 registerFieldType(FieldTypeGuids.MediaSelector, new MediaSelectorFieldType());
@@ -385,6 +391,9 @@ registerFieldType(FieldTypeGuids.Schedule, new ScheduleFieldType());
 
 import { SchedulesFieldType } from "./schedulesField.partial";
 registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
+
+import { SecondaryAuthsFieldType } from "./secondaryAuthsField.partial";
+registerFieldType(FieldTypeGuids.SecondaryAuths, new SecondaryAuthsFieldType());
 
 import { SecurityRoleFieldType } from "./securityRoleField.partial";
 registerFieldType(FieldTypeGuids.SecurityRole, new SecurityRoleFieldType());

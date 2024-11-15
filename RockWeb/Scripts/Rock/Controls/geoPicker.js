@@ -332,36 +332,47 @@
                             });
                         }
                         else if (obj.drawingMode == "Point") {
+                            var point;
 
-                            var pin = new google.maps.marker.PinElement({
-                                background: '#FE7569',
-                                borderColor: '#000',
-                                scale: 1,
-                                glyph: ''
-                            });
-
-                            var point = {
-                                position: pathArray[0],
-                                map: map,
-                                clickable: true,
-                                icon: obj.getMarkerImage(),
-                                marker_element: new google.maps.marker.AdvancedMarkerElement({
+                            if (obj.mapId === "DEFAULT_MAP_ID") {
+                                point = new google.maps.Marker({
                                     position: pathArray[0],
                                     map: map,
-                                    content: pin.element
-                                }),
-                                setMap: function (newMap) {
-                                    this.map = newMap;
-                                    this.marker_element.map = newMap;
-                                },
-                                getPosition: function () {
-                                    return this.position;
-                                },
-                                setPosition: function (newPosition) {
-                                    this.position = newPosition;
-                                    this.marker_element.position = newPosition;
-                                }
-                            };
+                                    clickable: true,
+                                    icon: obj.getMarkerImage()
+                                });
+                            }
+                            else {
+                                var pin = new google.maps.marker.PinElement({
+                                    background: '#FE7569',
+                                    borderColor: '#000',
+                                    scale: 1,
+                                    glyph: ''
+                                });
+
+                                point = {
+                                    position: pathArray[0],
+                                    map: map,
+                                    clickable: true,
+                                    icon: obj.getMarkerImage(),
+                                    marker_element: new google.maps.marker.AdvancedMarkerElement({
+                                        position: pathArray[0],
+                                        map: map,
+                                        content: pin.element
+                                    }),
+                                    setMap: function (newMap) {
+                                        this.map = newMap;
+                                        this.marker_element.map = newMap;
+                                    },
+                                    getPosition: function () {
+                                        return this.position;
+                                    },
+                                    setPosition: function (newPosition) {
+                                        this.position = newPosition;
+                                        this.marker_element.position = newPosition;
+                                    }
+                                };
+                            }
 
                             // Select the point
                             obj.setSelection(point, google.maps.drawing.OverlayType.MARKER);
@@ -658,8 +669,12 @@
                 mapTypeControlOptions: {
                     mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
                 },
-                mapId: self.mapId
             };
+
+            if (self.mapId !== "DEFAULT_MAP_ID") {
+                mapOptions.mapId = self.mapId;
+            }
+
             // center the map on the configured address
             self.centerMapOnAddress();
 

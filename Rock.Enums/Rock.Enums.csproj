@@ -53,6 +53,10 @@
     <Compile Include="Blocks\Communication\CommunicationEntry\Mode.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\MediumType.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\PushOpenActionType.cs" />
+    <Compile Include="CheckIn\AgeRestrictionMode.cs" />
+    <Compile Include="CheckIn\GradeAndAgeMatchingMode.cs" />
+    <Compile Include="CheckIn\LocationSelectionStrategy.cs" />
+    <Compile Include="Cms\ThemeFieldType.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\CommunicationPreference.cs" />
     <Compile Include="Blocks\Group\Scheduling\ToolboxActionType.cs" />
     <Compile Include="Blocks\Group\Scheduling\ToolboxScheduleRowActionType.cs" />
@@ -80,7 +84,6 @@
     <Compile Include="CheckIn\Labels\LabelType.cs" />
     <Compile Include="CheckIn\Labels\TextCollectionFormat.cs" />
     <Compile Include="CheckIn\Labels\TextFieldSubType.cs" />
-    <Compile Include="CheckIn\LocationSelectionStrategy.cs" />
     <Compile Include="CheckIn\PhoneSearchMode.cs" />
     <Compile Include="CheckIn\SuccessLavaTemplateDisplayMode.cs" />
     <Compile Include="Cms\BlockReloadMode.cs" />
@@ -99,7 +102,6 @@
     <Compile Include="Cms\SiteTypeFlags.cs" />
     <Compile Include="Cms\SiteType.cs" />
     <Compile Include="Cms\TagType.cs" />
-    <Compile Include="Cms\ThemeFieldType.cs" />
     <Compile Include="Cms\ThemeFontAwesomeWeight.cs" />
     <Compile Include="Cms\ThemeIconSet.cs" />
     <Compile Include="Communication\CommunicationMessageFilter.cs" />

@@ -60,6 +60,9 @@ export type PublicLearningClassWorkspaceBox = {
     /** Gets or sets the current Grade scale that the student has achieved in the class (if configured to show grades). */
     currentGrade?: LearningGradingSystemScaleBag | null;
 
+    /** Whether announcements are enabled. */
+    enableAnnouncements: boolean;
+
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.

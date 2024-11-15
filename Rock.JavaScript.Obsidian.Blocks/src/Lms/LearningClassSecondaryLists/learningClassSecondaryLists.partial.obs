@@ -115,6 +115,16 @@
     // #region Values
 
     const props = defineProps({
+        includeContentPages: {
+            type: Boolean as PropType<boolean>,
+            default: () => true
+        },
+
+        includeAnnouncements: {
+            type: Boolean as PropType<boolean>,
+            default: () => true
+        },
+
         navigationUrls: {
             type: Object as PropType<Record<string, string> | null>,
             required: false
@@ -129,10 +139,20 @@
         }
     });
 
+    const includeAnnouncements = ref(props.includeAnnouncements);
+    const includeContentPages = ref(props.includeContentPages);
     const isEditable = ref(props.isEditable ?? false);
     const navigationUrls = ref(props.navigationUrls ?? {});
 
-    const tabs: Array<string> = ["Learning Plan", "Students", "Facilitators", "Content", "Announcements"];
+    const tabs: Array<string> = ["Learning Plan", "Students", "Facilitators"];
+
+    if (includeContentPages.value === true) {
+        tabs.push("Content");
+    }
+
+    if (includeAnnouncements.value === true) {
+        tabs.push("Announcements");
+    }
 
     // Open the selected tab if one is specified.
     const selectedTab = ref(new URLSearchParams(window.location.search).get("tab") ?? "");

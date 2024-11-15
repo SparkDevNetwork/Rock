@@ -187,6 +187,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void lbPreview_Click( object sender, RowEventArgs e )
         {
+            PersistedDataset.UpdateResult result = null;
             try
             {
                 var rockContext = new RockContext();
@@ -194,7 +195,7 @@ namespace RockWeb.Blocks.Cms
                 PersistedDataset persistedDataset = persistedDatasetService.GetNoTracking( e.RowKeyId );
                 if ( persistedDataset.LastRefreshDateTime == null )
                 {
-                    persistedDataset.UpdateResultData();
+                    result = persistedDataset.UpdateResultData();
                 }
 
                 // limit preview size (default is 1MB)
@@ -226,7 +227,7 @@ namespace RockWeb.Blocks.Cms
             catch ( Exception ex )
             {
                 nbPreviewMessage.Text = "Error building Dataset object from the JSON generated from the Build Script";
-                nbPreviewMessage.Details = ex.Message;
+                nbPreviewMessage.Details = result?.WarningMessage ?? ex.Message;
                 nbPreviewMessage.NotificationBoxType = NotificationBoxType.Danger;
                 nbPreviewMessage.Visible = true;
             }

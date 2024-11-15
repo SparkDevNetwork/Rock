@@ -40,6 +40,7 @@ namespace Rock.Web.UI.Controls
         private RockDropDownList _ddlGroupTypeInheritFrom;
         private RockDropDownList _ddlAttendanceRule;
         private RockRadioButtonList _rblMatchingLogic;
+        private RockCheckBox _cbPreventConcurrentCheckIn;
         private RockDropDownList _ddlPrintTo;
 
         private PlaceHolder _phGroupTypeAttributes;
@@ -278,9 +279,10 @@ namespace Rock.Web.UI.Controls
             EnsureChildControls();
 
             groupType.Name = _tbGroupTypeName.Text;
-            groupType.InheritedGroupTypeId = _ddlGroupTypeInheritFrom.SelectedValueAsId();
+            groupType.InheritedGroupTypeId = GetInheritedGroupTypeId( groupType );
             groupType.AttendanceRule = _ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
             groupType.AlreadyEnrolledMatchingLogic = _rblMatchingLogic.SelectedValueAsEnum<AlreadyEnrolledMatchingLogic>();
+            groupType.IsConcurrentCheckInPrevented = _cbPreventConcurrentCheckIn.Checked;
             groupType.AttendancePrintTo = _ddlPrintTo.SelectedValueAsEnum<PrintTo>();
 
             // Reload Attributes
@@ -288,6 +290,50 @@ namespace Rock.Web.UI.Controls
             groupType.LoadAttributes();
 
             Rock.Attribute.Helper.GetEditValues( _phGroupTypeAttributes, groupType );
+        }
+
+        /// <summary>
+        /// Calculates the appropriate Inherited GroupType Identifier for the <see cref="GroupType"/>.  This method is utilized to avoid clearing
+        /// Inherited GroupType settings that may have been set elsewhere (e.g., the GroupType configuration) if no Inherited GroupType is
+        /// selected in the control.
+        /// </summary>
+        /// <param name="groupType"><see cref="GroupType"/>.</param>
+        /// <returns></returns>
+        private int? GetInheritedGroupTypeId( GroupType groupType )
+        {
+            var selectedValue = _ddlGroupTypeInheritFrom.SelectedValueAsId();
+            if ( selectedValue.HasValue )
+            {
+                // If a value was selected in the control, we can use that.
+                return selectedValue;
+            }
+            else if ( !groupType.InheritedGroupTypeId.HasValue )
+            {
+                // If the GroupType has no value, and nothing was selected, it will stay null.
+                return null;
+            }
+
+            var isExistingValueInList = false;
+            foreach ( ListItem item in _ddlGroupTypeInheritFrom.Items )
+            {
+                var itemValue = item.Value.AsIntegerOrNull();
+                if ( itemValue.HasValue && itemValue == groupType.InheritedGroupTypeId )
+                {
+                    isExistingValueInList = true;
+                    break;
+                }
+            }
+
+            if ( isExistingValueInList )
+            {
+                // This indicates that the previously configured value was in the dropdown, but was de-selected, so it should be cleared.
+                return null;
+            }
+            else
+            {
+                // The previously configured value was not in the dropdown, and the dropdown was left without a selection, so retain the previously configured value.
+                return groupType.InheritedGroupTypeId;
+            }
         }
 
         /// <summary>
@@ -306,6 +352,7 @@ namespace Rock.Web.UI.Controls
                 _ddlGroupTypeInheritFrom.SetValue( groupType.InheritedGroupTypeId );
                 _ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
                 _rblMatchingLogic.SetValue( ( int ) groupType.AlreadyEnrolledMatchingLogic );
+                _cbPreventConcurrentCheckIn.Checked = groupType.IsConcurrentCheckInPrevented;
                 _ddlPrintTo.SetValue( (int)groupType.AttendancePrintTo );
 
                 CreateGroupTypeAttributeControls( groupType, rockContext );
@@ -377,6 +424,13 @@ namespace Rock.Web.UI.Controls
             };
             _rblMatchingLogic.BindToEnum<AlreadyEnrolledMatchingLogic>();
 
+            _cbPreventConcurrentCheckIn = new RockCheckBox
+            {
+                ID = $"{ID}_cbPreventConcurrentCheckIn",
+                Label = "Prevent Concurrent Check-in",
+                Help = "Prevents checking into groups in this area if the person already has an attendance record for the same scheduled service. Only supported in next-gen check-in."
+            };
+
             _ddlPrintTo = new RockDropDownList();
             _ddlPrintTo.ID = this.ID + "_ddlPrintTo";
             _ddlPrintTo.Label = "Print To";
@@ -391,6 +445,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _ddlGroupTypeInheritFrom );
             Controls.Add( _ddlAttendanceRule );
             Controls.Add( _rblMatchingLogic );
+            Controls.Add( _cbPreventConcurrentCheckIn );
             Controls.Add( _ddlPrintTo );
             Controls.Add( _tbGroupTypeName );
             Controls.Add( _phGroupTypeAttributes );
@@ -485,6 +540,7 @@ namespace Rock.Web.UI.Controls
                 _ddlGroupTypeInheritFrom.RenderControl( writer );
                 _ddlAttendanceRule.RenderControl( writer );
                 _rblMatchingLogic.RenderControl( writer );
+                _cbPreventConcurrentCheckIn.RenderControl( writer );
                 _ddlPrintTo.RenderControl( writer );
 
                 _phGroupTypeAttributes.RenderControl( writer );

@@ -115,7 +115,7 @@ namespace Rock.Blocks.Cms
 
             if ( lavaShortCodeService.Queryable().Any( a => a.TagName == lavaShortcode.TagName && a.Id != lavaShortcode.Id ) )
             {
-                errorMessage = "Tag with the same name is already in use.";
+                errorMessage = @"This ""Tag Name"" is already in use. Please enter a new ""Tag Name"".";
                 return false;
             }
 

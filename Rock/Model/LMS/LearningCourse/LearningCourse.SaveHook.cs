@@ -44,7 +44,7 @@ namespace Rock.Model
                         Entity.LearningProgram.ConfigurationMode :
                         programService.GetSelect( Entity.LearningProgramId, p => p.ConfigurationMode );
 
-                    if ( configurationMode == Enums.Lms.ConfigurationMode.OnDemandLearning && !Entity.LearningClasses.Any() )
+                    if ( !Entity.LearningClasses.Any() )
                     {
                         var defaultSemesterId = programService.GetDefaultSemester( Entity.LearningProgramId )?.Id;
                         var passFailGradingSystemId = 1;
@@ -54,13 +54,12 @@ namespace Rock.Model
                         {
                             new LearningClass
                             {
-                                Name = "Default",
+                                Name = "Initial Class",
                                 Guid = Guid.NewGuid(),
                                 LearningCourseId = Entity.Id,
                                 LearningSemesterId = defaultSemesterId,
                                 LearningGradingSystemId = passFailGradingSystemId,
                                 GroupTypeId = lmsClassGroupTypeId,
-                                Description = "Default class.",
                                 IsActive = true,
                             }
                         };
