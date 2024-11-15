@@ -8,7 +8,8 @@
             <div class="configuration-screen">
                 <MainPanel v-if="isManualSetupVisible"
                            title="Check-in Options"
-                           subtitle="Select the options for your desired check-in experience">
+                           subtitle="Select the options for your desired check-in experience"
+                           :configuration="null">
                     <div class="row">
                         <div class="col-md-6">
                             <DropDownList label="Campus"

@@ -2,7 +2,8 @@
 <template>
     <div ref="screenElement" class="search-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <!--
                 The form is here to prevent iOS from causing the Return key
                 to become a Go key and triggering a WebForms postback.

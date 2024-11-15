@@ -2,7 +2,8 @@
 <template>
     <div class="registration-edit-family-screen">
         <MainPanel :title="title"
-                   subtitle="Add or remove people from the family">
+                   subtitle="Add or remove people from the family"
+                   :configuration="configuration">
             <RockForm v-model:submit="submitForm"
                       @submit="onSaveClick">
                 <div class="d-flex">
