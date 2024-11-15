@@ -1612,6 +1612,7 @@
     <Compile Include="Plugin\HotFixes\206_MigrationRollupsForV17_0_13.cs" />
     <Compile Include="Plugin\HotFixes\205_MigrationRollupsForV17_0_12.cs" />
     <Compile Include="Plugin\HotFixes\219_UndoObsidianChop.cs" />
+    <Compile Include="Plugin\HotFixes\220_CompletionGradingSystem.cs" />
     <Compile Include="Plugin\HotFixes\218_MigrationRollupsForV17_0_19.cs" />
     <Compile Include="Plugin\HotFixes\217_DefaultGradeScaleHighlightColors.cs" />
     <Compile Include="Plugin\HotFixes\216_LMSRoutes.cs" />

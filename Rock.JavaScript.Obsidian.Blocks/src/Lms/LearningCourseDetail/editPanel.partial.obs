@@ -90,7 +90,7 @@
                                         <RadioButtonList v-model="addRequirementType" label="Requirement Type" horizontal rules="required" :items="requirementTypes" />
                                     </div>
                                     <div class="col-md-6">
-                                        <DropDownList v-model="requiredCourse" :enhanceForLongLists="courseOptions.length > 10" :grouped="false" :items="courseOptions" rules="required" label="Course" :multiple="false" :showBlankItem="false" />
+                                        <DropDownList v-model="requiredCourse" :enhanceForLongLists="true" :grouped="false" :items="courseOptions" rules="required" label="Course" :multiple="false" :showBlankItem="false" />
                                     </div>
                                 </div>
                             </Modal>

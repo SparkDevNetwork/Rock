@@ -15,23 +15,19 @@
                     <li v-for="tab in tabs" role="presentation" :class="{ 'active': tab === selectedTab }">
                         <a href="#" @click.prevent="onSelectTab(tab)">{{ tab }}</a>
                     </li>
+
+                    <li class="facilitator-portal align-self-end" role="presentation" v-if="isFacilitator">
+                        <a :href="facilitatorPortalUrl">Facilitator Portal</a>
+                    </li>
                 </ul>
 
-                <div class="facilitator-portal" v-if="isFacilitator">
-                    <a :href="facilitatorPortalUrl">Facilitator Portal</a>
-                </div>
             </div>
 
             <NotificationBox v-if="isClassCompletedByStudent" class="text-center" alertType="default">{{ studentCompletionText }}</NotificationBox>
 
             <div class="content-page-section" v-if="selectedContentTab">
                 <div class="content-page-container">
-                    <h3 class="mt-0">
-                        {{ selectedContentTab.title }}
-                    </h3>
-                    <div class="content-page-content">
-                        <span v-html="selectedContentTab.content"></span>
-                    </div>
+                    <span v-html="selectedContentTab.content"></span>
                 </div>
             </div>
 

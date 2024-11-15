@@ -397,10 +397,13 @@ namespace Rock.Blocks.Lms
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
             {
+                var programId = PageParameter( PageParameterKey.LearningProgramId );
                 return new LearningClass
                 {
                     Id = 0,
-                    Guid = Guid.Empty
+                    Guid = Guid.Empty,
+                    LearningGradingSystemId = new LearningProgramService( RockContext )
+                        .GetSelect( programId, p => p.DefaultLearningGradingSystemId, !PageCache.Layout.Site.DisablePredictableIds ) ?? 0
                 };
             }
 
