@@ -284,8 +284,8 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
                                     <div class=""mt-3"">
 
-                                        {% if course.UnmetPrerequisites != empty %}
-                                        <div class=""btn btn-info disabled"">Enroll</div>
+                                        {% if Course.UnmetPrerequisites %}
+                                        <a class=""btn btn-info disabled"">Enroll</a>
                                         {% else %}
                                         <a class=""btn btn-info"" href=""{{ Course.CourseEnrollmentLink }}"">Enroll</a>
                                         {% endif %}
