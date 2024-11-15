@@ -408,6 +408,11 @@ namespace Rock.Blocks.Lms
                 entity.RequiresGrading = false;
             }
 
+            if ( !entity.CompletedDateTime.HasValue )
+            {
+                entity.CompletedDateTime = RockDateTime.Now;
+            }
+
             box.IfValidProperty( nameof( box.Bag.PointsEarned ),
                 () => entity.PointsEarned = box.Bag.PointsEarned );
 

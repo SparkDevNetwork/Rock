@@ -330,62 +330,62 @@ JOIN [GroupMember] gm ON gm.[Guid] = p.[GroupMemberGuid]
 JOIN [Person] pers on pers.[Id] = p.[PersonId]
 JOIN #classes c on c.[ClassGuid] = p.[ClassGuid]
 
-/* Add some Student Activity Completions */
-INSERT [LearningActivityCompletion] ( [LearningActivityId], [StudentId], [IsStudentCompleted], [IsFacilitatorCompleted], [Guid]
-    , [AvailableDateTime], [DueDate], [StudentComment], [FacilitatorComment], [CompletedDateTime], [WasCompletedOnTime], [PointsEarned], [CompletedByPersonAliasId] )
-SELECT [a].[Id], 
-    gm.[Id], 
-    1 [IsStudentCompleted],
-    0 [IsFacilitatorCompleted],
-    NEWID() [Guid],
-    CASE 
-        WHEN [AvailabilityCriteria] = @specificDate THEN [AvailableDateDefault] 
-        WHEN [AvailabilityCriteria] = @classStartOffset THEN DATEADD(DAY, [AvailableDateOffset], [RandomDateTimeAdded])
-        WHEN [AvailabilityCriteria] = @enrollmentOffset THEN DATEADD(DAY, [AvailableDateOffset], [DateTimeAdded])
-        WHEN [AvailabilityCriteria] = @availableAfterPreviousComplete THEN NULL
-        ELSE @now
-    END [AvailableDate],
-    CASE 
-        WHEN [DueDateCriteria] = @specificDate THEN [DueDateDefault] 
-        WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
-        WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
-        ELSE NULL
-    END [DueDate],
-    IIF(
-        a.[IsStudentCommentingEnabled] = 1, 
-        IIF( gm.[Id] % 3 = 0, 'I''ve learned so much!', NULL), 
-        NULL
-    ) StudentComment,
-    IIF( gm.[Id] % 4 = 0 AND gm.[Id] % 5 IN (0, 1), 'Excellent Work!', NULL) FacilitatorComment,
+/* TODO: Add some Student Activity Completions */
+--INSERT [LearningActivityCompletion] ( [LearningActivityId], [StudentId], [IsStudentCompleted], [IsFacilitatorCompleted], [Guid]
+--    , [AvailableDateTime], [DueDate], [StudentComment], [FacilitatorComment], [CompletedDateTime], [WasCompletedOnTime], [PointsEarned], [CompletedByPersonAliasId] )
+--SELECT [a].[Id], 
+--    gm.[Id], 
+--    1 [IsStudentCompleted],
+--    0 [IsFacilitatorCompleted],
+--    NEWID() [Guid],
+--    CASE 
+--        WHEN [AvailabilityCriteria] = @specificDate THEN [AvailableDateDefault] 
+--        WHEN [AvailabilityCriteria] = @classStartOffset THEN DATEADD(DAY, [AvailableDateOffset], [RandomDateTimeAdded])
+--        WHEN [AvailabilityCriteria] = @enrollmentOffset THEN DATEADD(DAY, [AvailableDateOffset], [DateTimeAdded])
+--        WHEN [AvailabilityCriteria] = @availableAfterPreviousComplete THEN NULL
+--        ELSE @now
+--    END [AvailableDate],
+--    CASE 
+--        WHEN [DueDateCriteria] = @specificDate THEN [DueDateDefault] 
+--        WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
+--        WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
+--        ELSE NULL
+--    END [DueDate],
+--    IIF(
+--        a.[IsStudentCommentingEnabled] = 1, 
+--        IIF( gm.[Id] % 3 = 0, 'I''ve learned so much!', NULL), 
+--        NULL
+--    ) StudentComment,
+--    IIF( gm.[Id] % 4 = 0 AND gm.[Id] % 5 IN (0, 1), 'Excellent Work!', NULL) FacilitatorComment,
 
-    /* Every 5 activities mark one completed on time and one late  */
-    CASE 
-        WHEN gm.[Id] % 5 = 0 THEN  
-            /* DueDate - 24 hours and some additional random hours */
-            DATEADD(HOUR, -(24 + (FLOOR(RAND(CHECKSUM(NEWID())) * 20 + 7))), CASE 
-                WHEN [DueDateCriteria] = @specificDate THEN DueDateDefault 
-                WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
-                WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
-                ELSE NULL
-            END)
-        WHEN gm.[Id] % 5 = 1 THEN  
-            /* DueDate + 1 */
-            DATEADD(HOUR, 24 + FLOOR(RAND(CHECKSUM(NEWID())) * 20 + 7), CASE 
-                WHEN [DueDateCriteria] = @specificDate THEN [DueDateDefault] 
-                WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
-                WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
-                ELSE NULL
-        END)
-    END [CompletedDate],
-    IIF( gm.[Id] % 5 = 0, 1, 0) [WasCompletedOnTime],
-    IIF( gm.[Id] % 5 = 0, FLOOR(RAND(CHECKSUM(NEWID())) * a.[Points]), 0) [PointsEarned],
-    IIF( gm.[Id] % 5 IN (0, 1), pers.[PrimaryAliasId], NULL) [CompletedByPersonAliasId]
-FROM [LearningActivity] a
-JOIN #participants p on p.[GroupId] = a.[LearningClassId]
-JOIN Person pers ON pers.Id = p.PersonId
-JOIN [GroupMember] gm ON gm.[Guid] = p.[GroupMemberGuid]
-JOIN #classes c ON c.[ClassGuid] = p.[ClassGuid]
-WHERE gm.[Id] % 7 = 0
+--    /* Every 5 activities mark one completed on time and one late  */
+--    CASE 
+--        WHEN gm.[Id] % 5 = 0 THEN  
+--            /* DueDate - 24 hours and some additional random hours */
+--            DATEADD(HOUR, -(24 + (FLOOR(RAND(CHECKSUM(NEWID())) * 20 + 7))), CASE 
+--                WHEN [DueDateCriteria] = @specificDate THEN DueDateDefault 
+--                WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
+--                WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
+--                ELSE NULL
+--            END)
+--        WHEN gm.[Id] % 5 = 1 THEN  
+--            /* DueDate + 1 */
+--            DATEADD(HOUR, 24 + FLOOR(RAND(CHECKSUM(NEWID())) * 20 + 7), CASE 
+--                WHEN [DueDateCriteria] = @specificDate THEN [DueDateDefault] 
+--                WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
+--                WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
+--                ELSE NULL
+--        END)
+--    END [CompletedDate],
+--    IIF( gm.[Id] % 5 = 0, 1, 0) [WasCompletedOnTime],
+--    IIF( gm.[Id] % 5 = 0, FLOOR(RAND(CHECKSUM(NEWID())) * a.[Points]), 0) [PointsEarned],
+--    IIF( gm.[Id] % 5 IN (0, 1), pers.[PrimaryAliasId], NULL) [CompletedByPersonAliasId]
+--FROM [LearningActivity] a
+--JOIN #participants p on p.[GroupId] = a.[LearningClassId]
+--JOIN Person pers ON pers.Id = p.PersonId
+--JOIN [GroupMember] gm ON gm.[Guid] = p.[GroupMemberGuid]
+--JOIN #classes c ON c.[ClassGuid] = p.[ClassGuid]
+--WHERE gm.[Id] % 7 = 0
 
 /* Redeclare the variables here in case we want to run the query without the inserts above. */
 DECLARE

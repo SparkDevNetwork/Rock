@@ -199,13 +199,10 @@ namespace Rock.Blocks.Lms
             // If they are also a facilitator we'll want to use the studentId for getting activities.
             var currentPersonParticipantBag = bags.OrderBy( p => p.IsFacilitator ).FirstOrDefault();
 
-            if (bags.Any( p => p.IsFacilitator ) )
-            {
-                // If the current person is a facilitator ensure
-                // they have the access necessary for the instructor portal.
-                currentPersonParticipantBag.IsFacilitator = true;
-            }
-
+            // If the current person is a facilitator ensure
+            // they have the access necessary for the instructor portal.
+            currentPersonParticipantBag.IsFacilitator = bags.Any( p => p.IsFacilitator );
+            
             var scales = new LearningClassService( RockContext )
                 .GetClassScales( classId )
                 .ToList()
@@ -402,9 +399,10 @@ namespace Rock.Blocks.Lms
             var currentPerson = GetCurrentPerson();
 
             var participantService = new LearningParticipantService( RockContext );
-            var currentPersonIsStudent = participantService.GetStudents( classId ).Any( s => s.PersonId == currentPerson.Id );
+            var currentPersonIsEnrolled = participantService.GetParticipants( classId ).Any( s => s.PersonId == currentPerson.Id );
 
-            if ( !currentPersonIsStudent )
+            // Facilitators are also considered enrolled.
+            if ( !currentPersonIsEnrolled )
             {
                 box.ErrorMessage = $"You must be enrolled to view the class workspace.";
                 return box;
@@ -454,7 +452,7 @@ namespace Rock.Blocks.Lms
 
             var currentPersonGuid = currentPerson.Guid.ToString();
 
-            box.IsCurrentPersonFacilitator = box.Facilitators.Any( f => f.Facilitator.Value == currentPersonGuid );
+            box.IsCurrentPersonFacilitator = box.Activities.Any( a => a.ActivityBag.CurrentPerson.IsFacilitator );
 
             var participantIdKey = box.Activities.Select( a => a.Student.IdKey ).FirstOrDefault();
             var participant = participantService.GetInclude( participantIdKey, p => p.LearningGradingSystemScale );
@@ -516,7 +514,7 @@ namespace Rock.Blocks.Lms
                 .Where( a => ( a.IsAvailable && !a.IsStudentCompleted ) )
                 .Select( a => new PublicLearningClassWorkspaceNotificationBag
                 {
-                    Content = a.IsDueSoon || a.IsLate ? $"Due on {a.DueDate.ToShortDateString()}" : $"Available on {a.AvailableDate.ToShortDateString()}",
+                    Content = a.IsDueSoon || a.IsLate ? $"Due on {a.DueDate.ToShortDateString()}" : a.AvailableDate.HasValue ? $"Available on {a.AvailableDate.ToShortDateString()}" : "Available",
                     LabelText = a.IsDueSoon ? "Due Soon" : a.IsLate ? "Late" : "Available",
                     LabelType = a.IsDueSoon ? "warning" : a.IsLate ? "danger" : "success",
                     NotificationDateTime = a.DueDate ?? DateTime.MaxValue,
