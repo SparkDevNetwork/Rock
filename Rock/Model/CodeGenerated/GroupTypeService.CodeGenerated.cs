@@ -200,6 +200,7 @@ namespace Rock.Model
             target.IgnorePersonInactivated = source.IgnorePersonInactivated;
             target.InheritedGroupTypeId = source.InheritedGroupTypeId;
             target.IsCapacityRequired = source.IsCapacityRequired;
+            target.IsConcurrentCheckInPrevented = source.IsConcurrentCheckInPrevented;
             target.IsIndexEnabled = source.IsIndexEnabled;
             target.IsPeerNetworkEnabled = source.IsPeerNetworkEnabled;
             target.IsSchedulingEnabled = source.IsSchedulingEnabled;
