@@ -2,11 +2,13 @@
 <template>
     <div class="group-select-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <div class="attendance-cards">
                 <AttendanceCard v-for="attendance in aggregateAttendance"
                                 term="Checked Out"
-                                :attendance="attendance" />
+                                :attendance="attendance"
+                                :hidePhoto="!!session.configuration.template?.isPhotoHidden" />
             </div>
 
             <div class="messages">
