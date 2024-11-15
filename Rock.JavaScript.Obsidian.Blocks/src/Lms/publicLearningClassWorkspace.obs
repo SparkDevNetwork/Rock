@@ -15,12 +15,12 @@
                     <li v-for="tab in tabs" role="presentation" :class="{ 'active': tab === selectedTab }">
                         <a href="#" @click.prevent="onSelectTab(tab)">{{ tab }}</a>
                     </li>
-
-                    <li class="facilitator-portal align-self-end" role="presentation" v-if="isFacilitator">
+                </ul>
+                <ul class="nav nav-pills d-flex align-items-end" v-if="isFacilitator">
+                    <li class="facilitator-portal" role="presentation">
                         <a :href="facilitatorPortalUrl">Facilitator Portal</a>
                     </li>
                 </ul>
-
             </div>
 
             <NotificationBox v-if="classCompletionDate" class="text-center" alertType="default">{{ studentCompletionText }}</NotificationBox>
@@ -192,6 +192,9 @@
                     <h2 class="mt-0">
                         {{ viewingCompletionBag.activityBag?.name ?? "" }}
                     </h2>
+                    <div class="activity-time">
+                        {{ getActivityTimeText(viewingCompletionBag) }}
+                    </div>
                     <div class="facilitator-comments-container" v-if="viewingCompletionBag.facilitatorComment">
                         <NotificationBox
                                          alertType="default">
@@ -201,9 +204,6 @@
                             {{ viewingCompletionBag.facilitatorComment }}
                         </NotificationBox>
 
-                    </div>
-                    <div class="activity-time">
-                        {{ getActivityTimeText(viewingCompletionBag) }}
                     </div>
                     <activityTypeComponent
                                            v-model:activityBag="viewingCompletionBag.activityBag"
@@ -217,6 +217,10 @@
     </div>
 </template>
 <style scoped>
+.facilitator-portal {
+    padding-right: var(--spacing-large);
+}
+
 .activity-item-detail-container {
     width: 100%;
 }
