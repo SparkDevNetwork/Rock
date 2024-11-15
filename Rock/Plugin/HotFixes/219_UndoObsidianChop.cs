@@ -50,21 +50,39 @@ namespace Rock.Plugin.HotFixes
         {
             RockMigrationHelper.UpdateBlockType( "Defined Type Detail", "Displays the details of the given defined type.", "~/Blocks/Core/DefinedTypeDetail.ascx", "Core", "08C35F15-9AF7-468F-9D50-CDFD3D21220C" );
 
-            RockMigrationHelper.DeleteAttribute( "0305EF98-C791-4626-9996-F189B9BB674C" );
+            RockMigrationHelper.UpdateBlockType( "Defined Value List", "Block for viewing values for a defined type.", "~/Blocks/Core/DefinedValueList.ascx", "Core", "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" );
+
+            /*
+	            11/15/2024 - JC & KH
+	            Update the qualifier value to match the new webforms BlockTypeId.
+	            This could happen if the church updates regularly and the webforms 
+	            block was chopped and then re-added as part of this migration.
+	            RockMigrationHelper.AddOrUpdateBlockTypeAttribute method expects
+	            the EntityTypeQualifierValue to match the current BlockTypeId.
+	            We can't just delete the attribute though because upgrading 
+	            from an older (< 16.0) could cause data loss.
+ 
+	            Reason: Premature chop of some blocks prevents use of non-obsidian FieldTypes.
+            */
+            Sql( @"UPDATE a SET
+	EntityTypeQualifierValue = CONVERT(NVARCHAR(400), bt.Id)
+FROM (
+	SELECT '0305EF98-C791-4626-9996-F189B9BB674C' WebformsAttributeGuid, '08C35F15-9AF7-468F-9D50-CDFD3D21220C' WebformsBlockTypeGuid
+	UNION SELECT '9280D61F-C4F3-4A3E-A9BB-BCD67FF78637', '0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE' -- Does this need names (i.e WebformsAttributeGuid, WebformsBlockTypeGuid)
+	UNION SELECT '87DAF7ED-AAF5-4D5C-8339-CB30B16CC9FF', '0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE'
+	UNION SELECT '0A3F078E-8A2A-4E9D-9763-3758E123E042', '0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE'
+	UNION SELECT '80765648-83B0-4B75-A296-851384C41CAB', '0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE'
+	UNION SELECT 'DF5BE156-A4B8-4FA5-A730-0579733F42F5', '0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE'
+) attributes
+JOIN [dbo].[Attribute] a ON a.[Guid] = WebformsAttributeGuid
+LEFT JOIN [dbo].[BlockType] bt ON bt.[Guid] = WebformsBlockTypeGuid
+WHERE a.EntityTypeQualifierValue <> CONVERT(NVARCHAR(400), bt.Id)" );
 
             // Attribute for BlockType
             //   BlockType: Defined Type Detail
             //   Category: Core
             //   Attribute: DefinedType
             RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "08C35F15-9AF7-468F-9D50-CDFD3D21220C", "BC48720C-3610-4BCF-AE66-D255A17F1CDF", "Defined Type", "DefinedType", "Defined Type", @"If a Defined Type is set, only details for it will be displayed (regardless of the querystring parameters).", 0, @"", "0305EF98-C791-4626-9996-F189B9BB674C" );
-
-            RockMigrationHelper.UpdateBlockType( "Defined Value List", "Block for viewing values for a defined type.", "~/Blocks/Core/DefinedValueList.ascx", "Core", "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" );
-
-            RockMigrationHelper.DeleteAttribute( "9280D61F-C4F3-4A3E-A9BB-BCD67FF78637" );
-            RockMigrationHelper.DeleteAttribute( "87DAF7ED-AAF5-4D5C-8339-CB30B16CC9FF" );
-            RockMigrationHelper.DeleteAttribute( "0A3F078E-8A2A-4E9D-9763-3758E123E042" );
-            RockMigrationHelper.DeleteAttribute( "80765648-83B0-4B75-A296-851384C41CAB" );
-            RockMigrationHelper.DeleteAttribute( "DF5BE156-A4B8-4FA5-A730-0579733F42F5" );
 
             // Attribute for BlockType
             //   BlockType: Defined Value List
@@ -101,7 +119,7 @@ namespace Rock.Plugin.HotFixes
         {
             // Custom swap to replace Obsidian DefinedTypeDetail with Webforms DefinedTypeDetail.
             RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
-                "Swap DefinedTypeDetail Block",
+                "Swap Webforms Blocks",
                 blockTypeReplacements: new Dictionary<string, string> {
                 { "f431f950-f007-493e-81c8-16559fe4c0f0", "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" }, // DefinedValueList -> DefinedValueList.ascx
                 { "73fd23b4-fa3a-49ea-b271-ffb228c6a49e", "08C35F15-9AF7-468F-9D50-CDFD3D21220C" }, // DefinedTypeDetail -> DefinedTypeDetail.ascx
