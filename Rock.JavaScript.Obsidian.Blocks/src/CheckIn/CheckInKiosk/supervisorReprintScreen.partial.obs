@@ -1,7 +1,8 @@
 <template>
     <div class="supervisor-reprint-screen">
         <MainPanel title="Reprint Labels"
-                   subtitle="Tap a button below to reprint labels.">
+                   subtitle="Tap a button below to reprint labels."
+                   :configuration="configuration">
             <!--
                 The form is here to prevent iOS from causing the Return key
                 to become a Go key and triggering a WebForms postback.

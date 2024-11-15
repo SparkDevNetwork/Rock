@@ -2,7 +2,8 @@
 <template>
     <div class="group-select-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <div class="button-list">
                 <RockButton btnType="primary"
                             class="checkout-button"
@@ -101,7 +102,7 @@
     /**
      * Handles the click event for the check-in button.
      */
-     async function onCheckIn(): Promise<void> {
+    async function onCheckIn(): Promise<void> {
         try {
             isProcessing.value = true;
 

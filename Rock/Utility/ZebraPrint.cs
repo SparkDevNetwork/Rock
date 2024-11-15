@@ -240,7 +240,7 @@ namespace Rock.Utility
             clientLabels = labels.Where( l => l.PrintFrom == PrintFrom.Client )
                 .Select( l => new ClientLabelBag
                 {
-                    PrinterAddress = l.PrintTo.IPAddress,
+                    PrinterAddress = l.PrintTo?.IPAddress,
                     Data = Convert.ToBase64String( l.Data )
                 } )
                 .ToList();

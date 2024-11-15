@@ -2,7 +2,8 @@
 <template>
     <div class="supervisor-login-screen">
         <MainPanel title="Supervisor Login"
-                   subtitle="Enter your PIN to login as a supervisor">
+                   subtitle="Enter your PIN to login as a supervisor"
+                   :configuration="configuration">
             <!--
                 The form is here to prevent iOS from causing the Return key
                 to become a Go key and triggering a WebForms postback.
@@ -29,7 +30,8 @@
 
         <MainPanel title="Current Counts"
                    subtitle="Below are the current check-in counts"
-                   class="flex-grow-1">
+                   class="flex-grow-1"
+                   :configuration="configuration">
             <SupervisorLoginScreenCounts :counts="counts"
                                          :showCountsByLocation="showCountsByLocation" />
         </MainPanel>
