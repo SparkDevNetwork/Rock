@@ -82,7 +82,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { computed, PropType, ref, watch } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-    import { alert, showDialog } from "@Obsidian/Utility/dialogs";
+    import { alert, confirm, showDialog } from "@Obsidian/Utility/dialogs";
     import { RegistrationScreen, RegistrationScreenData, KioskButton } from "./types.partial";
     import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -190,7 +190,7 @@
             type: "default",
             class: "cancel-button",
             disabled: false,
-            handler: onCloseClick
+            handler: onCancelClick
         });
 
         emit("updateActions", actions);
@@ -285,8 +285,17 @@
         people.value = people.value.filter(p => p.bag.guid !== guid);
     }
 
-    function onCloseClick(): void {
-        emit("closeRegistration");
+    async function onCancelClick(): Promise<void> {
+        if (!await confirm("Do you want to leave without saving?")) {
+            return;
+        }
+
+        if (props.registrationData.family.bag?.id) {
+            emit("checkInFamily", props.registrationData.family.bag.id);
+        }
+        else {
+            emit("closeRegistration");
+        }
     }
 
     async function onSaveClick(): Promise<void> {
