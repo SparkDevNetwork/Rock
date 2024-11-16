@@ -26,17 +26,15 @@
         </div>
     </Panel>
 
-    <div v-if="screenToShow === ComponentScreen.Completion">
-        <div :class="containerClasses">
-            <div class="instructions-section">
-                <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="true" />
-            </div>
+    <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
+        <div class="instructions-section">
+            <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="true" />
+        </div>
 
-            <div class="footer-content-section">
-                <RockButton v-if="isCompleted" :btnType="BtnType.Primary" @click="onContinueClicked">
-                    Continue
-                </RockButton>
-            </div>
+        <div class="footer-button-section">
+            <RockButton v-if="isCompleted" :btnType="BtnType.Primary" @click="onContinueClicked">
+                Continue
+            </RockButton>
         </div>
     </div>
 </template>

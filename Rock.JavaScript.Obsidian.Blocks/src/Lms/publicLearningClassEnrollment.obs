@@ -39,12 +39,6 @@
     </div>
 </template>
 
-<style scoped>
-.enrollment-block-container {
-    max-width: 545px;
-}
-</style>
-
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { PublicLearningClassEnrollmentBlockBox } from "@Obsidian/ViewModels/Blocks/Lms/publicLearningClassEnrollment/publicLearningClassEnrollmentBlockBox";

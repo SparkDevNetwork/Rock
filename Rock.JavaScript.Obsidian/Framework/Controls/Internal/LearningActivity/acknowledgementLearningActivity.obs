@@ -32,7 +32,8 @@
     </Panel>
 
     <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
-        <fieldset>
+
+        <div class="acknowledgement-container">
             <div class="header-content-section">
                 <StructuredContentEditor :disabled="true"
                                          v-model="content" />
@@ -40,13 +41,14 @@
             <div class="is-required-section" v-if="isConfirmationRequired">
                 <CheckBox v-model="isConfirmed" label="" :disabled="completionBag.isStudentCompleted" :text="confirmationText" />
             </div>
+        </div>
 
-            <div class="footer-content-section">
-                <RockButton :btnType="BtnType.Primary" :disabled="(isConfirmationRequired && !isConfirmed)" @click="onCompletedAndClosed">
-                    {{ completeButtonText }}
-                </RockButton>
-            </div>
-        </fieldset>
+        <div class="footer-button-section">
+            <RockButton :btnType="BtnType.Primary" :disabled="(isConfirmationRequired && !isConfirmed)" @click="onCompletedAndClosed">
+                {{ completeButtonText }}
+            </RockButton>
+        </div>
+
     </div>
 </template>
 

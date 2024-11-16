@@ -42,7 +42,7 @@
         </div>
     </Panel>
 
-    <div v-if="screenToShow === ComponentScreen.Completion">
+    <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
         <fieldset>
             <div class="header-section">
                 <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
@@ -55,7 +55,7 @@
             <div class="footer-section">
                 <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
             </div>
-            <div class="footer-buttons">
+            <div class="footer-button-section">
                 <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold"
                             @click="onCompletedAndClosed">
                     {{ completeButtonText }}
