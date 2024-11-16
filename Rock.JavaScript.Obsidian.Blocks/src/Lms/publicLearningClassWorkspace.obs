@@ -40,7 +40,7 @@
                         </h3>
 
                         <div class="section section-facilitators" v-if="showFacilitators()">
-                            <h4 class="mt-0">{{ facilitatorsLabel }}</h4>
+                            <h4 class="section-label facilitators-label">{{ facilitatorsLabel }}</h4>
 
                             <div class="facilitators-list">
                                 <span v-for="f in facilitators" :key="f.idKey ?? ''" class="facilitator-list-item">
@@ -51,7 +51,7 @@
                         </div>
 
                         <div class="section section-progress">
-                            <h4 class="mt-0">Class Progress</h4>
+                            <h4 class="section-label class-progress-label">Class Progress</h4>
 
                             <div class="class-progress-bar">
                                 <ProgressBar :percent="percentComplete" />
@@ -62,13 +62,19 @@
                         </div>
 
                         <div class="section section-grade" v-if="showGrades">
-                            <h4 class="mt-0">{{ currentGradeLabel }}</h4>
+                            <h4 class="section-label grade-label">{{ currentGradeLabel }}</h4>
 
-                            <div class="current-grade" v-if="showGrades && currentGrade">
-                                <span v-if="showGrades && currentGrade"
-                                      :class="['label', currentGrade.isPassing ? 'label-success' : 'label-warning']">
-                                    {{ currentGrade.name ?? '' }}
-                                </span>
+                            <div class="current-grade" v-if="showGrades">
+                                <template v-if="currentGrade && hasGradedActivities">
+                                    <span :class="['label', currentGrade.isPassing ? 'label-success' : 'label-warning']">
+                                        {{ currentGrade.name ?? '' }}
+                                    </span>
+                                </template>
+                                <template v-else>
+                                    <span class="label label-default empty-grade">
+                                        -
+                                    </span>
+                                </template>
                             </div>
                         </div>
                     </div>
@@ -76,15 +82,22 @@
 
                 <div class="announcements-container" v-if="enableAnnouncements">
                     <div class="announcements-section">
-                        <div class="d-flex flex-column">
+                        <div class="announcement-cards-container">
                             <h3 class="title">
                                 Announcements
                             </h3>
+
+                            <div class="announcement-cards-container empty-announcements-container" v-if="!hasAnnouncements">
+                                <i class="fa fa-comment-slash fa-2x no-announcements-icon"></i>
+                                <h6 class="no-announcements-title">No Announcements</h6>
+                                <div class="no-announcements-text">Future announcements will display here.</div>
+                            </div>
+
                             <template v-for="(announcement, index) in announcements" :key="announcement.idKey">
                                 <div class="card card-announcement" :class="getRowCssClass(index, announcements.length)"
                                      v-if="index < maxOverviewItemsToShow || isViewingAllAnnouncements">
                                     <div class="card-body">
-                                        <small class="text-bold card-date">
+                                        <small class="card-date">
                                             {{ formattedDate(announcement.publishDateTime) }}
                                         </small>
                                         <h5 class="announcement-title">
@@ -97,7 +110,7 @@
                                 </div>
                             </template>
 
-                            <div class="view-all-button d-flex justify-content-center" :class="announcementOverflowContainerClass" v-if="hasAnnouncementOverflow">
+                            <div class="view-all-button" :class="announcementOverflowContainerClass" v-if="hasAnnouncementOverflow">
                                 <RockButton
                                             btnType="link"
                                             @click="isViewingAllAnnouncements = !isViewingAllAnnouncements">
@@ -109,22 +122,28 @@
                 </div>
 
                 <div class="notifications-container">
-                    <div class="d-flex flex-column">
+                    <div class="notification-cards-container">
                         <div class="notifications-section">
                             <h3 class="title">
                                 Notifications
                             </h3>
 
+                            <div class="notification-cards-container empty-notifications-container" v-if="!hasNotifications">
+                                <i class="fa fa-bell-slash-o fa-2x no-notifications-icon"></i>
+                                <h6 class="no-notifications-title">No Notifications</h6>
+                                <div class="no-notifications-text">Future notifications will display here.</div>
+                            </div>
+
                             <div class="notification-cards notification-section">
                                 <template v-for="(notification, index) in notifications">
-                                    <div class="card card-notification d-flex flex-column" :class="getRowCssClass(index, notifications.length)"
+                                    <div class="card card-notification" :class="getRowCssClass(index, notifications.length)"
                                          v-if="index < maxOverviewItemsToShow || isViewingAllNotifications">
                                         <div class="card-body">
                                             <span :class="'badge badge-' + notification.labelType">
                                                 {{ notification.labelText }}
                                             </span>
 
-                                            <h5 class="notification-title mt-3">{{ notification.title }}</h5>
+                                            <h5 class="notification-title">{{ notification.title }}</h5>
 
                                             <div class="notification-content">
                                                 {{ notification.content }}
@@ -133,7 +152,7 @@
                                     </div>
                                 </template>
 
-                                <div class="view-all-button d-flex justify-content-center" :class="notificationsOverflowContainerClass" v-if="hasNotificationsOverflow">
+                                <div class="view-all-button" :class="notificationsOverflowContainerClass" v-if="hasNotificationsOverflow">
                                     <RockButton
                                                 btnType="link"
                                                 @click="isViewingAllNotifications = !isViewingAllNotifications">
@@ -171,7 +190,7 @@
                                 <i v-if="!isCompleted(item)" class="fa fa-circle-o fa-2x is-incomplete"></i>
                             </div>
                             <div class="activity-item-detail-container">
-                                <h5>{{ item?.activityBag?.name }}</h5>
+                                <h5 class="activity-name">{{ item?.activityBag?.name }}</h5>
                                 <div class="activity-item-time">
                                     <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
                                     <div class="activity-label-container">
@@ -277,7 +296,7 @@
     const maxOverviewItemsToShow = ref(config.numberOfNotificationsToShow);
     const isViewingAllAnnouncements = ref(false);
     const isViewingAllNotifications = ref(false);
-    const notifications = ref(config.notifications?.filter((_, i) => i < maxOverviewItemsToShow.value) ?? []);
+    const notifications = ref(config.notifications ?? []);
     const showGrades = ref(config.showGrades);
     const currentGrade = ref(config.currentGrade);
     const enableAnnouncements = ref(config.enableAnnouncements);
@@ -312,8 +331,17 @@
     /** The properly pluralized text for the Facilitator(s). */
     const facilitatorsLabel = computed(() => facilitators.value.length > 1 ? "Facilitators" : "Facilitator");
 
+    /** Whether there are any announcements. */
+    const hasAnnouncements = computed(() => announcements.value.length > 0);
+
     /** Whether there are more announcements than are configured to be shown by default. */
     const hasAnnouncementOverflow = computed(() => announcements.value.length > maxOverviewItemsToShow.value);
+
+    /** True if the student has completed an activity and that activity doesn't require scoring. */
+    const hasGradedActivities = computed(() => activities.value.some(a => isCompleted(a) && !a.requiresScoring));
+
+    /** Whether there are any notifications. */
+    const hasNotifications = computed(() => notifications.value.length > 0);
 
     /** Whether there are more notifications than are configured to be shown by default. */
     const hasNotificationsOverflow = computed(() => notifications.value.length > maxOverviewItemsToShow.value);
