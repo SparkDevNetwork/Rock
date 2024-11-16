@@ -967,6 +967,7 @@ namespace Rock.Blocks.Lms
                         a.DueDateCriteria,
                         a.DueDateOffset,
                         a.DueDateDefault,
+                        a.Order,
                         EnrollmentDate = a.LearningClass.CreatedDateTime,
                         ClassStartDate = a.LearningClass.LearningSemester.StartDate,
                         CompletedStudentIds = a.LearningActivityCompletions.Select( c => c.StudentId )
@@ -976,9 +977,10 @@ namespace Rock.Blocks.Lms
                     {
                         CompletedStudentIds = a.CompletedStudentIds.Distinct(),
                         DueDate = LearningActivity.CalculateDueDate( a.DueDateCriteria, a.DueDateDefault, a.DueDateOffset, a.ClassStartDate, a.EnrollmentDate ),
-                        a.Name
+                        a.Name,
+                        a.Order
                     } )
-                    .OrderBy( a => a.DueDate );
+                    .OrderBy( a => a.Order );
 
             var students = new LearningParticipantService( RockContext )
                 .GetStudents( entity.Id )

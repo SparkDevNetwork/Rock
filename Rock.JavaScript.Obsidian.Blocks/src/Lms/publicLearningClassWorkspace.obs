@@ -31,8 +31,8 @@
                 </div>
             </div>
 
-            <div class="workspace-class-overview row" v-if="selectedTab === overviewTab">
-                <div class="workspace-class-sidebar overview-container" :class="overviewColumnClasses">
+            <div class="workspace-class-overview" v-if="selectedTab === overviewTab">
+                <div class="workspace-class-sidebar overview-container">
 
                     <div class="overview-section">
                         <h3 class="title">
@@ -42,7 +42,7 @@
                         <div class="section section-facilitators" v-if="showFacilitators()">
                             <h4 class="mt-0">{{ facilitatorsLabel }}</h4>
 
-                            <div class="facilitators-list d-flex flex-column">
+                            <div class="facilitators-list">
                                 <span v-for="f in facilitators" :key="f.idKey ?? ''" class="facilitator-list-item">
                                     <div class="facilitator-name">{{ f.facilitatorName }}</div>
                                     <a class="facilitator-email" v-if="f.facilitatorEmail" :href="'mailto:' + f.facilitatorEmail"> {{ f.facilitatorEmail }}</a>
@@ -74,7 +74,41 @@
                     </div>
                 </div>
 
-                <div class="notifications-container" :class="notificationsColumnClasses">
+                <div class="announcements-container" v-if="enableAnnouncements">
+                    <div class="announcements-section">
+                        <div class="d-flex flex-column">
+                            <h3 class="title">
+                                Announcements
+                            </h3>
+                            <template v-for="(announcement, index) in announcements" :key="announcement.idKey">
+                                <div class="card card-announcement" :class="getRowCssClass(index, announcements.length)"
+                                     v-if="index < maxOverviewItemsToShow || isViewingAllAnnouncements">
+                                    <div class="card-body">
+                                        <small class="text-bold card-date">
+                                            {{ formattedDate(announcement.publishDateTime) }}
+                                        </small>
+                                        <h5 class="announcement-title">
+                                            {{ announcement.title }}
+                                        </h5>
+                                        <div class="announcement-content">
+                                            <span v-html="announcement.description"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <div class="view-all-button d-flex justify-content-center" :class="announcementOverflowContainerClass" v-if="hasAnnouncementOverflow">
+                                <RockButton
+                                            btnType="link"
+                                            @click="isViewingAllAnnouncements = !isViewingAllAnnouncements">
+                                    {{ announcementsOverflowText }} &nbsp; <i :class="announcementsOverflowIconClass"></i>
+                                </RockButton>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="notifications-container">
                     <div class="d-flex flex-column">
                         <div class="notifications-section">
                             <h3 class="title">
@@ -111,39 +145,6 @@
                     </div>
                 </div>
 
-                <div class="col-md-6 col-md-pull-3 announcements-container" v-if="enableAnnouncements">
-                    <div class="announcements-section row">
-                        <div class="d-flex flex-column">
-                            <h3 class="title">
-                                Announcements
-                            </h3>
-                            <template v-for="(announcement, index) in announcements" :key="announcement.idKey">
-                                <div class="card card-announcement" :class="getRowCssClass(index, announcements.length)"
-                                     v-if="index < maxOverviewItemsToShow || isViewingAllAnnouncements">
-                                    <div class="card-body">
-                                        <small class="text-bold card-date">
-                                            {{ formattedDate(announcement.publishDateTime) }}
-                                        </small>
-                                        <h5 class="announcement-title">
-                                            {{ announcement.title }}
-                                        </h5>
-                                        <div class="announcement-content">
-                                            <span v-html="announcement.description"></span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <div class="view-all-button d-flex justify-content-center" :class="announcementOverflowContainerClass" v-if="hasAnnouncementOverflow">
-                                <RockButton
-                                            btnType="link"
-                                            @click="isViewingAllAnnouncements = !isViewingAllAnnouncements">
-                                    {{ announcementsOverflowText }} &nbsp; <i :class="announcementsOverflowIconClass"></i>
-                                </RockButton>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div class="workspace-block-content" v-if="selectedTab === activitiesTab">
@@ -201,7 +202,9 @@
                             <div class="facilitator-comment-label">
                                 Facilitator Comment:
                             </div>
-                            {{ viewingCompletionBag.facilitatorComment }}
+                            <div class="facilitator-comment-text">
+                                {{ viewingCompletionBag.facilitatorComment }}
+                            </div>
                         </NotificationBox>
 
                     </div>
@@ -216,7 +219,6 @@
         </div>
     </div>
 </template>
-
 
 <script setup lang="ts">
     import { Component, computed, defineAsyncComponent, nextTick, onMounted, ref, toValue, watch } from "vue";
@@ -414,16 +416,6 @@
 
         return classes.join(" ");
     }
-
-    const notificationsColumnClasses = computed(() =>
-        enableAnnouncements.value === true ?
-            "col-md-3 col-md-push-6" :
-            "col-md-6");
-
-    const overviewColumnClasses = computed(() =>
-        enableAnnouncements.value === true ?
-            "col-md-3" :
-            "col-md-6");
 
     /** Add the tooltip for the activity disabled help text. */
     function addTooltip(activityContainer: Element | null): void {

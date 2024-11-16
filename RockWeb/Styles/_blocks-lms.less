@@ -48,13 +48,53 @@
 }
 
 
-
   /* Workspace Tabbar */
   .workspace-tab-bar {
     display: flex;
     justify-content: space-between;
     margin-bottom: var(--spacing-large);
     align-items: center;
+  }
+
+  /* Column Size and order on Class overview */
+  .workspace-class-overview {
+    display: flex;
+    width: 100%;
+    gap: 30px;
+  }
+
+  .overview-container {
+    flex: 1
+  }
+
+  .announcements-container {
+    flex: 2
+  }
+
+  .notifications-container {
+    flex: 1
+  }
+
+  /* Change order for smaller screens */
+  @media (max-width: 768px) {
+    .workspace-class-overview {
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .overview-container {
+      order: 1;
+    }
+
+    .notifications-container {
+      order: 2;
+    }
+
+    .announcements-container {
+      order: 3;
+      flex: 1;
+    }
   }
 
   /* Workspace Class Overview */
@@ -126,6 +166,11 @@
     }
 }
 
+  .facilitators-list {
+      display: flex;
+      flex-direction: column;
+  }
+
   .facilitator-comment-container {
     padding: 8px;
   }
@@ -164,10 +209,8 @@
   .activity-item-content {
     display: flex;
     align-items: center;
-  }
-
-  .activity-item-content .activity-item-icon {
-    margin-right: var(--spacing-xsmall);
+    width: 100%;
+    gap: var(--spacing-medium);
   }
 
   .activity-item-content h5 {
@@ -193,6 +236,10 @@
 
   .is-completed {
     background-color: var(--color-interface-softest);
+  }
+
+  .is-incomplete {
+    color: var(--color-interface-medium);
   }
 
   .is-selected {
@@ -262,7 +309,6 @@
         flex-direction: column;
     }
 
-
     /* With the title bar having a title and add button on left and right respectively. */
     .assessment-items-section > .assessment-items-title-bar {
         display: flex;
@@ -315,6 +361,19 @@
         margin-bottom: 12px;
     }
 
+    .student-completion-summary-header {
+        margin-bottom: var(--spacing-tiny);
+    }
+
+    /* The text in the summary text block */
+    .summary-text {
+        color: var(--interface-medium);
+    }
+
+    .add-assessment-item-button {
+        color: var(--interface-medium);
+    }
+
     .header-content-section-summary {
         margin-bottom: 16px;
     }
@@ -323,8 +382,8 @@
     // -------------------------
 
     .lms-assessment-item-multiple-choice-container > div {
-      display: flex;
-      flex-direction: column;
+        display: flex;
+        flex-direction: column;
     }
 
     .add-answer-button > i.fa-plus-circle {

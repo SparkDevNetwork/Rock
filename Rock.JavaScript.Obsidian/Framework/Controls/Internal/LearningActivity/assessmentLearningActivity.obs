@@ -59,7 +59,7 @@
                         <button
                                 aria-label="Add an assessment item"
                                 :disabled="disabled"
-                                class="btn btn-default btn-xs align-items-center add-assessment-item-button text-muted"
+                                class="btn btn-default btn-xs align-items-center add-assessment-item-button"
                                 @click.prevent="addAssessmentItem(0)">
                             <i class="fa fa-plus" aria-hidden="true"></i> Add Item
                         </button>
@@ -97,7 +97,7 @@
                     <button v-if="items.length > 0"
                             aria-label="Add an assessment item"
                             :disabled="disabled"
-                            class="btn btn-default btn-xs align-items-center add-assessment-item-button text-muted"
+                            class="btn btn-default btn-xs align-items-center add-assessment-item-button"
                             @click.prevent="addAssessmentItem(items.length - 1)">
                         <i class="fa fa-plus" aria-hidden="true"></i> Add Item
                     </button>
@@ -165,14 +165,14 @@
         <div v-if="isStudentAssignedAndCompleted">
             <div class="student-completion-summary-header">
                 <h2> {{ activityBag.activityComponent?.name }} </h2>
-                <div class="text-muted">{{ headerSubText }}</div>
+                <div class="summary-text">{{ headerSubText }}</div>
             </div>
 
             <div v-if="hasMultipleChoiceQuestions && showResultsOnCompletion" class="well well-sm student-completion-summary">
                 <div class="results-summary-section">
                     <h4>Results Summary</h4>
                     <h5>{{ resultSummarySubHeader }}</h5>
-                    <div class="multiple-choice-summary-text text-muted">
+                    <div class="multiple-choice-summary-text summary-text">
                         {{ multipleChoiceSummaryText }}
                     </div>
                 </div>
