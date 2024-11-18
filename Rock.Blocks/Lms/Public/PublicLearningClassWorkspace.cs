@@ -62,7 +62,7 @@ namespace Rock.Blocks.Lms
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
-        IsRequired = true,
+        IsRequired = false,
         DefaultValue = AttributeDefault.HeaderTemplate,
         Order = 2 )]
 
@@ -93,59 +93,12 @@ namespace Rock.Blocks.Lms
         private static class AttributeDefault
         {
             public const string HeaderTemplate = @"
-{% assign imageFileNameLength = Course.ImageFileGuid | Size %}
-
-//- Styles
-{% stylesheet %}
-    .header-container {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 12px;
-    }
-    
-    .page-header-section {
-        {% if imageFileNameLength > 0 %}
-            height: 280px;
-            background-image: url('/GetImage.ashx?guid={{Course.ImageFileGuid}}'); 
-            background-size: cover;
-        {% endif %}
-        align-items: center; 
-        border-radius: 12px; 
-    }
-    
-    .header-block {
-        display: flex;
-        flex-direction: column;
-        position: relative;
-        left: 10%;
-        {% if imageFileNameLength > 0 %}
-            bottom: -85%;
-            -webkit-transform: translateY(-30%);
-            transform: translateY(-30%);
-        {% endif %}
-        background-color: white; 
-        border-radius: 12px; 
-        width: 80%; 
-    }
-    
-    .page-sub-header {
-        padding-left: 10%; 
-        padding-right: 10%; 
-        padding-bottom: 12px;
-        margin-bottom: 12px;
-    }
-{% endstylesheet %}
-<div class=""header-container"">
-	<div class=""page-header-section mb-5"">
-		<div class=""header-block text-center"">
-			<h2>
-				{{ Course.PublicName }}
-			</h2>
-			<div class=""page-sub-header"">
-				{{ Course.Summary }}
-			</div>
-		</div>
-	</div>
+<div class=""hero-section mb-5"">
+    <div class=""hero-section-image"" style=""background-image: url('/GetImage.ashx?guid={{ Course.ImageBinaryFile.Guid }}')""></div>
+    <div class=""hero-section-content"">
+        <h1 class=""hero-section-title""> {{ Course.PublicName }} </h1>
+        <p class=""hero-section-description""> {{ Course.Summary }} </p>
+    </div>
 </div>
 ";
         }
@@ -246,13 +199,10 @@ namespace Rock.Blocks.Lms
             // If they are also a facilitator we'll want to use the studentId for getting activities.
             var currentPersonParticipantBag = bags.OrderBy( p => p.IsFacilitator ).FirstOrDefault();
 
-            if (bags.Any( p => p.IsFacilitator ) )
-            {
-                // If the current person is a facilitator ensure
-                // they have the access necessary for the instructor portal.
-                currentPersonParticipantBag.IsFacilitator = true;
-            }
-
+            // If the current person is a facilitator ensure
+            // they have the access necessary for the instructor portal.
+            currentPersonParticipantBag.IsFacilitator = bags.Any( p => p.IsFacilitator );
+            
             var scales = new LearningClassService( RockContext )
                 .GetClassScales( classId )
                 .ToList()
@@ -276,6 +226,13 @@ namespace Rock.Blocks.Lms
 
             // Get all the components once rather than loading each one inside the foreach loop.
             var components = LearningActivityContainer.Instance.Components.Values.ToList();
+
+            // For any graded activities get the PersonAlias for all graders.
+            var personAliasIds = activities.Where( a => a.GradedByPersonAliasId.HasValue && a.GradedByPersonAliasId > 0)
+                .Select( a => (int)a.GradedByPersonAliasId )
+                .Distinct()
+                .ToList();
+            var personAliases = new PersonAliasService( RockContext ).GetByIds( personAliasIds );
 
             // We need to track the previous completion for activities that become available upon completion of the previous.
             LearningActivityCompletionBag previousActivityCompletion = null;
@@ -442,13 +399,16 @@ namespace Rock.Blocks.Lms
             var currentPerson = GetCurrentPerson();
 
             var participantService = new LearningParticipantService( RockContext );
-            var currentPersonIsStudent = participantService.GetStudents( classId ).Any( s => s.PersonId == currentPerson.Id );
+            var currentPersonIsEnrolled = participantService.GetParticipants( classId ).Any( s => s.PersonId == currentPerson.Id );
 
-            if ( !currentPersonIsStudent )
+            // Facilitators are also considered enrolled.
+            if ( !currentPersonIsEnrolled )
             {
                 box.ErrorMessage = $"You must be enrolled to view the class workspace.";
                 return box;
             }
+
+            box.EnableAnnouncements = course.EnableAnnouncements;
 
             var now = RockDateTime.Now;
             box.ContentPages = new LearningClassContentPageService( RockContext ).Queryable()
@@ -492,7 +452,7 @@ namespace Rock.Blocks.Lms
 
             var currentPersonGuid = currentPerson.Guid.ToString();
 
-            box.IsCurrentPersonFacilitator = box.Facilitators.Any( f => f.Facilitator.Value == currentPersonGuid );
+            box.IsCurrentPersonFacilitator = box.Activities.Any( a => a.ActivityBag.CurrentPerson.IsFacilitator );
 
             var participantIdKey = box.Activities.Select( a => a.Student.IdKey ).FirstOrDefault();
             var participant = participantService.GetInclude( participantIdKey, p => p.LearningGradingSystemScale );
@@ -554,7 +514,7 @@ namespace Rock.Blocks.Lms
                 .Where( a => ( a.IsAvailable && !a.IsStudentCompleted ) )
                 .Select( a => new PublicLearningClassWorkspaceNotificationBag
                 {
-                    Content = a.IsDueSoon || a.IsLate ? $"Due on {a.DueDate.ToShortDateString()}" : $"Available on {a.AvailableDate.ToShortDateString()}",
+                    Content = a.IsDueSoon || a.IsLate ? $"Due on {a.DueDate.ToShortDateString()}" : a.AvailableDate.HasValue ? $"Available on {a.AvailableDate.ToShortDateString()}" : "Available",
                     LabelText = a.IsDueSoon ? "Due Soon" : a.IsLate ? "Late" : "Available",
                     LabelType = a.IsDueSoon ? "warning" : a.IsLate ? "danger" : "success",
                     NotificationDateTime = a.DueDate ?? DateTime.MaxValue,
@@ -586,7 +546,7 @@ namespace Rock.Blocks.Lms
                 {
                     Content = $"A facilitator commented on {a.ActivityBag.ActivityComponent.Name}: {a.ActivityBag.Name}.",
                     LabelText = "Comment",
-                    LabelType = "info",
+                    LabelType = "default",
                     NotificationDateTime = a.CompletedDate ?? DateTime.MaxValue,
                     Title = "Facilitator Comment"
                 } )

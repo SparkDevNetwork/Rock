@@ -1,10 +1,17 @@
 <template>
     <div class="supervisor-reprint-screen">
         <MainPanel title="Reprint Labels"
-                   subtitle="Tap a button below to reprint labels.">
-            <TextBox v-model="searchTerm"
-                     class="search-term"
-                     placeholder="Filter" />
+                   subtitle="Tap a button below to reprint labels."
+                   :configuration="configuration">
+            <!--
+                The form is here to prevent iOS from causing the Return key
+                to become a Go key and triggering a WebForms postback.
+            -->
+            <RockForm>
+                <TextBox v-model="searchTerm"
+                         class="search-term"
+                         placeholder="Filter" />
+            </RockForm>
 
             <div class="button-list">
                 <RockButton v-for="attendance in filteredAttendances"
@@ -40,6 +47,7 @@
     import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
     import { printLabels, printLegacyLabels } from "./utils.partial";
     import { PrintResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/printResponseBag";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
 
     type ReprintAttendanceBag = {
         id?: string | null;

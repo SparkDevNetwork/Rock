@@ -279,7 +279,7 @@ namespace Rock.Web.UI.Controls
             EnsureChildControls();
 
             groupType.Name = _tbGroupTypeName.Text;
-            groupType.InheritedGroupTypeId = _ddlGroupTypeInheritFrom.SelectedValueAsId();
+            groupType.InheritedGroupTypeId = GetInheritedGroupTypeId( groupType );
             groupType.AttendanceRule = _ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
             groupType.AlreadyEnrolledMatchingLogic = _rblMatchingLogic.SelectedValueAsEnum<AlreadyEnrolledMatchingLogic>();
             groupType.IsConcurrentCheckInPrevented = _cbPreventConcurrentCheckIn.Checked;
@@ -290,6 +290,50 @@ namespace Rock.Web.UI.Controls
             groupType.LoadAttributes();
 
             Rock.Attribute.Helper.GetEditValues( _phGroupTypeAttributes, groupType );
+        }
+
+        /// <summary>
+        /// Calculates the appropriate Inherited GroupType Identifier for the <see cref="GroupType"/>.  This method is utilized to avoid clearing
+        /// Inherited GroupType settings that may have been set elsewhere (e.g., the GroupType configuration) if no Inherited GroupType is
+        /// selected in the control.
+        /// </summary>
+        /// <param name="groupType"><see cref="GroupType"/>.</param>
+        /// <returns></returns>
+        private int? GetInheritedGroupTypeId( GroupType groupType )
+        {
+            var selectedValue = _ddlGroupTypeInheritFrom.SelectedValueAsId();
+            if ( selectedValue.HasValue )
+            {
+                // If a value was selected in the control, we can use that.
+                return selectedValue;
+            }
+            else if ( !groupType.InheritedGroupTypeId.HasValue )
+            {
+                // If the GroupType has no value, and nothing was selected, it will stay null.
+                return null;
+            }
+
+            var isExistingValueInList = false;
+            foreach ( ListItem item in _ddlGroupTypeInheritFrom.Items )
+            {
+                var itemValue = item.Value.AsIntegerOrNull();
+                if ( itemValue.HasValue && itemValue == groupType.InheritedGroupTypeId )
+                {
+                    isExistingValueInList = true;
+                    break;
+                }
+            }
+
+            if ( isExistingValueInList )
+            {
+                // This indicates that the previously configured value was in the dropdown, but was de-selected, so it should be cleared.
+                return null;
+            }
+            else
+            {
+                // The previously configured value was not in the dropdown, and the dropdown was left without a selection, so retain the previously configured value.
+                return groupType.InheritedGroupTypeId;
+            }
         }
 
         /// <summary>

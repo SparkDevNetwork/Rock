@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -227,14 +227,6 @@ namespace Rock.Workflow.Action
                     .Select( r => r.Id )
                     .FirstOrDefault();
                 var knownRelationshipOwner = UpdateGroupMember( business.Id, knownRelationshipGroupType, "Known Relationship", null, knownRelationshipOwnerRoleId, rockContext );
-
-                // Add/Update Implied Relationship Group Type
-                var impliedRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK.AsGuid() );
-                int impliedRelationshipOwnerRoleId = impliedRelationshipGroupType.Roles
-                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-                var impliedRelationshipOwner = UpdateGroupMember( business.Id, impliedRelationshipGroupType, "Implied Relationship", null, impliedRelationshipOwnerRoleId, rockContext );
 
                 rockContext.SaveChanges();
 

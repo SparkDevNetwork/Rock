@@ -1,7 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="container" class="image-with-icon-container" :style="backgroundImagePath">
-        <div class="icon-stack-container" v-if="hasIcon" :style="stackColorStyle">
+    <div ref="container" class="billboard">
+        <div class="billboard-image" :style="backgroundImagePath"></div>
+        <div class="billboard-icon" v-if="hasIcon" :style="stackColorStyle">
             <i :style="highlightColorStyle" :class="iconCssClasses"></i>
         </div>
     </div>

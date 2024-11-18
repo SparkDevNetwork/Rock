@@ -336,10 +336,13 @@ namespace Rock.Model
         public List<LearningActivityCompletion> GetStudentLearningPlan( int classId, int personId )
         {
             // Get the participant based on class and person identifiers.
+            // Order by IsLeader so that Student roles are included first
+            // This prevents potential issues when a facilitator is also a student.
             var participant = Queryable()
                 .Include( p => p.LearningClass )
                 .Include( p => p.LearningClass.LearningSemester )
                 .Include( p => p.LearningClass.LearningSemester.LearningProgram )
+                .OrderBy( p => p.GroupRole.IsLeader )
                 .FirstOrDefault( p => p.PersonId == personId && p.LearningClassId == classId );
 
             return GetStudentLearningPlan( participant );
@@ -391,6 +394,5 @@ namespace Rock.Model
                 .ThenBy( a => a.LearningActivityId )
                 .ToList();
         }
-
     }
 }

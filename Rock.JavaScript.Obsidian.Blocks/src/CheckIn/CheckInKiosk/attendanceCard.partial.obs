@@ -2,7 +2,9 @@
 <template>
     <div class="attendance-card">
         <div class="header">
-            <div class="avatar" :style="avatarStyle"></div>
+            <div v-if="!hidePhoto"
+                 class="avatar"
+                 :style="avatarStyle"></div>
 
             <div class="title">{{ attendance.person.fullName }}</div>
         </div>
@@ -51,6 +53,11 @@
         term: {
             type: String as PropType<string>,
             default: "Checked Into"
+        },
+
+        hidePhoto: {
+            type: Boolean as PropType<boolean>,
+            required: true
         }
     });
 

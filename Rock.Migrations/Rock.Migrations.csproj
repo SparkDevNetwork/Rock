@@ -2313,6 +2313,14 @@
     <Compile Include="Migrations\Version 13.0\Version 1.13.0\202112152202412_GivingAchievements.Designer.cs">
       <DependentUpon>202112152202412_GivingAchievements.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411141824585_RemoveLegacyAppleTvPages.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411141824585_RemoveLegacyAppleTvPages.Designer.cs">
+      <DependentUpon>202411141824585_RemoveLegacyAppleTvPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.Designer.cs">
+      <DependentUpon>202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RockStartup\DataMigrationsStartup.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
@@ -4003,6 +4011,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 13.0\Version 1.13.0\202112152202412_GivingAchievements.resx">
       <DependentUpon>202112152202412_GivingAchievements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411141824585_RemoveLegacyAppleTvPages.resx">
+      <DependentUpon>202411141824585_RemoveLegacyAppleTvPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.resx">
+      <DependentUpon>202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

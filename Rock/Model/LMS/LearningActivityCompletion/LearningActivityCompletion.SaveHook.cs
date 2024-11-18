@@ -91,6 +91,9 @@ namespace Rock.Model
                         // For determining overall class completion and calculating grade based on (facilitator) completed activities.
                         IsStudentOrFacilitatorCompleted = a.IsStudentCompleted || a.IsFacilitatorCompleted,
 
+                        // Don't include ungraded items.
+                        a.RequiresGrading,
+
                         // For getting list of grade scales available.
                         GradingSystemId = a.LearningActivity.LearningClass.LearningGradingSystemId,
 
@@ -108,6 +111,9 @@ namespace Rock.Model
                 var isClassOver = anyCompletionRecord.ClassEndDate.HasValue && anyCompletionRecord.ClassEndDate.Value.IsPast();
 
                 // If the class has ended don't recalculate the grade.
+                // This ensures that if a facilitator adds an activity
+                // after a student has completed all of what was assigned
+                // they don't unexpectedly find their class re-opened.
                 if ( isClassOver )
                 {
                     return;
@@ -115,7 +121,7 @@ namespace Rock.Model
 
                 var gradingSystemId = completionDetails.FirstOrDefault().GradingSystemId;
 
-                var gradedActivities = completionDetails.Where( a => a.IsStudentOrFacilitatorCompleted ).ToList();
+                var gradedActivities = completionDetails.Where( a => a.IsStudentOrFacilitatorCompleted && !a.RequiresGrading ).ToList();
                 var possiblePoints = gradedActivities.Sum( a => a.Possible );
                 var earnedPoints = gradedActivities.Sum( a => a.Earned );
                 var gradePercent = possiblePoints > 0 ? earnedPoints / possiblePoints * 100 : 0;

@@ -144,6 +144,8 @@ export const ServiceJob = {
     DataMigrations170RemoveLegacyPreferences: "46d98280-7611-4588-831d-6924e2be9da6",
     /** The Job to run Post v17.0 Data Migrations to swap Block. */
     DataMigrations170SwapObsidianBlocks: "EA16D2B2-35CB-4E6B-A6A7-CBD6BCA5998F",
+    /** The job for swapping DefinedTypeDetail and DefinedValueList with Webforms Block. */
+    DataMigrations170SwapWebformsBlocks: "AD8A38F7-1FCC-47CD-893F-9B4335DD7E08",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail

@@ -155,6 +155,12 @@ namespace Rock.SystemKey
         public const string CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION = "core_checkin_AbilityLevelDetermination";
 
         /// <summary>
+        /// Attribute key for check-in configuration template to specify if
+        /// certain age groups should be excluded from check-in.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_AGE_RESTRICTION = "core_AgeRestriction";
+
+        /// <summary>
         /// Attribute key for GroupTypes that allow checkout
         /// </summary>
         [RockObsolete( "1.14" )]

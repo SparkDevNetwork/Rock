@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Clicks"
+          stickyHeader
           liveUpdates
           :showLaunchWorkflow="false">
 

@@ -152,7 +152,9 @@ namespace Rock.Blocks.Lms
             {
                 var programService = new LearningProgramService( RockContext );
                 var configurationMode = programService.GetSelect( programId, p => p.ConfigurationMode );
+                var enableAnnouncements = new LearningClassService( RockContext ).GetSelect( classId, c => c.LearningCourse.EnableAnnouncements );
 
+                options.CourseAllowsAnnouncements = enableAnnouncements;
                 options.ProgramConfigurationMode = configurationMode;
                 options.ActiveClassesUsingDefaultGradingSystem = GetProgramActiveClassesWithDefaultGradingSystem( classId ).Count();
 
@@ -395,10 +397,13 @@ namespace Rock.Blocks.Lms
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
             {
+                var programId = PageParameter( PageParameterKey.LearningProgramId );
                 return new LearningClass
                 {
                     Id = 0,
-                    Guid = Guid.Empty
+                    Guid = Guid.Empty,
+                    LearningGradingSystemId = new LearningProgramService( RockContext )
+                        .GetSelect( programId, p => p.DefaultLearningGradingSystemId, !PageCache.Layout.Site.DisablePredictableIds ) ?? 0
                 };
             }
 
@@ -962,6 +967,7 @@ namespace Rock.Blocks.Lms
                         a.DueDateCriteria,
                         a.DueDateOffset,
                         a.DueDateDefault,
+                        a.Order,
                         EnrollmentDate = a.LearningClass.CreatedDateTime,
                         ClassStartDate = a.LearningClass.LearningSemester.StartDate,
                         CompletedStudentIds = a.LearningActivityCompletions.Select( c => c.StudentId )
@@ -971,9 +977,10 @@ namespace Rock.Blocks.Lms
                     {
                         CompletedStudentIds = a.CompletedStudentIds.Distinct(),
                         DueDate = LearningActivity.CalculateDueDate( a.DueDateCriteria, a.DueDateDefault, a.DueDateOffset, a.ClassStartDate, a.EnrollmentDate ),
-                        a.Name
+                        a.Name,
+                        a.Order
                     } )
-                    .OrderBy( a => a.DueDate );
+                    .OrderBy( a => a.Order );
 
             var students = new LearningParticipantService( RockContext )
                 .GetStudents( entity.Id )

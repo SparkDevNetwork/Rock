@@ -289,6 +289,8 @@ export const FieldType = {
     Schedule: "E9C12C59-98EA-4977-8318-647435BE9A9C",
     /** Schedules field type */
     Schedules: "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B",
+    /** Secondary auths field type */
+    SecondaryAuths: "98F57599-2DC3-4022-BE33-14A22C3043E1",
     /** Security Role field type */
     SecurityRole: "7BD25DC9-F34A-478D-BEF9-0C787F5D39B8",
     /** Single-Select field type */

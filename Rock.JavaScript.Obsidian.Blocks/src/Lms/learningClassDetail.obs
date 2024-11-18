@@ -31,7 +31,13 @@
         </template>
     </DetailBlock>
 
-    <LearningClassSecondaryLists v-if="panelMode === DetailPanelMode.View" :isEditable="isEditable" :navigationUrls="config.navigationUrls" :showAbsences="takesAttendance" v-model="learningClassViewBag" />
+    <LearningClassSecondaryLists
+                                 v-if="panelMode === DetailPanelMode.View"
+                                 :isEditable="isEditable"
+                                 :navigationUrls="config.navigationUrls"
+                                 :showAbsences="takesAttendance"
+                                 :includeAnnouncements="includeAnnouncementsTab"
+                                 :includeContentPages="includeContentTab" />
 </template>
 
 <script setup lang="ts">
@@ -53,6 +59,7 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { isValidGuid } from "@Obsidian/Utility/guid";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const config = useConfigurationValues<DetailBlockBox<LearningClassBag, LearningClassDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -80,6 +87,12 @@
     const takesAttendance = ref(learningClassViewBag.value?.takesAttendance);
     const activeClassesUsingDefaultGradingSystem = ref(config.options?.activeClassesUsingDefaultGradingSystem ?? 0);
     let initialGradingSystemGuid = learningClassViewBag.value?.gradingSystem?.value ?? "";
+
+    const configurationMode = ref(config.options?.programConfigurationMode);
+    const isAcademicCalendarMode = configurationMode.value === ConfigurationMode.AcademicCalendar;
+    const courseAllowsAnnouncements = ref(config.options?.courseAllowsAnnouncements ?? false);
+    const includeAnnouncementsTab = isAcademicCalendarMode && courseAllowsAnnouncements.value === true;
+    const includeContentTab = ref(isAcademicCalendarMode);
 
     // #endregion
 
@@ -179,7 +192,7 @@
     });
 
     const options = computed((): LearningClassDetailOptionsBag => {
-        return config.options ?? { activeClassesUsingDefaultGradingSystem: 0 };
+        return config.options ?? { activeClassesUsingDefaultGradingSystem: 0, courseAllowsAnnouncements: true };
     });
 
     // #endregion

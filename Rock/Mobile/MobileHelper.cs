@@ -29,8 +29,10 @@ using Rock.Data;
 using Rock.DownhillCss;
 using Rock.Mobile.JsonFields;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 using Rock.Utility;
+using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 
 using Authorization = Rock.Security.Authorization;
@@ -274,6 +276,121 @@ namespace Rock.Mobile
         }
 
         /// <summary>
+        /// Updates the form field value to the legacy format, if the attribute is applicable.
+        /// </summary>
+        /// <param name="field">The field to update the value of.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="requestContext">The request context.</param>
+        internal static void UpdateLegacyFieldValuesForClient( MobileField field, AttributeCache attribute, RockRequestContext requestContext )
+        {
+            /*
+             * BC - 11/14/2024
+             * In cases where a field types changes the structure of the value it returns, this method
+             * is used to handle backward compatibility from older shell versions.
+             * An example of this where the Phone Number field type was updated in v16.7 to return a POCO containing
+             * the country code and number instead of a raw string value.
+             * This breaks compatibility with older shells that expect a raw string value, we want to ensure that
+             * cases like this are caught so server updates don't break older shells.
+             */
+
+            // Phone number field type was updated in v16.7 to return a POCO instead of a raw
+            // string value. To maintain compatility with the shell we need to manually massage
+            // the value if the shell has not been updated to handle the new data structure.
+            var deviceData = requestContext.GetHeader( "X-Rock-DeviceData" )
+                ?.FirstOrDefault()
+                ?.FromJsonOrNull<DeviceData>();
+
+            var isShellV7OrLower = deviceData != null && new Version( deviceData.ShellVersion ) <= new Version( 1, 7, 0, 1 );
+
+            if ( isShellV7OrLower && attribute.FieldType.Guid == Rock.SystemGuid.FieldType.PHONE_NUMBER.AsGuid() )
+            {
+                var phoneValue = field.Value.FromJsonOrNull<PhoneNumberBoxWithSmsControlBag>();
+                if ( phoneValue != null )
+                {
+                    // Store the value as a formatted phone number.
+                    // Include the country code only if it is not the default value.
+                    var countryCode = phoneValue.CountryCode;
+                    var includeCountryCode = countryCode != PhoneNumber.DefaultCountryCode();
+
+                    field.Value = PhoneNumber.FormattedNumber( phoneValue.CountryCode, phoneValue.Number, includeCountryCode );
+                }
+            }
+
+            // Add additional field type conversions here as needed.
+        }
+
+        /// <summary>
+        /// Updates the legacy form values passed in from the client to the new format, if the attribute
+        /// is applicable.
+        /// </summary>
+        /// <param name="field">The field to update the value of.</param>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="requestContext">The request context.</param>
+        internal static void UpdateLegacyFieldValuesFromClient( MobileField field, AttributeCache attribute, RockRequestContext requestContext )
+        {
+            /*
+             * BC - 11/14/2024
+             * In cases where a field types changes the structure of the value it returns, this method
+             * is used to handle backward compatibility from older shell versions.
+             * An example of this where the Phone Number field type was updated in v16.7 to return a POCO containing
+             * the country code and number instead of a raw string value.
+             * This breaks compatibility with older shells that expect a raw string value, we want to ensure that
+             * cases like this are caught so server updates don't break older shells.
+             */
+
+            // Phone number field type was updated in v16.7 to return a POCO instead of a raw
+            // string value. To maintain compatility with the shell we need to manually massage
+            // the value if the shell has not been updated to handle the new data structure.
+            var deviceData = requestContext.GetHeader( "X-Rock-DeviceData" )
+                ?.FirstOrDefault()
+                ?.FromJsonOrNull<DeviceData>();
+
+            var isShellV7OrLower = deviceData != null && new Version( deviceData.ShellVersion ) <= new Version( 1, 7, 0, 1 );
+
+            if ( isShellV7OrLower && attribute.FieldType.Guid == Rock.SystemGuid.FieldType.PHONE_NUMBER.AsGuid() )
+            {
+                field.Value = ConvertLegacyPhoneNumberAttributeValue( field.Value ).ToCamelCaseJson( false, true );
+            }
+
+            // Add additional field type conversions here as needed.
+        }
+
+        /// <summary>
+        /// Processes a phone number field value, parsing and formatting it as needed.
+        /// </summary>
+        /// <param name="rawPhoneNumberValue">The raw phone number value.</param>
+        /// <returns>The processed phone number in JSON format.</returns>
+        internal static PhoneNumberBoxWithSmsControlBag ConvertLegacyPhoneNumberAttributeValue( string rawPhoneNumberValue )
+        {
+            var phoneEditValue = new PhoneNumberBoxWithSmsControlBag();
+
+            // Parse the input value to obtain the country code and remaining digits
+            string countryCodePart;
+            string numberPart;
+
+            var isValid = PhoneNumber.TryParseNumber( rawPhoneNumberValue, out countryCodePart, out numberPart );
+
+            if ( isValid )
+            {
+                // Reformat the number according to the country code
+                var formattedNumber = PhoneNumber.FormattedNumber( countryCodePart, numberPart, includeCountryCode: false );
+                if ( formattedNumber.IsNotNullOrWhiteSpace() )
+                {
+                    numberPart = formattedNumber;
+                }
+                phoneEditValue.CountryCode = countryCodePart;
+                phoneEditValue.Number = numberPart;
+            }
+            else
+            {
+                phoneEditValue.CountryCode = PhoneNumber.DefaultCountryCode();
+                phoneEditValue.Number = numberPart;
+            }
+
+            return phoneEditValue;
+        }
+
+        /// <summary>
         /// Builds the mobile package that can be archived for deployment.
         /// </summary>
         /// <param name="applicationId">The application identifier.</param>
@@ -301,6 +418,10 @@ namespace Rock.Mobile
             var site = SiteCache.Get( applicationId );
             string applicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
             var additionalSettings = site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+            var imageUrlOptions = new GetImageUrlOptions
+            {
+                PublicAppRoot = applicationRoot
+            };
 
             if ( additionalSettings == null )
             {
@@ -396,8 +517,6 @@ namespace Rock.Mobile
             package.AppearanceSettings.BarBackgroundColor = additionalSettings.BarBackgroundColor;
             package.AppearanceSettings.IOSEnableNavbarTransparency = additionalSettings.IOSEnableBarTransparency;
             package.AppearanceSettings.IOSNavbarBlurStyle = additionalSettings.IOSBarBlurStyle;
-            package.AppearanceSettings.MenuButtonColor = additionalSettings.MenuButtonColor;
-            package.AppearanceSettings.ActivityIndicatorColor = additionalSettings.ActivityIndicatorColor;
             package.AppearanceSettings.FlyoutXaml = additionalSettings.FlyoutXaml;
 
             package.AppearanceSettings.NavigationBarActionsXaml = additionalSettings.NavigationBarActionXaml;
@@ -434,6 +553,26 @@ namespace Rock.Mobile
                 package.AppearanceSettings.PaletteColors.Add( "app-danger-strong", applicationColors.DangerStrong );
                 package.AppearanceSettings.PaletteColors.Add( "app-warning-soft", applicationColors.WarningSoft );
                 package.AppearanceSettings.PaletteColors.Add( "app-warning-strong", applicationColors.WarningStrong );
+
+                // This helps maintain backward compatibility.
+                // If someone uses a palette color that no longer exists,
+                // the page will break. So we map our new colors to the
+                // legacy ones.
+                if( !useLegacyStyles )
+                {
+                    package.AppearanceSettings.PaletteColors.Add( "text-color", applicationColors.InterfaceStronger );
+                    package.AppearanceSettings.PaletteColors.Add( "heading-color", applicationColors.InterfaceStrongest );
+                    package.AppearanceSettings.PaletteColors.Add( "background-color", applicationColors.InterfaceSofter );
+                    package.AppearanceSettings.PaletteColors.Add( "app-primary", applicationColors.PrimaryStrong );
+                    package.AppearanceSettings.PaletteColors.Add( "app-secondary", applicationColors.SecondaryStrong );
+                    package.AppearanceSettings.PaletteColors.Add( "app-success", applicationColors.SuccessStrong );
+                    package.AppearanceSettings.PaletteColors.Add( "app-info", applicationColors.InfoStrong);
+                    package.AppearanceSettings.PaletteColors.Add( "app-danger", applicationColors.DangerStrong );
+                    package.AppearanceSettings.PaletteColors.Add( "app-warning", applicationColors.WarningStrong );
+                    package.AppearanceSettings.PaletteColors.Add( "app-light", applicationColors.InterfaceSofter );
+                    package.AppearanceSettings.PaletteColors.Add( "app-dark", applicationColors.InterfaceStronger );
+                    package.AppearanceSettings.PaletteColors.Add( "app-brand", applicationColors.BrandStrong );
+                }
             }
 
             // These colors are "obsolete" and can be
@@ -441,6 +580,9 @@ namespace Rock.Mobile
             // mandatory.
             if ( useLegacyStyles )
             {
+                package.AppearanceSettings.MenuButtonColor = additionalSettings.MenuButtonColor;
+                package.AppearanceSettings.ActivityIndicatorColor = additionalSettings.ActivityIndicatorColor;
+
                 // Legacy colors.
                 package.AppearanceSettings.PaletteColors.Add( "text-color", additionalSettings.DownhillSettings.TextColor );
                 package.AppearanceSettings.PaletteColors.Add( "heading-color", additionalSettings.DownhillSettings.HeadingColor );
@@ -464,7 +606,7 @@ namespace Rock.Mobile
 
             if ( site.FavIconBinaryFileId.HasValue )
             {
-                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value );
+                package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value, imageUrlOptions );
             }
 
             // Load all the layouts.

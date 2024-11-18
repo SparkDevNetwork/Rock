@@ -685,7 +685,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var clientLabelBags = labels.Where( l => l.PrintFrom == PrintFrom.Client )
                 .Select( l => new ClientLabelBag
                 {
-                    PrinterAddress = l.PrintTo.IPAddress,
+                    PrinterAddress = l.PrintTo?.IPAddress,
                     Data = Convert.ToBase64String( l.Data )
                 } )
                 .ToList();
@@ -963,13 +963,15 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 .Select( fm => fm.PersonId )
                 .ToList();
 
-            var canCheckInRoleId = GroupTypeRoleCache
-                .Get( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN.AsGuid(), RockContext )
-                .Id;
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            var canCheckInRoleIds = knownRelationshipGroupType.Roles
+                .Where( r => r.GetAttributeValue( "CanCheckin" ).AsBoolean() )
+                .Select( r => r.Id )
+                .ToList();
 
             foreach ( var familyMemberPersonId in familyMemberPersonIds )
             {
-                groupMemberService.DeleteKnownRelationship( familyMemberPersonId, attendeeIdNumber.Value, canCheckInRoleId );
+                groupMemberService.DeleteKnownRelationships( familyMemberPersonId, attendeeIdNumber.Value, canCheckInRoleIds );
             }
 
             RockContext.SaveChanges();

@@ -26,9 +26,15 @@
         </div>
     </Panel>
 
-    <div v-if="screenToShow === ComponentScreen.Completion">
-        <div :class="containerClasses">
+    <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
+        <div class="instructions-section">
             <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="true" />
+        </div>
+
+        <div class="footer-button-section">
+            <RockButton v-if="isCompleted" :btnType="BtnType.Primary" @click="onContinueClicked">
+                Continue
+            </RockButton>
         </div>
     </div>
 </template>
@@ -38,6 +44,8 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
@@ -59,6 +67,7 @@
         defaultAssigneeDescription,
         hasBeenGraded,
         instructions,
+        isCompleted,
         rubric,
         panelTitle
     } = useLearningComponent<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion>(
@@ -70,18 +79,22 @@
 
     const disabled = ref(props.disabled ?? false);
 
+    function onContinueClicked(): void {
+        emits("closed");
+    }
+
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
-            const updatedActivityBag = {
-                ...toValue(activityBag)
-            } as LearningActivityBag;
+        const updatedActivityBag = {
+            ...toValue(activityBag)
+        } as LearningActivityBag;
 
-            updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
-                instructions: instructions.value,
-                rubric: rubric.value
-            }) ?? "{}";
+        updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
+            instructions: instructions.value,
+            rubric: rubric.value
+        }) ?? "{}";
 
-            emits("update:activityBag", updatedActivityBag);
+        emits("update:activityBag", updatedActivityBag);
     });
 
     watch([activityBag.value.points, instructions, rubric], () => {

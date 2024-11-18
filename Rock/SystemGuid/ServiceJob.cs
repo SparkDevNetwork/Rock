@@ -432,5 +432,20 @@ namespace Rock.SystemGuid
         /// The job for updating the IX_EntityTypeId_EntityId index on the History table.
         /// </summary>
         public const string POST_170_UPDATE_HISTORY_ENTITYTYPEID_INDEX = "48D7629C-1FB5-425A-AFAB-E8F220ABADB0";
+
+        /// <summary>
+        /// The job for swapping DefinedTypeDetail and DefinedValueList with Webforms Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_SWAP_WEBFORMS_BLOCKS = "AD8A38F7-1FCC-47CD-893F-9B4335DD7E08";
+
+        /// <summary>
+        /// The job for calculating peer networks for individuals.
+        /// </summary>
+        public const string CALCULATE_PEER_NETWORK = "D3172560-0E8C-4E69-A477-56ABC018FEEF";
+
+        /// <summary>
+        /// The Job to run Post v17.0 to add new and update existing indexes to support the Peer Network feature.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_ADD_AND_UPDATE_PEER_NETWORK_INDEXES = "195DDB5A-FF1C-438E-BCA4-37EBC3D0F558";
     }
 }

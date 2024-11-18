@@ -465,7 +465,7 @@ namespace RockWeb.Blocks.Crm
                 var dataItem = e.Row.DataItem as ValuesRow;
                 if ( dataItem.IsMatchingRow )
                 {
-                    e.Row.AddCssClass( "matching-data bg-green-100" );
+                    e.Row.AddCssClass( "matching-data" );
                 }
             }
         }

@@ -59,7 +59,7 @@
                         <button
                                 aria-label="Add an assessment item"
                                 :disabled="disabled"
-                                class="btn btn-default btn-xs align-items-center add-assessment-item-button text-muted"
+                                class="btn btn-default btn-xs align-items-center add-assessment-item-button"
                                 @click.prevent="addAssessmentItem(0)">
                             <i class="fa fa-plus" aria-hidden="true"></i> Add Item
                         </button>
@@ -97,7 +97,7 @@
                     <button v-if="items.length > 0"
                             aria-label="Add an assessment item"
                             :disabled="disabled"
-                            class="btn btn-default btn-xs align-items-center add-assessment-item-button text-muted"
+                            class="btn btn-default btn-xs align-items-center add-assessment-item-button"
                             @click.prevent="addAssessmentItem(items.length - 1)">
                         <i class="fa fa-plus" aria-hidden="true"></i> Add Item
                     </button>
@@ -165,14 +165,14 @@
         <div v-if="isStudentAssignedAndCompleted">
             <div class="student-completion-summary-header">
                 <h2> {{ activityBag.activityComponent?.name }} </h2>
-                <div class="text-muted">{{ headerSubText }}</div>
+                <div class="summary-text">{{ headerSubText }}</div>
             </div>
 
             <div v-if="hasMultipleChoiceQuestions && showResultsOnCompletion" class="well well-sm student-completion-summary">
                 <div class="results-summary-section">
                     <h4>Results Summary</h4>
                     <h5>{{ resultSummarySubHeader }}</h5>
-                    <div class="multiple-choice-summary-text text-muted">
+                    <div class="multiple-choice-summary-text summary-text">
                         {{ multipleChoiceSummaryText }}
                     </div>
                 </div>
@@ -203,81 +203,6 @@
     </div>
 
 </template>
-<style scoped>
-.clickable-help {
-    margin-left: 6px;
-}
-
-/* Multiple Choice Weight, Show Results checkboxes... should be on a single line. */
-.minor-fields-section {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-}
-
-/* Stack Assessment item fields */
-.assessment-items-section {
-    display: flex;
-    flex-direction: column;
-}
-
-
-/* With the title bar having a title and add button on left and right respectively. */
-.assessment-items-section > .assessment-items-title-bar {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 8px;
-}
-
-.assessment-items-container > .assessment-item-container {
-    display: grid;
-    grid-template-columns: 24px minmax(80px, 30%) 66%;
-    row-gap: 8px;
-    column-gap: 12px;
-}
-
-.assessment-item {
-    display: flex;
-    flex-direction: column;
-}
-
-.assessment-item-reorder-section {
-    grid-column: 1;
-    padding-left: 4px;
-
-    /* Stack the reorder and delete buttons with space between. */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.assessment-item-type-section {
-    grid-column: 2;
-}
-
-.assessment-item-configuration-section {
-    grid-column: 3;
-}
-
-.assessment-term-section {
-    display: flex;
-    flex-direction: column;
-}
-
-.configuration-footer-buttons {
-    display: flex;
-    justify-content: flex-end;
-}
-
-div.summary-sub-title {
-    margin-bottom: 12px;
-}
-
-.header-content-section-summary {
-    margin-bottom: 16px;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, ref, toValue, watch, } from "vue";
