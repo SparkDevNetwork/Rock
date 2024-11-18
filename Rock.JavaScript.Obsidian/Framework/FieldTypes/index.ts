@@ -356,9 +356,6 @@ registerFieldType(FieldTypeGuids.PageReference, new PageReferenceFieldType());
 import { PersonFieldType } from "./personField.partial";
 registerFieldType(FieldTypeGuids.Person, new PersonFieldType());
 
-import { PrayerRequestFieldType } from "./prayerRequestField.partial";
-registerFieldType(FieldTypeGuids.PrayerRequest, new PrayerRequestFieldType());
-
 import { RangeSliderFieldType } from "./rangeSliderField.partial";
 registerFieldType(FieldTypeGuids.RangeSlider, new RangeSliderFieldType());
 
