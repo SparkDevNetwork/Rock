@@ -543,11 +543,9 @@
 
         // When the modal popup, disable scrolling.
         if (showPopup.value) {
-            console.log("hidden");
             body.style.overflowY = "hidden";
         }
         else {
-            console.log("unhidden");
             body.style.overflowY = "";
         }
     });
