@@ -4,31 +4,31 @@
         <fieldset>
             <legend>Your Information</legend>
             <FirstNameTextBox
-                v-model="internalFirstName"
-                :disabled="disabled"
-                label="First Name"
-                :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
+                              v-model="internalFirstName"
+                              :disabled="disabled"
+                              label="First Name"
+                              :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
             <TextBox
-                v-model="internalLastName"
-                :disabled="disabled"
-                label="Last Name"
-                :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
+                     v-model="internalLastName"
+                     :disabled="disabled"
+                     label="Last Name"
+                     :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
             <EmailBox
-                v-if="!isEmailHidden"
-                v-model="internalEmail"
-                :disabled="disabled"
-                label="Email"
-                rules="required" />
+                      v-if="!isEmailHidden"
+                      v-model="internalEmail"
+                      :disabled="disabled"
+                      label="Email"
+                      rules="required" />
             <GenderPicker
-                v-if="isGenderPickerShown"
-                v-model="internalGender"
-                :disabled="disabled" />
+                          v-if="isGenderPickerShown"
+                          v-model="internalGender"
+                          :disabled="disabled" />
             <BirthdayPicker
-                v-if="isBirthDateShown"
-                v-model="internalBirthday"
-                :disabled="disabled"
-                label="Birthday"
-                :rules="birthdayRules" />
+                            v-if="isBirthDateShown"
+                            v-model="internalBirthday"
+                            :disabled="disabled"
+                            label="Birth Date"
+                            :rules="birthdayRules" />
         </fieldset>
 
         <fieldset v-if="internalArePhoneNumbersShown">
@@ -49,14 +49,14 @@
         </fieldset>
 
         <CampusPicker
-            v-if="isCampusPickerShown"
-            :disabled="disabled"
-            :label="campusPickerLabel"
-            @update:modelValue="onCampusChanged"
-            :campusStatusFilter="campusStatusFilter"
-            :campusTypeFilter="campusTypeFilter"
-            :showBlankItem="true"
-            :rules="campusRules" />
+                      v-if="isCampusPickerShown"
+                      :disabled="disabled"
+                      :label="campusPickerLabel"
+                      @update:modelValue="onCampusChanged"
+                      :campusStatusFilter="campusStatusFilter"
+                      :campusTypeFilter="campusTypeFilter"
+                      :showBlankItem="true"
+                      :rules="campusRules" />
 
         <AttributeValuesContainer v-if="internalAttributes"
                                   v-model="internalAttributeValues"
