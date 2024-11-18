@@ -28,6 +28,7 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -47,6 +48,13 @@ namespace Rock.Jobs
         DefaultValue = "1",
         Order = 1 )]
 
+    [DataViewField( "Excluded Groups Data View",
+        Key = AttributeKey.ExcludedGroupsDataView,
+        Description = "An optional Data View of groups to exclude from receiving group attendance reminders.",
+        EntityType = typeof( Rock.Model.Group ),
+        IsRequired = false,
+        Order = 2 )]
+
     #endregion Job Attributes
 
     [RockLoggingCategory]
@@ -63,6 +71,11 @@ namespace Rock.Jobs
             /// The method to use when determining how the notice should be sent.
             /// </summary>
             public const string SendUsing = "SendUsing";
+
+            /// <summary>
+            /// The method to use when determining what groups are excluded from receiving reminders.
+            /// </summary>
+            public const string ExcludedGroupsDataView = "ExcludedGroupsDataView";
         }
 
         #endregion Attribute Keys
@@ -194,6 +207,7 @@ namespace Rock.Jobs
         {
             var rockContext = new RockContext();
             var isGroupTypeValid = groupType.AttendanceReminderSystemCommunicationId.HasValue;
+            var excludedGroupsDataViewGuid = GetAttributeValue( AttributeKey.ExcludedGroupsDataView ).AsGuidOrNull();
 
             if ( !isGroupTypeValid )
             {
@@ -216,6 +230,15 @@ namespace Rock.Jobs
 
             var occurrences = GetOccurenceDates( groupType, rockContext );
             var groupIds = occurrences.Where( o => o.Value.Any() ).Select( o => o.Key ).ToList();
+
+            if ( excludedGroupsDataViewGuid.HasValue )
+            {
+                var excludedGroupsDataViewCache = DataViewCache.Get( excludedGroupsDataViewGuid.Value );
+                var excludedGroupIds = excludedGroupsDataViewCache.GetEntityIds();
+
+                groupIds = groupIds.Except( excludedGroupIds ).ToList();
+            }
+
             var leaders = GetGroupLeaders( groupIds, rockContext );
             var attendanceRemindersResults = SendAttendanceReminders( leaders, occurrences, systemCommunication, jobPreferredCommunicationType );
 
