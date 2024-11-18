@@ -155,14 +155,14 @@
                 </div>
                 <div v-if="enableRateLimiting">
                     <div class="col-md-6">
-                        <NumberBox v-model="rateLimitPeriodDuration" label="Max Request Per Period" />
-                    </div>
-                    <div class="col-md-6">
-                        <NumberBox v-model="rateLimitRequestPerPeriod" label="Rate Limit Period">
+                        <NumberBox v-model="rateLimitPeriodDurationSeconds" label="Rate Limit Period">
                             <template #inputGroupAppend>
                                 <span class="input-group-addon">seconds</span>
                             </template>
                         </NumberBox>
+                    </div>
+                    <div class="col-md-6">
+                        <NumberBox v-model="rateLimitRequestPerPeriod" label="Max Request Per Period" />
                     </div>
                 </div>
             </div>
@@ -244,7 +244,7 @@
     const layouts = ref(props.options.layoutItems ?? []);
     const displayWhenItems = ref(props.options.displayWhenItems ?? []);
     const intentDefinedTypeGuid = ref(props.options.intentDefinedTypeGuid ?? "");
-    const enableRateLimiting = ref(!!props.modelValue.bag?.rateLimitPeriodDuration || !!props.modelValue.bag?.rateLimitRequestPerPeriod);
+    const enableRateLimiting = ref(!!props.modelValue.bag?.rateLimitPeriodDurationSeconds || !!props.modelValue.bag?.rateLimitRequestPerPeriod);
 
     const attributes = ref(props.modelValue.bag?.attributes ?? {});
     const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
@@ -280,7 +280,7 @@
     const pageRoute = ref(props.modelValue.bag?.pageRoute ?? "");
     const intents = ref(props.modelValue.bag?.intents);
     const cacheControlHeaderSettings = propertyRef(props.modelValue.bag?.cacheControlHeaderSettings ?? null, "CacheControlHeaderSettings");
-    const rateLimitPeriodDuration = propertyRef(props.modelValue.bag?.rateLimitPeriodDuration, "RateLimitPeriodDuration");
+    const rateLimitPeriodDurationSeconds = propertyRef(props.modelValue.bag?.rateLimitPeriodDurationSeconds, "RateLimitPeriodDurationSeconds");
     const rateLimitRequestPerPeriod = propertyRef(props.modelValue.bag?.rateLimitRequestPerPeriod, "RateLimitRequestPerPeriod");
     const headerContent = propertyRef(props.modelValue.bag?.headerContent ?? "", "HeaderContent");
     const blockContexts = ref(props.modelValue.bag?.blockContexts?.map(context => ({ ...context, text: context.text ?? "" })) ?? []);
@@ -289,7 +289,7 @@
     // objects returned by propertyRef().
     const propRefs = [parentPage, internalName, pageTitle, browserTitle, layout, menuDisplayIcon, iconCssClass, description,
         pageDisplayTitle, pageDisplayBreadCrumb, pageDisplayIcon, pageDisplayDescription, displayInNavWhen, menuDisplayDescription, menuDisplayChildPages, breadCrumbDisplayName, breadCrumbDisplayIcon,
-        requiresEncryption, enableViewState, includeAdminFooter, allowIndexing, bodyCssClass, cacheControlHeaderSettings, rateLimitPeriodDuration, rateLimitRequestPerPeriod, headerContent];
+        requiresEncryption, enableViewState, includeAdminFooter, allowIndexing, bodyCssClass, cacheControlHeaderSettings, rateLimitPeriodDurationSeconds, rateLimitRequestPerPeriod, headerContent];
 
     // #endregion
 
@@ -384,7 +384,7 @@
         updateRefValue(pageRoute, props.modelValue.bag?.pageRoute ?? "");
         updateRefValue(intents, props.modelValue.bag?.intents);
         updateRefValue(cacheControlHeaderSettings, props.modelValue.bag?.cacheControlHeaderSettings ?? null);
-        updateRefValue(rateLimitPeriodDuration, props.modelValue.bag?.rateLimitPeriodDuration);
+        updateRefValue(rateLimitPeriodDurationSeconds, props.modelValue.bag?.rateLimitPeriodDurationSeconds);
         updateRefValue(rateLimitRequestPerPeriod, props.modelValue.bag?.rateLimitRequestPerPeriod);
         updateRefValue(headerContent, props.modelValue.bag?.headerContent ?? "");
         updateRefValue(blockContexts, props.modelValue.bag?.blockContexts?.map(context => ({ ...context, text: context.text ?? "" })) ?? []);
@@ -431,7 +431,7 @@
         setPropertiesBoxValue(newValue, "pageRoute", pageRoute.value);
         setPropertiesBoxValue(newValue, "intents", intents.value);
         setPropertiesBoxValue(newValue, "cacheControlHeaderSettings", cacheControlHeaderSettings.value);
-        setPropertiesBoxValue(newValue, "rateLimitPeriodDuration", rateLimitPeriodDuration.value);
+        setPropertiesBoxValue(newValue, "rateLimitPeriodDurationSeconds", rateLimitPeriodDurationSeconds.value);
         setPropertiesBoxValue(newValue, "rateLimitRequestPerPeriod", rateLimitRequestPerPeriod.value);
         setPropertiesBoxValue(newValue, "headerContent", headerContent.value);
         setPropertiesBoxValue(newValue, "blockContexts", blockContexts.value);

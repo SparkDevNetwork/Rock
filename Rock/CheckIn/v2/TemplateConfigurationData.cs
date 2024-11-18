@@ -52,6 +52,15 @@ namespace Rock.CheckIn.v2
         public virtual IReadOnlyCollection<Guid> AchievementTypeGuids { get; }
 
         /// <summary>
+        /// Defines the age restriction for this check-in configuration. This applies
+        /// a filter when considering which people can be listed on the family
+        /// member selection screen. Using one of the Hide modes will hide those
+        /// people from the screen even if there is a valid opportunity for them to
+        /// check into.
+        /// </summary>
+        public virtual AgeRestrictionMode AgeRestriction { get; }
+
+        /// <summary>
         /// Gets a value indicating whether groups not marked as special needs
         /// should be removed from a person's opportunity list if the person
         /// <strong>is</strong> marked as special needs.
@@ -92,6 +101,12 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <value>The type of the family search.</value>
         public virtual FamilySearchMode FamilySearchType { get; }
+
+        /// <summary>
+        /// The matching behavior that will be used when matching on Grade
+        /// and Age (Age Range and Birthdate Range) for groups.
+        /// </summary>
+        public virtual GradeAndAgeMatchingMode GradeAndAgeMatchingBehavior { get; }
 
         /// <summary>
         /// Gets a value indicating whether age is required for check-in.
@@ -589,12 +604,14 @@ namespace Rock.CheckIn.v2
         {
             AbilityLevelDetermination = ( AbilityLevelDeterminationMode ) groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ).AsInteger();
             AchievementTypeGuids = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES ).SplitDelimitedValues().AsGuidList();
+            AgeRestriction = ( AgeRestrictionMode ) groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_AGE_RESTRICTION ).AsInteger();
             AreNonSpecialNeedsGroupsRemoved = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS ).AsBoolean();
             AreSpecialNeedsGroupsRemoved = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS ).AsBoolean();
             AutoSelectDaysBack = groupTypeCache.GetAttributeValue( "core_checkin_AutoSelectDaysBack" ).AsInteger();
             AutoSelect = ( AutoSelectMode ) groupTypeCache.GetAttributeValue( "core_checkin_AutoSelectOptions" ).AsInteger();
             KioskCheckInType = groupTypeCache.GetAttributeValue( "core_checkin_CheckInType" ) == "1" ? KioskCheckInMode.Family : KioskCheckInMode.Individual;
             FamilySearchType = GetFamilySearchType( groupTypeCache.GetAttributeValue( "core_checkin_SearchType" ).AsGuid() );
+            GradeAndAgeMatchingBehavior = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_GRADE_AND_AGE_MATCHING_BEHAVIOR ).ConvertToEnum<GradeAndAgeMatchingMode>( GradeAndAgeMatchingMode.GradeAndAgeMustMatch );
             IsAgeRequired = groupTypeCache.GetAttributeValue( "core_checkin_AgeRequired" ).AsBoolean( true );
             IsCheckoutAtKioskAllowed = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK ).AsBoolean();
             IsCheckoutInManagerAllowed = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER ).AsBoolean();

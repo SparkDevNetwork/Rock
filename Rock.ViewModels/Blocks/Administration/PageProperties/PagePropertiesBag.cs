@@ -186,7 +186,7 @@ namespace Rock.ViewModels.Blocks.Administration.PageProperties
         /// <summary>
         /// Gets or sets the rate limit period (in seconds).
         /// </summary>
-        public int? RateLimitPeriodDuration { get; set; }
+        public int? RateLimitPeriodDurationSeconds { get; set; }
 
         /// <summary>
         /// Gets or sets the rate limit request per period.

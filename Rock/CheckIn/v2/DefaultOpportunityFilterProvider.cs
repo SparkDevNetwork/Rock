@@ -39,9 +39,11 @@ namespace Rock.CheckIn.v2
             typeof( AgeOpportunityFilter ),
             typeof( BirthMonthOpportunityFilter ),
             typeof( GradeOpportunityFilter ),
+            typeof( GradeAndAgeOpportunityFilter ),
             typeof( GenderOpportunityFilter ),
             typeof( AbilityLevelOpportunityFilter ),
             typeof( SpecialNeedsOpportunityFilter ),
+            typeof( DuplicateCheckInOpportunityFilter ),
             typeof( MembershipOpportunityFilter ),
             typeof( DataViewOpportunityFilter ),
             typeof( PreferredGroupsOpportunityFilter )
@@ -117,7 +119,7 @@ namespace Rock.CheckIn.v2
             if ( !person.IsUnavailable && person.Opportunities.Groups.Count == 0 )
             {
                 person.IsUnavailable = true;
-                person.UnavailableMessage = "No Matching Groups Found";
+                person.UnavailableMessage = "No Eligible Options Found";
             }
 
             // Remove any locations that have no group referencing them.

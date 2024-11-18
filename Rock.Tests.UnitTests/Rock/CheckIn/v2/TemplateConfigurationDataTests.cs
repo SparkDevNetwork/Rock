@@ -44,12 +44,14 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         // Start Configuration Properties section.
         [DataRow( nameof( TemplateConfigurationData.AbilityLevelDetermination ), AbilityLevelDeterminationMode.DoNotAsk, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION )]
         [DataRow( nameof( TemplateConfigurationData.AchievementTypeGuids ), "d6b38cb2-eb9a-4f73-a4bc-978cf6b9d1a2,dc71b47f-35e9-4d26-b012-d7d6a6141c55", GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES )]
+        [DataRow( nameof( TemplateConfigurationData.AgeRestriction ), AgeRestrictionMode.HideAdults, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_AGE_RESTRICTION )]
         [DataRow( nameof( TemplateConfigurationData.AreNonSpecialNeedsGroupsRemoved ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS )]
         [DataRow( nameof( TemplateConfigurationData.AreSpecialNeedsGroupsRemoved ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS )]
         [DataRow( nameof( TemplateConfigurationData.AutoSelectDaysBack ), 14, "core_checkin_AutoSelectDaysBack" )]
         [DataRow( nameof( TemplateConfigurationData.AutoSelect ), AutoSelectMode.PeopleAndAreaGroupLocation, "core_checkin_AutoSelectOptions" )]
         // KioskCheckInType has its own test.
         // FamilySearchType has its own test.
+        [DataRow( nameof( TemplateConfigurationData.GradeAndAgeMatchingBehavior ), GradeAndAgeMatchingMode.PrioritizeGradeOverAge, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_GRADE_AND_AGE_MATCHING_BEHAVIOR )]
         [DataRow( nameof( TemplateConfigurationData.IsAgeRequired ), true, "core_checkin_AgeRequired" )]
         [DataRow( nameof( TemplateConfigurationData.IsCheckoutAtKioskAllowed ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK )]
         [DataRow( nameof( TemplateConfigurationData.IsCheckoutInManagerAllowed ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER )]
@@ -189,6 +191,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         }
 
         [DataRow( nameof( TemplateConfigurationData.FamilySearchType ), FamilySearchMode.PhoneNumber )]
+        [DataRow( nameof( TemplateConfigurationData.GradeAndAgeMatchingBehavior ), GradeAndAgeMatchingMode.GradeAndAgeMustMatch )]
         [DataRow( nameof( TemplateConfigurationData.KioskCheckInType ), KioskCheckInMode.Individual )]
         [DataRow( nameof( TemplateConfigurationData.PhoneNumberPattern ), "" )]
         [DataRow( nameof( TemplateConfigurationData.PhoneNumberRegex ), null )]
@@ -411,7 +414,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
             // added so we can update the other tests to check for those
             // properties.
             var type = typeof( TemplateConfigurationData );
-            var expectedPropertyCount = 71;
+            var expectedPropertyCount = 73;
 
             var propertyCount = type.GetProperties().Length;
 

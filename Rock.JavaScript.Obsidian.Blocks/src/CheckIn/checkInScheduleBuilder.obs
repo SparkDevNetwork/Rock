@@ -1,5 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <!-- This grid is (not) here simply to force the CSS to load in. -->
     <Grid v-if="false" />
     <div class="grid-obsidian grid-sticky grid-striped grid-bordered grid-hover">
         <div class="grid-heading">
@@ -18,14 +19,20 @@
                     </button>
 
                     <div ref="quickFilterContainerElement" class="grid-quick-filter-search" :class="{ 'open': isSearchExpanded }">
-                        <TextBox v-model="quickFilterValue" placeholder="Search" />
+                        <!--
+                            The form is here to prevent iOS from causing the Return key
+                            to become a Go key and triggering a WebForms postback.
+                        -->
+                        <RockForm>
+                            <TextBox v-model="quickFilterValue" placeholder="Search" />
+                        </RockForm>
                     </div>
                 </div>
             </div>
             <div class="margin-b-md">
                 <div class="d-flex flex-row justify-content-evenly">
                     <div class="col-md-2" v-if="!groupTypeIdFromParam">
-                        <GroupTypePicker v-model="groupType" label="Group Type" :showBlankItem="true" blankValue="All" :groupTypes="[...groupTypeItems]"  />
+                        <GroupTypePicker v-model="groupType" label="Group Type" :showBlankItem="true" blankValue="All" :groupTypes="[...groupTypeItems]" />
                     </div>
                     <div class="col-md-2">
                         <LocationItemPicker v-model="parentLocation" label="Parent Location" />
@@ -83,8 +90,8 @@
 
                 <div v-for="schedule in schedules" class="grid-cell" style="width: 5%; min-width: 75px; max-width: 100px;">
                     <CheckBox label=""
-                                :modelValue="isScheduleEnabled(groupLocation, schedule)"
-                                @change="onScheduleClick(groupLocation, schedule)" />
+                              :modelValue="isScheduleEnabled(groupLocation, schedule)"
+                              @change="onScheduleClick(groupLocation, schedule)" />
                 </div>
             </div>
             <div v-else-if="!isLoading" class="grid-row">

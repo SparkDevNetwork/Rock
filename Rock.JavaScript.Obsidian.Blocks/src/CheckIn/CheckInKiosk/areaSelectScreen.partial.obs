@@ -3,7 +3,8 @@
     <div class="area-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="session.getCurrentAttendee()?.person">
+                   :person="session.getCurrentAttendee()?.person"
+                   :configuration="configuration">
             <NotificationBox v-if="skipMessage"
                              alertType="warning">
                 {{ skipMessage }}

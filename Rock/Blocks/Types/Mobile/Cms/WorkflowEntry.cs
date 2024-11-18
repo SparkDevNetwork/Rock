@@ -248,17 +248,13 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <param name="fields">The fields.</param>
         private void SetInitialWorkflowAttributes( Model.Workflow workflow, List<MobileField> fields )
         {
-            //
             // Set initial values from the page parameters.
-            //
             foreach ( var pageParameter in RequestContext.PageParameters )
             {
                 workflow.SetAttributeValue( pageParameter.Key, pageParameter.Value );
             }
 
-            //
             // Set/Update initial values from what the shell sent us.
-            //
             if ( fields != null )
             {
                 foreach ( var field in fields )
@@ -279,9 +275,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             int personId = currentPerson?.Id ?? 0;
             bool canEdit = BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
 
-            //
             // Find all the activities that this person can see.
-            //
             var activities = workflow.Activities
                 .Where( a =>
                     a.IsActive &&
@@ -295,10 +289,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 .OrderBy( a => a.ActivityTypeCache.Order )
                 .ToList();
 
-            //
             // Find the first action that the user is authorized to work with that has a Form
             // attached to it.
-            //
             foreach ( var activity in activities )
             {
                 if ( canEdit || activity.ActivityTypeCache.IsAuthorized( Authorization.VIEW, currentPerson ) )
@@ -350,6 +342,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
                         if ( item != null )
                         {
+                            MobileHelper.UpdateLegacyFieldValuesFromClient( formField, attribute, RequestContext );
+
                             item.SetPublicAttributeValue( attribute.Key, formField.Value, RequestContext.CurrentPerson, false );
                         }
                     }
@@ -999,9 +993,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             var mobilePerson = personEntryPerson != null ? Rock.Mobile.MobileHelper.GetMobilePerson( personEntryPerson, mobileSite ) : null;
             var mobileSpouse = personEntrySpouse != null ? Rock.Mobile.MobileHelper.GetMobilePerson( personEntrySpouse, mobileSite ) : null;
 
-            //
             // Get the default address if it is supposed to show.
-            //
             MobileAddress mobileAddress = null;
             var promptForAddress = ( form.PersonEntryAddressEntryOption != WorkflowActionFormPersonEntryOption.Hidden ) && form.PersonEntryGroupLocationTypeValueId.HasValue;
             if ( promptForAddress && ( personEntryPerson?.PrimaryFamilyId ).HasValue )
@@ -1109,9 +1101,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 };
             }
 
-            //
             // Set initial workflow attribute values.
-            //
             if ( !workflowGuid.HasValue )
             {
                 SetInitialWorkflowAttributes( workflow, formFields );
@@ -1126,9 +1116,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 };
             }
 
-            //
             // If this is a form submittal, then complete the form and re-process.
-            //
             if ( !string.IsNullOrEmpty( formAction ) && formFields != null )
             {
                 if ( personEntryValues != null )
@@ -1152,16 +1140,12 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 }
                 else
                 {
-                    //
                     // If there is a second form, we need to persist.
-                    //
                     workflowService.PersistImmediately( action );
                 }
             }
 
-            //
             // Begin building up the response with the form data.
-            //
             var activity = action.Activity;
             var form = action.ActionTypeCache.WorkflowForm;
 
@@ -1181,9 +1165,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
             var useClientValues = supportedFeatures?.Contains( FeatureKey.ClientValues ) ?? false;
 
-            //
             // Populate all the form fields that should be visible on the workflow.
-            //
             foreach ( var formAttribute in form.FormAttributes.OrderBy( a => a.Order ) )
             {
                 if ( formAttribute.IsVisible )
@@ -1191,9 +1173,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                     var attribute = AttributeCache.Get( formAttribute.AttributeId );
                     string value = attribute.DefaultValue;
 
-                    //
                     // Get the current value from either the workflow or the activity.
-                    //
                     if ( workflow.AttributeValues.ContainsKey( attribute.Key ) && workflow.AttributeValues[attribute.Key] != null )
                     {
                         value = workflow.AttributeValues[attribute.Key].Value;
@@ -1220,6 +1200,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
                             ? attribute.FieldType.Field?.GetPublicEditValue( value, attribute.ConfigurationValues )
                             : value
                     };
+
+                    MobileHelper.UpdateLegacyFieldValuesForClient( mobileField, attribute, RequestContext );
 
                     if ( formAttribute.IsReadOnly )
                     {
@@ -1253,10 +1235,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 }
             }
 
-            //
             // Build the list of form actions (buttons) that should be presented
             // to the user.
-            //
             foreach ( var btn in form.Actions.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) )
             {
                 var actionDetails = btn.Split( new char[] { '^' } );

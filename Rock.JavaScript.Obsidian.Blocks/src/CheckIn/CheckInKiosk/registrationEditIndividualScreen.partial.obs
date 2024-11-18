@@ -2,7 +2,8 @@
 <template>
     <div class="registration-edit-individual-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <RockForm v-model:submit="submitForm"
                       @submit="onSaveClick">
 

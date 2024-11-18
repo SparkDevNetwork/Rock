@@ -72,6 +72,7 @@ namespace Rock.Blocks.Mobile.CheckIn
         Description = "The attributes to display when adding a person.",
         AllowMultiple = true,
         EntityTypeName = "Rock.Model.Person",
+        IsRequired = false,
         Order = 4,
         Key = AttributeKey.AddPersonAttributes )]
 

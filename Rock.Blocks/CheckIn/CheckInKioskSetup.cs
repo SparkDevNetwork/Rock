@@ -441,6 +441,7 @@ namespace Rock.Blocks.CheckIn
             }
 
             return savedConfigurationCache.DefinedValues
+                .Where( v => v.IsActive )
                 .Select( GetSavedConfigurationBag )
                 .ToList();
         }

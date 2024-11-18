@@ -381,7 +381,7 @@ namespace Rock.Rest.v2
                         .Where( l => l.Data != null && l.Error.IsNullOrWhiteSpace() )
                         .Select( l => new ClientLabelBag
                         {
-                            PrinterAddress = l.PrintTo.IPAddress,
+                            PrinterAddress = l.PrintTo?.IPAddress,
                             Data = Convert.ToBase64String( l.Data )
                         } )
                         .ToList();
@@ -445,7 +445,7 @@ namespace Rock.Rest.v2
                     .Where( l => l.Data != null && l.Error.IsNullOrWhiteSpace() )
                     .Select( l => new ClientLabelBag
                     {
-                        PrinterAddress = l.PrintTo.IPAddress,
+                        PrinterAddress = l.PrintTo?.IPAddress,
                         Data = Convert.ToBase64String( l.Data )
                     } )
                     .ToList();

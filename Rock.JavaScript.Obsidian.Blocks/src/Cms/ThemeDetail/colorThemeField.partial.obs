@@ -48,7 +48,7 @@
             // new value that matches the original value. So this attempts to
             // handle the case where we set internalValue to null and then the
             // color picker emits the default value back to us.
-            if (internalValue.value !== null || v !== props.field.defaultValue) {
+            if (internalValue.value !== null || v !== props.field.defaultValue?.toLowerCase()) {
                 internalValue.value = v;
             }
         }

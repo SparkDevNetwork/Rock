@@ -348,7 +348,7 @@ th {
   --input-border: var(--color-interface-soft);
 }
 
-@supports (color-mix(in srgb, red 50%, white 50%)) {
+@supports (color: color-mix(in srgb, red 50%, white 50%)) {
   :root {
     --color-critical-tint: color-mix(in srgb, var(--color-critical-strong) 50%, #FFF var(--tint-white-percentage));
     --color-critical-shade: color-mix(in srgb, var(--color-critical-strong) 100%, #000 var(--shade-black-percentage));

@@ -194,6 +194,19 @@ namespace Rock.CheckIn.v2
         {
             var opportunities = Director.GetAllOpportunities( possibleAreas, kiosk, locations );
             var groupMemberQry = GetGroupMembersQueryForFamily( familyId );
+
+            // Apply any age restriction filtering.
+            if ( TemplateConfiguration.AgeRestriction == AgeRestrictionMode.HideAdults )
+            {
+                groupMemberQry = groupMemberQry
+                    .Where( gm => gm.Person.AgeClassification != AgeClassification.Adult );
+            }
+            else if ( TemplateConfiguration.AgeRestriction == AgeRestrictionMode.HideChildren )
+            {
+                groupMemberQry = groupMemberQry
+                    .Where( gm => gm.Person.AgeClassification != AgeClassification.Child );
+            }
+
             var members = GetFamilyMemberBags( familyId, groupMemberQry );
 
             LoadAttendees( members, opportunities );

@@ -2,7 +2,8 @@
 <template>
     <div class="group-select-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <div class="button-list">
                 <RockButton v-for="attendance in attendances"
                             btnType="primary"
@@ -14,7 +15,9 @@
                         <i v-else class="fa fa-square-o"></i>
                     </span>
 
-                    <span class="avatar" :style="getStyleForAttendance(attendance)"></span>
+                    <span v-if="!props.session.configuration.template?.isPhotoHidden"
+                          class="avatar"
+                          :style="getStyleForAttendance(attendance)"></span>
 
                     <span class="title">
                         <span class="name">{{ attendance.person?.fullName }}</span>
@@ -122,7 +125,7 @@
      *
      * @returns A collection of CSS property values.
      */
-     function getStyleForAttendance(attendance: AttendanceBag): CSSProperties {
+    function getStyleForAttendance(attendance: AttendanceBag): CSSProperties {
         const properties: CSSProperties = {
             backgroundImage: `url("${attendance.person?.photoUrl}")`
         };
@@ -135,7 +138,7 @@
      *
      * @param family The family that was selected.
      */
-     async function onAttendanceClick(attendance: AttendanceBag): Promise<void> {
+    async function onAttendanceClick(attendance: AttendanceBag): Promise<void> {
         if (isAttendanceSelected(attendance)) {
             selections.value = selections.value.filter(s => s !== attendance.id);
         }

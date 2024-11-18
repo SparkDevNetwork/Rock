@@ -1,7 +1,8 @@
 <template>
     <div class="supervisor-schedule-locations-screen">
         <MainPanel title="Schedule Locations"
-                   subtitle="Turn on or off any schedules for the corresponding rooms to enable to disable that room for the schedule.">
+                   subtitle="Turn on or off any schedules for the corresponding rooms to enable to disable that room for the schedule."
+                   :configuration="configuration">
             <div ref="scheduleGridElement" class="schedule-grid">
                 <div class="header">Group</div>
                 <div class="header">Location</div>

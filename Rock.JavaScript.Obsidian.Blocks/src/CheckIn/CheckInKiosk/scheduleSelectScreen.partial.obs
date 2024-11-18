@@ -3,7 +3,8 @@
     <div class="schedule-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="currentPerson">
+                   :person="currentPerson"
+                   :configuration="configuration">
             <div class="button-list">
                 <RockButton v-for="schedule in schedules"
                             :btnType="isSelected(schedule) ? 'primary' : 'default'"

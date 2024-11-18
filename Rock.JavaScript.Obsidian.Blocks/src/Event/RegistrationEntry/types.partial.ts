@@ -40,6 +40,7 @@ export type RegistrantBasicInfo = {
     lastName: string;
     email: string;
     guid: Guid;
+    isOnWaitList: boolean
 };
 
 export type RegistrationCostSummaryInfo = {

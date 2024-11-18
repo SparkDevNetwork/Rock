@@ -26,6 +26,27 @@ namespace Rock.CheckIn.v2.Filters
         #region Methods
 
         /// <inheritdoc/>
+        public override void FilterLocations( OpportunityCollection opportunities )
+        {
+            var startCount = opportunities.Locations.Count;
+
+            if ( startCount == 0 )
+            {
+                return;
+            }
+
+            base.FilterLocations( opportunities );
+
+            // If we removed the last location then mark them as unavailable
+            // and set a helpful message to display in the UI.
+            if ( opportunities.Locations.Count == 0 && !Person.IsUnavailable )
+            {
+                Person.IsUnavailable = true;
+                Person.UnavailableMessage = "All Locations Are Full";
+            }
+        }
+
+        /// <inheritdoc/>
         public override bool IsLocationValid( LocationOpportunity location )
         {
             // If there are no limits, then always allow check-in.

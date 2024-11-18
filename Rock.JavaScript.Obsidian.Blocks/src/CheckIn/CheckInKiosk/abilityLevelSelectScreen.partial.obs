@@ -3,7 +3,8 @@
     <div class="ability-level-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="session.getCurrentAttendee()?.person">
+                   :person="session.getCurrentAttendee()?.person"
+                   :configuration="session.configuration">
             <div class="button-list">
                 <RockButton v-for="abilityLevel in abilityLevels"
                             btnType="primary"

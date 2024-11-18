@@ -197,7 +197,7 @@ namespace Rock.Rest.v2
                 {
                     var canProcess = RateLimiterCache.CanProcessPage( pageCache.Id,
                         controller.RockRequestContext.ClientInformation.IpAddress,
-                        TimeSpan.FromSeconds( pageCache.RateLimitPeriodDuration.Value ),
+                        TimeSpan.FromSeconds( pageCache.RateLimitPeriodDurationSeconds.Value ),
                         pageCache.RateLimitRequestPerPeriod.Value );
 
                     if ( !canProcess )

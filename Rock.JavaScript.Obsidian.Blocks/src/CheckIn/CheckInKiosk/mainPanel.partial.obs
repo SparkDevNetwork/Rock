@@ -2,7 +2,8 @@
 <template>
     <div class="check-in-panel">
         <AttendeeBanner v-if="person"
-                        :person="person" />
+                        :person="person"
+                        :hidePhoto="!!configuration?.template?.isPhotoHidden" />
 
         <div v-if="title || subtitle" class="panel-header">
             <h3 v-if="!person" class="title">{{ title }}</h3>
@@ -23,6 +24,7 @@
     import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
     import { PropType, computed } from "vue";
     import { markdown } from "./utils.partial";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
 
     const props = defineProps({
         title: {
@@ -43,6 +45,11 @@
         person: {
             type: Object as PropType<PersonBag | null>,
             required: false
+        },
+
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag | null | undefined>,
+            required: true
         }
     });
 

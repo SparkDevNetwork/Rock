@@ -2,7 +2,8 @@
 <template>
     <div ref="screenElement" class="person-select-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <div class="button-list">
                 <RockButton v-for="attendee in attendees"
                             btnType="primary"
@@ -14,7 +15,9 @@
                         <i v-else class="fa fa-square-o"></i>
                     </span>
 
-                    <span class="avatar" :style="getStyleForAttendee(attendee)"></span>
+                    <span v-if="!props.session.configuration.template?.isPhotoHidden"
+                          class="avatar"
+                          :style="getStyleForAttendee(attendee)"></span>
 
                     <span class="title">
                         <span class="name">{{ attendee.person?.fullName }}</span>

@@ -2,11 +2,17 @@
 <template>
     <div ref="screenElement" class="search-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
-
-            <TextBox v-model="searchTerm"
-                     class="search-term"
-                     @keypress.enter="onSearchClick" />
+                   :subtitle="subtitle"
+                   :configuration="configuration">
+            <!--
+                The form is here to prevent iOS from causing the Return key
+                to become a Go key and triggering a WebForms postback.
+            -->
+            <RockForm>
+                <TextBox v-model="searchTerm"
+                         class="search-term"
+                         @keypress.enter="onSearchClick" />
+            </RockForm>
 
             <NumberPad v-if="hasNumberPad"
                        v-model="searchTerm"
@@ -39,6 +45,7 @@
     import { RegistrationScreenData } from "./types.partial";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EditFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/editFamilyResponseBag";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
 
     const props = defineProps({
         configuration: {

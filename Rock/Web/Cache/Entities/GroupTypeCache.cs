@@ -634,6 +634,13 @@ namespace Rock.Web.Cache
         public ScheduleConfirmationLogic ScheduleConfirmationLogic { get; set; }
 
         /// <summary>
+        /// Gets a value that groups in this area should not be available
+        /// when a person already has a check-in for the same schedule.
+        /// </summary>
+        [DataMember]
+        public bool IsConcurrentCheckInPrevented { get; private set; }
+
+        /// <summary>
         /// Gets or sets the roles.
         /// </summary>
         /// <value>
@@ -1050,6 +1057,7 @@ namespace Rock.Web.Cache
             IsCapacityRequired = groupType.IsCapacityRequired;
             GroupsRequireCampus = groupType.GroupsRequireCampus;
             ScheduleCoordinatorNotificationTypes = groupType.ScheduleCoordinatorNotificationTypes;
+            IsConcurrentCheckInPrevented = groupType.IsConcurrentCheckInPrevented;
         }
 
         /// <summary>

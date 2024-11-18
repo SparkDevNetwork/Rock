@@ -2,7 +2,8 @@
 <template>
     <div class="family-select-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <div class="button-list">
                 <RockButton v-for="family in props.session.families"
                             btnType="primary"

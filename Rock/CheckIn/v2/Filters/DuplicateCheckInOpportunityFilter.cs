@@ -61,6 +61,7 @@ namespace Rock.CheckIn.v2.Filters
 
         #region Methods
 
+        /// <inheritdoc/>
         public override void FilterSchedules( OpportunityCollection opportunities )
         {
             var startCount = opportunities.Schedules.Count;
@@ -78,7 +79,7 @@ namespace Rock.CheckIn.v2.Filters
             if ( opportunities.Schedules.Count == 0 && !Person.IsUnavailable )
             {
                 Person.IsUnavailable = true;
-                Person.UnavailableMessage = "Already checked in.";
+                Person.UnavailableMessage = "Already Checked In.";
             }
         }
 
@@ -92,6 +93,44 @@ namespace Rock.CheckIn.v2.Filters
 
             // Remove any schedules the attendee has already checked in for.
             return !CheckedInScheduleIds.Value.Contains( schedule.Id );
+        }
+
+        /// <inheritdoc/>
+        public override void FilterGroups( OpportunityCollection opportunities )
+        {
+            var startCount = opportunities.Groups.Count;
+
+            if ( startCount == 0 )
+            {
+                return;
+            }
+
+            // Remove any groups that are marked as not available for
+            // concurrent check-in.
+            opportunities.Groups.RemoveAll( g => !IsGroupValid( g ) );
+
+            // If we removed the last schedule then mark them as unavailable
+            // and set a helpful message to display in the UI.
+            if ( opportunities.Groups.Count == 0 && !Person.IsUnavailable )
+            {
+                Person.IsUnavailable = true;
+                Person.UnavailableMessage = "Already Checked In.";
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool IsGroupValid( GroupOpportunity group )
+        {
+            if ( !group.CheckInAreaData.IsConcurrentCheckInPrevented )
+            {
+                return true;
+            }
+
+            // Remove any location schedules the attendee has already checked in for.
+            group.Locations.RemoveAll( l => CheckedInScheduleIds.Value.Contains( l.ScheduleId ) );
+            group.OverflowLocations.RemoveAll( l => CheckedInScheduleIds.Value.Contains( l.ScheduleId ) );
+
+            return group.Locations.Count > 0 || group.OverflowLocations.Count > 0;
         }
 
         #endregion

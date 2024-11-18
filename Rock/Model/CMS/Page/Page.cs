@@ -459,18 +459,18 @@ namespace Rock.Model
         /// <value>
         /// The rate limit period (in seconds).
         /// </value>
-        [Obsolete( "Use RateLimitPeriodDuration instead." )]
+        [Obsolete( "Use RateLimitPeriodDurationSeconds instead." )]
         [RockObsolete( "1.16.7" )]
         [NotMapped]
         public int? RateLimitPeriod
         {
             get
             {
-                return this.RateLimitPeriodDuration;
+                return this.RateLimitPeriodDurationSeconds;
             }
             set
             {
-                this.RateLimitPeriodDuration = value;
+                this.RateLimitPeriodDurationSeconds = value;
             }
         }
 
@@ -481,7 +481,7 @@ namespace Rock.Model
         /// The rate limit period (in seconds).
         /// </value>
         [DataMember]
-        public int? RateLimitPeriodDuration { get; set; }
+        public int? RateLimitPeriodDurationSeconds { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is rate limited.
@@ -495,7 +495,7 @@ namespace Rock.Model
         {
             get
             {
-                return RateLimitPeriodDuration != null && RateLimitRequestPerPeriod != null;
+                return RateLimitPeriodDurationSeconds != null && RateLimitPeriodDurationSeconds != null;
             }
         }
 
