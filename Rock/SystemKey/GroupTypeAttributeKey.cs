@@ -221,6 +221,13 @@ namespace Rock.SystemKey
         /// </summary>
         public const string CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS = "core_RemoveNonSpecialNeedsGroups";
 
+        /// <summary>
+        /// Attribute key for check-in configuraiton template to specify the
+        /// content channel that will drive the promotions on the welcome
+        /// screen. The raw value will be the unique identifier of the channel.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_PROMOTIONS_CONTENT_CHANNEL = "core_PromotionsContentChannel";
+
         #endregion
 
         #region Display
