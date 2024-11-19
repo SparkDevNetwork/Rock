@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -335,7 +336,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( PublicLearningCourseDetailBlockBox box )
         {
-            box.CourseHtml = GetHtmlContent(false);
+            box.CourseHtml = GetHtmlContent( false );
         }
 
         /// <summary>
@@ -360,14 +361,14 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
             course.DescriptionAsHtml = new StructuredContentHelper( course.Entity?.Description ?? string.Empty ).Render();
 
-            var enrolledClassIdKey = course.MostRecentParticipation?.LearningClassId > 0 ?
+            var enrolledOrNextClassIdKey = course.MostRecentParticipation?.LearningClassId > 0 ?
                 IdHasher.Instance.GetHash( course.MostRecentParticipation.LearningClassId ) :
                 course.NextSemester?.LearningClasses?.FirstOrDefault()?.IdKey;
             var queryParams = new Dictionary<string, string>
             {
                 [PageParameterKey.LearningProgramId] = course.Program.IdKey,
                 [PageParameterKey.LearningCourseId] = course.Entity.IdKey,
-                ["LearningClassId"] = enrolledClassIdKey
+                ["LearningClassId"] = enrolledOrNextClassIdKey
             };
 
             course.ClassWorkspaceLink = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, queryParams );
@@ -376,6 +377,51 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
             var mergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
             mergeFields.Add( "Course", course );
             mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
+
+            if ( currentPerson != null )
+            {
+                var learningClassService = new LearningClassService( RockContext );
+                var learningClassId = learningClassService.GetSelect( enrolledOrNextClassIdKey, c => c.Id );
+
+                var learningClass =
+                   learningClassId == 0 ?
+                   default :
+                   learningClassService
+                   .Queryable()
+                   .Include( c => c.LearningCourse )
+                  .Include( c => c.LearningCourse.LearningProgram )
+                  .Include( c => c.LearningCourse.ImageBinaryFile )
+                  .Include( c => c.LearningCourse.LearningCourseRequirements )
+                  .Include( c => c.GroupLocations )
+                  .Include( c => c.Schedule )
+                  .Include( c => c.LearningSemester )
+                  .Include( c => c.LearningGradingSystem )
+                  .FirstOrDefault( c => c.Id == learningClassId );
+
+                // Allow historical access if the course allows it and the class is not over.
+                var canShowHistoricalAccess = learningClass.LearningCourse.AllowHistoricalAccess
+                    && ( !learningClass.LearningSemester.EndDate.HasValue
+                    || learningClass.LearningSemester.EndDate.Value.IsFuture() );
+
+                mergeFields.Add( "CanShowHistoricalAccess", canShowHistoricalAccess );
+
+                var unmetRequirements =
+                learningClassId == 0 ?
+                default :
+                new LearningCourseService( RockContext )
+                .GetUnmetCourseRequirements( currentPerson.Id, learningClass.LearningCourse.LearningCourseRequirements );
+
+                if ( !new LearningParticipantService( RockContext ).CanEnroll( learningClass, currentPerson, unmetRequirements, out var errorMessage ) )
+                {
+                    // Don't treat already enrolled as an error for this block.
+                    // They should be able to navigate to the workspace from here.
+                    var alreadyEnrolledErrorKey = "already_enrolled";
+                    if ( !errorMessage.Equals( alreadyEnrolledErrorKey, System.StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        mergeFields.Add( "ErrorKey", errorMessage );
+                    }
+                }
+            }
 
             var template = GetAttributeValue( AttributeKey.CourseDetailTemplate ) ?? string.Empty;
             return template.ResolveMergeFields( mergeFields );
@@ -400,7 +446,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
             // (prevent unused/unnecessary query string parameters). 
             var includedParamKeys = new[] { "learningprogramid", "learningcourseid" };
             var paramsToInclude = pageReference.Parameters.Where( kv => includedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
-            
+
             var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
             var breadCrumb = new BreadCrumbLink( entityName ?? "Course Description", breadCrumbPageRef );
 

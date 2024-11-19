@@ -17,6 +17,9 @@
 
         <div class="row">
             <div class="col-md-6">
+                <DropDownList v-model="activityComponentValue" :grouped="false" :items="activityComponentListItems" rules="required" label="Activity Type" :multiple="false" :showBlankItem="true" />
+            </div>
+            <div class="col-md-6">
                 <RadioButtonList v-model="assignTo"
                                  label="Completed By"
                                  horizontal
@@ -92,15 +95,12 @@
         </div>
 
         <div class="row">
-            <div class="col-md-6">
-                <DropDownList v-model="activityComponentValue" :grouped="false" :items="activityComponentListItems" rules="required" label="Activity Type" :multiple="false" :showBlankItem="true" />
-            </div>
 
             <div class="col-md-6">
                 <NumberBox v-model="points"
                            label="Points"
                            help="This is the total number of points available for this activity."
-                           inputGroupClasses="input-width-md" />
+                           inputClasses="input-width-md" />
             </div>
         </div>
 

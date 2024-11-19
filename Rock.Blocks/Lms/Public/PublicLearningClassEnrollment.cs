@@ -52,7 +52,7 @@ namespace Rock.Blocks.Lms
 
     [CodeEditorField( "Confirmation Lava Template",
         Key = AttributeKey.ConfirmationLavaTemplate,
-        Description = "The Lava template to use when displaying the confirmation messaging to the individual. Merge fields include: UnmetRequirements, LearningClass, Facilitators, Registrant, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>", EditorMode = CodeEditorMode.Lava,
+        Description = "The Lava template to use when displaying the confirmation messaging to the individual. Merge fields include: ErrorKey (one of: 'unmet_course_requirements', 'class_full', 'enrollment_closed'), UnmetRequirements, LearningClass, Facilitators, Registrant, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>", EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
@@ -400,7 +400,6 @@ namespace Rock.Blocks.Lms
 
             SetBoxInitialEntityState( box );
 
-
             return box;
         }
 
@@ -466,7 +465,7 @@ namespace Rock.Blocks.Lms
             }
 
             // Get the merge fields using the current person and registrant.
-            var mergeFields = GetMergeFields( currentPerson, registrant, out var learningClass, out var _ );
+            var mergeFields = GetMergeFields( currentPerson, registrant, out var learningClass, out var unmetRequirements );
             box.NavigationUrls = GetBoxNavigationUrls( learningClass );
 
             if ( learningClass.Id == 0 )
@@ -476,7 +475,22 @@ namespace Rock.Blocks.Lms
             }
 
             box.HeaderHtml = HeaderLavaTemplate.ResolveMergeFields( mergeFields );
-            box.ConfirmationHtml = ConfirmationLavaTemplate.ResolveMergeFields( mergeFields );
+
+            if ( !new LearningParticipantService( RockContext ).CanEnroll( learningClass, registrant, unmetRequirements, out var errorMessage ) )
+            {
+                mergeFields.Add( "ErrorKey", errorMessage );
+            }
+
+            // If already enrolled show the completion rather than the confirmation screen.
+            var alreadyEnrolledErrorKey = "already_enrolled";
+            if ( errorMessage.Equals( alreadyEnrolledErrorKey, StringComparison.OrdinalIgnoreCase ) )
+            {
+                box.CompletionHtml = CompletionLavaTemplate.ResolveMergeFields( mergeFields );
+            }
+            else
+            {
+                box.ConfirmationHtml = ConfirmationLavaTemplate.ResolveMergeFields( mergeFields );
+            }
         }
 
         /// <summary>
@@ -549,45 +563,6 @@ namespace Rock.Blocks.Lms
             };
         }
 
-        private bool IsValid( LearningClass learningClass, Person registrant, List<LearningCourseRequirement> unmetRequirements, out string errorKey )
-        {
-            errorKey = string.Empty;
-
-            if (learningClass.LearningSemester.EnrollmentCloseDate.HasValue && learningClass.LearningSemester.EnrollmentCloseDate.Value.IsPast() )
-            {
-                errorKey = "enrollment_closed";
-                return false;
-            }
-
-            var participantService = new LearningParticipantService( RockContext );
-            var studentCount = participantService.GetStudents( learningClass.Id ).Count();
-            if ( studentCount >= learningClass.LearningCourse.MaxStudents )
-            {
-                errorKey = "class_full";
-                return false;
-            }
-
-            // Already enrolled (as a student).
-            var alreadyEnrolled = participantService.Queryable().Any( p =>
-                p.PersonId == registrant.Id
-                && p.LearningClassId == learningClass.Id
-                && !p.GroupRole.IsLeader );
-
-            if ( alreadyEnrolled )
-            {
-                errorKey = "already_enrolled";
-                return false;
-            }
-
-            if ( unmetRequirements.Any() )
-            {
-                errorKey = "unmet_course_requirements";
-                return false;
-            }
-
-            return true;
-        }
-
         #endregion
 
         #region Block Actions
@@ -602,16 +577,16 @@ namespace Rock.Blocks.Lms
             var currentPerson = GetCurrentPerson();
             var registrant = GetRegistrant( currentPerson );
             var mergeFields = GetMergeFields( currentPerson, registrant, out var learningClass, out var unmetRequirements );
+            var learningParticipantService = new LearningParticipantService( RockContext );
 
             try
             {
-                if (!IsValid( learningClass, registrant, unmetRequirements, out var errorMessage ) )
+                if (!learningParticipantService.CanEnroll( learningClass, registrant, unmetRequirements, out var errorMessage ) )
                 {
                     mergeFields.Add( "ErrorKey", errorMessage);
                     return ActionBadRequest( EnrollmentErrorLavaTemplate.ResolveMergeFields( mergeFields ) );
                 }
 
-                var learningParticipantService = new LearningParticipantService( RockContext );
                 var newLearningParticipant = GetNewLearningParticipant( registrant );
 
                 learningParticipantService.Add( newLearningParticipant );

@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+import { onBeforeUnmount } from "vue";
 import { getUniqueCssSelector } from "./dom";
 import { getFullscreenElement, isFullscreen } from "./fullscreen";
 

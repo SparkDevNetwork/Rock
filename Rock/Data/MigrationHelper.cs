@@ -5234,6 +5234,22 @@ END
         }
 
         /// <summary>
+        /// Adds the site security authentication (or ignores if it already exists).
+        /// Set <paramref name="groupGuid"/> to null when setting to a special role.
+        /// </summary>
+        /// <param name="siteGuid">The site unique identifier.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="action">The action.</param>
+        /// <param name="allow">if set to <c>true</c> [allow].</param>
+        /// <param name="groupGuid">The group unique identifier.</param>
+        /// <param name="specialRole">The special role.</param>
+        /// <param name="authGuid">The authentication unique identifier.</param>
+        public void AddSecurityAuthForSite( string siteGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
+        {
+            AddSecurityAuthForEntityBase( "Rock.Model.Site", "Site", siteGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+        }
+
+        /// <summary>
         /// Adds the page security authentication (or ignores if it already exists). Set GroupGuid to null when setting to a special role
         /// </summary>
         /// <param name="pageGuid">The page unique identifier.</param>

@@ -19,7 +19,7 @@ import { Guid } from "@Obsidian/Types";
 import axios, { AxiosError, AxiosProgressEvent, AxiosResponse } from "axios";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { HttpBodyData, HttpMethod, HttpFunctions, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
-import { inject, provide, getCurrentInstance } from "vue";
+import { inject, provide, getCurrentInstance, ref, type Ref } from "vue";
 
 
 // #region HTTP Requests
@@ -152,6 +152,78 @@ export function useHttp(): HttpFunctions {
         get: get,
         post: post
     };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ApiCallerOptions<ReturnType, Args extends any[] = []> = {
+    url: string;
+    params?: HttpUrlParams | ((...args: Args) => HttpUrlParams);
+    data?: HttpBodyData | ((...args: Args) => HttpBodyData);
+    onComplete?: ((data: ReturnType, ...args: Args) => void) | null | undefined;
+    method?: "get" | "post" | "GET" | "POST" | undefined;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ApiCallerReturnType<ReturnType, Args extends any[] = []> = {
+    run: (...args: Args) => Promise<ReturnType | undefined>;
+    readonly isLoading: Ref<boolean>;
+    readonly hasError: Ref<boolean>;
+    readonly errorMessage: Ref<string | undefined>;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createApiCaller<ReturnType = unknown, Args extends any[] = []> (options: ApiCallerOptions<ReturnType, Args>): ApiCallerReturnType<ReturnType, Args> {
+    const fetchFunction = useHttp()[(options.method || "post").toLowerCase()];
+    const isLoading = ref(false);
+    const hasError = ref(false);
+    const errorMessage = ref<string>();
+
+    return {
+        isLoading,
+        hasError,
+        errorMessage,
+        async run (...args) {
+            isLoading.value = true;
+            hasError.value = false;
+            errorMessage.value = undefined;
+
+            const params = typeof options.params === "function" ? options.params(...args) : options.params;
+            const data = typeof options.data === "function" ? options.data(...args) : options.data;
+
+            try {
+                const result = (await fetchFunction<ReturnType>(options.url, params, data)) as HttpResult<ReturnType>;
+
+                if (result.isSuccess) {
+                    if (typeof options.onComplete === "function") {
+                        options.onComplete(result.data as ReturnType, ...args);
+                    }
+
+                    return result.data as ReturnType;
+                }
+                else {
+                    hasError.value = true;
+                    errorMessage.value = result.errorMessage ?? undefined;
+                }
+            }
+            catch (e: unknown) {
+                hasError.value = true;
+
+                if (e instanceof Error) {
+                    errorMessage.value = e.message;
+                }
+                else if (typeof e === "string") {
+                    errorMessage.value = e;
+                }
+                else {
+                    errorMessage.value = "An unknown error occurred.";
+                }
+            }
+            finally {
+                isLoading.value = false;
+            }
+        }
+    };
+
 }
 
 // #endregion

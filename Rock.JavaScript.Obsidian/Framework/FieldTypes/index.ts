@@ -233,6 +233,9 @@ registerFieldType(FieldTypeGuids.FinancialAccounts, new FinancialAccountsFieldTy
 import { FinancialGatewayFieldType } from "./financialGatewayField.partial";
 registerFieldType(FieldTypeGuids.FinancialGateway, new FinancialGatewayFieldType());
 
+import { FinancialStatementTemplateFieldType } from "./financialStatementTemplateField.partial";
+registerFieldType(FieldTypeGuids.FinanciaStatementTemplate, new FinancialStatementTemplateFieldType());
+
 import { FileFieldType } from "./fileField.partial";
 registerFieldType(FieldTypeGuids.File, new FileFieldType());
 

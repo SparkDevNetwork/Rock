@@ -849,6 +849,11 @@
     <Compile Include="Controls\RockCacheabilityBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlValidateTokenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlTokenValidateTokenResultBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonAddReminderOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonReminderActionOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonGetRemindersResultsBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonGetRemindersReminderBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonGetRemindersOptionsBag.cs" />
     <Compile Include="Rest\Controls\UniversalItemSearchPickerOptionsBag.cs" />
     <Compile Include="Rest\Controls\UniversalItemTreePickerOptionsBag.cs" />
     <Compile Include="Utility\TimeIntervalBag.cs" />
