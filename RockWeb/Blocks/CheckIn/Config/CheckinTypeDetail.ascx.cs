@@ -243,6 +243,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 groupType.SetAttributeValue( "core_checkin_EnableManagerOption", cbEnableManager.Checked.ToString() );
                 groupType.SetAttributeValue( "core_checkin_EnableOverride", cbEnableOverride.Checked.ToString() );
                 groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES, listboxAchievementTypes.SelectedValues.AsDelimited(",") );
+                groupType.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_PROMOTIONS_CONTENT_CHANNEL, ddlPromotionsContentChannel.SelectedValue );
 
                 groupType.SetAttributeValue( "core_checkin_MaximumPhoneSearchLength", nbMaxPhoneLength.Text );
                 groupType.SetAttributeValue( "core_checkin_MaxSearchResults", nbMaxResults.Text );
@@ -555,6 +556,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                 cbEnableManager.Checked = groupType.GetAttributeValue( "core_checkin_EnableManagerOption" ).AsBoolean( true );
                 cbEnableOverride.Checked = groupType.GetAttributeValue( "core_checkin_EnableOverride" ).AsBoolean( true );
                 listboxAchievementTypes.SetValues( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES ).SplitDelimitedValues() );
+                ddlPromotionsContentChannel.SetValue( groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_PROMOTIONS_CONTENT_CHANNEL ) );
                 nbMaxPhoneLength.Text = groupType.GetAttributeValue( "core_checkin_MaximumPhoneSearchLength" );
                 nbMaxResults.Text = groupType.GetAttributeValue( "core_checkin_MaxSearchResults" );
                 nbMinPhoneLength.Text = groupType.GetAttributeValue( "core_checkin_MinimumPhoneSearchLength" );
@@ -904,6 +906,14 @@ namespace RockWeb.Blocks.CheckIn.Config
             {
                 listboxAchievementTypes.Items.Add( new ListItem( achievementType.Name, achievementType.Guid.ToString() ) );
             }
+
+            ddlPromotionsContentChannel.Items.Clear();
+            ddlPromotionsContentChannel.Items.Add( new ListItem() );
+            ContentChannelCache.All()
+                .Where( cc => cc.ContentChannelType.ShowInChannelList == true )
+                .OrderBy( cc => cc.Name )
+                .ToList()
+                .ForEach( cc => ddlPromotionsContentChannel.Items.Add( new ListItem( cc.Name, cc.Guid.ToString() ) ) );
 
             lbKnownRelationshipTypes.Items.Clear();
             lbKnownRelationshipTypes.Items.Add( new ListItem( "Child", "0" ) );
