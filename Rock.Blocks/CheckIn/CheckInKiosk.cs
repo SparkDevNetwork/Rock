@@ -1420,6 +1420,12 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "This kiosk does not support family registration." );
             }
 
+            var canCheckInMembers = new CheckInDirector( RockContext )
+                .CreateSession( template )
+                .SearchProvider
+                .GetCanCheckInFamilyMembersQuery( group.IdKey )
+                .ToList();
+
             var registration = new FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
             var knownRelationshipsCache = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), RockContext ).Roles;
             ListItemBag childRelationship = null;
@@ -1442,7 +1448,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var response = new EditFamilyResponseBag
             {
                 Family = registration.GetFamilyBag( group ),
-                People = group != null ? registration.GetFamilyMemberBags( group ) : null,
+                People = group != null ? registration.GetFamilyMemberBags( group, canCheckInMembers ) : null,
                 IsAlternateIdFieldVisibleForAdults = template.IsAlternateIdFieldVisibleForAdults,
                 IsAlternateIdFieldVisibleForChildren = template.IsAlternateIdFieldVisibleForChildren,
                 IsSmsButtonVisible = template.IsSmsButtonVisible,
