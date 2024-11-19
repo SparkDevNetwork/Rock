@@ -66,12 +66,6 @@ namespace Rock.Blocks.CheckIn
         Key = AttributeKey.ShowCountsByLocation,
         Order = 1 )]
 
-    [ContentChannelField( "Promotions Content Channel",
-        Description = "The content channel to use for displaying promotions on the kiosk welcome screen.",
-        Key = AttributeKey.PromotionsContentChannel,
-        IsRequired = false,
-        Order = 2 )]
-
     [CustomDropdownListField( "REST Key",
         Description = "If your kiosk pages are configured for anonymous access then you must create a REST key with access to the check-in API endpoints and select it here.",
         Key = AttributeKey.RestKey,
@@ -104,7 +98,6 @@ namespace Rock.Blocks.CheckIn
         {
             public const string SetupPage = "SetupPage";
             public const string ShowCountsByLocation = "ShowCountsByLocation";
-            public const string PromotionsContentChannel = "PromotionsContentChannel";
             public const string RestKey = "RestKey";
             public const string IdleTimeout = "IdleTimeout";
             public const string SelectAllSchedulesAutomatically = "SelectAllSchedulesAutomatically";
@@ -207,13 +200,12 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         /// Gets the promotion items that should be displayed on kiosks at the
         /// specified location.
         /// </summary>
+        /// <param name="configuration">The check-in configuration template data to use when pulling the promotions.</param>
         /// <param name="campusId">The identifier of the <see cref="Campus"/> to filter items for.</param>
         /// <returns>A collection of <see cref="PromotionBag"/> objects that represent the promotions to display.</returns>
-        private List<PromotionBag> GetPromotionItems( int? campusId )
+        private List<PromotionBag> GetPromotionItems( TemplateConfigurationData configuration, int? campusId )
         {
-            var promotionContentChannelGuid = GetAttributeValue( AttributeKey.PromotionsContentChannel ).AsGuidOrNull();
-
-            if ( !promotionContentChannelGuid.HasValue )
+            if ( !configuration.PromotionContentChannelGuid.HasValue )
             {
                 return new List<PromotionBag>();
             }
@@ -222,7 +214,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 .Queryable()
                 .AsNoTracking()
                 .Include( cc => cc.Items )
-                .Where( cc => cc.Guid == promotionContentChannelGuid.Value )
+                .Where( cc => cc.Guid == configuration.PromotionContentChannelGuid.Value )
                 .FirstOrDefault();
 
             if ( contentChannel == null )
@@ -796,11 +788,11 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         [BlockAction]
         public BlockActionResult GetPromotionList( string templateId, string kioskId )
         {
-            var promotionContentChannelGuid = GetAttributeValue( AttributeKey.PromotionsContentChannel ).AsGuidOrNull();
+            var configuration = GroupTypeCache.GetByIdKey( templateId, RockContext )?.GetCheckInConfiguration( RockContext );
 
-            if ( !promotionContentChannelGuid.HasValue )
+            if ( configuration == null )
             {
-                return ActionOk( new List<PromotionBag>() );
+                return ActionBadRequest( "Invalid check-in template." );
             }
 
             var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
@@ -810,7 +802,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Invalid kiosk." );
             }
 
-            return ActionOk( GetPromotionItems( kiosk.GetCampusId() ) );
+            return ActionOk( GetPromotionItems( configuration, kiosk.GetCampusId() ) );
         }
 
         /// <summary>

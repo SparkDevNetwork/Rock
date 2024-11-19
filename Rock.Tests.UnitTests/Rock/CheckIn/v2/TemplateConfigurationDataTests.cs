@@ -73,6 +73,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
         [DataRow( nameof( TemplateConfigurationData.PhoneNumberPattern ), "^test$", "core_checkin_RegularExpressionFilter" )]
         // PhoneNumberRegex has its own test.
         [DataRow( nameof( TemplateConfigurationData.PhoneSearchType ), PhoneSearchMode.EndsWith, "core_checkin_PhoneSearchType" )]
+        [DataRow( nameof( TemplateConfigurationData.PromotionContentChannelGuid ), "bdc46433-8927-41ca-8c6d-fbaebc7a4d08", GroupTypeAttributeKey.CHECKIN_GROUPTYPE_PROMOTIONS_CONTENT_CHANNEL )]
         [DataRow( nameof( TemplateConfigurationData.RefreshInterval ), 60, "core_checkin_RefreshInterval" )]
         [DataRow( nameof( TemplateConfigurationData.SecurityCodeAlphaLength ), 3, "core_checkin_SecurityCodeAlphaLength" )]
         [DataRow( nameof( TemplateConfigurationData.SecurityCodeAlphaNumericLength ), 2, "core_checkin_SecurityCodeLength" )]
@@ -414,7 +415,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
             // added so we can update the other tests to check for those
             // properties.
             var type = typeof( TemplateConfigurationData );
-            var expectedPropertyCount = 73;
+            var expectedPropertyCount = 74;
 
             var propertyCount = type.GetProperties().Length;
 
