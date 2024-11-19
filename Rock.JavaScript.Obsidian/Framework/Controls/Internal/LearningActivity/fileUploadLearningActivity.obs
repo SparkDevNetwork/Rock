@@ -75,7 +75,8 @@
         </div>
         <div class="footer-button-section">
             <RockButton :btnType="BtnType.Primary"
-                        :disabled="!binaryFile"
+                        :disabled="!binaryFile || completeClicked"
+                        :autoDisable="true"
                         @click="onCompletedAndClosed">
                 {{ completeButtonText }}
             </RockButton>
@@ -107,6 +108,7 @@
     const emits = defineEmits({ ...learningActivityEmits });
 
     const disabled = ref(props.disabled ?? false);
+    const completeClicked = ref(false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = computed(() => props.activityBag);
@@ -141,6 +143,7 @@
     function onCompletedAndClosed(): void {
         if (isCompleted.value === false) {
             emits("completed", true);
+            completeClicked.value = true;
         }
 
         emits("closed");

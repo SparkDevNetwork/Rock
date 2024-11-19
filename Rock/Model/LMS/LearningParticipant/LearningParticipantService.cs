@@ -27,6 +27,77 @@ namespace Rock.Model
 {
     public partial class LearningParticipantService
     {
+        private static class ErrorKey
+        {
+            /// <summary>
+            /// THe error key used when a participant is already enrolled as a student.
+            /// </summary>
+            public const string ALREADY_ENROLLED = "already_enrolled";
+
+            /// <summary>
+            /// The error key used when the learning class has reached it's maximum allowed student count.
+            /// </summary>
+            public const string CLASS_FULL = "class_full";
+
+            /// <summary>
+            /// The error key used when the semester for the learning class no longer accepts enrollments.
+            /// </summary>
+            public const string ENROLLMENT_CLOSED = "enrollment_closed";
+
+            /// <summary>
+            /// The error key used when the registrant has not met the course requirements.
+            /// </summary>
+            public const string UNMET_COURSE_REQUIREMENTS = "unmet_course_requirements";
+        }
+
+        /// <summary>
+        /// Checks the <paramref name="learningClass"/> and <paramref name="registrant"/> to verify that the <paramref name="registrant"/>
+        /// can enroll in the <paramref name="learningClass"/> based on the provided <paramref name="unmetRequirements"/>.
+        /// </summary>
+        /// <param name="learningClass">The learning class to check whether the <param</param>
+        /// <param name="registrant"></param>
+        /// <param name="unmetRequirements"></param>
+        /// <param name="errorKey"></param>
+        /// <returns></returns>
+        public bool CanEnroll( LearningClass learningClass, Person registrant, List<LearningCourseRequirement> unmetRequirements, out string errorKey )
+        {
+            errorKey = string.Empty;
+
+            if ( learningClass.LearningSemester.EnrollmentCloseDate.HasValue && learningClass.LearningSemester.EnrollmentCloseDate.Value.IsPast() )
+            {
+                errorKey = ErrorKey.ENROLLMENT_CLOSED;
+                return false;
+            }
+
+            var participantService = new LearningParticipantService( (RockContext)Context );
+            var studentCount = participantService.GetStudents( learningClass.Id ).Count();
+            if ( studentCount >= learningClass.LearningCourse.MaxStudents )
+            {
+                errorKey = ErrorKey.CLASS_FULL;
+                return false;
+            }
+
+            // Already enrolled (as a student).
+            var alreadyEnrolled = participantService.Queryable().Any( p =>
+                p.PersonId == registrant.Id
+                && p.LearningClassId == learningClass.Id
+                && !p.GroupRole.IsLeader );
+
+            if ( alreadyEnrolled )
+            {
+                errorKey = ErrorKey.ALREADY_ENROLLED;
+                return false;
+            }
+
+            if ( unmetRequirements.Any() )
+            {
+                errorKey = ErrorKey.UNMET_COURSE_REQUIREMENTS;
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// <para>Gets a list of <see cref="LearningActivity">Activities</see> for the course that the <see cref="LearningParticipant"/>
         /// is enrolled in.</para>.

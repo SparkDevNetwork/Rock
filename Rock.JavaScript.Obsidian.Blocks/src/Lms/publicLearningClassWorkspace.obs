@@ -97,8 +97,8 @@
                                 <div class="card card-announcement" :class="getRowCssClass(index, announcements.length)"
                                      v-if="index < maxOverviewItemsToShow || isViewingAllAnnouncements">
                                     <div class="card-body">
-                                        <small class="card-date">
-                                            {{ formattedDate(announcement.publishDateTime) }}
+                                        <small class="card-date" :title="getFormattedDate(announcement.publishDateTime)">
+                                            {{ getElapsedTime(announcement.publishDateTime) }}
                                         </small>
                                         <h5 class="announcement-title">
                                             {{ announcement.title }}
@@ -145,7 +145,7 @@
 
                                             <h5 class="notification-title">{{ notification.title }}</h5>
 
-                                            <div class="notification-content">
+                                            <div class="notification-content" :title="getFormattedDate(notification.notificationDateTime)">
                                                 {{ notification.content }}
                                             </div>
                                         </div>
@@ -167,73 +167,79 @@
             </div>
 
             <div class="workspace-block-content" v-if="selectedTab === activitiesTab">
-                <CustomSelect
-                              v-model="viewingCompletionBag"
-                              :items="activities"
-                              wrapperClass="workspace-navigation-pane"
-                              itemKey="learningActivityIdKey"
-                              :itemClass="getActivityContainerClasses"
-                              :disabledKey="isActivityUnavailable"
-                              :mobileThreshold="767"
-                              selectedClass="is-selected">
-                    <template #placeholder>
-                        <p class="text-muted">Tap here to select an activity</p>
-                    </template>
-                    <template #default="{ item }">
-                        <div class="activity-item-content detail-container"
-                             :ref="(el) => addTooltip(el as Element)"
-                             data-toggle="tooltip"
-                             data-placement="auto" data-container="body"
-                             :data-original-title="getActivityTooltip(item)">
-                            <div class="activity-item-completion-container">
-                                <i v-if="isCompleted(item)" class="fa fa-check-circle fa-2x text-success"></i>
-                                <i v-if="!isCompleted(item)" class="fa fa-circle-o fa-2x is-incomplete"></i>
-                            </div>
-                            <div class="activity-item-detail-container">
-                                <h5 class="activity-name">{{ item?.activityBag?.name }}</h5>
-                                <div class="activity-item-time">
-                                    <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
-                                    <div class="activity-label-container">
-                                        <template v-html="getActivityLabel(item)"></template>
+                <div class="empty-activities-container" v-if="activities.length === 0">
+
+                </div>
+                <template v-if="activities.length > 0">
+                    <CustomSelect
+                                  v-model="viewingCompletionBag"
+                                  :items="activities"
+                                  wrapperClass="workspace-navigation-pane"
+                                  itemKey="learningActivityIdKey"
+                                  :itemClass="getActivityContainerClasses"
+                                  :disabledKey="isActivityUnavailable"
+                                  :mobileThreshold="767"
+                                  selectedClass="is-selected">
+                        <template #placeholder>
+                            <p class="text-muted">Tap here to select an activity</p>
+                        </template>
+                        <template #default="{ item }">
+                            <div class="activity-item-content detail-container"
+                                 :ref="(el) => addTooltip(el as Element)"
+                                 data-toggle="tooltip"
+                                 data-placement="auto" data-container="body"
+                                 :data-original-title="getActivityTooltip(item)">
+                                <div class="activity-item-completion-container">
+                                    <i v-if="isCompleted(item)" class="fa fa-check-circle fa-2x text-success"></i>
+                                    <i v-if="!isCompleted(item)" class="fa fa-circle-o fa-2x is-incomplete"></i>
+                                </div>
+                                <div class="activity-item-detail-container">
+                                    <h5 class="activity-name">{{ item?.activityBag?.name }}</h5>
+                                    <div class="activity-item-time">
+                                        <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
+                                        <div class="activity-label-container">
+                                            <template v-html="getActivityLabel(item)"></template>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="activity-item-grade-container">
+                                    <div class="activity-item-grade-content">
+                                        <span v-if="isCompleted(item) && !item.requiresScoring" class="badge badge-grade" :style="getGradeBageStyles(item)">
+                                            {{ getBadgeText(item) }}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="activity-item-grade-container">
-                                <div class="activity-item-grade-content">
-                                    <span v-if="isCompleted(item) && !item.requiresScoring" class="badge badge-grade" :style="getGradeBageStyles(item)">
-                                        {{ getBadgeText(item) }}
-                                    </span>
-                                </div>
-                            </div>
+                        </template>
+                    </CustomSelect>
+                    <div class="workspace-main-content">
+                        <h2 class="mt-0">
+                            {{ viewingCompletionBag.activityBag?.name ?? "" }}
+                        </h2>
+                        <div class="activity-time">
+                            {{ getActivityTimeText(viewingCompletionBag) }}
                         </div>
-                    </template>
-                </CustomSelect>
-                <div class="workspace-main-content">
-                    <h2 class="mt-0">
-                        {{ viewingCompletionBag.activityBag?.name ?? "" }}
-                    </h2>
-                    <div class="activity-time">
-                        {{ getActivityTimeText(viewingCompletionBag) }}
-                    </div>
-                    <div class="facilitator-comments-container" v-if="viewingCompletionBag.facilitatorComment">
-                        <NotificationBox
-                                         alertType="default">
-                            <div class="facilitator-comment-label">
-                                Facilitator Comment:
-                            </div>
-                            <div class="facilitator-comment-text">
-                                {{ viewingCompletionBag.facilitatorComment }}
-                            </div>
-                        </NotificationBox>
+                        <div class="facilitator-comments-container" v-if="viewingCompletionBag.facilitatorComment">
+                            <NotificationBox
+                                             alertType="default">
+                                <div class="facilitator-comment-label">
+                                    Facilitator Comment:
+                                </div>
+                                <div class="facilitator-comment-text">
+                                    {{ viewingCompletionBag.facilitatorComment }}
+                                </div>
+                            </NotificationBox>
 
+                        </div>
+                        <activityTypeComponent
+                                               v-model:activityBag="viewingCompletionBag.activityBag"
+                                               v-model:completionBag="viewingCompletionBag"
+                                               :screenToShow="screenToShow"
+                                               @closed="onClosed"
+                                               @completed="onCompleted" />
                     </div>
-                    <activityTypeComponent
-                                           v-model:activityBag="viewingCompletionBag.activityBag"
-                                           v-model:completionBag="viewingCompletionBag"
-                                           :screenToShow="screenToShow"
-                                           @closed="onClosed"
-                                           @completed="onCompleted" />
-                </div>
+
+                </template>
             </div>
         </div>
     </div>
@@ -508,13 +514,13 @@
     }
 
     /** The function that formats the date for display. */
-    function formattedDate(date: string | null | undefined): string {
-        return RockDateTime.parseISO(date ?? "")?.localDateTime?.toASPString("MMMM d, yyyy") ?? "";
+    function getFormattedDate(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.localDateTime?.toASPString("d") ?? "";
     }
 
     /** The time elapsed since the specified date in a human-readable format. */
-    function getElapsedTime(date: string): string {
-        return RockDateTime.parseISO(date)?.localDateTime.toElapsedString() ?? "";
+    function getElapsedTime(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.localDateTime.toElapsedString() ?? "";
     }
 
     function isActivityUnavailable(activity: LearningActivityCompletionBag | null): boolean {
@@ -594,7 +600,7 @@
                 activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
 
                 // If this was the last incomplete activity set the classCompletionDate.
-                if (!hasIncompleteActivities && !classCompletionDate.value) {
+                if (!hasIncompleteActivities.value && !classCompletionDate.value) {
                     classCompletionDate.value = RockDateTime.now();
                 }
 
@@ -698,4 +704,6 @@
 
         void nextTick(() => backButtonClicked.value = false);
     });
+
+    console.warn({ classCompletionDate: classCompletionDate.value, config });
 </script>

@@ -159,7 +159,7 @@
             </div>
 
             <div class="footer-content-section mt-3">
-                <RockButton :btnType="BtnType.Primary" @click="emits('completed', true)" :disabled="unansweredQuestions">Complete</RockButton>
+                <RockButton :btnType="BtnType.Primary" @click="onCompleted" :autoDisable="true" :disabled="unansweredQuestions || completeClicked">Complete</RockButton>
             </div>
         </fieldset>
         <div v-if="isStudentAssignedAndCompleted">
@@ -168,9 +168,9 @@
                 <div class="summary-text">{{ headerSubText }}</div>
             </div>
 
-            <div v-if="hasMultipleChoiceQuestions && showResultsOnCompletion" class="well well-sm student-completion-summary">
-                <div class="results-summary-section">
-                    <h4>Results Summary</h4>
+            <div v-if="hasMultipleChoiceQuestions && showResultsOnCompletion" class="student-completion-summary">
+                <h4 class="results-summary-header">Results Summary</h4>
+                <div class="results-summary-section well well-sm">
                     <h5>{{ resultSummarySubHeader }}</h5>
                     <div class="multiple-choice-summary-text summary-text">
                         {{ multipleChoiceSummaryText }}
@@ -180,7 +180,7 @@
 
             <div v-if="hasMultipleChoiceQuestions && showMissedQuestionsOnResults && hasIncorrectResponses">
                 <div class="missed-questions-section">
-                    <h4>Missed Questions</h4>
+                    <h4 class="missed-questions-header">Missed Questions</h4>
 
                     <div class="well well-sm student-completion-summary" v-for="question of incorrectMultipleChoiceItems">
                         <h5 class="missed-question-text-section mb-1">
@@ -254,6 +254,7 @@
     // #region Values
 
     const disabled = ref(props.disabled ?? false);
+    const completeClicked = ref(false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = computed(() => props.activityBag);
@@ -346,6 +347,24 @@
             }));
     }
 
+    /**
+     * If the validity of the current sum of weights is out of sync
+     * force all (weight) controls to update.
+     * */
+    function handleMultiFieldWeightValidity(): void {
+        const isCurrentlyValid = sumOfAllWeights.value === 100;
+
+        if (isCurrentlyValid !== areWeightsValid.value) {
+            multiFieldWeightStateKey.value = newGuid();
+            areWeightsValid.value = isCurrentlyValid;
+        }
+    }
+
+    function onCompleted(): void {
+        emits("completed", true);
+        completeClicked.value = true;
+    }
+
     /** Validation rule for ensuring that all weights add up to 100 for the assessment item. */
     function weightsSumTo100(): string | boolean {
         // If there are no weights configured return true.
@@ -359,19 +378,6 @@
         }
 
         return `All weights must add up to 100`;
-    }
-
-    /**
-     * If the validity of the current sum of weights is out of sync
-     * force all (weight) controls to update.
-     * */
-    function handleMultiFieldWeightValidity(): void {
-        const isCurrentlyValid = sumOfAllWeights.value === 100;
-
-        if (isCurrentlyValid !== areWeightsValid.value) {
-            multiFieldWeightStateKey.value = newGuid();
-            areWeightsValid.value = isCurrentlyValid;
-        }
     }
 
     // #endregion
