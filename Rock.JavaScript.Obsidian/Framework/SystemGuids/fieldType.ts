@@ -173,6 +173,8 @@ export const FieldType = {
     FinancialAccounts: "17033CDD-EF97-4413-A483-7B85A787A87F",
     /** Financial Gateway field type */
     FinancialGateway: "7B34F9D8-6BBA-423E-B50E-525ABB3A1013",
+    /** Financial Statement Template field type */
+    FinanciaStatementTemplate: "9E0CD807-D69F-4888-A9BE-BCD11DD083FE",
     /** Gender field type */
     Gender: "2E28779B-4C76-4142-AE8D-49EA31DDB503",
     /** Group field type */

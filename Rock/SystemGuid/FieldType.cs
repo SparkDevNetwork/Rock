@@ -397,6 +397,11 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_GATEWAY = "7B34F9D8-6BBA-423E-B50E-525ABB3A1013";
 
         /// <summary>
+        /// Financial Statement Template field type
+        /// </summary>
+        public const string FINANCIAL_STATEMENT_TEMPLATE  = "9E0CD807-D69F-4888-A9BE-BCD11DD083FE";
+
+        /// <summary>
         /// Gender field type
         /// </summary>
         public const string GENDER = "2E28779B-4C76-4142-AE8D-49EA31DDB503";
