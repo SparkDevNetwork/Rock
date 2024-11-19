@@ -1,67 +1,96 @@
 
 // New color added in Style V2
-/* INTERFACE COLORS */
-.color-interface-strongest { color: var(--color-interface-strongest); }
-.color-interface-stronger  { color: var(--color-interface-stronger); }
-.color-interface-strong    { color: var(--color-interface-strong); }
-.color-interface-medium    { color: var(--color-interface-medium); }
-.color-interface-soft      { color: var(--color-interface-soft); }
-.color-interface-softer    { color: var(--color-interface-softer); }
-.color-interface-softest   { color: var(--color-interface-softest); }
+/* Background Colors */
+.bg-interface-strongest { background-color: var(--color-interface-strongest); }
+.bg-interface-stronger { background-color: var(--color-interface-stronger); }
+.bg-interface-strong { background-color: var(--color-interface-strong); }
+.bg-interface-medium { background-color: var(--color-interface-medium); }
+.bg-interface-soft { background-color: var(--color-interface-soft); }
+.bg-interface-softer { background-color: var(--color-interface-softer); }
+.bg-interface-softest { background-color: var(--color-interface-softest); }
 
-/* APPLICATION COLORS */
-.color-critical-soft   { color: var(--color-critical-soft); }
-.color-critical-strong { color: var(--color-critical-strong); }
-.color-danger-soft     { color: var(--color-danger-soft); }
-.color-danger-strong   { color: var(--color-danger-strong); }
-.color-info-soft       { color: var(--color-info-soft); }
-.color-info-strong     { color: var(--color-info-strong); }
-.color-success-soft    { color: var(--color-success-soft); }
-.color-success-strong  { color: var(--color-success-strong); }
-.color-warning-soft    { color: var(--color-warning-soft); }
-.color-warning-strong  { color: var(--color-warning-strong); }
+.bg-critical-soft { background-color: var(--color-critical-soft); }
+.bg-critical-strong { background-color: var(--color-critical-strong); }
+.bg-critical-tint { background-color: var(--color-critical-tint); }
+.bg-critical-shade { background-color: var(--color-critical-shade); }
 
-/* SYSTEM COLORS */
-.color-primary   { color: var(--color-primary); }
-.color-secondary    { color: var(--color-secondary); }
-.color-link      { color: var(--color-link); }
-.color-link-hover { color: var(--color-link-hover); }
+.bg-danger-soft { background-color: var(--color-danger-soft); }
+.bg-danger-strong { background-color: var(--color-danger-strong); }
+.bg-danger-tint { background-color: var(--color-danger-tint); }
+.bg-danger-shade { background-color: var(--color-danger-shade); }
 
-/* CATEGORICAL COLORS */
-.color-categorical-1 { color: var(--color-categorical-1); }
-.color-categorical-2 { color: var(--color-categorical-2); }
-.color-categorical-3 { color: var(--color-categorical-3); }
-.color-categorical-4 { color: var(--color-categorical-4); }
-.color-categorical-5 { color: var(--color-categorical-5); }
-.color-categorical-6 { color: var(--color-categorical-6); }
-.color-categorical-7 { color: var(--color-categorical-7); }
-.color-categorical-8 { color: var(--color-categorical-8); }
+.bg-info-soft { background-color: var(--color-info-soft); }
+.bg-info-strong { background-color: var(--color-info-strong); }
+.bg-info-tint { background-color: var(--color-info-tint); }
+.bg-info-shade { background-color: var(--color-info-shade); }
 
-/* DIVERGING COLORS */
-.color-diverging-1  { color: var(--color-diverging-1); }
-.color-diverging-2  { color: var(--color-diverging-2); }
-.color-diverging-3  { color: var(--color-diverging-3); }
-.color-diverging-4  { color: var(--color-diverging-4); }
-.color-diverging-5  { color: var(--color-diverging-5); }
-.color-diverging-6  { color: var(--color-diverging-6); }
-.color-diverging-7  { color: var(--color-diverging-7); }
-.color-diverging-8  { color: var(--color-diverging-8); }
-.color-diverging-9  { color: var(--color-diverging-9); }
-.color-diverging-10 { color: var(--color-diverging-10); }
-.color-diverging-11 { color: var(--color-diverging-11); }
+.bg-success-soft { background-color: var(--color-success-soft); }
+.bg-success-strong { background-color: var(--color-success-strong); }
+.bg-success-tint { background-color: var(--color-success-tint); }
+.bg-success-shade { background-color: var(--color-success-shade); }
 
-/* SEQUENTIAL COLORS */
-.color-sequential-1  { color: var(--color-sequential-1); }
-.color-sequential-2  { color: var(--color-sequential-2); }
-.color-sequential-3  { color: var(--color-sequential-3); }
-.color-sequential-4  { color: var(--color-sequential-4); }
-.color-sequential-5  { color: var(--color-sequential-5); }
-.color-sequential-6  { color: var(--color-sequential-6); }
-.color-sequential-7  { color: var(--color-sequential-7); }
-.color-sequential-8  { color: var(--color-sequential-8); }
-.color-sequential-9  { color: var(--color-sequential-9); }
-.color-sequential-10 { color: var(--color-sequential-10); }
-.color-sequential-11 { color: var(--color-sequential-11); }
+.bg-warning-soft { background-color: var(--color-warning-soft); }
+.bg-warning-strong { background-color: var(--color-warning-strong); }
+.bg-warning-tint { background-color: var(--color-warning-tint); }
+.bg-warning-shade { background-color: var(--color-warning-shade); }
+
+.bg-primary { background-color: var(--color-primary); }
+.bg-primary-tint { background-color: var(--color-primary-tint); }
+.bg-primary-shade { background-color: var(--color-primary-shade); }
+
+.bg-secondary { background-color: var(--color-secondary); }
+.bg-secondary-tint { background-color: var(--color-secondary-tint); }
+.bg-secondary-shade { background-color: var(--color-secondary-shade); }
+
+.bg-link { background-color: var(--color-link); }
+.bg-link-tint { background-color: var(--color-link-tint); }
+.bg-link-shade { background-color: var(--color-link-shade); }
+
+/* Text Colors */
+.text-interface-strongest { color: var(--color-interface-strongest); }
+.text-interface-stronger { color: var(--color-interface-stronger); }
+.text-interface-strong { color: var(--color-interface-strong); }
+.text-interface-medium { color: var(--color-interface-medium); }
+.text-interface-soft { color: var(--color-interface-soft); }
+.text-interface-softer { color: var(--color-interface-softer); }
+.text-interface-softest { color: var(--color-interface-softest); }
+
+.text-critical-soft { color: var(--color-critical-soft); }
+.text-critical-strong { color: var(--color-critical-strong); }
+.text-critical-tint { color: var(--color-critical-tint); }
+.text-critical-shade { color: var(--color-critical-shade); }
+
+.text-danger-soft { color: var(--color-danger-soft); }
+.text-danger-strong { color: var(--color-danger-strong); }
+.text-danger-tint { color: var(--color-danger-tint); }
+.text-danger-shade { color: var(--color-danger-shade); }
+
+.text-info-soft { color: var(--color-info-soft); }
+.text-info-strong { color: var(--color-info-strong); }
+.text-info-tint { color: var(--color-info-tint); }
+.text-info-shade { color: var(--color-info-shade); }
+
+.text-success-soft { color: var(--color-success-soft); }
+.text-success-strong { color: var(--color-success-strong); }
+.text-success-tint { color: var(--color-success-tint); }
+.text-success-shade { color: var(--color-success-shade); }
+
+.text-warning-soft { color: var(--color-warning-soft); }
+.text-warning-strong { color: var(--color-warning-strong); }
+.text-warning-tint { color: var(--color-warning-tint); }
+.text-warning-shade { color: var(--color-warning-shade); }
+
+.text-primary { color: var(--color-primary); }
+.text-primary-tint { color: var(--color-primary-tint); }
+.text-primary-shade { color: var(--color-primary-shade); }
+
+.text-secondary { color: var(--color-secondary); }
+.text-secondary-tint { color: var(--color-secondary-tint); }
+.text-secondary-shade { color: var(--color-secondary-shade); }
+
+.text-link { color: var(--color-link); }
+.text-link-tint { color: var(--color-link-tint); }
+.text-link-shade { color: var(--color-link-shade); }
 // ===========================
 
 .text-transparent {

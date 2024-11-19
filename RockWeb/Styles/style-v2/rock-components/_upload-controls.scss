@@ -53,8 +53,8 @@
 
     .imageupload-remove {
       position:             absolute;
-      right:                0;
-      bottom:               0;
+      right:                1px;
+      bottom:               1px;
 
       a {
         display:                block;
@@ -62,7 +62,7 @@
         color:                  var(--color-interface-softest);
         cursor:                 pointer;
         background-color:       var(--color-danger-strong);
-        border-top-left-radius: var(--rounded-small);
+        border-radius:          2px;
       }
     }
   }
@@ -178,8 +178,8 @@
 
   .fileupload-remove {
     position:       absolute;
-    right:          0;
-    bottom:         0;
+    right:          1px;
+    bottom:         1px;
     z-index:        50;
 
     a {
@@ -188,7 +188,7 @@
       color:            var(--color-interface-softest);
       cursor:           pointer;
       background-color: var(--color-danger-strong);
-      border-top-left-radius: var(--rounded-small);
+      border-radius:    2px;
     }
   }
 
@@ -234,6 +234,7 @@
   .fileupload-dropzone {
     margin-top:     2px;
     border-radius:  0 0 var(--rounded-xsmall) var(--rounded-xsmall);
+    border: 1px solid var(--color-interface-soft);
   }
 
   .fileupload-button {
@@ -293,7 +294,7 @@
     z-index:      10;
     display:      block;
     width:        100px;
-    height:       50px;
+    height:       100px;
     padding-top:  2px;
     overflow:     hidden;
     font-size:    10px;
@@ -312,7 +313,7 @@
       z-index:          -1;
       width:            100%;
       font-family:      'FontAwesome';
-      font-size:        var(--font-size-h3);
+      font-size:        50px;
       font-weight:      var(--font-weight-black);
       line-height:      0;
       color:            var(--color-interface-soft);
