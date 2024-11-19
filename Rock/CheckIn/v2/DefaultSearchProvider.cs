@@ -481,7 +481,7 @@ namespace Rock.CheckIn.v2
         /// <param name="familyId">The unique identifier of the family.</param>
         /// <returns>A queryable of matching <see cref="GroupMember"/> objects.</returns>
         /// <exception cref="Exception">Inactive person record status was not found in the database, please check your installation.</exception>
-        protected virtual IQueryable<GroupMember> GetImmediateFamilyMembersQuery( string familyId )
+        public virtual IQueryable<GroupMember> GetImmediateFamilyMembersQuery( string familyId )
         {
             var groupMemberService = new GroupMemberService( Session.RockContext );
             var qry = groupMemberService.GetByGroupId( IdHasher.Instance.GetId( familyId ) ?? 0 ).AsNoTracking();
@@ -511,7 +511,7 @@ namespace Rock.CheckIn.v2
         /// <exception cref="Exception">Known relationship group type was not found in the database, please check your installation.</exception>
         /// <exception cref="Exception">Inactive person record status was not found in the database, please check your installation.</exception>
         /// <exception cref="Exception">Known relationship owner role was not found in the database, please check your installation.</exception>
-        protected virtual IQueryable<GroupMember> GetCanCheckInFamilyMembersQuery( string familyId )
+        public virtual IQueryable<GroupMember> GetCanCheckInFamilyMembersQuery( string familyId )
         {
             var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), Session.RockContext );
             int? personRecordStatusInactiveId = null;
