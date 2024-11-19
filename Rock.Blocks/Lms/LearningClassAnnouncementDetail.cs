@@ -372,8 +372,6 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Save( ValidPropertiesBox<LearningClassAnnouncementBag> box )
         {
-            var entityService = new LearningClassAnnouncementService( RockContext );
-
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;
