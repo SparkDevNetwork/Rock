@@ -532,6 +532,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         private void PopulatePersonAttributeBags( EditFamilyResponseBag responseBag, TemplateConfigurationData template, Model.Group familyGroup )
         {
             var tempPerson = new Person();
+            var familyAttributeGuids = template.RequiredAttributeGuidsForFamilies
+                .Union( template.OptionalAttributeGuidsForFamilies )
+                .ToList();
             var adultAttributeGuids = template.RequiredAttributeGuidsForAdults
                 .Union( template.OptionalAttributeGuidsForAdults )
                 .ToList();
@@ -555,7 +558,10 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 false,
                 a => childAttributeGuids.Contains( a.Guid ) );
 
-            responseBag.FamilyAttributes = familyGroup.GetPublicAttributesForEdit( RequestContext.CurrentPerson );
+            responseBag.FamilyAttributes = familyGroup.GetPublicAttributesForEdit(
+                RequestContext.CurrentPerson,
+                false,
+                a => familyAttributeGuids.Contains( a.Guid ) );
 
             foreach ( var attribute in responseBag.AdultAttributes.Values )
             {
