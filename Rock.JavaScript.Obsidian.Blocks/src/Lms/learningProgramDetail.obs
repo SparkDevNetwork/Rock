@@ -18,6 +18,7 @@
                  :isBadgesVisible="false"
                  :isSecurityHidden="isSecurityHidden"
                  :footerSecondaryActions="footerSecondaryActions"
+                 :footerActions="footerActions"
                  :headerActions="headerSecondaryActions"
                  :isEditVisible="showEditButton"
                  :onDelete="onDelete"
@@ -182,10 +183,20 @@
 
         const secondaryActions: PanelAction[] = [];
 
+        return secondaryActions;
+    });
+
+    const footerActions = computed((): PanelAction[] => {
+        if (panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
+
+        const footerActions: PanelAction[] = [];
+
         if (displayMode.value === "Summary") {
-            secondaryActions.push({
+            footerActions.push({
                 iconCssClass: "fa fa-cog",
-                title: "Configure",
+                title: "Program Settings",
                 type: "default",
                 handler: async () => {
                     await onConfigure();
@@ -193,7 +204,7 @@
             });
         }
 
-        return secondaryActions;
+        return footerActions;
     });
 
     const isEditable = computed((): boolean => config.isEditable === true);
