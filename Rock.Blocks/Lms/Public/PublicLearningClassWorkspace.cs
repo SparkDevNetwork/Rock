@@ -463,14 +463,16 @@ namespace Rock.Blocks.Lms
                 SemesterEndDate = p.LearningClass.LearningSemester.EndDate
             } );
 
-            box.ClassCompletionDate = participantData.LearningCompletionDateTime;
+            box.ClassCompletionDate = participantData?.LearningCompletionDateTime;
 
             // Allow historical access if the course allows it and the class is not over.
             var canShowHistoricalAccess = course.AllowHistoricalAccess
+                && participantData != null
                 && ( !participantData.SemesterEndDate.HasValue
                 || participantData.SemesterEndDate.Value.IsFuture() );
 
-            if ( !canShowHistoricalAccess && participantData.LearningCompletionDateTime.HasValue && !participantData.LearningCompletionDateTime.Value.IsToday() )
+            var hasCompletedClass = participantData != null && participantData.LearningCompletionDateTime.HasValue;
+            if ( !canShowHistoricalAccess && hasCompletedClass && !participantData.LearningCompletionDateTime.Value.IsToday() )
             {
                 // If the class doesn't allow historical access and the student didn't complete today.
                 box.ErrorMessage = "This class has ended and is no longer available for viewing.";
