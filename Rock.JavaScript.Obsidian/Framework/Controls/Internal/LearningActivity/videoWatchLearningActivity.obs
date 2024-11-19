@@ -43,25 +43,25 @@
     </Panel>
 
     <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
-        <fieldset>
-            <div class="header-section">
-                <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
-            </div>
 
-            <div class="video-section">
-                <MediaPlayer v-model:watchedPercentage="watchedPercentage"
-                             :mediaElementGuid="video?.value ?? ''" />
-            </div>
-            <div class="footer-section">
-                <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
-            </div>
-            <div class="footer-button-section">
-                <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold || completeClicked" :autoDisable="true"
-                            @click="onCompletedAndClosed">
-                    {{ completeButtonText }}
-                </RockButton>
-            </div>
-        </fieldset>
+        <div class="header-section">
+            <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
+        </div>
+
+        <div class="video-section">
+            <MediaPlayer v-model:watchedPercentage="watchedPercentage"
+                         :mediaElementGuid="video?.value ?? ''" />
+        </div>
+        <div class="footer-section">
+            <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
+        </div>
+        <div class="footer-button-section">
+            <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold"
+                        @click="onCompletedAndClosed">
+                {{ completeButtonText }}
+            </RockButton>
+        </div>
+
     </div>
 </template>
 <script setup lang="ts">

@@ -337,7 +337,7 @@
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
     cursor: initial;
     font-weight: initial;
-    z-index: 10;
+    z-index: 20;
     /* Temporary Fix Until JS */
     bottom: 0;
     transform: translateY(100%);

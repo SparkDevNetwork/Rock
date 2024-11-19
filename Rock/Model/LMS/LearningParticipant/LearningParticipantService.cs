@@ -54,11 +54,11 @@ namespace Rock.Model
         /// Checks the <paramref name="learningClass"/> and <paramref name="registrant"/> to verify that the <paramref name="registrant"/>
         /// can enroll in the <paramref name="learningClass"/> based on the provided <paramref name="unmetRequirements"/>.
         /// </summary>
-        /// <param name="learningClass">The learning class to check whether the <param</param>
-        /// <param name="registrant"></param>
-        /// <param name="unmetRequirements"></param>
-        /// <param name="errorKey"></param>
-        /// <returns></returns>
+        /// <param name="learningClass">The learning class to check whether the <paramref name="registrant"/> can enroll.</param>
+        /// <param name="registrant">The <see cref="Person"/> to check whether they can enroll.</param>
+        /// <param name="unmetRequirements">The list of course requirements not yet met by the Person.</param>
+        /// <param name="errorKey">The error code for the type of error.</param>
+        /// <returns><c>true</c> if the registrant should be allowed to enroll; otherwise <c>false</c>.</returns>
         public bool CanEnroll( LearningClass learningClass, Person registrant, List<LearningCourseRequirement> unmetRequirements, out string errorKey )
         {
             errorKey = string.Empty;
@@ -205,7 +205,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The <see cref="Person"/> identifier of the participant to retrieve.</param>
         /// <param name="classId">The identifier of the <see cref="LearningClass"/> within which to search for the participant.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// The integer identifier of the <see cref="LearningParticipant"/> where the specified <paramref name="personId"/>
+        /// is a facilitator; <c>null</c> if not found.</returns>
         public int? GetFacilitatorId( int personId, int classId )
         {
             return GetParticipant( personId, classId )

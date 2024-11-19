@@ -45,7 +45,7 @@
 
   .facilitator-portal {
     padding-right: var(--spacing-large);
-}
+  }
 
 
   /* Workspace Tabbar */
@@ -162,6 +162,15 @@
     color: var(--color-interface-medium);
   }
 
+  .view-all-button > .btn-link:focus {
+    outline: none;
+  }
+
+  .view-all-button > .btn-link > .fa {
+    text-decoration-line: none;
+    margin-left: var(--spacing-tiny);
+  }
+
   .empty-grade {
     background-color: var(--color-interface-soft);
     color: var(--color-interface-strongest);
@@ -169,7 +178,7 @@
 
   .card-notification,
   .card-announcement {
-    margin-bottom: var(--spacing-large);
+    margin-bottom: var(--spacing-medium);
     background-color: var(--color-interface-softer) !important;
     display: flex;
     flex-direction: column;
@@ -199,29 +208,29 @@
     margin-bottom: var(--spacing-large);
   }
 
-  .overview-section .title,
-  .notifications-section .title,
-  .announcements-section .title {
-    margin-bottom: 32px !important;
-    margin-top: 0 !important;
+  .overview-section h3.title,
+  .notifications-section h3.title,
+  .announcements-section h3.title {
+    margin-bottom: var(--spacing-large);
+    margin-top: 0;
   }
 
-  .notification-title {
+  .notification-title { // Card Title
     margin-top: var(--spacing-tiny);
     margin-bottom: 0;
   }
 
-  .announcement-title {
+  .announcement-title { // Card Title
     font-size: var(--font-size-h4);
-    margin-top: var(--spacing-tiny) !important;
-    margin-bottom: var(--spacing-medium) !important;
+    margin-top: var(--spacing-tiny);
+    margin-bottom: var(--spacing-medium);
   }
 
   .announcement-content {
     h1, h2 {
     font-size: var(--font-size-h5);
   }
-}
+  }
 
   .announcement-content {
     h1, h2 {
@@ -232,7 +241,7 @@
         font-size: var(--font-size-small);
         font-weight: var(--font-weight-bold);
     }
-}
+  }
 
   .facilitators-list {
       display: flex;
@@ -248,23 +257,29 @@
     .workspace-block-content {
         display: flex;
     }
+  }
 
-    .workspace-navigation-pane {
-        width: 33%;
-        min-width: 300px;
-        margin-right: var(--spacing-large);
-        align-self: baseline;
-        border-radius: var(--rounded-large) !important;
-    }
+  .workspace-navigation-pane {
+      width: 33%;
+      min-width: 300px;
+      margin-right: var(--spacing-large);
+      align-self: baseline;
+      border-radius: var(--rounded-large) !important;
+  }
 
-    .workspace-main-content {
-        width: 67%;
-        padding: var(--spacing-large);
-        border: 1px solid var(--color-interface-soft);
-        border-radius: var(--rounded-large);
-        display: flex;
-        flex-direction: column;
-    }
+  .workspace-main-content {
+      width: 67%;
+      padding: var(--spacing-large);
+      border: 1px solid var(--color-interface-soft);
+      border-radius: var(--rounded-large);
+      display: flex;
+      flex-direction: column;
+  }
+
+  .workspace-main-content-header {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--spacing-medium)
   }
 
   /* Activity List */
@@ -292,6 +307,7 @@
 
   .activity-time {
       margin-bottom: var(--spacing-tiny);
+      color: var(--color-interface-medium);
   }
 
   .custom-select-mobile-wrapper {
@@ -329,26 +345,11 @@
     width: 100%;
   }
 
-.activity-item-grade-container {
+  .activity-item-grade-container {
     width: 80px;
     display: flex;
     flex-direction: column;
     align-items: center;
-  }
-
-  .lms-completion-container {
-    margin-top: var(--spacing-medium);
-  }
-
-  .lms-completion-container {
-
-    h1, h2 {
-      font-size: var(--font-size-h4);
-    }
-
-    h3, h4, h5, h6 {
-      font-size: var(--font-size-h5);
-    }
   }
 
   .content-page-container {
@@ -357,10 +358,19 @@
     padding: var(--spacing-large);
   }
 
+  .content-page-container h1:first-of-type {
+    margin-top: 0;
+  }
 
-    .footer-button-section {
-      margin-top: var(--spacing-large);
-    }
+  .footer-button-section {
+    margin-top: var(--spacing-large);
+  }
+
+  .student-completion-summary-header h2 {
+    margin-top: 0;
+  }
+
+
 
     // 2.2.1 Assessment
     // -------------------------
@@ -381,6 +391,23 @@
         display: flex;
         flex-direction: column;
     }
+
+    .assessment-container .instructions-section span h2 {
+        margin-top: 0;
+    }
+
+    .assessment-content {
+      h1, h2 {
+        font-size: var(--font-size-h4);
+      }
+
+      h3, h4, h5, h6 {
+          font-size: var(--font-size-small);
+          font-weight: var(--font-weight-semibold);
+      }
+    }
+
+
 
     /* With the title bar having a title and add button on left and right respectively. */
     .assessment-items-section > .assessment-items-title-bar {
@@ -435,7 +462,7 @@
     }
 
     .student-completion-summary-header {
-        margin-bottom: var(--spacing-tiny);
+        margin-bottom: var(--spacing-large);
     }
 
     /* The text in the summary text block */
@@ -448,7 +475,20 @@
     }
 
     .header-content-section-summary {
-        margin-bottom: 16px;
+        margin-bottom: var(--spacing-medium);
+
+        h1, h2 {
+            font-size: var(--font-size-h4);
+        }
+
+        h3, h4, h5, h6 {
+            font-size: var(--font-size-small);
+            font-weight: var(--font-weight-semibold);
+        }
+    }
+
+    .header-content-section-summary h2 {
+        margin-top: 0;
     }
 
     // Multiple Choice
@@ -581,6 +621,17 @@
     // 2.2.2 Point Assessment
     // -------------------------
 
+    .instructions-section {
+
+      h1, h2 {
+        font-size: var(--font-size-h5);
+      }
+
+      h3, h4, h5, h6 {
+        font-size: var(--font-size-small);
+        font-weight: var(--font-weight-semibold);
+      }
+    }
 
     // 2.2.3 Acknowledgement
     // -------------------------
@@ -589,13 +640,9 @@
       font-weight: var(--font-weight-semibold);
     }
 
-
-
     .is-required-section {
       margin-top: var(--spacing-large);
     }
-
-
 
 
     // 2.2.4 File Upload
@@ -621,6 +668,47 @@
     // 2.2.5 Video Watch
     // -------------------------
 
-    .footer-section {
-      margin-top: var(--spacing-xsmall);
+    // Remove top margin from main content block in video container
+    .lms-video {
+      margin-top: 0;
+    }
+
+    .workspace-main-content-title {
+      margin-top: 0;
+    }
+
+    // Convert structured content headings to smaller headings
+    .workspace-main-content .lms-video .header-section,
+    .workspace-main-content .lms-video .footer-section {
+
+      h1, h2 {
+          font-size: var(--font-size-h5);
+      }
+
+      h3, h4, h5, h6 {
+          font-size: var(--font-size-small);
+          font-weight: var(--font-weight-semibold);
+      }
+
+      p {
+        margin-bottom: var(--spacing-medium);
+      }
+
+    }
+
+
+    // Remove top margin from first element from structured content
+    .workspace-main-content .lms-video .header-section span > *:first-child {
+      margin-top: 0;
+    }
+
+    // Remove top margin from first element from structured content
+    .workspace-main-content .lms-video .footer-section span > *:first-child {
+      margin-top: 0;
+    }
+
+    // Spacing for the video player component
+    .video-section {
+      margin-top: var(--spacing-large);
+      margin-bottom: var(--spacing-large);
     }

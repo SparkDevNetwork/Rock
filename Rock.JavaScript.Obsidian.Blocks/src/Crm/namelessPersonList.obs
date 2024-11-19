@@ -1,4 +1,3 @@
-
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div>
@@ -8,6 +7,7 @@
               itemTerm="Nameless People"
               stickyHeader
               liveUpdates
+              :showMergeTemplate="false"
               :showLaunchWorkflow="false">
 
             <TextColumn name="personLabel"
@@ -23,7 +23,7 @@
     </div>
     <div>
         <!-- Modal Dialog -->
-        <Modal :onCloseModal="closeModal" :saveText="'Save'" :onSave="savePerson" :modelValue="isModalVisible" :title="`Link Phone Numbers ${selectedPhoneNumber} To Person`">
+        <Modal :onCloseModal="closeModal" :saveText="'Save'" :onSave="savePerson" :modelValue="isModalVisible" :title="`Link Phone Numbers To Person`">
             <NotificationBox :style="'font-weight: 600'" :alertType="AlertType.Info" :dismissible="false">
                 To prevent data loss and to ensure the highest level of security, a merge request will be created upon pressing Save.
             </NotificationBox>

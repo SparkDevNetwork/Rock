@@ -56,25 +56,16 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.ClassWorkspacePage,
         Order = 2 )]
 
-    [CustomDropdownListField(
-        "Show Completion Status",
-        Key = AttributeKey.ShowCompletionStatus,
-        Description = "Determines if the individual's completion status should be shown.",
-        ListSource = "Show,Hide",
-        IsRequired = true,
-        DefaultValue = "Show",
-        Order = 3 )]
-
     [SlidingDateRangeField( "Next Session Date Range",
-        Description = "Filter to limit the display of upcming sessions.",
-        Order = 4,
+        Description = "Filter to limit the display of upcoming sessions.",
+        Order = 3,
         IsRequired = false,
         Key = AttributeKey.NextSessionDateRange )]
 
     [LinkedPage( "Enrollment Page",
         Description = "The page that will enroll the student in the course.",
         Key = AttributeKey.CourseEnrollmentPage,
-        Order = 5 )]
+        Order = 4 )]
 
     [BooleanField(
         "Public Only",
@@ -83,7 +74,7 @@ namespace Rock.Blocks.Lms
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         Key = AttributeKey.PublicOnly,
-        Order = 6 )]
+        Order = 5 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "c5d5a151-038e-4295-a03c-63196883f68e" )]
     [Rock.SystemGuid.BlockTypeGuid( "b0dce130-0c91-4aa0-8161-57e8fa523392" )]
@@ -167,10 +158,12 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                             <h4 class=""m-0"">Course Description</h4>
                         </div>
                         <div class=""card-text"">
+                            {% if Course.Entity.CourseCode != empty %}
                             <div class=""text-muted"">
                                 <span class=""text-bold"">Course Code: </span>
                                 <span>{{Course.Entity.CourseCode}}</span>
                             </div>
+                            {% endif %}
 
                             <div class=""text-muted"">
                                 <span class=""text-bold"">Credits: </span>
@@ -220,22 +213,49 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
 
                         {% when 'Pass' or 'Fail' %}
-                        <div class=""card rounded-lg"">
-                            
-                            <div class=""card-body"">
-                                <div class=""card-title d-flex align-items-center"">
-                                    <i class=""fa fa-rotate-left mr-2""></i>
-                                    <h4 class=""m-0"">History</h4>
+                            {% if CanShowHistoricalAccess == true %}
+
+                            <div class=""card rounded-lg"">
+                                
+                                <div class=""card-body"">
+                                    <div class=""card-title d-flex align-items-center"">
+                                        <i class=""fa fa-rotate-left mr-2""></i>
+                                        <h4 class=""m-0"">History</h4>
+                                    </div>
+                                    <div class=""text-muted"">You completed this class on {{
+                                        Course.MostRecentParticipation.LearningCompletionDateTime | Date: 'MMMM dd, yyyy' }}</div>
+            
+                                    <div class=""mt-3"">
+                                        <a href=""{{ Course.ClassWorkspaceLink }}"">View Class Work</a>
+                                    </div>
                                 </div>
-                                <div class=""text-muted"">You completed this class on {{
-                                    Course.MostRecentParticipation.LearningCompletionDateTime | Date: 'MMMM dd, yyyy' }}</div>
-        
-                                <div class=""mt-3"">
-                                    <a href=""{{ Course.ClassWorkspaceLink }}"">View Class Work</a>
-                                </div>
+                                
                             </div>
                             
-                        </div>
+                            {% else %}
+                            
+                            <div class=""card rounded-lg"">
+                                
+                                <div class=""card-body"">
+                                    <div class=""card-title d-flex align-items-center"">
+                                        <i class=""fa fa-rotate-left mr-2""></i>
+                                        <h4 class=""m-0"">History</h4>
+                                    </div>
+                                    <div class=""text-muted"">You completed this class on {{
+                                        Course.MostRecentParticipation.LearningCompletionDateTime | Date: 'MMMM dd, yyyy' }}</div>
+            
+                                    <div class=""mt-3"">
+                                        <div class=""text-muted"">
+                                            <p class=""text-bold mb-0"">Grade</p>
+                                            <p class=""mb-0"">{{ Course.MostRecentParticipation.LearningGradingSystemScale.Name }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            
+                            
+                            {% endif %}
 
                         {% else %}
 
@@ -248,7 +268,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                                 </div>
 
                                 <div class=""card-text d-flex flex-column gap-1"">
-
+                                    {% if Course.Program.ConfigurationMode == ""AcademicCalendar"" %}
                                     <div class=""text-muted"">
                                         <p class=""text-bold mb-0"">Next Session Semester: </p>
                                         {% if Course.NextSemester.Name %}
@@ -257,6 +277,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                                         <p>TBD</p>
                                         {% endif %}
                                     </div>
+                                    {% endif %}
 
                                     <div class=""text-muted"">
                                         <p class=""text-bold mb-0"">{{ 'Instructor' | PluralizeForQuantity:facilitatorCount
@@ -272,7 +293,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                                     <div class=""text-muted"">
                                         <div class=""d-flex align-items-center"">
                                             <p class=""text-bold mb-0"">{{ requirementType | Pluralize }}</p>
-                                            {% if course.UnmetPrerequisites %}
+                                            {% if Course.UnmetPrerequisites %}
                                             <i class=""fa fa-check-circle text-success ml-2""></i>
                                             {% else %}
                                             <i class=""fa fa-exclamation-circle text-danger ml-2""></i>
@@ -285,10 +306,10 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
                                     <div class=""mt-3"">
 
-                                        {% if Course.UnmetPrerequisites %}
-                                        <a class=""btn btn-info disabled"">Enroll</a>
-                                        {% else %}
-                                        <a class=""btn btn-info"" href=""{{ Course.CourseEnrollmentLink }}"">Enroll</a>
+                                        {% if ErrorKey == 'enrollment_closed' or ErrorKey == 'class_full' %}
+                                            <p class=""text-danger"">Enrollment is closed for this class.</p>
+                                            {% else %}
+                                                <a class=""btn btn-info"" href=""{{ Course.CourseEnrollmentLink }}"">Enroll</a>
                                         {% endif %}
 
                                     </div>
@@ -304,7 +325,6 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
         </div>
     </div>
 </div>
-
 ";
         }
 

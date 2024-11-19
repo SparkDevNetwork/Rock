@@ -97,7 +97,12 @@
                                 <div class="card card-announcement" :class="getRowCssClass(index, announcements.length)"
                                      v-if="index < maxOverviewItemsToShow || isViewingAllAnnouncements">
                                     <div class="card-body">
-                                        <small class="card-date" :title="getFormattedDate(announcement.publishDateTime)">
+                                        <small class="card-date"
+                                               :ref="(el) => addTooltip(el as Element)"
+                                               data-toggle="tooltip"
+                                               data-placement="auto"
+                                               data-container="body"
+                                               :data-original-title="getFormattedDate(announcement.publishDateTime)">
                                             {{ getElapsedTime(announcement.publishDateTime) }}
                                         </small>
                                         <h5 class="announcement-title">
@@ -114,7 +119,7 @@
                                 <RockButton
                                             btnType="link"
                                             @click="isViewingAllAnnouncements = !isViewingAllAnnouncements">
-                                    {{ announcementsOverflowText }} &nbsp; <i :class="announcementsOverflowIconClass"></i>
+                                    {{ announcementsOverflowText }}<i :class="announcementsOverflowIconClass"></i>
                                 </RockButton>
                             </div>
                         </div>
@@ -143,10 +148,16 @@
                                                 {{ notification.labelText }}
                                             </span>
 
-                                            <h5 class="notification-title">{{ notification.title }}</h5>
-
-                                            <div class="notification-content" :title="getFormattedDate(notification.notificationDateTime)">
-                                                {{ notification.content }}
+                                            <div class="d-flex flex-column gap-1">
+                                                <h5 class="notification-title">{{ notification.title }}</h5>
+                                                <div class="notification-content"
+                                                     :ref="(el) => addTooltip(el as Element)"
+                                                     data-toggle="tooltip"
+                                                     data-placement="auto"
+                                                     data-container="body"
+                                                     :data-original-title="getFormattedDate(notification.notificationDateTime)">
+                                                    {{ notification.content }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -156,7 +167,7 @@
                                     <RockButton
                                                 btnType="link"
                                                 @click="isViewingAllNotifications = !isViewingAllNotifications">
-                                        {{ notificationsOverflowText }} &nbsp; <i :class="notificationsOverflowIconClass"></i>
+                                        {{ notificationsOverflowText }}<i :class="notificationsOverflowIconClass"></i>
                                     </RockButton>
                                 </div>
                             </div>
@@ -187,7 +198,8 @@
                             <div class="activity-item-content detail-container"
                                  :ref="(el) => addTooltip(el as Element)"
                                  data-toggle="tooltip"
-                                 data-placement="auto" data-container="body"
+                                 data-placement="auto"
+                                 data-container="body"
                                  :data-original-title="getActivityTooltip(item)">
                                 <div class="activity-item-completion-container">
                                     <i v-if="isCompleted(item)" class="fa fa-check-circle fa-2x text-success"></i>
@@ -213,12 +225,15 @@
                         </template>
                     </CustomSelect>
                     <div class="workspace-main-content">
-                        <h2 class="mt-0">
-                            {{ viewingCompletionBag.activityBag?.name ?? "" }}
-                        </h2>
-                        <div class="activity-time">
-                            {{ getActivityTimeText(viewingCompletionBag) }}
+                        <div class="workspace-main-content-header">
+                            <h3 class="workspace-main-content-title">
+                                {{ viewingCompletionBag.activityBag?.name ?? "" }}
+                            </h3>
+                            <div class="activity-time">
+                                {{ getActivityTimeText(viewingCompletionBag) }}
+                            </div>
                         </div>
+
                         <div class="facilitator-comments-container" v-if="viewingCompletionBag.facilitatorComment">
                             <NotificationBox
                                              alertType="default">
@@ -344,7 +359,7 @@
     const hasAnnouncementOverflow = computed(() => announcements.value.length > maxOverviewItemsToShow.value);
 
     /** True if the student has completed an activity and that activity doesn't require scoring. */
-    const hasGradedActivities = computed(() => activities.value.some(a => isCompleted(a) && !a.requiresScoring));
+    const hasGradedActivities = computed(() => activities.value.some(a => isCompleted(a) && !a.requiresScoring && Number(a.activityBag?.points) > 0));
 
     /** Whether there are any notifications. */
     const hasNotifications = computed(() => notifications.value.length > 0);
@@ -452,9 +467,9 @@
     }
 
     /** Add the tooltip for the activity disabled help text. */
-    function addTooltip(activityContainer: Element | null): void {
-        if (activityContainer) {
-            tooltip(activityContainer);
+    function addTooltip(element: Element | null): void {
+        if (element) {
+            tooltip(element);
         }
     }
 

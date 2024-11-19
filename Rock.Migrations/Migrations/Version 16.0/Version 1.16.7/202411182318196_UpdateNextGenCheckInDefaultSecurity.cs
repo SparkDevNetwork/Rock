@@ -88,6 +88,23 @@ DECLARE @CheckInTemplateValueId INT = (SELECT TOP 1 [Id] FROM [DefinedValue] WHE
 UPDATE [Attribute]
 SET [EntityTypeQualifierValue] = @CheckInTemplateValueId
 WHERE [Guid] = 'ca4f948d-2390-4532-afbf-ebf51f43516c'" );
+
+            // Set default values for existing check-in configurations.
+            Sql( @"
+DECLARE @CheckInTemplateValueId INT = (SELECT TOP 1 [Id] FROM [DefinedValue] WHERE [Guid] = '4a406cb0-495b-4795-b788-52bdfde00b01')
+DECLARE @AttributeId INT = (SELECT TOP 1 [Id] FROM [Attribute] WHERE [Guid] = 'ca4f948d-2390-4532-afbf-ebf51f43516c')
+
+INSERT INTO [AttributeValue]
+    ([AttributeId], [EntityId], [Value], [IsSystem], [Guid])
+    SELECT
+        @AttributeId,
+        [Id],
+        'a57bdbcd-fa77-4a6e-967d-1c5ace962587',
+        0,
+        NEWID()
+    FROM [GroupType] AS [GT]
+    WHERE [GT].[GroupTypePurposeValueId] = @CheckInTemplateValueId
+      AND [GT].[Id] NOT IN (SELECT [Id] FROM [AttributeValue] WHERE [AttributeId] = @AttributeId)" );
         }
 
         /// <summary>

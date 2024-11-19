@@ -33,7 +33,7 @@
 
     <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
 
-        <div class="acknowledgement-container">
+        <div class="acknowledgment-container">
             <div class="header-content-section">
                 <StructuredContentEditor :disabled="true"
                                          v-model="content" />
@@ -65,7 +65,7 @@
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
-    import { AcknowledgementActivityCompletion, AcknowledgementActivityConfiguration, AcknowledgementActivityDefaults } from "./acknowledgementLearningActivity.partial";
+    import { AcknowledgmentActivityCompletion, AcknowledgmentActivityConfiguration, AcknowledgmentActivityDefaults } from "./acknowledgmentLearningActivity.partial";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -92,11 +92,11 @@
         isConfirmationRequired,
         panelTitle,
         pointsPossibleAtCompletion
-    } = useLearningComponent<AcknowledgementActivityConfiguration, AcknowledgementActivityCompletion>(
+    } = useLearningComponent<AcknowledgmentActivityConfiguration, AcknowledgmentActivityCompletion>(
         activityBag,
         completionBag,
         screenToShow,
-        new AcknowledgementActivityDefaults()
+        new AcknowledgmentActivityDefaults()
     );
 
     function onCompletedAndClosed(): void {

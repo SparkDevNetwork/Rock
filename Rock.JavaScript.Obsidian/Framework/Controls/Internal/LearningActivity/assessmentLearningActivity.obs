@@ -132,7 +132,7 @@
         </div>
     </Panel>
 
-    <div v-if="screenToShow === ComponentScreen.Completion">
+    <div class="assessment-content" v-if="screenToShow === ComponentScreen.Completion">
         <fieldset v-if="isStudentAssignedAndIncomplete">
             <div class="header-content-section-summary">
                 <StructuredContentEditor :disabled="true" v-model="header" />
@@ -162,7 +162,7 @@
                 <RockButton :btnType="BtnType.Primary" @click="onCompleted" :autoDisable="true" :disabled="unansweredQuestions || completeClicked">Complete</RockButton>
             </div>
         </fieldset>
-        <div v-if="isStudentAssignedAndCompleted">
+        <div class="assessment-content" v-if="isStudentAssignedAndCompleted">
             <div class="student-completion-summary-header">
                 <h2> {{ activityBag.activityComponent?.name }} </h2>
                 <div class="summary-text">{{ headerSubText }}</div>

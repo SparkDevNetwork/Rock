@@ -876,8 +876,9 @@ export default defineComponent({
         </template>
 
         <RockButton v-for="action in footerActions" :btnType="action.type" @click="onActionClick(action, $event)">
+            <i v-if="action.iconCssClass" :class="action.iconCssClass"></i>
+            <template v-if="action.title && action.title">&nbsp;</template>
             <template v-if="action.title">{{ action.title }}</template>
-            <i v-else :class="action.iconCssClass"></i>
         </RockButton>
     </template>
 
