@@ -18,9 +18,19 @@
                 <TextBox v-model="iconCssClass"
                          label="Icon CSS Class" />
 
-                <CheckBox v-model="requiresViewSecurity"
-                          label="Requires View Security"
-                          help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="requiresViewSecurity"
+                                  label="Requires View Security"
+                                  help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="allowAnonymous"
+                                  label="Allow Anonymous"
+                                  help="Enable this to allow anyone to upload files of this type without checking Edit permissions." />
+                    </div>
+                </div>
+
                 <ComponentPicker v-model="storageEntityType"
                                  containerType="Rock.Storage.ProviderContainer, Rock"
                                  label="Storage Type"
@@ -42,7 +52,7 @@
                             <DeleteColumn @click="onDeleteAttribute" />
                         </Grid>
                     </div>
-                    <Modal v-model="isAttributeModalOpen" title="Step Participant Attributes">
+                    <Modal v-model="isAttributeModalOpen" title="Binary File Type Attributes">
 
                         <RockForm v-model:submit="saveAttribute" @submit="onSaveAttribute">
                             <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
@@ -154,6 +164,7 @@
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
     const requiresViewSecurity = propertyRef(props.modelValue.requiresViewSecurity, "RequiresViewSecurity");
+    const allowAnonymous = propertyRef(props.modelValue.allowAnonymous, "AllowAnonymous");
     const storageEntityType = propertyRef(props.modelValue.storageEntityType ?? {}, "StorageEntityTypeId");
     const maxFileSizeBytes = propertyRef(props.modelValue.maxFileSizeBytes?.toString() ?? "", "MaxFileSizeBytes");
     const maxWidth = propertyRef(props.modelValue.maxWidth?.toString() ?? "", "MaxWidth");
@@ -174,7 +185,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, name, iconCssClass, requiresViewSecurity, storageEntityType, maxFileSizeBytes, maxWidth, maxHeight, preferredRequired, cacheToServerFileSystem, cacheControlHeaderSettings];
+    const propRefs = [description, name, iconCssClass, requiresViewSecurity, allowAnonymous, storageEntityType, maxFileSizeBytes, maxWidth, maxHeight, preferredRequired, cacheToServerFileSystem, cacheControlHeaderSettings];
 
     // #endregion
 
@@ -315,6 +326,7 @@
         updateRefValue(name, props.modelValue.name ?? "");
         updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
         updateRefValue(requiresViewSecurity, props.modelValue.requiresViewSecurity);
+        updateRefValue(allowAnonymous, props.modelValue.allowAnonymous);
         updateRefValue(storageEntityType, props.modelValue.storageEntityType ?? {});
         updateRefValue(maxFileSizeBytes, props.modelValue.maxFileSizeBytes?.toString() ?? "");
         updateRefValue(maxWidth, props.modelValue.maxWidth?.toString() ?? "");
@@ -335,6 +347,7 @@
             name: name.value,
             iconCssClass: iconCssClass.value,
             requiresViewSecurity: requiresViewSecurity.value,
+            allowAnonymous: allowAnonymous.value,
             storageEntityType: storageEntityType.value,
             maxFileSizeBytes: toNumberOrNull(maxFileSizeBytes.value),
             maxWidth: toNumberOrNull(maxWidth.value),
