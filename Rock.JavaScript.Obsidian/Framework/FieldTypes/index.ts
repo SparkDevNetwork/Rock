@@ -41,6 +41,9 @@ registerFieldType(FieldTypeGuids.Asset, new AssetFieldType());
 import { AssetStorageProviderFieldType } from "./assetStorageProviderField.partial";
 registerFieldType(FieldTypeGuids.AssetStorageProvider, new AssetStorageProviderFieldType());
 
+import { AttendanceFieldType } from "./attendanceField.partial";
+registerFieldType(FieldTypeGuids.Attendance, new AttendanceFieldType());
+
 import { AttributeFieldType } from "./attributeField.partial";
 registerFieldType(FieldTypeGuids.Attribute, new AttributeFieldType());
 

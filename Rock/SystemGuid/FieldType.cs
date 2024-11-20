@@ -59,6 +59,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Attribute field type
         /// </summary>
+        public const string ATTENDANCE = "45F2BE0A-43C2-40D6-9888-68A2E72ACD06";
+
+        /// <summary>
+        /// Attribute field type
+        /// </summary>
         public const string ATTRIBUTE = "99B090AA-4D7E-46D8-B393-BF945EA1BA8B";
 
         /// <summary>
