@@ -51,7 +51,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-    <FinancialStatementTemplatePicker v-model="internalValue" />
+    <FinancialStatementTemplatePicker showBlankItem v-model="internalValue" />
 `
 });
 
