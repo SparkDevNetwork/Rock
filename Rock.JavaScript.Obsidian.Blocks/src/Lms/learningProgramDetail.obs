@@ -154,16 +154,8 @@
             });
         }
 
-        if (learningProgramViewBag.value?.isActive === true) {
+        if (learningProgramViewBag.value?.isActive === false) {
             labels.push({
-                iconCssClass: "fa fa-lightbulb",
-                title: "Active",
-                type: "success"
-            });
-        }
-        else {
-            labels.push({
-                iconCssClass: "far fa-lightbulb",
                 title: "Inactive",
                 type: "danger"
             });

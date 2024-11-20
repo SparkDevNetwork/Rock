@@ -134,13 +134,20 @@
             });
         }
 
-        if (learningClassViewBag.value?.isActive === true) {
+        if (learningClassViewBag.value?.isPublic === true) {
             labels.push({
-                title: "Active",
+                title: "Public",
                 type: "success"
             });
         }
         else {
+            labels.push({
+                title: "Internal",
+                type: "warning"
+            });
+        }
+
+        if (learningClassViewBag.value?.isActive === false) {
             labels.push({
                 title: "Inactive",
                 type: "danger"
