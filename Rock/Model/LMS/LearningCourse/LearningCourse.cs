@@ -255,7 +255,14 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return $"{Name}: {CourseCode}";
+            if ( CourseCode.IsNotNullOrWhiteSpace() )
+            {
+                return $"{Name} ({CourseCode})";
+            }
+            else
+            {
+                return Name;
+            }
         }
 
         #endregion
