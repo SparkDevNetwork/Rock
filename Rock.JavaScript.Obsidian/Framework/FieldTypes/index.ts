@@ -152,6 +152,9 @@ registerFieldType(FieldTypeGuids.Location, new LocationFieldType());
 import { LocationListFieldType } from "./locationListField.partial";
 registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
 
+import { MarkdownFieldType } from "./markdownField.partial";
+registerFieldType(FieldTypeGuids.Markdown, new MarkdownFieldType());
+
 import { MediaSelectorFieldType } from "./mediaSelectorField.partial";
 registerFieldType(FieldTypeGuids.MediaSelector, new MediaSelectorFieldType());
 

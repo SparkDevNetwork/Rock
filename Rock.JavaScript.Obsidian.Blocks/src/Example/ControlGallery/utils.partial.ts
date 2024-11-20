@@ -87,7 +87,6 @@ export function buildExampleCode(elementName: string, attributes: Record<string,
 
     for (const attr in attributes) {
         let value = attributes[attr];
-        console.log("attributes", attr, value);
 
         if (isRef(value)) {
             value = value.value;
@@ -106,8 +105,6 @@ export function buildExampleCode(elementName: string, attributes: Record<string,
             /* Do nothing */
         }
     }
-
-    console.log(attrs);
 
     return `<${elementName} ${attrs.join(" ")} />`;
 }

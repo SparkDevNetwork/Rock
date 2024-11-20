@@ -14,6 +14,7 @@
                          :id="codeEditorId"
                          class="position-absolute inset-0 m-0 ace_editor">{{ internalValue }}</pre>
                 </div>
+                <small v-if="mode === 'markdown'" class='pull-right text-muted'><strong>**bold**</strong> &nbsp;<em>*italics*</em> &nbsp;>quote &nbsp;[link text](link address) &nbsp;<a href='http://commonmark.org/help/' class='btn btn-xs text-muted' target='_blank' rel='noopener noreferrer'>more</a></small>
             </div>
         </template>
     </RockFormField>
