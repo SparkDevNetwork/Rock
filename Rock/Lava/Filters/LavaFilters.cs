@@ -4540,9 +4540,25 @@ namespace Rock.Lava
                     {
                         var item1AttributeValue = item1.AttributeValues.Where( a => a.Key == attributeKey ).FirstOrDefault().Value.SortValue;
                         var item2AttributeValue = item2.AttributeValues.Where( a => a.Key == attributeKey ).FirstOrDefault().Value.SortValue;
+                        var isSortOrderDescending = sortOrder.ToLower() == "desc";
+
+                        // Handle null values by placing them at the end or start based on sort order
+                        if ( item1AttributeValue == null && item2AttributeValue == null )
+                        {
+                            return 0;
+                        }
+                        if ( item1AttributeValue == null )
+                        {
+                            return isSortOrderDescending ? -1 : 1;
+                        }
+                        if ( item2AttributeValue == null )
+                        {
+                            return isSortOrderDescending ? 1 : -1;
+                        }
+
                         if ( item1AttributeValue is IComparable && item2AttributeValue is IComparable )
                         {
-                            if ( sortOrder.ToLower() == "desc" )
+                            if ( isSortOrderDescending )
                             {
                                 return ( item2AttributeValue as IComparable ).CompareTo( item1AttributeValue as IComparable );
                             }
