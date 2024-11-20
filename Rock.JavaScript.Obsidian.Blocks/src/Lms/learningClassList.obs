@@ -141,7 +141,7 @@
     let gridData: GridDataBag | undefined;
 
     const hasValidCourse = ref(config.options?.hasValidCourse || false);
-    const gridTitle = computed(() => config.options?.hasValidCourse ? "Current Classes" : "All Classes");
+    const gridTitle = computed(() => config.options?.hasValidCourse ? "All Classes" : "Current Classes");
 
     // Use the browser bus to listen for changes to edit mode for any blocks on the page.
     const browserBus = useBlockBrowserBus();
