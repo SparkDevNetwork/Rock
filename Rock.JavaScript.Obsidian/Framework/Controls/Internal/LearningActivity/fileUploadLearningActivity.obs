@@ -71,7 +71,7 @@
                           :binaryFileTypeGuid="BinaryFiletype.LearningManagementSystem"
                           uploadButtonText="Upload"
                           :disabled="hasBeenGraded"
-                          :showDeleteButton="true" />
+                          :showDeleteButton="!hasBeenGraded" />
         </div>
         <div class="footer-button-section">
             <RockButton :btnType="BtnType.Primary"

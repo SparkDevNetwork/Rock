@@ -5,7 +5,7 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          title="Current Classes"
+          :title="gridTitle"
           :entityTypeGuid="EntityType.LearningClass"
           :isCountMessageVisible="false"
           stickyHeader
@@ -122,7 +122,7 @@
     import { LearningClassListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassList/learningClassListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningClassList/types.partial";
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref } from "vue";
     import { BlockMessages } from "@Obsidian/Utility/browserBus";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
@@ -141,6 +141,7 @@
     let gridData: GridDataBag | undefined;
 
     const hasValidCourse = ref(config.options?.hasValidCourse || false);
+    const gridTitle = computed(() => config.options?.hasValidCourse ? "Current Classes" : "All Classes");
 
     // Use the browser bus to listen for changes to edit mode for any blocks on the page.
     const browserBus = useBlockBrowserBus();

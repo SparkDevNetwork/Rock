@@ -162,6 +162,12 @@ namespace Rock.Blocks.Lms
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<LearningSemester> GetOrderedListQueryable( IQueryable<LearningSemester> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.StartDate );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<LearningSemester> GetGridBuilder()
         {
             return new GridBuilder<LearningSemester>()

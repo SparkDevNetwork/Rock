@@ -17,8 +17,8 @@
                  entityTypeName="LearningProgram"
                  :isBadgesVisible="false"
                  :isSecurityHidden="isSecurityHidden"
-                 :footerSecondaryActions="footerSecondaryActions"
                  :footerActions="footerActions"
+                 :footerSecondaryActions="footerSecondaryActions"
                  :headerActions="headerSecondaryActions"
                  :isEditVisible="showEditButton"
                  :onDelete="onDelete"
@@ -176,16 +176,6 @@
     /**
      * The footer secondary actions for the block panel.
      */
-    const footerSecondaryActions = computed((): PanelAction[] => {
-        if (panelMode.value != DetailPanelMode.View) {
-            return [];
-        }
-
-        const secondaryActions: PanelAction[] = [];
-
-        return secondaryActions;
-    });
-
     const footerActions = computed((): PanelAction[] => {
         if (panelMode.value != DetailPanelMode.View) {
             return [];
@@ -193,18 +183,43 @@
 
         const footerActions: PanelAction[] = [];
 
-        if (displayMode.value === "Summary") {
+        if (displayMode.value === "Detail") {
             footerActions.push({
-                iconCssClass: "fa fa-cog",
-                title: "Program Settings",
+                iconCssClass: "fa fa-tasks",
+                title: "Program Operations",
                 type: "default",
                 handler: async () => {
-                    await onConfigure();
+                    await onViewAlternateDetailPage();
                 }
             });
         }
 
         return footerActions;
+    });
+
+
+    /**
+     * The footer secondary actions for the block panel.
+     */
+    const footerSecondaryActions = computed((): PanelAction[] => {
+        if (panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
+
+        const secondaryActions: PanelAction[] = [];
+
+        if (displayMode.value === "Summary") {
+            secondaryActions.push({
+                iconCssClass: "fa fa-cog",
+                title: "Configure",
+                type: "default",
+                handler: async () => {
+                    await onViewAlternateDetailPage();
+                }
+            });
+        }
+
+        return secondaryActions;
     });
 
     const isEditable = computed((): boolean => config.isEditable === true);
@@ -248,7 +263,7 @@
      *
      * @returns true if the panel should enter edit mode; otherwise false.
      */
-    async function onConfigure(): Promise<boolean | string> {
+    async function onViewAlternateDetailPage(): Promise<boolean | string> {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage];
         }
