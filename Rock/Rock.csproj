@@ -1361,6 +1361,8 @@
     <Compile Include="Model\CMS\AdaptiveMessageAdaptationSegment\AdaptiveMessageAdaptationSegment.cs" />
     <Compile Include="Model\CMS\AdaptiveMessageAdaptation\AdaptiveMessageAdaptation.cs" />
     <Compile Include="Model\CMS\AdaptiveMessageAdaptation\AdaptiveMessageAdaptation.Logic.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessageCategory\AdaptiveMessageCategory.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessageCategory\AdaptiveMessageCategory.Logic.cs" />
     <Compile Include="Model\CMS\AdaptiveMessage\AdaptiveMessage.cs" />
     <Compile Include="Model\CMS\AdaptiveMessage\AdaptiveMessage.Logic.cs" />
     <Compile Include="Model\CMS\BlockType\BlockType.WebForms.cs" />

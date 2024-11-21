@@ -136,7 +136,7 @@
 .grid-obsidian.grid-sticky .sticky-column-header {
     position: sticky;
     top: calc(var(--sticky-element-offset) + 57px);
-    z-index: 10;
+    z-index: 9;
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading {
