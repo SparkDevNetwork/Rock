@@ -153,7 +153,7 @@
     padding-top: 15px;
     padding-left: 15px;
     padding-right: 15px;
-    height: 90%;
+    min-height: 90%;
     width: 100%;
 }
 
@@ -179,7 +179,7 @@
     }
 
     .person-picker-body {
-        height: 93%;
+        min-height: 93%;
     }
 }
 </style>
