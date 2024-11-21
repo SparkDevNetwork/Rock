@@ -1992,6 +1992,11 @@ namespace Rock.SystemGuid
         public const string ADAPTIVE_MESSAGE_ADAPTATION_SEGMENT = "40EDF82B-EFF5-4253-A129-965F7BC90033";
 
         /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessageCategory"/> 
+        /// </summary>
+        public const string ADAPTIVE_MESSAGE_CATEGORY = "D47BDA25-03A3-46EE-A0A6-F8B220E39E4A";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.CheckInLabel"/> 
         /// </summary>
         public const string CHECK_IN_LABEL = "8B651EB1-492F-46D0-821B-CA7355C6E6E7";
