@@ -210,7 +210,7 @@ namespace Rock.Blocks.Cms
                 .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.MediaFolder.IdKey )
                 .AddTextField( "name", a => a.MediaFolder.Name )
-                .AddField( "contentChannelSync", a => a.MediaFolder?.ContentChannel.Name )
+                .AddField( "contentChannelSync", a => a.MediaFolder?.ContentChannel?.Name )
                 .AddField( "isContentChannelSyncEnabled", a => a.MediaFolder.IsContentChannelSyncEnabled )
                 .AddField( "watchCount", a => a.WatchCount )
                 .AddField( "videoCount", a => a.VideoCount )

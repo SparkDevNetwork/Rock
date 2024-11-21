@@ -818,7 +818,8 @@ namespace Rock.Blocks.Lms
             var announcements = new LearningClassAnnouncementService( RockContext )
                 .Queryable()
                 .Where( a => a.LearningClassId == entity.Id )
-                .ToList();
+                .ToList()
+                .OrderBy( a => a.Title );
 
             // Return all announcements for the course's default class.
             var gridBuilder = new GridBuilder<LearningClassAnnouncement>()
@@ -848,7 +849,8 @@ namespace Rock.Blocks.Lms
             var contentPages = new LearningClassContentPageService( RockContext )
                 .Queryable()
                 .Where( c => c.LearningClassId == entity.Id )
-                .ToList();
+                .ToList()
+                .OrderBy( c => c.Title );
 
             // Return all announcements for the course's default class.
             var gridBuilder = new GridBuilder<LearningClassContentPage>()
@@ -875,7 +877,9 @@ namespace Rock.Blocks.Lms
 
             var facilitators = new LearningParticipantService( RockContext )
                 .GetFacilitators( entity.Id )
-                .ToList();
+                .ToList()
+                .OrderBy( f => f.Person.NickName )
+                .ThenBy( f => f.Person.LastName );
 
             // Return all facilitators for the course's default class.
             var gridBuilder = new GridBuilder<LearningParticipant>()
@@ -985,7 +989,9 @@ namespace Rock.Blocks.Lms
             var students = new LearningParticipantService( RockContext )
                 .GetStudents( entity.Id )
                 .AsNoTracking()
-                .ToList();
+                .ToList()
+                .OrderBy( f => f.Person.NickName )
+                .ThenBy( f => f.Person.LastName );
 
             // Return all students for the course's default class.
             var gridBuilder = new GridBuilder<LearningParticipant>()

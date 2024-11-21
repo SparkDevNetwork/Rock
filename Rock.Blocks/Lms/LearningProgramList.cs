@@ -139,6 +139,12 @@ namespace Rock.Blocks.Lms
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 
+        /// <inheritdoc/>
+        protected override IQueryable<LearningProgram> GetOrderedListQueryable( IQueryable<LearningProgram> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( s => s.Name );
+        }
+
         #endregion
 
         #region Block Actions

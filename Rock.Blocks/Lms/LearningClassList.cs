@@ -163,8 +163,8 @@ namespace Rock.Blocks.Lms
             }
             
             // Only add the course column if the results aren't filtered to a course already.
-            options.ShowCourseColumn = course == null;
-            options.HasValidCourse = course != null;
+            options.HasValidCourse = course?.Id > 0;
+            options.ShowCourseColumn = !options.HasValidCourse;
 
             options.ShowLocationColumn = GetAttributeValue( AttributeKey.ShowLocationColumn ).AsBoolean();
             options.ShowScheduleColumn = GetAttributeValue( AttributeKey.ShowScheduleColumn ).AsBoolean();
@@ -223,10 +223,22 @@ namespace Rock.Blocks.Lms
             var courseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
             if ( courseId > 0 )
             {
+                // When there's a course defined include all classes.
                 baseQuery = baseQuery.Where( c => c.LearningCourseId == courseId );
+            }
+            else
+            {
+                // When there's no course selected show only active classes.
+                baseQuery = baseQuery.Where( c => c.IsActive );
             }
 
             return baseQuery;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<LearningClass> GetOrderedListQueryable( IQueryable<LearningClass> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( c => c.LearningCourse.Name ).ThenBy( c => c.Name );
         }
 
         /// <inheritdoc/>
@@ -235,7 +247,11 @@ namespace Rock.Blocks.Lms
             var grid = new GridBuilder<LearningClass>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddField( "facilitators", a => a.LearningParticipants.Where( p => p.GroupRole.IsLeader ).Select( p => p.Person.FullName ).JoinStrings( ", " ) )
+                .AddField( "facilitators", a => a.LearningParticipants
+                    .Where( p => p.GroupRole.IsLeader )
+                    .Select( p => p.Person.FullName )
+                    .OrderBy( p => p )
+                    .JoinStrings( ", " ) )
                 .AddField( "students", a => a.LearningParticipants.Count( p => !p.GroupRole?.IsLeader ?? false ) )
                 .AddTextField( "course", a => a.LearningCourse.Name )
                 .AddTextField( "learningCourseIdKey", a => a.LearningCourse.IdKey )

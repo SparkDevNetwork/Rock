@@ -13,36 +13,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
+//
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
-import FinancialStatementTemplatePicker from "@Obsidian/Controls/financialStatementTemplatePicker.obs";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { updateRefValue } from "@Obsidian/Utility/component";
+import TextBox from "@Obsidian/Controls/textBox.obs";
 
 export const EditComponent = defineComponent({
-    name: "FinancialStatementTemplateField.Edit",
+    name: "AttendanceField.Edit",
 
     components: {
-        FinancialStatementTemplatePicker
+        TextBox
     },
 
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
         // The internal value used by the text editor.
-        const internalValue = ref<ListItemBag | null>();
+        const internalValue = ref("");
 
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {
-            updateRefValue(internalValue, props.modelValue ? JSON.parse(props.modelValue) : null);
+            internalValue.value = props.modelValue;
         }, {
             immediate: true
         });
 
         // Watch for changes from the text editor and update the parent component.
         watch(internalValue, () => {
-            emit("update:modelValue", JSON.stringify(internalValue.value ?? ""));
+            emit("update:modelValue", internalValue.value);
         });
 
         return {
@@ -51,13 +49,11 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-    <FinancialStatementTemplatePicker showBlankItem v-model="internalValue" />
+<TextBox v-model="internalValue" />
 `
 });
 
 export const ConfigurationComponent = defineComponent({
-    name: "FinancialStatementTemplateField.Configuration",
-
+    name: "AttendanceField.Configuration",
     template: ``
 });
-

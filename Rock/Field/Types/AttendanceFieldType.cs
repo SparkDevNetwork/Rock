@@ -33,8 +33,8 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Attendance
     /// Stored as Attendance.Guid
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "45F2BE0A-43C2-40D6-9888-68A2E72ACD06" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ATTENDANCE )]
     public class AttendanceFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Formatting
@@ -60,6 +60,26 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = GetAttendanceGuid( privateValue );
+            return guid.HasValue ? guid.ToString() : privateValue;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = GetAttendanceGuid( publicValue );
+            return guid.HasValue ? guid.ToString() : publicValue;
+        }
 
         #endregion
 
@@ -206,7 +226,7 @@ namespace Rock.Field.Types
                     {
                         a.Id,
                         a.PersonAliasId,
-                        a.PersonAlias.PersonId,
+                        PersonId = a.PersonAlias != null ? a.PersonAlias.PersonId : ( int? ) null,
                         a.Occurrence.GroupId,
                         a.Occurrence.LocationId
                     } )
@@ -222,7 +242,7 @@ namespace Rock.Field.Types
                 if ( attendance.PersonAliasId.HasValue )
                 {
                     entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<PersonAlias>().Value, attendance.PersonAliasId.Value ) );
-                    entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<Person>().Value, attendance.PersonId ) );
+                    entityReferences.Add( new ReferencedEntity( EntityTypeCache.GetId<Person>().Value, attendance.PersonId.Value ) );
                 }
 
                 // The Group and Location values on an Attendance record don't

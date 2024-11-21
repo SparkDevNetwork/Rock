@@ -28,6 +28,11 @@ namespace Rock.ViewModels.Blocks.Core.BinaryFileTypeDetail
     public class BinaryFileTypeBag : EntityBagBase
     {
         /// <summary>
+        /// Gets or sets a flag indicating if this BinaryFileType allows anonymous uploads.
+        /// </summary>
+        public bool AllowAnonymous { get; set; }
+
+        /// <summary>
         /// Gets or sets the cache control header settings.
         /// </summary>
         public RockCacheabilityBag CacheControlHeaderSettings { get; set; }

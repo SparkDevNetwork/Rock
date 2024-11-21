@@ -38,6 +38,8 @@ export const FieldType = {
     /** Asset Storage System field type */
     AssetStorageSystem: "A57109EE-35A2-45D0-A575-02DBBDFBC0D0",
     /** Attribute field type */
+    Attendance: "45F2BE0A-43C2-40D6-9888-68A2E72ACD06",
+    /** Attribute field type */
     Attribute: "99B090AA-4D7E-46D8-B393-BF945EA1BA8B",
     /** Audio File field type */
     AudioFile: "9772CB1F-3BC4-432E-80DD-D635CDB2DA32",

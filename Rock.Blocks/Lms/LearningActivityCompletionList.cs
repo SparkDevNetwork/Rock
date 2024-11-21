@@ -150,7 +150,16 @@ namespace Rock.Blocks.Lms
         protected override IQueryable<LearningActivityCompletion> GetListQueryable( RockContext rockContext )
         {
             var activityId = RequestContext.PageParameterAsId( PageParameterKey.LearningActivityId );
-            return new LearningParticipantService( rockContext ).GetActivityCompletions( activityId );
+            return new LearningParticipantService( rockContext )
+                .GetActivityCompletions( activityId );
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<LearningActivityCompletion> GetOrderedListQueryable( IQueryable<LearningActivityCompletion> queryable, RockContext rockContext )
+        {
+            return queryable
+                .OrderBy( c => c.Student.Person.NickName )
+                .ThenBy( c => c.Student.Person.LastName );
         }
 
         /// <inheritdoc/>
@@ -166,7 +175,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "dueDate", a => a.DueDate )
                 .AddField( "pointsEarned", a => a.PointsEarned )
                 .AddField( "points", a => a.LearningActivity.Points )
-                .AddField( "grade", a => a.GetGradeText() )
+                .AddField( "grade", a => a.RequiresGrading || a.LearningActivity.Points == 0 ? null : a.GetGradeText() )
                 .AddField( "gradePercent", a => a.GradePercent.ToIntSafe() )
                 .AddField( "requiresScoring", a => a.RequiresGrading )
                 .AddField( "isPassingGrade", a => a.GetGrade()?.IsPassing )

@@ -33,7 +33,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a prayer request. Stored as PrayerRequest.Guid.
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.PRAYER_REQUEST )]
     public class PrayerRequestFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {

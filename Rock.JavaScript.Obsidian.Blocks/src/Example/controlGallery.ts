@@ -49,7 +49,7 @@
 import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
 import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath, displayStyleItems } from "./ControlGallery/utils.partial";
 import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
-import { ControlGalleryInitializationBox} from "@Obsidian/ViewModels/Blocks/Example/ControlGallery/controlGalleryInitializationBox";
+import { ControlGalleryInitializationBox } from "@Obsidian/ViewModels/Blocks/Example/ControlGallery/controlGalleryInitializationBox";
 import GalleryAndResult from "./ControlGallery/galleryAndResult.partial.obs";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -8396,6 +8396,308 @@ const templateGalleryComponents = [
         return newList;
     }, {});
 
+const inputSizingGallery = defineComponent({
+    name: "InputSizingRulesGallery",
+    components: {
+        GalleryAndResult,
+        TextBox
+    },
+    setup() {
+        return {
+            exampleCode: `
+<TextBox class="input-width-xs" label=".input-width-xs" />
+<TextBox class="input-width-sm" label=".input-width-sm" />
+<TextBox class="input-width-md" label=".input-width-md" />
+<TextBox class="input-width-lg" label=".input-width-lg" />
+<TextBox class="input-width-xl" label=".input-width-xl" />
+<TextBox class="input-width-xxl" label=".input-width-xxl" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :exampleCode="exampleCode">
+    <div class="alert alert-warning">
+        <p><strong>Warning!</strong></p>
+        In Bootstrap 3 inputs are meant to fill the width of their parent container (<a href="http://getbootstrap.com/css/#forms-control-sizes" class="alert-link">link</a>).  If a small input is desired they should
+    be wrapped in a table grid.  This provides the best responsive solution.  In some rare cases it's beneficial to be able to fix the width of
+    certain inputs to provide better context of what the input is for.  For instance a credit card CVV field makes more sense visually being
+    fixed width to 3 characters.  To provide this capability we have added the following CSS classes to fix width inputs.  <em>Please use them
+    sparingly.</em>
+    </div>
+
+    <div class="alert alert-danger">
+        <p><strong>Alert</strong></p>
+        Rock framework developers should get approval from the Core Team before using these styles.
+    </div>
+
+    <div>
+        <TextBox class="input-width-xs" label=".input-width-xs" />
+        <TextBox class="input-width-sm" label=".input-width-sm" />
+        <TextBox class="input-width-md" label=".input-width-md" />
+        <TextBox class="input-width-lg" label=".input-width-lg" />
+        <TextBox class="input-width-xl" label=".input-width-xl" />
+        <TextBox class="input-width-xxl" label=".input-width-xxl" />
+    </div>
+
+    <div class="alert alert-info">
+        <p><strong>Note</strong></p>
+        In Bootstrap 3 inputs are <em>display:block;</em>. If you need these sized controls to align horizontally, consider wrapping them with the <em>form-control-group</em> class.
+    </div>
+</GalleryAndResult>`
+});
+
+const horizontalFormsGallery = defineComponent({
+    name: "HorizontalFormsGallery",
+    components: {
+        GalleryAndResult
+    },
+    setup() {
+        return {
+            exampleCode: `
+<div class="form-horizontal label-sm">
+    <div class="form-group">
+        <label for="inputEmail4" class="control-label">Email</label>
+        <div class="control-wrapper">
+            <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+        </div>
+    </div>
+</div>
+
+<div class="form-horizontal label-md">
+    <div class="form-group">
+        <label for="inputEmail5" class="control-label">Email</label>
+        <div class="control-wrapper">
+            <input type="email" class="form-control" id="inputEmail5" placeholder="Email">
+        </div>
+    </div>
+</div>
+
+<div class="form-horizontal label-lg">
+    <div class="form-group">
+        <label for="inputEmail6" class="control-label">Email</label>
+        <div class="control-wrapper">
+            <input type="email" class="form-control" id="inputEmail6" placeholder="Email">
+        </div>
+    </div>
+</div>
+
+<div class="form-horizontal label-xl">
+    <div class="form-group">
+        <label for="inputEmail7" class="control-label">Email</label>
+        <div class="control-wrapper">
+            <input type="email" class="form-control" id="inputEmail7" placeholder="Email">
+        </div>
+    </div>
+</div>
+
+<div class="form-horizontal label-auto">
+    <div class="form-group">
+        <label for="inputEmail8" class="control-label">Email Email Email Email Email Email Email Email Email Email Email</label>
+        <div class="control-wrapper">
+            <input type="email" class="form-control" id="inputEmail8" placeholder="Email">
+        </div>
+    </div>
+</div>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :exampleCode="exampleCode">
+    <div class="alert alert-info">
+       <p><strong>Note</strong></p>
+       In Bootstrap 3 inputs are <em>display:block;</em>. If you need these sized controls to align horizontally, consider wrapping them with the <em>form-control-group</em> class.
+    </div>
+
+    <h2 runat="server">Horizontal Forms</h2>
+    <p>While Rock uses a similar approach to Bootstrap, we’ve made horizontal forms a bit easier to help facilitate their use when creating forms in workflows and event
+        registrations. Below is the syntax for declaring a horizontal form.
+    </p>
+    <div>
+        <div class="form-horizontal label-sm">
+            <div class="form-group">
+                <label for="inputEmail3" class="control-label">Email</label>
+                <div class="control-wrapper">
+                <input type="email" class="form-control" id="inputEmail3" placeholder="Email">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p>When using this in form generators you'll need to complete two steps. The first is adding a wrapping <code>&lt;div class=&quot;form-group &quot;&gt;</code> in your pre/post fields.</p>
+
+    <p>The second is an additional class on the form-horizontal element that determines how wide the label column should be. Options include:</p>
+
+    <ul>
+        <li><strong>label-sm: </strong> Label column of 2, field column of 10</li>
+        <li><strong>label-md: </strong> Label column of 4, field column of 8</li>
+        <li><strong>label-lg: </strong> Label column of 6, field column of 6</li>
+        <li><strong>label-xl: </strong> Label column of 8, field column of 4</li>
+        <li><strong>label-auto: </strong> Label and field widths determined by contents</li>
+    </ul>
+
+    <div runat="server" class="r-example">
+        <div class="form-horizontal label-sm">
+            <div class="form-group">
+                <label for="inputEmail4" class="control-label">Email</label>
+                <div class="control-wrapper">
+                    <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-horizontal label-md">
+            <div class="form-group">
+                <label for="inputEmail5" class="control-label">Email</label>
+                <div class="control-wrapper">
+                    <input type="email" class="form-control" id="inputEmail5" placeholder="Email">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-horizontal label-lg">
+            <div class="form-group">
+                <label for="inputEmail6" class="control-label">Email</label>
+                <div class="control-wrapper">
+                    <input type="email" class="form-control" id="inputEmail6" placeholder="Email">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-horizontal label-xl">
+            <div class="form-group">
+                <label for="inputEmail7" class="control-label">Email</label>
+                <div class="control-wrapper">
+                    <input type="email" class="form-control" id="inputEmail7" placeholder="Email">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-horizontal label-auto">
+            <div class="form-group">
+                <label for="inputEmail8" class="control-label">Email Email Email Email Email Email Email Email Email Email Email</label>
+                <div class="control-wrapper">
+                    <input type="email" class="form-control" id="inputEmail8" placeholder="Email">
+                </div>
+            </div>
+        </div>
+
+    </div>
+</GalleryAndResult>`
+});
+
+const marginsAndPaddingGallery = defineComponent({
+    name: "MarginsAndPaddingGallery",
+    components: {
+        GalleryAndResult,
+        TextBox,
+        NotificationBox
+    },
+    setup() {
+        return {
+            exampleCode: `
+<div class="well">
+    <TextBox cass="margin-t-xl" label=".margin-t-xl" placeholder="Blah..."/>
+</div>
+
+<div class="well">
+    <TextBox class="padding-h-lg" label=".padding-h-lg" placeholder="Blah..." />
+</div>
+
+<div class="well">
+    <label class="control-label">.padding-all-xl .margin-all-lg</label>
+    <NotificationBox class="padding-all-xl margin-all-lg" alertType="info" heading=".padding-all-xl .margin-all-md" text="For God so loved the world that he gave his one and only Son..." />
+</div>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :exampleCode="exampleCode">
+    <h2>Margins and Padding</h2>
+
+    <div class="alert alert-warning">
+        <p><strong>Warning!</strong></p>
+        If you think you need to control the margin or padding, you might be 'doing it wrong.'
+        <em>These are for use in those cases when you know what you're doing.</em>
+    </div>
+
+    <h3>Format</h3>
+    <p>
+        The format is the type (padding or margin) followed by a dash then the position (v=vertical, h=horizontal, t=top, etc.)
+        followed by a dash and then the sizing specifier (none, small, medium, etc).
+    </p>
+    <pre>.padding|margin - v|h|t|b|r|l|all - none|sm|md|lg|xl</pre>
+
+    <div>
+        <div class="well">
+            <TextBox cass="margin-t-xl" label=".margin-t-xl" placeholder="Blah..."/>
+        </div>
+
+        <div class="well">
+            <TextBox class="padding-h-lg" label=".padding-h-lg" placeholder="Blah..." />
+        </div>
+
+        <div class="well">
+            <label class="control-label">.padding-all-xl .margin-all-lg</label>
+            <NotificationBox class="padding-all-xl margin-all-lg" alertType="info" heading=".padding-all-xl .margin-all-md" text="For God so loved the world that he gave his one and only Son..." />
+        </div>
+    </div>
+</GalleryAndResult>`
+});
+
+const fieldLabelsGallery = defineComponent({
+    name: "FieldLabelsGallery",
+    components: {
+        GalleryAndResult,
+        TextBox,
+        NotificationBox
+    },
+    setup() {
+        return {
+            exampleCode: `
+<div class="form-group">
+    <label class="control-label">Group</label>
+    <div class="control-wrapper">
+        <p>A/V Team</p>
+    </div>
+</div>`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :exampleCode="exampleCode">
+    <h2 runat="server">Field Labels</h2>
+    <p>When a field is not editable because it was pre-configured via configuration or block setting,
+        it should still have a typical look by using the <code>form-group, control-label, control-wrapper</code>
+        classes.
+    </p>
+
+    <div runat="server" class="r-example">
+        <div class="form-group">
+            <label class="control-label">Group</label>
+            <div class="control-wrapper">
+                <p>A/V Team</p>
+            </div>
+        </div>
+    </div>
+</GalleryAndResult>`
+});
+
+const generalInformationGalleryComponents = [
+    inputSizingGallery,
+    horizontalFormsGallery,
+    marginsAndPaddingGallery,
+    fieldLabelsGallery
+]
+    .map(a => {
+        a.name = a.__name ?? a.name;
+        return a;
+    })
+    .sort((a, b) => a.name!.localeCompare(b.name!))
+    .reduce((newList, comp) => {
+        newList[comp.name!] = comp;
+        return newList;
+    }, {});
+
 // #endregion
 
 export default defineComponent({
@@ -8404,7 +8706,8 @@ export default defineComponent({
         Panel,
         SectionHeader,
         ...controlGalleryComponents,
-        ...templateGalleryComponents
+        ...templateGalleryComponents,
+        ...generalInformationGalleryComponents
     },
 
     setup() {
@@ -8423,7 +8726,7 @@ export default defineComponent({
                 return;
             }
 
-            const component = controlGalleryComponents[hashComponent] ?? templateGalleryComponents[hashComponent];
+            const component = controlGalleryComponents[hashComponent] ?? templateGalleryComponents[hashComponent] ?? generalInformationGalleryComponents[hashComponent];
 
             if (component) {
                 currentComponent.value = component;
@@ -8444,7 +8747,8 @@ export default defineComponent({
             currentComponent,
             convertComponentName,
             controlGalleryComponents,
-            templateGalleryComponents
+            templateGalleryComponents,
+            generalInformationGalleryComponents
         };
     },
 
@@ -8503,6 +8807,13 @@ export default defineComponent({
 
                 <ul class="list-unstyled mb-0">
                     <li v-for="(component, key) in templateGalleryComponents" :key="key" :class="{current: currentComponent.name === component.name}">
+                        <a :href="'#' + key" @click="currentComponent = component">{{ convertComponentName(component.name) }}</a>
+                    </li>
+                </ul>
+
+                <h4 class="mt-3">General Information</h4>
+                <ul class="list-unstyled mb-0">
+                    <li v-for="(component, key) in generalInformationGalleryComponents" :key="key" :class="{current: currentComponent.name === component.name}">
                         <a :href="'#' + key" @click="currentComponent = component">{{ convertComponentName(component.name) }}</a>
                     </li>
                 </ul>

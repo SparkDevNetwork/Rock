@@ -13,51 +13,62 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
+//
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
-import FinancialStatementTemplatePicker from "@Obsidian/Controls/financialStatementTemplatePicker.obs";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { updateRefValue } from "@Obsidian/Utility/component";
+import TextBox from "@Obsidian/Controls/textBox.obs";
+
+// We can't import the ConfigurationValueKey from textField.partial.ts
+// because it causes a recursive import back to this file by way of
+// the fieldType.ts import in textField.partial.ts.
+export const enum ConfigurationValueKey {
+    /** Contains "True" if the text field is designed for password entry. */
+    IsPassword = "ispassword",
+
+    /** The maximum number of characters allowed in the text entry field. */
+    MaxCharacters = "maxcharacters",
+
+    /** Contains "True" if the text field should show the character countdown. */
+    ShowCountdown = "showcountdown",
+
+    /** Contains "True" if the text field is designed for first name entry. */
+    IsFirstName = "isfirstname",
+}
 
 export const EditComponent = defineComponent({
-    name: "FinancialStatementTemplateField.Edit",
+    name: "PrayerRequestField.Edit",
 
     components: {
-        FinancialStatementTemplatePicker
+        TextBox
     },
 
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
         // The internal value used by the text editor.
-        const internalValue = ref<ListItemBag | null>();
+        const internalValue = ref("");
 
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {
-            updateRefValue(internalValue, props.modelValue ? JSON.parse(props.modelValue) : null);
+            internalValue.value = props.modelValue;
         }, {
             immediate: true
         });
 
         // Watch for changes from the text editor and update the parent component.
         watch(internalValue, () => {
-            emit("update:modelValue", JSON.stringify(internalValue.value ?? ""));
+            emit("update:modelValue", internalValue.value);
         });
 
         return {
-            internalValue
+            internalValue,
         };
     },
 
-    template: `
-    <FinancialStatementTemplatePicker showBlankItem v-model="internalValue" />
-`
+    template: `<TextBox v-model="internalValue" />`
 });
 
 export const ConfigurationComponent = defineComponent({
-    name: "FinancialStatementTemplateField.Configuration",
-
+    name: "PrayerRequestField.Configuration",
     template: ``
 });
-

@@ -33,6 +33,9 @@ export type BinaryFileTypeBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** Gets or sets a flag indicating if this BinaryFileType allows anonymous uploads. */
+    allowAnonymous: boolean;
+
     /** Gets or sets the binary file type attributes. */
     binaryFileTypeAttributes?: PublicEditableAttributeBag[] | null;
 
