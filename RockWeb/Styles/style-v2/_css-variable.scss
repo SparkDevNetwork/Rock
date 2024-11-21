@@ -54,18 +54,23 @@
     --shade-black-percentage: 15%;
 
     --color-critical-tint: color-mix(in srgb, var(--color-critical-strong) 50%, #FFF var(--tint-white-percentage));
+    --color-critical-soft: color-mix(in srgb, var(--color-critical-strong) 25%, #FFF var(--tint-white-percentage));
     --color-critical-shade: color-mix(in srgb, var(--color-critical-strong) 100%, #000 var(--shade-black-percentage));
   
     --color-danger-tint: color-mix(in srgb, var(--color-danger-strong) 50%, #FFF var(--tint-white-percentage));
+    --color-danger-soft: color-mix(in srgb, var(--color-danger-strong) 25%, #FFF var(--tint-white-percentage));
     --color-danger-shade: color-mix(in srgb, var(--color-danger-strong) 100%, #000 var(--shade-black-percentage));
   
     --color-info-tint: color-mix(in srgb, var(--color-info-strong) 50%, #FFF var(--tint-white-percentage));
+    --color-info-soft: color-mix(in srgb, var(--color-info-strong) 25%, #FFF var(--tint-white-percentage));
     --color-info-shade: color-mix(in srgb, var(--color-info-strong) 100%, #000 var(--shade-black-percentage));
   
     --color-success-tint: color-mix(in srgb, var(--color-success-strong) 50%, #FFF var(--tint-white-percentage));
+    --color-success-soft: color-mix(in srgb, var(--color-success-strong) 25%, #FFF var(--tint-white-percentage));
     --color-success-shade: color-mix(in srgb, var(--color-success-strong) 100%, #000 var(--shade-black-percentage));
   
     --color-warning-tint: color-mix(in srgb, var(--color-warning-strong) 50%, #FFF var(--tint-white-percentage));
+    --color-warning-soft: color-mix(in srgb, var(--color-warning-strong) 25%, #FFF var(--tint-white-percentage));
     --color-warning-shade: color-mix(in srgb, var(--color-warning-strong) 100%, #000 var(--shade-black-percentage));
   
     --color-primary-tint: color-mix(in srgb, var(--color-primary) 50%, #FFF var(--tint-white-percentage));
