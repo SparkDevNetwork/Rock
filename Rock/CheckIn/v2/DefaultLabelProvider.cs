@@ -609,6 +609,8 @@ namespace Rock.CheckIn.v2
 
                     return new RenderedLabel
                     {
+                        LabelId = label.IdKey,
+                        LabelName = label.Name,
                         Data = memoryStream.ToArray(),
                         PrintTo = printer
                     };
