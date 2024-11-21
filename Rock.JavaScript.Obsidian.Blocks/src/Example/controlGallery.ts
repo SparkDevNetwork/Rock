@@ -8596,7 +8596,7 @@ const marginsAndPaddingGallery = defineComponent({
         return {
             exampleCode: `
 <div class="well">
-    <TextBox cass="margin-t-xl" label=".margin-t-xl" placeholder="Blah..."/>
+    <TextBox class="margin-t-xl" label=".margin-t-xl" placeholder="Blah..."/>
 </div>
 
 <div class="well">
@@ -8629,7 +8629,7 @@ const marginsAndPaddingGallery = defineComponent({
 
     <div>
         <div class="well">
-            <TextBox cass="margin-t-xl" label=".margin-t-xl" placeholder="Blah..."/>
+            <TextBox class="margin-t-xl" label=".margin-t-xl" placeholder="Blah..."/>
         </div>
 
         <div class="well">
