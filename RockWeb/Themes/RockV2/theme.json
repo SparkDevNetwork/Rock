@@ -126,7 +126,7 @@
         },
         {
             "type": "panel",
-            "title": "Font",
+            "title": "Typography",
             "expanded": false,
             "fields": [
                 {
@@ -218,21 +218,21 @@
                     "name": "Tiny Spacing",
                     "variable": "spacing-tiny",
                     "description": "The tiny spacing you want to set",
-                    "default": "4px"  
+                    "default": "4px"
                 },
                 {
                     "type": "literal",
-                    "name": "Tiny Spacing",
-                    "variable": "spacing-tiny",
-                    "description": "The tiny spacing you want to set",
-                    "default": "4px"
+                    "name": "xSmall Spacing",
+                    "variable": "spacing-xsmall",
+                    "description": "The xsmall spacing you want to set",
+                    "default": "8px"
                 },
                 {
                     "type": "literal",
                     "name": "Small Spacing",
                     "variable": "spacing-small",
                     "description": "The small spacing you want to set",
-                    "default": "8px"
+                    "default": "12px"
                 },
                 {
                     "type": "literal",
