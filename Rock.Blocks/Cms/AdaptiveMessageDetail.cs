@@ -472,7 +472,11 @@ namespace Rock.Blocks.Cms
 
                 if ( category != null )
                 {
-                    entity.Categories.Add( category );
+                    if ( !entity.Categories.Any( a => a.CategoryId == category.Id ) )
+                    {
+                        entity.Categories.Add( new AdaptiveMessageCategory { CategoryId = category.Id } );
+                    };
+                    
                 }
             }
         }
