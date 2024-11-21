@@ -768,6 +768,9 @@ ul li::marker {
     margin-right: auto;
 }
 
+.supervisor-reprint-screen input.search-term::placeholder {
+    color: var(--color-interface-medium);
+}
 
 /**
  * Supervisor Schedule Locations Screen
