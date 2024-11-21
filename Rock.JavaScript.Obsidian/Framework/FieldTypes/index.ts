@@ -62,6 +62,9 @@ registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType()
 import { BenevolenceRequestFieldType } from "./benevolenceRequestField.partial";
 registerFieldType(FieldTypeGuids.BenevolenceRequest, new BenevolenceRequestFieldType());
 
+import { BenevolenceTypeFieldType } from "./benevolenceTypeField.partial";
+registerFieldType(FieldTypeGuids.BenevolenceType, new BenevolenceTypeFieldType());
+
 import { BinaryFileFieldType } from "./binaryFileField.partial";
 registerFieldType(FieldTypeGuids.BinaryFile, new BinaryFileFieldType());
 
@@ -237,7 +240,7 @@ import { FinancialGatewayFieldType } from "./financialGatewayField.partial";
 registerFieldType(FieldTypeGuids.FinancialGateway, new FinancialGatewayFieldType());
 
 import { FinancialStatementTemplateFieldType } from "./financialStatementTemplateField.partial";
-registerFieldType(FieldTypeGuids.FinanciaStatementTemplate, new FinancialStatementTemplateFieldType());
+registerFieldType(FieldTypeGuids.FinancialStatementTemplate, new FinancialStatementTemplateFieldType());
 
 import { FileFieldType } from "./fileField.partial";
 registerFieldType(FieldTypeGuids.File, new FileFieldType());

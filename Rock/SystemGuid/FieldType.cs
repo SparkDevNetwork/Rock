@@ -92,6 +92,11 @@ namespace Rock.SystemGuid
         public const string BENEVOLENCE_REQUEST = "44EEC881-3C07-4A58-ACC4-0F21D873DBE0";
 
         /// <summary>
+        /// Benevolence Type field type
+        /// </summary>
+        public const string BENEVOLENCE_TYPE = "7BD3C3A3-DF4A-41EB-BF13-29EDB166078B";
+
+        /// <summary>
         /// Binary File field type
         /// </summary>
         public const string BINARY_FILE = "C403E219-A56B-439E-9D50-9302DFE760CF";
@@ -404,7 +409,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Financial Statement Template field type
         /// </summary>
-        public const string FINANCIAL_STATEMENT_TEMPLATE  = "9E0CD807-D69F-4888-A9BE-BCD11DD083FE";
+        public const string FINANCIAL_STATEMENT_TEMPLATE = "9E0CD807-D69F-4888-A9BE-BCD11DD083FE";
 
         /// <summary>
         /// Gender field type

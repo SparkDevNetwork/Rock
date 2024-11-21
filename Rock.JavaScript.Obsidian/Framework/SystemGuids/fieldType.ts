@@ -51,6 +51,8 @@ export const FieldType = {
     Badges: "602F273B-7EC2-42E6-9AA7-A36A268192A3",
     /** Benevolence Request field type */
     BenevolenceRequest: "44EEC881-3C07-4A58-ACC4-0F21D873DBE0",
+    /** Benevolence Type field type */
+    BenevolenceType: "7BD3C3A3-DF4A-41EB-BF13-29EDB166078B",
     /** Binary File field type */
     BinaryFile: "C403E219-A56B-439E-9D50-9302DFE760CF",
     /** Binary File Type field type */
@@ -176,7 +178,7 @@ export const FieldType = {
     /** Financial Gateway field type */
     FinancialGateway: "7B34F9D8-6BBA-423E-B50E-525ABB3A1013",
     /** Financial Statement Template field type */
-    FinanciaStatementTemplate: "9E0CD807-D69F-4888-A9BE-BCD11DD083FE",
+    FinancialStatementTemplate: "9E0CD807-D69F-4888-A9BE-BCD11DD083FE",
     /** Gender field type */
     Gender: "2E28779B-4C76-4142-AE8D-49EA31DDB503",
     /** Group field type */
