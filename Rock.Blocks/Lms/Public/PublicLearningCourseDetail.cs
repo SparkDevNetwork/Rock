@@ -159,25 +159,25 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                         </div>
                         <div class=""card-text"">
                             {% if Course.Entity.CourseCode != empty %}
-                            <div class=""text-muted"">
+                            <div class=""text-gray-600"">
                                 <span class=""text-bold"">Course Code: </span>
                                 <span>{{Course.Entity.CourseCode}}</span>
                             </div>
                             {% endif %}
 
-                            <div class=""text-muted"">
+                            <div class=""text-gray-600"">
                                 <span class=""text-bold"">Credits: </span>
                                 <span>{{Course.Entity.Credits}}</span>
                             </div>
 
-                            <div class=""text-muted"">
+                            <div class=""pb-3 text-gray-600"""">
                                 <span class=""text-bold"">Prerequisites: </span>
                                 <span>
                                     {{ prerequisitesText }}
                                 </span>
                             </div>
 
-                            <div class=""pt-3 text-muted"">
+                            <div class=""pt-3 border-top border-gray-200"">
                                 <span>{{Course.DescriptionAsHtml}}</span>
                             </div>
                         </div>
