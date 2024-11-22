@@ -31,6 +31,15 @@ type TooltipOptions = {
 
     /** Enables santization of HTML content. */
     sanitize?: boolean;
+
+    /** The delay before showing/hiding the tooltip. */
+    delay?: number | {
+        /** The delay before showing the tooltip. */
+        show?: number;
+
+        /** The delay before hiding the tooltip. */
+        hide?: number;
+    };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,7 +115,8 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
                 $node?.tooltip({
                     container: container,
                     html: options?.html,
-                    sanitize: options?.sanitize ?? true
+                    sanitize: options?.sanitize ?? true,
+                    delay: options?.delay
                 });
 
             }, 151);
@@ -115,7 +125,8 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
             $node?.tooltip({
                 container: container,
                 html: options?.html,
-                sanitize: options?.sanitize ?? true
+                sanitize: options?.sanitize ?? true,
+                delay: options?.delay
             });
         }
 
