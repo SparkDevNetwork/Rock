@@ -25,6 +25,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a list of connection states
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_STATE )]
     public class ConnectionStateFieldType : EnumFieldType<ConnectionState>

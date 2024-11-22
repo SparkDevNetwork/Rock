@@ -32,6 +32,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a template to use in a block
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BLOCK_TEMPLATE )]
     public class BlockTemplateFieldType : FieldType, IEntityReferenceFieldType

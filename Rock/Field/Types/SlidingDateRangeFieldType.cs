@@ -32,6 +32,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save a sliding date range. Last X (Hours, Days, etc)
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SLIDING_DATE_RANGE )]
     public class SlidingDateRangeFieldType : FieldType

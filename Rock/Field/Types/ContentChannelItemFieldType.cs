@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) content channel item filtered by a selected content channel
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONTENT_CHANNEL_ITEM )]
     public class ContentChannelItemFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

@@ -753,7 +753,7 @@ namespace RockWeb.Blocks.CheckIn
                 var attendanceIds = hfSelectedAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
                 var kiosk = DeviceCache.Get( CurrentCheckInState.DeviceId );
 
-                if ( kiosk != null && ZebraPrint.TryReprintNextGenLabels( attendanceIds, kiosk, out var messages, out var clientLabels ) )
+                if ( kiosk != null && ZebraPrint.TryReprintNextGenLabels( attendanceIds, kiosk, null, null, null, out var messages, out var clientLabels ) )
                 {
                     if ( clientLabels.Any() )
                     {

@@ -64,7 +64,7 @@ namespace Rock.Model
                     // make sure it isn't getting saved with a recursive parent hierarchy
                     var parentIds = new List<int>();
                     parentIds.Add( this.Id );
-                    var parent = this.ParentAccountId.HasValue ? FinancialAccountCache.Get( this.ParentAccountId.Value ).ParentAccount : null;
+                    var parent = this.ParentAccountId.HasValue ? FinancialAccountCache.Get( this.ParentAccountId.Value ) : null;
                     while ( parent != null )
                     {
                         if ( parentIds.Contains( parent.Id ) )

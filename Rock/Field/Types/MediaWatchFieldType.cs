@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// Field Type to allow the user to watch a video and have the amount they
     /// watched recorded.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MEDIA_WATCH )]
     public class MediaWatchFieldType : FieldType

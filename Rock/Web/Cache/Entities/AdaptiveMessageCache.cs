@@ -144,7 +144,7 @@ namespace Rock.Web.Cache
             Description = adaptiveMessage.Description;
             IsActive = adaptiveMessage.IsActive;
             Key = adaptiveMessage.Key;
-            CategoryIds = adaptiveMessage.Categories.Select( c => c.Id ).ToList();
+            CategoryIds = adaptiveMessage.AdaptiveMessageCategories.Select( c => c.CategoryId ).ToList();
         }
 
         /// <summary>

@@ -21,11 +21,20 @@
 // </copyright>
 //
 
-export type AdaptiveMessageListOptionsBag = {
-    /**
-     * Gets or sets a value indicating whether the grid should be visible.
-     * The grid will not be displayed if the 'FilterCategoryFromQueryString' block setting is set to true
-     * and no CategoryId is provided in the URL.
-     */
-    isGridVisible: boolean;
-};
+using Rock.Model;
+using Rock.SystemGuid;
+
+namespace Rock.Rest.Controllers
+{
+    /// <summary>
+    /// AdaptiveMessageCategories REST API
+    /// </summary>
+    [RestControllerGuid( "F6AB7180-00F1-49B0-A589-F4AB17C3FF2E" )]
+    public partial class AdaptiveMessageCategoriesController : Rock.Rest.ApiController<Rock.Model.AdaptiveMessageCategory>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AdaptiveMessageCategoriesController"/> class.
+        /// </summary>
+        public AdaptiveMessageCategoriesController() : base( new Rock.Model.AdaptiveMessageCategoryService( new Rock.Data.RockContext() ) ) { } 
+    }
+}

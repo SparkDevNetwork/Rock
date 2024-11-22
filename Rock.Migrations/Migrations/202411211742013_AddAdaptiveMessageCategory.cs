@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.UpdateEntityType( "Rock.Model.AdaptiveMessageAdaptation", "", "", true, true, Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_CATEGORY );
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.AdaptiveMessageCategory", "", "", true, true, Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_CATEGORY );
             RockMigrationHelper.UpdateCategory( Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_CATEGORY, "All Church", "", "", "2512EC06-CF27-402C-9CCC-EFD97174F6E4" );
             DropIndex( "dbo.AdaptiveMessageCategory", new[] { "AdaptiveMessageId" });
             DropIndex("dbo.AdaptiveMessageCategory", new[] { "CategoryId" });
