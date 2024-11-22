@@ -122,7 +122,7 @@
         }
 
         if(props.modelValue.signedDateTime) {
-            let date = RockDateTime.parseISO(props.modelValue.signedDateTime);
+            const date = RockDateTime.parseISO(props.modelValue.signedDateTime);
             let signedOnInformation = "";
             if (date) {
                 signedOnInformation = date.toString();
@@ -166,7 +166,6 @@
             const result = await invokeBlockAction<{ key: string }>("ResendCompletionEmail", {
                 key: props.modelValue?.idKey
             });
-            console.log(result);
 
             if (result.isSuccess) {
                 resendMessage.value = "Signature completion email was successfully sent";

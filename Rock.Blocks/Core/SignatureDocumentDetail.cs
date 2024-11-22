@@ -37,7 +37,6 @@ namespace Rock.Blocks.Core
     /// <summary>
     /// User controls for managing signature documents.
     /// </summary>
-
     [DisplayName( "Signature Document Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a given signature document." )]
@@ -234,22 +233,21 @@ namespace Rock.Blocks.Core
             {
                 return false;
             }
-            RockContext rockContext = new RockContext();
 
             box.IfValidProperty( nameof( box.Bag.AppliesToPersonAlias ),
-                () => entity.AppliesToPersonAliasId = box.Bag.AppliesToPersonAlias.GetEntityId<PersonAlias>( rockContext ) );
+                () => entity.AppliesToPersonAliasId = box.Bag.AppliesToPersonAlias.GetEntityId<PersonAlias>( RockContext ) );
 
             box.IfValidProperty( nameof( box.Bag.AppliesToPersonAliasId ),
                 () => entity.AppliesToPersonAliasId = box.Bag.AppliesToPersonAliasId );
 
             box.IfValidProperty( nameof( box.Bag.AssignedToPersonAlias ),
-                () => entity.AssignedToPersonAliasId = box.Bag.AssignedToPersonAlias.GetEntityId<PersonAlias>( rockContext ) );
+                () => entity.AssignedToPersonAliasId = box.Bag.AssignedToPersonAlias.GetEntityId<PersonAlias>( RockContext ) );
 
             box.IfValidProperty( nameof( box.Bag.AssignedToPersonAliasId ),
                 () => entity.AssignedToPersonAliasId = box.Bag.AssignedToPersonAliasId );
 
             box.IfValidProperty( nameof( box.Bag.BinaryFile ),
-                () => entity.BinaryFileId = box.Bag.BinaryFile.GetEntityId<BinaryFile>( rockContext ) );
+                () => entity.BinaryFileId = box.Bag.BinaryFile.GetEntityId<BinaryFile>( RockContext ) );
 
             box.IfValidProperty( nameof( box.Bag.BinaryFileId ),
                 () => entity.BinaryFileId = box.Bag.BinaryFileId );
@@ -264,7 +262,7 @@ namespace Rock.Blocks.Core
                 () => entity.EntityId = box.Bag.EntityId );
 
             box.IfValidProperty( nameof( box.Bag.EntityType ),
-                () => entity.EntityTypeId = box.Bag.EntityType.GetEntityId<EntityType>( rockContext ) );
+                () => entity.EntityTypeId = box.Bag.EntityType.GetEntityId<EntityType>( RockContext ) );
 
             box.IfValidProperty( nameof( box.Bag.EntityTypeId ),
                 () => entity.EntityTypeId = box.Bag.EntityTypeId );
@@ -285,7 +283,7 @@ namespace Rock.Blocks.Core
                 () => entity.SignatureDataEncrypted = box.Bag.SignatureDataEncrypted );
 
             box.IfValidProperty( nameof( box.Bag.SignatureDocumentTemplate ),
-                () => entity.SignatureDocumentTemplateId = box.Bag.SignatureDocumentTemplate.GetEntityId<SignatureDocumentTemplate>( rockContext ).Value );
+                () => entity.SignatureDocumentTemplateId = box.Bag.SignatureDocumentTemplate.GetEntityId<SignatureDocumentTemplate>( RockContext ).Value );
 
             box.IfValidProperty( nameof( box.Bag.SignatureDocumentTemplateId ),
                 () => entity.SignatureDocumentTemplateId = box.Bag.SignatureDocumentTemplateId );
@@ -297,7 +295,7 @@ namespace Rock.Blocks.Core
                 () => entity.SignedByEmail = box.Bag.SignedByEmail );
 
             box.IfValidProperty( nameof( box.Bag.SignedByPersonAlias ),
-                () => entity.SignedByPersonAliasId = box.Bag.SignedByPersonAlias.GetEntityId<PersonAlias>( rockContext ) );
+                () => entity.SignedByPersonAliasId = box.Bag.SignedByPersonAlias.GetEntityId<PersonAlias>( RockContext ) );
 
             box.IfValidProperty( nameof( box.Bag.SignedByPersonAliasId ),
                 () => entity.SignedByPersonAliasId = box.Bag.SignedByPersonAliasId );
@@ -469,34 +467,37 @@ namespace Rock.Blocks.Core
             } );
         }
 
-        ///// <summary>
-        ///// Deletes the specified entity.
-        ///// </summary>
-        ///// <param name="key">The identifier of the entity to be deleted.</param>
-        ///// <returns>A string that contains the URL to be redirected to on success.</returns>
-        //[BlockAction]
-        //public BlockActionResult Delete( string key )
-        //{
-        //    var entityService = new SignatureDocumentService( RockContext );
+        /// <summary>
+        /// Deletes the specified entity.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be deleted.</param>
+        /// <returns>A string that contains the URL to be redirected to on success.</returns>
+        [BlockAction]
+        public BlockActionResult Delete( string key )
+        {
+            var entityService = new SignatureDocumentService( RockContext );
 
-        //    if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
-        //    {
-        //        return actionError;
-        //    }
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
+            {
+                return actionError;
+            }
 
-        //    if ( !entityService.CanDelete( entity, out var errorMessage ) )
-        //    {
-        //        return ActionBadRequest( errorMessage );
-        //    }
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
 
-        //    entityService.Delete( entity );
-        //    RockContext.SaveChanges();
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
 
-        //    return ActionOk( this.GetParentPageUrl() );
-        //}
+            return ActionOk( this.GetParentPageUrl() );
+        }
 
         /// <summary>
+        /// Resends the signature completion communication.
         /// </summary>
+        /// <param name="key">The identifier of the entity that needs the completion communication resent.</param>
+        /// <returns>Any errors that occurred during send or an OK result.</returns>
         [BlockAction]
         public BlockActionResult ResendCompletionEmail( string key )
         {

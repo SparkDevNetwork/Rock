@@ -29,8 +29,8 @@
                               help="The person that this document applies to."
                               rules="required" />
                 <template v-else>
-                    <RockLabel>Applies To</RockLabel> <br/>
-                    {{ appliesToPersonAlias?.text }} <br/>
+                    <RockLabel>Applies To</RockLabel>
+                    <div>{{ appliesToPersonAlias?.text }}</div>
                 </template>
 
                 <PersonPicker v-model="assignedToPersonAlias"
@@ -39,8 +39,8 @@
                               help="The person that this document was assigned to for getting a signature."
                               rules="required" />
                 <template v-else>
-                    <RockLabel>Assigned To</RockLabel> <br/>
-                    {{ assignedToPersonAlias?.text }} <br/>
+                    <RockLabel>Assigned To</RockLabel> 
+                    <div>{{ assignedToPersonAlias?.text }}</div>
                 </template>
 
                 <PersonPicker v-model="signedByPersonAlias"
@@ -48,8 +48,8 @@
                               label="Signed By"
                               help="The person that signed this." />
                 <template v-else>
-                    <RockLabel>Signed By</RockLabel> <br/>
-                    {{ signedByPersonAlias?.text }}
+                    <RockLabel>Signed By</RockLabel>
+                    <div>{{ signedByPersonAlias?.text }}</div>
                 </template>
             </div>
         </div>
@@ -72,6 +72,8 @@
     import { SignatureDocumentStatus, SignatureDocumentStatusDescription } from "@Obsidian/Enums/Core/signatureDocumentStatus";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
 
     const props = defineProps({
         modelValue: {
@@ -100,7 +102,8 @@
     const appliesToPersonAlias = propertyRef(props.modelValue.bag?.appliesToPersonAlias ?? {}, "AppliesToPersonAlias");
     const assignedToPersonAlias = propertyRef(props.modelValue.bag?.assignedToPersonAlias ?? {}, "AssignedToPersonAlias");
     const signedByPersonAlias = propertyRef(props.modelValue.bag?.signedByPersonAlias ?? {}, "SignedByPersonAlias");
-    const isLegacyDocument = propertyRef(props.modelValue.bag?.isLegacyDocument ?? false, "IsLegacyDocument")
+    const isLegacyDocument = propertyRef(props.modelValue.bag?.isLegacyDocument ?? false, "IsLegacyDocument");
+    const items = ref<ListItemBag[]>(enumToListItemBag(SignatureDocumentStatusDescription));
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -109,17 +112,6 @@
     // #endregion
 
     // #region Computed Values
-    const items = computed<ListItemBag[]>(() => {
-        const items: ListItemBag[] = [];
-
-        items.push({ text: SignatureDocumentStatusDescription[SignatureDocumentStatus.None], value: SignatureDocumentStatus.None.toString() });
-        items.push({ text: SignatureDocumentStatusDescription[SignatureDocumentStatus.Sent], value: SignatureDocumentStatus.Sent.toString() });
-        items.push({ text: SignatureDocumentStatusDescription[SignatureDocumentStatus.Signed], value: SignatureDocumentStatus.Signed.toString() });
-        items.push({ text: SignatureDocumentStatusDescription[SignatureDocumentStatus.Cancelled], value: SignatureDocumentStatus.Cancelled.toString() });
-        items.push({ text: SignatureDocumentStatusDescription[SignatureDocumentStatus.Expired], value: SignatureDocumentStatus.Expired.toString() });
-
-        return items;
-    });
 
     // #endregion
 
@@ -136,6 +128,12 @@
         updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
         updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
         updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(status, props.modelValue.bag?.status.toString() ?? "");
+        updateRefValue(binaryFile, props.modelValue.bag?.binaryFile ?? {});
+        updateRefValue(appliesToPersonAlias, props.modelValue.bag?.appliesToPersonAlias ?? {});
+        updateRefValue(assignedToPersonAlias, props.modelValue.bag?.assignedToPersonAlias ?? {});
+        updateRefValue(signedByPersonAlias, props.modelValue.bag?.signedByPersonAlias ?? {});
+        updateRefValue(isLegacyDocument, props.modelValue.bag?.isLegacyDocument ?? false);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -145,8 +143,14 @@
             bag: { ...props.modelValue.bag } as SignatureDocumentBag
         };
         
-            setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
-            setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "status", toNumber(status.value) as SignatureDocumentStatus);
+        setPropertiesBoxValue(newValue, "binaryFile", binaryFile.value);
+        setPropertiesBoxValue(newValue, "appliesToPersonAlias", appliesToPersonAlias.value);
+        setPropertiesBoxValue(newValue, "assignedToPersonAlias", assignedToPersonAlias.value);
+        setPropertiesBoxValue(newValue, "signedByPersonAlias", signedByPersonAlias.value);
+        setPropertiesBoxValue(newValue, "isLegacyDocument", isLegacyDocument.value);
 
         emit("update:modelValue", newValue);
     });

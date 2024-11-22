@@ -181,13 +181,16 @@ namespace Rock.Blocks.Core
             }
             else
             {
-                int? documentTypeId = PageParameter( PageParameterKey.SignatureDocumentTemplateId ).AsIntegerOrNull();
+                string key = PageParameter( PageParameterKey.SignatureDocumentTemplateId );
+                int? documentTypeId = new SignatureDocumentTemplateService( rockContext ).GetSelect( key, s => s.Id );
                 if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
                 {
                     qry = qry.Where( d =>
                         d.SignatureDocumentTemplateId == documentTypeId.Value );
                 }
             }
+
+            qry = qry.ToList().Where( d => d.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ).AsQueryable();
 
             return qry;
         }

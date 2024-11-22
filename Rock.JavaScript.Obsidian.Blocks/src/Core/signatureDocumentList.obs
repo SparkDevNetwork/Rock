@@ -22,7 +22,7 @@
             v-if="showDocumentType"
             title="Document Type"
             field="documentType"
-            :filter="textValueFilter"
+            :filter="pickExistingValueFilter"
             visiblePriority="md" />
             
         <DateTimeColumn name="lastInviteDate"
@@ -40,6 +40,9 @@
         <PersonColumn name="appliesToPersonAlias"
             title="Applies To"
             field="appliesToPersonAlias"
+            :filter="pickExistingValueFilter"
+            :filterValue="getAppliesToPersonFilterValue"
+            :quickFilterValue="getAppliesToPersonFilterValue"
             :hideAvatar="true"
             :showAsLink="true"
             visiblePriority="xs" >
@@ -48,6 +51,9 @@
         <PersonColumn name="assignedToPersonAlias"
             title="Assigned To"
             field="assignedToPersonAlias"
+            :filter="pickExistingValueFilter"
+            :filterValue="getAssignedToPersonFilterValue"
+            :quickFilterValue="getAssignedToPersonFilterValue"
             :hideAvatar="true"
             :showAsLink="true"
             visiblePriority="md" >
@@ -56,6 +62,9 @@
         <PersonColumn name="signedByPersonAlias"
             title="Signed By"
             field="signedByPersonAlias"
+            :filter="pickExistingValueFilter"
+            :filterValue="getSignedByPersonFilterValue"
+            :quickFilterValue="getSignedByPersonFilterValue"
             :hideAvatar="true"
             :showAsLink="true"
             visiblePriority="xs" >
@@ -64,7 +73,7 @@
         <TextColumn name="status"
             title="Status"
             field="status"
-            :filter="textValueFilter"
+            :filter="pickExistingValueFilter"
             visiblePriority="xs"
             width="7%" />
 
@@ -90,11 +99,12 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, Column, DateTimeColumn, dateValueFilter, PersonColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, Column, DateTimeColumn, dateValueFilter, pickExistingValueFilter, PersonColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { SignatureDocumentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentList/signatureDocumentListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { NavigationUrlKey } from "./SignatureDocumentList/types.partial";
     import { reactive, ref } from "vue";
 
@@ -126,6 +136,36 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
+    }
+
+    /**
+    * Gets the filter value text to use for the applies to column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getAppliesToPersonFilterValue(row: Record<string, unknown>): string {
+        const person = row["appliesToPersonAlias"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Gets the filter value text to use for the assigned to column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getAssignedToPersonFilterValue(row: Record<string, unknown>): string {
+        const person = row["assignedToPersonAlias"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Gets the filter value text to use for the signed by column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getSignedByPersonFilterValue(row: Record<string, unknown>): string {
+        const person = row["signedByPersonAlias"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
     // #endregion
