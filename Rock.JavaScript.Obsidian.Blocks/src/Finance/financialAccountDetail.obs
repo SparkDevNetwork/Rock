@@ -28,6 +28,11 @@
         </template>
 
         <template #edit>
+            <NotificationBox v-if="validationMessage"
+                             alertType="validation">
+                <p>Please correct the following:</p>
+                <span v-html="validationMessage"></span>
+            </NotificationBox>
             <EditPanel v-model="financialAccountEditBag" :options="options" @propertyChanged="onPropertyChanged" />
         </template>
     </DetailBlock>
@@ -57,6 +62,7 @@
 
     const blockError = ref("");
     const errorMessage = ref("");
+    const validationMessage = ref("");
 
     const financialAccountViewBag = ref(config.entity);
     const financialAccountEditBag = ref<FinancialAccountBag>({} as FinancialAccountBag);
@@ -152,6 +158,24 @@
     // #endregion
 
     // #region Functions
+
+    function setErrorMessage(message: string | null): void {
+        const defaultErrorMessage = "Unknown error while trying to save financial account.";
+
+        try {
+            const errorResponse = JSON.parse(message || "");
+            if (errorResponse?.isValidationError) {
+                validationMessage.value = errorResponse.message;
+            }
+            else {
+                errorMessage.value = message ?? defaultErrorMessage;
+            }
+        }
+        catch {
+            errorMessage.value = message ?? defaultErrorMessage;
+        }
+    }
+
 
     // #endregion
 
@@ -266,7 +290,7 @@
             }
         }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save financial account.";
+        setErrorMessage(result.errorMessage);
 
         return false;
     }
