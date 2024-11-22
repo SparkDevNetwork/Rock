@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of benevolence types
     /// </summary>
     [Serializable]
+    [FieldTypeUsage(FieldTypeUsage.System)]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BENEVOLENCE_TYPE )]
     public class BenevolenceTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

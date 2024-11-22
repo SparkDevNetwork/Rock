@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) <see cref="MediaElement"/>.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MEDIA_ELEMENT )]
     public class MediaElementFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

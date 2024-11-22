@@ -38,6 +38,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a list of options as checkboxes.  Value is saved as a comma-delimited list
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CHECK_LIST )]
     public class CheckListFieldType : FieldType, ISplitMultiValueFieldType

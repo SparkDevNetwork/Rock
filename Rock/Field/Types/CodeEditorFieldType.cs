@@ -32,6 +32,7 @@ namespace Rock.Field.Types
     /// <summary>
     ///
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CODE_EDITOR )]
     public class CodeEditorFieldType : FieldType

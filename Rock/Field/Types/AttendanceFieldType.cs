@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Attendance
     /// Stored as Attendance.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ATTENDANCE )]
     public class AttendanceFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

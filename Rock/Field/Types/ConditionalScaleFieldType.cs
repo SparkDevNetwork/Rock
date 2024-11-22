@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// 
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian)]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONDITIONAL_SCALE )]
     public class ConditionalScaleFieldType : DecimalFieldType

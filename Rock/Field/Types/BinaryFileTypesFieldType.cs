@@ -29,6 +29,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to pick multiple Binary Files Types
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BINARY_FILE_TYPES )]
     public class BinaryFileTypesFieldType : SelectFromListFieldType, IEntityReferenceFieldType
