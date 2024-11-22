@@ -504,7 +504,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningCourse.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningCourse.FriendlyTypeName}." );
                 return false;
             }
 

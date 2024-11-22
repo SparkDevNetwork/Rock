@@ -95,16 +95,13 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningSemesterListOptionsBag();
 
-            var progamInfo = new LearningProgramService(RockContext).GetSelect(PageParameter(PageParameterKey.LearningProgramId), p => new
-            {
-                p.Id,
-                p.Name
-            } );
+            var progam = new LearningProgramService( RockContext ).Get( PageParameter( PageParameterKey.LearningProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( progamInfo != null )
+            if ( progam != null )
             {
-                options.LearningProgramIdKey = Rock.Utility.IdHasher.Instance.GetHash( progamInfo.Id );
-                options.LearningProgramName = progamInfo.Name;
+                options.CanEditProgram = progam.IsAuthorized( Authorization.EDIT, GetCurrentPerson() );
+                options.LearningProgramIdKey = Rock.Utility.IdHasher.Instance.GetHash( progam.Id );
+                options.LearningProgramName = progam.Name;
             }
 
             return options;
@@ -204,7 +201,7 @@ namespace Rock.Blocks.Lms
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${LearningSemester.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {LearningSemester.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

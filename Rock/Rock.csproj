@@ -1271,9 +1271,13 @@
     <Compile Include="Model\Core\Note\NoteExtensionMethods.cs" />
     <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncementService.cs" />
+    <Compile Include="Model\LMS\LearningCourse\LearningCourse.Logic.cs" />
     <Compile Include="Model\LMS\LearningCourse\LearningCourse.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScaleService.cs" />
+    <Compile Include="Model\LMS\LearningParticipant\LearningParticipant.Logic.cs" />
     <Compile Include="Model\LMS\LearningParticipant\LearningParticipantExtensionMethods.cs" />
+    <Compile Include="Model\LMS\LearningProgramCompletion\LearningProgramCompletion.Logic.cs" />
+    <Compile Include="Model\LMS\LearningSemester\LearningSemester.Logic.cs" />
     <Compile Include="Model\Prayer\PrayerRequest\PrayerRequest.SaveHook.cs" />
     <Compile Include="Net\Geolocation\IpGeoException.cs" />
     <Compile Include="Net\Geolocation\IpGeolocation.cs" />
@@ -1617,6 +1621,7 @@
     <Compile Include="Plugin\HotFixes\206_MigrationRollupsForV17_0_13.cs" />
     <Compile Include="Plugin\HotFixes\205_MigrationRollupsForV17_0_12.cs" />
     <Compile Include="Plugin\HotFixes\219_UndoObsidianChop.cs" />
+    <Compile Include="Plugin\HotFixes\222_LMSSecurity.cs" />
     <Compile Include="Plugin\HotFixes\220_CompletionGradingSystem.cs" />
     <Compile Include="Plugin\HotFixes\218_MigrationRollupsForV17_0_19.cs" />
     <Compile Include="Plugin\HotFixes\217_DefaultGradeScaleHighlightColors.cs" />

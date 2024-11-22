@@ -535,11 +535,11 @@
 
     /** The time elapsed since the specified date in a human-readable format. */
     function getElapsedTime(date: string | null | undefined): string {
-        return RockDateTime.parseISO(date ?? "")?.localDateTime.toElapsedString() ?? "";
+        return RockDateTime.parseISO(date ?? "")?.localDateTime.humanizeElapsed() ?? "";
     }
 
     function isActivityUnavailable(activity: LearningActivityCompletionBag | null): boolean {
-        return !activity?.isAvailable;
+        return activity?.isAvailable !== true;
     }
 
     // #endregion
@@ -549,7 +549,7 @@
     /**
      * Called when the activity component's closed emit is fired. Because completed
      *  and closed may be called together - this event handler awaits the resolution
-     * of the completedPromiseSource.
+     * of the completedPromiseSource (if the activity is not yet completed).
      */
     async function onClosed(): Promise<void> {
         if (!isCompleted(viewingCompletionBag.value)) {

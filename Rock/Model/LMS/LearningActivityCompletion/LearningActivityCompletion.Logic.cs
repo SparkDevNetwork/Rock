@@ -22,7 +22,6 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Enums.Lms;
-using Rock.Lms;
 
 namespace Rock.Model
 {
@@ -145,14 +144,43 @@ namespace Rock.Model
                 return false;
             }
         }
-            
+
         /// <summary>
         /// The activity has points, is assigned to the facilitator and hasn't been completed.
         /// </summary>
         [NotAudited]
-        public bool RequiresFaciltatorCompletion =>
-            LearningActivity.Points > 0
-            && LearningActivity.AssignTo == AssignTo.Facilitator
-            && !IsFacilitatorCompleted;
+        public bool RequiresFacilitatorCompletion
+        {
+            get
+            {
+                return LearningActivity.Points > 0
+                    && LearningActivity.AssignTo == AssignTo.Facilitator
+                    && !IsFacilitatorCompleted;
+            }
+        }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        [NotMapped]
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.LearningActivity != null ? this.LearningActivity : base.ParentAuthority;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Rock.Model.Person person )
+        {
+            // Defer to the parent authority.
+            // We don't add any logic to the authorization process
+            // that's not already included in that logic.
+            return ParentAuthority.IsAuthorized( action, person );
+        }
     }
 }

@@ -15,13 +15,13 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
-using Rock.Enums.Lms;
 using Rock.Security;
 
 namespace Rock.Model
 {
-    public partial class LearningProgram
+    public partial class LearningCourse
     {
         /// <inheritdoc/>
         public override bool IsAuthorized( string action, Rock.Model.Person person )
@@ -31,7 +31,7 @@ namespace Rock.Model
 
             if ( authorized )
             {
-                return authorized;
+                return true;
             }
 
             // Authorize "ViewGrades" when the person has "EditGrades".
@@ -47,7 +47,27 @@ namespace Rock.Model
                 }
             }
 
-            return authorized;
+            // We need to explicitly call to the ParentAuthority's IsAuthorized
+            // method so that the logic for VIEW_GRADES actions can be evaluated;
+            // the default security logic will just recursively call
+            // Rock.Security.Authorization.ItemAuthorized which doesn't
+            // know anything about the special handling of "VIEW_GRADES" and "EDIT_GRADES".
+            return ParentAuthority.IsAuthorized( action, person );
+        }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        [NotMapped]
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.LearningProgram != null ? this.LearningProgram : base.ParentAuthority;
+            }
         }
 
         /// <summary>
@@ -63,38 +83,5 @@ namespace Rock.Model
                 return supportedActions;
             }
         }
-    }
-
-    /// <summary>
-    /// POCO for encapsulating KPIs for a given <see cref="LearningProgram"/> .
-    /// </summary>
-    public class LearningProgramKpis
-    {
-        /// <summary>
-        ///     Gets or sets the number of active classes in the Program.
-        /// </summary>
-        /// <remarks>
-        ///     Currently defined as the number of unique learning class Ids for the program
-        ///     where the semester has started, but not ended and the class "isActive".
-        /// </remarks>
-        public int ActiveClasses { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the number of active students in the Program.
-        /// </summary>
-        /// <remarks>
-        ///     Currently defined as the number of unique student person Ids enrolled in any class
-        ///     within the program where the <see cref="LearningCompletionStatus"/> is incomplete.
-        /// </remarks>
-        public int ActiveStudents { get; set; }
-
-        /// <summary>
-        ///     Gets or sets the number of students who have completed this Program.
-        /// </summary>
-        /// <remarks>
-        ///     Currently defined as the number of unique program completions for the program
-        ///     where the <see cref="CompletionStatus"/> is "Completed".
-        /// </remarks>
-        public int Completions { get; set; }
     }
 }

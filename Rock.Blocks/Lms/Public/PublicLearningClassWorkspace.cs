@@ -268,12 +268,14 @@ namespace Rock.Blocks.Lms
                         .Select( b => new ListItemBag { Text = b.FileName, Value = b.Guid.ToString() } )
                         .FirstOrDefault();
 
+                // AvailableDateTime should have been calculated for the student
+                // in the call to LearningParticipantService.GetStudentLearningPlan().
                 var activityBag = new LearningActivityBag
                 {
                     ActivityComponent = activityComponentBag,
                     ActivityComponentSettingsJson = configurationToSend,
                     AssignTo = activity.LearningActivity.AssignTo,
-                    AvailableDateCalculated = activity.LearningActivity.AvailableDateCalculated,
+                    AvailableDateCalculated = activity.AvailableDateTime,
                     AvailabilityCriteria = activity.LearningActivity.AvailabilityCriteria,
                     AvailableDateDefault = activity.LearningActivity.AvailableDateDefault,
                     AvailableDateOffset = activity.LearningActivity.AvailableDateOffset,

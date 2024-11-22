@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 using Rock.Data;
 using Rock.Enums.Lms;
@@ -47,16 +48,18 @@ namespace Rock.Model
                         }
                         else
                         {
-                            return $"{DateOffsetText( AvailableDateOffset )} class start.";
+                            return $"{DateOffsetText( AvailableDateOffset )} class start";
                         }
                     case AvailabilityCriteria.EnrollmentOffset:
-                        if ( LearningClass?.CreatedDateTime.HasValue == true )
+                        var daysOffset = AvailableDateOffset.ToIntSafe();
+                        var daysText = "Day".PluralizeIf( daysOffset != 1 );
+                        if ( daysOffset == 0 )
                         {
-                            return LearningClass.CreatedDateTime.Value.AddDays( AvailableDateOffset.Value ).ToShortDateString();
+                            return "At Enrollment";
                         }
                         else
                         {
-                            return $"{DateOffsetText( AvailableDateOffset )} class enrollment.";
+                            return $"{daysOffset} {daysText} After Enrollment";
                         }
                     case AvailabilityCriteria.AfterPreviousCompleted:
                         return "After Previous";
@@ -91,16 +94,18 @@ namespace Rock.Model
                         }
                         else
                         {
-                            return $"{DateOffsetText( DueDateOffset )} class start.";
+                            return $"{DateOffsetText( DueDateOffset )} class start";
                         }
                     case DueDateCriteria.EnrollmentOffset:
-                        if ( LearningClass.CreatedDateTime.HasValue )
+                        var daysOffset = DueDateOffset.ToIntSafe();
+                        var daysText = "Day".PluralizeIf( daysOffset != 1 );
+                        if ( daysOffset == 0 )
                         {
-                            return LearningClass.CreatedDateTime.Value.AddDays( DueDateOffset.Value ).ToShortDateString();
+                            return "At Enrollment";
                         }
                         else
                         {
-                            return $"{DateOffsetText( DueDateOffset )} class enrollment.";
+                            return $"{daysOffset} {daysText} After Enrollment";
                         }
                     case DueDateCriteria.NoDate:
                         return string.Empty;
@@ -124,7 +129,7 @@ namespace Rock.Model
                 AvailableDateDefault,
                 AvailableDateOffset,
                 LearningClass?.LearningSemester?.StartDate,
-                LearningClass?.CreatedDateTime
+                null
             );
 
         /// <summary>
@@ -221,7 +226,7 @@ namespace Rock.Model
                     DueDateDefault,
                     DueDateOffset,
                     LearningClass?.LearningSemester?.StartDate,
-                    LearningClass?.CreatedDateTime
+                    null
                 );
 
         /// <summary>
@@ -259,6 +264,30 @@ namespace Rock.Model
                 return DueDateCalculated.HasValue
                     && DueDateCalculated.Value.Date < RockDateTime.Today.Date;
             }
+        }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        [NotMapped]
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.LearningClass != null ? this.LearningClass : base.ParentAuthority;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Rock.Model.Person person )
+        {
+            // Defer to the parent authority.
+            // We don't add any logic to the authorization process
+            // that's not already included in that logic.
+            return ParentAuthority.IsAuthorized( action, person );
         }
 
         #region Private methods

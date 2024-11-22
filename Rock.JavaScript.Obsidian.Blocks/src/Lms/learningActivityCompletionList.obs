@@ -43,7 +43,8 @@
             </template>
         </DateColumn>
 
-        <Column name="grade"
+        <Column v-if="canViewGrades"
+                name="grade"
                 title="Grade"
                 field="grade"
                 width="10%"
@@ -60,7 +61,7 @@
                 title="Statuses"
                 field="statuses"
                 width="15%"
-                :filter="textValueFilter"
+                :filter="pickExistingValueFilter"
                 :filterValue="getRowStatusesFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
@@ -145,6 +146,8 @@
     // #endregion
 
     // #region Computed Functions
+
+    const canViewGrades = computed((): boolean => config.options?.canViewGrades ?? false);
 
     const studentsWithoutActivity = computed(() =>
         allStudents.value.filter(s =>

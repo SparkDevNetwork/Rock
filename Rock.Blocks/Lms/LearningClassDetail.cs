@@ -145,18 +145,22 @@ namespace Rock.Blocks.Lms
         private LearningClassDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
-            var classId = GetClassId().ToIntSafe();
+            var learningClassService = new LearningClassService( RockContext );
+            var learningClass = learningClassService
+                .Get( PageParameter( PageParameterKey.LearningClassId ), !PageCache.Layout.Site.DisablePredictableIds );
+
             var options = new LearningClassDetailOptionsBag();
+            options.CanViewGrades = learningClass.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
 
             if ( programId > 0 )
             {
                 var programService = new LearningProgramService( RockContext );
                 var configurationMode = programService.GetSelect( programId, p => p.ConfigurationMode );
-                var enableAnnouncements = new LearningClassService( RockContext ).GetSelect( classId, c => c.LearningCourse.EnableAnnouncements );
+                var enableAnnouncements = learningClassService.GetSelect( learningClass.Id, c => c.LearningCourse.EnableAnnouncements );
 
                 options.CourseAllowsAnnouncements = enableAnnouncements;
                 options.ProgramConfigurationMode = configurationMode;
-                options.ActiveClassesUsingDefaultGradingSystem = GetProgramActiveClassesWithDefaultGradingSystem( classId ).Count();
+                options.ActiveClassesUsingDefaultGradingSystem = GetProgramActiveClassesWithDefaultGradingSystem( learningClass.Id ).Count();
 
                 options.Semesters = programService.GetSemesters( programId ).ToListItemBagList();
             }
@@ -367,7 +371,7 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.IsPublic ),
                 () => entity.IsPublic = box.Bag.IsPublic );
 
-            // Only allow the UI to set the grading system if it's not yet set.
+            // Only allow the block to set the grading system if it's not yet set.
             // Because existing ActivityCompletions may be set using it.
             if ( entity.LearningGradingSystemId == 0 || new LearningClassService( RockContext ).CanUpdateGradingSystem( entity.Id ) )
             {
@@ -497,7 +501,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningClass.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningClass.FriendlyTypeName}." );
                 return false;
             }
 
@@ -693,7 +697,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${LearningActivity.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningActivity.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -725,7 +729,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${LearningClassAnnouncement.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningClassAnnouncement.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -757,7 +761,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${LearningClassContentPage.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningClassContentPage.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )
@@ -792,7 +796,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${LearningParticipant.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningParticipant.FriendlyTypeName}." );
             }
 
             entityService.Delete( entity );
@@ -930,7 +934,7 @@ namespace Rock.Blocks.Lms
                             && components.FirstOrDefault( comp => comp.Value.EntityType.Id == a.ActivityComponentId )
                             .Value
                             .RequiresGrading(c)
-                        ) || c.RequiresFaciltatorCompletion ) )
+                        ) || c.RequiresFacilitatorCompletion ) )
                 .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.HasStudentComment ) );
 
             var classId = GetClassId().ToIntSafe();
@@ -993,12 +997,16 @@ namespace Rock.Blocks.Lms
                 .OrderBy( f => f.Person.NickName )
                 .ThenBy( f => f.Person.LastName );
 
+            // Check that the current person is authorized to view grades on the class.
+            // If not then hide the current grade column values.
+            var canViewGrades = entity.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
+
             // Return all students for the course's default class.
             var gridBuilder = new GridBuilder<LearningParticipant>()
                 .AddTextField( "idKey", p => p.IdKey )
                 .AddPersonField( "name", p => p.Person )
-                .AddField( "currentGradePercent", p => Math.Round( p.LearningGradePercent, 1 ) )
-                .AddField( "currentGrade", p => p.LearningGradingSystemScale?.Name )
+                .AddField( "currentGradePercent", p => canViewGrades ? (decimal?)Math.Round( p.LearningGradePercent, 1 ) : null )
+                .AddField( "currentGrade", p => canViewGrades ? p.LearningGradingSystemScale?.Name : null )
                 .AddTextField( "note", p => p.Note )
                 .AddTextField( "role", p => p.GroupRole.Name )
                 .AddField( "hasCompletions", p => p.LearningActivities.Any() )
@@ -1106,7 +1114,8 @@ namespace Rock.Blocks.Lms
 
             RockContext.SaveChanges();
 
-            var updatedBag = GetLearningParticipantBag( entity, learningParticipantService );
+            var canViewGrades = entity.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
+            var updatedBag = GetLearningParticipantBag( entity, learningParticipantService, canViewGrades );
 
             return ActionOk( updatedBag );
         }
@@ -1201,7 +1210,7 @@ namespace Rock.Blocks.Lms
         /// <param name="entity">The <see cref="LearningParticipant"/> to convert to bag.</param>
         /// <param name="participantService">The LearningParticipantService to use for getting the updated information.</param>
         /// <returns>A LearningParticipantBag with the latest values from the database.</returns>
-        private LearningParticipantBag GetLearningParticipantBag( LearningParticipant entity, LearningParticipantService participantService )
+        private LearningParticipantBag GetLearningParticipantBag( LearningParticipant entity, LearningParticipantService participantService, bool includeGrades = false )
         {
             var participantDetails = participantService
                 .Queryable()
@@ -1214,8 +1223,8 @@ namespace Rock.Blocks.Lms
             return new LearningParticipantBag
             {
                 IdKey = entity.IdKey,
-                CurrentGradePercent = participantDetails.LearningGradePercent,
-                CurrentGradeText = participantDetails.LearningGradingSystemScale?.Name,
+                CurrentGradePercent = includeGrades ? participantDetails.LearningGradePercent : 0,
+                CurrentGradeText = includeGrades ? participantDetails.LearningGradingSystemScale?.Name : string.Empty,
                 ParticipantRole = participantDetails.GroupRole.ToListItemBag(),
                 PersonAlias = participantDetails.Person.PrimaryAlias.ToListItemBag(),
                 IsFacilitator = participantDetails.GroupRole.IsLeader
@@ -1256,7 +1265,7 @@ namespace Rock.Blocks.Lms
         /// <summary>
         /// Gets the ordered learning plan for the class specified by the current PageParameter.
         /// </summary>
-        /// <param name="rockContext">The RockContex tto use for getting the ordered results</param>
+        /// <param name="rockContext">The RockContex to use for getting the ordered results</param>
         /// <returns>An IQueryable of ordered <see cref="LearningActivity"/> records.</returns>
         private IQueryable<LearningActivity> GetOrderedLearningPlan( RockContext rockContext, int classId )
         {

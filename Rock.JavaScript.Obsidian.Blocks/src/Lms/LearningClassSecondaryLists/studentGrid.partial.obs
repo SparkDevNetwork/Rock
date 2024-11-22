@@ -46,7 +46,13 @@
 
         <TextColumn name="currentAssignment" title="Current Assignment" field="currentAssignment" :filter="pickExistingValueFilter" visiblePriority="xs" />
 
-        <Column name="currentGradePercent" title="Current Grade" field="currentGradePercent" :filter="numberValueFilter" visiblePriority="xs">
+        <Column
+                v-if="showGrades"
+                name="currentGradePercent"
+                title="Current Grade"
+                field="currentGradePercent"
+                :filter="numberValueFilter"
+                visiblePriority="xs">
             <template #format="{ row }">
                 {{ row.currentGrade }} ({{ row.currentGradePercent }}%)
             </template>
@@ -70,7 +76,6 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
-    import { confirm } from "@Obsidian/Utility/dialogs";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -82,13 +87,19 @@
 
     const props = defineProps({
         isAddEnabled: {
-            type: Object as PropType<boolean>,
+            type: Boolean as PropType<boolean>,
             required: true,
             default: false
         },
 
         isDeleteEnabled: {
-            type: Object as PropType<boolean>,
+            type: Boolean as PropType<boolean>,
+            required: true,
+            default: false
+        },
+
+        showGrades: {
+            type: Boolean as PropType<boolean>,
             required: true,
             default: false
         }

@@ -34,6 +34,7 @@
     <LearningClassSecondaryLists
                                  v-if="panelMode === DetailPanelMode.View"
                                  :isEditable="isEditable"
+                                 :canViewGrades="canViewGrades"
                                  :navigationUrls="config.navigationUrls"
                                  :showAbsences="takesAttendance"
                                  :includeAnnouncements="includeAnnouncementsTab"
@@ -97,6 +98,8 @@
     // #endregion
 
     // #region Computed Values
+
+    const canViewGrades = computed((): boolean => options.value?.canViewGrades ?? false);
 
     /**
      * The entity name to display in the block panel.
@@ -199,7 +202,7 @@
     });
 
     const options = computed((): LearningClassDetailOptionsBag => {
-        return config.options ?? { activeClassesUsingDefaultGradingSystem: 0, courseAllowsAnnouncements: true };
+        return config.options ?? { activeClassesUsingDefaultGradingSystem: 0, courseAllowsAnnouncements: true, canViewGrades: false };
     });
 
     // #endregion

@@ -96,9 +96,11 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningParticipantDetailOptionsBag();
 
-            var classId = PageParameter( PageParameterKey.LearningClassId );
+            var learningClass = new LearningClassService( RockContext )
+                .Get( PageParameter( PageParameterKey.LearningClassId ), !PageCache.Layout.Site.DisablePredictableIds );
 
-            options.ClassRoles = new LearningClassService( RockContext ).GetClassRoles( classId )?.ToListItemBagList();
+            options.ClassRoles = new LearningClassService( RockContext ).GetClassRoles( learningClass.Id )?.ToListItemBagList();
+            options.CanViewGrades = learningClass.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
 
             return options;
         }
@@ -180,14 +182,15 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
+            var canViewGrades = entity.IsAuthorized( Authorization.VIEW_GRADES, RequestContext.CurrentPerson );
             var absences = GetAbsences( entity );
             return new LearningParticipantBag
             {
                 IdKey = entity.IdKey,
                 Absences = absences,
                 AbsencesLabelStyle = entity.LearningClass?.AbsencesLabelStyle( absences ?? 0 ),
-                CurrentGradePercent = Math.Round( entity.LearningGradePercent, 1),
-                CurrentGradeText = entity.LearningGradingSystemScale?.Name,
+                CurrentGradePercent = canViewGrades ? Math.Round( entity.LearningGradePercent, 1) : 0,
+                CurrentGradeText = canViewGrades ? entity.LearningGradingSystemScale?.Name : null,
                 Note = entity.Note,
                 ParticipantRole = entity.GroupRole?.ToListItemBag(),
                 PersonAlias = entity.Person?.PrimaryAlias?.ToListItemBag(),
@@ -529,7 +532,7 @@ namespace Rock.Blocks.Lms
             var now = RockDateTime.Now;
             var participantService = new LearningParticipantService( RockContext );
 
-            // Get the grade scales first since we'll need them for the grade caluculations.
+            // Get the grade scales first since we'll need them for the grade calculations.
             var gradeScales = participantService.Queryable()
                 .Where( p => p.Id == entity.Id )
                 .Include( c => c.LearningClass.LearningGradingSystem.LearningGradingSystemScales )
@@ -537,11 +540,17 @@ namespace Rock.Blocks.Lms
                 .ToList()
                 .OrderByDescending( g => g.ThresholdPercentage );
 
-            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
+            var learningClassService = new LearningClassService( RockContext );
+            var learningClassId = learningClassService.GetSelect(
+                PageParameter( PageParameterKey.LearningClassId ),
+                c => c.Id,
+                !PageCache.Layout.Site.DisablePredictableIds );   
             var personId = participantService.GetSelect( PageParameter( PageParameterKey.LearningParticipantId ), p => p.PersonId );
-            var learningPlan = participantService.GetStudentLearningPlan( classId, personId );
+            var learningPlan = participantService.GetStudentLearningPlan( learningClassId, personId );
 
             var components = LearningActivityContainer.Instance.Components;
+
+            var canViewGrades = entity.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
 
             // Return all activities for the course.
             var gridBuilder = new GridBuilder<LearningActivityCompletion>()
@@ -556,7 +565,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "dueDate", a => a.DueDate )
                 .AddField( "isPastDue", a => a.DueDate != null && a.DueDate >= now && !a.CompletedDateTime.HasValue )
                 .AddField( "isAvailableNow", a => a.AvailableDateTime != null && now >= a.AvailableDateTime )
-                .AddTextField( "grade", a => a.RequiresGrading || a.LearningActivity.Points == 0 ? null : a.GetGradeText( gradeScales ) );
+                .AddTextField( "grade", a => !canViewGrades || a.RequiresGrading || a.LearningActivity.Points == 0 ? null : a.GetGradeText( gradeScales ) );
 
             return ActionOk( gridBuilder.Build( learningPlan ) );
         }

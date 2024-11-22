@@ -303,7 +303,7 @@ namespace Rock.Blocks.Lms
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${LearningClass.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {LearningClass.FriendlyTypeName}." );
                 }
 
                 entityService.Delete( entity.Id );
