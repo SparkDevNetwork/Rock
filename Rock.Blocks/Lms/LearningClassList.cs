@@ -263,7 +263,7 @@ namespace Rock.Blocks.Lms
 
             if ( GetAttributeValue( AttributeKey.ShowSemesterColumn ).AsBoolean() )
             {
-                grid.AddTextField( "semester", a => a.LearningSemester.Name );
+                grid.AddTextField( "semester", a => a.LearningSemester?.Name );
             }
 
             if ( GetAttributeValue( AttributeKey.ShowLocationColumn ).AsBoolean() )

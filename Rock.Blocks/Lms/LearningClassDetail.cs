@@ -150,7 +150,7 @@ namespace Rock.Blocks.Lms
                 .Get( PageParameter( PageParameterKey.LearningClassId ), !PageCache.Layout.Site.DisablePredictableIds );
 
             var options = new LearningClassDetailOptionsBag();
-            options.CanViewGrades = learningClass.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
+            options.CanViewGrades = learningClass != null && learningClass.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
 
             if ( programId > 0 )
             {
