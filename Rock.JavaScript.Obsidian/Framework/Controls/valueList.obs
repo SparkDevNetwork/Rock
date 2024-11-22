@@ -103,8 +103,8 @@
     const valueInputClasses = computed((): string => {
         let classes = "key-value-value form-control";
 
-        if (!props.fullWidth) {
-            classes += " input-width-lg";
+        if (props.fullWidth) {
+            classes += " full-width";
         }
 
         return classes;
