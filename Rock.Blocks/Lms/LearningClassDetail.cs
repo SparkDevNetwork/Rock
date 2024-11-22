@@ -156,11 +156,11 @@ namespace Rock.Blocks.Lms
             {
                 var programService = new LearningProgramService( RockContext );
                 var configurationMode = programService.GetSelect( programId, p => p.ConfigurationMode );
-                var enableAnnouncements = learningClassService.GetSelect( learningClass.Id, c => c.LearningCourse.EnableAnnouncements );
+                var enableAnnouncements = learningClass != null && learningClassService.GetSelect( learningClass.Id, c => c.LearningCourse.EnableAnnouncements );
 
                 options.CourseAllowsAnnouncements = enableAnnouncements;
                 options.ProgramConfigurationMode = configurationMode;
-                options.ActiveClassesUsingDefaultGradingSystem = GetProgramActiveClassesWithDefaultGradingSystem( learningClass.Id ).Count();
+                options.ActiveClassesUsingDefaultGradingSystem = learningClass == null ? 0 : GetProgramActiveClassesWithDefaultGradingSystem( learningClass.Id ).Count();
 
                 options.Semesters = programService.GetSemesters( programId ).ToListItemBagList();
             }

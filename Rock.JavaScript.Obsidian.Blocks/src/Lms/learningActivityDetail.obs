@@ -16,7 +16,7 @@
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="Activity"
                  :isBadgesVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  :footerSecondaryActions="footerSecondaryActions"
                  :isEditVisible="isEditable"
                  @cancelEdit="onCancelEdit"
