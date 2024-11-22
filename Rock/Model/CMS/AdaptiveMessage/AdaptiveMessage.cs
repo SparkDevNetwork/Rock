@@ -105,13 +105,13 @@ namespace Rock.Model
         /// A collection of <see cref="Rock.Model.Category">Categories</see> that this Content Channel is associated with.
         /// </value>
         [DataMember]
-        public virtual ICollection<AdaptiveMessageCategory> Categories
+        public virtual ICollection<AdaptiveMessageCategory> AdaptiveMessageCategories
         {
-            get { return _categories ?? ( _categories = new Collection<AdaptiveMessageCategory>() ); }
-            set { _categories = value; }
+            get { return _adaptiveMessageCategories ?? ( _adaptiveMessageCategories = new Collection<AdaptiveMessageCategory>() ); }
+            set { _adaptiveMessageCategories = value; }
         }
 
-        private ICollection<AdaptiveMessageCategory> _categories;
+        private ICollection<AdaptiveMessageCategory> _adaptiveMessageCategories;
 
         #endregion Navigation Properties
     }
