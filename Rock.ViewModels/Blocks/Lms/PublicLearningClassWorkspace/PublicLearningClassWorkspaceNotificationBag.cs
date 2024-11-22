@@ -41,7 +41,7 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         /// <summary>
         /// Gets or sets the DateTime of the notification.
         /// </summary>
-        public DateTime NotificationDateTime { get; set; }
+        public DateTime? NotificationDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the title that should be used for this notification.

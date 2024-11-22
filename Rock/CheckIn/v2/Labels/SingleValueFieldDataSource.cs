@@ -38,7 +38,14 @@ namespace Rock.CheckIn.v2.Labels
         /// <inheritdoc/>
         public override List<object> GetValues( LabelField field, PrintLabelRequest printRequest )
         {
-            return new List<object>( new[] { ValueFunc?.Invoke( ( TLabelData ) printRequest.LabelData, field, printRequest ) } );
+            var value = ValueFunc?.Invoke( ( TLabelData ) printRequest.LabelData, field, printRequest );
+
+            if ( value == null )
+            {
+                return new List<object>();
+            }
+
+            return new List<object>( new[] { value } );
         }
     }
 }

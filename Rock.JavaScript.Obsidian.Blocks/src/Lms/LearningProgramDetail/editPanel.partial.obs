@@ -11,12 +11,34 @@
                                      label="Name"
                                      rules="required" />
 
-                            <TextBox
-                                     v-model="summary"
-                                     label="Summary"
-                                     help="Short summary of the program to be used on public sites and lists."
-                                     textMode="multiline" />
+                        </div>
+                        <div class="col-md-6">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <CheckBox
+                                            v-model="isActive"
+                                            label="Active" />
+                                </div>
 
+                                <div class="col-md-6">
+                                    <CheckBox
+                                            v-model="isPublic"
+                                            label="Public" />
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <TextBox
+                            v-model="summary"
+                            label="Public Summary"
+                            help="Short summary of the program to be used on public sites and lists."
+                            textMode="multiline"
+                            :maxLength="500" />
+
+                    <div class="row">
+                        <div class="col-md-6">
                             <RadioButtonList
                                              v-model="configurationMode"
                                              label="Configuration Mode"
@@ -24,65 +46,29 @@
                                              rules="required"
                                              :items="configurationModes" />
 
-                            <CategoryPicker
-                                            v-model="category"
-                                            label="Category"
-                                            :entityTypeGuid="EntityType.LearningProgram"
-                                            :multiple="false" />
-
-                            <CheckBox
-                                      v-model="isCompletionStatusTracked"
-                                      help="Determines if program start and end dates will be automatically tracked for individuals as they start/complete classes."
-                                      label="Track Program Status" />
-
-                            <DropDownList
-                                          :enhanceForLongLists="true"
-                                          v-model="systemCommunicationValue"
-                                          label="Default Communication Template"
-                                          help="The template to use when sending emails for communications about this program and it's courses."
-                                          rules="required"
-                                          :items="systemCommunications" />
-
-                            <WorkflowTypePicker
-                                                v-model="completionWorkflowType"
-                                                label="Completion Workflow Type"
-                                                help="The workflow to launch when an individual completes the requirements for a program." />
+                            <ImageUploader v-model="imageBinaryFile"
+                                           label="Image"
+                                           :binaryFileTypeGuid="imageFileTypeGuid" />
                         </div>
 
                         <div class="col-md-6">
-                            <div class="col-md-6">
-                                <CheckBox
-                                          v-model="isActive"
-                                          label="Active" />
-                            </div>
 
-                            <div class="col-md-6">
-                                <CheckBox
-                                          v-model="isPublic"
-                                          label="Public" />
+                            <CategoryPicker
+                                    v-model="category"
+                                    label="Category"
+                                    :entityTypeGuid="EntityType.LearningProgram"
+                                    :multiple="false" />
 
-                            </div>
                             <ColorPicker
-                                         v-model="highlightColor"
-                                         label="Highlight Color"
-                                         help="The color to use to differentiate from other learning programs." />
+                                        v-model="highlightColor"
+                                        label="Highlight Color"
+                                        help="The color to use to differentiate from other learning programs." />
 
                             <TextBox
                                      v-model="iconCssClass"
                                      class="input-width-xl"
                                      label="Icon CSS Class" />
 
-                            <ImageUploader v-model="imageBinaryFile"
-                                           label="Image"
-                                           :binaryFileTypeGuid="imageFileTypeGuid" />
-
-                            <DropDownList
-                                          label="Default Grading System"
-                                          v-model="gradingSystem"
-                                          :grouped="false"
-                                          :items="gradingSystems"
-                                          :multiple="false"
-                                          :showBlankItem="true" />
                             <!-- <NumberBox
                                        v-model="absencesWarningCount"
                                        label="Absences Warning Count"
@@ -96,6 +82,39 @@
                     </div>
 
                     <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+
+                    <Panel title="Advanced Settings" :hasCollapse="true" class="mt-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <CheckBox
+                                    v-model="isCompletionStatusTracked"
+                                    help="Determines if program start and end dates will be automatically tracked for individuals as they start/complete classes."
+                                    label="Track Program Status" />
+
+                                    <DropDownList
+                                        :enhanceForLongLists="true"
+                                        v-model="systemCommunicationValue"
+                                        label="Activity Available Communication Template"
+                                        help="The template to use when sending available activity emails for this program and it's courses."
+                                        rules="required"
+                                        :items="systemCommunications" />
+                            </div>
+                            <div class="col-md-6">
+                                <DropDownList
+                                    label="Default Grading System"
+                                    v-model="gradingSystem"
+                                    :grouped="false"
+                                    :items="gradingSystems"
+                                    :multiple="false"
+                                    :showBlankItem="true" />
+
+                                <WorkflowTypePicker
+                                    v-model="completionWorkflowType"
+                                    label="Completion Workflow Type"
+                                    help="The workflow to launch when an individual completes the requirements for a program." />
+                            </div>
+                        </div>
+                    </Panel>
                 </fieldset>
             </div>
             <div v-else-if="item === 'Description'">
@@ -107,6 +126,7 @@
 </template>
 
 <script setup lang="ts">
+    import Panel from "@Obsidian/Controls/panel.obs";
     import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";

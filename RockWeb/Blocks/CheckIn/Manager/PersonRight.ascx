@@ -41,17 +41,27 @@
                     <Rock:HiddenFieldWithClass ID="hfHasClientPrinter" runat="server" CssClass="js-has-client-printer" />
                     <Rock:NotificationBox ID="nbReprintMessage" runat="server" CssClass="js-reprintlabel-notification" Visible="false"></Rock:NotificationBox>
                     <Rock:ModalAlert ID="maNoLabelsFound" runat="server"></Rock:ModalAlert>
+                    <Rock:ModalAlert ID="maPrintResult" runat="server"></Rock:ModalAlert>
                     <asp:HiddenField ID="hfCurrentAttendanceIds" runat="server" />
                     <asp:HiddenField ID="hfPersonId" runat="server" />
                     <div>
                         <asp:LinkButton ID="btnPersonAttendanceHistory" runat="server" OnClick="btnPersonAttendanceHistory_Click" ToolTip="Attendance History" CssClass="btn btn-default btn-sm my-2"><i class="fa fa-history"></i></asp:LinkButton>
                         <asp:LinkButton ID="btnReprintLabels" runat="server" OnClick="btnReprintLabels_Click" ToolTip="Reprint Labels" CssClass="btn btn-default btn-sm my-2"><i class="fa fa-print"></i></asp:LinkButton>
                     </div>
+
                     <Rock:ModalDialog ID="mdReprintLabels" runat="server" ValidationGroup="vgReprintLabels" Title="Label Reprints" OnSaveClick="mdReprintLabels_PrintClick" SaveButtonText="Print" Visible="false">
                         <Content>
                             <Rock:NotificationBox ID="nbReprintLabelMessages" runat="server" NotificationBoxType="Validation"></Rock:NotificationBox>
                             <Rock:RockCheckBoxList ID="cblLabels" runat="server" Label="Labels" DataTextField="Name" DataValueField="FileGuid"></Rock:RockCheckBoxList>
                             <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" />
+                        </Content>
+                    </Rock:ModalDialog>
+
+                    <Rock:ModalDialog ID="mdReprintNextGenLabels" runat="server" ValidationGroup="vgReprintLabels" Title="Label Reprints" OnSaveClick="mdReprintNextGenLabels_PrintClick" SaveButtonText="Print" Visible="false">
+                        <Content>
+                            <Rock:NotificationBox ID="nbReprintNextGenLabelMessages" runat="server" NotificationBoxType="Validation"></Rock:NotificationBox>
+                            <Rock:RockCheckBoxList ID="cblNextGenLabels" runat="server" Label="Labels" DataTextField="Text" DataValueField="Value"></Rock:RockCheckBoxList>
+                            <Rock:RockDropDownList ID="ddlNextGenPrinter" runat="server" Label="Printer" />
                         </Content>
                     </Rock:ModalDialog>
                 </div>

@@ -147,13 +147,14 @@
     // #region Functions
 
     function getComponentHtml(row: Record<string, unknown>): string {
-        const baseColor = row.componentHighlightColor as string;
-        const pair = RockColor.calculateColorPair(new RockColor(baseColor));
+        const pair = RockColor.calculateColorPair(new RockColor(row.componentHighlightColor as string));
+        const backgroundColor = pair.backgroundColor.toRgba();
+        const forecolor = pair.foregroundColor.toRgba();
         const iconCssClass = row.componentIconCssClass as string;
 
         return `
-            <span class="label label-default component-label" style="background-color: ${pair.backgroundColor.toRgba()}">
-                <i class="${iconCssClass}" style="color: ${baseColor}"></i>${row.componentName}
+            <span class="label label-component" style="background-color: ${backgroundColor}; color: ${forecolor}">
+                <i class="${iconCssClass}" style="color: ${forecolor}"></i>${row.componentName}
             </span>`;
     }
 

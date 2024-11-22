@@ -17,6 +17,7 @@
 
 using System;
 
+using Rock.Data;
 using Rock.Enums.Lms;
 
 namespace Rock.Model
@@ -26,6 +27,7 @@ namespace Rock.Model
         /// <summary>
         /// Attempts to calculate the available date or provides a textual description if unable to calculate.
         /// </summary>
+        [NotAudited]
         public string AvailableDateDescription
         {
             get
@@ -69,6 +71,7 @@ namespace Rock.Model
         /// <summary>
         /// A description of the Due Date.
         /// </summary>
+        [NotAudited]
         public string DueDateDescription
         {
             get
@@ -100,7 +103,7 @@ namespace Rock.Model
                             return $"{DateOffsetText( DueDateOffset )} class enrollment.";
                         }
                     case DueDateCriteria.NoDate:
-                        return "Optional";
+                        return string.Empty;
                 }
 
                 return null;
@@ -115,6 +118,7 @@ namespace Rock.Model
         /// When an AVailableDateOffset is required, but is null zero will be used for the calculation.
         /// for a Course.
         /// </remarks>
+        [NotAudited]
         public DateTime? AvailableDateCalculated => CalculateAvailableDate(
                 AvailabilityCriteria,
                 AvailableDateDefault,
@@ -210,6 +214,7 @@ namespace Rock.Model
         /// The NoDate calculation criteria will return null indicating there is no due date.
         /// When a DueDateOffset is required, but is null - zero will be used for the calculation
         /// </remarks>
+        [NotAudited]
         public DateTime? DueDateCalculated =>
                 CalculateDueDate(
                     DueDateCriteria,
@@ -222,22 +227,37 @@ namespace Rock.Model
         /// <summary>
         /// A textual description of the available and due dates for the activity.
         /// </summary>
+        [NotAudited]
         public string DatesDescription
         {
             get
             {
-                return $"{AvailableDateDescription} - {DueDateDescription}";
+                if ( DueDateDescription.IsNotNullOrWhiteSpace() )
+                {
+                    return $"{AvailableDateDescription} - {DueDateDescription}";
+                }
+                else
+                {
+                    return AvailableDateDescription;
+                }
             }
         }
 
         /// <summary>
         /// <c>true</c> if the calculated due date is in the past; otherwise <c>false</c>.
         /// </summary>
+        /// <remarks>
+        /// If the DueDate is today this will return <c>false</c> since we don't allow setting a time.
+        /// </remarks>
+        [NotAudited]
         public bool IsPastDue
         {
             get
             {
-                return DueDateCalculated.HasValue && DueDateCalculated.Value.IsPast();
+                // We don't allow setting the time portion
+                // so compare as a Date (excluding time).
+                return DueDateCalculated.HasValue
+                    && DueDateCalculated.Value.Date < RockDateTime.Today.Date;
             }
         }
 

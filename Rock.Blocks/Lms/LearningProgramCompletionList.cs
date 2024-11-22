@@ -127,7 +127,7 @@ namespace Rock.Blocks.Lms
                 queryable = queryable.Where( a => a.LearningProgramId == contextProgram.Id );
             }
 
-            return queryable;
+            return queryable.OrderBy( a => a.PersonAlias.Person.NickName ).ThenBy( a => a.PersonAlias.Person.LastName );
         }
 
         /// <inheritdoc/>

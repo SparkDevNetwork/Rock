@@ -320,6 +320,8 @@
             entityAttributes.value = result.data.attributes ?? {};
             attributeValues.value = result.data.attributeValues ?? {};
             componentDescription.value = result.data.achievementEventDescription ?? "";
+            availablePrerequisites.value = result.data.availablePrerequisites ?? [];
+            prerequisites.value = result.data.prerequisites ?? [];
         }
     }, { immediate: true });
 

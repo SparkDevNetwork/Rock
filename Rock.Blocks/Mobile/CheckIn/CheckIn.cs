@@ -72,6 +72,7 @@ namespace Rock.Blocks.Mobile.CheckIn
         Description = "The attributes to display when adding a person.",
         AllowMultiple = true,
         EntityTypeName = "Rock.Model.Person",
+        IsRequired = false,
         Order = 4,
         Key = AttributeKey.AddPersonAttributes )]
 
@@ -721,7 +722,7 @@ namespace Rock.Blocks.Mobile.CheckIn
             }
 
             var registration = new Rock.CheckIn.v2.FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
-            var existingRegistrants = registration.GetFamilyMemberBags( RequestContext.CurrentPerson.PrimaryFamily );
+            var existingRegistrants = registration.GetFamilyMemberBags( RequestContext.CurrentPerson.PrimaryFamily, null );
             var newRegistrants = options.People.Where( box => box.Bag.Id.IsNullOrWhiteSpace() );
 
             existingRegistrants.AddRange( newRegistrants );

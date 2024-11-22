@@ -20,7 +20,7 @@ using Rock.Model;
 namespace Rock.CheckIn.v2.Labels
 {
     /// <summary>
-    /// Label data objects that has a singular Person property which identifies
+    /// Label data objects that have a singular Person property which identifies
     /// the person that was checked in.
     /// </summary>
     internal interface ILabelDataHasPerson

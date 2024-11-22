@@ -83,6 +83,12 @@ type LearningActivityComponentBaseEmits = {
      * @param isSuccess True if the button click was for a completion; false if cancelled.
      */
     completed(isSuccess: boolean): void;
+
+    /**
+     * @description Emitted when the activity is done and should be closed
+     * or the next activity opened.
+     */
+    closed(): void;
 };
 
 /**
@@ -115,6 +121,7 @@ export const learningActivityProps: LearningActivityComponentBaseProps = {
  */
 export const learningActivityEmits: LearningActivityComponentBaseEmits = {
     completed(_isSuccess: boolean): void { },
+    closed(): void { },
     ["update:activityBag"](_bag: LearningActivityBag): void { },
     ["update:completionBag"](_bag: LearningActivityCompletionBag): void { }
 };
@@ -153,6 +160,9 @@ type LearningComponentBaseProps = {
 
     /** Determines if the actiivty has been graded by a facilitator. */
     hasBeenGraded: ComputedRef<boolean>;
+
+    /** Whether the student or facilitator has completed the activity. */
+    isCompleted: ComputedRef<boolean>;
 
     /** The title of the panel to display in the template. */
     panelTitle: ComputedRef<string>;
@@ -247,6 +257,12 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
     /** Determines if the actiivty has been graded by a facilitator. */
     const hasBeenGraded = computed(() => isValidGuid(toValue(completionBag)?.gradedByPersonAlias?.value ?? ""));
 
+    /** Whether the student or facilitator has completed the activity. */
+    const isCompleted = computed(() => {
+        const completion = toValue(completionBag);
+        return completion?.isStudentCompleted || completion?.isFacilitatorCompleted;
+    });
+
     /**
      * The default title of the panel to display.
      * This function is provided for consistency,
@@ -271,7 +287,7 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
      */
     const fileUrl = computed((): string => {
         const securityGrantToken = toValue(completionBag).binaryFileSecurityGrant ?? "";
-        const securityGrantQueryParam = securityGrantToken.length > 0? `&securitygrant=${securityGrantToken}` : "";
+        const securityGrantQueryParam = securityGrantToken.length > 0 ? `&securitygrant=${securityGrantToken}` : "";
 
         if (toValue(completionBag)?.binaryFile?.value) {
             return `/GetFile.ashx?guid=${toValue(completionBag)?.binaryFile?.value}${securityGrantQueryParam}`;
@@ -323,6 +339,7 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         ...dynamicProps,
         fileUrl,
         hasBeenGraded,
+        isCompleted,
         panelTitle,
         student
     } as LearningComponent<TConfig, TCompletion>;

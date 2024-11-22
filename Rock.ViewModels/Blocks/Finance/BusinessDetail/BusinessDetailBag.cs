@@ -69,6 +69,14 @@ namespace Rock.ViewModels.Blocks.Finance.BusinessDetail
         public string PreviousAddress { get; set; }
 
         /// <summary>
+        /// Gets or sets the phone number when in view mode.
+        /// </summary>
+        /// <value>
+        /// The phone number.
+        /// </value>
+        public string DisplayPhoneNumber { get; set; }
+
+        /// <summary>
         /// Gets or sets the phone number.
         /// </summary>
         /// <value>

@@ -23,12 +23,12 @@
 
 /** The Custom Settings Bag */
 export type CustomSettingsBag = {
-    /** Gets or sets the CheckIn Areas */
+    /** List of check-in areas. */
     checkInAreas?: string[] | null;
 
-    /** Gets or sets the CheckIn Configuration */
+    /** Configuration settings for check-in. */
     checkInConfiguration?: string | null;
 
-    /** Gets or sets the Kiosk */
+    /** Kiosk identifier. */
     kiosk?: string | null;
 };

@@ -765,13 +765,13 @@ export class RockColor {
 
         switch (recipe) {
             case ColorRecipe.Lightest:
-                recipeSaturation = 0.88;
-                recipeLuminosity = 0.87;
+                recipeSaturation = 0.96;
+                recipeLuminosity = 0.95;
                 break;
 
             case ColorRecipe.Light:
-                recipeSaturation = 0.10;
-                recipeLuminosity = 0.95;
+                recipeSaturation = 0.44;
+                recipeLuminosity = 0.84;
                 break;
 
             case ColorRecipe.Medium:

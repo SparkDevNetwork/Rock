@@ -46,7 +46,8 @@
                         label="Documentation"
                         help="Technical description of the internals of the shortcode."
                         :editorHeight="250"
-                        toolbar="light" />
+                        toolbar="light"
+                        :isTogglableCodeEditorForced="true" />
 
             <CodeEditor v-model="markup"
                         label="Short Code Markup"

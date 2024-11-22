@@ -79,12 +79,12 @@
         valueBuilder.addHtmlValue("Average Score", averageScoreHtml);
 
         const availableDateText = props.modelValue?.availableDateDescription ?? "";
-        if (availableDateText.length > 0){
+        if (availableDateText.length > 0) {
             valueBuilder.addTextValue("Available", availableDateText);
         }
 
         const checkmarkIconOrEmpty = props.modelValue.isStudentCommentingEnabled ? "<i class='fa fa-check'></i>" : "";
-        if (checkmarkIconOrEmpty.length > 0){
+        if (checkmarkIconOrEmpty.length > 0) {
             valueBuilder.addHtmlValue("Student Commenting Enabled", checkmarkIconOrEmpty);
         }
 
@@ -105,7 +105,7 @@
         }
 
         const dueDateDescription = props.modelValue?.dueDateDescription ?? "";
-        if (dueDateDescription.length > 0){
+        if (dueDateDescription.length > 0) {
             valueBuilder.addTextValue("Due Date", dueDateDescription);
         }
 

@@ -848,9 +848,6 @@ namespace Rock.Jobs
             // Known Relationship Group
             resultCount += AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid(), commandTimeout );
 
-            // Implied Relationship Group
-            resultCount += AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK ), Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid(), commandTimeout );
-
             // Find family groups that have no members or that have only 'inactive' people (record status) and mark the groups inactive.
             using ( var familyRockContext = CreateRockContext() )
             {
@@ -2769,6 +2766,41 @@ WHERE [CreatedByPersonAliasId] IS NOT NULL
 SET [ModifiedByPersonAliasId] = NULL
 WHERE [ModifiedByPersonAliasId] IS NOT NULL
   AND [ModifiedByPersonAliasId] NOT IN (SELECT [Id] FROM [PersonAlias])" );
+            }
+
+            // Fix any anonymous PersonAlias records that have a NULL LastVisitDate.
+            // These could happen because older versions of Rock created the
+            // PersonAlias initially with a NULL value. It was only the second page
+            // load for that same visitor that would set the LastVisitDate value.
+            // This was fixed in 1.16.7, which means this code can probably be
+            // safely removed in Rock v18.
+            var stopProcessingAfter = RockDateTime.Now.AddMinutes( 2 );
+
+            while ( RockDateTime.Now < stopProcessingAfter )
+            {
+                using ( var rockContext = CreateRockContext() )
+                {
+                    var anonymousVisitorId = new PersonService( rockContext ).GetId( Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() );
+                    var personAliasService = new PersonAliasService( rockContext );
+                    var now = RockDateTime.Now;
+
+                    var aliasesToUpdate = personAliasService
+                        .Queryable()
+                        .Where( a => a.PersonId == anonymousVisitorId
+                            && !a.LastVisitDateTime.HasValue )
+                        .Take( 500 )
+                        .ToList();
+
+                    // If no aliases need to be updated, then we are done.
+                    if ( !aliasesToUpdate.Any() )
+                    {
+                        break;
+                    }
+
+                    aliasesToUpdate.ForEach( a => a.LastVisitDateTime = now );
+
+                    rockContext.SaveChanges( disablePrePostProcessing: true );
+                }
             }
 
             return deleteCount;

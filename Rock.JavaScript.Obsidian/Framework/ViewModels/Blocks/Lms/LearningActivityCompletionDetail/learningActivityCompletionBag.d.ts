@@ -61,6 +61,9 @@ export type LearningActivityCompletionBag = {
     /** Gets or sets the facilitator's comment. */
     facilitatorComment?: string | null;
 
+    /** Gets or sets the highlight color of the achieved grade. */
+    gradeColor?: string | null;
+
     /** Gets or sets the PersonAlias of the Person who graded the activity. */
     gradedByPersonAlias?: ListItemBag | null;
 
@@ -85,8 +88,8 @@ export type LearningActivityCompletionBag = {
     /** Indicates whether or not the grade is a passing grade. */
     isGradePassing: boolean;
 
-    /** Indicates whether or not the related activity instance for the student is currently past due. */
-    isPastDue: boolean;
+    /** Indicates whether or not the activity was completed late or is late (if incomplete). */
+    isLate: boolean;
 
     /** Indicates whether or not student commenting is enabled for this activity. */
     isStudentCommentingEnabled: boolean;

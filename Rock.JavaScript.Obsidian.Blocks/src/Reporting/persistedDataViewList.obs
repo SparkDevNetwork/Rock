@@ -38,7 +38,7 @@
         <DateTimeColumn name="lastRunDateTime"
                         title="Last Run Date Time"
                         field="lastRunDateTime"
-                        headerClass="text-right"
+                        headerClass="title-right"
                         itemClass="justify-content-end text-right"
                         :filter="dateValueFilter"
                         visiblePriority="md" />
@@ -46,13 +46,19 @@
         <DateTimeColumn name="persistedLastRefreshDateTime"
                         title="Last Refresh"
                         field="persistedLastRefreshDateTime"
-                        headerClass="text-right"
+                        headerClass="title-right"
                         itemClass="justify-content-end text-right"
                         :filter="dateValueFilter"
                         visiblePriority="xs"
                         width="200" />
     </Grid>
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

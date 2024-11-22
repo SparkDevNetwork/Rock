@@ -21,11 +21,6 @@
                  @cancelEdit="onCancelEdit"
                  @edit="onEdit"
                  @save="onSave">
-        <template #sidebar v-if="panelMode === DetailPanelMode.View">
-            <ImageWithIcon :imageFileGuid="imageGuid"
-                           :highlightColor="highlightColor"
-                           :iconCssClass="iconCssClass" />
-        </template>
         <template #view>
             <ViewPanel :modelValue="learningCourseViewBag" :options="options" />
         </template>
@@ -34,11 +29,6 @@
             <EditPanel v-model="learningCourseEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
-
-    <LearningClassSecondaryLists v-if="isOnDemandMode && panelMode === DetailPanelMode.View"
-                                 :isEditable="isEditable"
-                                 :navigationUrls="config.navigationUrls"
-                                 v-model="learningCourseViewBag" />
 </template>
 
 <script setup lang="ts">
@@ -50,19 +40,21 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./LearningCourseDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningCourseDetail/viewPanel.partial.obs";
-    import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
-    import LearningClassSecondaryLists from "./LearningClassSecondaryLists/learningClassSecondaryLists.partial.obs";
-    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./LearningCourseDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
     import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<DetailBlockBox<LearningCourseBag, LearningCourseDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     onConfigurationValuesChanged(useReloadBlock());
+
+    // This block uses the browser bus to notify other blocks that it's entering 'Add' mode.
+    const browserBus = useBlockBrowserBus();
 
     // #region Values
 
@@ -82,11 +74,6 @@
     const entityTypeGuid = EntityType.LearningCourse;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
-    const isOnDemandMode = ref(config.options?.configurationMode === ConfigurationMode.OnDemandLearning);
-
-    const imageGuid = computed(() => learningCourseViewBag.value?.imageBinaryFile?.value ?? "");
-    const iconCssClass = computed(() => learningCourseViewBag.value?.programIconCssClass ?? "");
-    const highlightColor = computed(() => learningCourseViewBag.value?.programHighlightColor ?? "");
 
     // #endregion
 
@@ -116,21 +103,6 @@
             return labels;
         }
 
-        if (learningCourseViewBag.value?.isActive === true) {
-            labels.push({
-                iconCssClass: "fa fa-lightbulb",
-                title: "Active",
-                type: "info"
-            });
-        }
-        else {
-            labels.push({
-                iconCssClass: "far fa-lightbulb",
-                title: "Inactive",
-                type: "danger"
-            });
-        }
-
         if (learningCourseViewBag.value?.isPublic === true) {
             labels.push({
                 title: "Public",
@@ -141,6 +113,13 @@
             labels.push({
                 title: "Internal",
                 type: "warning"
+            });
+        }
+
+        if (learningCourseViewBag.value?.isActive === false) {
+            labels.push({
+                title: "Inactive",
+                type: "danger"
             });
         }
 
@@ -243,5 +222,6 @@
     else if (!config.entity.idKey) {
         learningCourseEditBag.value.bag = config.entity;
         panelMode.value = DetailPanelMode.Add;
+        browserBus.publish(BlockMessages.BeginEdit);
     }
 </script>

@@ -110,8 +110,8 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             if ( config.CollectionFormat == TextCollectionFormat.TwoColumn )
             {
-                var col1Value = string.Join( "\\&", values.Where( ( _, idx ) => idx % 1 == 0 ) );
-                var col2Value = string.Join( "\\&", values.Where( ( _, idx ) => idx % 1 == 1 ) );
+                var col1Value = string.Join( "\\&", values.Where( ( _, idx ) => idx % 2 == 0 ) );
+                var col2Value = string.Join( "\\&", values.Where( ( _, idx ) => idx % 2 == 1 ) );
 
                 // Calculate column width with 1/4 inch gutter between.
                 var gutter = 0.25;
@@ -457,6 +457,11 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                 return;
             }
 
+            if ( image == null )
+            {
+                return;
+            }
+
             WriteFieldOrigin( writer, field );
 
             if ( config.IsColorInverted )
@@ -588,7 +593,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             {
                 var size = adaptiveFontSizes
                     .Where( a => textLength >= a.Key )
-                    .OrderBy( a => a.Key )
+                    .OrderByDescending( a => a.Key )
                     .FirstOrDefault();
 
                 if ( size.Value > 0 )

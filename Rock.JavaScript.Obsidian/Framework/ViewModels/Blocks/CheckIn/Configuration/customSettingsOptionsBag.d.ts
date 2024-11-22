@@ -27,12 +27,12 @@ import { ConfigurationTemplateBag } from "@Obsidian/ViewModels/CheckIn/configura
 
 /** The Custom Settings Options Bag */
 export type CustomSettingsOptionsBag = {
-    /** Gets or sets a list of the Campuses and Kiosks */
+    /** List of campuses and kiosks. */
     campusesAndKiosks?: CampusBag[] | null;
 
-    /** Gets or sets a list of the CheckIn Areas */
+    /** List of available check-in areas. */
     checkInAreas?: ConfigurationAreaBag[] | null;
 
-    /** Gets or sets a list of CheckIn Configuration Options */
+    /** Available check-in configuration options. */
     checkInConfigurationOptions?: ConfigurationTemplateBag[] | null;
 };

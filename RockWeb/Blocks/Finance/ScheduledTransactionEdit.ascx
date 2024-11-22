@@ -45,8 +45,11 @@
 
                                         <div id="divRepeatingPayments" runat="server" visible="false">
                                             <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" Label="Frequency"
-                                                DataTextField="Value" DataValueField="Id" />
-                                            <Rock:DatePicker ID="dtpStartDate" runat="server" Label="Next Gift" />
+                                                DataTextField="Value" DataValueField="Id" OnSelectedIndexChanged="btnFrequency_SelectedIndexChanged" />
+                                            <div class="d-flex gap-3 flex-wrap">
+                                                <Rock:DatePicker ID="dtpStartDate" runat="server" Label="Next Gift" />
+                                                <Rock:DatePicker ID="dtpEndDate" runat="server" Label="End Date" />
+                                            </div>
                                         </div>
 
                                         <Rock:DataTextBox ID="tbComments" runat="server" Label="Comments" TextMode="MultiLine" Rows="2" ValidateRequestMode="Disabled"

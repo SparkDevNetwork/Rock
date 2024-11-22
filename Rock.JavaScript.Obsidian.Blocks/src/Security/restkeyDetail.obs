@@ -12,12 +12,13 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="RESTKey"
-                 :isAuditHidden="false"
+                 :isAuditHidden="true"
                  :isBadgesVisible="true"
                  :isDeleteVisible="false"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"
@@ -58,7 +59,7 @@
     const warningMessage = ref("");
 
     const restKeyViewBag = ref(config.entity);
-    const restKeyEditBag = ref<ValidPropertiesBox<RestKeyBag>>({ bag: {} as RestKeyBag});
+    const restKeyEditBag = ref<ValidPropertiesBox<RestKeyBag>>({ bag: {} as RestKeyBag });
 
     const entityTypeGuid = EntityType.UserLogin;
 

@@ -1,0 +1,508 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <!-- This grid is (not) here simply to force the CSS to load in. -->
+    <Grid v-if="false" />
+    <div class="grid-obsidian grid-sticky grid-striped grid-bordered grid-hover">
+        <div class="grid-heading">
+            <div class="grid-title-heading">
+                <div class="grid-title">Schedule Builder</div>
+                <div class="grid-badges mr-3">
+                    <RockButton class="mr-3" @click="showCloneScheduleModal = true">Clone Schedule</RockButton>
+                    <span class="label label-default">
+                        <span class="label-value">{{ getCountLabelText }}</span>
+                    </span>
+                </div>
+
+                <div class="grid-quick-filter grid-actions" :class="{ 'active': isSearchExpanded }">
+                    <button type="button" class="btn btn-grid-action" title="Search" @click.stop.prevent="onSearchClick">
+                        <i class="fa fa-search fa-fw"></i>
+                    </button>
+
+                    <div ref="quickFilterContainerElement" class="grid-quick-filter-search" :class="{ 'open': isSearchExpanded }">
+                        <!--
+                            The form is here to prevent iOS from causing the Return key
+                            to become a Go key and triggering a WebForms postback.
+                        -->
+                        <RockForm>
+                            <TextBox v-model="quickFilterValue" placeholder="Search" />
+                        </RockForm>
+                    </div>
+                </div>
+            </div>
+            <div class="margin-b-md">
+                <div class="d-flex flex-row justify-content-evenly">
+                    <div class="col-md-2" v-if="!groupTypeIdFromParam">
+                        <GroupTypePicker v-model="groupType" label="Group Type" :showBlankItem="true" blankValue="All" :groupTypes="[...groupTypeItems]" />
+                    </div>
+                    <div class="col-md-2">
+                        <LocationItemPicker v-model="parentLocation" label="Parent Location" />
+                    </div>
+                    <div class="col-md-2" v-if="areaItems.length > 0">
+                        <GroupTypePicker v-model="area" label="Area" :showBlankItem="true" :groupTypes="[...areaItems]" />
+                    </div>
+                    <div class="col-md-2">
+                        <CategoryPicker v-model="scheduleCategory" label="Schedule Category" :entityTypeGuid="EntityType.Schedule" />
+                    </div>
+                </div>
+                <div class="mx-4" v-if="!isLoading && schedules.length === 0">
+                    <NotificationBox alertType="warning" heading="Warning: ">No schedules found. Consider <a class="alert-link" href="/Schedules">adding a schedule</a> or a different schedule category.</NotificationBox>
+                </div>
+            </div>
+            <div class="grid-column-heading">
+                <div class="grid-column-header" style="flex: 1 1 20%">
+                    <div class="grid-column-title">
+                        Group
+                    </div>
+                </div>
+                <div class="grid-column-header" style="flex: 1 1 20%">
+                    <div class="grid-column-title">
+                        Location
+                    </div>
+                </div>
+                <div class="grid-column-header px-1" style="width: 5%; min-width: 75px; max-width: 100px;" v-for="schedule in schedules">
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="grid-column-title text-center" v-html="getScheduleHtml(schedule)"></div>
+                        <a href='#'
+                           style="display: inline; color: inherit"
+                           :class="['fa', 'js-sched-select-all', isColumnEnabled(schedule.value ?? '') ? 'fa-check-square-o' : 'fa-square-o']"
+                           @click="onScheduleColumnClick(schedule.value ?? '')">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-body">
+            <div v-for="(groupLocation, index) in filteredGroupLocations" v-if="filteredGroupLocations.length > 0" :class="['grid-row', isEven(index + 1) ? 'grid-row-even' : 'grid-row-odd']">
+                <div class="grid-cell" style="flex: 1 1 20%">
+                    <div class="d-flex flex-column">
+                        <div>{{ groupLocation.groupPath }}</div>
+                        <small>{{ groupLocation.areaPath }}</small>
+                    </div>
+                </div>
+
+                <div class="grid-cell" style="flex: 1 1 20%">
+                    <div class="d-flex flex-column">
+                        <div>{{ groupLocation.locationName }}</div>
+                        <small>{{ groupLocation.locationPath }}</small>
+                    </div>
+                </div>
+
+                <div v-for="schedule in schedules" class="grid-cell" style="width: 5%; min-width: 75px; max-width: 100px;">
+                    <CheckBox label=""
+                              :modelValue="isScheduleEnabled(groupLocation, schedule)"
+                              @change="onScheduleClick(groupLocation, schedule)" />
+                </div>
+            </div>
+            <div v-else-if="!isLoading" class="grid-row">
+                <div class="grid-cell table-empty">
+                    No Schedule Locations found.
+                </div>
+            </div>
+        </div>
+        <div class="grid-footing">
+            <div class="d-flex m-3 align-items-center">
+                <div class="mr-2">
+                    <RockButton btnType="primary" @click="onSaveClick" :disabled="isSaving">
+                        <span v-if="isSaving"><i class='fa fa-refresh fa-spin'></i> Saving</span>
+                        <span v-else>Save</span>
+                    </RockButton>
+                </div>
+                <NotificationBox v-if="showSaveNotification" :alertType="saveNotificationType" class="mb-0">{{ saveNotificationText }}</NotificationBox>
+            </div>
+        </div>
+    </div>
+
+    <Modal v-model="showCloneScheduleModal" title="Copy Schedule">
+        <RockForm v-model:submit="submitClonedSchedule" @submit="processClonedSchedule">
+            <NotificationBox alertType="info">This will copy all the enabled locations from the source schedule into the destination schedule.</NotificationBox>
+            <div class="row">
+                <div class="col-md-3">
+                    <SchedulePicker v-model="sourceSchedule" label="Source Schedule" rules="required" />
+                </div>
+                <div class="col-md-3"></div>
+                <div class="col-md-3">
+                    <SchedulePicker v-model="destinationSchedule" label="Destination Schedule" rules="required" />
+                </div>
+            </div>
+        </RockForm>
+
+        <template #customButtons>
+            <RockButton btnType="primary" @click="submitClonedSchedule = true">Save</RockButton>
+        </template>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { CheckInScheduleBuilderOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CheckInScheduleBuilderOptionsBag";
+    import { CheckInScheduleBuilderDataBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CheckInScheduleBuilderDataBag";
+    import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
+    import { CloneScheduleBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CloneScheduleBag";
+    import { PreferenceKey, PageParameterKey } from "./CheckInScheduleBuilder/types.partial";
+    import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { Guid } from "@Obsidian/Types";
+    import Grid from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
+
+    // #region Values
+    const config = useConfigurationValues<CheckInScheduleBuilderOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+    const params = new URLSearchParams(window.location.search);
+
+    const saveNotificationType = ref<string>("");
+    const saveNotificationText = ref<string>("");
+    const showSaveNotification = ref<boolean>(false);
+    const isSaving = ref<boolean>(false);
+    const isLoading = ref<boolean>(false);
+    const groupLocations = ref<GroupLocationsBag[]>([]);
+    const schedules = ref<ListItemBag[]>([]);
+
+    // Grid Search
+    const isSearchExpanded = ref(false);
+    const quickFilterContainerElement = ref<HTMLElement>();
+    const quickFilterValue = ref<string>("");
+
+    // Filter Data
+    const groupTypeIdFromParam = ref<string | null>(params.get(PageParameterKey.GroupTypeId));
+    const areaItems = ref<Guid[]>(config.areas ?? []);
+    const groupTypeItems = ref<Guid[]>(config.groupTypes ?? []);
+    const groupType = ref<ListItemBag>(preferences.getValue(PreferenceKey.SelectedGroupType) ? JSON.parse(preferences.getValue(PreferenceKey.SelectedGroupType)) : {});
+    const parentLocation = ref<ListItemBag>(preferences.getValue(PreferenceKey.SelectedParentLocation) ? JSON.parse(preferences.getValue(PreferenceKey.SelectedParentLocation)) : {});
+    const area = ref<ListItemBag>(preferences.getValue(PreferenceKey.SelectedArea) ? JSON.parse(preferences.getValue(PreferenceKey.SelectedArea)) : {});
+    const scheduleCategory = ref<ListItemBag>(preferences.getValue(PreferenceKey.SelectedCategory) ? JSON.parse(preferences.getValue(PreferenceKey.SelectedCategory)) : {});
+
+    // Modal Data
+    const showCloneScheduleModal = ref<boolean>(false);
+    const submitClonedSchedule = ref<boolean>(false);
+    const sourceSchedule = ref<ListItemBag>();
+    const destinationSchedule = ref<ListItemBag>();
+
+    // #endregion
+
+    // #region Computed Values
+
+    const getCountLabelText = computed(() => {
+        if (groupLocations.value.length > filteredGroupLocations.value.length) {
+            return `${filteredGroupLocations.value.length} of ${groupLocations.value.length} Schedule Locations`;
+        }
+        return groupLocations.value.length === 1 ? `${groupLocations.value.length} Schedule Location` : `${groupLocations.value.length} Schedule Locations`;
+    });
+
+    const filteredGroupLocations = computed(() => {
+        return groupLocations.value.filter(location => {
+            const searchTerm = quickFilterValue.value.toLowerCase();
+
+            return (
+                location.groupPath?.toLowerCase().includes(searchTerm) ||
+                location.areaPath?.toLowerCase().includes(searchTerm) ||
+                location.locationPath?.toLowerCase().includes(searchTerm) ||
+                location.locationName?.toLowerCase().includes(searchTerm)
+            );
+        });
+    });
+
+    // #endregion
+
+    // #region Grid Search Functions
+
+    /**
+     * Called when the quick filter search button is clicked. Toggle the
+     * visible state of the search box.
+     */
+    function onSearchClick(): void {
+        // Don't allow hiding the search box if there is content in it.
+        if (isSearchExpanded.value && quickFilterValue.value) {
+            return;
+        }
+
+        isSearchExpanded.value = !isSearchExpanded.value;
+
+        // Focus the search box if it is visible.
+        if (isSearchExpanded.value) {
+            nextTick(() => {
+                const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
+                searchBox?.focus();
+            });
+        }
+    }
+
+    /**
+     * Checks if the element or any ancestor can be focused. This is a rough
+     * guess and not 100% accurate, but should be good enough for our uses.
+     *
+     * @param element The element whose ancestor tree is to be checked for focusability.
+     *
+     * @returns `true` if the element or any ancestor is focusable, otherwise `false`.
+     */
+    function isTreeFocusable(element: HTMLElement | null): boolean {
+        while (element != null) {
+            if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
+                return true;
+            }
+
+            if (element.isContentEditable) {
+                return true;
+            }
+
+            element = element.parentElement;
+        }
+
+        return false;
+    }
+
+    /**
+     * Event handler for when a key down event occurs anywhere in the document.
+     *
+     * @param event The keyboard event.
+     */
+    function onDocumentKeyDown(event: KeyboardEvent): void {
+        // If it's not any kind of HTML Element, then just ignore it.
+        if (!(event.target instanceof HTMLElement)) {
+            return;
+        }
+
+        // If the quick filter has the focus, investigate further.
+        if (quickFilterContainerElement.value?.contains(event.target)) {
+            if (event.key === "Escape") {
+                // If the escape key is pressed then clear the search.
+                if (quickFilterValue.value === "") {
+                    const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
+
+                    searchBox?.blur();
+                    isSearchExpanded.value = false;
+                }
+                else {
+                    quickFilterValue.value = "";
+                }
+            }
+            else if (event.key === "Enter") {
+                // If the enter/return key is pressed, it signifies the individual
+                // is done typing and is ready to "search"; if the event is not
+                // cancelled, this can lead to other grid actions (i.e. row delete)
+                // from trying to handle the event.
+                event.preventDefault();
+            }
+        }
+
+        // If no other input type element has focus and they hit the hotkey
+        // for searching, open the search bar and focus the search box.
+        if (!isTreeFocusable(event.target)) {
+            if (event.key === "F" && event.ctrlKey && event.shiftKey) {
+                isSearchExpanded.value = true;
+
+                nextTick(() => {
+                    const searchBox = quickFilterContainerElement.value?.querySelector(".grid-quick-filter-search input") as HTMLInputElement | null;
+                    searchBox?.focus();
+                });
+            }
+        }
+    }
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Determines if a schedule column is enabled for all group locations.
+     * A column is considered enabled if the scheduleIdKey is present in the scheduleIds for every group location.
+     *
+     * @param scheduleIdKey - The key of the schedule to check.
+     * @returns `true` if the scheduleIdKey is present in all filteredGroupLocations, and false otherwise.
+     */
+    function isColumnEnabled(scheduleIdKey: string): boolean {
+        return filteredGroupLocations.value.filter(g => g.scheduleIds?.includes(scheduleIdKey)).length === filteredGroupLocations.value.length && filteredGroupLocations.value.length > 0;
+    }
+
+    /**
+     * Selects or deselects all scheduels in a given schedule column
+     *
+     * @param scheduleIdKey  the unique identifier for the schedule column
+     */
+    function onScheduleColumnClick(scheduleIdKey: string): void {
+        if (filteredGroupLocations.value.length === 0) {
+            return;
+        }
+
+        const isCurrentlyEnabled = isColumnEnabled(scheduleIdKey);
+        // const updatedLocations: typeof filteredGroupLocations.value = [];
+
+        for (const groupLocation of filteredGroupLocations.value) {
+            let scheduleIds = groupLocation.scheduleIds || [];
+
+            if (isCurrentlyEnabled) {
+                scheduleIds = scheduleIds.filter(id => id !== scheduleIdKey);
+            }
+            else if (!scheduleIds.includes(scheduleIdKey)) {
+                scheduleIds = [...scheduleIds, scheduleIdKey];
+            }
+
+            groupLocation.scheduleIds = scheduleIds;
+        }
+    }
+
+    /**
+     * Determines if a given row in the grid is even or odd.
+     *
+     * @param index The grid row number.
+     * @returns `true` if the grid row is even.
+     */
+    function isEven(index: number): boolean {
+        return index % 2 === 0;
+    }
+
+    /**
+     * Gets the HTML string to display that represents the name of the schedule.
+     *
+     * @param schedule The schedule whose name will be displayed.
+     */
+    function getScheduleHtml(schedule: ListItemBag): string {
+        // Replace spaces with <br> to save horizontal space.
+        return escapeHtml(schedule.text ?? "").replace(/ /g, "<br>");
+    }
+
+    /**
+     * Determines if the group location is currently enabled for the
+     * specified schedule. This provides the state of the checkbox for a cell.
+     *
+     * @param groupLocation The group location.
+     * @param schedule The schedule.
+     *
+     * @returns `true` if the cell checkbox should be checked.
+     */
+    function isScheduleEnabled(groupLocation: GroupLocationsBag, schedule: ListItemBag): boolean {
+        if (!groupLocation.scheduleIds || !schedule.value) {
+            return false;
+        }
+
+        return groupLocation.scheduleIds.includes(schedule.value);
+    }
+
+    /**
+     * Toggles the enabled state of a schedule for a location.
+     *
+     * @param scheduledLocation The scheduled location row.
+     * @param schedule The schedule column.
+     */
+    function onScheduleClick(scheduledLocation: GroupLocationsBag, schedule: ListItemBag): void {
+        if (!scheduledLocation.scheduleIds || !schedule.value) {
+            return;
+        }
+
+        if (scheduledLocation.scheduleIds.includes(schedule.value)) {
+            scheduledLocation.scheduleIds = scheduledLocation.scheduleIds.filter(id => id !== schedule.value);
+        }
+        else {
+            scheduledLocation.scheduleIds = [...scheduledLocation.scheduleIds, schedule.value];
+        }
+    }
+
+    /**
+     * Loads the schedule builder data.
+     */
+    async function loadScheduleBuilderData(): Promise<void> {
+        isLoading.value = true;
+        const response = await invokeBlockAction<CheckInScheduleBuilderDataBag>("LoadGroupScheduleLocationData");
+
+        if (response.isSuccess && response.data) {
+            groupLocations.value = response.data?.groupLocations ?? [];
+            schedules.value = response.data?.schedules ?? [];
+            isLoading.value = false;
+        }
+    }
+
+    /**
+     * Saves the current group's location schedule settings.
+     */
+    async function onSaveClick(): Promise<void> {
+        isSaving.value = true;
+        const data = {
+            scheduledLocations: groupLocations.value
+        };
+
+        const response = await invokeBlockAction("Save", data);
+
+        if (response.isSuccess) {
+            saveNotificationType.value = "success";
+            saveNotificationText.value = "Changes have been saved.";
+        }
+        else {
+            saveNotificationType.value = "danger";
+            saveNotificationText.value = response.errorMessage ?? "Unknown error while saving schedule information.";
+        }
+
+        isSaving.value = false;
+        showSaveNotification.value = true;
+        setTimeout(() => {
+            showSaveNotification.value = false;
+        }, 3000);
+    }
+
+    /**
+     * Processes the clone schedule operation and sets the groupLocations value to the
+     * result of the clone process.
+     */
+    async function processClonedSchedule(): Promise<void> {
+        const data: CloneScheduleBag = {
+            sourceSchedule: sourceSchedule.value,
+            destinationSchedule: destinationSchedule.value
+        };
+
+        const response = await invokeBlockAction<GroupLocationsBag[]>("ProcessClonedSchedule", {
+            bag: data
+        });
+
+        if (response.isSuccess && response.data) {
+            submitClonedSchedule.value = false;
+            showCloneScheduleModal.value = false;
+            groupLocations.value = response.data ?? [];
+            return;
+        }
+
+        await alert(response.errorMessage || "Unknown error while cloning schedule information.");
+    }
+
+    // #endregion
+
+    watch([groupType, parentLocation, area, scheduleCategory], async () => {
+        preferences.setValue(PreferenceKey.SelectedGroupType, JSON.stringify(groupType.value));
+        preferences.setValue(PreferenceKey.SelectedParentLocation, JSON.stringify(parentLocation.value));
+        preferences.setValue(PreferenceKey.SelectedArea, JSON.stringify(area.value));
+        preferences.setValue(PreferenceKey.SelectedCategory, JSON.stringify(scheduleCategory.value));
+
+        await preferences.save();
+
+        loadScheduleBuilderData();
+    });
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    onMounted(() => {
+        document.addEventListener("keydown", onDocumentKeyDown);
+        if (!scheduleCategory.value?.value && config.defaultScheduleCategory) {
+            scheduleCategory.value = config.defaultScheduleCategory;
+            return;
+        }
+
+        loadScheduleBuilderData();
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("keydown", onDocumentKeyDown);
+    });
+
+</script>

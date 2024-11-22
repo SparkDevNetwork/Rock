@@ -24,6 +24,7 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,8 +36,8 @@ namespace Rock.Field.Types
     /// </summary>
     [Serializable]
     [FieldTypeUsage( FieldTypeUsage.System )]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "9E0CD807-D69F-4888-A9BE-BCD11DD083FE" )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.FINANCIAL_STATEMENT_TEMPLATE )]
     public class FinancialStatementTemplateFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Formatting
@@ -61,6 +62,55 @@ namespace Rock.Field.Types
         #endregion
 
         #region Edit Control
+
+        /// <inheritdoc />
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var guid = privateValue.AsGuidOrNull();
+
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var financialStatementTemplate = new FinancialStatementTemplateService( rockContext )
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( c => c.Guid == guid.Value )
+                        .Select( c => new ListItemBag
+                        {
+                            Value = c.Guid.ToString(),
+                            Text = c.Name
+                        } )
+                        .FirstOrDefault();
+
+                    if ( financialStatementTemplate != null )
+                    {
+                        return financialStatementTemplate.ToCamelCaseJson( false, true );
+                    }
+                }
+            }
+
+            return base.GetPublicEditValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc />
+        public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            var jsonValue = publicValue.FromJsonOrNull<ListItemBag>();
+
+            if ( jsonValue != null )
+            {
+                return jsonValue.Value;
+            }
+
+            return base.GetPrivateEditValue( publicValue, privateConfigurationValues );
+        }
 
         #endregion
 
@@ -93,6 +143,7 @@ namespace Rock.Field.Types
 
             return null;
         }
+
         #endregion
 
         #region IEntityReferenceFieldType

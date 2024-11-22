@@ -2,7 +2,8 @@
 <template>
     <div class="supervisor-action-screen">
         <MainPanel title="Locations"
-                   subtitle="Tap locations to open or close">
+                   subtitle="Tap locations to open or close"
+                   :configuration="configuration">
             <div class="button-list">
                 <RockButton v-for="location in locations"
                             :key="location.id"
@@ -20,7 +21,8 @@
 
         <MainPanel title="Supervisor Actions"
                    subtitle="Select an action from the list below"
-                   class="flex-grow-1">
+                   class="flex-grow-1"
+                   :configuration="configuration">
             <RockButton class="reprint-labels-button"
                         btnType="primary"
                         @click="onReprintLabelsClick">
@@ -102,7 +104,7 @@
         for (const location of props.supervisorData.counts.locations) {
             const isLocationValid = props.supervisorData.counts
                 .groups
-                ?.some(g => g.locationIds?.includes(location.id ?? ""));
+                ?.some(g => g.locations?.some(gl => gl.locationId === location.id));
 
             if (!location.id || !location.name || !isLocationValid) {
                 continue;

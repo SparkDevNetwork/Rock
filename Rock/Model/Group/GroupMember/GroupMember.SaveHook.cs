@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.Web.Cache;
@@ -360,6 +361,12 @@ namespace Rock.Model
                     }
                 }
 
+                // Adds a LearningParticipant record with default values
+                // if the GroupMember is in an 'LMS Class' group type
+                // and the LearningParticipant record doesn't yet exist.
+                // This supports using GroupMember workflow actions for LMS participants.
+                AddLearningParticipantIfNotExists( rockContext );
+
                 if ( State == EntityContextState.Added || State == EntityContextState.Modified )
                 {
                     if ( Entity.Group != null && Entity.Person != null )
@@ -449,6 +456,48 @@ namespace Rock.Model
                 }
 
                 updateGroupMemberMsg.Send();
+            }
+
+            /// <summary>
+            /// If the GroupMember was just added to an LMS class, ensure they have a corresponding LearningParticipant record.
+            /// </summary>
+            /// <remarks>
+            /// This supports using GroupMember workflow actions for LMS participants.
+            /// </remarks>
+            /// <param name="rockContext">The <see cref="RockContext"/> to use.</param>
+            private void AddLearningParticipantIfNotExists( RockContext rockContext )
+            {
+                if ( State != EntityContextState.Added )
+                {
+                    return;
+                }
+
+                var groupTypeGuid = GroupTypeCache.GetGuid( Entity.GroupTypeId );
+
+                if ( groupTypeGuid != SystemGuid.GroupType.GROUPTYPE_LMS_CLASS.AsGuid() )
+                {
+                    return;
+                }
+
+                rockContext.Database.ExecuteSqlCommand( $@"
+IF NOT EXISTS (
+    SELECT 1 FROM [dbo].[LearningParticipant] ex WHERE ex.Id = @p0
+)
+BEGIN
+    INSERT [dbo].[LearningParticipant] (
+        [Id],
+        [LearningCompletionStatus],
+        [LearningGradePercent],
+        [LearningClassId]
+    )
+    VALUES (
+        @p0,
+        {LearningCompletionStatus.Incomplete.ToIntSafe()},
+        0,
+        @p1
+    )
+END
+", Entity.Id, Entity.GroupId );
             }
         }
     }

@@ -21,6 +21,8 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using DotLiquid;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -173,6 +175,19 @@ namespace Rock.Blocks.Crm
             {
                 person.Gender = personBag.PersonGender.Value;
             }
+            if ( personBag.PersonBirthDate != null )
+            {
+                person.SetBirthDate( new DateTime( personBag.PersonBirthDate.Year, personBag.PersonBirthDate.Month, personBag.PersonBirthDate.Day ) );
+            }
+            if ( personBag.PersonGradeOffset != null )
+            {
+                int offset = Int32.Parse( personBag.PersonGradeOffset.Value );
+
+                if ( offset >= 0 )
+                {
+                    person.GradeOffset = offset;
+                }
+            }
 
             UpdatePhoneNumber( person, personBag, rockContext );
         }
@@ -252,6 +267,7 @@ namespace Rock.Blocks.Crm
         {
             return new GridBuilder<Person>()
                 .WithBlock( this )
+                .AddPersonField("Person", a => a)
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "guid", a => a.Guid.ToString() )
                 .AddField( "id", a => a.Id )

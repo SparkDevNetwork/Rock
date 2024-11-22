@@ -21,6 +21,7 @@ import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
 import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
 
 // We can't import the ConfigurationValueKey from textField.partial.ts
 // because it causes a recursive import back to this file by way of
@@ -33,14 +34,18 @@ export const enum ConfigurationValueKey {
     MaxCharacters = "maxcharacters",
 
     /** Contains "True" if the text field should show the character countdown. */
-    ShowCountdown = "showcountdown"
+    ShowCountdown = "showcountdown",
+
+    /** Contains "True" if the text field is designed for first name entry. */
+    IsFirstName = "isfirstname",
 }
 
 export const EditComponent = defineComponent({
     name: "TextField.Edit",
 
     components: {
-        TextBox
+        TextBox,
+        FirstNameTextBox
     },
 
     props: getFieldEditorProps(),
@@ -83,6 +88,11 @@ export const EditComponent = defineComponent({
 
         });
 
+        const isFirstName = computed((): boolean => {
+            const isFirstNameConfig = props.configurationValues[ConfigurationValueKey.IsFirstName];
+            return asBooleanOrNull(isFirstNameConfig) ?? false;
+        });
+
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {
             internalValue.value = props.modelValue;
@@ -98,12 +108,14 @@ export const EditComponent = defineComponent({
         return {
             configAttributes,
             internalValue,
-            textType
+            textType,
+            isFirstName
         };
     },
 
     template: `
-<TextBox v-model="internalValue" v-bind="configAttributes" :type="textType" />
+<FirstNameTextBox v-if="isFirstName" v-model="internalValue" v-bind="configAttributes" :type="textType" />
+<TextBox v-else v-model="internalValue" v-bind="configAttributes" :type="textType" />
 `
 });
 
@@ -117,13 +129,14 @@ export const ConfigurationComponent = defineComponent({
 
     props: getFieldConfigurationProps(),
 
-    emits: ["update:modelValue", "updateConfiguration", "updateConfigurationValue" ],
+    emits: ["update:modelValue", "updateConfiguration", "updateConfigurationValue"],
 
     setup(props, { emit }) {
         // Define the properties that will hold the current selections.
         const passwordField = ref(false);
         const maxCharacters = ref<number | null>(null);
         const showCountdown = ref(false);
+        const firstNameField = ref(false);
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -141,11 +154,13 @@ export const ConfigurationComponent = defineComponent({
             newValue[ConfigurationValueKey.IsPassword] = asTrueFalseOrNull(passwordField.value) ?? "False";
             newValue[ConfigurationValueKey.MaxCharacters] = maxCharacters.value?.toString() ?? "";
             newValue[ConfigurationValueKey.ShowCountdown] = asTrueFalseOrNull(showCountdown.value) ?? "False";
+            newValue[ConfigurationValueKey.IsFirstName] = asTrueFalseOrNull(firstNameField.value) ?? "False";
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.IsPassword] !== (props.modelValue[ConfigurationValueKey.IsPassword] ?? "False")
                 || newValue[ConfigurationValueKey.MaxCharacters] !== (props.modelValue[ConfigurationValueKey.MaxCharacters] ?? "")
-                || newValue[ConfigurationValueKey.ShowCountdown] !== (props.modelValue[ConfigurationValueKey.ShowCountdown] ?? "False");
+                || newValue[ConfigurationValueKey.ShowCountdown] !== (props.modelValue[ConfigurationValueKey.ShowCountdown] ?? "False")
+                || newValue[ConfigurationValueKey.IsFirstName] !== (props.modelValue[ConfigurationValueKey.IsFirstName] ?? "False");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -175,6 +190,7 @@ export const ConfigurationComponent = defineComponent({
             passwordField.value = asBoolean(props.modelValue[ConfigurationValueKey.IsPassword]);
             maxCharacters.value = toNumberOrNull(props.modelValue[ConfigurationValueKey.MaxCharacters]);
             showCountdown.value = asBoolean(props.modelValue[ConfigurationValueKey.ShowCountdown]);
+            firstNameField.value = asBoolean(props.modelValue[ConfigurationValueKey.IsFirstName]);
         }, {
             immediate: true
         });
@@ -193,11 +209,13 @@ export const ConfigurationComponent = defineComponent({
         watch(passwordField, () => maybeUpdateConfiguration(ConfigurationValueKey.IsPassword, asTrueFalseOrNull(passwordField.value) ?? "False"));
         watch(maxCharacters, () => maybeUpdateConfiguration(ConfigurationValueKey.MaxCharacters, maxCharacters.value?.toString() ?? ""));
         watch(showCountdown, () => maybeUpdateConfiguration(ConfigurationValueKey.ShowCountdown, asTrueFalseOrNull(showCountdown.value) ?? "False"));
+        watch(firstNameField, () => maybeUpdateConfiguration(ConfigurationValueKey.IsFirstName, asTrueFalseOrNull(firstNameField.value) ?? "False"));
 
         return {
             maxCharacters,
             passwordField,
-            showCountdown
+            showCountdown,
+            firstNameField
         };
     },
 
@@ -206,6 +224,7 @@ export const ConfigurationComponent = defineComponent({
     <CheckBox v-model="passwordField" label="Password Field" help="When set, edit field will be masked." />
     <NumberBox v-model="maxCharacters" label="Max Characters" help="The maximum number of characters to allow. Leave this field empty to allow for an unlimited amount of text." />
     <CheckBox v-model="showCountdown" label="Show Character Limit Countdown" help="When set, displays a countdown showing how many characters remain (for the Max Characters setting)." />
+    <CheckBox v-model="firstNameField" label="FirstName Field" help="When set, edit field will be validated as a first name." />
 </div>
 `
 });

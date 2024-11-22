@@ -5,7 +5,7 @@
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          title="Current Classes"
+          :title="gridTitle"
           :entityTypeGuid="EntityType.LearningClass"
           :isCountMessageVisible="false"
           stickyHeader
@@ -23,6 +23,15 @@
                     :filter="textValueFilter"
                     width="25%"
                     visiblePriority="sm">
+        </TextColumn>
+
+        <TextColumn
+                    name="className"
+                    title="Class"
+                    field="className"
+                    :filter="textValueFilter"
+                    width="10%"
+                    visiblePriority="md">
         </TextColumn>
 
         <TextColumn
@@ -74,19 +83,6 @@
                     visiblePriority="sm">
         </TextColumn>
 
-        <Column name="category"
-                title="Category"
-                field="category"
-                :filter="pickExistingValueFilter"
-                width="15%"
-                visiblePriority="lg">
-            <template #format="{ row }">
-                <span class="label label-default category-label" :style="'color: ' + row.categoryColor">
-                    {{ row.category }}
-                </span>
-            </template>
-        </Column>
-
         <Column name="students"
                 title="Students"
                 field="students"
@@ -95,23 +91,40 @@
                 visiblePriority="lg">
         </Column>
 
+        <BooleanColumn name="isActive"
+                       title="Active"
+                       field="isActive"
+                       :filter="booleanValueFilter"
+                       width="2%"
+                       visiblePriority="lg">
+        </BooleanColumn>
+
+        <BooleanColumn name="isPublic"
+                       title="Public"
+                       field="isPublic"
+                       :filter="booleanValueFilter"
+                       width="2%"
+                       visiblePriority="lg">
+        </BooleanColumn>
+
         <SecurityColumn />
 
-        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" :disableConfirmation="true" />
     </Grid>
 </template>
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { numberValueFilter, textValueFilter, Column, TextColumn, DeleteColumn, SecurityColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import Grid, { numberValueFilter, textValueFilter, Column, TextColumn, DeleteColumn, SecurityColumn, BooleanColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningClassListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassList/learningClassListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningClassList/types.partial";
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref } from "vue";
     import { BlockMessages } from "@Obsidian/Utility/browserBus";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<ListBlockBox<LearningClassListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -128,6 +141,7 @@
     let gridData: GridDataBag | undefined;
 
     const hasValidCourse = ref(config.options?.hasValidCourse || false);
+    const gridTitle = computed(() => config.options?.hasValidCourse ? "Classes" : "Current Classes");
 
     // Use the browser bus to listen for changes to edit mode for any blocks on the page.
     const browserBus = useBlockBrowserBus();
@@ -167,10 +181,51 @@
     // #region Event Handlers
 
     /**
-     * Called when a row's delete button has been clicked by the individual. This
-     * happens only if they have confirmed the delete action.
+     * Called when a row's delete button has been clicked by the individual.
+     * This will confirm the delete and if the class contains any
+     * student completions it will confirm a second time.
      */
     async function onDeleteClick(key: string): Promise<void> {
+        const learningClass = gridData?.rows?.find(r => r.idKey === key);
+        const courseName = learningClass?.["course"] as string ?? "";
+
+        const initialConfirmationMessage = courseName.length > 0 ?
+            `Are you sure you wish to delete the ${courseName} class?` :
+            "Are you sure you wish to delete the class?";
+
+        const confirmed = await confirm(initialConfirmationMessage);
+
+        if (!confirmed) {
+            return;
+        }
+
+        // If there are student completions - ensure the individual
+        // is aware that the delete will remove completed activities.
+        let hasCompletions = true;
+        const hasCompletionsResult = await invokeBlockAction<string>("HasStudentCompletions", {
+            key
+        });
+
+        if (hasCompletionsResult.isSuccess) {
+            hasCompletions = asBoolean(hasCompletionsResult.data);
+        }
+        else {
+            await alert(hasCompletionsResult.errorMessage ?? "Unknown error while trying to check learning class student completions.");
+            return;
+        }
+
+        if (hasCompletions) {
+            const confirmationMessage = courseName.length > 0 ?
+                `The ${courseName} class has students with completed activities. Are you sure you want to delete this class and all its related information?` :
+                "The class has students with completed activities. Are you sure you want to delete this class and all its related information?";
+
+            const confirmedDelete = await confirm(confirmationMessage);
+
+            if (!confirmedDelete) {
+                return;
+            }
+        }
+
         const result = await invokeBlockAction<string>("Delete", {
             key
         });
@@ -185,7 +240,7 @@
             }
         }
         else {
-            await alert(result.errorMessage ?? "Unknown error while trying to delete learning class.");
+            await alert(result.errorMessage ?? "Unknown error while trying to delete the class.");
         }
     }
 

@@ -71,8 +71,8 @@ namespace Rock.Blocks.Lms
         DefaultValue = "Is Grid Column",
         Order = 3 )]
 
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the Detail view for the learning program (if Display Mode is 'Summary').",
+    [LinkedPage( "Alternate Detail Page",
+        Description = "The page that will show the Detail view when in 'Summary' mode and the 'Summary' view when in 'Detail' mode.",
         Key = AttributeKey.DetailPage, IsRequired = false, Order = 4 )]
 
     #endregion
@@ -644,12 +644,7 @@ namespace Rock.Blocks.Lms
                 return actionError;
             }
 
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
+            entityService.Delete( entity.Id );
             RockContext.SaveChanges();
 
             return ActionOk( this.GetParentPageUrl() );

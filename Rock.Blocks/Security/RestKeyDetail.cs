@@ -32,14 +32,14 @@ using Rock.Web.Cache;
 namespace Rock.Blocks.Security
 {
     /// <summary>
-    /// Displays the details of a particular user login.
+    /// Displays the details of the given REST API Key.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockDetailBlockType" />
     [DisplayName( "Rest Key Detail" )]
     [Category( "Security" )]
-    [Description( "Displays the details of a particular user login." )]
+    [Description( "Displays the details of the given REST API Key." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

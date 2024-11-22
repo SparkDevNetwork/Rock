@@ -27,8 +27,15 @@
 <script setup lang="ts">
     import { onMounted, PropType, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedValuePickerGetDefinedValuesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetDefinedValuesOptionsBag";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
 
     // TODO: This should be replaced with a version that does not require jQuery.
+
+    const http = useHttp();
 
     const props = defineProps({
         modelValue: {
@@ -45,7 +52,8 @@
         (e: "update:modelValue", value: string): void;
     }>();
 
-    const internalValue = ref(props.modelValue);
+    // The color picker wants things in lower case.
+    const internalValue = ref(props.modelValue.toLowerCase());
     const colorPicker = ref<HTMLElement>();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -68,11 +76,40 @@
         internalValue.value = props.modelValue;
     });
 
-    onMounted(() => {
+    /**
+     * Load color swatch defined type from server to display at the bottom of the picker.
+     */
+    async function loadColorSwatches(): Promise<ListItemBag[]> {
+        const options: DefinedValuePickerGetDefinedValuesOptionsBag = {
+            definedTypeGuid: toGuidOrNull(DefinedType.ColorPickerSwatches) ?? emptyGuid,
+            includeInactive: false,
+        };
+        const url = "/api/v2/Controls/DefinedValuePickerGetDefinedValues";
+        const result = await http.post<ListItemBag[]>(url, undefined, options);
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            console.error(result.errorMessage ?? "Unknown error while loading data.");
+            return [];
+        }
+    }
+
+    watch(internalValue, () => {
+        if (props.modelValue !== internalValue.value) {
+            emit("update:modelValue", internalValue.value);
+        }
+    });
+
+    onMounted(async () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         $colorPicker = (<any>window[<any>"$"])(colorPicker.value);
+        const colorSwatches = await loadColorSwatches();
 
-        $colorPicker.colorpicker();
+        $colorPicker.colorpicker({
+            colorSelectors: colorSwatches.map(c => c.text)
+        });
 
         // Vue will not detect the change if it happens from jQuery, so we need
         // to detect the change and make sure Vue knows.
@@ -80,7 +117,6 @@
             const newValue = <string>$colorPicker.find("> input").val();
             if (internalValue.value !== newValue) {
                 internalValue.value = newValue;
-                emit("update:modelValue", newValue);
             }
         });
     });

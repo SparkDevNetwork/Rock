@@ -32,6 +32,12 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.LabelDesigner
         public string IdKey { get; set; }
 
         /// <summary>
+        /// Determines if the label is a system label. If so it can not be
+        /// saved, but they can look around and run preview tests.
+        /// </summary>
+        public bool IsSystem { get; set; }
+
+        /// <summary>
         /// The data that describes the check-in label that is being designed.
         /// </summary>
         public LabelDetailBag Label { get; set; }

@@ -27,6 +27,8 @@
                 field="person"
                 :filter="pickExistingValueFilter"
                 :filterValue="getNameFilterValue"
+                :quickFilterValue="getNameFilterValue"
+                :sortValue="getNameFilterValue"
                 visiblePriority="xs"
                 width="25%">
             <template #format="{ row }">
@@ -51,7 +53,7 @@
                     title="Date Started"
                     field="dateStarted"
                     :filter="dateValueFilter"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     width="20%"
                     visiblePriority="md" />
@@ -60,7 +62,7 @@
                     title="Date Completed"
                     field="dateCompleted"
                     :filter="dateValueFilter"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     width="170"
                     visiblePriority="xs" />
@@ -122,10 +124,13 @@
 </template>
 
 <style>
-
 .grid-item-pull-right {
     flex-direction: column;
     align-items: start;
+}
+
+.title-right .grid-column-title {
+    text-align: right;
 }
 </style>
 

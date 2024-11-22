@@ -25,23 +25,25 @@
                         field="lastSuccessfulRun"
                         :filter="dateValueFilter"
                         visiblePriority="md"
-                        headerClass="text-right"
-                        itemClass="no-x-padding" />
+                        headerClass="title-right"
+                        itemClass="no-x-padding"
+                        width="9%" />
 
         <DateTimeColumn name="lastRunDateTime"
                         title="Last Run Date"
                         field="lastRunDateTime"
                         :filter="dateValueFilter"
                         visiblePriority="md"
-                        headerClass="text-right"
-                        itemClass="no-x-padding" />
+                        headerClass="title-right"
+                        itemClass="no-x-padding"
+                        width="9%" />
 
         <TextColumn name="lastRunDurationSeconds"
                     title="Last Run Duration"
                     field="lastRunDurationSeconds"
                     :filter="textValueFilter"
                     visiblePriority="md"
-                    headerClass="text-center"
+                    headerClass="title-center"
                     itemClass="justify-content-center text-center" />
 
         <Column name="lastStatus"
@@ -80,7 +82,7 @@
                        field="isSystem"
                        :filter="booleanValueFilter"
                        visiblePriority="md"
-                       headerClass="text-center"
+                       headerClass="title-center"
                        itemClass="justify-content-center text-center" />
 
         <BooleanColumn name="isActive"
@@ -89,14 +91,14 @@
                        :filter="booleanValueFilter"
                        visiblePriority="md"
                        width="5%"
-                       headerClass="text-center"
+                       headerClass="title-center"
                        itemClass="justify-content-center text-center" />
 
         <Column name="history"
                 width="5%"
                 title="History"
                 disableSort
-                headerClass="text-center">
+                headerClass="title-center">
             <template #format="{ row }">
                 <button v-if="row.guid !== ServiceJob.JobPulse"
                         @click.prevent="onShowHistory(row, $event)"
@@ -128,6 +130,14 @@
 <style>
 .no-x-padding {
     padding: var(--table-cell-padding-y) 0 !important;
+}
+
+.title-right .grid-column-title {
+    text-align: right;
+}
+
+.title-center .grid-column-title {
+    text-align: center;
 }
 </style>
 

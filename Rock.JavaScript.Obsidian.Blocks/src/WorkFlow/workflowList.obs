@@ -73,8 +73,9 @@
                         title="Created"
                         field="createdDateTime"
                         :filter="dateValueFilter"
+                        :quickFilterValue="createdRowFilterValue"
                         visiblePriority="md"
-                        headerClass="text-right"
+                        headerClass="title-right"
                         itemClass="justify-content-end text-right"
                         width="150">
             <template #format="{ row }">
@@ -151,6 +152,12 @@
     </Modal>
 </template>
 
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
+
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -171,7 +178,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
 
     const config = useConfigurationValues<ListBlockBox<WorkflowListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -275,6 +282,16 @@ import { pluralize } from "@Obsidian/Utility/stringUtils";
     }
 
     /**
+    * Gets the filter value text to use for the created column.
+    *
+    * @param row The row to be filtered.
+    */
+    function createdRowFilterValue(row: Record<string, unknown>): string {
+        const createdDateTime = row.createdDateTime as string;
+        return createdDateTime ? getElapsed(createdDateTime) : "";
+    }
+
+    /**s
     * Makes the key unique to the current workflowType.
     *
     * @param row The preference key.

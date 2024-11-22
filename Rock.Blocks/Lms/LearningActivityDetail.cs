@@ -112,7 +112,9 @@ namespace Rock.Blocks.Lms
                 IconCssClass = component.Value.Value.IconCssClass,
                 IdKey = component.Value.Value.EntityType.IdKey,
                 Guid = component.Value.Value.EntityType.Guid.ToString()
-            } ).ToList();
+            } )
+                .OrderBy( a => a.Name )
+                .ToList();
 
             // Get a list of Activity Types for the user to select from.
             options.ActivityTypeListItems = options.ActivityTypes.Select( a => new ListItemBag
@@ -221,11 +223,15 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
-            var completionStatistics = new LearningActivityService( RockContext ).GetCompletionStatistics( entity );
+            var learningActivityService = new LearningActivityService( RockContext );
+            var completionStatistics = learningActivityService.GetCompletionStatistics( entity );
 
             // Get the current persons info.
             var currentPerson = GetCurrentPerson();
-            var isClassFacilitator = new LearningParticipantService( RockContext ).GetFacilitatorId( currentPerson.Id, entity.LearningClassId ) > 0;
+            var facilitatorId = new LearningParticipantService( RockContext )
+                .GetFacilitatorId( currentPerson.Id, entity.LearningClassId );
+
+            var isClassFacilitator = facilitatorId.HasValue && facilitatorId.Value > 0;
             var currentPersonBag = new LearningActivityParticipantBag
             {
                 Name = currentPerson.FullName,
@@ -250,13 +256,26 @@ namespace Rock.Blocks.Lms
                 };
             }
 
+            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
+            var isFirstClassActivity = !learningActivityService.Queryable().Any( a => a.LearningClassId == classId );
+            var isNew = entity.Id == 0;
+
+            // If this is an existing record use it's availability criteria
+            // If new - use "Always Available" for the first activity in a class
+            // and "After Previous Completed" for all subsequent activities.
+            var availabilityCriteria =
+                !isNew ?
+                entity.AvailabilityCriteria :
+                isFirstClassActivity ? AvailabilityCriteria.AlwaysAvailable :
+                AvailabilityCriteria.AfterPreviousCompleted;
+
             return new LearningActivityBag
             {
                 IdKey = entity.IdKey,
                 ActivityComponent = activityComponentBag,
                 ActivityComponentSettingsJson = entity.ActivityComponentSettingsJson,
                 AssignTo = entity.AssignTo,
-                AvailabilityCriteria = entity.AvailabilityCriteria,
+                AvailabilityCriteria = availabilityCriteria,
                 AvailableDateCalculated = entity.AvailableDateCalculated,
                 AvailableDateDefault = entity.AvailableDateDefault,
                 AvailableDateDescription = entity.AvailableDateDescription,
@@ -291,7 +310,7 @@ namespace Rock.Blocks.Lms
             {
                 Id = 0,
                 Guid = Guid.Empty,
-                AvailabilityCriteria = Enums.Lms.AvailabilityCriteria.AlwaysAvailable,
+                AvailabilityCriteria = Enums.Lms.AvailabilityCriteria.AfterPreviousCompleted,
                 DueDateCriteria = Enums.Lms.DueDateCriteria.NoDate
             };
         }

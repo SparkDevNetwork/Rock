@@ -30,6 +30,7 @@ using Rock.Enums.Blocks.Communication.CommunicationEntry;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Tasks;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Communication.CommunicationEntry;
@@ -431,6 +432,7 @@ namespace Rock.Blocks.Communication
                     box.MaximumRecipientsBeforeApprovalRequired = this.MaximumRecipients;
                     box.Mediums = GetMediums( currentPerson );
                     box.Mode = this.Mode;
+                    box.SecurityGrantToken = GetSecurityGrantToken();
                     box.Title = GetTitle( communication );
 
                     var communicationData = GetInitialCommunicationData( rockContext, communication, currentPerson, box.Mediums.Select( m => m.Value.AsGuid() ) );
@@ -932,6 +934,11 @@ namespace Rock.Blocks.Communication
             }
 
             return mediums
+                .OrderBy( medium =>
+                    medium.Medium.CommunicationType == CommunicationType.Email ? 1 :
+                    medium.Medium.CommunicationType == CommunicationType.SMS ? 2 :
+                    medium.Medium.CommunicationType == CommunicationType.PushNotification ? 3 : 4
+                )
                 .Select( medium => new ListItemBag
                 {
                     Text = medium.ComponentName,
@@ -1593,6 +1600,28 @@ namespace Rock.Blocks.Communication
             }
 
             return templates;
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</string>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new Rock.Security.SecurityGrant();
+
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+
+            return securityGrant.ToToken();
         }
 
         /// <summary>

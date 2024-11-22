@@ -2,19 +2,24 @@
 <template>
     <button ref="element" :class="cssClass" :disabled="isButtonDisabled" @click="onButtonClick" :type="type" v-bind="tooltipAttrs" :data-shortcut-key="shortcutKey">
         <template v-if="isButtonLoading">
-            <slot name="loading">{{ loadingText }}</slot>
+            <slot name="loading" v-if="$slots.loading || loadingText">{{ loadingText }}</slot>
+            <slot v-else />
+            <template v-if="!disableLoadingIndicator">&nbsp;
+                <LoadingIndicator isSmall class="d-inline" />
+            </template>
         </template>
         <slot v-else />
     </button>
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
     import { LiteralUnion } from "@Obsidian/Types/Utility/support";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { tooltip, destroyTooltip } from "@Obsidian/Utility/tooltip";
+    import LoadingIndicator from "./loadingIndicator.obs";
 
     const props = defineProps({
         isLoading: {
@@ -23,7 +28,7 @@
         },
         loadingText: {
             type: String as PropType<string>,
-            default: "Loading..."
+            default: ""
         },
         type: {
             type: String as PropType<"button" | "submit" | "reset">,
@@ -74,6 +79,11 @@
         shortcutKey: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        disableLoadingIndicator: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -118,6 +128,10 @@
         if (props.title && element.value) {
             tooltip(element.value);
         }
+    });
+
+    onBeforeUnmount(() => {
+        destroyTooltip(element.value);
     });
 
     const onButtonClick = async (event: MouseEvent): Promise<void> => {

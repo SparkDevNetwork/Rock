@@ -201,6 +201,13 @@ namespace RockWeb.Blocks.Finance
         Order = 29
         )]
 
+    [BooleanField(
+        "Enable End Date",
+        Description = "When enabled, this setting allows an individual to specify an optional end date for their recurring scheduled gifts.",
+        Key = AttributeKey.EnableEndDate,
+        DefaultBooleanValue = false,
+        Order = 30 )]
+
     #region Scheduled Transactions
 
     [BooleanField(
@@ -557,7 +564,8 @@ mission. We are so grateful for your commitment.</p>
     <dd>
 
     {% if Transaction.TransactionFrequencyValue %}
-        {{ Transaction.TransactionFrequencyValue.Value }} starting on {{ Transaction.NextPaymentDate | Date:'sd' }}
+        {{ Transaction.TransactionFrequencyValue.Value }} //- Updated to include EndDate
+{% if Transaction.EndDate %}starting on {{ Transaction.NextPaymentDate | Date:'sd' }} and ending on {{ Transaction.EndDate | Date:'sd' }}{% else %}starting on {{ Transaction.NextPaymentDate | Date:'sd' }}{% endif %}
     {% else %}
         Today
     {% endif %}
@@ -742,6 +750,7 @@ mission. We are so grateful for your commitment.</p>
             public const string FeeCoverageDefaultState = "FeeCoverageDefaultState";
             public const string FeeCoverageMessage = "FeeCoverageMessage";
             public const string DisableCaptchaSupport = "DisableCaptchaSupport";
+            public const string EnableEndDate = "EnableEndDate";
         }
 
         #endregion Attribute Keys
@@ -2709,10 +2718,10 @@ mission. We are so grateful for your commitment.</p>
             }
 
             int firstAndFifteenthFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH.AsGuid() ) ?? 0;
-            bool oneTime = selectedScheduleFrequencyId == oneTimeFrequencyId;
+            bool isOneTime = selectedScheduleFrequencyId == oneTimeFrequencyId;
             var giftTerm = this.GetAttributeValue( AttributeKey.GiftTerm );
 
-            if ( oneTime )
+            if ( isOneTime )
             {
                 if ( FinancialGatewayComponent.SupportedPaymentSchedules.Any( a => a.Guid == Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) == false )
                 {
@@ -2727,6 +2736,8 @@ mission. We are so grateful for your commitment.</p>
 
                 dtpStartDate.Label = string.Format( "Process {0} On", giftTerm );
                 btnGiveNow.Text = this.GetAttributeValue( AttributeKey.GiveButtonNowText );
+                pnlScheduledTransactionEndDate.Visible = false;
+                dtpEndDate.SelectedDate = null;
             }
             else
             {
@@ -2740,6 +2751,12 @@ mission. We are so grateful for your commitment.</p>
                 else
                 {
                     dtpStartDate.Label = "Start Giving On";
+                }
+
+                if ( this.GetAttributeValue( AttributeKey.EnableEndDate ).AsBoolean() )
+                {
+                    pnlScheduledTransactionEndDate.Visible = true;
+                    dtpEndDate.Label = "End Giving On";
                 }
             }
 
@@ -2766,7 +2783,7 @@ mission. We are so grateful for your commitment.</p>
             var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );
 
             // if scheduling recurring, it can't start today since the gateway will be taking care of automated giving, it might have already processed today's transaction. So make sure it is no earlier than the gateway's earliest start date.
-            if ( !oneTime && ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate.Value.Date < earliestScheduledStartDate ) )
+            if ( !isOneTime && ( !dtpStartDate.SelectedDate.HasValue || dtpStartDate.SelectedDate.Value.Date < earliestScheduledStartDate ) )
             {
                 dtpStartDate.SelectedDate = earliestScheduledStartDate;
             }
@@ -2902,6 +2919,7 @@ mission. We are so grateful for your commitment.</p>
                     {
                         TransactionFrequencyValue = DefinedValueCache.Get( ddlFrequency.SelectedValue.AsInteger() ),
                         StartDate = dtpStartDate.SelectedDate.Value,
+                        EndDate = dtpEndDate.SelectedDate.HasValue ? dtpEndDate.SelectedDate.Value : ( DateTime? ) null,
                         PersonId = transactionPersonId
                     };
 
@@ -3366,6 +3384,7 @@ mission. We are so grateful for your commitment.</p>
 
             scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
             scheduledTransaction.StartDate = schedule.StartDate;
+            scheduledTransaction.EndDate = schedule.EndDate;
             scheduledTransaction.AuthorizedPersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId ).Value;
             scheduledTransaction.FinancialGatewayId = financialGateway.Id;
 
@@ -3513,12 +3532,24 @@ mission. We are so grateful for your commitment.</p>
             if ( this.IsScheduledTransaction() )
             {
                 var earliestScheduledStartDate = FinancialGatewayComponent.GetEarliestScheduledStartDate( FinancialGateway );
-                if ( dtpStartDate.SelectedDate < earliestScheduledStartDate )
+                if ( dtpStartDate.SelectedDate < earliestScheduledStartDate || !dtpStartDate.SelectedDate.HasValue )
                 {
                     nbPromptForAmountsWarning.Visible = true;
 
                     nbPromptForAmountsWarning.Text = string.Format( "When scheduling a {0}, the minimum start date is {1}", giftTerm.ToLower(), earliestScheduledStartDate.ToShortDateString() );
                     return;
+                }
+
+                int oneTimeFrequencyId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME.AsGuid() ) ?? 0;
+                if ( this.GetAttributeValue( AttributeKey.EnableEndDate ).AsBoolean() && ddlFrequency.SelectedValue.AsInteger() != oneTimeFrequencyId )
+                {
+                    if ( dtpEndDate.SelectedDate < dtpStartDate.SelectedDate )
+                    {
+                        nbPromptForAmountsWarning.Visible = true;
+
+                        nbPromptForAmountsWarning.Text = string.Format( "When scheduling a {0}, the minimum end date is {1}", giftTerm.ToLower(), dtpStartDate.SelectedDate.ToShortDateString() );
+                        return;
+                    }
                 }
             }
             else

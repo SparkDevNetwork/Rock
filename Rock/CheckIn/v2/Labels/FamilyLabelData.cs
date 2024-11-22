@@ -42,7 +42,7 @@ namespace Rock.CheckIn.v2.Labels
         /// <summary>
         /// All attendance records for this session.
         /// </summary>
-        public List<AttendanceLabel> AllAttendance { get; }
+        public List<LabelAttendanceDetail> AllAttendance { get; }
 
         /// <summary>
         /// The family object that was determined via either kiosk search
@@ -66,12 +66,12 @@ namespace Rock.CheckIn.v2.Labels
         /// <summary>
         /// The date and time these people were checked in for this label.
         /// </summary>
-        public DateTime CheckInTime { get; }
+        public DateTime CheckInDateTime { get; }
 
         /// <summary>
         /// The current date and time the label is being printed at.
         /// </summary>
-        public DateTime CurrentTime { get; }
+        public DateTime CurrentDateTime { get; }
 
         /// <summary>
         /// The nick name of each person that was checked in.
@@ -116,42 +116,45 @@ namespace Rock.CheckIn.v2.Labels
         /// <param name="family">The family group used during the check-in process.</param>
         /// <param name="allAttendance">The list of all attendance labels.</param>
         /// <param name="rockContext">The <see cref="RockContext"/> for data operations.</param>
-        public FamilyLabelData( Group family, List<AttendanceLabel> allAttendance, RockContext rockContext )
+        public FamilyLabelData( Group family, List<LabelAttendanceDetail> allAttendance, RockContext rockContext )
         {
             Family = family;
             AllAttendance = allAttendance;
 
-            CheckInTime = AllAttendance.Count > 0
+            CheckInDateTime = AllAttendance.Count > 0
                 ? AllAttendance.Min( a => a.StartDateTime )
                 : RockDateTime.Now;
-            CurrentTime = RockDateTime.Now;
+            CurrentDateTime = RockDateTime.Now;
 
-            NickNames = AllAttendance.Select( a => a.Person )
+            NickNames = AllAttendance.Where(a => a.Person != null )
+                .Select( a => a.Person )
                 .DistinctBy( p => p.Id )
                 .Select( p => p.NickName )
                 .ToList();
-            FirstNames = AllAttendance.Select( a => a.Person )
+            FirstNames = AllAttendance.Where( a => a.Person != null )
+                .Select( a => a.Person )
                 .DistinctBy( p => p.Id )
                 .Select( p => p.FirstName )
                 .ToList();
-            LastNames = AllAttendance.Select( a => a.Person )
+            LastNames = AllAttendance.Where( a => a.Person != null )
+                .Select( a => a.Person )
                 .DistinctBy( p => p.Id )
                 .Select( p => p.LastName )
                 .ToList();
 
-            AreaNames = AllAttendance.Select( a => a.Area.Name )
+            AreaNames = AllAttendance.Select( a => a.Area?.Name )
                 .Distinct()
                 .ToList();
 
-            GroupNames = AllAttendance.Select( a => a.Group.Name )
+            GroupNames = AllAttendance.Select( a => a.Group?.Name )
                 .Distinct()
                 .ToList();
 
-            LocationNames = AllAttendance.Select( a => a.Location.Name )
+            LocationNames = AllAttendance.Select( a => a.Location?.Name )
                 .Distinct()
                 .ToList();
 
-            ScheduleNames = AllAttendance.Select( a => a.Schedule.Name )
+            ScheduleNames = AllAttendance.Select( a => a.Schedule?.Name )
                 .Distinct()
                 .ToList();
 

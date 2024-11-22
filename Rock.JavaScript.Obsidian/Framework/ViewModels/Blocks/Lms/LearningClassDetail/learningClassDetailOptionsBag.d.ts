@@ -29,6 +29,9 @@ export type LearningClassDetailOptionsBag = {
     /** Gets or sets the number of active classes using the default grading system. */
     activeClassesUsingDefaultGradingSystem: number;
 
+    /** Gets or sets whether the course has announcements enabled. */
+    courseAllowsAnnouncements: boolean;
+
     /** Gets or sets the available grading systems. */
     gradingSystems?: ListItemBag[] | null;
 

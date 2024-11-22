@@ -200,7 +200,10 @@ namespace Rock.Model
             target.PageDisplayTitle = source.PageDisplayTitle;
             target.PageTitle = source.PageTitle;
             target.ParentPageId = source.ParentPageId;
+            #pragma warning disable 612, 618
             target.RateLimitPeriod = source.RateLimitPeriod;
+            #pragma warning restore 612, 618
+            target.RateLimitPeriodDurationSeconds = source.RateLimitPeriodDurationSeconds;
             target.RateLimitRequestPerPeriod = source.RateLimitRequestPerPeriod;
             target.RequiresEncryption = source.RequiresEncryption;
             target.CreatedDateTime = source.CreatedDateTime;

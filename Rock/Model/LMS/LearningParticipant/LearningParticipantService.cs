@@ -27,6 +27,77 @@ namespace Rock.Model
 {
     public partial class LearningParticipantService
     {
+        private static class ErrorKey
+        {
+            /// <summary>
+            /// THe error key used when a participant is already enrolled as a student.
+            /// </summary>
+            public const string ALREADY_ENROLLED = "already_enrolled";
+
+            /// <summary>
+            /// The error key used when the learning class has reached it's maximum allowed student count.
+            /// </summary>
+            public const string CLASS_FULL = "class_full";
+
+            /// <summary>
+            /// The error key used when the semester for the learning class no longer accepts enrollments.
+            /// </summary>
+            public const string ENROLLMENT_CLOSED = "enrollment_closed";
+
+            /// <summary>
+            /// The error key used when the registrant has not met the course requirements.
+            /// </summary>
+            public const string UNMET_COURSE_REQUIREMENTS = "unmet_course_requirements";
+        }
+
+        /// <summary>
+        /// Checks the <paramref name="learningClass"/> and <paramref name="registrant"/> to verify that the <paramref name="registrant"/>
+        /// can enroll in the <paramref name="learningClass"/> based on the provided <paramref name="unmetRequirements"/>.
+        /// </summary>
+        /// <param name="learningClass">The learning class to check whether the <paramref name="registrant"/> can enroll.</param>
+        /// <param name="registrant">The <see cref="Person"/> to check whether they can enroll.</param>
+        /// <param name="unmetRequirements">The list of course requirements not yet met by the Person.</param>
+        /// <param name="errorKey">The error code for the type of error.</param>
+        /// <returns><c>true</c> if the registrant should be allowed to enroll; otherwise <c>false</c>.</returns>
+        public bool CanEnroll( LearningClass learningClass, Person registrant, List<LearningCourseRequirement> unmetRequirements, out string errorKey )
+        {
+            errorKey = string.Empty;
+
+            if ( learningClass.LearningSemester.EnrollmentCloseDate.HasValue && learningClass.LearningSemester.EnrollmentCloseDate.Value.IsPast() )
+            {
+                errorKey = ErrorKey.ENROLLMENT_CLOSED;
+                return false;
+            }
+
+            var participantService = new LearningParticipantService( (RockContext)Context );
+            var studentCount = participantService.GetStudents( learningClass.Id ).Count();
+            if ( studentCount >= learningClass.LearningCourse.MaxStudents )
+            {
+                errorKey = ErrorKey.CLASS_FULL;
+                return false;
+            }
+
+            // Already enrolled (as a student).
+            var alreadyEnrolled = participantService.Queryable().Any( p =>
+                p.PersonId == registrant.Id
+                && p.LearningClassId == learningClass.Id
+                && !p.GroupRole.IsLeader );
+
+            if ( alreadyEnrolled )
+            {
+                errorKey = ErrorKey.ALREADY_ENROLLED;
+                return false;
+            }
+
+            if ( unmetRequirements.Any() )
+            {
+                errorKey = ErrorKey.UNMET_COURSE_REQUIREMENTS;
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// <para>Gets a list of <see cref="LearningActivity">Activities</see> for the course that the <see cref="LearningParticipant"/>
         /// is enrolled in.</para>.
@@ -64,6 +135,7 @@ namespace Rock.Model
                 .Include( p => p.Person )
                 .Include( p => p.LearningClass )
                 .Include( p => p.LearningClass.LearningSemester )
+                .AreStudents()
                 .Where( p => p.LearningClassId == activity.LearningClassId )
                 .ToList();
 
@@ -79,7 +151,10 @@ namespace Rock.Model
 
             foreach ( var student in students )
             {
-                var existingCompletion = existingCompletions.FirstOrDefault( c => c.LearningActivityId == activity.Id );
+                var existingCompletion = existingCompletions
+                    .FirstOrDefault( c =>
+                        c.LearningActivityId == activity.Id
+                        && c.StudentId == student.Id );
 
                 if ( existingCompletion != null )
                 {
@@ -130,10 +205,13 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The <see cref="Person"/> identifier of the participant to retrieve.</param>
         /// <param name="classId">The identifier of the <see cref="LearningClass"/> within which to search for the participant.</param>
-        /// <returns></returns>
-        public int GetFacilitatorId( int personId, int classId )
+        /// <returns>
+        /// The integer identifier of the <see cref="LearningParticipant"/> where the specified <paramref name="personId"/>
+        /// is a facilitator; <c>null</c> if not found.</returns>
+        public int? GetFacilitatorId( int personId, int classId )
         {
             return GetParticipant( personId, classId )
+                .AreFacilitators()
                 .Select( p => p.Id )
                 .FirstOrDefault();
         }
@@ -145,7 +223,7 @@ namespace Rock.Model
         /// <returns>Queryable of LearningParticipants that have a Group role of IsLeader.</returns>
         public IQueryable<LearningParticipant> GetFacilitators( int classId )
         {
-            return GetParticipants( classId ).Where( a => a.GroupRole.IsLeader );
+            return GetParticipants( classId ).AreFacilitators();
         }
 
         /// <summary>
@@ -162,7 +240,7 @@ namespace Rock.Model
                 .Include( c => c.GroupRole )
                 .Where( c => c.LearningClass.LearningCourseId == courseId )
                 .Where( c => c.LearningClass.LearningSemesterId == semesterId )
-                .Where( c => c.GroupRole.IsLeader == true );
+                .AreFacilitators();
 
             return includePerson ? baseQuery.Include( c => c.Person ) : baseQuery;
         }
@@ -215,7 +293,7 @@ namespace Rock.Model
             // Optionally filter by facilitators only.
             if ( facilitatorsOnly )
             {
-                baseQuery = baseQuery.Where( p => p.GroupRole.IsLeader );
+                baseQuery = baseQuery.AreFacilitators();
             }
 
             return baseQuery
@@ -271,7 +349,7 @@ namespace Rock.Model
         /// <returns>Queryable of LearningParticipants that have a Group role of not IsLeader.</returns>
         public IQueryable<LearningParticipant> GetStudents( int classId )
         {
-            return GetParticipants( classId, true ).Where( a => !a.GroupRole.IsLeader );
+            return GetParticipants( classId, true ).AreStudents();
         }
 
         /// <summary>
@@ -286,6 +364,7 @@ namespace Rock.Model
         {
             // Get the participant based on class and person identifiers.
             var participant = Queryable()
+                .AreStudents()
                 .Include( p => p.LearningClass )
                 .Include( p => p.LearningClass.LearningActivities )
                 .Include( p => p.LearningClass.LearningSemester )
@@ -293,7 +372,7 @@ namespace Rock.Model
                 .FirstOrDefault( p => p.PersonId == personId && p.LearningClassId == classId );
 
             // If the participant has a completion for this activity return it.
-            var existingCompletion = participant.LearningActivities.FirstOrDefault( c => c.LearningActivityId == learningActivityId );
+            var existingCompletion = participant?.LearningActivities?.FirstOrDefault( c => c.LearningActivityId == learningActivityId );
             if ( existingCompletion != null )
             {
                 return existingCompletion;
@@ -330,10 +409,13 @@ namespace Rock.Model
         public List<LearningActivityCompletion> GetStudentLearningPlan( int classId, int personId )
         {
             // Get the participant based on class and person identifiers.
+            // Order by IsLeader so that Student roles are included first
+            // This prevents potential issues when a facilitator is also a student.
             var participant = Queryable()
                 .Include( p => p.LearningClass )
                 .Include( p => p.LearningClass.LearningSemester )
                 .Include( p => p.LearningClass.LearningSemester.LearningProgram )
+                .OrderBy( p => p.GroupRole.IsLeader )
                 .FirstOrDefault( p => p.PersonId == personId && p.LearningClassId == classId );
 
             return GetStudentLearningPlan( participant );
@@ -385,6 +467,5 @@ namespace Rock.Model
                 .ThenBy( a => a.LearningActivityId )
                 .ToList();
         }
-
     }
 }

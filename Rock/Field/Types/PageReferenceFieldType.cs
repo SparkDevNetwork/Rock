@@ -132,10 +132,12 @@ namespace Rock.Field.Types
                             }
                         }
                     }
+
+                    return pageRouteBag.ToCamelCaseJson( false, true );
                 }
             }
 
-            return pageRouteBag.ToCamelCaseJson( false, true );
+            return string.Empty;
         }
 
         /// <inheritdoc />

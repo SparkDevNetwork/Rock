@@ -389,98 +389,6 @@ namespace Rock.Blocks.Lms
             return true;
         }
 
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="participantBag">The bag containing the values to save.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( LearningParticipantBag participantBag, RockContext rockContext, out LearningParticipant entity, out BlockActionResult error )
-        {
-            var entityService = new LearningParticipantService( rockContext );
-            error = null;
-
-            // Determine if we are editing an existing entity or creating a new one.
-            if ( participantBag.IdKey.IsNotNullOrWhiteSpace() )
-            {
-                // If editing an existing entity then load it and make sure it
-                // was found and can still be edited.
-                entity = entityService.Get( participantBag.IdKey, !PageCache.Layout.Site.DisablePredictableIds );
-            }
-            else
-            {
-                // Create a new entity.
-                entity = new LearningParticipant();
-
-                // Get the related Class.
-                var classId = IdHasher.Instance.GetId( PageParameter( PageParameterKey.LearningClassId ) ).ToIntSafe();
-                if ( classId == 0 )
-                {
-                    error = ActionBadRequest( $"{LearningClass.FriendlyTypeName} not found." );
-                    return false;
-                }
-
-                var group = new LearningClassService( rockContext ).Get( classId );
-
-                if ( group == null )
-                {
-                    error = ActionBadRequest( $"{LearningClass.FriendlyTypeName} not found." );
-                    return false;
-                }
-
-                entity.LearningClass = group;
-                entity.GroupId = classId;
-
-                // Get the selected person.
-                if ( !Guid.TryParse( participantBag.PersonAlias.Value, out var aliasGuid ) )
-                {
-                    error = ActionBadRequest( $"Missing {LearningParticipant.FriendlyTypeName}." );
-                }
-
-                var personId = new PersonAliasService( rockContext ).GetPersonId( aliasGuid ).ToIntSafe();
-
-                if ( personId == 0 )
-                {
-                    error = ActionBadRequest( $"{LearningParticipant.FriendlyTypeName} not found." );
-                }
-
-                entity.PersonId = personId;
-
-                // Get the Role type.
-                if ( !Guid.TryParse( participantBag.ParticipantRole.Value, out var roleTypeGuid ) )
-                {
-                    error = ActionBadRequest( $"{GroupTypeRole.FriendlyTypeName} not found." );
-                }
-
-                var groupRole = new GroupTypeRoleService( rockContext ).Get( roleTypeGuid );
-
-                if ( groupRole == null )
-                {
-                    error = ActionBadRequest( $"{GroupTypeRole.FriendlyTypeName} not found." );
-                }
-
-                entity.GroupRole = groupRole;
-
-                entityService.Add( entity );
-            }
-
-            if ( entity == null )
-            {
-                error = ActionBadRequest( $"{LearningParticipant.FriendlyTypeName} not found." );
-                return false;
-            }
-
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                error = ActionBadRequest( $"Not authorized to edit {LearningParticipant.FriendlyTypeName}." );
-                return false;
-            }
-
-            return true;
-        }
-
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
@@ -618,7 +526,7 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"The {LearningParticipant.FriendlyTypeName} was not found." );
             }
 
-            var now = DateTime.Now;
+            var now = RockDateTime.Now;
             var participantService = new LearningParticipantService( RockContext );
 
             // Get the grade scales first since we'll need them for the grade caluculations.
@@ -630,7 +538,7 @@ namespace Rock.Blocks.Lms
                 .OrderByDescending( g => g.ThresholdPercentage );
 
             var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
-            var personId = GetCurrentPerson()?.Id ?? 0;
+            var personId = participantService.GetSelect( PageParameter( PageParameterKey.LearningParticipantId ), p => p.PersonId );
             var learningPlan = participantService.GetStudentLearningPlan( classId, personId );
 
             var components = LearningActivityContainer.Instance.Components;
@@ -648,7 +556,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "dueDate", a => a.DueDate )
                 .AddField( "isPastDue", a => a.DueDate != null && a.DueDate >= now && !a.CompletedDateTime.HasValue )
                 .AddField( "isAvailableNow", a => a.AvailableDateTime != null && now >= a.AvailableDateTime )
-                .AddTextField( "grade", a => a.GetGradeText( gradeScales ) );
+                .AddTextField( "grade", a => a.RequiresGrading || a.LearningActivity.Points == 0 ? null : a.GetGradeText( gradeScales ) );
 
             return ActionOk( gridBuilder.Build( learningPlan ) );
         }

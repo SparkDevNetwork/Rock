@@ -131,9 +131,17 @@ namespace Rock.Blocks.Lms
         {
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
 
-            return programId > 0 ?
+            var query = programId > 0 ?
                 base.GetListQueryable( rockContext ).Where( c => c.LearningProgramId == programId ) :
                 base.GetListQueryable( rockContext );
+
+            return query;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<LearningCourse> GetOrderedListQueryable( IQueryable<LearningCourse> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( s => s.Name );
         }
 
         /// <inheritdoc/>
