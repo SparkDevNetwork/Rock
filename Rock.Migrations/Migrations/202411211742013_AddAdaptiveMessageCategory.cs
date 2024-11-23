@@ -29,7 +29,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RockMigrationHelper.UpdateEntityType( "Rock.Model.AdaptiveMessageCategory", "", "", true, true, Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_CATEGORY );
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.AdaptiveMessageCategory", "Adaptive Message Category", "", true, true, Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_CATEGORY );
             RockMigrationHelper.UpdateCategory( Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_CATEGORY, "All Church", "", "", "2512EC06-CF27-402C-9CCC-EFD97174F6E4" );
             DropIndex( "dbo.AdaptiveMessageCategory", new[] { "AdaptiveMessageId" });
             DropIndex("dbo.AdaptiveMessageCategory", new[] { "CategoryId" });
@@ -41,8 +41,7 @@ namespace Rock.Migrations
             AddColumn("dbo.AdaptiveMessageCategory", "ForeignGuid", c => c.Guid());
             AddColumn("dbo.AdaptiveMessageCategory", "ForeignKey", c => c.String(maxLength: 100));
             AddPrimaryKey("dbo.AdaptiveMessageCategory", "Id");
-            Sql( @"SELECT * FROM Category
-
+            Sql( @"
 DECLARE @AdaptiveMsgCategoryEntityTypeId INT = (SELECT Id FROM [EntityType] WHERE [Guid]='D47BDA25-03A3-46EE-A0A6-F8B220E39E4A')
 DECLARE @AdaptiveMsgEntityTypeId INT = (SELECT Id FROM [EntityType] WHERE [Guid]='63D98F58-DA81-46AE-AE0C-662A7BFAA7D0')
 DECLARE @AllChurchCategory INT = (SELECT Id FROM [Category] WHERE [Guid] = '2512EC06-CF27-402C-9CCC-EFD97174F6E4')
