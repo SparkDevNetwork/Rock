@@ -79,6 +79,8 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
+    const canEditProgram = config.options?.canEditProgram ?? false;
+
     // #endregion
 
     // #region Functions
@@ -101,17 +103,6 @@
     // #endregion
 
     // #region Event Handlers
-
-    /**
-     * Called when a row has been selected by the individual.
-     *
-     * @param key The key of the row that was selected.
-     */
-    function onSelectItem(key: string): void {
-        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key) + "?autoEdit=true&returnUrl=" + encodeURIComponent(window.location.href);
-        }
-    }
 
     /**
      * Called when the Add button has been clicked by the indivual.
@@ -154,6 +145,21 @@
     function onDeleteRowDisabled(row: Record<string, unknown>): boolean {
         return (row.classCount as number) > 0;
     }
+
+    /**
+     * undefined if the individual doesn't have permission to edit the program;
+     * otherwise a function to be called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    const onSelectItem =
+        !canEditProgram ?
+            undefined :
+            function onSelectItem(key: string): void {
+                if (canEditProgram && config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+                    window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key) + "?autoEdit=true&returnUrl=" + encodeURIComponent(window.location.href);
+                }
+            };
 
     // #endregion
 
