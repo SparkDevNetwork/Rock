@@ -44,9 +44,9 @@
                                      :minimumRecipientCount="minimumRecipientCount" />
                     <template v-else>
                         <RockLabel>Recipients</RockLabel>
-                        <StaticFormControl :modelValue="`Communication List: ${config.communication.communicationListName} (${config.communication.communicationListRecipientCount} individuals)`">
+                        <StaticFormControl :modelValue="`Communication List: ${config.communication.communicationListName} (${recipients.length} individuals)`">
                             <template #default="{ value }">
-                                {{ value }} <RockButton btnType="link" btnSize="sm" @click="onConvertListToRecipients">Convert List to Recipients</RockButton>
+                                {{ value }} <RockButton btnType="link" btnSize="sm" :disabled="disabled" @click="onConvertListToRecipients">Convert List to Recipients</RockButton>
                             </template>
                         </StaticFormControl>
                     </template>
