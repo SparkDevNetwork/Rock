@@ -42,26 +42,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
     #region Block Attributes
 
-    [DefinedValueField(
-        "Connection Status",
-        Key = AttributeKeys.ConnectionStatus,
-        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
-        DefinedTypeGuid = "2E6540EA-63F0-40FE-BE50-F2A84735E600",
-        IsRequired = true,
-        AllowMultiple = false,
-        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
-        Order = 11 )]
-
-    [DefinedValueField(
-        "Record Status",
-        Key = AttributeKeys.RecordStatus,
-        Description = "The record status to use for new individuals (default = 'Pending'.)",
-        DefinedTypeGuid = "8522BADD-2871-45A5-81DD-C76DA07E2E7E",
-        IsRequired = true,
-        AllowMultiple = false,
-        DefaultValue = "283999EC-7346-42E3-B807-BCE9B2BABB49",
-        Order = 12 )]
-
     [BooleanField(
         "Birthdate Show",
         Key = AttributeKeys.BirthDateShow,
@@ -161,6 +141,26 @@ namespace Rock.Blocks.Types.Mobile.Cms
         Key = AttributeKeys.Gender,
         Order = 10 )]
 
+    [DefinedValueField(
+        "Connection Status",
+        Key = AttributeKeys.ConnectionStatus,
+        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
+        DefinedTypeGuid = "2E6540EA-63F0-40FE-BE50-F2A84735E600",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
+        Order = 11 )]
+
+    [DefinedValueField(
+        "Record Status",
+        Key = AttributeKeys.RecordStatus,
+        Description = "The record status to use for new individuals (default = 'Pending'.)",
+        DefinedTypeGuid = "8522BADD-2871-45A5-81DD-C76DA07E2E7E",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = "283999EC-7346-42E3-B807-BCE9B2BABB49",
+        Order = 12 )]
+
     [DefinedValueField( "Display Campus Types",
         Description = "The campus types that will be included in the list of campuses for the user to choose from. If the user's assigned campus is not part of the filtered list, it will be automatically added.",
         DefinedTypeGuid = SystemGuid.DefinedType.CAMPUS_TYPE,
@@ -168,7 +168,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
         DefaultValue = SystemGuid.DefinedValue.CAMPUS_TYPE_PHYSICAL,
         AllowMultiple = true,
         Key = AttributeKeys.DisplayCampusTypes,
-        Order = 0 )]
+        Order = 13 )]
+
     [DefinedValueField( "Display Campus Statuses",
         Description = "The campus types that will be included in the list of campuses for the user to choose from.",
         DefinedTypeGuid = SystemGuid.DefinedType.CAMPUS_STATUS,
@@ -176,7 +177,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         DefaultValue = SystemGuid.DefinedValue.CAMPUS_STATUS_OPEN,
         AllowMultiple = true,
         Key = AttributeKeys.DisplayCampusStatuses,
-        Order = 1 )]
+        Order = 14 )]
 
     #endregion
 
