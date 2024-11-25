@@ -330,6 +330,12 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
         #endregion Keys
 
+        /// <summary>
+        /// Whether the ShowCompletionStatus block setting is configured to "Show".
+        /// </summary>
+        /// <returns><c>true</c> if the completion status should be shown; otherwise <c>false</c>.</returns>
+        private bool ShowCompletionStatus => GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";
+
         #region Methods
 
         /// <inheritdoc/>
@@ -360,7 +366,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
         }
 
         /// <summary>
-        /// Gets the html content for the block.
+        /// Gets the HTML content for the block.
         /// </summary>
         /// <param name="includeNextSessionFiltering">Optional filter to restrict courses to those within the block setting's "Next Session Date Range".</param>
         /// <returns>The resolved lava template.</returns>
@@ -396,7 +402,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
             var mergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
             mergeFields.Add( "Course", course );
-            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
+            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus );
 
             if ( currentPerson != null )
             {
@@ -419,7 +425,9 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                   .FirstOrDefault( c => c.Id == learningClassId );
 
                 // Allow historical access if the course allows it and the class is not over.
+                var hasSemester = learningClass.LearningSemester != null;
                 var canShowHistoricalAccess = learningClass.LearningCourse.AllowHistoricalAccess
+                    && hasSemester
                     && ( !learningClass.LearningSemester.EndDate.HasValue
                     || learningClass.LearningSemester.EndDate.Value.IsFuture() );
 
@@ -445,15 +453,6 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
             var template = GetAttributeValue( AttributeKey.CourseDetailTemplate ) ?? string.Empty;
             return template.ResolveMergeFields( mergeFields );
-        }
-
-        /// <summary>
-        /// Whether the ShowCompletionStatus block setting us configured to "Show".
-        /// </summary>
-        /// <returns><c>true</c> if the completion status should be shown; otherwise <c>false</c>.</returns>
-        private bool ShowCompletionStatus()
-        {
-            return GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";
         }
 
         /// <inheritdoc/>

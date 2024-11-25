@@ -401,13 +401,26 @@ namespace Rock.Blocks.Lms
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
             {
-                var programId = PageParameter( PageParameterKey.LearningProgramId );
+                var programKey = PageParameter( PageParameterKey.LearningProgramId );
+                var learningProgramService = new LearningProgramService( RockContext );
+                var program = learningProgramService
+                        .GetSelect( programKey, p => new
+                        {
+                            p.DefaultLearningGradingSystemId,
+                            p.Id,
+                            p.ConfigurationMode
+                        }, !PageCache.Layout.Site.DisablePredictableIds );
+
+                var isOnDemandLearning = program.ConfigurationMode == ConfigurationMode.OnDemandLearning;
+                var defaultLearningSemester = isOnDemandLearning ? learningProgramService.GetDefaultSemester( program.Id ) : null;
+
                 return new LearningClass
                 {
                     Id = 0,
                     Guid = Guid.Empty,
-                    LearningGradingSystemId = new LearningProgramService( RockContext )
-                        .GetSelect( programId, p => p.DefaultLearningGradingSystemId, !PageCache.Layout.Site.DisablePredictableIds ) ?? 0
+                    LearningSemester = defaultLearningSemester,
+                    LearningSemesterId = defaultLearningSemester?.Id,
+                    LearningGradingSystemId = program?.DefaultLearningGradingSystemId ?? 0
                 };
             }
 

@@ -549,7 +549,7 @@ namespace Rock.Blocks.Lms
                     .FirstOrDefault( a => !a.IsStudentCompleted && !a.IsAvailable );
 
             // If there's no available activities that the student hasn't completed.
-            // Then show them their next avaiable activity.
+            // Then show them their next available activity.
             if ( !box.Notifications.Any() && nextAvailableActivity != null )
             {
                 box.Notifications.Add( new PublicLearningClassWorkspaceNotificationBag
