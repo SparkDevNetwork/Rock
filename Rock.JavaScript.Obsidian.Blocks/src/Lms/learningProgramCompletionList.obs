@@ -20,14 +20,14 @@
                       field="individual"
                       :filter="pickExistingValueFilter"
                       :filterValue="getPersonNameFilterValue"
-                      visiblePriority="sm" />
+                      visiblePriority="xs" />
 
         <TextColumn
                     name="campus"
                     title="Campus"
                     field="campus"
                     :filter="textValueFilter"
-                    visiblePriority="sm" />
+                    visiblePriority="md" />
 
         <TextColumn
                     v-if="config.options?.showSemesterColumn"
@@ -35,7 +35,7 @@
                     title="Semester"
                     field="semester"
                     :filter="textValueFilter"
-                    visiblePriority="sm" />
+                    visiblePriority="md" />
 
         <DateColumn
                     name="startDate"
@@ -49,7 +49,7 @@
                     title="End Date"
                     field="endDate"
                     :filter="dateValueFilter"
-                    visiblePriority="sm" />
+                    visiblePriority="md" />
 
         <Column
                 name="status"
@@ -57,7 +57,7 @@
                 field="status"
                 :filter="pickExistingValueFilter"
                 width="10%"
-                visiblePriority="sm">
+                visiblePriority="xs">
             <template #format="{ row }">
                 <span :class="'label label-' + statusLabelTypeMap[row.status] + ' category-label'">
                     {{ CompletionStatusDescription[row.status] }}
@@ -69,7 +69,7 @@
                 name="profile"
                 title=""
                 width="48px"
-                visiblePriority="md">
+                visiblePriority="xs">
             <template #format="{ row }">
                 <i class="fa fa-user pr-3" @click="onPersonProfileClick(row.individual?.idKey)"></i>
             </template>

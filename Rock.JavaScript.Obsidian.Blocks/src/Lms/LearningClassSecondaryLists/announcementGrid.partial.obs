@@ -26,7 +26,7 @@
                     field="publishDateTime"
                     :filter="dateValueFilter"
                     filterValue="publishDateTime"
-                    visiblePriority="xs" />
+                    visiblePriority="sm" />
 
         <Column
                 name="communicationMode"
@@ -44,7 +44,7 @@
                        title="Sent"
                        field="communicationSent"
                        :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       visiblePriority="sm" />
 
         <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
     </Grid>

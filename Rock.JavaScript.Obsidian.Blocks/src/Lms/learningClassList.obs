@@ -22,7 +22,7 @@
                     field="course"
                     :filter="textValueFilter"
                     width="25%"
-                    visiblePriority="sm">
+                    visiblePriority="xs">
         </TextColumn>
 
         <TextColumn
@@ -31,7 +31,7 @@
                     field="className"
                     :filter="textValueFilter"
                     width="10%"
-                    visiblePriority="md">
+                    visiblePriority="xs">
         </TextColumn>
 
         <TextColumn
@@ -41,7 +41,7 @@
                     field="code"
                     :filter="textValueFilter"
                     width="10%"
-                    visiblePriority="xs">
+                    visiblePriority="lg">
         </TextColumn>
 
         <TextColumn
@@ -51,7 +51,7 @@
                     field="semester"
                     :filter="textValueFilter"
                     width="10%"
-                    visiblePriority="sm">
+                    visiblePriority="md">
         </TextColumn>
 
         <TextColumn
@@ -60,7 +60,7 @@
                     field="facilitators"
                     :filter="textValueFilter"
                     width="20%"
-                    visiblePriority="md">
+                    visiblePriority="lg">
         </TextColumn>
 
         <TextColumn
@@ -107,6 +107,12 @@
                        visiblePriority="lg">
         </BooleanColumn>
 
+        <ButtonColumn name="copy"
+                      title="Copy"
+                      iconClass="fa fa-clone"
+                      width="52"
+                      @click="onCopyClick" />
+
         <SecurityColumn />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" :disableConfirmation="true" />
@@ -116,7 +122,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { numberValueFilter, textValueFilter, Column, TextColumn, DeleteColumn, SecurityColumn, BooleanColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { numberValueFilter, textValueFilter, ButtonColumn, Column, TextColumn, DeleteColumn, SecurityColumn, BooleanColumn, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningClassListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassList/learningClassListOptionsBag";
@@ -179,6 +185,28 @@
     // #endregion
 
     // #region Event Handlers
+
+    /**
+    * Called when a row's copy button has been clicked by the individual.
+    * This sends a request to the server to create a new learning class
+    * based on the clicked entity and redirects the user to the specified
+    * detail page with the learning class id.
+    */
+    async function onCopyClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Copy", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (result.data) {
+                window.location.href = result.data;
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to copy learning class.");
+        }
+    }
+
 
     /**
      * Called when a row's delete button has been clicked by the individual.

@@ -282,6 +282,53 @@ namespace Rock.Blocks.Lms
         #endregion
 
         #region Block Actions
+        
+        /// <summary>
+        /// Copy the Class to create as a new Class
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult Copy( string key )
+        {
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return ActionNotFound();
+            }
+
+            var learningClassService = new LearningClassService( RockContext );
+            var copiedEntity = learningClassService.Copy( key );
+            var currentPageParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId )
+            };
+
+            var courseIdPageParameter = PageParameter( PageParameterKey.LearningCourseId );
+
+            // When creating the return url only include the LearningCourseId
+            // if it's present for the current page ( avoid an empty query string param).
+            if ( courseIdPageParameter.IsNotNullOrWhiteSpace() )
+            {
+                currentPageParams.Add( PageParameterKey.LearningCourseId, courseIdPageParameter );
+            }
+
+            var returnUrl = this.GetCurrentPageUrl( currentPageParams );
+
+            // After getting the returnUrl ensure that the detail page includes the LearningCourseIdKey.
+            if ( courseIdPageParameter.IsNullOrWhiteSpace() )
+            {
+                var courseIdKeyFromCopiedClass = IdHasher.Instance.GetHash( copiedEntity.LearningCourseId );
+                currentPageParams.AddOrReplace( PageParameterKey.LearningCourseId, courseIdKeyFromCopiedClass );
+            }
+
+            // Add the LearningClassId, autoEdit and returnUrl to the current page parameters.
+            var queryParams = new Dictionary<string, string>( currentPageParams )
+            {
+                ["LearningClassId"] = copiedEntity.IdKey,
+                ["autoEdit"] = true.ToString(),
+                ["returnUrl"] = returnUrl
+            };
+
+            return ActionContent( System.Net.HttpStatusCode.Created, this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams ) );
+        }
 
         /// <summary>
         /// Deletes the specified entity.

@@ -35,7 +35,7 @@
                       class="text-right"
                       :filter="numberValueFilter"
                       width="15%"
-                      visiblePriority="xs" />
+                      visiblePriority="sm" />
 
         <BooleanColumn name="isPassing"
                        title="Passing"
