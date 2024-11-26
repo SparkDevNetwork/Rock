@@ -1315,6 +1315,7 @@
     <Compile Include="Model\CMS\Theme\ThemeService.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationSegmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AdaptiveMessageCategoryService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AIProviderService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\CheckInLabelService.CodeGenerated.cs" />

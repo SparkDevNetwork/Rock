@@ -108,8 +108,8 @@ namespace Rock.CheckIn.v2.Filters
             {
                 // If we are configured such that grade matches take priority
                 // over other matches then we need to track groups that were
-                // matched by grade.
-                if ( TemplateConfiguration.GradeAndAgeMatchingBehavior == GradeAndAgeMatchingMode.PrioritizeGradeOverAge )
+                // positively matched by grade.
+                if ( TemplateConfiguration.GradeAndAgeMatchingBehavior == GradeAndAgeMatchingMode.PrioritizeGradeOverAge && gradeRangeMatch.Value )
                 {
                     if ( _matchedByGradeGroupIds == null )
                     {

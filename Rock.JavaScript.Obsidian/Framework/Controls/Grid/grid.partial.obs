@@ -110,6 +110,7 @@
     --table-cell-padding-x: 16px;
     --table-cell-padding-y: 16px;
     color: var(--theme-darkest);
+    margin-bottom: 24px;
 }
 
 .grid-obsidian.grid-bordered {
