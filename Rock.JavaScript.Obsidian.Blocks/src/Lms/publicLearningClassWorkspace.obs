@@ -195,7 +195,7 @@
                             <p class="text-muted">Tap here to select an activity</p>
                         </template>
                         <template #default="{ item }">
-                            <div class="activity-item-content detail-container"
+                            <div class="activity-item-content"
                                  :ref="(el) => addTooltip(el as Element)"
                                  data-toggle="tooltip"
                                  data-placement="auto"
@@ -209,9 +209,8 @@
                                     <h5 class="activity-name">{{ item?.activityBag?.name }}</h5>
                                     <div class="activity-item-time">
                                         <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
-                                        <div class="activity-label-container">
-                                            <template v-html="getActivityLabel(item)"></template>
-                                        </div>
+                                    </div>
+                                    <div class="activity-label-container" v-html="getActivityLabel(item)">
                                     </div>
                                 </div>
                                 <div class="activity-item-grade-container">

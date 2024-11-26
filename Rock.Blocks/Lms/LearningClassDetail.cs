@@ -940,14 +940,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.EntityType.Id == a.ActivityComponentId ).Value.Name )
                 .AddField( "points", a => a.Points )
                 // Ungraded and requires grading or requires a facilitator to complete.
-                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions
-                    .Any( c =>
-                        (
-                            !c.GradedByPersonAliasId.HasValue
-                            && components.FirstOrDefault( comp => comp.Value.EntityType.Id == a.ActivityComponentId )
-                            .Value
-                            .RequiresGrading(c)
-                        ) || c.RequiresFacilitatorCompletion ) )
+                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.RequiresGrading || c.RequiresFacilitatorCompletion ) )
                 .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.HasStudentComment ) );
 
             var classId = GetClassId().ToIntSafe();
