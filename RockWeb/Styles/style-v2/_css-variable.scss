@@ -213,19 +213,19 @@
     --color-interface-softer:    #010409;
     --color-interface-softest:   #0d1117;
     
-    --color-critical-soft:    #EE772533;
+    --color-critical-soft:    #EE7725;
     --color-critical-strong:  #FEDEC8;
   
-    --color-danger-soft:      #D7001533;
+    --color-danger-soft:      #D70015;
     --color-danger-strong:    #FFCCD1;
   
-    --color-info-soft:        #007AFF33;
+    --color-info-soft:        #007AFF;
     --color-info-strong:      #D6EAFF;
   
-    --color-success-soft:     #248A3D33;
+    --color-success-soft:     #248A3D;
     --color-success-strong:   #D7F4DE;
   
-    --color-warning-soft:     #E5860033;
+    --color-warning-soft:     #E58600;
     --color-warning-strong:   #FFECD1;
   }
 }
@@ -239,13 +239,20 @@
   --color-interface-softer:    #f1f1f8;
   --color-interface-softest:   #FFFFFF;
 
-  @supports (color: color-mix(in srgb, red 50%, white 50%)) {
-    --color-critical-soft:    color-mix(in srgb, var(--color-critical-strong) 25%, #FFF var(--tint-white-percentage));
-    --color-danger-soft:      color-mix(in srgb, var(--color-danger-strong) 25%, #FFF var(--tint-white-percentage));
-    --color-info-soft:        color-mix(in srgb, var(--color-info-strong) 25%, #FFF var(--tint-white-percentage));
-    --color-success-soft:     color-mix(in srgb, var(--color-success-strong) 25%, #FFF var(--tint-white-percentage));
-    --color-warning-soft:     color-mix(in srgb, var(--color-warning-strong) 25%, #FFF var(--tint-white-percentage));
-  }
+  --color-critical-soft:    #FEDEC8;
+  --color-critical-strong:  #EE7725;
+
+  --color-danger-soft:      #FFCCD1;
+  --color-danger-strong:    #D70015;
+
+  --color-info-soft:        #D6EAFF;
+  --color-info-strong:      #007AFF;
+
+  --color-success-soft:     #D7F4DE;
+  --color-success-strong:   #248A3D;
+
+  --color-warning-soft:     #FFECD1;
+  --color-warning-strong:   #E58600;
 }
 
 [theme = "dark"] {
@@ -257,18 +264,18 @@
   --color-interface-softer:    #010409;
   --color-interface-softest:   #0d1117;
   
-  --color-critical-soft:    #EE772533;
+  --color-critical-soft:    #EE7725;
   --color-critical-strong:  #FEDEC8;
 
-  --color-danger-soft:      #D7001533;
+  --color-danger-soft:      #D70015;
   --color-danger-strong:    #FFCCD1;
 
-  --color-info-soft:        #007AFF33;
+  --color-info-soft:        #007AFF;
   --color-info-strong:      #D6EAFF;
 
-  --color-success-soft:     #248A3D33;
+  --color-success-soft:     #248A3D;
   --color-success-strong:   #D7F4DE;
 
-  --color-warning-soft:     #E5860033;
+  --color-warning-soft:     #E58600;
   --color-warning-strong:   #FFECD1;
 }
