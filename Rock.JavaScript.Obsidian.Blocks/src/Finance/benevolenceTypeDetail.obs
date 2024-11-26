@@ -49,7 +49,7 @@
     import { BenevolenceTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceTypeDetail/benevolenceTypeDetailOptionsBag";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 
     const config = useConfigurationValues<DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -78,7 +78,8 @@ import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
         "requestLavaTemplate",
         "showFinancialResults",
         "maximumNumberOfDocuments",
-        "workflows"
+        "workflows",
+        "attributeValues"
     ];
 
     // #endregion
