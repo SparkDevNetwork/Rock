@@ -108,7 +108,6 @@
         </BooleanColumn>
 
         <ButtonColumn name="copy"
-                      title="Copy"
                       iconClass="fa fa-clone"
                       width="52"
                       @click="onCopyClick" />
