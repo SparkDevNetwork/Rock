@@ -388,8 +388,10 @@ namespace Rock.Web.Cache
         /// <param name="purposeGuid">The purpose unique identifier.</param>
         /// <param name="startingGroup">Starting group is used to avoid circular references.</param>
         /// <returns></returns>
-        private GroupTypeCache GetParentPurposeGroupType( GroupTypeCache groupType, Guid purposeGuid, GroupTypeCache startingGroup )
+        private GroupTypeCache GetParentPurposeGroupType( GroupTypeCache groupType, Guid purposeGuid, GroupTypeCache startingGroup, List<int> groupTypeIds = null )
         {
+            groupTypeIds = groupTypeIds ?? new List<int>();
+
             if ( groupType != null &&
                 groupType.GroupTypePurposeValue != null &&
                 groupType.GroupTypePurposeValue.Guid.Equals( purposeGuid ) )
@@ -402,12 +404,15 @@ namespace Rock.Web.Cache
                 // skip if parent group type and current group type are the same (a situation that should not be possible) to prevent stack overflow
                 if ( groupType.Id == parentGroupType.Id ||
                      // also skip if the parent group type and starting group type are the same as this is a circular reference and can cause a stack overflow
-                     startingGroup.Id == parentGroupType.Id )
+                     startingGroup.Id == parentGroupType.Id ||
+                     groupTypeIds.Contains( parentGroupType.Id ) )
                 {
                     continue;
                 }
 
-                var testGroupType = GetParentPurposeGroupType( parentGroupType, purposeGuid, startingGroup );
+                groupTypeIds.Add( parentGroupType.Id );
+
+                var testGroupType = GetParentPurposeGroupType( parentGroupType, purposeGuid, startingGroup, groupTypeIds );
                 if ( testGroupType != null )
                 {
                     return testGroupType;
