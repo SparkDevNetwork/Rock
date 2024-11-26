@@ -7,62 +7,62 @@
     "fields": [
         {
             "type":"panel",
-            "title":"Application & System Color",
+            "title":"Application & System Colors",
             "expanded": true,
             "fields": [
                 {
                     "type": "color",
                     "name": "Primary Color",
-                    "variable": "color-primary",
+                    "variable": "base-primary",
                     "description": "The primary color used to highlight screen elements, such as the main button.",
-                    "default": "#ee7725"
+                    "default": "#FF8C3D"
                 },
                 {
                     "type": "color",
-                    "name": "link Color",
-                    "variable": "color-link",
+                    "name": "Link Color",
+                    "variable": "base-link",
                     "description": "The link color used to highlight screen elements, such as the main button.",
                     "default": "#006DCC"
                 },
                 {
                     "type": "color",
                     "name": "Secondary Color",
-                    "variable": "color-secondary",
+                    "variable": "base-secondary",
                     "description": "The secondary color used to highlight screen elements, such as the main button.",
                     "default": "#83758f"
                 },
                 {
                     "type": "color",
                     "name": "Critical Color",
-                    "variable": "color-critical-strong",
+                    "variable": "base-critical",
                     "description": "Color use to paint critical alert, label, badges...",
                     "default": "#ee7725"
                 },
                 {
                     "type": "color",
                     "name": "Danger Color",
-                    "variable": "color-danger-strong",
+                    "variable": "base-danger",
                     "description": "The danger color used to paint alert, label, badges.",
                     "default": "#D70015"
                 },
                 {
                     "type": "color",
                     "name": "Info Color",
-                    "variable": "color-info-strong",
+                    "variable": "base-info",
                     "description": "The info color used to paint alert, label, badges.",
                     "default": "#007AFF"
                 },
                 {
                     "type": "color",
                     "name": "Success Color",
-                    "variable": "color-success-strong",
+                    "variable": "base-success",
                     "description": "The success color used to paint alert, label, badges.",
                     "default": "#248A3D"
                 },
                 {
                     "type": "color",
-                    "name": "warning Color",
-                    "variable": "color-warning-strong",
+                    "name": "Warning Color",
+                    "variable": "base-warning",
                     "description": "The warning color used to paint alert, label, badges.",
                     "default": "#E58600"
                 }
@@ -70,55 +70,55 @@
         },
         {
             "type": "panel",
-            "title": "Interface Color",
+            "title": "Interface Colors",
             "expanded": false,
             "fields": [
                 {
                     "type": "color",
                     "name": "Interface Color Strongest",
-                    "variable": "color-interface-strongest",
+                    "variable": "base-interface-strongest",
                     "description": "The strongest color used throughout the UI",
                     "default": "#000000"
                 },
                 {
                     "type": "color",
                     "name": "Interface Color Stronger",
-                    "variable": "color-interface-stronger",
+                    "variable": "base-interface-stronger",
                     "description": "A stronger color used throughout the UI",
-                    "default": "#1C1C1E"
+                    "default": "#0d1117"
                 },
                 {
                     "type": "color",
                     "name": "Interface Color Strong",
-                    "variable": "color-interface-strong",
+                    "variable": "base-interface-strong",
                     "description": "A strong color used throughout the UI",
-                    "default": "#5D5D6F"
+                    "default": "#3d444d"
                 },
                 {
                     "type": "color",
                     "name": "Interface Color Medium",
-                    "variable": "color-interface-medium",
+                    "variable": "base-interface-medium",
                     "description": "A medium color used throughout the UI",
                     "default": "#8B8BA7"
                 },
                 {
                     "type": "color",
                     "name": "Interface Color Soft",
-                    "variable": "color-interface-soft",
+                    "variable": "base-interface-soft",
                     "description": "A soft color used throughout the UI",
                     "default": "#D9D9E3"
                 },
                 {
                     "type": "color",
                     "name": "Interface Color Softer",
-                    "variable": "color-interface-softer",
+                    "variable": "base-interface-softer",
                     "description": "A softer color used throughout the UI",
-                    "default": "#E7E9EF"
+                    "default": "#f1f1f8"
                 },
                 {
                     "type": "color",
                     "name": "Interface Color Softest",
-                    "variable": "color-interface-softest",
+                    "variable": "base-interface-softest",
                     "description": "The softest color used throughout the UI",
                     "default": "#FFFFFF"
                 }
@@ -261,27 +261,6 @@
                     "variable": "spacing-huge",
                     "description": "The huge spacing you want to set",
                     "default": "80px"
-                }
-            ]
-        },
-        {
-            "type": "panel",
-            "title": "Mixing Percentage",
-            "expanded": false,
-            "fields": [
-                {
-                    "type": "literal",
-                    "name": "Lightening Percentage",
-                    "variable": "tint-white-percentage",
-                    "description": "The percentage of white added to create a tinted version for each application, i.e., --color-primary-tint",
-                    "default": "98%"
-                },
-                {
-                    "type": "literal",
-                    "name": "Darkening Percentage",
-                    "variable": "shade-black-percentage",
-                    "description": "The percentage of black added to create a shaded version for each application, i.e., --color-primary-shade ",
-                    "default": "15%"
                 }
             ]
         }

@@ -1,53 +1,75 @@
-:root {
+  :root {
   // ========================= COLOR =========================
 
+  // #region BASE COLORS (These are not used as reference variables)
+
+  --base-interface-strongest: #010409;
+  --base-interface-stronger:  #0d1117;
+  --base-interface-strong:    #3d444d;
+  --base-interface-medium:    #8B8BA7;
+  --base-interface-soft:      #D9D9E3;
+  --base-interface-softer:    #f1f1f8;
+  --base-interface-softest:   #FFFFFF;
+
+  --base-critical:    #FF8C3D;
+  --base-danger:      #D70015;
+  --base-info:        #007AFF;
+  --base-success:     #248A3D;
+
+  --base-primary:     #EE7725;
+  --base-warning:     #E58600;
+  --base-link:        #006DCC;
+  --base-secondary:   #83758F;
+
+  // #endregion
+
   // INTERFACE COLORS 
-  --color-interface-strongest: #010409;
-  --color-interface-stronger:  #0d1117;
-  --color-interface-strong:    #3d444d;
-  --color-interface-medium:    #8B8BA7;
-  --color-interface-soft:      #D9D9E3;
-  --color-interface-softer:    #f1f1f8;
-  --color-interface-softest:   #FFFFFF;
+  --color-interface-strongest: var(--base-interface-strongest);
+  --color-interface-stronger:  var(--base-interface-stronger);
+  --color-interface-strong:    var(--base-interface-strong);
+  --color-interface-medium:    var(--base-interface-medium);
+  --color-interface-soft:      var(--base-interface-soft);
+  --color-interface-softer:    var(--base-interface-softer);
+  --color-interface-softest:   var(--base-interface-softest);
 
   // APPLICATION COLORS 
-  --color-critical-soft:    #EE7725;
-  --color-critical-strong:  #EE7725;
-  --color-critical-tint:    #EE7725;
-  --color-critical-shade:   #EE7725;
+  --color-critical-soft:    var(--base-critical);
+  --color-critical-strong:  var(--base-critical);
+  --color-critical-tint:    var(--base-critical);
+  --color-critical-shade:   var(--base-critical);
   
-  --color-danger-soft:    #D70015;
-  --color-danger-strong:  #D70015;
-  --color-danger-tint:    #D70015;
-  --color-danger-shade:   #D70015;
+  --color-danger-soft:      var(--base-danger);
+  --color-danger-strong:    var(--base-danger);
+  --color-danger-tint:      var(--base-danger);
+  --color-danger-shade:     var(--base-danger);
   
-  --color-info-soft:        #007AFF;
-  --color-info-strong:      #007AFF;
-  --color-info-tint:        #007AFF;
-  --color-info-shade:       #007AFF;
+  --color-info-soft:        var(--base-info);
+  --color-info-strong:      var(--base-info);
+  --color-info-tint:        var(--base-info);
+  --color-info-shade:       var(--base-info);
   
-  --color-success-soft:     #248A3D;
-  --color-success-strong:   #248A3D;
-  --color-success-tint:     #248A3D;
-  --color-success-shade:    #248A3D;
+  --color-success-soft:     var(--base-success);
+  --color-success-strong:   var(--base-success);
+  --color-success-tint:     var(--base-success);
+  --color-success-shade:    var(--base-success);
   
-  --color-warning-soft:     #E58600;
-  --color-warning-strong:   #E58600;
-  --color-warning-tint:     #E58600;
-  --color-warning-shade:    #E58600;
+  --color-warning-soft:     var(--base-warning);
+  --color-warning-strong:   var(--base-warning);
+  --color-warning-tint:     var(--base-warning);
+  --color-warning-shade:    var(--base-warning);
   
   /* System colors */
-  --color-primary:          #EE7725;
-  --color-primary-tint:     #EE7725;
-  --color-primary-shade:    #EE7725;
+  --color-primary:          var(--base-primary);
+  --color-primary-tint:     var(--base-primary);
+  --color-primary-shade:    var(--base-primary);
   
-  --color-link:             #006DCC;
-  --color-link-tint:        #006DCC;
-  --color-link-shade:       #006DCC;
+  --color-link:             var(--base-link);
+  --color-link-tint:        var(--base-link);
+  --color-link-shade:       var(--base-link);
   
-  --color-secondary:        #83758f;
-  --color-secondary-tint:   #83758f;
-  --color-secondary-shade:  #83758f;
+  --color-secondary:        var(--base-secondary);
+  --color-secondary-tint:   var(--base-secondary);
+  --color-secondary-shade:  var(--base-secondary);
 
   @supports (color: color-mix(in srgb, red 50%, white 50%)) {
     --tint-white-percentage: 100%;
@@ -205,77 +227,78 @@
 
   // Follow the system color.
   @media (prefers-color-scheme: dark) {
-    --color-interface-strongest: #FFFFFF;
-    --color-interface-stronger:  #f1f1f8;
-    --color-interface-strong:    #D9D9E3;
-    --color-interface-medium:    #8B8BA7;
-    --color-interface-soft:      #3d444d;
-    --color-interface-softer:    #010409;
-    --color-interface-softest:   #0d1117;
-    
-    --color-critical-soft:    #EE7725;
-    --color-critical-strong:  #FEDEC8;
+    --color-interface-strongest: var(--base-interface-softest);
+    --color-interface-stronger:  var(--base-interface-softer);
+    --color-interface-strong:    var(--base-interface-soft);
+    --color-interface-medium:    var(--base-interface-medium);
+    --color-interface-soft:      var(--base-interface-strong);
+    --color-interface-softer:    var(--base-interface-strongest);
+    --color-interface-softest:   var(--base-interface-stronger);
   
-    --color-danger-soft:      #D70015;
-    --color-danger-strong:    #FFCCD1;
+    --color-critical-soft:    var(--base-critical);
+    --color-critical-strong:  color-mix(in srgb, var(--base-critical) 25%, #FFF var(--tint-white-percentage));
   
-    --color-info-soft:        #007AFF;
-    --color-info-strong:      #D6EAFF;
+    --color-danger-soft:      var(--base-danger);
+    --color-danger-strong:    color-mix(in srgb, var(--base-danger) 25%, #FFF var(--tint-white-percentage));
   
-    --color-success-soft:     #248A3D;
-    --color-success-strong:   #D7F4DE;
+    --color-info-soft:        var(--base-info);
+    --color-info-strong:      color-mix(in srgb, var(--base-info) 25%, #FFF var(--tint-white-percentage));
   
-    --color-warning-soft:     #E58600;
-    --color-warning-strong:   #FFECD1;
+    --color-success-soft:     var(--base-success);
+    --color-success-strong:   color-mix(in srgb, var(--base-success) 25%, #FFF var(--tint-white-percentage));
+  
+    --color-warning-soft:     var(--base-warning);
+    --color-warning-strong:   color-mix(in srgb, var(--base-warning) 25%, #FFF var(--tint-white-percentage));
   }
 }
 
 [theme = "light"] {
-  --color-interface-strongest: #010409;
-  --color-interface-stronger:  #0d1117;
-  --color-interface-strong:    #3d444d;
-  --color-interface-medium:    #8B8BA7;
-  --color-interface-soft:      #D9D9E3;
-  --color-interface-softer:    #f1f1f8;
-  --color-interface-softest:   #FFFFFF;
+  --color-interface-strongest: var(--base-interface-strongest);
+  --color-interface-stronger:  var(--base-interface-stronger);
+  --color-interface-strong:    var(--base-interface-strong);
+  --color-interface-medium:    var(--base-interface-medium);
+  --color-interface-soft:      var(--base-interface-soft);
+  --color-interface-softer:    var(--base-interface-softer);
+  --color-interface-softest:   var(--base-interface-softest);
 
-  --color-critical-soft:    #FEDEC8;
-  --color-critical-strong:  #EE7725;
+  --color-critical-soft:      color-mix(in srgb, var(--base-critical) 25%, #FFF var(--tint-white-percentage));
+  --color-critical-strong:    var(--base-critical);
 
-  --color-danger-soft:      #FFCCD1;
-  --color-danger-strong:    #D70015;
+  --color-danger-soft:        color-mix(in srgb, var(--base-danger) 25%, #FFF var(--tint-white-percentage));
+  --color-danger-strong:      var(--base-danger);
 
-  --color-info-soft:        #D6EAFF;
-  --color-info-strong:      #007AFF;
+  --color-info-soft:          color-mix(in srgb, var(--base-info) 25%, #FFF var(--tint-white-percentage));
+  --color-info-strong:        var(--base-info);
 
-  --color-success-soft:     #D7F4DE;
-  --color-success-strong:   #248A3D;
+  --color-success-soft:       color-mix(in srgb, var(--base-success) 25%, #FFF var(--tint-white-percentage));
+  --color-success-strong:     var(--base-success);
 
-  --color-warning-soft:     #FFECD1;
-  --color-warning-strong:   #E58600;
+  --color-warning-soft:       color-mix(in srgb, var(--base-warning) 25%, #FFF var(--tint-white-percentage));
+  --color-warning-strong:     var(--base-warning);
 }
 
 [theme = "dark"] {
-  --color-interface-strongest: #FFFFFF;
-  --color-interface-stronger:  #f1f1f8;
-  --color-interface-strong:    #D9D9E3;
-  --color-interface-medium:    #8B8BA7;
-  --color-interface-soft:      #3d444d;
-  --color-interface-softer:    #010409;
-  --color-interface-softest:   #0d1117;
+  --color-interface-strongest: var(--base-interface-softest);
+  --color-interface-stronger:  var(--base-interface-softer);
+  --color-interface-strong:    var(--base-interface-soft);
+  --color-interface-medium:    var(--base-interface-medium);
+  --color-interface-soft:      var(--base-interface-strong);
+  --color-interface-softer:    var(--base-interface-strongest);
+  --color-interface-softest:   var(--base-interface-stronger);
+
   
-  --color-critical-soft:    #EE7725;
-  --color-critical-strong:  #FEDEC8;
+  --color-critical-soft:    var(--base-critical);
+  --color-critical-strong:  color-mix(in srgb, var(--base-critical) 25%, #FFF var(--tint-white-percentage));
 
-  --color-danger-soft:      #D70015;
-  --color-danger-strong:    #FFCCD1;
+  --color-danger-soft:      var(--base-danger);
+  --color-danger-strong:    color-mix(in srgb, var(--base-danger) 25%, #FFF var(--tint-white-percentage));
 
-  --color-info-soft:        #007AFF;
-  --color-info-strong:      #D6EAFF;
+  --color-info-soft:        var(--base-info);
+  --color-info-strong:      color-mix(in srgb, var(--base-info) 25%, #FFF var(--tint-white-percentage));
 
-  --color-success-soft:     #248A3D;
-  --color-success-strong:   #D7F4DE;
+  --color-success-soft:     var(--base-success);
+  --color-success-strong:   color-mix(in srgb, var(--base-success) 25%, #FFF var(--tint-white-percentage));
 
-  --color-warning-soft:     #E58600;
-  --color-warning-strong:   #FFECD1;
+  --color-warning-soft:     var(--base-warning);
+  --color-warning-strong:   color-mix(in srgb, var(--base-warning) 25%, #FFF var(--tint-white-percentage));
 }
