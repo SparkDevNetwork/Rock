@@ -16,24 +16,17 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-
-using DotLiquid;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
-using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.NamelessPersonList;
-using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Crm
 {
