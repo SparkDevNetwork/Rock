@@ -387,10 +387,11 @@ namespace Rock.Web.Cache
         /// <param name="groupType">Type of the group.</param>
         /// <param name="purposeGuid">The purpose unique identifier.</param>
         /// <param name="startingGroup">Starting group is used to avoid circular references.</param>
+        /// <param name="processedGroupTypeIds">A collection of unique identifiers representing specific group types already processed by the method. This parameter filters the operation to include only the specified group types.</param>
         /// <returns></returns>
-        private GroupTypeCache GetParentPurposeGroupType( GroupTypeCache groupType, Guid purposeGuid, GroupTypeCache startingGroup, List<int> groupTypeIds = null )
+        private GroupTypeCache GetParentPurposeGroupType( GroupTypeCache groupType, Guid purposeGuid, GroupTypeCache startingGroup, List<int> processedGroupTypeIds = null )
         {
-            groupTypeIds = groupTypeIds ?? new List<int>();
+            processedGroupTypeIds = processedGroupTypeIds ?? new List<int>();
 
             if ( groupType != null &&
                 groupType.GroupTypePurposeValue != null &&
@@ -405,14 +406,14 @@ namespace Rock.Web.Cache
                 if ( groupType.Id == parentGroupType.Id ||
                      // also skip if the parent group type and starting group type are the same as this is a circular reference and can cause a stack overflow
                      startingGroup.Id == parentGroupType.Id ||
-                     groupTypeIds.Contains( parentGroupType.Id ) )
+                     processedGroupTypeIds.Contains( parentGroupType.Id ) )
                 {
                     continue;
                 }
 
-                groupTypeIds.Add( parentGroupType.Id );
+                processedGroupTypeIds.Add( parentGroupType.Id );
 
-                var testGroupType = GetParentPurposeGroupType( parentGroupType, purposeGuid, startingGroup, groupTypeIds );
+                var testGroupType = GetParentPurposeGroupType( parentGroupType, purposeGuid, startingGroup, processedGroupTypeIds );
                 if ( testGroupType != null )
                 {
                     return testGroupType;
