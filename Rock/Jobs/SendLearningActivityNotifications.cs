@@ -114,6 +114,7 @@ namespace Rock.Jobs
 
                     if ( !courseDataByPerson.Any() )
                     {
+                        Result = "No notifications to send";
                         return;
                     }
                     else
@@ -330,6 +331,7 @@ namespace Rock.Jobs
                     s.ClassActivity.ActivityName
                 } )
                 .ToList()
+                .Where( s => s.Key.Email.IsNotNullOrWhiteSpace() )
                 // Convert the grouped data to the POCO for simpler comprehension.
                 .Select( row => new PersonActivitiesByCourse
                 {
@@ -429,7 +431,7 @@ namespace Rock.Jobs
                 return;
             }
 
-            _errors.Add( $"Unable to send Learning Activity Available Notifications to '{person.Email}'. '{errorMessages.JoinStrings( " " )}'" );
+            _errors.Add( $"Unable to send Learning Activity Available Notifications to {person.FullName}. '{errorMessages.JoinStrings( " " )}'" );
         }
 
         /// <summary>
