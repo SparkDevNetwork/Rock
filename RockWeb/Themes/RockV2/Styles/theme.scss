@@ -307,7 +307,7 @@ $navbar-element-height: 40px;
       bottom: 0;
       left: 0;
       content: "";
-      background-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
+      background-image: var(--logo-image);
       background-repeat: no-repeat;
       background-position: center center;
       background-size: ($navbarside-width * .525);

@@ -7,7 +7,7 @@
     "fields": [
         {
             "type":"panel",
-            "title":"Application & System Colors",
+            "title":"Base Theme",
             "expanded": true,
             "fields": [
                 {
@@ -17,6 +17,23 @@
                     "description": "The primary color used to highlight screen elements, such as the main button.",
                     "default": "#FF8C3D"
                 },
+                {
+                    "type": "image",
+                    "name": "Checkin Logo",
+                    "variable": "logo-image",
+                    "description": "The logo that wll be displayed throughout the site.",
+                    "default": "~/Assets/Images/rock-logo-circle-white.svg"
+                }
+            ]
+
+
+        },
+        {
+            "type":"panel",
+            "title":"Application Colors",
+            "expanded": false,
+            "fields": [
+
                 {
                     "type": "color",
                     "name": "Link Color",

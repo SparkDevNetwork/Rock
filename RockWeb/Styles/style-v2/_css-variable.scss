@@ -1,9 +1,11 @@
   :root {
   // ========================= COLOR =========================
 
-  // #region BASE COLORS (These are not used as reference variables)
+  // #region BASE VARIABLE (These are not meant to be used as reference variables)
 
-  --base-interface-strongest: #010409;
+  --logo-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
+
+  --base-interface-strongest: #000000;
   --base-interface-stronger:  #0d1117;
   --base-interface-strong:    #3d444d;
   --base-interface-medium:    #8B8BA7;
