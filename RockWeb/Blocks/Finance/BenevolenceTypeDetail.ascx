@@ -32,7 +32,7 @@
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.BenevolenceType, Rock" PropertyName="Name" Required="true" />
                         </div>
                         <div class="col-md-1">
-                            </div>
+                        </div>
                         <div class="col-md-2">
                             <Rock:RockCheckBox ID="cbShowFinancialResults" runat="server" CssClass="js-isactivetype" Label="Show Financial Results" />
                         </div>
@@ -58,10 +58,11 @@
                             <Rock:NumberBox ID="numberBoxMaxDocuments" runat="server" Label="Maximum Number of Documents" Help="The maximum number of documents that can be added to a request." Required="true"></Rock:NumberBox>
                         </div>
                         <div class="col-md-6">
-
                         </div>
                     </div>
-
+                    <div class="attributes">
+                        <Rock:AttributeValuesContainer ID="avcEditAttributes" runat="server"></Rock:AttributeValuesContainer>
+                    </div>
                     <div class="form-group">
                         <h4>Workflows</h4>
                         <div class="panel-body">

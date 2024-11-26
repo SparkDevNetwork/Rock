@@ -17,17 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
-using System.Data.Entity.Core;
-using System.Data.Entity.Core.Objects;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -35,7 +28,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
@@ -251,7 +243,7 @@ namespace RockWeb.Blocks.Finance
             cbIsActive.Enabled = !readOnly;
 
             SetHighlightLabelVisibility( benevolenceType, readOnly );
-
+            ShowEditAttributes( benevolenceType );
             btnSave.Visible = !readOnly;
         }
 
@@ -361,6 +353,8 @@ namespace RockWeb.Blocks.Finance
                         benevolenceWorkflow.CopyPropertiesFrom( workflowStateModel );
                     }
 
+                    avcEditAttributes.GetEditValues( benevolenceType );
+
                     if ( !benevolenceType.IsValid )
                     {
                         // Controls will render the error messages
@@ -370,6 +364,7 @@ namespace RockWeb.Blocks.Finance
                     rockContext.WrapTransaction( () =>
                     {
                         rockContext.SaveChanges();
+                        benevolenceType.SaveAttributeValues( rockContext );
                     } );
 
                     BenevolenceWorkflowService.RemoveCachedTriggers();
@@ -660,6 +655,28 @@ namespace RockWeb.Blocks.Finance
         #endregion BenevolenceType Workflow Grid/Dialog Events
 
         #region Methods
+
+        /// <summary>
+        /// Shows the edit attributes.
+        /// </summary>
+        /// <param name="benevolenceType">The benevolence type.</param>
+        private void ShowEditAttributes( BenevolenceType benevolenceType )
+        {
+            var attributeGuidList = GetAttributeValue( AttributeKey.BenevolenceTypeAttributes ).SplitDelimitedValues().AsGuidList();
+            if ( !attributeGuidList.Any() )
+            {
+                avcEditAttributes.Visible = false;
+                return;
+            }
+
+            avcEditAttributes.Visible = true;
+
+            avcEditAttributes.IncludedAttributes = attributeGuidList.Select( a => AttributeCache.Get( a ) ).ToArray();
+            avcEditAttributes.NumberOfColumns = 2;
+            avcEditAttributes.ShowCategoryLabel = false;
+            avcEditAttributes.AddEditControls( benevolenceType, true );
+        }
+
         /// <summary>
         /// Displays the error.
         /// </summary>
