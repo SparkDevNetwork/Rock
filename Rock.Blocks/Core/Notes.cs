@@ -383,6 +383,7 @@ namespace Rock.Blocks.Core
                 AllowsReplies = noteType.AllowsReplies,
                 MaxReplyDepth = noteType.MaxReplyDepth ?? -1,
                 AllowsWatching = noteType.AllowsWatching,
+                RequiresApprovals = noteType.RequiresApprovals,
                 IsMentionEnabled = noteType.FormatType != NoteFormatType.Unstructured && noteType.IsMentionEnabled,
                 Attributes = note.GetPublicAttributesForEdit( currentPerson )
             };
