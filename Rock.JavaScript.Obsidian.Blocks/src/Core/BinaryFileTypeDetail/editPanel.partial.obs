@@ -55,14 +55,6 @@
                     <Modal v-model="isAttributeModalOpen" title="Binary File Type Attributes">
 
                         <RockForm v-model:submit="saveAttribute" @submit="onSaveAttribute">
-                            <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                                Please correct the following:
-                                <ul>
-                                    <li v-for="error of attributeErrors">
-                                        {{ error }}
-                                    </li>
-                                </ul>
-                            </NotificationBox>
                             <AttributeEditor v-model="binaryFileTypeAttribute" :reservedKeyNames="reservedKeyNames" />
                         </RockForm>
 
@@ -181,7 +173,6 @@
     const saveAttribute = ref(false);
     const binaryFileTypeAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
-    const attributeErrors = ref<string[]>([]);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -240,11 +231,9 @@
             fieldTypeGuid: FieldType.Text
         } as PublicEditableAttributeBag;
         isAttributeModalOpen.value = true;
-        attributeErrors.value = [];
     }
 
     function onEditAttribute(key: string): void {
-        attributeErrors.value = [];
         const selectedBinaryFileTypeAttribute = binaryFileTypeAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedBinaryFileTypeAttribute) {
@@ -308,12 +297,7 @@
     }
 
     const onStartSaveAttribute = (): void => {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(binaryFileTypeAttribute.value?.key ?? "");
-        saveAttribute.value = !isExistingKey;
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
+        saveAttribute.value = true;
     };
 
     // #endregion
