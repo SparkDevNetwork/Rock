@@ -33,6 +33,7 @@
                             <template v-else>
                                 {{ note.caption }}
                             </template>
+                            <span v-if="approvalTypeLabel" :class="'pull-right mr-1 label label-' + approvalTypeLabel">{{NoteApprovalStatusDescription[note.approvalStatus ?? 0]}}</span>
                         </span>
                         <span class="note-details">
                             <span v-if="!noteOptions.isLightMode" class="tag-flair">
@@ -224,11 +225,13 @@
     const editNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false, isPinned: false });
     const isSavingNote = ref(false);
     const approvalTypeLabel = computed(() => {
-        if (props.note.approvalStatus === NoteApprovalStatus.Denied) {
-            return "danger";
-        }
-        else if (props.note.approvalStatus === NoteApprovalStatus.PendingApproval) {
-            return "warning";
+        if (props.note.noteType.requiresApproval) {
+            if (props.note.approvalStatus === NoteApprovalStatus.Denied) {
+                return "danger";
+            }
+            else if (props.note.approvalStatus === NoteApprovalStatus.PendingApproval) {
+                return "warning";
+            }
         }
 
         return "";
