@@ -54,7 +54,8 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            var signalCount = person.Signals.Where( s => !s.ExpirationDate.HasValue || s.ExpirationDate >= RockDateTime.Now ).Count();
+            var validSignals = person.Signals.Where( s => !s.ExpirationDate.HasValue || s.ExpirationDate >= RockDateTime.Now );
+            var signalCount = validSignals.Count();
             if ( !string.IsNullOrWhiteSpace( person.TopSignalColor ) && signalCount > 0 )
             {
                 writer.Write( string.Format( @"
@@ -67,7 +68,7 @@ namespace Rock.Badge.Component
                     signalCount,
                     person.NickName,
                     "signal".PluralizeIf( person.Signals.Count != 1 ),
-                    string.Join( ", ", person.Signals.Select( s => s.SignalType.Name.EncodeHtml() ) ) ) );
+                    string.Join( ", ", validSignals.Select( s => s.SignalType.Name.EncodeHtml() ) ) ) );
             }
         }
     }
