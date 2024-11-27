@@ -170,7 +170,7 @@
 
         const secondaryActions: PanelAction[] = [];
 
-        if (isEditable) {
+        if (isEditable.value === true) {
             secondaryActions.push({
                 iconCssClass: "fa fa-clone",
                 title: "Copy",
@@ -179,7 +179,7 @@
             });
         }
 
-        if (learningClassViewBag.value?.takesAttendance === true) {
+        if (showAttendanceButton.value === true) {
             secondaryActions.push({
                 iconCssClass: "fa fa-check-square-o",
                 title: "Take Attendance",
@@ -204,6 +204,11 @@
     const options = computed((): LearningClassDetailOptionsBag => {
         return config.options ?? { activeClassesUsingDefaultGradingSystem: 0, courseAllowsAnnouncements: true, canViewGrades: false };
     });
+
+    const showAttendanceButton = computed((): boolean =>
+        learningClassViewBag.value?.takesAttendance === true
+        && (config.navigationUrls?.[NavigationUrlKey.AttendancePage] ?? "").length > 0
+    );
 
     // #endregion
 

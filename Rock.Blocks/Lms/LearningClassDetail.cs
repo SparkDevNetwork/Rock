@@ -100,6 +100,7 @@ namespace Rock.Blocks.Lms
 
         private static class PageParameterKey
         {
+            public const string GroupId = "GroupId";
             public const string LearningActivityId = "LearningActivityId";
             public const string LearningClassId = "LearningClassId";
             public const string LearningClassContentPageId = "LearningClassContentPageId";
@@ -471,11 +472,19 @@ namespace Rock.Blocks.Lms
             var contentPageParams = GetCurrentPageParams( PageParameterKey.LearningClassContentPageId );
             var announcementParams = GetCurrentPageParams( PageParameterKey.LearningClassAnnouncementId );
 
+            // For the attendance page pass the LearningClassId as the GroupId.
+            var attendancePageParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                [PageParameterKey.GroupId] = PageParameter( PageParameterKey.LearningClassId ),
+            };
+
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.AnnouncementDetailPage] = this.GetLinkedPageUrl( AttributeKey.AnnouncementDetailPage, announcementParams ),
                 [NavigationUrlKey.ActivityDetailPage] = this.GetLinkedPageUrl( AttributeKey.ActivityDetailPage, activityParams ),
-                [NavigationUrlKey.AttendancePage] = this.GetLinkedPageUrl( AttributeKey.AttendancePage, currentPageParams ),
+                [NavigationUrlKey.AttendancePage] = this.GetLinkedPageUrl( AttributeKey.AttendancePage, attendancePageParams ),
                 [NavigationUrlKey.ContentPageDetailPage] = this.GetLinkedPageUrl( AttributeKey.ContentPageDetailPage, contentPageParams ),
                 [NavigationUrlKey.ParticipantDetailPage] = this.GetLinkedPageUrl( AttributeKey.ParticipantDetailPage, participantParams ),
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( currentPageParams ),

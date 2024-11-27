@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -96,7 +97,10 @@ namespace RockWeb.Blocks.Groups
 
             _rockContext = new RockContext();
 
-            int groupId = PageParameter( "GroupId" ).AsInteger();
+            var groupKey = PageParameter( "GroupId" );
+
+            int groupId = groupKey.AsInteger() > 0 ? groupKey.ToIntSafe() : IdHasher.Instance.GetId( groupKey ).ToIntSafe();
+
             _group = new GroupService( _rockContext )
                 .Queryable( "GroupLocations" ).AsNoTracking()
                 .FirstOrDefault( g => g.Id == groupId );

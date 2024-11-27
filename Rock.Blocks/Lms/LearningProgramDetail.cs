@@ -120,7 +120,7 @@ namespace Rock.Blocks.Lms
 
             SetBoxInitialEntityState( box );
 
-            box.NavigationUrls = GetBoxNavigationUrls( box.Entity.IdKey );
+            box.NavigationUrls = GetBoxNavigationUrls( box.Entity?.IdKey );
             box.Options = GetBoxOptions( box.IsEditable );
 
             return box;

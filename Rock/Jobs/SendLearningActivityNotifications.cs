@@ -277,11 +277,11 @@ namespace Rock.Jobs
                     CompletionLookups = s.LearningActivities
                         .Select( lac => new { LearningActivityCompletionId = lac.Id, lac.LearningActivityId } )
                         .ToList(),
-                    IsCompletedOrAlreadyNotifiedIds = s.LearningActivities
+                    IsCompletedOrAlreadyNotifiedActivityIds = s.LearningActivities
                         .Where( lac =>
                             lac.IsStudentCompleted
                             || lac.NotificationCommunicationId.HasValue )
-                        .Select( lac => lac.Id )
+                        .Select( lac => lac.LearningActivityId )
                         .ToList()
                 } )
                 .ToList()
@@ -312,7 +312,7 @@ namespace Rock.Jobs
                     s.ClassActivity.ActivityId,
                     // If the student has an activity completion record then get it's Id for later updates.
                     s.Student.CompletionLookups.FirstOrDefault( l => l.LearningActivityId == s.ClassActivity.ActivityId )?.LearningActivityCompletionId,
-                    IsCompletedOrAlreadyNotified = s.Student.IsCompletedOrAlreadyNotifiedIds.Any( id => id == s.ClassActivity.ActivityId ),
+                    IsCompletedOrAlreadyNotified = s.Student.IsCompletedOrAlreadyNotifiedActivityIds.Any( id => id == s.ClassActivity.ActivityId ),
                     DueDate = LearningActivity.CalculateDueDate(
                         s.ClassActivity.DueDateCriteria,
                         s.ClassActivity.DueDateDefault,
@@ -356,7 +356,8 @@ namespace Rock.Jobs
                         groupingValue.LearningActivityCompletionId,
                         groupingValue.IsCompletedOrAlreadyNotified,
                         groupingValue.Order
-                    } ).Select( groupedResult => new ActivitiesByCourse
+                    } )
+                    .Select( groupedResult => new ActivitiesByCourse
                     {
                         CourseCode = groupedResult.Key.CourseCode,
                         CourseName = groupedResult.Key.CourseName,

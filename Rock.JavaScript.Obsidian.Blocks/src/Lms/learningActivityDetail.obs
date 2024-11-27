@@ -172,7 +172,7 @@
 
         const secondaryActions: PanelAction[] = [];
 
-        if (isEditable) {
+        if (isEditable.value === true) {
             secondaryActions.push({
                 iconCssClass: "fa fa-copy",
                 title: "Copy Activity",

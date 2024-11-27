@@ -31,6 +31,7 @@ using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.GroupAttendanceDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -2456,8 +2457,10 @@ namespace Rock.Blocks.Group
                         .Include( g => g.GroupType )
                         .Include( g => g.Schedule );
 
-                var groupId = this._block.GroupIdPageParameter.AsIntegerOrNull();
-                var groupGuid = this._block.GroupIdPageParameter.AsGuidOrNull();
+                var groupKey = this._block.GroupIdPageParameter;
+                var groupId =  groupKey.AsIntegerOrNull();
+                groupId = !groupId.HasValue ? IdHasher.Instance.GetId( groupKey ) : groupId.Value;
+                var groupGuid = groupKey.AsGuidOrNull();
 
                 if ( groupId.HasValue )
                 {
@@ -2467,7 +2470,9 @@ namespace Rock.Blocks.Group
                 {
                     query = query.Where( g => g.Guid == groupGuid.Value );
                 }
-                else
+
+
+                if ( groupId == null )
                 {
                     // The GroupId page parameter is not an integer ID
                     // nor a guid ID so return null.
