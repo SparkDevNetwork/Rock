@@ -308,7 +308,7 @@ namespace Rock.Blocks.Core
                 NoteTypeIdKey = noteType.IdKey,
                 Caption = note.Caption,
                 Text = note.Text,
-                ApprovalStatus = note.ApprovalStatus,
+                ApprovalStatus = ( noteType.RequiresApprovals ) ? note.ApprovalStatus : NoteApprovalStatus.Approved,
                 AnchorId = note.NoteAnchorId,
                 IsAlert = note.IsAlert ?? false,
                 IsPinned = note.IsPinned,
