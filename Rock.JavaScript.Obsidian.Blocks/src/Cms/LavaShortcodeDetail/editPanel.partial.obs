@@ -53,6 +53,7 @@
                         label="Short Code Markup"
                         theme="rock"
                         mode="text"
+                        readonly
                         :editorHeight="350"
                         rules="required" />
 
@@ -92,12 +93,21 @@
                 </div>
             </div>
 
-            <CodeEditor v-model="markup"
+            <CodeEditor v-if="!isSystem" v-model="markup"
                         label="Short Code Markup"
                         theme="rock"
                         mode="text"
                         :editorHeight="850"
                         rules="required" />
+
+            <RockLiteral v-if="isSystem" v-model="markup"
+                         label="Short Code Markup"
+                         theme="rock"
+                         mode="text"
+                         :editorHeight="850"
+                         rules="required">
+                {{ markup }}
+            </RockLiteral>
 
             <strong>Parameters</strong>
             <pre>
@@ -119,6 +129,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
