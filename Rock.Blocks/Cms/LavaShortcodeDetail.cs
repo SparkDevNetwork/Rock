@@ -20,9 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-
 using DotLiquid;
-
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
