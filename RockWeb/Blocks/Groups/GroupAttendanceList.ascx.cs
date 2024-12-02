@@ -97,9 +97,10 @@ namespace RockWeb.Blocks.Groups
 
             _rockContext = new RockContext();
 
+            var allowPredictableIds = !this.PageCache.Layout.Site.DisablePredictableIds;
             var groupKey = PageParameter( "GroupId" );
 
-            int groupId = groupKey.AsInteger() > 0 ? groupKey.ToIntSafe() : IdHasher.Instance.GetId( groupKey ).ToIntSafe();
+            int groupId = groupKey.AsInteger() > 0 && allowPredictableIds ? groupKey.ToIntSafe() : IdHasher.Instance.GetId( groupKey ).ToIntSafe();
 
             _group = new GroupService( _rockContext )
                 .Queryable( "GroupLocations" ).AsNoTracking()

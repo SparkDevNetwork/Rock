@@ -44,7 +44,7 @@ namespace Rock.Model
                     case AvailabilityCriteria.ClassStartOffset:
                         if ( LearningClass?.LearningSemester?.StartDate.HasValue == true )
                         {
-                            return LearningClass.LearningSemester.StartDate.Value.AddDays( AvailableDateOffset.Value ).ToShortDateString();
+                            return LearningClass.LearningSemester.StartDate.Value.Date.AddDays( AvailableDateOffset.Value ).ToShortDateString();
                         }
                         else
                         {
@@ -52,13 +52,13 @@ namespace Rock.Model
                         }
                     case AvailabilityCriteria.EnrollmentOffset:
                         var daysOffset = AvailableDateOffset.ToIntSafe();
-                        var daysText = "Day".PluralizeIf( daysOffset != 1 );
                         if ( daysOffset == 0 )
                         {
                             return "At Enrollment";
                         }
                         else
                         {
+                            var daysText = "Day".PluralizeIf( daysOffset != 1 );
                             return $"{daysOffset} {daysText} After Enrollment";
                         }
                     case AvailabilityCriteria.AfterPreviousCompleted:
@@ -90,7 +90,7 @@ namespace Rock.Model
                     case DueDateCriteria.ClassStartOffset:
                         if ( LearningClass?.LearningSemester?.StartDate.HasValue == true )
                         {
-                            return LearningClass.LearningSemester.StartDate.Value.AddDays( DueDateOffset.Value ).ToShortDateString();
+                            return LearningClass.LearningSemester.StartDate.Value.Date.AddDays( DueDateOffset.Value ).ToShortDateString();
                         }
                         else
                         {
@@ -98,13 +98,13 @@ namespace Rock.Model
                         }
                     case DueDateCriteria.EnrollmentOffset:
                         var daysOffset = DueDateOffset.ToIntSafe();
-                        var daysText = "Day".PluralizeIf( daysOffset != 1 );
                         if ( daysOffset == 0 )
                         {
                             return "At Enrollment";
                         }
                         else
                         {
+                            var daysText = "Day".PluralizeIf( daysOffset != 1 );
                             return $"{daysOffset} {daysText} After Enrollment";
                         }
                     case DueDateCriteria.NoDate:
@@ -157,13 +157,13 @@ namespace Rock.Model
                 case AvailabilityCriteria.ClassStartOffset:
                     if ( semesterStart.HasValue )
                     {
-                        return semesterStart.Value.AddDays( offset ?? 0 );
+                        return semesterStart.Value.Date.AddDays( offset ?? 0 );
                     }
                     break;
                 case AvailabilityCriteria.EnrollmentOffset:
                     if ( enrollmentDate.HasValue )
                     {
-                        return enrollmentDate.Value.AddDays( offset ?? 0 );
+                        return enrollmentDate.Value.Date.AddDays( offset ?? 0 );
                     }
                     break;
                 case AvailabilityCriteria.AlwaysAvailable:
@@ -198,13 +198,13 @@ namespace Rock.Model
                 case DueDateCriteria.ClassStartOffset:
                     if ( semesterStart.HasValue )
                     {
-                        return semesterStart.Value.AddDays( offset ?? 0 );
+                        return semesterStart.Value.Date.AddDays( offset ?? 0 );
                     }
                     break;
                 case DueDateCriteria.EnrollmentOffset:
                     if ( enrollmentDate.HasValue )
                     {
-                        return enrollmentDate.Value.AddDays( offset ?? 0 );
+                        return enrollmentDate.Value.Date.AddDays( offset ?? 0 );
                     }
                     break;
             }

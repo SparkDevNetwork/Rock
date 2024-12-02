@@ -2459,10 +2459,11 @@ namespace Rock.Blocks.Group
 
                 var groupKey = this._block.GroupIdPageParameter;
                 var groupId =  groupKey.AsIntegerOrNull();
+                var allowPredictableIds = !this._block.PageCache.Layout.Site.DisablePredictableIds;
                 groupId = !groupId.HasValue ? IdHasher.Instance.GetId( groupKey ) : groupId.Value;
                 var groupGuid = groupKey.AsGuidOrNull();
 
-                if ( groupId.HasValue )
+                if ( groupId.HasValue && allowPredictableIds )
                 {
                     query = query.Where( g => g.Id == groupId.Value );
                 }

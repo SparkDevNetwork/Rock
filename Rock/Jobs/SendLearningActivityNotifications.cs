@@ -119,7 +119,14 @@ namespace Rock.Jobs
                     }
                     else
                     {
-                        SendNotifications( systemCommunication, courseDataByPerson );
+                        var successulPersonNotifications = SendNotifications( systemCommunication, courseDataByPerson );
+
+                        foreach ( var personActivitiesNotified in successulPersonNotifications )
+                        {
+                            AddOrUpdateCompletionRecords( personActivitiesNotified, systemCommunication.Id );
+                        }
+
+                        rockContext.SaveChanges();
                     }
                 }
             }
@@ -144,36 +151,15 @@ namespace Rock.Jobs
             // Get a list of all activities for simpler querying.
             var activities = personActivitiesByCourse.Courses.SelectMany( c => c.Activities );
 
-            // Get the list of all ActivityIds that were referenced in the persons email.
-            var activityIds = activities.Select( a => a.LearningActivityId ).ToList();
+            // The participant will differ across classes.
+            var participantIds = personActivitiesByCourse.Courses.Select( a => a.LearningParticipantId ).Distinct().ToList();
+            var participants = _learningParticipantService.GetByIds( participantIds );
 
-            // Get the activity data and transform it into the completion records for the student.
-            var activityCompletionsToAdd = _learningActivityService
-               .GetByIds( activityIds )
-               .Select( a => new
-               {
-                   LearningActivityId = a.Id,
-                   a.SendNotificationCommunication,
-                   a.Order,
-                   NotificationCommunicationId = systemCommunicationId
-               } )
-               .ToList()
-               .Where( a =>
-                    !activities.Any( c => c.LearningActivityId == a.LearningActivityId
-                    && c.LearningActivityCompletionId.HasValue ) )
-               .OrderBy( a => a.Order )
-               .ThenBy( a => a.LearningActivityId )
-               .Select( c => new LearningActivityCompletion
-               {
-                   LearningActivityId = c.LearningActivityId,
-                   StudentId = personActivitiesByCourse.LearningParticipantId,
-                   AvailableDateTime = activities.FirstOrDefault( a => a.LearningActivityId == c.LearningActivityId ).AvailableDate,
-                   DueDate = activities.FirstOrDefault( a => a.LearningActivityId == c.LearningActivityId ).DueDate,
-                   NotificationCommunicationId = c.NotificationCommunicationId
-               } );
-
-            // Add the new LearningActivityCompletion records to the context.
-            _learningActivityCompletionService.AddRange( activityCompletionsToAdd );
+            // Get the list of all ActivityIds that were referenced in the person's email.
+            var activityIdsToAdd = activities
+                .Where( a => a.LearningActivityCompletionId.ToIntSafe() == 0 )
+                .Select( a => a.LearningActivityId )
+                .ToList();
 
             // Now get the distinct LearningActivityCompletion records to update the bit flag for.
             var completionIds = activities
@@ -182,6 +168,19 @@ namespace Rock.Jobs
                 .Distinct()
                 .ToList();
             _learningActivityCompletionService.UpdateNotificationCommunicationProperties( completionIds, systemCommunicationId );
+
+            // Get the activity data and transform it into the completion records for the student.
+            var activityCompletionsToAdd = _learningActivityService
+               .GetByIds( activityIdsToAdd )
+               .ToList()
+               .OrderBy( a => a.Order )
+               .ThenBy( a => a.Id )
+               .Select( a => LearningActivityCompletionService.GetNew(
+                   a,
+                   participants.FirstOrDefault( p => p.LearningClassId == a.LearningClassId ) ) );
+
+            // Add the new LearningActivityCompletion records to the context.
+            _learningActivityCompletionService.AddRange( activityCompletionsToAdd );
         }
 
         /// <summary>
@@ -210,8 +209,6 @@ namespace Rock.Jobs
         {
             var now = RockDateTime.Now;
 
-            var studentSpecificCalculationTypes = new[] { AvailabilityCriteria.AfterPreviousCompleted, AvailabilityCriteria.EnrollmentOffset };
-
             // Get all the activities - because some may require student specific
             // availability criteria calculations we can't determine exclusions
             // until we also have the student data.
@@ -227,8 +224,10 @@ namespace Rock.Jobs
                 .Where( a =>
                         !a.LearningClass.LearningSemester.StartDate.HasValue
                         || a.LearningClass.LearningSemester.StartDate <= now )
-                // Is configured to send s communication.
+                // Is configured to send a communication.
                 .Where( a => a.SendNotificationCommunication )
+                // Don't send notifications for Always available.
+                .Where( a => a.AvailabilityCriteria != AvailabilityCriteria.AlwaysAvailable )
                 // Is assigned to a student
                 .Where( a => a.AssignTo == AssignTo.Student )
                 .Select( a => new
@@ -259,6 +258,7 @@ namespace Rock.Jobs
                 .Include( s => s.LearningClass.LearningCourse )
                 .Include( s => s.LearningClass.LearningCourse.LearningProgram )
                 .Include( s => s.LearningActivities )
+                .AreStudents()
                 .Where( s => classIds.Contains( s.LearningClassId ) )
                 .Select( s => new
                 {
@@ -271,8 +271,9 @@ namespace Rock.Jobs
                     ProgramName = s.LearningClass.LearningCourse.LearningProgram.Name,
                     SemesterStartDate = s.LearningClass.LearningSemester.StartDate,
                     EnrollmentDate = s.CreatedDateTime,
-                    CourseName = s.LearningClass.LearningCourse.Name,
                     s.LearningClass.LearningCourse.CourseCode,
+                    s.LearningClass.LearningCourseId,
+                    CourseName = s.LearningClass.LearningCourse.Name,
                     s.LearningClassId,
                     CompletionLookups = s.LearningActivities
                         .Select( lac => new { LearningActivityCompletionId = lac.Id, lac.LearningActivityId } )
@@ -299,16 +300,17 @@ namespace Rock.Jobs
                     s.Student.PersonNickName,
                     s.Student.PersonLastName,
                     s.Student.PersonSuffixValueId,
-                    s.Student.PersonId,
-                    s.Student.LearningParticipantId
+                    s.Student.PersonId
                 }, s => new
                 {
                     // with values for course and activities data.
+                    s.Student.LearningParticipantId,
                     s.Student.ProgramName,
                     s.Student.SemesterStartDate,
                     s.Student.EnrollmentDate,
-                    s.Student.CourseName,
                     s.Student.CourseCode,
+                    s.Student.LearningCourseId,
+                    s.Student.CourseName,
                     s.ClassActivity.ActivityId,
                     // If the student has an activity completion record then get it's Id for later updates.
                     s.Student.CompletionLookups.FirstOrDefault( l => l.LearningActivityId == s.ClassActivity.ActivityId )?.LearningActivityCompletionId,
@@ -337,19 +339,20 @@ namespace Rock.Jobs
                 {
                     Email = row.Key.Email,
                     PersonId = row.Key.PersonId,
-                    LearningParticipantId = row.Key.LearningParticipantId,
                     // Include the properties necessary to get the FullName (NickName, LastName and SuffixValueId).
                     PersonNickName = row.Key.PersonNickName,
                     PersonLastName = row.Key.PersonLastName,
                     PersonSuffixValueId = row.Key.PersonSuffixValueId,
                     Courses = row.GroupBy( groupingKey => new
                     {
-                        groupingKey.CourseName,
                         groupingKey.CourseCode,
+                        groupingKey.LearningCourseId,
+                        groupingKey.CourseName,
                         groupingKey.ProgramName
                     }, groupingValue => new
                     {
                         groupingValue.ActivityId,
+                        groupingValue.LearningParticipantId,
                         groupingValue.AvailableDateTime,
                         groupingValue.ActivityName,
                         groupingValue.DueDate,
@@ -360,7 +363,12 @@ namespace Rock.Jobs
                     .Select( groupedResult => new ActivitiesByCourse
                     {
                         CourseCode = groupedResult.Key.CourseCode,
+                        CourseId = groupedResult.Key.LearningCourseId,
                         CourseName = groupedResult.Key.CourseName,
+                        // While technically possible to have multiple LearningParticipantIds per course;
+                        // this is unlikely since it means the same person would be enrolled in 2 classes
+                        // for the same course. Still we should handle for it by taking the MAX LearningParticipantId.
+                        LearningParticipantId = groupedResult.Max( r => r.LearningParticipantId ),
                         ProgramName = groupedResult.Key.ProgramName,
                         // Apply the date and/or completion logic here
                         // to remove any activities that the student has completed.
@@ -391,19 +399,32 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Sends the digest emails for each regional group within the attendance summary.
+        /// Sends the digest emails for each person and their course activities.
         /// </summary>
         /// <param name="systemCommunication">The system communication.</param>
-        /// <param name="personsActivitiesByCourse">The list of .</param>
-        private void SendNotifications( SystemCommunication systemCommunication, List<PersonActivitiesByCourse> personsActivitiesByCourse )
+        /// <param name="personsActivitiesByCourse">The list of persons and their activities to notify.</param>
+        /// <returns>The list of PersonActivitiesByCourse that were successfully notified.</returns>
+        private List<PersonActivitiesByCourse> SendNotifications( SystemCommunication systemCommunication, List<PersonActivitiesByCourse> personsActivitiesByCourse )
         {
+            var successfullySentNotifications = new List<PersonActivitiesByCourse>();
             foreach ( var personActivitiesByCourse in personsActivitiesByCourse )
             {
-                SendNotificationForPerson( personActivitiesByCourse, systemCommunication );
+                if ( SendNotificationForPerson( systemCommunication, personActivitiesByCourse ) )
+                {
+                    successfullySentNotifications.Add( personActivitiesByCourse );
+                }
             }
+
+            return successfullySentNotifications;
         }
 
-        private void SendNotificationForPerson( PersonActivitiesByCourse personActivitiesByCourse, SystemCommunication systemCommunication )
+        /// <summary>
+        /// Sends the digest email for the specified person.
+        /// </summary>
+        /// <param name="systemCommunication">The system communication.</param>
+        /// <param name="personActivitiesByCourse">The person and their activities to notify.</param>
+        /// <returns><c>true</c> if the email was successfully sent; otherwise <c>false</c>.</returns>
+        private bool SendNotificationForPerson( SystemCommunication systemCommunication, PersonActivitiesByCourse personActivitiesByCourse )
         {
             var person = new Person
             {
@@ -414,25 +435,34 @@ namespace Rock.Jobs
                 Email = personActivitiesByCourse.Email
             };
 
-            // Add the merge objects to support this notification.
-            var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
-            mergeObjects.AddOrReplace( "ActivityCount", personActivitiesByCourse.Courses.Sum( c => c.ActivityCount ) );
-            mergeObjects.AddOrReplace( "Courses", personActivitiesByCourse.Courses );
-
-            var recipient = new RockEmailMessageRecipient( person, mergeObjects );
-            var message = new RockEmailMessage( systemCommunication );
-            message.Subject = systemCommunication.Subject.ResolveMergeFields( mergeObjects );
-            message.SetRecipients( new List<RockEmailMessageRecipient> { recipient } );
-            message.Send( out List<string> errorMessages );
-
-            if ( !errorMessages.Any() )
+            try
             {
-                AddOrUpdateCompletionRecords( personActivitiesByCourse, systemCommunication.Id );
-                _notificationsSent++;
-                return;
+                // Add the merge objects to support this notification.
+                var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
+                mergeObjects.AddOrReplace( "ActivityCount", personActivitiesByCourse.Courses.Sum( c => c.ActivityCount ) );
+                mergeObjects.AddOrReplace( "Courses", personActivitiesByCourse.Courses );
+
+                var recipient = new RockEmailMessageRecipient( person, mergeObjects );
+                var message = new RockEmailMessage( systemCommunication );
+                message.Subject = systemCommunication.Subject.ResolveMergeFields( mergeObjects );
+                message.SetRecipients( new List<RockEmailMessageRecipient> { recipient } );
+                message.Send( out List<string> errorMessages );
+
+                if ( !errorMessages.Any() )
+                {
+                    _notificationsSent++;
+                    return true;
+                }
+
+                _errors.Add( $"Unable to send Learning Activity Available Notifications to {person.FullName}. '{errorMessages.JoinStrings( " " )}'" );
+            }
+            catch( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, HttpContext.Current );
+                _errors.Add( $"Unable to send Learning Activity Available Notifications to {person.FullName}. '{ex.Message}'" );
             }
 
-            _errors.Add( $"Unable to send Learning Activity Available Notifications to {person.FullName}. '{errorMessages.JoinStrings( " " )}'" );
+            return false;
         }
 
         /// <summary>
@@ -507,11 +537,6 @@ namespace Rock.Jobs
         private class PersonActivitiesByCourse : RockDynamic
         {
             /// <summary>
-            /// The identifier of the Person's <see cref="LearningParticipant"/> record specific to this <see cref="LearningClass"/>.
-            /// </summary>
-            public int LearningParticipantId { get; set; }
-
-            /// <summary>
             /// The identifier of the <see cref="Person"/>.
             /// </summary>
             public int PersonId { get; set; }
@@ -550,9 +575,19 @@ namespace Rock.Jobs
             public List<Activity> Activities { get; set; }
 
             /// <summary>
+            /// The identifier of the Person's <see cref="LearningParticipant"/> record specific to the <see cref="LearningClass"/>.
+            /// </summary>
+            public int LearningParticipantId { get; set; }
+
+            /// <summary>
             /// The learning course code of the activity.
             /// </summary>
             public string CourseCode { get; set; }
+
+            /// <summary>
+            /// The identifier of the activity's learning course.
+            /// </summary>
+            public int CourseId { get; set; }
 
             /// <summary>
             /// The learning course name of the activity.
