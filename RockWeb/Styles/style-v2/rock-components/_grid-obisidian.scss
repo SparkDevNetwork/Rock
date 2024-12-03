@@ -1,6 +1,6 @@
 
-// // Wrap in obsidian block to win over specificity over the style in grid.obs
-// .obsidian-block {
+// Wrap in obsidian block to win over specificity over the style in grid.obs
+.obsidian-block {
 
 //     .grid-overflow {
 //         overflow-x: auto;
@@ -131,11 +131,12 @@
 //         border-radius: 0;
 //     }
     
-//     .grid-column-heading {
-//         display: flex;
-//         font-weight: 500;
-//         color: var(--theme-dark);
-//     }
+    .grid-column-heading {
+        display: flex;
+        font-weight: 500;
+        color: var(--theme-dark);
+        border-bottom: 1px solid var(--color-interface-soft);
+    }
     
 //     .grid-column-header {
 //         position: relative;
@@ -267,11 +268,12 @@
 //         padding: var(--spacing-xsmall);
 //     }
     
-//     .grid-row {
-//         display: flex;
-//         background-color: var(--color-interface-softest);
-//         transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
-//     }
+    .grid-row {
+        display: flex;
+        background-color: var(--color-interface-softest);
+        transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
+        border-bottom: 1px solid var(--color-interface-soft);
+    }
     
 //     .grid-row:hover > .grid-cell {
 //         background-color: rgba(85, 150, 230, .1);
@@ -560,18 +562,18 @@
 //         }
 //     }
     
-//     .grid-light-action-row {
-//       justify-content: flex-end;
-//     }
+    .grid-light-action-row {
+      justify-content: flex-end;
+    }
     
-//     .grid-light-action-row .grid-actions {
-//       background-color: inherit;
-//       padding: calc(var(--table-cell-padding-y) * .25) 0;
-//     }
+    .grid-light-action-row .grid-actions {
+      background-color: inherit;
+      padding: calc(var(--table-cell-padding-y) * .25) 0;
+    }
     
-//     .grid-light-action-row .grid-actions:last-child {
-//       padding-right: var(--table-cell-padding-x);
-//     }
+    .grid-light-action-row .grid-actions:last-child {
+      padding-right: var(--table-cell-padding-x);
+    }
 
 //     .grid-row:has(.table-empty) {
 //         border-bottom: 1px solid var(--color-interface-soft);
@@ -580,5 +582,5 @@
 //     .grid-cell.table-empty {
 //         border-bottom: none;
 //     }
-// }
+}
 

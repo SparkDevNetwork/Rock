@@ -3,10 +3,10 @@
 @import "../../../Styles/style-v2/sass-variable";
 @import "../../../Styles/style-v2/core.css";
 
-@import "../../../Styles/style-v2/icons/fontawesome-icon.css";
-@import "../../../Styles/style-v2/icons/fontawesome-regular.css"; 
-@import "../../../Styles/style-v2/icons/fontawesome-solid.css";
-@import "../../../Styles/style-v2/icons/tabler-icon.css";
+// @import "../../../Styles/style-v2/icons/fontawesome-icon.css";
+// @import "../../../Styles/style-v2/icons/fontawesome-regular.css"; 
+// @import "../../../Styles/style-v2/icons/fontawesome-solid.css";
+// @import "../../../Styles/style-v2/icons/tabler-icon.css";
 
 
 @-ms-viewport {
@@ -1207,3 +1207,10 @@ $hamburger-spacing: 4px;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,.1);
 }
 
+.gap {
+  gap: 8px;
+
+  .rockbadge {
+    margin: 0;
+  }
+}
