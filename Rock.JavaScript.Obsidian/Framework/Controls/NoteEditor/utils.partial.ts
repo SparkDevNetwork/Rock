@@ -17,7 +17,7 @@
 
 import { Editor, RawEditorOptions } from "@Obsidian/Libs/tinymce";
 import { InjectionKey, inject, provide } from "vue";
-import { PluginHelper, PluginManager, PluginsFeatureArgs } from "./types.partial";
+import { ConfigureEditorUtilities, PluginHelper, PluginManager, PluginsFeatureArgs } from "./types.partial";
 
 /** Gets a button element from the toolbar. This should only be called after the editor is initialized. */
 export function getToolbarButton(tooltip: string, parent?: HTMLElement | undefined): HTMLElement | null | undefined {
@@ -59,22 +59,48 @@ const pluginHelperInjectionKey: InjectionKey<PluginHelper> = Symbol("plugin-help
  * Provides support for the plugins feature.
  */
 export function providePluginsFeature(value: PluginsFeatureArgs): PluginManager {
-    const pluginConfigureEditorOptionsCallbacks: ((currentOptions: RawEditorOptions) => RawEditorOptions)[] = [];
+    const pluginConfigureEditorOptionsCallbacks: ((currentOptions: RawEditorOptions, utilities: ConfigureEditorUtilities) => RawEditorOptions)[] = [];
 
     // Provide the plugin helper that can be injected into child plugin components.
     provide(pluginHelperInjectionKey, {
-        onConfigureEditorOptions(callback: (currentOptions: RawEditorOptions) => RawEditorOptions): void {
+        onConfigureEditorOptions(callback: (currentOptions: RawEditorOptions, utilities: ConfigureEditorUtilities) => RawEditorOptions): void {
             pluginConfigureEditorOptionsCallbacks.push(callback);
         },
         editorInstance: value.editorInstance,
         toolbarElement: value.toolbarElement
     });
 
+    const configureEditorUtilities: ConfigureEditorUtilities = {
+        allowRootElement<K extends keyof HTMLElementTagNameMap>(editorOptions: RawEditorOptions, tagName: K): void {
+            // Syntax examples:
+            // "+div[p|i]"              This would add <p> and <i> as valid child elements of <div> elements.
+            // "-div[strong]"           This would remove <strong> from being a valid child element of <div> elements.
+            // "+div[p|i],-div[strong]" Use commas to combine multiple rules.
+            // For more information, visit: https://www.tiny.cloud/docs/tinymce/latest/content-filtering/#valid_children
+
+            // Allow element as "root" elements in the editor.
+            // The "root" element of the editor is either a <div> or <body> element
+            // depending on whether its in inline or iframe mode.
+            const styleChildren = [`+body[${tagName}]`, `+div[${tagName}]`];
+
+            if (!editorOptions.valid_children) {
+                editorOptions.valid_children = styleChildren.join(",");
+            }
+            else {
+                for (const styleChild of styleChildren) {
+                    if (!editorOptions.valid_children.includes(styleChild)) {
+                        editorOptions.valid_children += `,${styleChild}`;
+                    }
+                }
+            }
+        }
+    };
+
     return {
         configureEditorOptions(editorOptions: RawEditorOptions): RawEditorOptions {
             // Execute plugin callbacks that can further configure the editor options.
             for (let i = 0; i < pluginConfigureEditorOptionsCallbacks.length; i++) {
-                editorOptions = pluginConfigureEditorOptionsCallbacks[i](editorOptions);
+                editorOptions = pluginConfigureEditorOptionsCallbacks[i](editorOptions, configureEditorUtilities);
             }
 
             return editorOptions;

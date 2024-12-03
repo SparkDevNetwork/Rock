@@ -69,14 +69,6 @@
             </div>
             <Modal v-model="isModalOpen" title="Adaptation Attributes">
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                        Please correct the following:
-                        <ul>
-                            <li v-for="error of attributeErrors">
-                                {{ error }}
-                            </li>
-                        </ul>
-                    </NotificationBox>
                     <AttributeEditor v-model="adaptationAttribute" :reservedKeyNames="reservedKeyNames" />
                 </RockForm>
 
@@ -141,7 +133,6 @@
     const adaptationAttributes = ref(props.modelValue.adaptationAttributes ?? []);
     const adaptationAttribute = ref<PublicEditableAttributeBag | null>(null);
     const isModalOpen = ref<boolean>(false);
-    const attributeErrors = ref<string[]>([]);
     const submitEditAttribute = ref<boolean>(false);
     const reservedKeyNames = ref(props.options.reservedKeyNames ?? []);
 
@@ -180,11 +171,9 @@
     async function onAddItem(): Promise<void> {
         adaptationAttribute.value = {} as PublicEditableAttributeBag;
         isModalOpen.value = true;
-        attributeErrors.value = [];
     }
 
     const onEditItem = async (key: string): Promise<void> => {
-        attributeErrors.value = [];
         const selectedSiteAttribute = adaptationAttributes.value.find(x => x.key === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedSiteAttribute) {
@@ -250,12 +239,7 @@
     }
 
     const onStartSaveAttribute = (): void => {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(adaptationAttribute.value?.key ?? "") && !adaptationAttribute.value?.guid;
-        submitEditAttribute.value = !isExistingKey;
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
+        submitEditAttribute.value = true;
     };
 
     // #endregion

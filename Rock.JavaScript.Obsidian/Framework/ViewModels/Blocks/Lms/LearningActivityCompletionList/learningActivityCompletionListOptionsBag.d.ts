@@ -25,6 +25,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The additional configuration options for the Learning Activity Completion List block. */
 export type LearningActivityCompletionListOptionsBag = {
+    /** Gets or sets whether the current person is authorized to view grades. */
+    canViewGrades: boolean;
+
     /** Gets or sets a list of students for the class being viewed. */
     students?: ListItemBag[] | null;
 };

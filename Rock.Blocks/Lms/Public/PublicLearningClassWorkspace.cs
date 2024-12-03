@@ -268,12 +268,14 @@ namespace Rock.Blocks.Lms
                         .Select( b => new ListItemBag { Text = b.FileName, Value = b.Guid.ToString() } )
                         .FirstOrDefault();
 
+                // AvailableDateTime should have been calculated for the student
+                // in the call to LearningParticipantService.GetStudentLearningPlan().
                 var activityBag = new LearningActivityBag
                 {
                     ActivityComponent = activityComponentBag,
                     ActivityComponentSettingsJson = configurationToSend,
                     AssignTo = activity.LearningActivity.AssignTo,
-                    AvailableDateCalculated = activity.LearningActivity.AvailableDateCalculated,
+                    AvailableDateCalculated = activity.AvailableDateTime,
                     AvailabilityCriteria = activity.LearningActivity.AvailabilityCriteria,
                     AvailableDateDefault = activity.LearningActivity.AvailableDateDefault,
                     AvailableDateOffset = activity.LearningActivity.AvailableDateOffset,
@@ -547,7 +549,7 @@ namespace Rock.Blocks.Lms
                     .FirstOrDefault( a => !a.IsStudentCompleted && !a.IsAvailable );
 
             // If there's no available activities that the student hasn't completed.
-            // Then show them their next avaiable activity.
+            // Then show them their next available activity.
             if ( !box.Notifications.Any() && nextAvailableActivity != null )
             {
                 box.Notifications.Add( new PublicLearningClassWorkspaceNotificationBag

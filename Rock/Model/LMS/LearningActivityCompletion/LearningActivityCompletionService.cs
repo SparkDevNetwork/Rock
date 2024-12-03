@@ -45,9 +45,9 @@ namespace Rock.Model
         /// <param name="activity">The <see cref="LearningActivity"/> the completion record is for.</param>
         /// <param name="participantId">The identifier of the <see cref="LearningParticipant"/> the completion record is for.</param>
         /// <param name="enrollmentDate">The date the participant enrolled in the <see cref="LearningClass"/>.</param>
-        /// <param name="progamCommuncationId">The SystemCommunicationId of the <see cref="LearningProgram"/> the completion record is for.</param>
+        /// <param name="programCommunicationId">The SystemCommunicationId of the <see cref="LearningProgram"/> the completion record is for.</param>
         /// <returns>A new untracked <see cref="LearningActivityCompletion"/>.</returns>
-        public static LearningActivityCompletion GetNew( LearningActivity activity, int participantId, DateTime? enrollmentDate, int? progamCommuncationId )
+        public static LearningActivityCompletion GetNew( LearningActivity activity, int participantId, DateTime? enrollmentDate, int? programCommunicationId )
         {
             var semesterStartDate = activity.LearningClass.LearningSemester.StartDate;
 
@@ -67,7 +67,7 @@ namespace Rock.Model
                     activity.DueDateOffset,
                     semesterStartDate,
                     enrollmentDate ),
-                NotificationCommunicationId = activity.SendNotificationCommunication ? progamCommuncationId : null
+                NotificationCommunicationId = activity.SendNotificationCommunication ? programCommunicationId : null
             };
         }
 
@@ -79,7 +79,7 @@ namespace Rock.Model
         /// <returns>A new <see cref="LearningActivityCompletion"/> record with default values.</returns>
         public static LearningActivityCompletion GetNew( LearningActivity activity, LearningParticipant student )
         {
-            var enrollmentDate = student.LearningClass?.CreatedDateTime;
+            var enrollmentDate = student?.CreatedDateTime;
             var classStartDate = student.LearningClass?.LearningSemester?.StartDate;
             var systemCommunicationId = student.LearningClass?.LearningSemester?.LearningProgram?.SystemCommunicationId;
 

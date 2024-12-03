@@ -19,6 +19,7 @@
                 <StudentGrid v-if="!isRefreshingStudents"
                              :isAddEnabled="isEditable"
                              :isDeleteEnabled="isEditable"
+                             :showGrades="canViewGrades"
                              @addClick="onAddStudentClick"
                              @rowClick="onParticipantClick"
                              @deleteClick="onDeleteStudentClick" />
@@ -115,6 +116,10 @@
     // #region Values
 
     const props = defineProps({
+        canViewGrades: {
+            type: Boolean as PropType<boolean>,
+            default: () => false
+        },
         includeContentPages: {
             type: Boolean as PropType<boolean>,
             default: () => true

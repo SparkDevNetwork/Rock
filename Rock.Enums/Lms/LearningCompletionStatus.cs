@@ -27,7 +27,7 @@ namespace Rock.Enums.Lms
         Incomplete = 0,
 
         /// <summary>
-        /// The class has been compelted with a failing grade.
+        /// The class has been completed with a failing grade.
         /// </summary>
         Fail = 1,
 

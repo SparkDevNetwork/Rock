@@ -23,6 +23,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningSemesterList
     public class LearningSemesterListOptionsBag
     {
         /// <summary>
+        /// Gets or sets whether the current person is authorized to edit the program.
+        /// </summary>
+        public bool CanEditProgram { get; set; }
+
+        /// <summary>
         /// Gets or sets the IdKey of the filtered Learning Program.
         /// </summary>
         public string LearningProgramIdKey { get; set; }

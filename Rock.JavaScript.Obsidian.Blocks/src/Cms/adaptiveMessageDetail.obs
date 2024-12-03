@@ -4,7 +4,7 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
 
-    <DetailBlock v-if="!blockError"
+    <DetailBlock v-if="!blockError && config.entity"
                  v-model:mode="panelMode"
                  :name="panelName"
                  :labels="blockLabels"
@@ -261,10 +261,7 @@
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
     }
-    else if (!config.entity) {
-        blockError.value = "The specified adaptive message could not be viewed.";
-    }
-    else if (!config.entity.idKey) {
+    else if (config.entity && !config.entity.idKey) {
         adaptiveMessageEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }

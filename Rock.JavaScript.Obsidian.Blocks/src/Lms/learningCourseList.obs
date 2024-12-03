@@ -42,7 +42,7 @@
                 field="category"
                 :filter="pickExistingValueFilter"
                 width="15%"
-                visiblePriority="lg">
+                visiblePriority="md">
             <template #format="{ row }">
                 <span class="label label-default category-label" :style="'color: ' + row.categoryColor">
                     {{ row.category }}
@@ -55,19 +55,20 @@
                        field="isPublic"
                        width="5%"
                        :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       visiblePriority="sm" />
 
         <TextColumn name="code"
                     title="Code"
                     field="code"
-                    :filter="textValueFilter" />
+                    :filter="textValueFilter"
+                    visiblePriority="sm" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
                        width="5%"
                        :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       visiblePriority="sm" />
 
         <SecurityColumn />
 

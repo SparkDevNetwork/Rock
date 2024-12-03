@@ -145,7 +145,8 @@
     import StaticFormControl from "./staticFormControl.obs";
     import Panel from "./panel.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
+    import { useFormState } from "@Obsidian/Utility/form";
 
     const props = defineProps({
         modelValue: {
@@ -238,6 +239,8 @@
         configurationValues: { ...(props.modelValue?.configurationValues ?? {}) },
         defaultValue: props.modelValue?.defaultValue ?? ""
     });
+    const uniqueId = newGuid();
+    const formState = useFormState();
 
     const categoryQualifierValue = computed((): string => {
         if (props.attributeEntityTypeGuid) {
@@ -265,6 +268,16 @@
 
             attributeKey.value = newKeyValue;
         }
+    }
+
+    function validateValue(): string[] {
+        const errors = [] as string[];
+
+        if (props.reservedKeyNames.some(r => r === attributeKey.value)) {
+            errors.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
+        }
+
+        return errors;
     }
 
     watch([
@@ -316,6 +329,14 @@
                 defaultValue: fieldTypeValue.value.defaultValue,
                 isSuppressHistoryLogging: isSuppressHistoryLogging.value
             };
+
+            const errors = validateValue();
+            if (errors.length > 0) {
+                formState?.setError(uniqueId, "", errors[0]);
+            }
+            else {
+                formState?.setError(uniqueId, "", "");
+            }
 
             emit("update:modelValue", newModelValue);
         });

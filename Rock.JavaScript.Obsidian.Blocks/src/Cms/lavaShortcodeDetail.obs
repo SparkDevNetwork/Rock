@@ -21,7 +21,6 @@
                  :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
-                 @edit="onEdit"
                  @save="onSave">
         <template #view>
             <ViewPanel :modelValue="lavaShortcodeViewBag" :options="options" />
@@ -48,6 +47,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { LavaShortcodeBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeDetail/lavaShortcodeBag";
     import { LavaShortcodeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeDetail/lavaShortcodeDetailOptionsBag";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 
     const config = useConfigurationValues<DetailBlockBox<LavaShortcodeBag, LavaShortcodeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -117,7 +117,7 @@
     /**
      * Additional labels to display in the block panel.
      */
-     const blockLabels = computed((): PanelAction[] | undefined => {
+    const blockLabels = computed((): PanelAction[] | undefined => {
         const labels: PanelAction[] = [];
 
         if (panelMode.value !== DetailPanelMode.View) {
@@ -154,18 +154,14 @@
      * Event handler for the Cancel button being clicked while in Edit mode.
      * Handles redirect to parent page if creating a new entity.
      *
-     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     * @returns true if the panel should leave edit mode; otherwise false.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!lavaShortcodeEditBag.value?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
-            }
-
-            return false;
+        // navigate to the parent page when Cancel Button is clicked.
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            return config.navigationUrls[NavigationUrlKey.ParentPage];
         }
-
-        return true;
+        return false;
     }
 
     /**
@@ -187,27 +183,6 @@
         else {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to delete lava shortcode.";
 
-            return false;
-        }
-    }
-
-    /**
-     * Event handler for the Edit button being clicked. Request the edit
-     * details from the server and then enter edit mode.
-     *
-     * @returns true if the panel should enter edit mode; otherwise false.
-     */
-    async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<LavaShortcodeBag, LavaShortcodeDetailOptionsBag>>("Edit", {
-            key: lavaShortcodeViewBag.value?.idKey
-        });
-
-        if (result.isSuccess && result.data && result.data.entity) {
-            lavaShortcodeEditBag.value = result.data.entity;
-
-            return true;
-        }
-        else {
             return false;
         }
     }
@@ -250,9 +225,13 @@
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                lavaShortcodeViewBag.value = result.data;
-
-                return true;
+                const parentPageUrl = config.navigationUrls?.[NavigationUrlKey.ParentPage];
+                if (parentPageUrl) {
+                    window.location.href = makeUrlRedirectSafe(parentPageUrl);
+                }
+                else {
+                    return true;
+                }
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
                 return result.data;
@@ -278,5 +257,9 @@
     else if (!config.entity.idKey) {
         lavaShortcodeEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
+    }
+    else if (config.entity.idKey && isEditable.value) {
+        lavaShortcodeEditBag.value = config.entity;
+        panelMode.value = DetailPanelMode.Edit;
     }
 </script>

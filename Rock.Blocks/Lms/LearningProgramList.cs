@@ -167,7 +167,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${LearningProgram.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningProgram.FriendlyTypeName}." );
             }
 
             entityService.Delete( entity.Id );

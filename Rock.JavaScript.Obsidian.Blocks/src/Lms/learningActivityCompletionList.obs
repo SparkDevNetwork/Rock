@@ -43,13 +43,14 @@
             </template>
         </DateColumn>
 
-        <Column name="grade"
+        <Column v-if="canViewGrades"
+                name="grade"
                 title="Grade"
                 field="grade"
                 width="10%"
                 :filter="numberValueFilter"
                 :filterValue="getGradePercentFilterValue"
-                visiblePriority="xs">
+                visiblePriority="sm">
             <template #format="{ row }">
                 <span v-if="!row.isCompleted"></span>
                 <span v-else-if="row.isPassingGrade" class="label label-success">{{ row.grade }}</span>
@@ -60,9 +61,9 @@
                 title="Statuses"
                 field="statuses"
                 width="15%"
-                :filter="textValueFilter"
+                :filter="pickExistingValueFilter"
                 :filterValue="getRowStatusesFilterValue"
-                visiblePriority="xs">
+                visiblePriority="sm">
             <template #format="{ row }">
                 <span v-if="row.requiresScoring" class="mr-1 mb-1 label label-warning">Requires Scoring</span>
                 <span v-if="row.isLate" class="mr-1 mb-1 label label-warning">Late</span>
@@ -75,7 +76,7 @@
                 width="10%"
                 :filter="textValueFilter"
                 :filterValue="getRowCommentsFilterValue"
-                visiblePriority="xs">
+                visiblePriority="md">
             <template #format="{ row }">
                 <span v-if="hasValue(row.studentComment)" class="mr-1 mb-1 label label-info">Student</span>
                 <span v-if="hasValue(row.facilitatorComment)" class="mr-1 mb-1 label label-default">Facilitator</span>
@@ -145,6 +146,8 @@
     // #endregion
 
     // #region Computed Functions
+
+    const canViewGrades = computed((): boolean => config.options?.canViewGrades ?? false);
 
     const studentsWithoutActivity = computed(() =>
         allStudents.value.filter(s =>

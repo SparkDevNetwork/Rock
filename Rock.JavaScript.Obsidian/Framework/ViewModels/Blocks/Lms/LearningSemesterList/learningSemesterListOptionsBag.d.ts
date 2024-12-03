@@ -22,6 +22,9 @@
 //
 
 export type LearningSemesterListOptionsBag = {
+    /** Gets or sets whether the current person is authorized to edit the program. */
+    canEditProgram: boolean;
+
     /** Gets or sets the IdKey of the filtered Learning Program. */
     learningProgramIdKey?: string | null;
 

@@ -497,7 +497,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningActivity.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningActivity.FriendlyTypeName}." );
                 return false;
             }
 
@@ -511,7 +511,9 @@ namespace Rock.Blocks.Lms
 
             // Exclude the auto edit and return URL parameters from the page reference parameters (if any).
             var excludedParamKeys = new[] { PageParameterKey.AutoEdit.ToLower(), PageParameterKey.ReturnUrl.ToLower() };
-            var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
+            var paramsToInclude = pageReference.Parameters
+                .Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) )
+                .ToDictionary( kv => kv.Key, kv => kv.Value );
 
             var entityName = entityKey.Length > 0 ? new Service<LearningActivity>( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Activity";
             var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
