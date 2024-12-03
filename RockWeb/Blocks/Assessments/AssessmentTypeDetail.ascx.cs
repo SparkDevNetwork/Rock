@@ -279,6 +279,7 @@ namespace RockWeb.Blocks.Assessments
 
             assessmentType.RequiresRequest = cbRequiresRequest.Checked;
             assessmentType.MinimumDaysToRetake = nbDaysBeforeRetake.Text.AsInteger();
+            assessmentType.ValidDuration = nbValidDuration.Text.AsInteger();
 
             if ( !assessmentType.IsValid )
             {
@@ -476,6 +477,11 @@ namespace RockWeb.Blocks.Assessments
             if ( assessmentType.MinimumDaysToRetake > 0 )
             {
                 nbDaysBeforeRetake.Text = assessmentType.MinimumDaysToRetake.ToString();
+            }
+
+            if ( assessmentType.ValidDuration > 0 )
+            {
+                nbValidDuration.Text = assessmentType.ValidDuration.ToString();
             }
         }
 

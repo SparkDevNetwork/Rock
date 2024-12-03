@@ -84,6 +84,20 @@
                         </div>
                     </div>
 
+                    <div class="row">
+                        <div class="col-md-3">
+                            <Rock:NumberBox ID="nbValidDuration"
+                                runat="server"
+                                SourceTypeName="Rock.Model.AssessmentType, Rock"
+                                PropertyName="ValidDuration"
+                                Label="Valid Duration"
+                                AppendText="days"
+                                MinimumValue="0"
+                                CssClass="input-width-md"
+                                Help="The number of days the assessment is valid for before it must be taken again." />
+                        </div>
+                    </div>
+
                     <div class="actions">
                         <asp:LinkButton ID="btnSave" runat="server" data-shortcut-key="s" ToolTip="Alt+s" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                         <asp:LinkButton ID="btnCancel" runat="server" data-shortcut-key="c" ToolTip="Alt+c" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />

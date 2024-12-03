@@ -171,6 +171,7 @@ namespace Rock.Blocks.Crm
                     AssessmentRetakeLinkButton = "",
                     RequiresRequest = t.RequiresRequest,
                     MinDaysToRetake = t.MinimumDaysToRetake,
+                    ValidDuration = t.ValidDuration,
                     LastRequestObject = t.Assessments
                             .Where( a => a.PersonAlias.Person.Id == currentPersonId )
                             .OrderBy( a => a.Status ) // pending first
@@ -279,6 +280,7 @@ namespace Rock.Blocks.Crm
             public string AssessmentRetakeLinkButton { get; set; }
             public bool RequiresRequest { get; set; }
             public int MinDaysToRetake { get; set; }
+            public int ValidDuration { get; set; }
             public LastAssessmentTaken LastRequestObject { get; set; }
         }
 
