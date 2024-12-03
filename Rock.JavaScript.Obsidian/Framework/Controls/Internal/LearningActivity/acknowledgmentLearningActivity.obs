@@ -22,10 +22,10 @@
             </div>
         </div>
         <div v-if="screenToShow === ComponentScreen.Summary">
-            <NotificationBox v-if="dateConfirmed" alertType="success">
-                {{ assignee?.name ?? defaultAssigneeDescription }} checked off that they completed this activity at {{ dateConfirmed }}.
+            <NotificationBox v-if="isCompleted" alertType="success">
+                {{ assignee?.name ?? defaultAssigneeDescription }} completed this activity {{ humanizedCompletionDate }}.
             </NotificationBox>
-            <NotificationBox v-if="!dateConfirmed" alertType="warning">
+            <NotificationBox v-if="!isCompleted" alertType="warning">
                 {{ assignee?.name ?? defaultAssigneeDescription }} has not checked off this activity.
             </NotificationBox>
         </div>
@@ -66,6 +66,7 @@
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { AcknowledgmentActivityCompletion, AcknowledgmentActivityConfiguration, AcknowledgmentActivityDefaults } from "./acknowledgmentLearningActivity.partial";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -79,13 +80,14 @@
     const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
     const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
 
+    const completedDate = ref(props.completionBag?.completedDate ?? "");
+
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
         assignee,
         confirmationText,
         containerClasses,
         content,
-        dateConfirmed,
         defaultAssigneeDescription,
         isCompleted,
         isConfirmed,
@@ -107,6 +109,11 @@
 
         emits("closed");
     }
+
+    /** The time elapsed since the specified date in a human-readable format. */
+    const humanizedCompletionDate = computed((): string =>
+        RockDateTime.parseISO(completedDate.value)?.localDateTime.humanizeElapsed() ?? ""
+    );
 
     const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");
 
@@ -136,12 +143,11 @@
 
         updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
             isConfirmed: isConfirmed.value,
-            dateConfirmed: dateConfirmed.value,
             pointsPossibleAtCompletion: pointsPossibleAtCompletion?.value ?? activityBag.value.points
         }) ?? "{}";
         emits("update:completionBag", updatedCompletionBag);
     });
-    watch([isConfirmed, dateConfirmed], () => {
+    watch([isConfirmed], () => {
         debouncedCompletionBagEmits();
     }, { deep: true });
 </script>

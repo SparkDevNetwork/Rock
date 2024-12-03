@@ -32,6 +32,7 @@
     import { usePluginHelper } from "./utils.partial";
     import { RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { ConfigureEditorUtilities } from "./types.partial";
 
     const id = `meta-tags-${newGuid()}` as const;
 
@@ -41,25 +42,9 @@
 
     const { onConfigureEditorOptions } = usePluginHelper();
 
-    onConfigureEditorOptions((currentOptions: RawEditorOptions) => {
-        // Syntax examples:
-        // "+div[p|i]"              This would add <p> and <i> as valid child elements of <div> elements.
-        // "-div[strong]"           This would remove <strong> from being a valid child element of <div> elements.
-        // "+div[p|i],-div[strong]" Use commas to combine multiple rules.
-        // For more information, visit: https://www.tiny.cloud/docs/tinymce/latest/content-filtering/#valid_children
-
-        // Allow style elements as "root" elements in the editor.
-        // The editor is hosted in a <div> element.
-        // Since the "root" would be direct children of that host <div>,
-        // the rule should allow <meta> tags as children of <div> tags.
-        const metaChildren = "+div[meta]";
-
-        if (!currentOptions.valid_children) {
-            currentOptions.valid_children = metaChildren;
-        }
-        else if (!currentOptions.valid_children.includes("+div[meta]")) {
-            currentOptions.valid_children += `,${metaChildren}`;
-        }
+    onConfigureEditorOptions((currentOptions: RawEditorOptions, { allowRootElement }: ConfigureEditorUtilities) => {
+        // Allow <meta> elements as "root" elements in the editor.
+        allowRootElement(currentOptions, "meta");
 
         return currentOptions;
     });

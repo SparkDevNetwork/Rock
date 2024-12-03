@@ -510,7 +510,7 @@ namespace Rock.Blocks.Finance
                 // Ensure everything is valid before saving.
                 if ( !ValidateFinancialAccount( entity, rockContext, out var validationMessage ) )
                 {
-                    return ActionBadRequest( validationMessage );
+                    return ActionBadRequest( new { isValidationError = true, message = validationMessage }.ToCamelCaseJson( false, true ) );
                 }
 
                 var isNew = entity.Id == 0;

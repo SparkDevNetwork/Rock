@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 using Rock.Data;
 using Rock.Enums.Lms;
@@ -43,20 +44,22 @@ namespace Rock.Model
                     case AvailabilityCriteria.ClassStartOffset:
                         if ( LearningClass?.LearningSemester?.StartDate.HasValue == true )
                         {
-                            return LearningClass.LearningSemester.StartDate.Value.AddDays( AvailableDateOffset.Value ).ToShortDateString();
+                            return LearningClass.LearningSemester.StartDate.Value.Date.AddDays( AvailableDateOffset.Value ).ToShortDateString();
                         }
                         else
                         {
-                            return $"{DateOffsetText( AvailableDateOffset )} class start.";
+                            return $"{DateOffsetText( AvailableDateOffset )} class start";
                         }
                     case AvailabilityCriteria.EnrollmentOffset:
-                        if ( LearningClass?.CreatedDateTime.HasValue == true )
+                        var daysOffset = AvailableDateOffset.ToIntSafe();
+                        if ( daysOffset == 0 )
                         {
-                            return LearningClass.CreatedDateTime.Value.AddDays( AvailableDateOffset.Value ).ToShortDateString();
+                            return "At Enrollment";
                         }
                         else
                         {
-                            return $"{DateOffsetText( AvailableDateOffset )} class enrollment.";
+                            var daysText = "Day".PluralizeIf( daysOffset != 1 );
+                            return $"{daysOffset} {daysText} After Enrollment";
                         }
                     case AvailabilityCriteria.AfterPreviousCompleted:
                         return "After Previous";
@@ -87,20 +90,22 @@ namespace Rock.Model
                     case DueDateCriteria.ClassStartOffset:
                         if ( LearningClass?.LearningSemester?.StartDate.HasValue == true )
                         {
-                            return LearningClass.LearningSemester.StartDate.Value.AddDays( DueDateOffset.Value ).ToShortDateString();
+                            return LearningClass.LearningSemester.StartDate.Value.Date.AddDays( DueDateOffset.Value ).ToShortDateString();
                         }
                         else
                         {
-                            return $"{DateOffsetText( DueDateOffset )} class start.";
+                            return $"{DateOffsetText( DueDateOffset )} class start";
                         }
                     case DueDateCriteria.EnrollmentOffset:
-                        if ( LearningClass.CreatedDateTime.HasValue )
+                        var daysOffset = DueDateOffset.ToIntSafe();
+                        if ( daysOffset == 0 )
                         {
-                            return LearningClass.CreatedDateTime.Value.AddDays( DueDateOffset.Value ).ToShortDateString();
+                            return "At Enrollment";
                         }
                         else
                         {
-                            return $"{DateOffsetText( DueDateOffset )} class enrollment.";
+                            var daysText = "Day".PluralizeIf( daysOffset != 1 );
+                            return $"{daysOffset} {daysText} After Enrollment";
                         }
                     case DueDateCriteria.NoDate:
                         return string.Empty;
@@ -124,7 +129,7 @@ namespace Rock.Model
                 AvailableDateDefault,
                 AvailableDateOffset,
                 LearningClass?.LearningSemester?.StartDate,
-                LearningClass?.CreatedDateTime
+                null
             );
 
         /// <summary>
@@ -152,13 +157,13 @@ namespace Rock.Model
                 case AvailabilityCriteria.ClassStartOffset:
                     if ( semesterStart.HasValue )
                     {
-                        return semesterStart.Value.AddDays( offset ?? 0 );
+                        return semesterStart.Value.Date.AddDays( offset ?? 0 );
                     }
                     break;
                 case AvailabilityCriteria.EnrollmentOffset:
                     if ( enrollmentDate.HasValue )
                     {
-                        return enrollmentDate.Value.AddDays( offset ?? 0 );
+                        return enrollmentDate.Value.Date.AddDays( offset ?? 0 );
                     }
                     break;
                 case AvailabilityCriteria.AlwaysAvailable:
@@ -193,13 +198,13 @@ namespace Rock.Model
                 case DueDateCriteria.ClassStartOffset:
                     if ( semesterStart.HasValue )
                     {
-                        return semesterStart.Value.AddDays( offset ?? 0 );
+                        return semesterStart.Value.Date.AddDays( offset ?? 0 );
                     }
                     break;
                 case DueDateCriteria.EnrollmentOffset:
                     if ( enrollmentDate.HasValue )
                     {
-                        return enrollmentDate.Value.AddDays( offset ?? 0 );
+                        return enrollmentDate.Value.Date.AddDays( offset ?? 0 );
                     }
                     break;
             }
@@ -221,7 +226,7 @@ namespace Rock.Model
                     DueDateDefault,
                     DueDateOffset,
                     LearningClass?.LearningSemester?.StartDate,
-                    LearningClass?.CreatedDateTime
+                    null
                 );
 
         /// <summary>
@@ -259,6 +264,30 @@ namespace Rock.Model
                 return DueDateCalculated.HasValue
                     && DueDateCalculated.Value.Date < RockDateTime.Today.Date;
             }
+        }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        [NotMapped]
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                return this.LearningClass != null ? this.LearningClass : base.ParentAuthority;
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Rock.Model.Person person )
+        {
+            // Defer to the parent authority.
+            // We don't add any logic to the authorization process
+            // that's not already included in that logic.
+            return ParentAuthority.IsAuthorized( action, person );
         }
 
         #region Private methods

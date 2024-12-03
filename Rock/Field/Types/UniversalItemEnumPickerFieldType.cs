@@ -27,6 +27,7 @@ namespace Rock.Field.Types
     /// be picked by the person.
     /// </summary>
     /// <typeparam name="TEnum">The type of the enum to be represented.</typeparam>
+    [Rock.Attribute.FieldTypeUsage( FieldTypeUsage.System )]
     public abstract class UniversalItemEnumPickerFieldType<TEnum> : UniversalItemPickerFieldType
         where TEnum : Enum
     {

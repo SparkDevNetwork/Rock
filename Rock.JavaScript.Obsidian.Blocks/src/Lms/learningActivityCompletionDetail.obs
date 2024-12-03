@@ -115,7 +115,7 @@
 
         const gradeText = hasGradeScale ? `${grade.name} (${percentEarned}%)` : `${percentEarned}%`;
 
-        if (gradeText.length > 0) {
+        if (pointsPossible > 0 && gradeText.length > 0) {
             labels.push({
                 title: gradeText,
                 type: isGradePassing ? "success" : "warning"

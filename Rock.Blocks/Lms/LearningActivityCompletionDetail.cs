@@ -142,8 +142,8 @@ namespace Rock.Blocks.Lms
                 return;
             }
 
-            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = IsAuthorizedToEdit();
+            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             if ( entity.Id != 0 )
             {
@@ -202,6 +202,7 @@ namespace Rock.Blocks.Lms
 
             // Get the student and current persons bags.
             var currentPerson = GetCurrentPerson();
+            var canViewGrades = entity.IsAuthorized( Authorization.VIEW_GRADES, currentPerson );
 
             var participantService = new LearningParticipantService( RockContext );
 
@@ -314,15 +315,15 @@ namespace Rock.Blocks.Lms
                 CompletedDate = entity.CompletedDateTime,
                 DueDate = entity.DueDate,
                 FacilitatorComment = entity.FacilitatorComment,
-                GradeText = entity.GetGradeText( scales ),
+                GradeText = canViewGrades ? entity.GetGradeText( scales ) : string.Empty,
                 GradedByPersonAlias = gradedByPersonAliasBag,
                 IsFacilitatorCompleted = entity.IsFacilitatorCompleted,
-                IsGradePassing = entity.GetGrade().IsPassing,
+                IsGradePassing = canViewGrades ? entity.GetGrade().IsPassing : false,
                 IsLate = entity.IsLate,
                 IsStudentCompleted = entity.IsStudentCompleted,
-                PointsEarned = entity.PointsEarned,
+                PointsEarned = canViewGrades ? entity.PointsEarned : 0,
                 RequiresScoring = entity.RequiresGrading,
-                RequiresFacilitatorCompletion = entity.RequiresFaciltatorCompletion,
+                RequiresFacilitatorCompletion = entity.RequiresFacilitatorCompletion,
                 Student = studentBag,
                 StudentComment = entity.StudentComment,
                 WasCompletedOnTime = entity.WasCompletedOnTime
@@ -340,17 +341,6 @@ namespace Rock.Blocks.Lms
                 IdKey = activityComponent?.EntityType.IdKey,
                 Guid = activityComponent?.EntityType.Guid.ToString()
             };
-        }
-
-        private bool IsAuthorizedToEdit()
-        {
-            var currentPerson = RequestContext.CurrentPerson;
-
-            var learningClassKey = PageParameter( PageParameterKey.LearningClassId );
-            var learningClassId = new LearningClassService( RockContext ).GetSelect( learningClassKey, c => c.Id );
-            var facilitatorId = new LearningParticipantService( RockContext ).GetFacilitatorId( currentPerson.Id, learningClassId );
-
-            return BlockCache.IsAuthorized( Authorization.EDIT, currentPerson ) && facilitatorId.HasValue && facilitatorId.Value > 0;
         }
 
         /// <inheritdoc/>
@@ -540,7 +530,7 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            if ( !IsAuthorizedToEdit() )
+            if ( !entity.IsAuthorized( Authorization.EDIT_GRADES, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {LearningActivityCompletion.FriendlyTypeName}." );
                 return false;

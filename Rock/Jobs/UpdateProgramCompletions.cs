@@ -37,7 +37,7 @@ namespace Rock.Jobs
     [IntegerField(
         "Command Timeout",
         Key = AttributeKey.CommandTimeoutSeconds,
-        Description = "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (180).",
+        Description = "Maximum amount of time (in seconds) to wait for the SQL operations to complete. Leave blank to use the default for this job (180).",
         IsRequired = false,
         DefaultIntegerValue = 60 * 3,
         Order = 1 )]
@@ -175,21 +175,21 @@ namespace Rock.Jobs
 
                 var completedProgramsText = "completion".PluralizeIf( existingProgramsCompleted.Count() != 1 );
                 var newProgramsText = "completion".PluralizeIf( programsToCreate.Count() != 1 );
-                var completedWasText = "was".PluralizeIf( existingProgramsCompleted.Count() != 1 );
-                var newProgramsWasText = "was".PluralizeIf( programsToCreate.Count() != 1 );
+                var completedWasOrWere = existingProgramsCompleted.Count() == 1 ? "was" : "were";
+                var newProgramsWasOrWere = programsToCreate.Count() == 1 ? "was" : "were";
 
                 // Set the job result text.
                 if ( existingProgramsCompleted.Any() && programsToCreate.Any() )
                 {
-                    resultsBuilder.AppendLine( $"{existingProgramsCompleted.Count()} {completedProgramsText} {completedWasText} updated to 'Completed' and {programsToCreate.Count()} {newProgramsText} {newProgramsWasText} created as 'Pending'." );
+                    resultsBuilder.AppendLine( $"{existingProgramsCompleted.Count()} {completedProgramsText} {completedWasOrWere} updated to 'Completed' and {programsToCreate.Count()} {newProgramsText} {newProgramsWasOrWere} created as 'Pending'." );
                 }
                 else if ( existingProgramsCompleted.Any() )
                 {
-                    resultsBuilder.AppendLine( $"{existingProgramsCompleted.Count()} {completedProgramsText} {completedWasText} updated to 'Completed'." );
+                    resultsBuilder.AppendLine( $"{existingProgramsCompleted.Count()} {completedProgramsText} {completedWasOrWere} updated to 'Completed'." );
                 }
                 else if ( programsToCreate.Any() )
                 {
-                    resultsBuilder.AppendLine( $"{programsToCreate.Count()} {newProgramsText} {newProgramsWasText} created as 'Pending'." );
+                    resultsBuilder.AppendLine( $"{programsToCreate.Count()} {newProgramsText} {newProgramsWasOrWere} created as 'Pending'." );
                 }
                 else
                 {
@@ -211,7 +211,10 @@ namespace Rock.Jobs
 
                         rockContext.SaveChanges();
 
-                        var participantIds = completionData.Where( c => c.Id == 0 ).Select( c => c.ParticipantId );
+                        var personAliasIds = completionData.Select( p => p.PersonAliasId ).Distinct();
+                        var programIds = completionData.Select( p => p.LearningProgramId ).Distinct();
+
+                        var participantIds = completionData.Where( c => c.Id == 0 ).Select( c => c.ParticipantId ).Distinct();
 
                         var participantsData = participantService.Queryable()
                             .Where( p => participantIds.Contains( p.Id ) )
@@ -227,22 +230,16 @@ namespace Rock.Jobs
                                 }
                             );
 
-                        // Get the newly created programs so we can ensure the LearningParticipant links to the completion.
-                        var allProgramCompletionIds = completionData
-                            .Where( c => c.Id > 0 )
-                            .Select( c => c.Id )
-                            .Concat( programsToCreate.Select( p => p.Id ) )
-                            .ToList()
-                            .Distinct();
-
                         // Need to materialize now for use by completed programs to update
                         // and for later use by participantsData loop (for linking completion to participant).
                         var learningProgramCompletions = new LearningProgramCompletionService( rockContext )
                             .Queryable()
-                            .Where( c => allProgramCompletionIds.Contains( c.Id ) )
+                            .Where( c => 
+                                personAliasIds.Contains( c.PersonAliasId )
+                                && programIds.Contains( c.LearningProgramId ) )
                             .ToList();
 
-                        // Uupdate the CompletionStatus and EndDate of newly completed programs.
+                        // Update the CompletionStatus and EndDate of newly completed programs.
                         var completedProgramsToUpdate = learningProgramCompletions.Where( p => existingProgramsCompleted.Any( e => e.Id == p.Id && p.CompletionStatus != Enums.Lms.CompletionStatus.Completed ) );
                         foreach ( var programCompletion in completedProgramsToUpdate )
                         {
@@ -266,11 +263,6 @@ namespace Rock.Jobs
 
                         // Again save changes before launching any workflows.
                         rockContext.SaveChanges();
-
-                        var personAliasIds = completionData
-                            .Select( c => c.PersonAliasId )
-                            .Distinct()
-                            .ToList();
 
                         var persons = new PersonService( rockContext )
                             .Queryable()

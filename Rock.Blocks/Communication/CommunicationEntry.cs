@@ -1374,11 +1374,12 @@ namespace Rock.Blocks.Communication
                 template = new CommunicationTemplateService( rockContext ).Get( this.DefaultTemplateGuid.Value );
             }
 
-            if ( template != null && communication.Status == CommunicationStatus.Transient )
+            if ( template != null )
             {
                 communicationBag.CommunicationTemplateGuid = template.Guid;
 
-                if ( selectedMediumOptions.Templates?.Any( t => t.Value.AsGuid() == template.Guid ) == true )
+                if ( communication.Status == CommunicationStatus.Transient
+                     && selectedMediumOptions.Templates?.Any( t => t.Value.AsGuid() == template.Guid ) == true )
                 {
                     // Copy communication data from the template.
                     CopyTemplateToCommunicationBag( rockContext, template, communicationBag );
@@ -1870,6 +1871,7 @@ namespace Rock.Blocks.Communication
             communicationBag.CommunicationGuid = communication.Guid;
             communicationBag.FutureSendDateTime = communication.FutureSendDateTime;
             communicationBag.Status = communication.Status;
+            communicationBag.ExcludeDuplicateRecipientAddress = communication.ExcludeDuplicateRecipientAddress;
         }
 
         /// <summary>

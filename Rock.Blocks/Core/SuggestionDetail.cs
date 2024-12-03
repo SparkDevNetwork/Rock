@@ -130,30 +130,39 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Gets the entity bag that is common between both view and edit modes.
         /// </summary>
-        /// <param name="entity">The entity to be represented as a bag.</param>
+        /// <param name="followingSuggestion">The entity to be represented as a bag.</param>
         /// <returns>A <see cref="SuggestionDetailBag"/> that represents the entity.</returns>
-        private SuggestionDetailBag GetEntityBag( FollowingSuggestionType entity )
+        private SuggestionDetailBag GetEntityBag( FollowingSuggestionType followingSuggestion )
         {
-            if ( entity == null )
+            if ( followingSuggestion == null )
             {
                 return null;
             }
 
+            if ( followingSuggestion.EntityTypeId.HasValue )
+            {
+                var suggestionEntityTypeId = followingSuggestion.EntityTypeId;
+                var suggestionComponentEntityType = EntityTypeCache.Get( followingSuggestion.EntityTypeId.Value );
+                var suggestionEntityType = EntityTypeCache.Get( "Rock.Model.FollowingSuggestionType" );
+                var rockContext = new RockContext();
+                Rock.Attribute.Helper.UpdateAttributes( suggestionComponentEntityType.GetEntityType(), suggestionEntityType.Id, "EntityTypeId", suggestionComponentEntityType.Id.ToString(), rockContext );
+            }
+
             var bag = new SuggestionDetailBag
             {
-                IdKey = entity.IdKey,
-                Description = entity.Description,
-                EntityNotificationFormatLava = entity.EntityNotificationFormatLava,
-                EntityType = entity.EntityType.ToListItemBag(),
-                EntityTypeId = entity.EntityTypeId,
-                IsActive = entity.IsActive,
-                Name = entity.Name,
-                Order = entity.Order,
-                ReasonNote = entity.ReasonNote,
-                ReminderDays = entity.ReminderDays
+                IdKey = followingSuggestion.IdKey,
+                Description = followingSuggestion.Description,
+                EntityNotificationFormatLava = followingSuggestion.EntityNotificationFormatLava,
+                EntityType = followingSuggestion.EntityType.ToListItemBag(),
+                EntityTypeId = followingSuggestion.EntityTypeId,
+                IsActive = followingSuggestion.IsActive,
+                Name = followingSuggestion.Name,
+                Order = followingSuggestion.Order,
+                ReasonNote = followingSuggestion.ReasonNote,
+                ReminderDays = followingSuggestion.ReminderDays
             };
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, true, attributeFilter: IsAttributeIncluded );
+            bag.LoadAttributesAndValuesForPublicEdit( followingSuggestion, RequestContext.CurrentPerson, true, attributeFilter: IsAttributeIncluded );
 
             return bag;
         }

@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     /// Stored as GroupLocationTypeValue.Guid.
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_LOCATION_TYPE )]
     public class GroupLocationTypeFieldType : FieldType, IEntityReferenceFieldType

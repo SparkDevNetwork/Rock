@@ -32,6 +32,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a <see cref="SignatureDocumentTemplate" />. Stored as the SignatureDocumentTemplate's Guid.
     /// </summary>
+    [Rock.Attribute.FieldTypeUsage( FieldTypeUsage.System )]
     [Rock.SystemGuid.FieldTypeGuid( "258A4AEF-F555-4AF5-8D5D-2D581A982D1C" )]
     public class SignatureDocumentTemplateFieldType : UniversalItemPickerFieldType, IEntityFieldType, IEntityReferenceFieldType
     {

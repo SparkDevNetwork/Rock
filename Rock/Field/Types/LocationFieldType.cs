@@ -49,6 +49,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to save and display a location value
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LOCATION )]
     public class LocationFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

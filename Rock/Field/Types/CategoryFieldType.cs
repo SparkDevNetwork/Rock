@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as Category.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian)]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CATEGORY )]
     public class CategoryFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

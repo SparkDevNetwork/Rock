@@ -2922,7 +2922,7 @@ namespace RockWeb.Blocks.Connection
             }
 
             activity.ConnectionRequestId = ConnectionRequestId.Value;
-            activity.ConnectorPersonAliasId = ddlRequestModalViewModeAddActivityModeConnector.SelectedValue.AsIntegerOrNull();
+            activity.ConnectorPersonAliasId = ddlRequestModalViewModeAddActivityModeConnector.SelectedValueAsId();
             activity.Note = tbRequestModalViewModeAddActivityModeNote.Text;
             activity.ConnectionActivityTypeId = ddlRequestModalViewModeAddActivityModeType.SelectedValue.AsInteger();
             activity.ConnectionOpportunityId = ConnectionOpportunityId;

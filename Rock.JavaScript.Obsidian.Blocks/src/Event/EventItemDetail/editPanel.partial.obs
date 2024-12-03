@@ -113,14 +113,6 @@
             <Modal v-model="isAttributeModalOpen" title="Event Occurrence Attribute" saveText="Save" :onSave="onStartSaveAttribute">
 
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                        Please correct the following:
-                        <ul>
-                            <li v-for="error of attributeErrors">
-                                {{ error }}
-                            </li>
-                        </ul>
-                    </NotificationBox>
                     <AttributeEditor v-model="occurrenceAttribute" :reservedKeyNames="reservedKeyNames" :isAllowSearchVisible="true" />
                 </RockForm>
 
@@ -157,7 +149,6 @@
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
@@ -209,7 +200,6 @@
     const submitEditAttribute = ref(false);
     const occurrenceAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
-    const attributeErrors = ref<string[]>([]);
 
     const audience = ref<string>("");
     const isAudienceModalOpen = ref(false);
@@ -310,11 +300,9 @@
         occurrenceAttribute.value = {} as PublicEditableAttributeBag;
         occurrenceAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
         isAttributeModalOpen.value = true;
-        attributeErrors.value = [];
     };
 
     const onEditAttribute = (key: string): void => {
-        attributeErrors.value = [];
         const selectedAttribute = eventOccurenceAttributes.value.find(x => x.attribute?.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute?.attribute) {
@@ -386,12 +374,7 @@
     };
 
     const onStartSaveAttribute = (): void => {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(occurrenceAttribute.value?.key ?? "") && !occurrenceAttribute.value?.guid;
-        submitEditAttribute.value = !isExistingKey;
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
+        submitEditAttribute.value = true;
     };
 
     // #endregion

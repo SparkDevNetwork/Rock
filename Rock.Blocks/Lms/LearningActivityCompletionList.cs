@@ -28,7 +28,6 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionList;
 using Rock.ViewModels.Utility;
-using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
 {
@@ -102,8 +101,11 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningActivityCompletionListOptionsBag();
 
-            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
-            options.Students = new LearningParticipantService( RockContext ).GetParticipantBags( classId )
+            var learningClass = new LearningClassService( RockContext )
+                .Get( PageParameter( PageParameterKey.LearningClassId ), !PageCache.Layout.Site.DisablePredictableIds );
+
+            options.CanViewGrades = learningClass.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
+            options.Students = new LearningParticipantService( RockContext ).GetParticipantBags( learningClass.Id )
                 .Where( p => !p.IsFacilitator )
                 .Select( p => new ListItemBag
                 {
@@ -120,7 +122,8 @@ namespace Rock.Blocks.Lms
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var learningClass = new LearningClassService( RockContext ).Get( PageParameter( PageParameterKey.LearningClassId ) );
+            return learningClass.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -165,6 +168,9 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override GridBuilder<LearningActivityCompletion> GetGridBuilder()
         {
+            var learningClass = new LearningClassService( RockContext ).Get( PageParameter(PageParameterKey.LearningClassId ) );
+            var canViewGrades = learningClass.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
+
             return new GridBuilder<LearningActivityCompletion>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
@@ -173,12 +179,12 @@ namespace Rock.Blocks.Lms
                 .AddField( "studentGuid", a => a.Student.Guid )
                 .AddField( "completionDate", a => a.CompletedDateTime )
                 .AddField( "dueDate", a => a.DueDate )
-                .AddField( "pointsEarned", a => a.PointsEarned )
-                .AddField( "points", a => a.LearningActivity.Points )
-                .AddField( "grade", a => a.RequiresGrading || a.LearningActivity.Points == 0 ? null : a.GetGradeText() )
-                .AddField( "gradePercent", a => a.GradePercent.ToIntSafe() )
+                .AddField( "pointsEarned", a => !canViewGrades ? 0 : a.PointsEarned )
+                .AddField( "points", a => !canViewGrades ? 0 : a.LearningActivity.Points )
+                .AddField( "grade", a => !canViewGrades || a.RequiresGrading || a.LearningActivity.Points == 0 ? null : a.GetGradeText() )
+                .AddField( "gradePercent", a => !canViewGrades ? 0 : a.GradePercent.ToIntSafe() )
                 .AddField( "requiresScoring", a => a.RequiresGrading )
-                .AddField( "isPassingGrade", a => a.GetGrade()?.IsPassing )
+                .AddField( "isPassingGrade", a => !canViewGrades ? null : a.GetGrade()?.IsPassing )
                 .AddField( "isLate", a => a.IsLate )
                 .AddField( "isCompleted", a => a.CompletedDateTime.HasValue )
                 .AddField( "hadExtension", a => a.HadExtension )

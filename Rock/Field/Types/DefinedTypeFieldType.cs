@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Defined Types
     /// Stored as DefinedType.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DEFINED_TYPE )]
     public class DefinedTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

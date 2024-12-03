@@ -25,7 +25,6 @@ export type AcknowledgmentActivityConfiguration = {
 
 export type AcknowledgmentActivityCompletion = {
     isConfirmed: boolean;
-    dateConfirmed: string | null;
     pointsPossibleAtCompletion?: number;
 };
 
@@ -39,8 +38,7 @@ export class AcknowledgmentActivityDefaults
             confirmationText: ""
         };
         this.defaultCompletion = {
-            isConfirmed: false,
-            dateConfirmed: ""
+            isConfirmed: false
         };
     }
 }

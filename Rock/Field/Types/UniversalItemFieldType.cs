@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     /// Base logic provider for field types that have shared UI comonents
     /// on the client to handle working with the field values.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     public abstract class UniversalItemFieldType : FieldType
     {
         #region Properties

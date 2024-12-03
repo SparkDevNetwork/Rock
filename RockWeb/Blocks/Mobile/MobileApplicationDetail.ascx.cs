@@ -550,6 +550,9 @@ namespace RockWeb.Blocks.Mobile
                 nbPageViewRetentionPeriodDays.Text = interactionChannelForSite.RetentionDuration.ToString();
             }
 
+            site.LoadAttributes();
+            avcAttributes.AddEditControls(site, Rock.Security.Authorization.EDIT, CurrentPerson );
+
             //
             // Set the API Key.
             //
@@ -1168,6 +1171,14 @@ namespace RockWeb.Blocks.Mobile
 
                 rockContext.SaveChanges();
             }
+
+            avcAttributes.GetEditValues( site );
+            // only save if everything saves:
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+                site.SaveAttributeValues();
+            } );
 
             //
             // Create the default interaction channel for this site, and set the Retention Duration.

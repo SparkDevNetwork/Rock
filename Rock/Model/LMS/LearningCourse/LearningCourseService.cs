@@ -138,7 +138,10 @@ namespace Rock.Model
             course.NextSemester = nextSemesterQuery.OrderBy( c => c.StartDate ).FirstOrDefault();
 
             // Remove any related classes that don't belong to this course.
-            course.NextSemester.LearningClasses = course.NextSemester.LearningClasses.Where( c => c.LearningCourseId == courseId ).ToList();
+            if ( course.NextSemester != null )
+            {
+                course.NextSemester.LearningClasses = course.NextSemester?.LearningClasses?.Where( c => c.LearningCourseId == courseId ).ToList();
+            }
 
             course.UnmetPrerequisites = GetUnmetCourseRequirements( personId, course.CourseRequirements );
 

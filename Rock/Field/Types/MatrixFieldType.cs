@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     ///  Matrix Field Type
     ///  Value stored as AttributeMatrix.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MATRIX )]
     public class MatrixFieldType : FieldType, IEntityFieldType

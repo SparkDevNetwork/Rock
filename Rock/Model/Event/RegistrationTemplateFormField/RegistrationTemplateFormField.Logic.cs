@@ -95,6 +95,21 @@ namespace Rock.Model
                 return;
             }
 
+            if ( this.AttributeId.HasValue )
+            {
+                // If linked to an attribute, check that the attribute exists and IsActive.
+                if ( this.Attribute != null && !this.Attribute.IsActive )
+                {
+                    return;
+                }
+
+                var attribute = AttributeCache.Get( this.AttributeId.Value );
+                if ( attribute == null || !attribute.IsActive )
+                {
+                    return;
+                }
+            }
+
             // Find or add the parent form's collection.
             missingFieldsByFormId.TryGetValue( this.RegistrationTemplateFormId, out Dictionary<int, string> formFields );
             if ( formFields == null )

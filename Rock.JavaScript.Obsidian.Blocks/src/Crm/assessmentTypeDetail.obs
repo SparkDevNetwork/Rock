@@ -71,7 +71,8 @@
         "isActive",
         "minimumDaysToRetake",
         "requiresRequest",
-        "title"
+        "title",
+        "validDuration"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(assessmentTypeEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -122,10 +123,6 @@
     const options = computed((): AssessmentTypeDetailOptionsBag => {
         return config.options ?? {};
     });
-
-    // #endregion
-
-    // #region Functions
 
     // #endregion
 

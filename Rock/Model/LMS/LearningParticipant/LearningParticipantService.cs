@@ -63,7 +63,8 @@ namespace Rock.Model
         {
             errorKey = string.Empty;
 
-            if ( learningClass.LearningSemester.EnrollmentCloseDate.HasValue && learningClass.LearningSemester.EnrollmentCloseDate.Value.IsPast() )
+            if ( learningClass.LearningSemester?.EnrollmentCloseDate != null
+                && learningClass.LearningSemester.EnrollmentCloseDate.Value.IsPast() )
             {
                 errorKey = ErrorKey.ENROLLMENT_CLOSED;
                 return false;

@@ -155,7 +155,7 @@ namespace Rock.Model
         /// </summary>
         public AdaptiveMessageCategoryConfiguration()
         {
-            this.HasRequired( a => a.AdaptiveMessage ).WithMany( a => a.Categories ).HasForeignKey( a => a.AdaptiveMessageId );
+            this.HasRequired( a => a.AdaptiveMessage ).WithMany( a => a.AdaptiveMessageCategories ).HasForeignKey( a => a.AdaptiveMessageId );
             this.HasRequired( a => a.Category ).WithMany();
         }
     }

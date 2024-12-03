@@ -357,7 +357,7 @@ namespace Rock.Model
             {
                 return new List<ChatCompletionsRequestMessage>
                 {
-                    new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.System, Content = "You're a helpful church assistant. Please determine if the note delimited by ```Note Text``` should be approved based on the approval guidance delimited by ```Approval Guidance```. Please answer with only true to approve or false to not approve." },
+                    new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.System, Content = "Please determine if the note delimited by ```Note Text``` should be approved based on the approval guidance delimited by ```Approval Guidance```. Please answer with only true to approve or false to not approve." },
                     new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.User, Content = $@"
 ```Approval Guidance```
 {AIApprovalGuidelines}

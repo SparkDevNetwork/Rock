@@ -268,7 +268,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningSemester.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningSemester.FriendlyTypeName}." );
                 return false;
             }
 

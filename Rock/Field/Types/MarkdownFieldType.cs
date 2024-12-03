@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to edit text in Markdown format and rendered as processed Markdown
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MARKDOWN )]
     public class MarkdownFieldType : FieldType

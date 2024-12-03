@@ -30,5 +30,10 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionList
         /// Gets or sets a list of students for the class being viewed.
         /// </summary>
         public List<ListItemBag> Students { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the current person is authorized to view grades.
+        /// </summary>
+        public bool CanViewGrades { get; set; }
     }
 }

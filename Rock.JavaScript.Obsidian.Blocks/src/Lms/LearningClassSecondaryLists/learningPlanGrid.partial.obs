@@ -29,7 +29,7 @@
                 field="assignTo"
                 :filter="pickExistingValueFilter"
                 width="130px"
-                visiblePriority="xs">
+                visiblePriority="sm">
             <template #format="{ row }">
                 <span :class="assignToIcons[row.assignTo] + ' ml-4'" :style="'color: ' + assignToColors[row.assignTo]"></span>
             </template>
@@ -64,7 +64,7 @@
                 field="completions"
                 :filter="numberValueFilter"
                 :filterValue="getCompletionsRowValue"
-                visiblePriority="sm">
+                visiblePriority="md">
             <template #format="{ row }">
                 <span v-html="getCompletionsHtml(row)"></span>
             </template>

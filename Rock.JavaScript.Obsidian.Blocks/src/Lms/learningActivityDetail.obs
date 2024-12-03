@@ -16,7 +16,7 @@
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="Activity"
                  :isBadgesVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  :footerSecondaryActions="footerSecondaryActions"
                  :isEditVisible="isEditable"
                  @cancelEdit="onCancelEdit"
@@ -71,6 +71,7 @@
     import { NavigationUrlKey } from "./LearningActivityDetail/types.partial";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { DueDateChangeType } from "@Obsidian/Enums/Lms/dueDateChangeType";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const config = useConfigurationValues<DetailBlockBox<LearningActivityBag, LearningActivityDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -108,10 +109,10 @@
     // and prompt the individual to confirm the change
     // as well the method for updating (Due Dates only).
     const originalDueDateCriteria = computed(() => learningActivityViewBag.value?.dueDateCriteria);
-    const originalDueDateDefault = computed(() => learningActivityViewBag.value?.dueDateDefault);
+    const originalDueDateDefault = computed(() => RockDateTime.parseISO(learningActivityViewBag.value?.dueDateDefault ?? ""));
     const originalDueDateOffset = computed(() => learningActivityViewBag.value?.dueDateOffset);
     const originalAvailabilityCriteria = computed(() => learningActivityViewBag.value?.availabilityCriteria);
-    const originalAvailableDateDefault = computed(() => learningActivityViewBag.value?.availableDateDefault);
+    const originalAvailableDateDefault = computed(() => RockDateTime.parseISO(learningActivityViewBag.value?.availableDateDefault ?? ""));
     const originalAvailableDateOffset = computed(() => learningActivityViewBag.value?.availableDateOffset);
 
     /**
@@ -172,7 +173,7 @@
 
         const secondaryActions: PanelAction[] = [];
 
-        if (isEditable) {
+        if (isEditable.value === true) {
             secondaryActions.push({
                 iconCssClass: "fa fa-copy",
                 title: "Copy Activity",
@@ -250,16 +251,22 @@
     }
 
     const hasAvailabilityChanges = computed((): boolean => {
+        const currentDateMs = RockDateTime.parseISO(learningActivityEditBag.value?.bag?.availableDateDefault ?? "")?.toMilliseconds() ?? 0;
+        const originalDateMs = originalAvailableDateDefault.value?.date.toMilliseconds() ?? 0;
+
         return !isNewActivity
             && (learningActivityEditBag.value?.bag?.availabilityCriteria !== originalAvailabilityCriteria.value
-                || learningActivityEditBag.value?.bag?.availableDateDefault !== originalAvailableDateDefault.value
+                || currentDateMs !== originalDateMs
                 || learningActivityEditBag.value?.bag?.availableDateOffset !== originalAvailableDateOffset.value);
     });
 
     const hasDueDateChanges = computed((): boolean => {
+        const currentDateMs = RockDateTime.parseISO(learningActivityEditBag.value?.bag?.dueDateDefault ?? "")?.toMilliseconds() ?? 0;
+        const originalDateMs = originalDueDateDefault.value?.date.toMilliseconds() ?? 0;
+
         return !isNewActivity
             && (learningActivityEditBag.value?.bag?.dueDateCriteria !== originalDueDateCriteria.value
-                || learningActivityEditBag.value?.bag?.dueDateDefault !== originalDueDateDefault.value
+                || currentDateMs !== originalDateMs
                 || learningActivityEditBag.value?.bag?.dueDateOffset !== originalDueDateOffset.value);
     });
 

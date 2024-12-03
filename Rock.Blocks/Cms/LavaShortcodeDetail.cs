@@ -140,25 +140,28 @@ namespace Rock.Blocks.Cms
 
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
-
             entity.LoadAttributes( rockContext );
 
             if ( entity.Id != 0 )
             {
                 // Existing entity was found, prepare for view mode by default.
-                if ( isViewable )
+                if ( box.IsEditable )
+                {
+                    box.Entity = GetEntityBagForEdit( entity );
+                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                }
+                else if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( Snippet.FriendlyTypeName );
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( LavaShortcode.FriendlyTypeName );
                 }
             }
             else
             {
-                // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
@@ -166,7 +169,7 @@ namespace Rock.Blocks.Cms
                 }
                 else
                 {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Snippet.FriendlyTypeName );
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( LavaShortcode.FriendlyTypeName );
                 }
             }
         }
