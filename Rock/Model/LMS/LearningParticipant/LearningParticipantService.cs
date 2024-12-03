@@ -123,7 +123,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets a list of <see cref="LearningActivityCompletion" /> for the specified <paramref name="activityId"/>.
         /// </summary>
-        /// <param name="activityId">The identifier of the <see cref="LearningActivity"/> for which to retreive the list of activity completions.</param>
+        /// <param name="activityId">The identifier of the <see cref="LearningActivity"/> for which to retrieve the list of activity completions.</param>
         /// <returns>A <c>Queryable</c> of LearningActivityCompletion for the specified <see cref="LearningActivity"/> identifier.</returns>
         public IQueryable<LearningActivityCompletion> GetActivityCompletions( int activityId )
         {
@@ -324,7 +324,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets a list of <see cref="LearningParticipant">Participants</see> for a specified <see cref="LearningClass"/>
         /// </summary>
-        /// <param name="classId">The identifier of the class for which to retreive participants.</param>
+        /// <param name="classId">The identifier of the class for which to retrieve participants.</param>
         /// <param name="includeGradingScales">Whether to include the list of <see cref="LearningGradingSystemScale"/> for the course.</param>
         /// <returns>Queryable of LearningParticipants.</returns>
         public IQueryable<LearningParticipant> GetParticipants( int classId, bool includeGradingScales = false )
@@ -357,7 +357,7 @@ namespace Rock.Model
         /// Gets a list of <see cref="LearningActivity">LearningActivities</see> matching the specified <paramref name="classId">LearningClassId</paramref>.
         /// Includes the <see cref="LearningActivityCompletion">LearningActivityCompletions</see> the specified <paramref name="personId"/>.
         /// </summary>
-        /// <param name="classId">The identifier of the <see cref="LearningClass"/> for which to retreive activities.</param>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> for which to retrieve activities.</param>
         /// <param name="personId">The person for whom to include <see cref="LearningActivityCompletion"/> records.</param>
         /// <param name="learningActivityId">The identifier of the <see cref="LearningActivity"/> to get the completion for.</param>
         /// <returns>A <c>Queryable</c> of LearningActivity for the specified LearningClass identifier.</returns>
@@ -404,7 +404,7 @@ namespace Rock.Model
         /// Gets a list of <see cref="LearningActivityCompletion" /> for all activities in the specified <paramref name="classId">LearningClassId</paramref>.
         /// Includes the <see cref="LearningActivityCompletion">LearningActivityCompletions</see> the specified <paramref name="personId"/>.
         /// </summary>
-        /// <param name="classId">The identifier of the <see cref="LearningClass"/> for which to retreive activities.</param>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> for which to retrieve activities.</param>
         /// <param name="personId">The person for whom to include <see cref="LearningActivityCompletion"/> records.</param>
         /// <returns>A <c>Queryable</c> of LearningActivityCompletion for the specified LearningClass identifier.</returns>
         public List<LearningActivityCompletion> GetStudentLearningPlan( int classId, int personId )
@@ -427,16 +427,25 @@ namespace Rock.Model
         /// If a the <see cref="LearningParticipant"/> doesn't have a persisted <see cref="LearningActivityCompletion" /> then a new instance is generated 
         /// (but not tracked) with default values.
         /// </summary>
-        /// <param name="student">The<see cref="LearningParticipant"/> for which to retreive activities.</param>
+        /// <remarks>
+        /// If a student has completed the class any <see cref="LearningActivity"/> records created after that
+        /// <see cref="LearningParticipant.LearningCompletionDateTime"/> will be excluded from the learning plan.
+        /// </remarks>
+        /// <param name="student">The<see cref="LearningParticipant"/> for which to retrieve activities.</param>
         /// <returns>A <c>Queryable</c> of LearningActivityCompletions - one for each <see cref="LearningActivity"/> in the class.</returns>
         private List<LearningActivityCompletion> GetStudentLearningPlan( LearningParticipant student )
         {
-            // Get all the activities for this class.
+            // Get the activities for this class
+            // excluding those created after a student completed.
             var activities = Queryable()
                 .Include( p => p.LearningClass )
                 .Where( p => p.Id == student.Id )
                 .SelectMany( p => p.LearningClass.LearningActivities )
-                .ToList();
+                .ToList()
+                .Where( c =>
+                    !student.LearningCompletionDateTime.HasValue
+                    || !c.CreatedDateTime.HasValue
+                    || c.CreatedDateTime <= student.LearningCompletionDateTime );
 
             // Get any of the completions that exist for this participant.
             var existingCompletions = Queryable()

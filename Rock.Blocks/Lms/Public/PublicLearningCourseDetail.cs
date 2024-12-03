@@ -280,7 +280,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                                     {% endif %}
 
                                     <div class=""text-muted"">
-                                        <p class=""text-bold mb-0"">{{ 'Instructor' | PluralizeForQuantity:facilitatorCount
+                                        <p class=""text-bold mb-0"">{{ 'Facilitator' | PluralizeForQuantity:facilitatorCount
                                             }}:</p>
                                         <p>{{ facilitators }}</p>
                                     </div>

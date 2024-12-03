@@ -109,7 +109,7 @@
      */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", `0?returnUrl=${encodeURIComponent(window.location.href)}`);
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", `0?autoEdit=true&returnUrl=${encodeURIComponent(window.location.href)}`);
         }
     }
 

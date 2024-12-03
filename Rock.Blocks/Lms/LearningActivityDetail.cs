@@ -64,7 +64,6 @@ namespace Rock.Blocks.Lms
             public const string LearningProgramId = "LearningProgramId";
             public const string LearningCourseId = "LearningCourseId";
             public const string LearningClassId = "LearningClassId";
-            public const string CloneId = "CloneId";
             public const string AutoEdit = "autoEdit";
             public const string ReturnUrl = "returnUrl";
         }

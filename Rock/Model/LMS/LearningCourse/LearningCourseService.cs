@@ -86,20 +86,7 @@ namespace Rock.Model
                     CategoryColor = c.Category.HighlightColor,
                     CourseRequirements = c.LearningCourseRequirements.ToList(),
                     ImageFileGuid = c.ImageBinaryFile.Guid,
-                    Program = c.LearningProgram,
-
-                    // Limit the learning classes to only
-                    // active and (optionally) only public.
-                    NextSemester = c.LearningClasses
-                        .Where( c2 => c2.IsActive && ( !publicOnly || c2.IsPublic ) )
-                        .Select( cl => cl.LearningSemester )
-                        .FirstOrDefault( s =>
-                            ( s.EnrollmentCloseDate == null || s.EnrollmentCloseDate >= now ) &&
-                            ( s.StartDate == null || s.StartDate >= now ) &&
-                            ( !semesterStartFrom.HasValue || s.StartDate >= semesterStartFrom.Value ) &&
-                            ( !semesterStartTo.HasValue || s.StartDate <= semesterStartTo.Value ) &&
-                            s.LearningClasses.Any( sc => sc.LearningCourseId == c.Id )
-                        )
+                    Program = c.LearningProgram
                 } )
                 .FirstOrDefault();
 
@@ -117,9 +104,14 @@ namespace Rock.Model
                 };
             }
 
+            // Get all Semesters for the course.
+            // Include the active classes (and optionally public only) -
+            // Ensure only classes that are under their 'MaxStudents' are included.
             var nextSemesterQuery = new LearningClassService( rockContext )
                 .Queryable()
-                .Where( c => c.LearningCourseId == course.Entity.Id )
+                .Where( c => c.LearningCourseId == courseId )
+                .Where( c => c.IsActive && ( !publicOnly || c.IsPublic ) )
+                .Where( c => !c.LearningCourse.MaxStudents.HasValue || c.LearningParticipants.Count( p => !p.GroupRole.IsLeader ) < c.LearningCourse.MaxStudents )
                 .Select( c => c.LearningSemester );
 
             if ( semesterStartFrom.HasValue )
@@ -140,7 +132,11 @@ namespace Rock.Model
             // Remove any related classes that don't belong to this course.
             if ( course.NextSemester != null )
             {
-                course.NextSemester.LearningClasses = course.NextSemester?.LearningClasses?.Where( c => c.LearningCourseId == courseId ).ToList();
+                course.NextSemester.LearningClasses = course.NextSemester?.LearningClasses?
+                    .Where( c => c.LearningCourseId == courseId )
+                    .Where( c => c.IsActive && ( !publicOnly || c.IsPublic ) )
+                    .Where( c => !c.LearningCourse.MaxStudents.HasValue || c.LearningParticipants.Count( p => !p.GroupRole.IsLeader ) < c.LearningCourse.MaxStudents )
+                    .ToList();
             }
 
             course.UnmetPrerequisites = GetUnmetCourseRequirements( personId, course.CourseRequirements );
@@ -184,12 +180,16 @@ namespace Rock.Model
                             2 // Fail
                         );
 
-            //  Get all Semesters for the program.
-            //  Include the classes for joining to the Course.
-            var semesters = new LearningSemesterService( rockContext )
+            // Get all Semesters for the program.
+            // Include the active (optionally public only) classes for joining to the Course.
+            // Ensure only classes that are under their 'MaxStudents' are included.
+            var semesters = new LearningClassService( rockContext )
                 .Queryable()
-                .Include( s => s.LearningClasses )
-                .Where( s => s.LearningProgramId == programId );
+                .Include( c => c.LearningSemester )
+                .Where( c => c.LearningSemester.LearningProgramId == programId )
+                .Where( c => ( c.IsPublic || !publicOnly ) && c.IsActive )
+                .Where( c => !c.LearningCourse.MaxStudents.HasValue || c.LearningParticipants.Count( p => !p.GroupRole.IsLeader ) < c.LearningCourse.MaxStudents )
+                .Select( c => c.LearningSemester );
 
             var unmetPrerequisiteTypes = new List<RequirementType> { RequirementType.Prerequisite, RequirementType.Equivalent };
             var now = RockDateTime.Now;
@@ -212,7 +212,7 @@ namespace Rock.Model
                     // Get the person's completion status for this course.
                     LearningCompletionStatus = !personId.HasValue ?
                         null :
-                        (LearningCompletionStatus?)orderedPersonCompletions
+                        ( LearningCompletionStatus? ) orderedPersonCompletions
                         .FirstOrDefault( p => p.LearningClass.LearningCourseId == c.Id )
                         .LearningCompletionStatus,
 
@@ -222,7 +222,7 @@ namespace Rock.Model
                         s.StartDate >= now &&
                         ( !semesterStartFrom.HasValue || s.StartDate >= semesterStartFrom.Value ) &&
                         ( !semesterStartTo.HasValue || s.StartDate <= semesterStartTo.Value ) &&
-                        s.LearningClasses.Any( sc => sc.LearningCourseId == c.Id && sc.IsActive && ( !publicOnly || sc.IsPublic ) )
+                        s.LearningClasses.Any( sc => sc.LearningCourseId == c.Id )
                         ),
 
                     // Only Prerequisites/Equivalents where the course completions for the student aren't 'Passed'.
@@ -237,7 +237,6 @@ namespace Rock.Model
                         .ToList()
                 } )
                 .ToList()
-                // Sort in memory (after calling ToList).
                 .OrderBy( c => c.Entity.Order )
                 .ThenBy( c => c.Entity.Id );
 
@@ -381,7 +380,7 @@ namespace Rock.Model
             public List<LearningCourseRequirement> CourseRequirements { get; set; }
 
             /// <summary>
-            /// Gets or sets the sescription as an html string.
+            /// Gets or sets the description as an HTML string.
             /// </summary>
             public string DescriptionAsHtml { get; set; }
 
