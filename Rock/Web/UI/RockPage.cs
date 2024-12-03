@@ -4643,6 +4643,7 @@ Sys.Application.add_load(function () {
             {
                 var obsidianPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/Obsidian" );
                 var pluginsPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/Plugins" );
+                var now = RockDateTime.Now;
 
                 // Find the last date any obsidian file was modified.
                 var lastWriteTime = Directory.EnumerateFiles( obsidianPath, "*.js", SearchOption.AllDirectories )
@@ -4660,10 +4661,15 @@ Sys.Application.add_load(function () {
                     } )
                     .Where( d => d.HasValue )
                     .Select( d => ( DateTime? ) RockDateTime.ConvertLocalDateTimeToRockDateTime( d.Value ) )
+                    // This is an attempt to fix random issues where people have the
+                    // JS file cached in the browser. A theory is that some JS file
+                    // has a future date time, so even after an upgrade the same
+                    // fingerprint value is used. Ignore any dates in the future.
+                    .Where( d => d < now )
                     .OrderByDescending( d => d )
                     .FirstOrDefault();
 
-                _obsidianFingerprint = ( lastWriteTime ?? RockDateTime.Now ).Ticks;
+                _obsidianFingerprint = ( lastWriteTime ?? now ).Ticks;
 
                 // Check if we are in debug mode and if so enable the watchers.
                 var cfg = ( CompilationSection ) ConfigurationManager.GetSection( "system.web/compilation" );
