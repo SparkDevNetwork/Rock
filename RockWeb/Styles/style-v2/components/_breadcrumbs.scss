@@ -21,7 +21,7 @@
 
     + li:before {
       padding:  0 var(--spacing-tiny);
-      color:    var(--color-primary);
+      color:    var(--color-link-shade);
       content:  "/\00a0"; // Unicode space added since inline-block means non-collapsing white-space
     }
   }
