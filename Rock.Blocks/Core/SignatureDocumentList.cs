@@ -190,7 +190,8 @@ namespace Rock.Blocks.Core
                 }
             }
 
-            qry = qry.ToList().Where( d => d.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ).AsQueryable();
+            List<int> authorizedTemplates = qry.Select( d => d.SignatureDocumentTemplate ).ToList().Where( dt => dt.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ).Select( dt => dt.Id ).ToList();
+            qry = qry.Where( d => authorizedTemplates.Contains( d.SignatureDocumentTemplateId ) ).AsQueryable();
 
             return qry;
         }
