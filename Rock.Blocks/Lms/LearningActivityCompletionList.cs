@@ -153,8 +153,9 @@ namespace Rock.Blocks.Lms
         protected override IQueryable<LearningActivityCompletion> GetListQueryable( RockContext rockContext )
         {
             var activityId = RequestContext.PageParameterAsId( PageParameterKey.LearningActivityId );
-            return new LearningParticipantService( rockContext )
-                .GetActivityCompletions( activityId );
+            return activityId > 0 ?
+                new LearningParticipantService( rockContext ).GetActivityCompletions( activityId ) :
+                default;
         }
 
         /// <inheritdoc/>
@@ -169,7 +170,8 @@ namespace Rock.Blocks.Lms
         protected override GridBuilder<LearningActivityCompletion> GetGridBuilder()
         {
             var learningClass = new LearningClassService( RockContext ).Get( PageParameter(PageParameterKey.LearningClassId ) );
-            var canViewGrades = learningClass.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
+
+            var canViewGrades = learningClass != null && learningClass.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
 
             return new GridBuilder<LearningActivityCompletion>()
                 .WithBlock( this )

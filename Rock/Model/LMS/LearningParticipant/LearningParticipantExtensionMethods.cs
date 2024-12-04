@@ -42,5 +42,18 @@ namespace Rock.Model
         {
             return participants.Where( p => p.GroupRole.IsLeader );
         }
+
+        /// <summary>
+        /// Filters the Queryable of participants to facilitators or the specified person.
+        /// </summary>
+        /// <param name="participants">The participant queryable to filter</param>
+        /// <param name="personId">The identifier of the <see cref="Person"/> to include whether a facilitator or student.</param>
+        /// <returns>An IQueryable of participants filtered to facilitators or the specified person.</returns>
+        public static IQueryable<LearningParticipant> AreFacilitatorsOrPerson( this IQueryable<LearningParticipant> participants, int? personId )
+        {
+            return personId.HasValue ?
+                participants.Where( p => p.GroupRole.IsLeader || p.PersonId == personId ) :
+                participants.AreFacilitators();
+        }
     }
 }

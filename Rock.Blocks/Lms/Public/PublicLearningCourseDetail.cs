@@ -17,13 +17,11 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Model;
-using Rock.Utility;
 using Rock.ViewModels.Blocks.Lms.PublicLearningCourseDetail;
 using Rock.Web;
 using Rock.Web.UI.Controls;
@@ -33,13 +31,11 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays the details for a public learning course.
     /// </summary>
-
     [DisplayName( "Public Learning Course Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular public learning course." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
-
 
     [CodeEditorField( "Lava Template",
         Key = AttributeKey.CourseDetailTemplate,
@@ -85,7 +81,7 @@ namespace Rock.Blocks.Lms
         private static class AttributeKey
         {
             public const string CourseEnrollmentPage = "CourseEnrollmentPage";
-            public const string CourseDetailTemplate = "CourseListTemplate";
+            public const string CourseDetailTemplate = "CourseDetailTemplate";
             public const string ClassWorkspacePage = "DetailPage";
             public const string NextSessionDateRange = "NextSessionDateRange";
             public const string PublicOnly = "PublicOnly";
@@ -382,74 +378,16 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
             var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
 
             var course = includeNextSessionFiltering ?
-                learningCourseService.GetPublicCourseDetails( courseId, currentPerson?.Id, publicOnly, semesterDateRange.Start, semesterDateRange.End ) :
-                learningCourseService.GetPublicCourseDetails( courseId, currentPerson?.Id, publicOnly );
+                learningCourseService.GetPublicCourseDetails( courseId, currentPerson, publicOnly, semesterDateRange.Start, semesterDateRange.End ) :
+                learningCourseService.GetPublicCourseDetails( courseId, currentPerson, publicOnly );
 
             course.DescriptionAsHtml = new StructuredContentHelper( course.Entity?.Description ?? string.Empty ).Render();
 
-            var enrolledOrNextClassIdKey = course.MostRecentParticipation?.LearningClassId > 0 ?
-                IdHasher.Instance.GetHash( course.MostRecentParticipation.LearningClassId ) :
-                course.NextSemester?.LearningClasses?.FirstOrDefault()?.IdKey;
-            var queryParams = new Dictionary<string, string>
-            {
-                [PageParameterKey.LearningProgramId] = course.Program.IdKey,
-                [PageParameterKey.LearningCourseId] = course.Entity.IdKey,
-                ["LearningClassId"] = enrolledOrNextClassIdKey
-            };
-
-            course.ClassWorkspaceLink = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, queryParams );
-            course.CourseEnrollmentLink = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
+            AddClassSpecificProperties( course ); 
 
             var mergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
             mergeFields.Add( "Course", course );
             mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus );
-
-            if ( currentPerson != null )
-            {
-                var learningClassService = new LearningClassService( RockContext );
-                var learningClassId = learningClassService.GetSelect( enrolledOrNextClassIdKey, c => c.Id );
-
-                var learningClass =
-                   learningClassId == 0 ?
-                   default :
-                   learningClassService
-                   .Queryable()
-                   .Include( c => c.LearningCourse )
-                  .Include( c => c.LearningCourse.LearningProgram )
-                  .Include( c => c.LearningCourse.ImageBinaryFile )
-                  .Include( c => c.LearningCourse.LearningCourseRequirements )
-                  .Include( c => c.GroupLocations )
-                  .Include( c => c.Schedule )
-                  .Include( c => c.LearningSemester )
-                  .Include( c => c.LearningGradingSystem )
-                  .FirstOrDefault( c => c.Id == learningClassId );
-
-                // Allow historical access if the course allows it and the class is not over.
-                var hasSemester = learningClass.LearningSemester != null;
-                var canShowHistoricalAccess = learningClass.LearningCourse.AllowHistoricalAccess
-                    && hasSemester
-                    && ( !learningClass.LearningSemester.EndDate.HasValue
-                    || learningClass.LearningSemester.EndDate.Value.IsFuture() );
-
-                mergeFields.Add( "CanShowHistoricalAccess", canShowHistoricalAccess );
-
-                var unmetRequirements =
-                learningClassId == 0 ?
-                default :
-                new LearningCourseService( RockContext )
-                .GetUnmetCourseRequirements( currentPerson.Id, learningClass.LearningCourse.LearningCourseRequirements );
-
-                if ( !new LearningParticipantService( RockContext ).CanEnroll( learningClass, currentPerson, unmetRequirements, out var errorMessage ) )
-                {
-                    // Don't treat already enrolled as an error for this block.
-                    // They should be able to navigate to the workspace from here.
-                    var alreadyEnrolledErrorKey = "already_enrolled";
-                    if ( !errorMessage.Equals( alreadyEnrolledErrorKey, System.StringComparison.OrdinalIgnoreCase ) )
-                    {
-                        mergeFields.Add( "ErrorKey", errorMessage );
-                    }
-                }
-            }
 
             var template = GetAttributeValue( AttributeKey.CourseDetailTemplate ) ?? string.Empty;
             return template.ResolveMergeFields( mergeFields );
@@ -476,6 +414,29 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                     breadCrumb
                 }
             };
+        }
+
+        /// <summary>
+        /// Adds class specific properties that require configuration from the block.
+        /// </summary>
+        /// <param name="course"></param>
+        private void AddClassSpecificProperties( LearningCourseService.PublicLearningCourseDetailBag course )
+        {
+            foreach ( var semester in course.Semesters )
+            {
+                foreach ( var availableClass in semester.AvailableClasses )
+                {
+                    var queryParams = new Dictionary<string, string>
+                    {
+                        [PageParameterKey.LearningProgramId] = course.Program.IdKey,
+                        [PageParameterKey.LearningCourseId] = course.Entity.IdKey,
+                        ["LearningClassId"] = availableClass.Entity.IdKey
+                    };
+
+                    availableClass.EnrollmentLink = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
+                    availableClass.WorkspaceLink = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, queryParams );
+                }
+            }
         }
 
         #endregion

@@ -234,8 +234,7 @@
                         </div>
 
                         <div class="facilitator-comments-container" v-if="viewingCompletionBag.facilitatorComment">
-                            <NotificationBox
-                                             alertType="default">
+                            <NotificationBox alertType="info">
                                 <div class="facilitator-comment-label">
                                     Facilitator Comment:
                                 </div>

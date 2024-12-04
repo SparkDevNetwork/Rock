@@ -254,7 +254,7 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Provide html to the block for it's initial rendering.
+        /// Provide HTML to the block for it's initial rendering.
         /// </summary>
         /// <returns>The HTML content to initially render.</returns>
         protected override string GetInitialHtmlContent()
@@ -281,8 +281,6 @@ namespace Rock.Blocks.Lms
                 // If there are unmet requirements include the link for enrollment to that course.
                 var prerequisiteCourseIdKey = course.UnmetPrerequisites?.FirstOrDefault()?.IdKey ?? string.Empty;
                 course.CourseDetailsLink = courseDetailUrlTemplate.Replace( "((Key))", course.Entity.IdKey );
-                course.PrerequisiteEnrollmentLink = courseEnrollmentUrlTemplate.Replace( "((Key))", prerequisiteCourseIdKey );
-                course.CourseEnrollmentLink = courseEnrollmentUrlTemplate.Replace( "((Key))", course.Entity.IdKey );
             }
 
             var mergeFields = this.RequestContext.GetCommonMergeFields();
