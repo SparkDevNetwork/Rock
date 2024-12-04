@@ -142,7 +142,7 @@ export const ConfigurationComponent = defineComponent({
     <NumberBox
         v-model="repeatColumns"
         label="Columns"
-        help="Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no enforced upper limit however the block this control is used in might add contraints due to available space." />
+        help="Select how many columns the list should use before going to the next row. If blank or 0 then 3 columns will be displayed. There is no enforced upper limit however the block this control is used in might add contraints due to available space." />
 </div>
 `
 });
