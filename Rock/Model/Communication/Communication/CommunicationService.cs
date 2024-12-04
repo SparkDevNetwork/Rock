@@ -595,33 +595,30 @@ namespace Rock.Model
                 //      )
                 //  )
                 queuedCommunicationsQry = queuedCommunicationsQry.Where( c =>
-                    // First, try to use the reviewed date to get the queued communications.
+
+                    // First, try to use the future send date to get the queued communications.
                     (
-                        c.ReviewedDateTime.HasValue
+                        c.FutureSendDateTime.HasValue
+                        && c.FutureSendDateTime.Value >= earliestDateTime
+                        && c.FutureSendDateTime.Value <= currentDateTime
+                    )
+
+                    // Next, try to use the reviewed date to get the queued communications.
+                    || (
+                        !c.FutureSendDateTime.HasValue
+                        && c.ReviewedDateTime.HasValue
                         && c.ReviewedDateTime.Value >= earliestDateTime
                         && c.ReviewedDateTime.Value <= latestDateTime
-                        && (
-                            !c.FutureSendDateTime.HasValue
-                            || (
-                                c.FutureSendDateTime.Value >= earliestDateTime
-                                && c.FutureSendDateTime.Value <= currentDateTime
-                            )
-                        )
                     )
-                    // Next, try to use the created date to get the queued communications.
+
+                    // Finally, try to use the created date to get the queued communications.
                     // This is for communications that are created by legacy plugins that have not switched to using reviewed date.
                     || (
-                        !c.ReviewedDateTime.HasValue
+                        !c.FutureSendDateTime.HasValue
+                        && !c.ReviewedDateTime.HasValue
                         && c.CreatedDateTime.HasValue
                         && c.CreatedDateTime.Value >= earliestDateTime
                         && c.CreatedDateTime.Value <= latestDateTime
-                        && (
-                            !c.FutureSendDateTime.HasValue
-                            || (
-                                c.FutureSendDateTime.Value >= earliestDateTime
-                                && c.FutureSendDateTime.Value <= currentDateTime
-                            )
-                        )
                     )
                 );
             }
