@@ -248,6 +248,12 @@ namespace Rock.CheckIn.v2
         public virtual PhoneSearchMode PhoneSearchType { get; }
 
         /// <summary>
+        /// The unique identifier of the content channel that will provide
+        /// the promotions displayed on the welcome screen.
+        /// </summary>
+        public virtual Guid? PromotionContentChannelGuid { get; }
+
+        /// <summary>
         /// Gets the kiosk refresh interval. This is used by some kiosks to
         /// determine how often, in seconds, they will check with the server
         /// to see if any configuration data has changed.
@@ -631,6 +637,7 @@ namespace Rock.CheckIn.v2
             MaximumPhoneNumberLength = groupTypeCache.GetAttributeValue( "core_checkin_MaximumPhoneSearchLength" ).AsIntegerOrNull();
             MinimumPhoneNumberLength = groupTypeCache.GetAttributeValue( "core_checkin_MinimumPhoneSearchLength" ).AsIntegerOrNull();
             PhoneSearchType = ( PhoneSearchMode ) groupTypeCache.GetAttributeValue( "core_checkin_PhoneSearchType" ).AsInteger();
+            PromotionContentChannelGuid = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_PROMOTIONS_CONTENT_CHANNEL ).AsGuidOrNull();
             RefreshInterval = groupTypeCache.GetAttributeValue( "core_checkin_RefreshInterval" ).AsInteger();
             PhoneNumberPattern = groupTypeCache.GetAttributeValue( "core_checkin_RegularExpressionFilter" ) ?? string.Empty;
             PhoneNumberRegex = GetRegexOrNull( PhoneNumberPattern );

@@ -26,6 +26,10 @@
                     <Column name="classification">
                         <template #format="{ row }">
                             {{ row.isAdult ? "Adult" : "Child" }}
+                            <template v-if="shouldShowRelationship(row)">
+                                <br>
+                                {{ row.relationshipToAdult.text }}
+                            </template>
                         </template>
                     </Column>
 
@@ -84,7 +88,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { alert, confirm, showDialog } from "@Obsidian/Utility/dialogs";
-    import { RegistrationScreen, RegistrationScreenData, KioskButton } from "./types.partial";
+    import { RegistrationScreen, RegistrationScreenData, KioskButton, AugmentedRegistrationPersonBag } from "./types.partial";
     import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
@@ -244,6 +248,26 @@
         });
 
         return result === "yes";
+    }
+
+    /**
+     * Determines if the relationship should be displayed below the Adult/Child
+     * designation.
+     *
+     * @param row The row object that is being displayed.
+     * @returns `true` if the relationship should be shown; otherwise `false`.
+     */
+    function shouldShowRelationship(row: AugmentedRegistrationPersonBag): boolean {
+        if (row.isAdult) {
+            return false;
+        }
+
+        if (!row.relationshipToAdult) {
+            return false;
+        }
+
+        // Don't show the relationship if it is the same as the text above it.
+        return row.relationshipToAdult.text !== "Child";
     }
 
     // #endregion

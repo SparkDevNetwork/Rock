@@ -78,6 +78,7 @@
 
                                     <Rock:RockListBox ID="listboxAchievementTypes" runat="server" Label="Achievement Types" Help="Select achievement types that will used for checkin celebrations." />
 
+                                    <Rock:RockDropDownList ID="ddlPromotionsContentChannel" runat="server" Label="Promotions Content Channel" Help="The content channel to use for displaying promotions on the kiosk welcome screen. Only supported by next-gen check-in." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:NumberBox ID="nbAutoSelectDaysBack" runat="server" Label="Auto Select Days Back" MinimumValue="0" NumberType="Integer"

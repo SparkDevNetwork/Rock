@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
+
 {
     /// <summary>
     /// 
@@ -104,13 +105,13 @@ namespace Rock.Model
         /// A collection of <see cref="Rock.Model.Category">Categories</see> that this Content Channel is associated with.
         /// </value>
         [DataMember]
-        public virtual ICollection<Category> Categories
+        public virtual ICollection<AdaptiveMessageCategory> AdaptiveMessageCategories
         {
-            get { return _categories ?? ( _categories = new Collection<Category>() ); }
-            set { _categories = value; }
+            get { return _adaptiveMessageCategories ?? ( _adaptiveMessageCategories = new Collection<AdaptiveMessageCategory>() ); }
+            set { _adaptiveMessageCategories = value; }
         }
 
-        private ICollection<Category> _categories;
+        private ICollection<AdaptiveMessageCategory> _adaptiveMessageCategories;
 
         #endregion Navigation Properties
     }
@@ -127,14 +128,6 @@ namespace Rock.Model
         /// </summary>
         public AdaptiveMessageConfiguration()
         {
-            this.HasMany( a => a.Categories )
-                .WithMany()
-                .Map( a =>
-                {
-                    a.MapLeftKey( "AdaptiveMessageId" );
-                    a.MapRightKey( "CategoryId" );
-                    a.ToTable( "AdaptiveMessageCategory" );
-                } );
         }
     }
 

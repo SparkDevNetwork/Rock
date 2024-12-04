@@ -8,6 +8,7 @@ using Moq;
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
 using Rock.Enums.CheckIn;
+using Rock.Model;
 using Rock.ViewModels.CheckIn;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
@@ -32,7 +33,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
             var minAge = 3;
 
             var filter = CreateGradeAndAgeFilter( null, null, GradeAndAgeMatchingMode.GradeAndAgeMustMatch );
-            var groupOpportunity = CreateGroupOpportunity( null, null, minAge, null, null, null );
+            var groupOpportunity = CreateGroupOpportunity( minAge: minAge );
 
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
@@ -47,7 +48,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
             var minAge = 3;
 
             var filter = CreateGradeAndAgeFilter( null, RockDateTime.Now.AddDays( -365 ) );
-            var groupOpportunity = CreateGroupOpportunity( null, null, minAge, null, null, null );
+            var groupOpportunity = CreateGroupOpportunity( minAge: minAge );
 
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
@@ -62,7 +63,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
             var minAge = 3;
 
             var filter = CreateGradeAndAgeFilter( null, null );
-            var groupOpportunity = CreateGroupOpportunity( null, null, minAge, null, null, null );
+            var groupOpportunity = CreateGroupOpportunity( minAge: minAge );
 
             var isIncluded = filter.IsGroupValid( groupOpportunity );
 
@@ -81,8 +82,8 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
             var birthdate = RockDateTime.Now.AddDays( -1277 ); // 3.5 years old
 
             var filter = CreateGradeAndAgeFilter( minGrade, birthdate, GradeAndAgeMatchingMode.AgeMatchNotRequired );
-            var groupOpportunityByGrade = CreateGroupOpportunity( minGrade, null, null, null, null, null );
-            var groupOpportunityByAge = CreateGroupOpportunity( null, null, minAge, null, null, null );
+            var groupOpportunityByGrade = CreateGroupOpportunity( minGradeOffset: minGrade );
+            var groupOpportunityByAge = CreateGroupOpportunity( minAge: minAge );
             var opportunities = new OpportunityCollection
             {
                 Groups = new List<GroupOpportunity>
@@ -105,8 +106,8 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
             var birthdate = RockDateTime.Now.AddDays( -1277 ); // 3.5 years old
 
             var filter = CreateGradeAndAgeFilter( minGrade, birthdate, GradeAndAgeMatchingMode.PrioritizeGradeOverAge );
-            var groupOpportunityByGrade = CreateGroupOpportunity( minGrade, null, null, null, null, null );
-            var groupOpportunityByAge = CreateGroupOpportunity( null, null, minAge, null, null, null );
+            var groupOpportunityByGrade = CreateGroupOpportunity( minGradeOffset: minGrade );
+            var groupOpportunityByAge = CreateGroupOpportunity( minAge: minAge );
             var opportunities = new OpportunityCollection
             {
                 Groups = new List<GroupOpportunity>
@@ -120,6 +121,56 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 
             Assert.AreEqual( 1, opportunities.Groups.Count );
             Assert.AreSame( groupOpportunityByGrade, opportunities.Groups[0] );
+        }
+
+        [TestMethod]
+        public void FilterGroups_WithPrioritizeGradeOverAge_IncludesGroupsWithDataView()
+        {
+            var minGrade = 3;
+            var birthdate = RockDateTime.Now.AddDays( -1277 ); // 3.5 years old
+
+            var filter = CreateGradeAndAgeFilter( minGrade, birthdate, GradeAndAgeMatchingMode.PrioritizeGradeOverAge );
+            var groupOpportunityByGrade = CreateGroupOpportunity( minGradeOffset: minGrade );
+            var groupOpportunityByDataView = CreateGroupOpportunity( dataViewGuids: new List<Guid> { Guid.NewGuid() } );
+            var opportunities = new OpportunityCollection
+            {
+                Groups = new List<GroupOpportunity>
+                {
+                    groupOpportunityByGrade,
+                    groupOpportunityByDataView
+                }
+            };
+
+            filter.FilterGroups( opportunities );
+
+            Assert.AreEqual( 2, opportunities.Groups.Count );
+            Assert.AreSame( groupOpportunityByGrade, opportunities.Groups[0] );
+            Assert.AreSame( groupOpportunityByDataView, opportunities.Groups[1] );
+        }
+
+        [TestMethod]
+        public void FilterGroups_WithPrioritizeGradeOverAge_IncludesGroupsWithAlreadyEnrolled()
+        {
+            var minGrade = 3;
+            var birthdate = RockDateTime.Now.AddDays( -1277 ); // 3.5 years old
+
+            var filter = CreateGradeAndAgeFilter( minGrade, birthdate, GradeAndAgeMatchingMode.PrioritizeGradeOverAge );
+            var groupOpportunityByGrade = CreateGroupOpportunity( minGradeOffset: minGrade );
+            var groupOpportunityByDataView = CreateGroupOpportunity( attendanceRule: AttendanceRule.AlreadyEnrolledInGroup );
+            var opportunities = new OpportunityCollection
+            {
+                Groups = new List<GroupOpportunity>
+                {
+                    groupOpportunityByGrade,
+                    groupOpportunityByDataView
+                }
+            };
+
+            filter.FilterGroups( opportunities );
+
+            Assert.AreEqual( 2, opportunities.Groups.Count );
+            Assert.AreSame( groupOpportunityByGrade, opportunities.Groups[0] );
+            Assert.AreSame( groupOpportunityByDataView, opportunities.Groups[1] );
         }
 
         #endregion
@@ -160,7 +211,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
                 filter.Person.Person.BirthMonth = filter.Person.Person.BirthDate.Value.Month;
                 filter.Person.Person.BirthDay = filter.Person.Person.BirthDate.Value.Day;
 
-                var tempPerson = new global::Rock.Model.Person
+                var tempPerson = new Person
                 {
                     BirthYear = personBirthdate.Value.Year,
                     BirthMonth = personBirthdate.Value.Month,
@@ -177,12 +228,16 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         /// Creates a group opportunity with the specified birth month range
         /// attribute value.
         /// </summary>
+        /// <param name="minGradeOffset">The minimum grade offset or <c>null</c>.</param>
+        /// <param name="maxGradeOffset">The maximum grade offset or <c>null</c>.</param>
         /// <param name="minAge">The minimum age value or <c>null</c>.</param>
         /// <param name="maxAge">The maximum age value or <c>null</c>.</param>
         /// <param name="minBirthdate">The minimum birthdate value or <c>null</c>.</param>
         /// <param name="maxBirthdate">The maximum birthdate value or <c>null</c>.</param>
+        /// <param name="dataViewGuids">The list of data view unique identifiers configured for this opportunity.</param>
+        /// <param name="attendanceRule">The attendance rule for the area of this opportunity.</param>
         /// <returns>A new instance of <see cref="GroupOpportunity"/>.</returns>
-        private GroupOpportunity CreateGroupOpportunity( int? minGradeOffset, int? maxGradeOffset, decimal? minAge, decimal? maxAge, DateTime? minBirthdate, DateTime? maxBirthdate )
+        private GroupOpportunity CreateGroupOpportunity( int? minGradeOffset = null, int? maxGradeOffset = null, decimal? minAge = null, decimal? maxAge = null, DateTime? minBirthdate = null, DateTime? maxBirthdate = null, List<Guid> dataViewGuids = null, AttendanceRule? attendanceRule = null )
         {
             var groupConfigurationMock = new Mock<GroupConfigurationData>( MockBehavior.Strict );
 
@@ -192,11 +247,17 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
             groupConfigurationMock.Setup( m => m.MaximumAge ).Returns( maxAge );
             groupConfigurationMock.Setup( m => m.MinimumBirthdate ).Returns( minBirthdate );
             groupConfigurationMock.Setup( m => m.MaximumBirthdate ).Returns( maxBirthdate );
+            groupConfigurationMock.Setup( m => m.DataViewGuids ).Returns( dataViewGuids ?? new List<Guid>() );
+
+            var areaConfigurationMock = new Mock<AreaConfigurationData>( MockBehavior.Strict );
+
+            areaConfigurationMock.Setup( m => m.AttendanceRule ).Returns( attendanceRule ?? AttendanceRule.None );
 
             return new GroupOpportunity
             {
                 Id = Guid.NewGuid().ToString(),
-                CheckInData = groupConfigurationMock.Object
+                CheckInData = groupConfigurationMock.Object,
+                CheckInAreaData = areaConfigurationMock.Object,
             };
         }
 

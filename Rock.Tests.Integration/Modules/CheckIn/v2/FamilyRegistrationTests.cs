@@ -260,7 +260,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
                 var deckerFamily = new GroupService( rockContext ).Get( DeckerFamilyGuid );
                 var registrationFamily = registration.GetFamilyBag( deckerFamily );
-                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily );
+                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily, null );
 
                 var result = registration.SaveRegistration( registrationFamily, registrationPeople, null, new List<string>() );
 
@@ -279,7 +279,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
                 var deckerFamily = new GroupService( rockContext ).Get( DeckerFamilyGuid );
                 var registrationFamily = registration.GetFamilyBag( deckerFamily );
-                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily );
+                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily, null );
 
                 var result = registration.SaveRegistration( registrationFamily, registrationPeople, null, new List<string>() );
 
@@ -344,7 +344,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
                 var deckerFamily = new GroupService( rockContext ).Get( DeckerFamilyGuid );
                 var registrationFamily = registration.GetFamilyBag( deckerFamily );
-                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily );
+                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily, null );
 
                 registrationPeople[0].ValidProperties.Remove( nameof( RegistrationPersonBag.Id ) );
                 var expectedError = $"Person is missing required {nameof( RegistrationPersonBag.Id )} property.";
@@ -367,7 +367,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
                 var deckerFamily = new GroupService( rockContext ).Get( DeckerFamilyGuid );
                 var registrationFamily = registration.GetFamilyBag( deckerFamily );
 
-                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily );
+                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily, null );
 
                 registrationPeople[0].ValidProperties.Remove( nameof( RegistrationPersonBag.NickName ) );
                 var expectedError = $"Person is missing required {nameof( RegistrationPersonBag.NickName )} property.";
@@ -389,7 +389,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
                 var deckerFamily = new GroupService( rockContext ).Get( DeckerFamilyGuid );
                 var registrationFamily = registration.GetFamilyBag( deckerFamily );
-                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily );
+                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily, null );
 
                 registrationPeople[0].ValidProperties.Remove( nameof( RegistrationPersonBag.LastName ) );
                 var expectedError = $"Person is missing required {nameof( RegistrationPersonBag.LastName )} property.";
@@ -411,7 +411,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
                 var deckerFamily = new GroupService( rockContext ).Get( DeckerFamilyGuid );
                 var registrationFamily = registration.GetFamilyBag( deckerFamily );
-                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily );
+                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily, null );
 
                 registrationPeople[0].ValidProperties.Remove( nameof( RegistrationPersonBag.IsAdult ) );
                 var expectedError = $"Person is missing required {nameof( RegistrationPersonBag.IsAdult )} property.";
@@ -433,7 +433,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
                 var deckerFamily = new GroupService( rockContext ).Get( DeckerFamilyGuid );
                 var registrationFamily = registration.GetFamilyBag( deckerFamily );
-                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily );
+                var registrationPeople = registration.GetFamilyMemberBags( deckerFamily, null );
 
                 registrationPeople[0].ValidProperties.Remove( nameof( RegistrationPersonBag.RelationshipToAdult ) );
                 var expectedError = $"Person is missing required {nameof( RegistrationPersonBag.RelationshipToAdult )} property.";

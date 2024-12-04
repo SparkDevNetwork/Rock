@@ -722,7 +722,7 @@ namespace Rock.Blocks.Mobile.CheckIn
             }
 
             var registration = new Rock.CheckIn.v2.FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
-            var existingRegistrants = registration.GetFamilyMemberBags( RequestContext.CurrentPerson.PrimaryFamily );
+            var existingRegistrants = registration.GetFamilyMemberBags( RequestContext.CurrentPerson.PrimaryFamily, null );
             var newRegistrants = options.People.Where( box => box.Bag.Id.IsNullOrWhiteSpace() );
 
             existingRegistrants.AddRange( newRegistrants );

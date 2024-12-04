@@ -27,7 +27,11 @@
                  class="achievement">
                 <div class="header">
                     <div class="title">{{ achievement.name }}</div>
-                    <div class="subtitle">{{ getProgressText(achievement) }}</div>
+                    <!--
+                    This is intentionally hidden for now pending decision
+                    from PO on how to display this.
+                    -->
+                    <div v-if="false" class="subtitle">{{ getProgressText(achievement) }}</div>
                 </div>
                 <div v-if="achievement.targetCount"
                      class="completion-progress">

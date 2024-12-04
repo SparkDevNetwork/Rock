@@ -345,8 +345,13 @@
             props.registrationData.editPersonGuid = person.bag.guid;
         }
 
+        const relationship: ListItemBag = {
+            value: relationshipToAdult.value,
+            text: relationshipToAdultItems.find(r => r.value === relationshipToAdult.value)?.text
+        };
+
         setPropertiesBoxValue(person, "isAdult", isAdult.value);
-        setPropertiesBoxValue(person, "relationshipToAdult", { value: relationshipToAdult.value });
+        setPropertiesBoxValue(person, "relationshipToAdult", relationship);
         setPropertiesBoxValue(person, "isMarried", isMarried.value);
         setPropertiesBoxValue(person, "gender", isFemale.value ? Gender.Female : Gender.Male);
         setPropertiesBoxValue(person, "nickName", nickName.value);

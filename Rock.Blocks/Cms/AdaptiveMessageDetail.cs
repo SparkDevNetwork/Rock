@@ -195,7 +195,7 @@ namespace Rock.Blocks.Cms
                 IsActive = entity.IsActive,
                 Key = entity.Key,
                 Name = entity.Name,
-                Categories = entity.Categories.ToListItemBagList(),
+                Categories = entity.AdaptiveMessageCategories.Select( a => a.Category ).ToListItemBagList(),
             };
         }
 
@@ -463,16 +463,33 @@ namespace Rock.Blocks.Cms
         /// <param name="bag">The bag.</param>
         private void UpdateCategories( RockContext rockContext, AdaptiveMessage entity, AdaptiveMessageBag bag )
         {
-            entity.Categories.Clear();
-
             var categoryService = new CategoryService( rockContext );
+            var adaptiveMessageCategoryService = new AdaptiveMessageCategoryService(rockContext );
+            var adaptiveMessageCategories = entity.AdaptiveMessageCategories.ToList();
+            foreach ( var adaptiveMessageCategory in adaptiveMessageCategories )
+            {
+                var category = categoryService.Get( adaptiveMessageCategory.CategoryId );
+
+                if ( category != null )
+                {
+                    if ( !bag.Categories.Any( a => a.Value == category.Guid.ToString() ) )
+                    {
+                        entity.AdaptiveMessageCategories.Remove( adaptiveMessageCategory );
+                        adaptiveMessageCategoryService.Delete( adaptiveMessageCategory );
+                    };
+                }
+            }
+
             foreach ( var categoryGuid in bag.Categories.Select( c => c.Value.AsGuid() ) )
             {
                 var category = categoryService.Get( categoryGuid );
 
                 if ( category != null )
                 {
-                    entity.Categories.Add( category );
+                    if ( !entity.AdaptiveMessageCategories.Any( a => a.CategoryId == category.Id ) )
+                    {
+                        entity.AdaptiveMessageCategories.Add( new AdaptiveMessageCategory { CategoryId = category.Id } );
+                    };
                 }
             }
         }

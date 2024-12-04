@@ -9,7 +9,7 @@
             .on('mouseenter', function () {
                 // the sync-button in the popover would use the lbGroupSync asp control as a proxy to invoke the postback call
                 // Motive: there was no other way to make a postback call to the C# method from the javascript in the frontend.
-                $('#sync-button').click(function (e) {
+                $('#sync-button').off('click').on('click', function (e) {
                     $("#<%= lbGroupSync.ClientID %>")[0].click();
                 })
             })
