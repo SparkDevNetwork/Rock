@@ -82,7 +82,7 @@
                 visiblePriority="md">
             <template #format="{ row }">
                 <span :class="row.isAttentionNeeded ? 'attention-needed-icon fa fa-poll fw mr-3' : 'fw'" title="Requires grading or facilitator action"></span>
-                <span :class="row.hasStudentComments ? 'student-comments-icon fa fa-comment-alt' : 'fw'"></span>
+                <span :class="row.hasStudentComments ? 'student-comments-icon fa fa-comment-alt' : 'fw'" title="Student commented on this assignment"></span>
             </template>
         </Column>
 

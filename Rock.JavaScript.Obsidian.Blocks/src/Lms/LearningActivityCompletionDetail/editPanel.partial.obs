@@ -16,7 +16,7 @@
 
         </div>
 
-        <div class="student-comments-section" v-if="isStudentCommentingEnabled">
+        <div class="student-comments-section" v-if="isStudentCommentingEnabled && studentComment">
             <div class="form-group">
                 <RockLabel>Student Comment</RockLabel>
                 <div>{{ studentComment }}</div>
