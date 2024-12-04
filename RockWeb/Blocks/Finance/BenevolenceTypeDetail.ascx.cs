@@ -671,7 +671,7 @@ namespace RockWeb.Blocks.Finance
 
             avcEditAttributes.Visible = true;
 
-            avcEditAttributes.IncludedAttributes = attributeGuidList.Select( a => AttributeCache.Get( a ) ).ToArray();
+            avcEditAttributes.IncludedAttributes = attributeGuidList.Select( a => AttributeCache.Get( a ) ).Where( a => a != null ).ToArray();
             avcEditAttributes.NumberOfColumns = 2;
             avcEditAttributes.ShowCategoryLabel = false;
             avcEditAttributes.AddEditControls( benevolenceType, true );
