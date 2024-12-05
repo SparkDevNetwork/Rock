@@ -131,7 +131,7 @@
             </template>
 
             <template #default>
-                <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+                <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
                 <NotificationBox v-if="!isPrintingRoster && printRosterWarning" alertType="warning">{{ printRosterWarning }}</NotificationBox>
 
                 <TransitionVerticalCollapse speed="fast">
