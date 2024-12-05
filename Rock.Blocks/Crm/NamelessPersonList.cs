@@ -19,6 +19,7 @@ using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -144,6 +145,10 @@ namespace Rock.Blocks.Crm
             person.RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;
             person.ConnectionStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT.AsGuid() ).Id;
 
+            if ( personBag.PersonConnectionStatus != null )
+            {
+                person.ConnectionStatusValueId = DefinedValueCache.Get( personBag.PersonConnectionStatus.Value )?.Id;
+            }
             if ( personBag.PersonTitle != null )
             {
                 person.TitleValueId = DefinedValueCache.Get( personBag.PersonTitle.Value )?.Id;
@@ -168,7 +173,7 @@ namespace Rock.Blocks.Crm
             {
                 person.Gender = personBag.PersonGender.Value;
             }
-            if ( personBag.PersonBirthDate != null )
+            if ( personBag.PersonBirthDate != null && personBag.PersonBirthDate.Day != default( int ) && personBag.PersonBirthDate.Month != default( int ) && personBag.PersonBirthDate.Year != default( int ) )
             {
                 person.SetBirthDate( new DateTime( personBag.PersonBirthDate.Year, personBag.PersonBirthDate.Month, personBag.PersonBirthDate.Day ) );
             }
