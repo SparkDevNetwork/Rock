@@ -85,6 +85,11 @@ namespace Rock.Web.UI
         /// </summary>
         private bool _pageNeedsObsidian = false;
 
+        /// <summary>
+        /// Will be <c>true</c> if the page has any Obsidian blocks to initialize.
+        /// </summary>
+        private bool _pageHasObsidianBlock = false;
+
         private readonly string _obsidianPageTimingControlId = "lObsidianPageTimings";
         private readonly List<DebugTimingViewModel> _debugTimingViewModels = new List<DebugTimingViewModel>();
         private Stopwatch _onLoadStopwatch = null;
@@ -1091,10 +1096,10 @@ namespace Rock.Web.UI
                 }
 
                 // Add CSS class to body
-                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) && this.Master != null )
+                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) )
                 {
                     // attempt to find the body tag
-                    var body = ( HtmlGenericControl ) this.Master.FindControl( "body" );
+                    var body = ( HtmlGenericControl ) this.Master?.FindControl( "body" );
                     if ( body != null )
                     {
                         // determine if we need to append or add the class
@@ -1106,6 +1111,11 @@ namespace Rock.Web.UI
                         {
                             body.Attributes.Add( "class", this.BodyCssClass );
                         }
+                    }
+                    else
+                    {
+                        var bodyClasses = BodyCssClass.Split( new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries ).ToJson();
+                        ClientScript.RegisterStartupScript( GetType(), "initialize-body-class", $"document.body.classList.add(...{bodyClasses});\n", true );
                     }
                 }
 
@@ -1423,6 +1433,7 @@ Rock.settings.initialize({{
                                         if ( blockEntity is IRockObsidianBlockType )
                                         {
                                             _pageNeedsObsidian = true;
+                                            _pageHasObsidianBlock = true;
                                         }
                                     }
 
@@ -1499,12 +1510,6 @@ Rock.settings.initialize({{
 
                         Page.Trace.Warn( "Initializing Obsidian" );
 
-                        var body = ( HtmlGenericControl ) this.Master?.FindControl( "body" );
-                        if ( body != null )
-                        {
-                            body.AddCssClass( "obsidian-loading" );
-                        }
-
                         if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                         {
                             var currentPersonJson = "null";
@@ -1558,6 +1563,11 @@ Obsidian.onReady(() => {{
 
 Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
 ";
+
+                            if ( _pageHasObsidianBlock )
+                            {
+                                script = "document.body.classList.add(\"obsidian-loading\")\n" + script;
+                            }
 
                             ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-init", script, true );
                         }
