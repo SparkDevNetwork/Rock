@@ -71,7 +71,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<RangeSlider v-model="internalValue" rules="integer" :min="minValue" :max="maxValue" />
+<RangeSlider v-model="internalValue" rules="integer" :min="minValue" :max="maxValue" showValueBar />
 `
 });
 
@@ -94,6 +94,10 @@ export const ConfigurationComponent = defineComponent({
         // Define the properties that will hold the current selections.
         const minValue = ref<number | null>(null);
         const maxValue = ref<number | null>(null);
+
+        const onBlur = (): void => {
+            emit("updateConfiguration");
+        };
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -162,14 +166,15 @@ export const ConfigurationComponent = defineComponent({
 
         return {
             minValue,
-            maxValue
+            maxValue,
+            onBlur
         };
     },
 
     template: `
 <div>
-    <NumberBox v-model="minValue" label="Min Value" help="The minimum value allowed for the slider range." />
-    <NumberBox v-model="maxValue" label="Max Value" help="The maximum value allowed for the slider range." />
+    <NumberBox v-model="minValue" label="Min Value" help="The minimum value allowed for the slider range." @blur="onBlur"  />
+    <NumberBox v-model="maxValue" label="Max Value" help="The maximum value allowed for the slider range." @blur="onBlur"  />
 </div>
 `
 });
