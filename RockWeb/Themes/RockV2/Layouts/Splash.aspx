@@ -29,17 +29,19 @@
     <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest") %>"></script>
 
     <!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Themes/Rock/Styles/bootstrap.css", true) %>"/>
-	<link rel="stylesheet" href="<%# ResolveRockUrl("~/Themes/Rock/Styles/theme.css", true) %>"/>
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>"/>
+	<link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
 
 </head>
 <body id="splash">
 
     <form id="form1" runat="server">
 
-        <div id="content">
-            <div id="logo">
-                <asp:Literal ID="lLogoSvg" runat="server" />
+        <div id="content" class="login-form-container">
+            <div class="logo-background">
+                <div id="logo">
+                    <asp:Literal ID="lLogoSvg" runat="server" />
+                </div>
             </div>
 
             <div id="content-box" class="clearfix">

@@ -1214,3 +1214,148 @@ $hamburger-spacing: 4px;
     margin: 0;
   }
 }
+
+// splash screen
+#splash {
+  display: flex;
+  justify-content: center;
+  
+  margin-top: 15vh;
+
+  @media (max-width: $screen-medium) {
+    margin-top: 2vh;
+  }
+
+  .login-form-container {
+    position: relative;
+
+    display: flex;
+    justify-content: flex-end;
+
+    width: 1000px;
+    height: 510px;
+
+    background-color: var(--color-interface-softest);
+    border-radius: var(--rounded-xlarge);
+    padding: var(--spacing-large) var(--spacing-xlarge) var(--spacing-large) var(--spacing-large);
+
+    .login-\(legacy\) .btn {
+      display: block;
+      width: 100%;
+      margin: 18px 0 0;
+    }
+
+    @media (max-width: $screen-medium) {
+      height: 730px;
+      width: 95vw;
+      padding: var(--spacing-xlarge) var(--spacing-xlarge);
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    @media (max-width: $screen-small) {
+      height: 700px;
+      padding: var(--spacing-large);
+    }
+  }
+
+  .logo-background {
+    position: absolute;
+    left: var(--spacing-large);
+    z-index: 1100;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--color-primary);
+    border-radius: var(--rounded-large);
+
+    min-width: 460px; // The width is also being set in the keyframe `sliding-left`.
+    height: 460px;
+
+    animation: sliding-left 1.3s ease-in-out;
+
+    @media (max-width: $screen-medium) {
+      position: static;
+      height: 300px;
+      min-width: 100%;
+      animation: none;
+    }
+  }
+
+  #content-box {
+    width: 420px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    @media (max-width: $screen-medium) {
+      display: block;
+      width: 100%;
+    }
+  }
+
+  #logo {
+    width: 200px;
+    height: 200px;
+    border-radius: var(--rounded-large);
+    fill: var(--color-interface-softest);
+
+    @media (max-width: $screen-medium) {
+      width: 120px;
+      height: 120px;
+    }
+  }
+
+  .login-block {
+    max-width: 600px;
+    margin: 0 auto;
+
+    @media (max-width: $screen-medium) {
+      max-width: 1000px;
+    }
+    legend {
+      display: none;
+    }
+  }
+
+  .login-block.external-auth-providers {
+    max-width: 800px;
+  }
+
+  .splash-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .splash-form-btn {
+    flex-direction: row;
+  }
+
+  .form-group {
+    margin-bottom: 0;
+  }
+}
+
+@keyframes sliding-left {
+  0% { 
+    min-width: 95%;
+  }
+  50% {
+    min-width: 95%;
+  }
+  100% {
+    min-width: 460px;
+  }
+}
+
+// .obsidian-loading {
+//   .login-block {
+//     opacity: 0;
+//   }
+// }
+
+// .login-block {
+//   transition: opacity 1s;
+//   opacity: 1;
+// }
+
