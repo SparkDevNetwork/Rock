@@ -104,6 +104,7 @@ namespace Rock.Model
                 .AsNoTracking()
                 .Include( c => c.LearningSemester )
                 .Include( c => c.GroupLocations )
+                .Include( c => c.LearningGradingSystem )
                 .Include( c => c.Schedule )
                 .Include( c => c.Campus )
                 .Where( c => c.LearningCourseId == courseId )
@@ -493,6 +494,17 @@ namespace Rock.Model
             /// The link to the enrollment page for this class.
             /// </summary>
             public string EnrollmentLink { get; set; }
+
+            /// <summary>
+            /// The <see cref="LearningGradingSystem "/> the class uses.
+            /// </summary>
+            public LearningGradingSystem GradingSystem
+            {
+                get
+                {
+                    return Entity?.LearningGradingSystem;
+                }
+            }
 
             /// <summary>
             /// The Location for the LearningClass to meet.
