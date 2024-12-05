@@ -101,7 +101,11 @@ namespace Rock.Model
             // Ensure only classes that are under their 'MaxStudents' are included.
             var classesQuery = new LearningClassService( rockContext )
                 .Queryable()
+                .AsNoTracking()
                 .Include( c => c.LearningSemester )
+                .Include( c => c.GroupLocations )
+                .Include( c => c.Schedule )
+                .Include( c => c.Campus )
                 .Where( c => c.LearningCourseId == courseId )
                 .Where( c => c.IsActive && ( !publicOnly || c.IsPublic ) )
                 .Where( c => !c.LearningCourse.MaxStudents.HasValue || c.LearningParticipants.Count( p => !p.GroupRole.IsLeader ) < c.LearningCourse.MaxStudents );
@@ -119,33 +123,48 @@ namespace Rock.Model
             }
 
             var classes = classesQuery.ToList();
-            var classIds = classes.Select( c => c.Id );
 
-            // Get all distinct Semesters for the course and project them into a new PublicLearningSemesterBag.
+            // Get the distinct Semesters for the course and project them into
+            // a new PublicLearningSemesterBag ordered by semester start date.
             course.Semesters = classes
                 .Select( c => c.LearningSemester )
                 .DistinctBy( s => s.Id )
                 .ToList()
-                .Select( s => new PublicLearningSemesterBag { Entity = s } )
+                .OrderBy( s => s.StartDate )
+                .Select( s => new PublicLearningSemesterBag {
+                    Entity = s,
+                    AvailableClasses = classes
+                        .Where( c => c.LearningSemesterId == s.Id )
+                        .Select( c => new PublicLearningClassDetailBag
+                        {
+                            Entity = c
+                        } )
+                        .ToList()
+                } )
                 .ToList();
 
             var hasActiveSemesters = course.Semesters != null;
 
             // Get all the facilitators and this person's participant records in one query.
-            var facilitatorsAndPerson = participantService.Queryable()
+            var classIds = classes.Select( c => c.Id );
+            var facilitatorsAndPerson = participantService
+                .Queryable()
                 .Include( p => p.LearningGradingSystemScale )
                 .Where( p => classIds.Contains( p.LearningClassId ) )
                 .AreFacilitatorsOrPerson( person?.Id );
 
-            if ( person != null )
+            if ( hasPersonId )
             {
                 course.UnmetPrerequisites = GetUnmetCourseRequirements( person.Id, course.CourseRequirements );
 
                 course.CanShowHistoricalAccess = course.AllowHistoricalAccess && hasActiveSemesters;
+            }
 
-                foreach ( var semester in course.Semesters )
+            foreach ( var semester in course.Semesters )
+            {
+                foreach ( var availableClass in semester.AvailableClasses )
                 {
-                    foreach ( var availableClass in semester.AvailableClasses )
+                    if ( hasPersonId )
                     {
                         availableClass.CanEnroll = participantService.CanEnroll( availableClass.Entity, person, course.UnmetPrerequisites, out var errorKey );
                         availableClass.EnrollmentErrorKey = errorKey;
@@ -153,28 +172,31 @@ namespace Rock.Model
                         availableClass.StudentParticipant = facilitatorsAndPerson
                             .AreStudents()
                             .FirstOrDefault( p => p.LearningClassId == availableClass.Entity.Id && p.PersonId == person.Id );
-
-                        var facilitatorPersonIds = facilitatorsAndPerson
-                            .AreFacilitators()
-                            .Where( p => p.LearningClassId == availableClass.Entity.Id )
-                            .Select( p => p.PersonId )
-                            .ToArray();
-
-                        availableClass.Facilitators = participantService.GetFacilitatorBags( availableClass.Entity.Id, facilitatorPersonIds )
-                            .Select( p => new LearningClassFacilitatorBag
-                            {
-                                IdKey = p.IdKey,
-                                FacilitatorName = p.Name,
-                                FacilitatorRole = p.RoleName,
-                                Facilitator = new ListItemBag
-                                {
-                                    Value = p.Guid.ToString(),
-                                    Text = p.Name
-                                }
-                            } )
-                            .ToList();
                     }
+
+                    var facilitatorPersonIds = facilitatorsAndPerson
+                        .AreFacilitators()
+                        .Where( p => p.LearningClassId == availableClass.Entity.Id )
+                        .Select( p => p.PersonId )
+                        .ToArray();
+
+                    availableClass.Facilitators = participantService.GetFacilitatorBags( availableClass.Entity.Id, facilitatorPersonIds )
+                        .Select( p => new LearningClassFacilitatorBag
+                        {
+                            IdKey = p.IdKey,
+                            FacilitatorName = p.Name,
+                            FacilitatorRole = p.RoleName,
+                            Facilitator = new ListItemBag
+                            {
+                                Value = p.Guid.ToString(),
+                                Text = p.Name
+                            }
+                        } )
+                        .ToList();
                 }
+
+                // By default sort the classes by the campus name.
+                semester.AvailableClasses = semester.AvailableClasses.OrderBy( c => c.Campus?.Name ).ToList();
             }
 
             return course;
@@ -438,33 +460,7 @@ namespace Rock.Model
             /// <summary>
             /// The <see cref="LearningSemester"/> entity.
             /// </summary>
-            public LearningSemester Entity
-            {
-                get
-                {
-                    return _semester;
-                }
-                set
-                {
-                    _semester = value;
-                    var classes = new List<PublicLearningClassDetailBag>();
-
-                    if ( _semester?.LearningClasses?.Any() == true )
-                    {
-                        foreach ( var c in _semester.LearningClasses )
-                        {
-                            classes.Add( new PublicLearningClassDetailBag
-                            {
-                                Entity = c
-                            } );
-                        }
-                    }
-
-                    this.AvailableClasses = classes;
-                }
-            }
-
-            private LearningSemester _semester;
+            public LearningSemester Entity { get; set; }
 
             /// <summary>
             /// The list of available classes.
@@ -478,6 +474,17 @@ namespace Rock.Model
         public class PublicLearningClassDetailBag : RockDynamic
         {
             /// <summary>
+            /// The <see cref="Campus"/> that the class meets at or is associated with.
+            /// </summary>
+            public Campus Campus
+            {
+                get
+                {
+                    return Entity?.Campus;
+                }
+            }
+
+            /// <summary>
             /// The <see cref="LearningClass"/> entity.
             /// </summary>
             public LearningClass Entity { get; set; }
@@ -486,6 +493,28 @@ namespace Rock.Model
             /// The link to the enrollment page for this class.
             /// </summary>
             public string EnrollmentLink { get; set; }
+
+            /// <summary>
+            /// The Location for the LearningClass to meet.
+            /// </summary>
+            public GroupLocation Location
+            {
+                get
+                {
+                    return Entity?.GroupLocations?.FirstOrDefault();
+                }
+            }
+
+            /// <summary>
+            /// The schedule that the class meets.
+            /// </summary>
+            public Schedule Schedule
+            {
+                get
+                {
+                    return Entity?.Schedule;
+                }
+            }
 
             /// <summary>
             /// The link to the workspace page for this class.

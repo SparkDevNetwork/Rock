@@ -94,11 +94,11 @@ WHERE NOT EXISTS (
     WHERE ex.[Guid] = p.[Guid]
 )
 
-/* Add A semesters for each program */
+/* Add a semesters for each program */
 INSERT [LearningSemester] ( [Name], [LearningProgramId], [StartDate], [EndDate], [EnrollmentCloseDate], [Guid] )
 SELECT IIF(
             ps.[ConfigurationMode] = @onDemandMode,
-            'Default',
+            'Initial Semester',
             CONCAT('SPRING ', @nextYear)
         )
         , p.Id, 
