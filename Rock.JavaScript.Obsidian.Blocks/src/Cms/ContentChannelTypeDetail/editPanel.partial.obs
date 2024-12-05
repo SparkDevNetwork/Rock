@@ -14,7 +14,7 @@
                             <DropDownList label="Date Range Type" v-model="dateRangeType" :items="dateRangeTypeOptions" :showBlankItem="false" />
                         </div>
                         <div class="col-xs-6">
-                            <CheckBox label="Include Time" v-model="includeTime" help="Should the Date Range include the time of day along with the date?" />
+                            <CheckBox v-if="isIncludeTimeVisible" label="Include Time" v-model="includeTime" help="Should the Date Range include the time of day along with the date?" />
                         </div>
                     </div>
                 </div>
@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch, Ref } from "vue";
+    import { PropType, reactive, ref, watch, Ref, computed } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
@@ -90,11 +90,12 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { ContentChannelTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelTypeDetail/contentChannelTypeBag";
     import { ContentChannelTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelTypeDetail/contentChannelTypeDetailOptionsBag";
-    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
 
     const props = defineProps({
         modelValue: {
@@ -149,6 +150,10 @@
 
     const channelAttributesGridData: GridDataBag = reactive<GridDataBag>({
         rows: channelAttributes.value.map((x: PublicEditableAttributeBag) => convertToAttributeGridRowItem(x, channelAttributesReservedKeyNames))
+    });
+
+    const isIncludeTimeVisible = computed((): boolean => {
+        return toNumberOrNull(dateRangeType.value) !== ContentChannelDateType.NoDates;
     });
 
     // #endregion
