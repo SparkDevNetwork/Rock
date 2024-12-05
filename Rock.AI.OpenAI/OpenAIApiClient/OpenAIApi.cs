@@ -90,6 +90,10 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             client.Authenticator = new JwtAuthenticator( secretKey );
             client.Timeout = _apiTimeoutLength;
 
+            // Due to issues with RestSharp's deserialization of properties with forward slashes
+            // 
+            client.AddHandler( "application/json", OpenAINewtonsoftJsonSerializer.Default );
+
             return client;
         }
 
@@ -98,9 +102,9 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         /// </summary>
         /// <param name="resource"></param>
         /// <returns></returns>
-        private RestRequest GetOpenAIRequest( string resource, Method method = Method.GET )
+        private RestSharp.RestRequest GetOpenAIRequest( string resource, Method method = Method.GET )
         {
-            var request = new RestRequest( resource, method );
+            var request = new RestSharp.RestRequest( resource, method );
             request.AddHeader( "OpenAI-Organization", _organization );
 
             return request;
