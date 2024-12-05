@@ -88,7 +88,7 @@
                     </div>
                 </div>
 
-                <div v-for="schedule in schedules" class="grid-cell" style="width: 5%; min-width: 75px; max-width: 100px;">
+                <div v-for="schedule in schedules" class="grid-cell justify-content-center grid-select-field" style="width: 5%; min-width: 75px; max-width: 100px;">
                     <CheckBox label=""
                               :modelValue="isScheduleEnabled(groupLocation, schedule)"
                               @change="onScheduleClick(groupLocation, schedule)" />
@@ -106,6 +106,11 @@
                     <RockButton btnType="primary" @click="onSaveClick" :disabled="isSaving">
                         <span v-if="isSaving"><i class='fa fa-refresh fa-spin'></i> Saving</span>
                         <span v-else>Save</span>
+                    </RockButton>
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Link"
+                                @click="onCancel">
+                        Cancel
                     </RockButton>
                 </div>
                 <NotificationBox v-if="showSaveNotification" :alertType="saveNotificationType" class="mb-0">{{ saveNotificationText }}</NotificationBox>
@@ -139,7 +144,7 @@
     import { CheckInScheduleBuilderDataBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CheckInScheduleBuilderDataBag";
     import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
     import { CloneScheduleBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/CloneScheduleBag";
-    import { PreferenceKey, PageParameterKey } from "./CheckInScheduleBuilder/types.partial";
+    import { PreferenceKey, PageParameterKey, NavigationUrlKey } from "./CheckInScheduleBuilder/types.partial";
     import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -152,11 +157,14 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
     import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 
     // #region Values
     const config = useConfigurationValues<CheckInScheduleBuilderOptionsBag>();
@@ -447,9 +455,14 @@
 
         isSaving.value = false;
         showSaveNotification.value = true;
-        setTimeout(() => {
-            showSaveNotification.value = false;
-        }, 3000);
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
+        }
+        else {
+            setTimeout(() => {
+                showSaveNotification.value = false;
+            }, 3000);
+        }
     }
 
     /**
@@ -474,6 +487,16 @@
         }
 
         await alert(response.errorMessage || "Unknown error while cloning schedule information.");
+    }
+
+    /**
+     * Event handler for the Cancel button being clicked while in Edit or Add mode.
+     * Handles redirect to parent page.
+     */
+    function onCancel(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
+        }
     }
 
     // #endregion
