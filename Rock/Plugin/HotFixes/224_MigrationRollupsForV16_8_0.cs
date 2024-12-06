@@ -200,7 +200,7 @@ GROUP BY
 SET	  [Markup] = REPLACE([Markup], '
             scrollwheel: {{ scrollwheel }},
             draggable: {{ draggable }},', '')
-	, [Parameters] = REPLACE([Parameters], 'scrollwheel^null|draggable^true|gesturehandling^cooperative', 'gesturehandling^cooperative')
+	, [Parameters] = REPLACE([Parameters], 'scrollwheel^true|draggable^true|gesturehandling^cooperative', 'gesturehandling^cooperative')
 WHERE	[Guid] = 'FE298210-1307-49DF-B28B-3735A414CCA0';" );
         }
 
