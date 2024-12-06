@@ -26,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { {% if UseAttributeValues == true %}AttributeColumns, {% endif %}{% if GridImports != empty %}{{ GridImports | Join:", " }}, {%endif %}{% if ShowDelete == true %}DeleteColumn, {% endif %}{% if ShowReorder == true %}ReorderColumn, {% endif %}{% if ShowSecurity == true %}SecurityColumn, {% endif %}SelectColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -39,6 +39,11 @@
     const config = useConfigurationValues<ListBlockBox<{{ EntityName }}ListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+    
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();

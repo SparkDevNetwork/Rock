@@ -37,7 +37,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./{{ EntityName }}Detail/editPanel.partial.obs";
     import ViewPanel from "./{{ EntityName }}Detail/viewPanel.partial.obs";
-    import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./{{ EntityName }}Detail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { {{ EntityName }}Bag } from "@Obsidian/ViewModels/Blocks/{{ DomainNamespace }}/{{ EntityName }}Detail/{{ EntityName | CamelCase }}Bag";
@@ -47,6 +47,11 @@
     const config = useConfigurationValues<DetailBlockBox<{{ EntityName }}Bag, {{ EntityName }}DetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
 
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+        
     // #region Values
 
     const blockError = ref("");
