@@ -72,6 +72,14 @@
     <Compile Include="Migrations\202412050843482_UpdateAnalyticsFinancialTransaction.Designer.cs">
       <DependentUpon>202412050843482_UpdateAnalyticsFinancialTransaction.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202412051949353_Rollup_20241205.cs" />
+    <Compile Include="Migrations\202412051949353_Rollup_20241205.designer.cs">
+      <DependentUpon>202412051949353_Rollup_20241205.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202412052331428_CodeGenerated_20241205.cs" />
+    <Compile Include="Migrations\202412052331428_CodeGenerated_20241205.designer.cs">
+      <DependentUpon>202412052331428_CodeGenerated_20241205.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2347,6 +2355,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202412050843482_UpdateAnalyticsFinancialTransaction.resx">
       <DependentUpon>202412050843482_UpdateAnalyticsFinancialTransaction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202412051949353_Rollup_20241205.resx">
+      <DependentUpon>202412051949353_Rollup_20241205.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202412052331428_CodeGenerated_20241205.resx">
+      <DependentUpon>202412052331428_CodeGenerated_20241205.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>

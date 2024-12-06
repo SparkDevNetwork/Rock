@@ -327,6 +327,27 @@ namespace Rock.Blocks.Security
         DefaultBooleanValue = false,
         Order = 34 )]
 
+    [BooleanField(
+        "Show Address",
+        Key = AttributeKey.ShowAddress,
+        Description = "Allows showing the address field.",
+        DefaultBooleanValue = false,
+        Order = 15 )]
+
+    [BooleanField(
+        "Address Required",
+        Key = AttributeKey.AddressRequired,
+        Description = "Whether the address is required.",
+        DefaultBooleanValue = false,
+        Order = 17 )]
+
+    [BooleanField(
+        "Show Gender",
+        Key = AttributeKey.ShowGender,
+        Description = "Determines if the gender selection field should be shown.",
+        DefaultBooleanValue = true,
+        Order = 28 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "75704274-FDB8-4A0C-AE0E-510F1977BE0A" )]
@@ -371,6 +392,10 @@ namespace Rock.Blocks.Security
             public const string DisableCaptchaSupport = "DisableCaptchaSupport";
             public const string RequireCampus = "RequireCampus";
             public const string ShowBirthDate = "ShowBirthDate";
+
+            public const string ShowGender = "ShowGender";
+            public const string AddressRequired = "AddressRequired";
+            public const string ShowAddress = "ShowAddress";
         }
 
         private static class PageParameterKey
