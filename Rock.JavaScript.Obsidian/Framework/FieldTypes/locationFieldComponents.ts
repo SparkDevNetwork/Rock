@@ -47,7 +47,8 @@ export const EditComponent = defineComponent({
         });
 
         const currentPickerMode = computed((): string => {
-            return props.configurationValues[ConfigurationValueKey.CurrentPickerMode];
+            const mode = props.configurationValues[ConfigurationValueKey.CurrentPickerMode];
+            return mode === null || mode === undefined || mode === "" ? "1" : mode;
         });
 
         watch(() => props.modelValue, () => {
@@ -92,8 +93,6 @@ export const ConfigurationComponent = defineComponent({
     },
 
     setup(props, { emit }) {
-        console.debug("CONFIG", props.modelValue);
-
         const options = [{
             text: "Location",
             value: "2"
@@ -131,7 +130,7 @@ export const ConfigurationComponent = defineComponent({
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.AllowedPickerModes] !== props.modelValue[ConfigurationValueKey.AllowedPickerModes] ||
-                        newValue[ConfigurationValueKey.CurrentPickerMode] !== props.modelValue[ConfigurationValueKey.CurrentPickerMode];
+                newValue[ConfigurationValueKey.CurrentPickerMode] !== props.modelValue[ConfigurationValueKey.CurrentPickerMode];
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -167,7 +166,7 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that require new configuration
         // properties to be retrieved from the server.
-        watch([availableLocationTypes,currentPickerMode], () => {
+        watch([availableLocationTypes, currentPickerMode], () => {
             if (maybeUpdateModelValue()) {
                 emit("updateConfiguration");
             }

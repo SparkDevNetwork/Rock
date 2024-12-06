@@ -32,6 +32,11 @@ namespace Rock.CheckIn.v2.Labels
     internal class LabelAttendanceDetail
     {
         /// <summary>
+        /// The lazy load value for <see cref="CheckedInByPerson"/>.
+        /// </summary>
+        private readonly Lazy<Person> _checkedInByPersonLazy;
+
+        /// <summary>
         /// The person this attendance record is for.
         /// </summary>
         public Person Person { get; set; }
@@ -57,6 +62,12 @@ namespace Rock.CheckIn.v2.Labels
         /// The area used during the check-in for this attendance.
         /// </summary>
         public GroupTypeCache Area { get; set; }
+
+        /// <summary>
+        /// The person that checked this individual in. May be <c>null</c> in
+        /// cases where this is not known.
+        /// </summary>
+        public Person CheckedInByPerson => _checkedInByPersonLazy.Value;
 
         /// <summary>
         /// The group used during the check-in for this attendance.
@@ -108,6 +119,7 @@ namespace Rock.CheckIn.v2.Labels
         /// </summary>
         internal LabelAttendanceDetail()
         {
+            _checkedInByPersonLazy = new Lazy<Person>( () => null );
         }
 
         /// <summary>
@@ -143,6 +155,13 @@ namespace Rock.CheckIn.v2.Labels
                 ? NamedScheduleCache.Get( attendance.Occurrence.ScheduleId.Value, rockContext )
                 : null;
             var areaCache = GroupTypeCache.Get( groupCache.GroupTypeId, rockContext );
+
+            _checkedInByPersonLazy = new Lazy<Person>( () =>
+            {
+                return attendance.CheckedInByPersonAliasId.HasValue
+                    ? new PersonAliasService( rockContext ).GetPerson( attendance.CheckedInByPersonAliasId.Value )
+                    : null;
+            } );
 
             Area = areaCache;
             EndDateTime = attendance.EndDateTime;

@@ -485,7 +485,10 @@ namespace Rock.Blocks.Mobile.CheckIn
             {
                 var director = new CheckInDirector( RockContext );
                 var session = director.CreateSession( configuration );
-                var sessionRequest = new AttendanceSessionRequest( options.Session );
+                var sessionRequest = new AttendanceSessionRequest( options.Session )
+                {
+                    PerformedByPersonId = RequestContext.CurrentPerson?.IdKey
+                };
 
                 var result = session.SaveAttendance( sessionRequest, options.Requests, kiosk, RequestContext.ClientInformation.IpAddress );
 

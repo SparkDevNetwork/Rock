@@ -1025,7 +1025,7 @@ namespace Rock.Blocks.Lms
                 .AddTextField( "note", p => p.Note )
                 .AddTextField( "role", p => p.GroupRole.Name )
                 .AddField( "hasCompletions", p => p.LearningActivities.Any() )
-                .AddTextField( "currentAssignment", p =>
+                .AddTextField( "currentAssignment", p => p.LearningCompletionDateTime.HasValue ? string.Empty :
                     activities.Where( a => !a.CompletedStudentIds.Contains( p.Id ) ).Select( a => a.Name ).FirstOrDefault() );
 
             if ( includeAbsences )

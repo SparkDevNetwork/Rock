@@ -503,7 +503,7 @@ namespace Rock.Web.UI.Controls
         #region Support Classes
 
         /// <summary>
-        /// Support class to handle the response Cloudflares captcha reponse
+        /// Support class to handle the response Cloudflares captcha response
         /// </summary>
         private class CloudFlareCaptchaResponse
         {

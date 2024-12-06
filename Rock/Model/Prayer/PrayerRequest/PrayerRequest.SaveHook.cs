@@ -251,8 +251,10 @@ namespace Rock.Model
                     // Use the original prayer request text for moderation.
                     // OriginalRequest will be null if no text formatter completion was run.
                     Input = Entity.OriginalRequest ?? Entity.Text,
-                    Model = "text-moderation-latest"
+                    Model = "omni-moderation-latest"
                 } );
+
+                var wasModified = prayerRequest.ModerationFlags != ( long ) moderations.ModerationsResponseCategories.ModerationFlags;
 
                 // Set the bit mask of detected moderation flags.
                 prayerRequest.ModerationFlags = ( long ) moderations.ModerationsResponseCategories.ModerationFlags;
@@ -275,10 +277,9 @@ namespace Rock.Model
                     };
 
                     prayerRequest.LaunchWorkflow( workflowTypeGuid, moderationWorkflow.Name, workflowAttributes, currentPersonAliasId );
-                    return true;
                 }
 
-                return false;
+                return wasModified;
             }
         }
     }

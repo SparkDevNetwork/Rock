@@ -256,7 +256,7 @@ namespace Rock.Rest.v2.Controllers
                 return response;
             }
 
-            // Get requested cache control from client (client trumps server. We'll use this to set the reponse header to help inform any CDNs
+            // Get requested cache control from client (client trumps server. We'll use this to set the response header to help inform any CDNs
             var cacheRequest = this.Request.GetHeader( "X-Rock-Tv-RequestedCacheControl" );
             if ( cacheRequest.IsNotNullOrWhiteSpace() )
             {

@@ -82,6 +82,9 @@ export type AccountEntryInitializationBox = {
     /** Gets or sets a value indicating whether username must be an email. */
     isEmailRequiredForUsername: boolean;
 
+    /** Indicating whether the Gender dropdown is required. */
+    isGenderPickerRequired: boolean;
+
     /** Indicating whether the Gender dropdown is shown. */
     isGenderPickerShown: boolean;
 

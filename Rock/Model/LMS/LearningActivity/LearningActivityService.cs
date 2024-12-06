@@ -127,22 +127,21 @@ namespace Rock.Model
                 .GetStudents( learningClassId ).Count();
 
             // Get all of the completions records for the activity.
-            var activityCompletions = new LearningActivityCompletionService( rockContext )
+            // Exclude any that still require grading.
+            var completedActivities = new LearningActivityCompletionService( rockContext )
                 .Queryable()
-                .Include( a => a.LearningActivity )
-                .Include( a => a.LearningActivity.LearningClass )
                 .Where( a => a.LearningActivityId == learningActivityId )
-                .AsNoTracking()
+                .Where( a => a.IsStudentCompleted || a.IsFacilitatorCompleted )
+                .Where( a => !a.RequiresGrading )
                 .Select( a => new
                 {
-                    a.IsStudentCompleted,
                     a.PointsEarned,
                     a.LearningActivity.LearningClass.LearningGradingSystemId
                 } )
                 .ToList();
 
             // If there weren't any completions there are no statistics to calculate.
-            if ( !activityCompletions.Any() )
+            if ( !completedActivities.Any() )
             {
                 return new LearningActivityCompletionStatistics
                 {
@@ -150,13 +149,10 @@ namespace Rock.Model
                 };
             }
 
-            var gradingSystemId = activityCompletions.Select( a => a.LearningGradingSystemId ).FirstOrDefault();
-            var complete = ( double ) activityCompletions.Count( a => a.IsStudentCompleted );
+            var gradingSystemId = completedActivities.Select( a => a.LearningGradingSystemId ).FirstOrDefault();
+            var complete = ( double ) completedActivities.Count();
             var incomplete = studentCount - complete;
             var percentComplete = complete / studentCount * 100;
-
-            // For all point averages only consider activities that have been completed.
-            var completedActivities = activityCompletions.Where( a => a.IsStudentCompleted ).ToList();
 
             // If there aren't any completed activities there's no need for additional calculations
             // return the data we've collected so far.

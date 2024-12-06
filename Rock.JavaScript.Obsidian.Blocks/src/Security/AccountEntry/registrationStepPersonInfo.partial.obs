@@ -22,6 +22,7 @@
             <GenderPicker
                           v-if="isGenderPickerShown"
                           v-model="internalGender"
+                          :rules="isGenderPickerRequired ? genderRules : ''"
                           :disabled="disabled" />
             <BirthdayPicker
                             v-if="isBirthDateShown"
@@ -86,6 +87,8 @@
     import { BirthdayPickerBag } from "@Obsidian/ViewModels/Controls/birthdayPickerBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
+    import { createNotEqualRule, createRuleWithReplacement, createRuleWithSuffix, required } from "./utils.partial";
 
     const props = defineProps({
         modelValue: {
@@ -122,6 +125,7 @@
     const isCampusRequired = computed(() => props.config.isCampusRequired);
     const isEmailHidden = computed(() => props.config.isEmailHidden);
     const isGenderPickerShown = computed(() => props.config.isGenderPickerShown);
+    const isGenderPickerRequired = computed(() => props.config.isGenderPickerRequired);
     const isBirthDateShown = computed(() => props.config.isBirthDateShown);
     const campusStatusFilter = computed(() => props.config.campusStatusFilter ?? []);
     const campusTypeFilter = computed(() => props.config.campusTypeFilter ?? []);
@@ -212,6 +216,12 @@
             emit("update:modelValue", { ...props.modelValue, attributeValues: newValue });
         }
     });
+
+    const genderRules = computed<ValidationRule[]>(() => [
+        createRuleWithSuffix(required, "is required"),
+        createRuleWithReplacement(createNotEqualRule(Gender.Unknown), "is required"),
+        "required"
+    ]);
 
     // #endregion
 
