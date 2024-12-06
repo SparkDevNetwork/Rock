@@ -77,7 +77,7 @@ namespace Rock.Blocks.Finance
                                 .GroupBy( p => p.CampusShortCode, StringComparer.OrdinalIgnoreCase )
                                 .ToDictionary( p => p.Key, p => p.First().CampusName, StringComparer.OrdinalIgnoreCase );
 
-                            var uniqueCampuses = campusDict.Select( c => new ListItemBag { Text = c.Value, Value = c.Key } ).ToList();
+                            var uniqueCampuses = campusDict.Select( c => new ListItemBag { Text = c.Value, Value = c.Key } ).OrderBy( i => i.Text ).ToList();
 
                             var uniqueGroups = peopleData.Select( p => p.GroupName ).Distinct().ToList();
                             var hasMultipleCampuses = CampusCache.All().Count( c => ( bool ) c.IsActive ) > 1;
