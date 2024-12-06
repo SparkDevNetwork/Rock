@@ -48,9 +48,6 @@ namespace Rock.Plugin.HotFixes
 
         private void UpdateVolGenBuildScript_CampusName_Up()
         {
-            ///<summary>
-            /// 
-            /// </summary>
             string newBuildScript = @"//- Retrieve the base URL for linking photos from a global attribute 
 {% assign publicApplicationRoot = 'Global' | Attribute:'PublicApplicationRoot' %}
 

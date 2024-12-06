@@ -17,9 +17,19 @@
 
 namespace Rock.ViewModels.Blocks.Core.SignatureDocumentList
 {
+    /// <summary>
+    /// The Signature Document List Options Bag
+    /// </summary>
     public class SignatureDocumentListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets the boolean value whether to show a document type.
+        /// </summary>
         public bool ShowDocumentType { get; set; }
+
+        /// <summary>
+        /// Gets or set the boolean value determining who can view.
+        /// </summary>
         public bool CanView { get; set; }
     }
 }

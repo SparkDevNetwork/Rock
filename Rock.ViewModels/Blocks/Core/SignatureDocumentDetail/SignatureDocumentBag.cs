@@ -22,6 +22,9 @@ using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Core.SignatureDocumentDetail
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class SignatureDocumentBag : EntityBagBase
     {
         /// <summary>

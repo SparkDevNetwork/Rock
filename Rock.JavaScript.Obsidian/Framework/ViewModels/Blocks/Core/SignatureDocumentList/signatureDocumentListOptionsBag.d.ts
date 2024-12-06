@@ -21,7 +21,11 @@
 // </copyright>
 //
 
+/** The Signature Document List Options Bag */
 export type SignatureDocumentListOptionsBag = {
-    showDocumentType: boolean;
+    /** Gets or set the boolean value determining who can view. */
     canView: boolean;
+
+    /** Gets or sets the boolean value whether to show a document type. */
+    showDocumentType: boolean;
 };
