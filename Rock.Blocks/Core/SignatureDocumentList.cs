@@ -190,7 +190,7 @@ namespace Rock.Blocks.Core
                 }
             }
 
-            List<int> authorizedTemplates = qry.Select( d => d.SignatureDocumentTemplate ).ToList().Where( dt => dt.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ).Select( dt => dt.Id ).ToList();
+            List<int> authorizedTemplates = qry.Select( d => d.SignatureDocumentTemplate ).Distinct().ToList().Where( dt => dt.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ).Select( dt => dt.Id ).ToList();
             qry = qry.Where( d => authorizedTemplates.Contains( d.SignatureDocumentTemplateId ) ).AsQueryable();
 
             return qry;
