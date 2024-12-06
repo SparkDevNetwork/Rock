@@ -57,12 +57,34 @@
     border: none;
 }
 
+:deep(.tox-tinymce) {
+    border: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
 .note-editable {
     height: v-bind(editorHeightCss);
 }
 
 .note-editor-container {
     position: relative;
+}
+
+.note-editor {
+    border: 1px solid var(--input-border);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-radius: var(--input-border-radius);
+    transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+}
+
+.note-editor:focus,
+.note-editor.focused,
+.note-editor:focus-within {
+    border-color: var(--focus-state-border-color);
+    border: var(--focus-state-border);
+    box-shadow: var(--focus-state-shadow);
 }
 
 .note-editor .note-toolbar {

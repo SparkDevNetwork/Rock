@@ -382,7 +382,8 @@ namespace Rock.Blocks.CheckIn.Configuration
                         Capabilities = new PrinterCapabilities(),
                         DataSources = FieldSourceHelper.GetCachedDataSources( checkInLabel.LabelType ),
                         Label = label.LabelData,
-                        LabelData = GetPreviewLabelData( checkInLabel.LabelType, RequestContext.CurrentPerson, RockContext )
+                        LabelData = GetPreviewLabelData( checkInLabel.LabelType, RequestContext.CurrentPerson, RockContext ),
+                        RockContext = RockContext
                     };
 
                     var renderer = new ZplLabelRenderer();

@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) component filtered by a channel
     /// Stored as "Channel.Guid|Component.Guid"
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.INTERACTION_CHANNEL_INTERACTION_COMPONENT )]
     public class InteractionChannelInteractionComponentFieldType : FieldType, IEntityReferenceFieldType

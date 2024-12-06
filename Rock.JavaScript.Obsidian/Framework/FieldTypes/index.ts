@@ -41,6 +41,9 @@ registerFieldType(FieldTypeGuids.Asset, new AssetFieldType());
 import { AssetStorageProviderFieldType } from "./assetStorageProviderField.partial";
 registerFieldType(FieldTypeGuids.AssetStorageProvider, new AssetStorageProviderFieldType());
 
+import { AttendanceFieldType } from "./attendanceField.partial";
+registerFieldType(FieldTypeGuids.Attendance, new AttendanceFieldType());
+
 import { AttributeFieldType } from "./attributeField.partial";
 registerFieldType(FieldTypeGuids.Attribute, new AttributeFieldType());
 
@@ -58,6 +61,9 @@ registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType()
 
 import { BenevolenceRequestFieldType } from "./benevolenceRequestField.partial";
 registerFieldType(FieldTypeGuids.BenevolenceRequest, new BenevolenceRequestFieldType());
+
+import { BenevolenceTypeFieldType } from "./benevolenceTypeField.partial";
+registerFieldType(FieldTypeGuids.BenevolenceType, new BenevolenceTypeFieldType());
 
 import { BinaryFileFieldType } from "./binaryFileField.partial";
 registerFieldType(FieldTypeGuids.BinaryFile, new BinaryFileFieldType());
@@ -233,6 +239,9 @@ registerFieldType(FieldTypeGuids.FinancialAccounts, new FinancialAccountsFieldTy
 import { FinancialGatewayFieldType } from "./financialGatewayField.partial";
 registerFieldType(FieldTypeGuids.FinancialGateway, new FinancialGatewayFieldType());
 
+import { FinancialStatementTemplateFieldType } from "./financialStatementTemplateField.partial";
+registerFieldType(FieldTypeGuids.FinancialStatementTemplate, new FinancialStatementTemplateFieldType());
+
 import { FileFieldType } from "./fileField.partial";
 registerFieldType(FieldTypeGuids.File, new FileFieldType());
 
@@ -305,6 +314,9 @@ registerFieldType(FieldTypeGuids.Location, new LocationFieldType());
 import { LocationListFieldType } from "./locationListField.partial";
 registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
 
+import { MarkdownFieldType } from "./markdownField.partial";
+registerFieldType(FieldTypeGuids.Markdown, new MarkdownFieldType());
+
 import { MatrixFieldType } from "./matrixField.partial";
 registerFieldType(FieldTypeGuids.Matrix, new MatrixFieldType());
 
@@ -355,6 +367,9 @@ registerFieldType(FieldTypeGuids.PageReference, new PageReferenceFieldType());
 
 import { PersonFieldType } from "./personField.partial";
 registerFieldType(FieldTypeGuids.Person, new PersonFieldType());
+
+import { PrayerRequestFieldType } from "./prayerRequestField.partial";
+registerFieldType(FieldTypeGuids.PrayerRequest, new PrayerRequestFieldType());
 
 import { RangeSliderFieldType } from "./rangeSliderField.partial";
 registerFieldType(FieldTypeGuids.RangeSlider, new RangeSliderFieldType());

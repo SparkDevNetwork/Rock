@@ -738,6 +738,10 @@ ul li::marker {
 /**
  * Supervisor Reprint Screen
 */
+.supervisor-reprint-screen .button-list {
+    margin-top: var(--spacing-medium);
+}
+
 .supervisor-reprint-screen .attendance-button .btn {
     justify-content: initial;
     border: 0;
@@ -757,13 +761,16 @@ ul li::marker {
 }
 
 .supervisor-reprint-screen input.search-term {
-    height: 64px;
-    font-size: 36px;
+    height: 48px;
+    font-size: 28px;
     max-width: 480px;
     margin-left: auto;
     margin-right: auto;
 }
 
+.supervisor-reprint-screen input.search-term::placeholder {
+    color: var(--color-interface-medium);
+}
 
 /**
  * Supervisor Schedule Locations Screen

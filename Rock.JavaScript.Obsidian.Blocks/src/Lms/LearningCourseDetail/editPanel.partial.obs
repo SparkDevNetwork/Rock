@@ -90,7 +90,13 @@
                                         <RadioButtonList v-model="addRequirementType" label="Requirement Type" horizontal rules="required" :items="requirementTypes" />
                                     </div>
                                     <div class="col-md-6">
-                                        <DropDownList v-model="requiredCourse" :enhanceForLongLists="true" :grouped="false" :items="courseOptions" rules="required" label="Course" :multiple="false" :showBlankItem="false" />
+                                        <DropDownList enhanceForLongLists
+                                                      :popupContainerOverride="documentBody"
+                                                      v-model="requiredCourse"
+                                                      :items="courseOptions"
+                                                      rules="required"
+                                                      label="Course"
+                                                      :showBlankItem="false" />
                                     </div>
                                 </div>
                             </Modal>
@@ -151,7 +157,6 @@
         </template>
     </TabbedContent>
 </template>
-
 <script setup lang="ts">
     import Panel from "@Obsidian/Controls/panel.obs";
     import { computed, PropType, ref, watch } from "vue";
@@ -203,6 +208,9 @@
 
     // #region Values
 
+    // Use the document body for the popup container as using the default control-wrapper in the modal
+    // prevents enhanceForLongLists from working.
+    const documentBody = ref(document.body);
     const courseDetailTabs: Array<string> = ["Overview", "Description"];
     const imageFileTypeGuid = BinaryFiletype.Default;
     const showAddCourseRequirementModal = ref(false);

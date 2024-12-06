@@ -16,10 +16,12 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -33,6 +35,11 @@ namespace Rock.Model
         {
             private History.HistoryChangeList HistoryChanges { get; set; }
 
+            /// <summary>
+            /// <c>true</c> if the points earned for an already graded activity were changed; otherwise <c>false</c>.
+            /// </summary>
+            private bool WasRegraded { get; set; }
+
             protected override void PreSave()
             {
                 base.PreSave();
@@ -43,6 +50,8 @@ namespace Rock.Model
                 {
                     Entity.WasCompletedOnTime = Entity.DueDate >= RockDateTime.Now;
                 }
+
+                SetWasRegraded();
 
                 LogChanges();
             }
@@ -71,71 +80,6 @@ namespace Rock.Model
                         true,
                         this.Entity.ModifiedByPersonAliasId );
                 }
-            }
-
-            /// <summary>
-            /// Updates class grades for the related participant (if the current participant completion status is Incomplete).
-            /// </summary>
-            private void UpdateClassGrades()
-            {
-                // Get the student specific learning plan (this will include completion
-                // records for all activities in the class - even if the completions aren't persisted).
-                var completionDetails = new LearningParticipantService( RockContext )
-                    .GetStudentLearningPlan( Entity.StudentId )
-                    .Select( a => new
-                    {
-                        // Convert to decimal for proper precision when calculating grade percent.
-                        Possible = ( decimal ) a.LearningActivity.Points,
-                        Earned = ( decimal ) a.PointsEarned,
-
-                        // For determining overall class completion and calculating grade based on (facilitator) completed activities.
-                        IsStudentOrFacilitatorCompleted = a.IsStudentCompleted || a.IsFacilitatorCompleted,
-
-                        // For getting list of grade scales available.
-                        GradingSystemId = a.LearningActivity.LearningClass.LearningGradingSystemId,
-
-                        // For updating grade and completion status.
-                        a.Student,
-
-                        // Some activities (assessment) may not clearly indicate if the Facilitator must
-                        // grade the activity before it can be considered complete.
-                        // Therefore; we are always evaluating grades until the class is considered over.
-                        ClassEndDate = a.LearningActivity.LearningClass.LearningSemester.EndDate
-                    } );
-
-                var anyCompletionRecord = completionDetails.FirstOrDefault();
-                var participant = anyCompletionRecord.Student;
-                var isClassOver = anyCompletionRecord.ClassEndDate.HasValue && anyCompletionRecord.ClassEndDate.Value.IsPast();
-
-                // If the class has ended don't recalculate the grade.
-                if ( isClassOver )
-                {
-                    return;
-                }
-
-                var gradingSystemId = completionDetails.FirstOrDefault().GradingSystemId;
-
-                var gradedActivities = completionDetails.Where( a => a.IsStudentOrFacilitatorCompleted ).ToList();
-                var possiblePoints = gradedActivities.Sum( a => a.Possible );
-                var earnedPoints = gradedActivities.Sum( a => a.Earned );
-                var gradePercent = possiblePoints > 0 ? earnedPoints / possiblePoints * 100 : 0;
-
-                var gradeScaleEarned = new LearningGradingSystemScaleService( RockContext ).GetEarnedScale( gradingSystemId, gradePercent );
-                var currentGradePassFailStatus = gradeScaleEarned != null && gradeScaleEarned.IsPassing ? Enums.Lms.LearningCompletionStatus.Pass : Enums.Lms.LearningCompletionStatus.Fail;
-                var hasIncompleteAssignments = completionDetails.Any( a => !a.IsStudentOrFacilitatorCompleted );
-
-                // Set the LearningParticipant current class grade values.
-                participant.LearningGradePercent = gradePercent;
-                participant.LearningGradingSystemScaleId = gradeScaleEarned.Id;
-                participant.LearningCompletionStatus = hasIncompleteAssignments ? Enums.Lms.LearningCompletionStatus.Incomplete : currentGradePassFailStatus;
-
-                // If all assignments have been graded (by a facilitator) and the completion date time hasn't yet been set then set it.
-                if ( !hasIncompleteAssignments && !participant.LearningCompletionDateTime.HasValue )
-                {
-                    participant.LearningCompletionDateTime = RockDateTime.Now;
-                }
-
-                RockContext.SaveChanges();
             }
 
             /// <summary>
@@ -205,6 +149,114 @@ namespace Rock.Model
                             break;
                         }
                 }
+            }
+
+            /// <summary>
+            /// Updates class grades for the related participant (if the current participant completion status is Incomplete).
+            /// </summary>
+            private void UpdateClassGrades()
+            {
+                // Get the student specific learning plan (this will include completion
+                // records for all activities in the class - even if the completions aren't persisted).
+                var completionDetails = new LearningParticipantService( RockContext )
+                    .GetStudentLearningPlan( Entity.StudentId )
+                    .Select( a => new
+                    {
+                        // Convert to decimal for proper precision when calculating grade percent.
+                        Possible = ( decimal ) a.LearningActivity.Points,
+                        Earned = ( decimal ) a.PointsEarned,
+
+                        // For determining overall class completion and calculating grade based on (facilitator) completed activities.
+                        IsStudentOrFacilitatorCompleted = a.IsStudentCompleted || a.IsFacilitatorCompleted,
+
+                        // Don't include ungraded items.
+                        a.RequiresGrading,
+
+                        // For getting list of grade scales available.
+                        GradingSystemId = a.LearningActivity.LearningClass.LearningGradingSystemId,
+
+                        // For updating grade and completion status.
+                        a.Student,
+
+                        // The course completion workflow type id (if any).
+                        a.LearningActivity.LearningClass.LearningCourse.CompletionWorkflowTypeId,
+
+                        // Some activities (assessment) may not clearly indicate if the Facilitator must
+                        // grade the activity before it can be considered complete.
+                        // Therefore; we are always evaluating grades until the class is considered over.
+                        ClassEndDate = a.LearningActivity.LearningClass.LearningSemester.EndDate,
+                    } );
+
+                var anyCompletionRecord = completionDetails.FirstOrDefault();
+                var participant = anyCompletionRecord.Student;
+                var isClassOver = anyCompletionRecord.ClassEndDate.HasValue && anyCompletionRecord.ClassEndDate.Value.IsPast();
+                var hasIncompleteAssignments = completionDetails.Any( a => !a.IsStudentOrFacilitatorCompleted );
+                var hasUngradedAssignments = completionDetails.Any( a => a.RequiresGrading );
+
+                // If the student completed all activities then mark the completion date (if unmarked).
+                if ( !hasIncompleteAssignments && !participant.LearningCompletionDateTime.HasValue )
+                {
+                    participant.LearningCompletionDateTime = RockDateTime.Now;
+                }
+
+                // If the student has ungraded assignments don't send the completion workflow yet
+                // (it may be dependent on the final grade.
+
+                // If the class has ended don't recalculate the grade.
+                // This ensures that if a facilitator adds an activity
+                // after a student has completed all of what was assigned
+                // they don't unexpectedly find their class re-opened.
+                // The exception being when an activity was re-graded by a facilitator.
+                var hasStudentCompletedClass = participant.LearningCompletionStatus != Enums.Lms.LearningCompletionStatus.Incomplete;
+                if ( isClassOver || ( hasStudentCompletedClass && !WasRegraded ) )
+                {
+                    return;
+                }
+
+                var gradingSystemId = completionDetails.FirstOrDefault().GradingSystemId;
+
+                var gradedActivities = completionDetails.Where( a => a.IsStudentOrFacilitatorCompleted && !a.RequiresGrading ).ToList();
+                var possiblePoints = gradedActivities.Sum( a => a.Possible );
+                var earnedPoints = gradedActivities.Sum( a => a.Earned );
+                var gradePercent = possiblePoints > 0 ? earnedPoints / possiblePoints * 100 : 0;
+
+                var gradeScaleEarned = new LearningGradingSystemScaleService( RockContext ).GetEarnedScale( gradingSystemId, gradePercent );
+                var currentGradePassFailStatus = gradeScaleEarned != null && gradeScaleEarned.IsPassing ? Enums.Lms.LearningCompletionStatus.Pass : Enums.Lms.LearningCompletionStatus.Fail;
+
+                // Set the LearningParticipant current class grade values.
+                participant.LearningGradePercent = gradePercent;
+                participant.LearningGradingSystemScaleId = gradeScaleEarned.Id;
+                participant.LearningCompletionStatus = hasIncompleteAssignments || hasUngradedAssignments ? Enums.Lms.LearningCompletionStatus.Incomplete : currentGradePassFailStatus;
+
+                RockContext.SaveChanges();
+
+                if ( participant.LearningCompletionStatus != Enums.Lms.LearningCompletionStatus.Incomplete && anyCompletionRecord.CompletionWorkflowTypeId.HasValue )
+                {
+                    var workflowAttributes = new Dictionary<string, string>
+                    {
+                        {"Student", participant.ToJson()}
+                    };
+
+                    var workflow = WorkflowTypeCache.Get( ( int ) anyCompletionRecord.CompletionWorkflowTypeId );
+                    participant.LaunchWorkflow( anyCompletionRecord.CompletionWorkflowTypeId, workflow?.Name, workflowAttributes, null );
+                }
+            }
+
+            /// <summary>
+            /// Sets the value of the WasGraded property.
+            /// </summary>
+            private void SetWasRegraded()
+            {
+                if ( this.Entry.OriginalValues == null || !this.Entry.OriginalValues.Any() )
+                {
+                    return;
+                }
+
+                var originalGradedByPersonAliasId = this.Entry.OriginalValues["GradedByPersonAliasId"] as int?;
+                var originalPointsEarned = this.Entry.OriginalValues["PointsEarned"].ToIntSafe();
+                var pointsEarnedChanged = this.Entity.PointsEarned != originalPointsEarned;
+
+                WasRegraded = originalGradedByPersonAliasId.HasValue && originalGradedByPersonAliasId > 0 && pointsEarnedChanged;
             }
         }
     }

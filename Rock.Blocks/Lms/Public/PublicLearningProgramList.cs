@@ -58,6 +58,7 @@ namespace Rock.Blocks.Lms
         "Banner Image",
         Description = "Add a welcoming banner image to visually enhance the homepage. Ideal size: 1200x400 pixels; use high-quality images.",
         Key = AttributeKey.BannerImage,
+        IsRequired = false,
         DefaultValue = AttributeDefault.BannerImage )]
 
     [CodeEditorField( "Lava Template",
@@ -171,14 +172,15 @@ namespace Rock.Blocks.Lms
             <p class=""text-muted""> The following types of classes are available. </p>
         </div>
     </div>
-    <div> //- Main Body - Container for course grid
+    <div> //- MAIN BODY - Container for course grid
+        
         <div class=""lms-grid""> //- Grid for Cards
 
             {% for program in Programs %}
             
             <div class=""card""> 
                 
-                //-1 IMAGE
+                //- 1 IMAGE
                 {% if program.ImageFileGuid %}
                 
                     <img src=""/GetImage.ashx?guid={{ program.ImageFileGuid }}"" class=""card-img-top card-img-h object-cover""
@@ -189,12 +191,12 @@ namespace Rock.Blocks.Lms
                         <i class=""fa fa-image fa-2x o-30""></i> </div>
                 {% endif %}
                 
-                //-2 TITLE
+                //- 2 TITLE
                 <div class=""card-body pb-0 pt-0"">
                     <h4 class=""card-title mb-0"">{{ program.Entity.PublicName }}</h4>
                 </div>
                 
-                //-3 BODY TEXT
+                //- 3 BODY TEXT
                 <div class=""card-body pt-0 pb-0"">
                     <p class=""line-clamp-3"">{{ program.Entity.Summary }}</p>
                 </div>
@@ -215,7 +217,7 @@ namespace Rock.Blocks.Lms
                 
                 {% endif %}
                 
-                //-5 FOOTER
+                //- 5 FOOTER
                 <div class=""card-footer d-flex justify-content-between"">
                     <a href=""{{ program.CoursesLink }}"" class=""btn btn-default"">Learn More</a>
                     
@@ -239,7 +241,6 @@ namespace Rock.Blocks.Lms
         </div>
     </div>
 </div>
-
 ";
         }
 

@@ -1,7 +1,8 @@
 <template>
     <div class="supervisor-reprint-screen">
         <MainPanel title="Reprint Labels"
-                   subtitle="Tap a button below to reprint labels.">
+                   subtitle="Select an individual below to reprint their labels."
+                   :configuration="configuration">
             <!--
                 The form is here to prevent iOS from causing the Return key
                 to become a Go key and triggering a WebForms postback.
@@ -9,7 +10,7 @@
             <RockForm>
                 <TextBox v-model="searchTerm"
                          class="search-term"
-                         placeholder="Filter" />
+                         placeholder="Search" />
             </RockForm>
 
             <div class="button-list">

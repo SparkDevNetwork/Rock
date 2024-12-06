@@ -224,6 +224,9 @@
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestActionList\RestActionListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\SignatureDocumentDetail\SignatureDocumentBag.cs" />
+    <Compile Include="Blocks\Core\SignatureDocumentDetail\SignatureDocumentDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\SignatureDocumentList\SignatureDocumentListOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInLabelDetail\CheckInLabelBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInLabelDetail\CheckInLabelDetailOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInLabelList\CheckInLabelListOptionsBag.cs" />
@@ -849,6 +852,11 @@
     <Compile Include="Controls\RockCacheabilityBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlValidateTokenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlTokenValidateTokenResultBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonAddReminderOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonReminderActionOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonGetRemindersResultsBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonGetRemindersReminderBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonGetRemindersOptionsBag.cs" />
     <Compile Include="Rest\Controls\UniversalItemSearchPickerOptionsBag.cs" />
     <Compile Include="Rest\Controls\UniversalItemTreePickerOptionsBag.cs" />
     <Compile Include="Utility\TimeIntervalBag.cs" />

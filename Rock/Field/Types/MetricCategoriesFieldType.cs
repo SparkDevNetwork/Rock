@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as a List of Metric.Guid|MetricCategory.Guid (MetricCategory.Guid included so we can preserve which category the metric was selected from)
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.METRIC_CATEGORIES )]
     public class MetricCategoriesFieldType : FieldType, IEntityReferenceFieldType

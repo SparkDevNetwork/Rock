@@ -157,6 +157,8 @@
     <Compile Include="Cms\PersonalLinkSectionList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Core\PersonFollowingList.cs" />
+    <Compile Include="Core\SignatureDocumentDetail.cs" />
+    <Compile Include="Core\SignatureDocumentList.cs" />
     <Compile Include="Tv\RokuPageDetail.cs" />
     <Compile Include="Tv\TvPageList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />

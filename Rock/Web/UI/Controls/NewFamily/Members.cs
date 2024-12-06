@@ -236,7 +236,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "required" );
                 }
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                writer.Write( "Birthdate" );
+                writer.Write( "Birth Date" );
                 writer.RenderEndTag();
 
                 if ( ShowGrade )

@@ -328,15 +328,17 @@ namespace Rock.Blocks.Finance
                 .GroupBy( ftd => new
                 {
                     BatchId = ftd.Transaction.BatchId.Value,
-                    ftd.AccountId
+                    ftd.AccountId,
                 } )
                 .Select( grp => new
                 {
                     grp.Key.BatchId,
                     grp.Key.AccountId,
+                    Order = grp.Max( ftd => ftd.Account.Order ),
                     Amount = grp.Sum( ftd => ftd.Amount )
                 } )
                 .ToList()
+                .OrderBy( a => a.Order )
                 .GroupBy( a => a.BatchId )
                 .ToDictionary( grp => grp.Key, grp => grp.ToList() );
 

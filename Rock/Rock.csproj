@@ -1264,14 +1264,20 @@
     <Compile Include="Field\UniversalFieldTypeGuidAttribute.cs" />
     <Compile Include="Financial\IScheduledNumberOfPaymentsGateway.cs" />
     <Compile Include="Financial\ISettlementGateway.cs" />
+    <Compile Include="Jobs\CalculatePeerNetwork.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV17AddAndUpdatePeerNetworkIndexes.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdateHistoryTableEntityTypeIdIndexPostMigration.cs" />
     <Compile Include="Jobs\UpdateProgramCompletions.cs" />
     <Compile Include="Model\Core\Note\NoteExtensionMethods.cs" />
     <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncementService.cs" />
+    <Compile Include="Model\LMS\LearningCourse\LearningCourse.Logic.cs" />
     <Compile Include="Model\LMS\LearningCourse\LearningCourse.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScaleService.cs" />
+    <Compile Include="Model\LMS\LearningParticipant\LearningParticipant.Logic.cs" />
     <Compile Include="Model\LMS\LearningParticipant\LearningParticipantExtensionMethods.cs" />
+    <Compile Include="Model\LMS\LearningProgramCompletion\LearningProgramCompletion.Logic.cs" />
+    <Compile Include="Model\LMS\LearningSemester\LearningSemester.Logic.cs" />
     <Compile Include="Model\Prayer\PrayerRequest\PrayerRequest.SaveHook.cs" />
     <Compile Include="Net\Geolocation\IpGeoException.cs" />
     <Compile Include="Net\Geolocation\IpGeolocation.cs" />
@@ -1332,7 +1338,7 @@
     <Compile Include="Lms\PointAssessmentComponent.cs" />
     <Compile Include="Lms\VideoWatchComponent.cs" />
     <Compile Include="Lms\FileUploadComponent.cs" />
-    <Compile Include="Lms\AcknowledgementComponent.cs" />
+    <Compile Include="Lms\AcknowledgmentComponent.cs" />
     <Compile Include="Lms\LearningActivityComponent.cs" />
     <Compile Include="Lms\LearningActivityContainer.cs" />
     <Compile Include="Logging\DynamicConfigurationProvider.cs" />
@@ -1343,6 +1349,8 @@
     <Compile Include="Model\CMS\AdaptiveMessageAdaptationSegment\AdaptiveMessageAdaptationSegment.cs" />
     <Compile Include="Model\CMS\AdaptiveMessageAdaptation\AdaptiveMessageAdaptation.cs" />
     <Compile Include="Model\CMS\AdaptiveMessageAdaptation\AdaptiveMessageAdaptation.Logic.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessageCategory\AdaptiveMessageCategory.cs" />
+    <Compile Include="Model\CMS\AdaptiveMessageCategory\AdaptiveMessageCategory.Logic.cs" />
     <Compile Include="Model\CMS\AdaptiveMessage\AdaptiveMessage.cs" />
     <Compile Include="Model\CMS\AdaptiveMessage\AdaptiveMessage.Logic.cs" />
     <Compile Include="Model\CMS\BlockType\BlockType.WebForms.cs" />
@@ -1370,6 +1378,7 @@
     <Compile Include="Model\CMS\Theme\ThemeService.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationSegmentService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageAdaptationService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AdaptiveMessageCategoryService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AdaptiveMessageService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AIProviderService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\CheckInLabelService.CodeGenerated.cs" />
@@ -1596,6 +1605,7 @@
     <Compile Include="Plugin\HotFixes\199_MigrationRollupsForV17_0_7.cs" />
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
+    <Compile Include="Plugin\HotFixes\224_MigrationRollupsForV16_8_0.cs" />
     <Compile Include="Plugin\HotFixes\196_MigrationRollupsForV16_5_1.cs" />
     <Compile Include="Plugin\HotFixes\194_MigratoinRollupForV17_0_3.cs" />
     <Compile Include="Plugin\HotFixes\193_MigratoinRollupForV15_4_1.cs" />
@@ -1612,11 +1622,15 @@
     <Compile Include="Plugin\HotFixes\206_MigrationRollupsForV17_0_13.cs" />
     <Compile Include="Plugin\HotFixes\205_MigrationRollupsForV17_0_12.cs" />
     <Compile Include="Plugin\HotFixes\219_UndoObsidianChop.cs" />
+    <Compile Include="Plugin\HotFixes\223_ClassAttendancePage.cs" />
+    <Compile Include="Plugin\HotFixes\222_LMSSecurity.cs" />
     <Compile Include="Plugin\HotFixes\220_CompletionGradingSystem.cs" />
     <Compile Include="Plugin\HotFixes\218_MigrationRollupsForV17_0_19.cs" />
     <Compile Include="Plugin\HotFixes\217_DefaultGradeScaleHighlightColors.cs" />
     <Compile Include="Plugin\HotFixes\216_LMSRoutes.cs" />
     <Compile Include="Plugin\HotFixes\214_UpdateGradingScaleDescriptions.cs" />
+    <Compile Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks.cs" />
+    <Compile Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -4889,6 +4903,9 @@
     <None Include="Plugin\HotFixes\167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap.sql" />
     <None Include="Plugin\HotFixes\177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql" />
     <None Include="Plugin\HotFixes\216_open_bible_on_notebook.jpg.bin" />
+    <Content Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateFollowing.sql" />
+    <Content Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateGroupConnections.sql" />
+    <Content Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections.sql" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">

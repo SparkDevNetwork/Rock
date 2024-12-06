@@ -103,21 +103,6 @@
             return labels;
         }
 
-        if (learningCourseViewBag.value?.isActive === true) {
-            labels.push({
-                iconCssClass: "fa fa-lightbulb",
-                title: "Active",
-                type: "info"
-            });
-        }
-        else {
-            labels.push({
-                iconCssClass: "far fa-lightbulb",
-                title: "Inactive",
-                type: "danger"
-            });
-        }
-
         if (learningCourseViewBag.value?.isPublic === true) {
             labels.push({
                 title: "Public",
@@ -128,6 +113,13 @@
             labels.push({
                 title: "Internal",
                 type: "warning"
+            });
+        }
+
+        if (learningCourseViewBag.value?.isActive === false) {
+            labels.push({
+                title: "Inactive",
+                type: "danger"
             });
         }
 

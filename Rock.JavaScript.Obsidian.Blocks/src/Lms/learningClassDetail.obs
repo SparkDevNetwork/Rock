@@ -34,6 +34,7 @@
     <LearningClassSecondaryLists
                                  v-if="panelMode === DetailPanelMode.View"
                                  :isEditable="isEditable"
+                                 :canViewGrades="canViewGrades"
                                  :navigationUrls="config.navigationUrls"
                                  :showAbsences="takesAttendance"
                                  :includeAnnouncements="includeAnnouncementsTab"
@@ -98,6 +99,8 @@
 
     // #region Computed Values
 
+    const canViewGrades = computed((): boolean => options.value?.canViewGrades ?? false);
+
     /**
      * The entity name to display in the block panel.
      */
@@ -134,13 +137,20 @@
             });
         }
 
-        if (learningClassViewBag.value?.isActive === true) {
+        if (learningClassViewBag.value?.isPublic === true) {
             labels.push({
-                title: "Active",
+                title: "Public",
                 type: "success"
             });
         }
         else {
+            labels.push({
+                title: "Internal",
+                type: "warning"
+            });
+        }
+
+        if (learningClassViewBag.value?.isActive === false) {
             labels.push({
                 title: "Inactive",
                 type: "danger"
@@ -160,7 +170,7 @@
 
         const secondaryActions: PanelAction[] = [];
 
-        if (isEditable) {
+        if (isEditable.value === true) {
             secondaryActions.push({
                 iconCssClass: "fa fa-clone",
                 title: "Copy",
@@ -169,7 +179,7 @@
             });
         }
 
-        if (learningClassViewBag.value?.takesAttendance === true) {
+        if (showAttendanceButton.value === true) {
             secondaryActions.push({
                 iconCssClass: "fa fa-check-square-o",
                 title: "Take Attendance",
@@ -192,8 +202,13 @@
     });
 
     const options = computed((): LearningClassDetailOptionsBag => {
-        return config.options ?? { activeClassesUsingDefaultGradingSystem: 0, courseAllowsAnnouncements: true };
+        return config.options ?? { activeClassesUsingDefaultGradingSystem: 0, courseAllowsAnnouncements: true, canViewGrades: false };
     });
+
+    const showAttendanceButton = computed((): boolean =>
+        learningClassViewBag.value?.takesAttendance === true
+        && (config.navigationUrls?.[NavigationUrlKey.AttendancePage] ?? "").length > 0
+    );
 
     // #endregion
 

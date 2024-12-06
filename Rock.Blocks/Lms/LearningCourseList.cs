@@ -131,9 +131,11 @@ namespace Rock.Blocks.Lms
         {
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
 
-            return programId > 0 ?
+            var query = programId > 0 ?
                 base.GetListQueryable( rockContext ).Where( c => c.LearningProgramId == programId ) :
                 base.GetListQueryable( rockContext );
+
+            return query;
         }
 
         /// <inheritdoc/>
@@ -201,7 +203,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${LearningCourse.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningCourse.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

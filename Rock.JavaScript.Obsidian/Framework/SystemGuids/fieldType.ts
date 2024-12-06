@@ -38,6 +38,8 @@ export const FieldType = {
     /** Asset Storage System field type */
     AssetStorageSystem: "A57109EE-35A2-45D0-A575-02DBBDFBC0D0",
     /** Attribute field type */
+    Attendance: "45F2BE0A-43C2-40D6-9888-68A2E72ACD06",
+    /** Attribute field type */
     Attribute: "99B090AA-4D7E-46D8-B393-BF945EA1BA8B",
     /** Audio File field type */
     AudioFile: "9772CB1F-3BC4-432E-80DD-D635CDB2DA32",
@@ -49,6 +51,8 @@ export const FieldType = {
     Badges: "602F273B-7EC2-42E6-9AA7-A36A268192A3",
     /** Benevolence Request field type */
     BenevolenceRequest: "44EEC881-3C07-4A58-ACC4-0F21D873DBE0",
+    /** Benevolence Type field type */
+    BenevolenceType: "7BD3C3A3-DF4A-41EB-BF13-29EDB166078B",
     /** Binary File field type */
     BinaryFile: "C403E219-A56B-439E-9D50-9302DFE760CF",
     /** Binary File Type field type */
@@ -173,6 +177,8 @@ export const FieldType = {
     FinancialAccounts: "17033CDD-EF97-4413-A483-7B85A787A87F",
     /** Financial Gateway field type */
     FinancialGateway: "7B34F9D8-6BBA-423E-B50E-525ABB3A1013",
+    /** Financial Statement Template field type */
+    FinancialStatementTemplate: "9E0CD807-D69F-4888-A9BE-BCD11DD083FE",
     /** Gender field type */
     Gender: "2E28779B-4C76-4142-AE8D-49EA31DDB503",
     /** Group field type */

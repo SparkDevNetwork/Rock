@@ -47,8 +47,9 @@ SELECT 'GroupMember' AS [Entity]
     , CONCAT(p.[NickName], ' ', p.[LastName]) AS 'Name'
     , g.[Id] AS [GroupId]
     , g.[Name] AS [GroupName]
-    , gtr.[Name] AS [GroupTypeName]
-    , gm.[ScheduleReminderEmailOffsetDays] AS [SendRemindersDaysBefore]
+    , gtr.[Name] AS [GroupRoleName]
+    , gt.[ScheduleReminderEmailOffsetDays] AS [GroupTypeReminderOffsetDays]
+    , gm.[ScheduleReminderEmailOffsetDays] AS [GroupMemberReminderOffsetDays]
     , gm.[ScheduleTemplateId] AS [ScheduleTemplateId]
     , gmst.[Name] AS [ScheduleTemplateName]
     , gm.[ScheduleStartDate]
@@ -59,6 +60,8 @@ INNER JOIN [Person] p
     ON p.[Id] = gm.[PersonId]
 INNER JOIN [Group] g
     ON g.[Id] = gm.[GroupId]
+INNER JOIN [GroupType] gt
+    ON gt.[Id] = g.[GroupTypeId]
 INNER JOIN [GroupTypeRole] gtr
     ON gtr.[Id] = gm.[GroupRoleId]
 LEFT OUTER JOIN [GroupMemberScheduleTemplate] gmst

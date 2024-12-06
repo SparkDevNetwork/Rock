@@ -312,7 +312,11 @@ namespace Rock.CheckIn.v2
             // location combination.
             var personLocationLabelsToPrint = groupTypeLabels
                 .Where( gtl => gtl.CheckInLabel.LabelType == LabelType.PersonLocation )
-                .DistinctBy( gtl => gtl.CheckInLabel.Id )
+                .DistinctBy( gtl => new
+                {
+                    gtl.AreaId,
+                    LabelId = gtl.CheckInLabel.Id
+                } )
                 .OrderBy( gtl => gtl.Order )
                 .ThenBy( gtl => gtl.CheckInLabel.Id )
                 .ToList();
@@ -346,7 +350,8 @@ namespace Rock.CheckIn.v2
                     attendanceLabelsForPerson,
                     attendanceLabels,
                     kiosk,
-                    sessionFamily ) );
+                    sessionFamily,
+                    preventDuplicateLabels: true ) );
 
                 // Print labels that get printed once per location for the
                 // person.
@@ -358,7 +363,8 @@ namespace Rock.CheckIn.v2
                         attendanceLabelsByLocation,
                         attendanceLabels,
                         kiosk,
-                        sessionFamily ) );
+                        sessionFamily,
+                        preventDuplicateLabels: true ) );
                 }
 
                 // Print labels that get printed for every attendance record.
@@ -603,6 +609,8 @@ namespace Rock.CheckIn.v2
 
                     return new RenderedLabel
                     {
+                        LabelId = label.IdKey,
+                        LabelName = label.Name,
                         Data = memoryStream.ToArray(),
                         PrintTo = printer
                     };
@@ -619,11 +627,19 @@ namespace Rock.CheckIn.v2
         /// <param name="attendanceLabels">All attendance data for the check-in session.</param>
         /// <param name="kiosk">The kiosk performing the operation, may be <see langword="null"/>.</param>
         /// <param name="sessionFamily">The family that was matched during the check-in operation, may be <see langword="null"/>.</param>
+        /// <param name="preventDuplicateLabels">If <c>true</c> then duplicate <see cref="CheckInLabel"/> instances will be skipped.</param>
         /// <returns>A set of labels to be printed.</returns>
-        private IEnumerable<RenderedLabel> RenderLabels( List<OrderedAreaLabel> labelsToPrint, IEnumerable<LabelAttendanceDetail> filteredAttendanceLabels, List<LabelAttendanceDetail> attendanceLabels, DeviceCache kiosk, Group sessionFamily )
+        private IEnumerable<RenderedLabel> RenderLabels( List<OrderedAreaLabel> labelsToPrint, IEnumerable<LabelAttendanceDetail> filteredAttendanceLabels, List<LabelAttendanceDetail> attendanceLabels, DeviceCache kiosk, Group sessionFamily, bool preventDuplicateLabels = false )
         {
+            var renderedLabelIds = new List<int>( labelsToPrint.Count );
+
             foreach ( var label in labelsToPrint )
             {
+                if ( preventDuplicateLabels && renderedLabelIds.Contains( label.CheckInLabel.Id ) )
+                {
+                    continue;
+                }
+
                 var attendanceLabel = filteredAttendanceLabels
                     .FirstOrDefault( al => al.Area.Id == label.AreaId );
 
@@ -633,6 +649,8 @@ namespace Rock.CheckIn.v2
                 {
                     continue;
                 }
+
+                renderedLabelIds.Add( label.CheckInLabel.Id );
 
                 var printer = GetPrintToDevice( kiosk, attendanceLabel );
                 var labelData = RenderLabel( label.CheckInLabel, attendanceLabel, attendanceLabels, sessionFamily, printer );

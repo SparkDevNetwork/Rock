@@ -30,7 +30,7 @@
                       field="scalesCount"
                       :filter="numberValueFilter"
                       width="5%"
-                      visiblePriority="xs" />
+                      visiblePriority="sm" />
 
         <BooleanColumn name="isActive"
                        title="Active"

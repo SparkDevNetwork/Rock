@@ -19,6 +19,7 @@
                 <StudentGrid v-if="!isRefreshingStudents"
                              :isAddEnabled="isEditable"
                              :isDeleteEnabled="isEditable"
+                             :showGrades="canViewGrades"
                              @addClick="onAddStudentClick"
                              @rowClick="onParticipantClick"
                              @deleteClick="onDeleteStudentClick" />
@@ -115,6 +116,10 @@
     // #region Values
 
     const props = defineProps({
+        canViewGrades: {
+            type: Boolean as PropType<boolean>,
+            default: () => false
+        },
         includeContentPages: {
             type: Boolean as PropType<boolean>,
             default: () => true
@@ -261,14 +266,14 @@
      * Called when an announcement row has been clicked by the individual.
      */
     function onAnnouncementClick(key: string | null): void {
-        navigateToPage(NavigationUrlKey.AnnouncementDetailPage, `${key}?returnUrl=${encodeURIComponent(window.location.href)}`);
+        navigateToPage(NavigationUrlKey.AnnouncementDetailPage, `${key}?autoEdit=true&returnUrl=${encodeURIComponent(window.location.href)}`);
     }
 
     /**
      * Called when a content page row has been clicked by the individual.
      */
     function onContentPageClick(key: string | null): void {
-        navigateToPage(NavigationUrlKey.ContentPageDetailPage, `${key}?returnUrl=${encodeURIComponent(window.location.href)}`);
+        navigateToPage(NavigationUrlKey.ContentPageDetailPage, `${key}?autoEdit=true&returnUrl=${encodeURIComponent(window.location.href)}`);
     }
 
     /**

@@ -23,6 +23,8 @@
 
 /** Service Job guids */
 export const ServiceJob = {
+    /** The job for calculating peer networks for individuals. */
+    CalculatePeerNetwork: "D3172560-0E8C-4E69-A477-56ABC018FEEF",
     /** The collect hosting metrics job - collect metrics regarding database connections, Etc. */
     CollectHostingMetrics: "36FA38CA-9DB0-40A8-BABD-5411121B4809",
     /** The data migrations 120 add communication get queued index */
@@ -132,6 +134,8 @@ export const ServiceJob = {
     DataMigrations167ChopPledgeEntryBlock: "8E8C177E-DE88-47B2-AD9A-FC6AD5965882",
     /** The Job to run Post v16.7 to populate EntityIntents from AdditionalSettingsJson. */
     DataMigrations167PopulateEntityIntentsFromAdditionalSettingsJson: "155C2051-1513-4BB3-83AD-8D37EBBC3F59",
+    /** The Job to run Post v17.0 to add new and update existing indexes to support the Peer Network feature. */
+    DataMigrations170AddAndUpdatePeerNetworkIndexes: "195DDB5A-FF1C-438E-BCA4-37EBC3D0F558",
     /** The Job to run Post v17.0 Data Migrations to chop Block. */
     DataMigrations170ChopObsidianBlocks: "74265B89-31DF-4430-84D4-8343C64F2580",
     /** The Job to run Post v17.0 Data Migrations to chop Shortened Link Block. */

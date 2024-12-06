@@ -136,7 +136,7 @@
                 break;
 
             case RegistrationPersonFieldType.Birthdate:
-                componentProps.label = "Birthday";
+                componentProps.label = "Birth Date";
                 break;
 
             case RegistrationPersonFieldType.AnniversaryDate:

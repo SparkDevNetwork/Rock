@@ -22,6 +22,7 @@
 //
 
 import { VolunteerGenerosityDataBag } from "@Obsidian/ViewModels/Blocks/Finance/VolunteerGenerosityAnalysis/volunteerGenerosityDataBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** A bag that contains all data for the Volunteer Generosity Analysis block. */
 export type VolunteerGenerosityInitializationBox = {
@@ -38,7 +39,7 @@ export type VolunteerGenerosityInitializationBox = {
     showCampusFilter: boolean;
 
     /** Gets or sets the list of unique campuses. */
-    uniqueCampuses?: string[] | null;
+    uniqueCampuses?: ListItemBag[] | null;
 
     /** Gets or sets the list of unique groups  */
     uniqueGroups?: string[] | null;

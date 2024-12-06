@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) group member requirement.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_MEMBER_REQUIREMENT )]
     public class GroupMemberRequirementFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

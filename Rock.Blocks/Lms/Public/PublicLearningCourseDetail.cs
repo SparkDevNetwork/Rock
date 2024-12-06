@@ -22,7 +22,6 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Model;
-using Rock.Utility;
 using Rock.ViewModels.Blocks.Lms.PublicLearningCourseDetail;
 using Rock.Web;
 using Rock.Web.UI.Controls;
@@ -32,13 +31,11 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays the details for a public learning course.
     /// </summary>
-
     [DisplayName( "Public Learning Course Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular public learning course." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
-
 
     [CodeEditorField( "Lava Template",
         Key = AttributeKey.CourseDetailTemplate,
@@ -55,25 +52,16 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.ClassWorkspacePage,
         Order = 2 )]
 
-    [CustomDropdownListField(
-        "Show Completion Status",
-        Key = AttributeKey.ShowCompletionStatus,
-        Description = "Determines if the individual's completion status should be shown.",
-        ListSource = "Show,Hide",
-        IsRequired = true,
-        DefaultValue = "Show",
-        Order = 3 )]
-
     [SlidingDateRangeField( "Next Session Date Range",
-        Description = "Filter to limit the display of upcming sessions.",
-        Order = 4,
+        Description = "Filter to limit the display of upcoming sessions.",
+        Order = 3,
         IsRequired = false,
         Key = AttributeKey.NextSessionDateRange )]
 
     [LinkedPage( "Enrollment Page",
         Description = "The page that will enroll the student in the course.",
         Key = AttributeKey.CourseEnrollmentPage,
-        Order = 5 )]
+        Order = 4 )]
 
     [BooleanField(
         "Public Only",
@@ -82,7 +70,7 @@ namespace Rock.Blocks.Lms
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         Key = AttributeKey.PublicOnly,
-        Order = 6 )]
+        Order = 5 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "c5d5a151-038e-4295-a03c-63196883f68e" )]
     [Rock.SystemGuid.BlockTypeGuid( "b0dce130-0c91-4aa0-8161-57e8fa523392" )]
@@ -93,7 +81,7 @@ namespace Rock.Blocks.Lms
         private static class AttributeKey
         {
             public const string CourseEnrollmentPage = "CourseEnrollmentPage";
-            public const string CourseDetailTemplate = "CourseListTemplate";
+            public const string CourseDetailTemplate = "CourseDetailTemplate";
             public const string ClassWorkspacePage = "DetailPage";
             public const string NextSessionDateRange = "NextSessionDateRange";
             public const string PublicOnly = "PublicOnly";
@@ -166,24 +154,26 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                             <h4 class=""m-0"">Course Description</h4>
                         </div>
                         <div class=""card-text"">
-                            <div class=""text-muted"">
+                            {% if Course.Entity.CourseCode != empty %}
+                            <div class=""text-gray-600"">
                                 <span class=""text-bold"">Course Code: </span>
                                 <span>{{Course.Entity.CourseCode}}</span>
                             </div>
+                            {% endif %}
 
-                            <div class=""text-muted"">
+                            <div class=""text-gray-600"">
                                 <span class=""text-bold"">Credits: </span>
                                 <span>{{Course.Entity.Credits}}</span>
                             </div>
 
-                            <div class=""text-muted"">
+                            <div class=""pb-3 text-gray-600"""">
                                 <span class=""text-bold"">Prerequisites: </span>
                                 <span>
                                     {{ prerequisitesText }}
                                 </span>
                             </div>
 
-                            <div class=""pt-3 text-muted"">
+                            <div class=""pt-3 border-top border-gray-200"">
                                 <span>{{Course.DescriptionAsHtml}}</span>
                             </div>
                         </div>
@@ -219,22 +209,49 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
 
                         {% when 'Pass' or 'Fail' %}
-                        <div class=""card rounded-lg"">
-                            
-                            <div class=""card-body"">
-                                <div class=""card-title d-flex align-items-center"">
-                                    <i class=""fa fa-rotate-left mr-2""></i>
-                                    <h4 class=""m-0"">History</h4>
+                            {% if CanShowHistoricalAccess == true %}
+
+                            <div class=""card rounded-lg"">
+                                
+                                <div class=""card-body"">
+                                    <div class=""card-title d-flex align-items-center"">
+                                        <i class=""fa fa-rotate-left mr-2""></i>
+                                        <h4 class=""m-0"">History</h4>
+                                    </div>
+                                    <div class=""text-muted"">You completed this class on {{
+                                        Course.MostRecentParticipation.LearningCompletionDateTime | Date: 'MMMM dd, yyyy' }}</div>
+            
+                                    <div class=""mt-3"">
+                                        <a href=""{{ Course.ClassWorkspaceLink }}"">View Class Work</a>
+                                    </div>
                                 </div>
-                                <div class=""text-muted"">You completed this class on {{
-                                    Course.MostRecentParticipation.LearningCompletionDateTime | Date: 'MMMM dd, yyyy' }}</div>
-        
-                                <div class=""mt-3"">
-                                    <a href=""{{ Course.ClassWorkspaceLink }}"">View Class Work</a>
-                                </div>
+                                
                             </div>
                             
-                        </div>
+                            {% else %}
+                            
+                            <div class=""card rounded-lg"">
+                                
+                                <div class=""card-body"">
+                                    <div class=""card-title d-flex align-items-center"">
+                                        <i class=""fa fa-rotate-left mr-2""></i>
+                                        <h4 class=""m-0"">History</h4>
+                                    </div>
+                                    <div class=""text-muted"">You completed this class on {{
+                                        Course.MostRecentParticipation.LearningCompletionDateTime | Date: 'MMMM dd, yyyy' }}</div>
+            
+                                    <div class=""mt-3"">
+                                        <div class=""text-muted"">
+                                            <p class=""text-bold mb-0"">Grade</p>
+                                            <p class=""mb-0"">{{ Course.MostRecentParticipation.LearningGradingSystemScale.Name }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            
+                            
+                            {% endif %}
 
                         {% else %}
 
@@ -247,7 +264,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                                 </div>
 
                                 <div class=""card-text d-flex flex-column gap-1"">
-
+                                    {% if Course.Program.ConfigurationMode == ""AcademicCalendar"" %}
                                     <div class=""text-muted"">
                                         <p class=""text-bold mb-0"">Next Session Semester: </p>
                                         {% if Course.NextSemester.Name %}
@@ -256,9 +273,10 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                                         <p>TBD</p>
                                         {% endif %}
                                     </div>
+                                    {% endif %}
 
                                     <div class=""text-muted"">
-                                        <p class=""text-bold mb-0"">{{ 'Instructor' | PluralizeForQuantity:facilitatorCount
+                                        <p class=""text-bold mb-0"">{{ 'Facilitator' | PluralizeForQuantity:facilitatorCount
                                             }}:</p>
                                         <p>{{ facilitators }}</p>
                                     </div>
@@ -271,7 +289,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                                     <div class=""text-muted"">
                                         <div class=""d-flex align-items-center"">
                                             <p class=""text-bold mb-0"">{{ requirementType | Pluralize }}</p>
-                                            {% if course.UnmetPrerequisites %}
+                                            {% if Course.UnmetPrerequisites %}
                                             <i class=""fa fa-check-circle text-success ml-2""></i>
                                             {% else %}
                                             <i class=""fa fa-exclamation-circle text-danger ml-2""></i>
@@ -284,10 +302,10 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
                                     <div class=""mt-3"">
 
-                                        {% if Course.UnmetPrerequisites %}
-                                        <a class=""btn btn-info disabled"">Enroll</a>
-                                        {% else %}
-                                        <a class=""btn btn-info"" href=""{{ Course.CourseEnrollmentLink }}"">Enroll</a>
+                                        {% if ErrorKey == 'enrollment_closed' or ErrorKey == 'class_full' %}
+                                            <p class=""text-danger"">Enrollment is closed for this class.</p>
+                                            {% else %}
+                                                <a class=""btn btn-info"" href=""{{ Course.CourseEnrollmentLink }}"">Enroll</a>
                                         {% endif %}
 
                                     </div>
@@ -303,11 +321,16 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
         </div>
     </div>
 </div>
-
 ";
         }
 
         #endregion Keys
+
+        /// <summary>
+        /// Whether the ShowCompletionStatus block setting is configured to "Show".
+        /// </summary>
+        /// <returns><c>true</c> if the completion status should be shown; otherwise <c>false</c>.</returns>
+        private bool ShowCompletionStatus => GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";
 
         #region Methods
 
@@ -335,11 +358,11 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( PublicLearningCourseDetailBlockBox box )
         {
-            box.CourseHtml = GetHtmlContent(false);
+            box.CourseHtml = GetHtmlContent( false );
         }
 
         /// <summary>
-        /// Gets the html content for the block.
+        /// Gets the HTML content for the block.
         /// </summary>
         /// <param name="includeNextSessionFiltering">Optional filter to restrict courses to those within the block setting's "Next Session Date Range".</param>
         /// <returns>The resolved lava template.</returns>
@@ -355,39 +378,19 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
             var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
 
             var course = includeNextSessionFiltering ?
-                learningCourseService.GetPublicCourseDetails( courseId, currentPerson?.Id, publicOnly, semesterDateRange.Start, semesterDateRange.End ) :
-                learningCourseService.GetPublicCourseDetails( courseId, currentPerson?.Id, publicOnly );
+                learningCourseService.GetPublicCourseDetails( courseId, currentPerson, publicOnly, semesterDateRange.Start, semesterDateRange.End ) :
+                learningCourseService.GetPublicCourseDetails( courseId, currentPerson, publicOnly );
 
             course.DescriptionAsHtml = new StructuredContentHelper( course.Entity?.Description ?? string.Empty ).Render();
 
-            var enrolledClassIdKey = course.MostRecentParticipation?.LearningClassId > 0 ?
-                IdHasher.Instance.GetHash( course.MostRecentParticipation.LearningClassId ) :
-                course.NextSemester?.LearningClasses?.FirstOrDefault()?.IdKey;
-            var queryParams = new Dictionary<string, string>
-            {
-                [PageParameterKey.LearningProgramId] = course.Program.IdKey,
-                [PageParameterKey.LearningCourseId] = course.Entity.IdKey,
-                ["LearningClassId"] = enrolledClassIdKey
-            };
-
-            course.ClassWorkspaceLink = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, queryParams );
-            course.CourseEnrollmentLink = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
+            AddClassSpecificProperties( course ); 
 
             var mergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
             mergeFields.Add( "Course", course );
-            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
+            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus );
 
             var template = GetAttributeValue( AttributeKey.CourseDetailTemplate ) ?? string.Empty;
             return template.ResolveMergeFields( mergeFields );
-        }
-
-        /// <summary>
-        /// Whether the ShowCompletionStatus block setting us configured to "Show".
-        /// </summary>
-        /// <returns><c>true</c> if the completion status should be shown; otherwise <c>false</c>.</returns>
-        private bool ShowCompletionStatus()
-        {
-            return GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";
         }
 
         /// <inheritdoc/>
@@ -400,7 +403,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
             // (prevent unused/unnecessary query string parameters). 
             var includedParamKeys = new[] { "learningprogramid", "learningcourseid" };
             var paramsToInclude = pageReference.Parameters.Where( kv => includedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
-            
+
             var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
             var breadCrumb = new BreadCrumbLink( entityName ?? "Course Description", breadCrumbPageRef );
 
@@ -411,6 +414,29 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                     breadCrumb
                 }
             };
+        }
+
+        /// <summary>
+        /// Adds class specific properties that require configuration from the block.
+        /// </summary>
+        /// <param name="course"></param>
+        private void AddClassSpecificProperties( LearningCourseService.PublicLearningCourseDetailBag course )
+        {
+            foreach ( var semester in course.Semesters )
+            {
+                foreach ( var availableClass in semester.AvailableClasses )
+                {
+                    var queryParams = new Dictionary<string, string>
+                    {
+                        [PageParameterKey.LearningProgramId] = course.Program.IdKey,
+                        [PageParameterKey.LearningCourseId] = course.Entity.IdKey,
+                        ["LearningClassId"] = availableClass.Entity.IdKey
+                    };
+
+                    availableClass.EnrollmentLink = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
+                    availableClass.WorkspaceLink = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, queryParams );
+                }
+            }
         }
 
         #endregion

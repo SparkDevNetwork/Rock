@@ -28,6 +28,7 @@ namespace Rock.Field.Types
     /// Field Type to select 0 or more ContentChannels 
     /// Stored as comma-delimited list of ContentChannel.Guids
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONTENT_CHANNELS )]
     public class ContentChannelsFieldType : SelectFromListFieldType, IEntityReferenceFieldType

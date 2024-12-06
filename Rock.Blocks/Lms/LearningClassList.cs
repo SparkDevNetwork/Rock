@@ -163,8 +163,8 @@ namespace Rock.Blocks.Lms
             }
             
             // Only add the course column if the results aren't filtered to a course already.
-            options.ShowCourseColumn = course == null;
-            options.HasValidCourse = course != null;
+            options.HasValidCourse = course?.Id > 0;
+            options.ShowCourseColumn = !options.HasValidCourse;
 
             options.ShowLocationColumn = GetAttributeValue( AttributeKey.ShowLocationColumn ).AsBoolean();
             options.ShowScheduleColumn = GetAttributeValue( AttributeKey.ShowScheduleColumn ).AsBoolean();
@@ -223,10 +223,22 @@ namespace Rock.Blocks.Lms
             var courseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
             if ( courseId > 0 )
             {
+                // When there's a course defined include all classes.
                 baseQuery = baseQuery.Where( c => c.LearningCourseId == courseId );
+            }
+            else
+            {
+                // When there's no course selected show only active classes.
+                baseQuery = baseQuery.Where( c => c.IsActive );
             }
 
             return baseQuery;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<LearningClass> GetOrderedListQueryable( IQueryable<LearningClass> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( c => c.LearningCourse.Name ).ThenBy( c => c.Name );
         }
 
         /// <inheritdoc/>
@@ -235,7 +247,11 @@ namespace Rock.Blocks.Lms
             var grid = new GridBuilder<LearningClass>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddField( "facilitators", a => a.LearningParticipants.Where( p => p.GroupRole.IsLeader ).Select( p => p.Person.FullName ).JoinStrings( ", " ) )
+                .AddField( "facilitators", a => a.LearningParticipants
+                    .Where( p => p.GroupRole.IsLeader )
+                    .Select( p => p.Person.FullName )
+                    .OrderBy( p => p )
+                    .JoinStrings( ", " ) )
                 .AddField( "students", a => a.LearningParticipants.Count( p => !p.GroupRole?.IsLeader ?? false ) )
                 .AddTextField( "course", a => a.LearningCourse.Name )
                 .AddTextField( "learningCourseIdKey", a => a.LearningCourse.IdKey )
@@ -247,7 +263,7 @@ namespace Rock.Blocks.Lms
 
             if ( GetAttributeValue( AttributeKey.ShowSemesterColumn ).AsBoolean() )
             {
-                grid.AddTextField( "semester", a => a.LearningSemester.Name );
+                grid.AddTextField( "semester", a => a.LearningSemester?.Name );
             }
 
             if ( GetAttributeValue( AttributeKey.ShowLocationColumn ).AsBoolean() )
@@ -266,6 +282,53 @@ namespace Rock.Blocks.Lms
         #endregion
 
         #region Block Actions
+        
+        /// <summary>
+        /// Copy the Class to create as a new Class
+        /// </summary>
+        [BlockAction]
+        public BlockActionResult Copy( string key )
+        {
+            if ( key.IsNullOrWhiteSpace() )
+            {
+                return ActionNotFound();
+            }
+
+            var learningClassService = new LearningClassService( RockContext );
+            var copiedEntity = learningClassService.Copy( key );
+            var currentPageParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId )
+            };
+
+            var courseIdPageParameter = PageParameter( PageParameterKey.LearningCourseId );
+
+            // When creating the return url only include the LearningCourseId
+            // if it's present for the current page ( avoid an empty query string param).
+            if ( courseIdPageParameter.IsNotNullOrWhiteSpace() )
+            {
+                currentPageParams.Add( PageParameterKey.LearningCourseId, courseIdPageParameter );
+            }
+
+            var returnUrl = this.GetCurrentPageUrl( currentPageParams );
+
+            // After getting the returnUrl ensure that the detail page includes the LearningCourseIdKey.
+            if ( courseIdPageParameter.IsNullOrWhiteSpace() )
+            {
+                var courseIdKeyFromCopiedClass = IdHasher.Instance.GetHash( copiedEntity.LearningCourseId );
+                currentPageParams.AddOrReplace( PageParameterKey.LearningCourseId, courseIdKeyFromCopiedClass );
+            }
+
+            // Add the LearningClassId, autoEdit and returnUrl to the current page parameters.
+            var queryParams = new Dictionary<string, string>( currentPageParams )
+            {
+                ["LearningClassId"] = copiedEntity.IdKey,
+                ["autoEdit"] = true.ToString(),
+                ["returnUrl"] = returnUrl
+            };
+
+            return ActionContent( System.Net.HttpStatusCode.Created, this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams ) );
+        }
 
         /// <summary>
         /// Deletes the specified entity.
@@ -287,7 +350,7 @@ namespace Rock.Blocks.Lms
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${LearningClass.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {LearningClass.FriendlyTypeName}." );
                 }
 
                 entityService.Delete( entity.Id );

@@ -17,7 +17,6 @@
 
 using System;
 
-using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Utility;
@@ -35,7 +34,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public LearningActivityBag ActivityBag { get; set; }
 
         /// <summary>
-        /// Gets or sets the completion json for the activity component.
+        /// Gets or sets the completion JSON for the activity component.
         /// </summary>
         public string ActivityComponentCompletionJson { get; set; }
 
@@ -114,11 +113,6 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         /// Indicates whether or not the activity was completed late or is late (if incomplete).
         /// </summary>
         public bool IsLate { get; set; }
-
-        /// <summary>
-        /// Indicates whether or not student commenting is enabled for this activity.
-        /// </summary>
-        public bool IsStudentCommentingEnabled { get; set; }
 
         /// <summary>
         /// Indicates whether or not the related activity instance has been completed by the student.

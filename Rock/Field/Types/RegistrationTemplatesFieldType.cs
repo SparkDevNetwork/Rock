@@ -32,6 +32,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as a List of RegistrationTemplate Guids
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REGISTRATION_TEMPLATES )]
     public class RegistrationTemplatesFieldType : FieldType, IEntityReferenceFieldType, ISplitMultiValueFieldType

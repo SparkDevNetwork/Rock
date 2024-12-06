@@ -65,6 +65,11 @@ namespace Rock.Blocks.CheckIn
             public const string SelectedParentLocation = "selected-parent-location";
         }
 
+        private static class NavigationUrlKey
+        {
+            public const string ParentPage = "ParentPage";
+        }
+
         #endregion
 
         #region Properties
@@ -142,8 +147,26 @@ namespace Rock.Blocks.CheckIn
                 };
             }
 
+            bag.NavigationUrls = GetBoxNavigationUrls();
+
             return bag;
         }
+
+        /// <summary>
+        /// Gets the box navigation URLs required for the page to operate.
+        /// </summary>
+        /// <returns>A dictionary of key names and URL values.</returns>
+        private Dictionary<string, string> GetBoxNavigationUrls()
+        {
+            return new Dictionary<string, string>
+            {
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    ["CheckinTypeId"] = PageParameter( PageParameterKey.GroupTypeId )
+                } ),
+            };
+        }
+
 
         /// <summary>
         /// Gets the list of schedules to display and applies the category filter against the schedules.

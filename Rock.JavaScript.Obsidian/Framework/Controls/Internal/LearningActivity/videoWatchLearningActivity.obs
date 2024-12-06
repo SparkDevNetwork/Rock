@@ -42,26 +42,26 @@
         </div>
     </Panel>
 
-    <div v-if="screenToShow === ComponentScreen.Completion">
-        <fieldset>
-            <div class="header-section">
-                <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
-            </div>
+    <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
 
-            <div class="video-section">
-                <MediaPlayer v-model:watchedPercentage="watchedPercentage"
-                             :mediaElementGuid="video?.value ?? ''" />
-            </div>
-            <div class="footer-section">
-                <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
-            </div>
-            <div class="footer-buttons">
-                <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold"
-                            @click="onCompletedAndClosed">
-                    completeButtonText
-                </RockButton>
-            </div>
-        </fieldset>
+        <div class="header-section">
+            <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
+        </div>
+
+        <div class="video-section">
+            <MediaPlayer v-model:watchedPercentage="watchedPercentage"
+                         :mediaElementGuid="video?.value ?? ''" />
+        </div>
+        <div class="footer-section">
+            <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
+        </div>
+        <div class="footer-button-section">
+            <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold"
+                        @click="onCompletedAndClosed">
+                {{ completeButtonText }}
+            </RockButton>
+        </div>
+
     </div>
 </template>
 <script setup lang="ts">
@@ -86,6 +86,7 @@
     const emits = defineEmits({ ...learningActivityEmits });
 
     const disabled = ref(props.disabled ?? false);
+    const completeClicked = ref(false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = computed(() => props.activityBag);
@@ -114,7 +115,6 @@
 
     const hasPassedThreshold = computed(() => watchedPercentage.value >= completionThreshold.value);
     const notificationAlertType = computed(() => hasPassedThreshold ? "success" : "warning");
-    const isStudentCompleted = ref(completionBag.value.isStudentCompleted);
 
     // The threshold control should show as a number between 0 and 100;
     // while the saved value will be normalized as a decimal < 1.
@@ -127,6 +127,7 @@
     function onCompletedAndClosed(): void {
         if (isCompleted.value === false) {
             emits("completed", true);
+            completeClicked.value = true;
         }
 
         emits("closed");

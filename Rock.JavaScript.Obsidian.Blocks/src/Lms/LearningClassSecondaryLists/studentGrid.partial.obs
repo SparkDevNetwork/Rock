@@ -16,7 +16,8 @@
                 title="Name"
                 field="name"
                 :filter="textValueFilter"
-                :filterValue="getPersonNameFilterValue">
+                :filterValue="getPersonNameFilterValue"
+                visiblePriority="xs">
             <template #format="{ row }">
 
                 <div class="d-flex flex-fill align-items-center">
@@ -44,15 +45,32 @@
             </template>
         </Column>
 
-        <TextColumn name="currentAssignment" title="Current Assignment" field="currentAssignment" :filter="pickExistingValueFilter" visiblePriority="xs" />
+        <TextColumn
+                    name="currentAssignment"
+                    title="Current Assignment"
+                    field="currentAssignment"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs" />
 
-        <Column name="currentGradePercent" title="Current Grade" field="currentGradePercent" :filter="numberValueFilter" visiblePriority="xs">
+        <Column
+                v-if="showGrades"
+                name="currentGradePercent"
+                title="Current Grade"
+                field="currentGradePercent"
+                :filter="numberValueFilter"
+                visiblePriority="xs">
             <template #format="{ row }">
                 {{ row.currentGrade }} ({{ row.currentGradePercent }}%)
             </template>
         </Column>
 
-        <Column v-if="hasAbsencesColumn" name="absences" title="Absences" field="absences" :filter="numberValueFilter" visiblePriority="sm">
+        <Column
+                v-if="hasAbsencesColumn"
+                name="absences"
+                title="Absences"
+                field="absences"
+                :filter="numberValueFilter"
+                visiblePriority="sm">
             <template #format="{ row }">
                 <span :class="'label label-' + row.absencesLabelStyle">{{ row.absences }}</span>
             </template>
@@ -70,7 +88,6 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
-    import { confirm } from "@Obsidian/Utility/dialogs";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -82,13 +99,19 @@
 
     const props = defineProps({
         isAddEnabled: {
-            type: Object as PropType<boolean>,
+            type: Boolean as PropType<boolean>,
             required: true,
             default: false
         },
 
         isDeleteEnabled: {
-            type: Object as PropType<boolean>,
+            type: Boolean as PropType<boolean>,
+            required: true,
+            default: false
+        },
+
+        showGrades: {
+            type: Boolean as PropType<boolean>,
             required: true,
             default: false
         }

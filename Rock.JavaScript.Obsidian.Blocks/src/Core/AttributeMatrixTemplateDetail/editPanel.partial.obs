@@ -42,14 +42,6 @@
             </Grid>
         </div>
         <Modal v-model="isAttributeModalOpen" title="Matrix Template Attributes" saveText="Save" @save="onSaveAttribute">
-            <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                Please correct the following:
-                <ul>
-                    <li v-for="error of attributeErrors">
-                        {{ error }}
-                    </li>
-                </ul>
-            </NotificationBox>
             <AttributeEditor v-model="templateAttribute" :reservedKeyNames="reservedKeyNames" />
         </Modal>
 
@@ -142,7 +134,6 @@
     const isAttributeModalOpen = ref(false);
     const templateAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
-    const attributeErrors = ref<string[]>([]);
     const invokeBlockAction = useInvokeBlockAction();
 
     // The properties that are being edited. This should only contain
@@ -224,13 +215,13 @@
 
     // #region Event Handlers
     async function onAddAttribute(): Promise<void> {
-        templateAttribute.value = {} as PublicEditableAttributeBag;
+        templateAttribute.value = {
+            fieldTypeGuid: FieldType.Text
+        } as PublicEditableAttributeBag;
         isAttributeModalOpen.value = true;
-        attributeErrors.value = [];
     }
 
     const onEditAttribute = async (key: string): Promise<void> => {
-        attributeErrors.value = [];
         const selectedAttribute = templateAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute) {
@@ -260,44 +251,36 @@
     };
 
     function onSaveAttribute(): void {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(templateAttribute.value?.key ?? "") && !templateAttribute.value?.guid;
+        if (templateAttribute.value) {
+            const index = templateAttributes.value.findIndex(a => a.guid === templateAttribute.value?.guid);
+            if (index !== -1) {
+                // Get the updated attribute and rowItem.
+                let editedAttribute = templateAttributes.value.find(a => a.guid == templateAttribute.value?.guid);
+                let rowItem = attributesGridData.rows?.find(x => x.guid == templateAttribute.value?.guid);
 
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
-        else {
-            if (templateAttribute.value) {
-                const index = templateAttributes.value.findIndex(a => a.guid === templateAttribute.value?.guid);
-                if (index !== -1) {
-                    // Get the updated attribute and rowItem.
-                    let editedAttribute = templateAttributes.value.find(a => a.guid == templateAttribute.value?.guid);
-                    let rowItem = attributesGridData.rows?.find(x => x.guid == templateAttribute.value?.guid);
-
-                    if (editedAttribute) {
-                        // Replace old attribute with updated attribute.
-                        editedAttribute = templateAttribute.value;
-                        templateAttributes.value.splice(index, 1, editedAttribute);
-                    }
-
-                    if (rowItem && attributesGridData.rows && editedAttribute) {
-                        // Update GridRowItem so changes are reflected in the UI.
-                        const rowIndex = attributesGridData.rows.findIndex(r => r.guid === templateAttribute.value?.guid);
-                        rowItem = convertToAttributeGridRowItem(editedAttribute);
-                        attributesGridData.rows?.splice(rowIndex, 1, rowItem);
-                    }
-                }
-                else {
-                    templateAttribute.value.guid = templateAttribute.value.guid ?? newGuid();
-                    templateAttributes.value.push(templateAttribute.value);
-
-                    // Add new RowItem to the grid to represent the newly added attribute.
-                    const newRowItem = convertToAttributeGridRowItem(templateAttribute.value);
-                    attributesGridData.rows?.push(newRowItem);
+                if (editedAttribute) {
+                    // Replace old attribute with updated attribute.
+                    editedAttribute = templateAttribute.value;
+                    templateAttributes.value.splice(index, 1, editedAttribute);
                 }
 
-                isAttributeModalOpen.value = false;
+                if (rowItem && attributesGridData.rows && editedAttribute) {
+                    // Update GridRowItem so changes are reflected in the UI.
+                    const rowIndex = attributesGridData.rows.findIndex(r => r.guid === templateAttribute.value?.guid);
+                    rowItem = convertToAttributeGridRowItem(editedAttribute);
+                    attributesGridData.rows?.splice(rowIndex, 1, rowItem);
+                }
             }
+            else {
+                templateAttribute.value.guid = templateAttribute.value.guid ?? newGuid();
+                templateAttributes.value.push(templateAttribute.value);
+
+                // Add new RowItem to the grid to represent the newly added attribute.
+                const newRowItem = convertToAttributeGridRowItem(templateAttribute.value);
+                attributesGridData.rows?.push(newRowItem);
+            }
+
+            isAttributeModalOpen.value = false;
         }
     }
 

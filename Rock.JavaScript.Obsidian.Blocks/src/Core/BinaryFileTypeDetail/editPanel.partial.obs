@@ -18,9 +18,19 @@
                 <TextBox v-model="iconCssClass"
                          label="Icon CSS Class" />
 
-                <CheckBox v-model="requiresViewSecurity"
-                          label="Requires View Security"
-                          help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="requiresViewSecurity"
+                                  label="Requires View Security"
+                                  help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="allowAnonymous"
+                                  label="Allow Anonymous"
+                                  help="Enable this to allow anyone to upload files of this type without checking Edit permissions." />
+                    </div>
+                </div>
+
                 <ComponentPicker v-model="storageEntityType"
                                  containerType="Rock.Storage.ProviderContainer, Rock"
                                  label="Storage Type"
@@ -42,17 +52,9 @@
                             <DeleteColumn @click="onDeleteAttribute" />
                         </Grid>
                     </div>
-                    <Modal v-model="isAttributeModalOpen" title="Step Participant Attributes">
+                    <Modal v-model="isAttributeModalOpen" title="Binary File Type Attributes">
 
                         <RockForm v-model:submit="saveAttribute" @submit="onSaveAttribute">
-                            <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                                Please correct the following:
-                                <ul>
-                                    <li v-for="error of attributeErrors">
-                                        {{ error }}
-                                    </li>
-                                </ul>
-                            </NotificationBox>
                             <AttributeEditor v-model="binaryFileTypeAttribute" :reservedKeyNames="reservedKeyNames" />
                         </RockForm>
 
@@ -154,6 +156,7 @@
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
     const requiresViewSecurity = propertyRef(props.modelValue.requiresViewSecurity, "RequiresViewSecurity");
+    const allowAnonymous = propertyRef(props.modelValue.allowAnonymous, "AllowAnonymous");
     const storageEntityType = propertyRef(props.modelValue.storageEntityType ?? {}, "StorageEntityTypeId");
     const maxFileSizeBytes = propertyRef(props.modelValue.maxFileSizeBytes?.toString() ?? "", "MaxFileSizeBytes");
     const maxWidth = propertyRef(props.modelValue.maxWidth?.toString() ?? "", "MaxWidth");
@@ -170,11 +173,10 @@
     const saveAttribute = ref(false);
     const binaryFileTypeAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
-    const attributeErrors = ref<string[]>([]);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, name, iconCssClass, requiresViewSecurity, storageEntityType, maxFileSizeBytes, maxWidth, maxHeight, preferredRequired, cacheToServerFileSystem, cacheControlHeaderSettings];
+    const propRefs = [description, name, iconCssClass, requiresViewSecurity, allowAnonymous, storageEntityType, maxFileSizeBytes, maxWidth, maxHeight, preferredRequired, cacheToServerFileSystem, cacheControlHeaderSettings];
 
     // #endregion
 
@@ -229,11 +231,9 @@
             fieldTypeGuid: FieldType.Text
         } as PublicEditableAttributeBag;
         isAttributeModalOpen.value = true;
-        attributeErrors.value = [];
     }
 
     function onEditAttribute(key: string): void {
-        attributeErrors.value = [];
         const selectedBinaryFileTypeAttribute = binaryFileTypeAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedBinaryFileTypeAttribute) {
@@ -297,12 +297,7 @@
     }
 
     const onStartSaveAttribute = (): void => {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(binaryFileTypeAttribute.value?.key ?? "");
-        saveAttribute.value = !isExistingKey;
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
+        saveAttribute.value = true;
     };
 
     // #endregion
@@ -315,6 +310,7 @@
         updateRefValue(name, props.modelValue.name ?? "");
         updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
         updateRefValue(requiresViewSecurity, props.modelValue.requiresViewSecurity);
+        updateRefValue(allowAnonymous, props.modelValue.allowAnonymous);
         updateRefValue(storageEntityType, props.modelValue.storageEntityType ?? {});
         updateRefValue(maxFileSizeBytes, props.modelValue.maxFileSizeBytes?.toString() ?? "");
         updateRefValue(maxWidth, props.modelValue.maxWidth?.toString() ?? "");
@@ -335,6 +331,7 @@
             name: name.value,
             iconCssClass: iconCssClass.value,
             requiresViewSecurity: requiresViewSecurity.value,
+            allowAnonymous: allowAnonymous.value,
             storageEntityType: storageEntityType.value,
             maxFileSizeBytes: toNumberOrNull(maxFileSizeBytes.value),
             maxWidth: toNumberOrNull(maxWidth.value),

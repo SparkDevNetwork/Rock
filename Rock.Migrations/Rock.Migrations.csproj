@@ -64,6 +64,22 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202411211742013_AddAdaptiveMessageCategory.cs" />
+    <Compile Include="Migrations\202411211742013_AddAdaptiveMessageCategory.Designer.cs">
+      <DependentUpon>202411211742013_AddAdaptiveMessageCategory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202412050843482_UpdateAnalyticsFinancialTransaction.cs" />
+    <Compile Include="Migrations\202412050843482_UpdateAnalyticsFinancialTransaction.Designer.cs">
+      <DependentUpon>202412050843482_UpdateAnalyticsFinancialTransaction.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202412051949353_Rollup_20241205.cs" />
+    <Compile Include="Migrations\202412051949353_Rollup_20241205.designer.cs">
+      <DependentUpon>202412051949353_Rollup_20241205.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202412052331428_CodeGenerated_20241205.cs" />
+    <Compile Include="Migrations\202412052331428_CodeGenerated_20241205.designer.cs">
+      <DependentUpon>202412052331428_CodeGenerated_20241205.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2321,11 +2337,31 @@
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.Designer.cs">
       <DependentUpon>202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411182318196_UpdateNextGenCheckInDefaultSecurity.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411182318196_UpdateNextGenCheckInDefaultSecurity.Designer.cs">
+      <DependentUpon>202411182318196_UpdateNextGenCheckInDefaultSecurity.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411191728290_RestoreChildAndParentKnownRelationships.cs" />
+    <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411191728290_RestoreChildAndParentKnownRelationships.Designer.cs">
+      <DependentUpon>202411191728290_RestoreChildAndParentKnownRelationships.cs</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RockStartup\DataMigrationsStartup.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202411211742013_AddAdaptiveMessageCategory.resx">
+      <DependentUpon>202411211742013_AddAdaptiveMessageCategory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202412050843482_UpdateAnalyticsFinancialTransaction.resx">
+      <DependentUpon>202412050843482_UpdateAnalyticsFinancialTransaction.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202412051949353_Rollup_20241205.resx">
+      <DependentUpon>202412051949353_Rollup_20241205.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202412052331428_CodeGenerated_20241205.resx">
+      <DependentUpon>202412052331428_CodeGenerated_20241205.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
     </EmbeddedResource>
@@ -4017,6 +4053,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.resx">
       <DependentUpon>202411142255543_AddAgeRestrictionToCheckInConfigurationGroupType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411182318196_UpdateNextGenCheckInDefaultSecurity.resx">
+      <DependentUpon>202411182318196_UpdateNextGenCheckInDefaultSecurity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411191728290_RestoreChildAndParentKnownRelationships.resx">
+      <DependentUpon>202411191728290_RestoreChildAndParentKnownRelationships.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

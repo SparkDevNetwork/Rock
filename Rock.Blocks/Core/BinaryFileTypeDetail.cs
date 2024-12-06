@@ -176,6 +176,7 @@ namespace Rock.Blocks.Core
             return new BinaryFileTypeBag
             {
                 IdKey = entity.IdKey,
+                AllowAnonymous = entity.AllowAnonymous,
                 CacheControlHeaderSettings = cacheability.ToCacheabilityBag(),
                 CacheToServerFileSystem = entity.CacheToServerFileSystem,
                 Description = entity.Description,
@@ -249,6 +250,9 @@ namespace Rock.Blocks.Core
             {
                 return false;
             }
+
+            box.IfValidProperty( nameof( box.Entity.AllowAnonymous ),
+                () => entity.AllowAnonymous = box.Entity.AllowAnonymous );
 
             box.IfValidProperty( nameof( box.Entity.CacheControlHeaderSettings ),
                 () => entity.CacheControlHeaderSettings = box.Entity.CacheControlHeaderSettings.ToCacheability()?.ToJson() );

@@ -71,8 +71,8 @@ namespace Rock.Blocks.Lms
         DefaultValue = "Is Grid Column",
         Order = 3 )]
 
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the Detail view for the learning program (if Display Mode is 'Summary').",
+    [LinkedPage( "Alternate Detail Page",
+        Description = "The page that will show the Detail view when in 'Summary' mode and the 'Summary' view when in 'Detail' mode.",
         Key = AttributeKey.DetailPage, IsRequired = false, Order = 4 )]
 
     #endregion
@@ -120,7 +120,7 @@ namespace Rock.Blocks.Lms
 
             SetBoxInitialEntityState( box );
 
-            box.NavigationUrls = GetBoxNavigationUrls( box.Entity.IdKey );
+            box.NavigationUrls = GetBoxNavigationUrls( box.Entity?.IdKey );
             box.Options = GetBoxOptions( box.IsEditable );
 
             return box;
@@ -498,7 +498,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningProgram.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningProgram.FriendlyTypeName}." );
                 return false;
             }
 
@@ -668,7 +668,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${LearningSemester.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningSemester.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

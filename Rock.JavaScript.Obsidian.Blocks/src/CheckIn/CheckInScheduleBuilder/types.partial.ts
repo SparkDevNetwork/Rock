@@ -25,3 +25,7 @@ export const enum PreferenceKey {
 export const enum PageParameterKey {
     GroupTypeId = "GroupTypeId"
 }
+
+export const enum NavigationUrlKey {
+    ParentPage = "ParentPage"
+}

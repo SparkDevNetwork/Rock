@@ -69,6 +69,7 @@
     // inform the server which incoming values have valid data in them.
     const validProperties = [
         "attributeValues",
+        "allowAnonymous",
         "cacheControlHeaderSettings",
         "cacheToServerFileSystem",
         "description",

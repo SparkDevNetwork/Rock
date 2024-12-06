@@ -188,9 +188,11 @@ namespace Rock.Blocks.Finance
                     {
                         Name = s.Key.AccountName,
                         Currency = s.Sum( a => ( decimal? ) a.Amount ) ?? 0.0M,
-                        GlCode = s.Key.GlCode
+                        GlCode = s.Key.GlCode,
+                        Order = s.Max( ftd => ftd.Account.Order )
                     } )
-                    .OrderBy( s => s.Name )
+                    .OrderBy( s => s.Order )
+                    .ThenBy( s => s.Name )
                     .ToList();
 
             options.TransactionAmount = options.Accounts

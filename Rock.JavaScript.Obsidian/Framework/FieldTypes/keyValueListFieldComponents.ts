@@ -164,20 +164,20 @@ export const EditComponent = defineComponent({
     <span class="key-value-rows">
         <div v-for="(value, valueIndex) in internalValues" class="controls controls-row form-control-group">
             <template v-if="!displayValueFirst">
-                <input v-model="value.key" class="key-value-key form-control input-width-md" type="text" :placeholder="keyPlaceholder">
+                <input v-model="value.key" class="key-value-key form-control" type="text" :placeholder="keyPlaceholder">
 
-                <select v-if="hasValues" v-model="value.value" class="form-control input-width-lg">
+                <select v-if="hasValues" v-model="value.value" class="form-control input-width-xl">
                     <option v-for="option in options" :value="option.value" :key="option.value">{{ option.text }}</option>
                 </select>
-                <input v-else v-model="value.value" class="key-value-value form-control input-width-md" type="text" :placeholder="valuePlaceholder">
+                <input v-else v-model="value.value" class="key-value-value form-control" type="text" :placeholder="valuePlaceholder">
             </template>
             <template v-else>
-                <select v-if="hasValues" v-model="value.value" class="form-control input-width-lg">
+                <select v-if="hasValues" v-model="value.value" class="form-control input-width-xl">
                     <option v-for="option in options" :value="option.value" :key="option.value">{{ option.text }}</option>
                 </select>
-                <input v-else v-model="value.value" class="key-value-value form-control input-width-md" type="text" :placeholder="valuePlaceholder">
+                <input v-else v-model="value.value" class="key-value-value form-control" type="text" :placeholder="valuePlaceholder">
 
-                <input v-model="value.key" class="key-value-key form-control input-width-md" type="text" :placeholder="keyPlaceholder">
+                <input v-model="value.key" class="key-value-key form-control" type="text" :placeholder="keyPlaceholder">
             </template>
 
             <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>

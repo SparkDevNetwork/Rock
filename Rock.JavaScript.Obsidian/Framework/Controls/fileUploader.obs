@@ -25,7 +25,7 @@
                         <div>{{ uploadProgressText }}</div>
                     </div>
 
-                    <div class="fileupload-dropzone">
+                    <div v-if="!disabled" class="fileupload-dropzone">
                         <span>{{ uploadButtonText }}</span>
                         <input ref="fileInputElement" type="file" style="display: none;" @change="onFileChange" @remove="onFileRemove" :disabled="disabled" />
                     </div>
@@ -54,7 +54,7 @@
          * The {@link ListItemBag.text} property should contain the name of the
          * file.
          */
-         modelValue: {
+        modelValue: {
             type: Object as PropType<ListItemBag | null>,
             required: false
         },
@@ -149,6 +149,7 @@
     /** True if the delete button should be visible. */
     const isDeleteVisible = computed((): boolean => {
         return props.showDeleteButton
+            && !props.disabled
             && (!!fileGuid.value || internalValue.value?.value?.startsWith("/") === true);
     });
 

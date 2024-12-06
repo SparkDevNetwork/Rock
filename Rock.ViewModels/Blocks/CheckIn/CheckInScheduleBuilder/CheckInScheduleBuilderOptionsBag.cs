@@ -42,5 +42,11 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInScheduleBuilder
         /// The Default Schedule Category
         /// </summary>
         public ListItemBag DefaultScheduleCategory { get; set; }
+
+        /// <summary>
+        /// Gets or sets the navigation urls.
+        /// </summary>
+        /// <value>The navigation urls.</value>
+        public Dictionary<string, string> NavigationUrls { get; set; } = new Dictionary<string, string>();
     }
 }

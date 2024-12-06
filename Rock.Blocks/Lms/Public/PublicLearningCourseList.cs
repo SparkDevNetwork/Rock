@@ -62,12 +62,6 @@ namespace Rock.Blocks.Lms
         DefaultValue = "Show",
         Order = 3 )]
 
-    [SlidingDateRangeField( "Next Session Date Range",
-        Description = "Filter to limit the display of upcoming sessions.",
-        Order = 4,
-        IsRequired = false,
-        Key = AttributeKey.NextSessionDateRange )]
-
     [BooleanField(
         "Public Only",
         Description = "If selected, all non-public courses will be excluded.",
@@ -75,7 +69,7 @@ namespace Rock.Blocks.Lms
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         Key = AttributeKey.PublicOnly,
-        Order = 5 )]
+        Order = 4 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "4356febe-5efd-421a-bfc4-05942b6bd910" )]
     [Rock.SystemGuid.BlockTypeGuid( "5d6ba94f-342a-4ec1-b024-fc5046ffe14d" )]
@@ -88,7 +82,6 @@ namespace Rock.Blocks.Lms
             public const string CourseEnrollmentPage = "CourseEnrollmentPage";
             public const string LavaTemplate = "LavaTemplate";
             public const string DetailPage = "DetailPage";
-            public const string NextSessionDateRange = "NextSessionDateRange";
             public const string PublicOnly = "PublicOnly";
             public const string ShowCompletionStatus = "ShowCompletionStatus";
         }
@@ -101,7 +94,6 @@ namespace Rock.Blocks.Lms
         private static class AttributeDefault
         {
             public const string CourseListTemplate = @"
-//- Styles
 <style>
     
     .lms-grid {
@@ -166,7 +158,8 @@ namespace Rock.Blocks.Lms
             {% for course in Courses %}
 
             <div class=""card"">
-                //-1 IMAGE
+                //- 1 IMAGE
+                
                 {% if course.ImageFileGuid %}
                     <img src=""/GetImage.ashx?guid={{ course.ImageFileGuid }}"" class=""card-img-top card-img-h object-cover"" alt=""course image"" />
                         
@@ -188,11 +181,8 @@ namespace Rock.Blocks.Lms
     			        {% endif %}
                     </div>
                 
-
-                
                 //- 3 BODY TEXT
                 <div class=""card-body pt-0 pb-0"">
-
                     <p class=""line-clamp-3"">
                         {{ course.Entity.Summary }}    
                     </p>
@@ -203,7 +193,7 @@ namespace Rock.Blocks.Lms
 			            <div class=""badge badge-default"">{{ course.Category }}</div>
             		</div>
                 
-                //-5 FOOTER
+                //- 5 FOOTER
                 <div class=""card-footer bg-transparent d-flex justify-content-between"">
                     <a href=""{{ course.CourseDetailsLink }}"" class=""btn btn-default"">Learn More</a>
                     
@@ -231,11 +221,11 @@ namespace Rock.Blocks.Lms
             </div>
             
             {% endfor %}
-            
+        
         </div>
     </div>
-	
-</div>";
+</div>
+";
         }
 
         #endregion Keys
@@ -264,7 +254,7 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Provide html to the block for it's initial rendering.
+        /// Provide HTML to the block for it's initial rendering.
         /// </summary>
         /// <returns>The HTML content to initially render.</returns>
         protected override string GetInitialHtmlContent()
@@ -291,8 +281,6 @@ namespace Rock.Blocks.Lms
                 // If there are unmet requirements include the link for enrollment to that course.
                 var prerequisiteCourseIdKey = course.UnmetPrerequisites?.FirstOrDefault()?.IdKey ?? string.Empty;
                 course.CourseDetailsLink = courseDetailUrlTemplate.Replace( "((Key))", course.Entity.IdKey );
-                course.PrerequisiteEnrollmentLink = courseEnrollmentUrlTemplate.Replace( "((Key))", prerequisiteCourseIdKey );
-                course.CourseEnrollmentLink = courseEnrollmentUrlTemplate.Replace( "((Key))", course.Entity.IdKey );
             }
 
             var mergeFields = this.RequestContext.GetCommonMergeFields();
@@ -312,9 +300,8 @@ namespace Rock.Blocks.Lms
         private List<Rock.Model.LearningCourseService.PublicLearningCourseBag> GetCourses( int programId, RockContext rockContext )
         {
             var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
-            var semesterDates = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now );
 
-            return new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson()?.Id, publicOnly, semesterDates.Start, semesterDates.End );
+            return new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson()?.Id, publicOnly );
         }
 
         /// <inheritdoc/>

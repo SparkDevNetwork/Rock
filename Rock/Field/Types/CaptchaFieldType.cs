@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     /// Field Type used to show a captcha and validate the user is not a robot.
     /// Stores value of "1" if user is verified as not a robot.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CAPTCHA )]
     public class CaptchaFieldType : FieldType

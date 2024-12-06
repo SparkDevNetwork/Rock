@@ -49,7 +49,7 @@
                 title="Configuration Mode"
                 :filter="pickExistingValueFilter"
                 width="20%"
-                visiblePriority="md">
+                visiblePriority="lg">
             <template #format="{ row }">
                 <div class="configuration-mode-container">
                     <span :class="getConfigurationModeLabelClass(row.configurationMode)">
@@ -63,14 +63,14 @@
                        field="isPublic"
                        :filter="booleanValueFilter"
                        width="5%"
-                       visiblePriority="lg" />
+                       visiblePriority="sm" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
                        :filter="booleanValueFilter"
                        width="5%"
-                       visiblePriority="lg" />
+                       visiblePriority="sm" />
 
         <template #skeleton>
             <div class="skeleton skeleton-text skeleton-rounded" />

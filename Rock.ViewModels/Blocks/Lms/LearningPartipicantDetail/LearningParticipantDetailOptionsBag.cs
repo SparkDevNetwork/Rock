@@ -30,5 +30,10 @@ namespace Rock.ViewModels.Blocks.Lms.LearningParticipantDetail
         /// Gets or sets the list of available roles for the class.
         /// </summary>
         public List<ListItemBag> ClassRoles { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the current person is authorized to view grades.
+        /// </summary>
+        public bool CanViewGrades { get; set; }
     }
 }

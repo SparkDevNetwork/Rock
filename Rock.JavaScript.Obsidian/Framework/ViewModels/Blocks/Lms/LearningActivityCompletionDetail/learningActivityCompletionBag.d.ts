@@ -31,7 +31,7 @@ export type LearningActivityCompletionBag = {
     /** Gets or sets the Learning Activity Bag for this completion instance. */
     activityBag?: LearningActivityBag | null;
 
-    /** Gets or sets the completion json for the activity component. */
+    /** Gets or sets the completion JSON for the activity component. */
     activityComponentCompletionJson?: string | null;
 
     /** Gets or sets the attributes. */
@@ -90,9 +90,6 @@ export type LearningActivityCompletionBag = {
 
     /** Indicates whether or not the activity was completed late or is late (if incomplete). */
     isLate: boolean;
-
-    /** Indicates whether or not student commenting is enabled for this activity. */
-    isStudentCommentingEnabled: boolean;
 
     /** Indicates whether or not the related activity instance has been completed by the student. */
     isStudentCompleted: boolean;

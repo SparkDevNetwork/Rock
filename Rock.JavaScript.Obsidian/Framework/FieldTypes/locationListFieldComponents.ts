@@ -78,7 +78,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<LocationList v-model="internalValue" :allowAdd="allowAdd" :locationTypeValueGuid="locationTypeGuid" :parentLocationGuid="parentGuid" :showCityState="showCityState" :isAddressRequired="addressRequired" />
+<LocationList v-model="internalValue" :allowAdd="allowAdd" :locationTypeValueGuid="locationTypeGuid" :parentLocationGuid="parentGuid" :showCityState="showCityState" :isAddressRequired="addressRequired" showBlankItem />
 `
 });
 
@@ -106,7 +106,6 @@ export const ConfigurationComponent = defineComponent({
     },
 
     setup(props, { emit }) {
-        console.debug("CONFIG", props.modelValue);
         const locationTypeGuid = DefinedType.LocationType;
 
         const locationType = ref<ListItemBag | null>(null);
@@ -174,6 +173,14 @@ export const ConfigurationComponent = defineComponent({
             addressRequired.value = asBoolean(props.modelValue[ConfigurationValueKey.AddressRequired]);
         }, {
             immediate: true
+        });
+
+        // Watch for changes in properties that require new configuration
+        // properties to be retrieved from the server.
+        watch([locationType, parentLocation, allowAdding, showCityState, addressRequired], () => {
+            if (maybeUpdateModelValue()) {
+                emit("updateConfiguration");
+            }
         });
 
         // Watch for changes in properties that only require a local UI update.

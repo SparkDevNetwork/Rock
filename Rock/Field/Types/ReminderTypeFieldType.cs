@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of reminder types
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REMINDER_TYPE )]
     public class ReminderTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

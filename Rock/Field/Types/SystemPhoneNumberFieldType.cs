@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     /// Stored as either a single Guid or a comma-delimited list of Guids (if AllowMultiple).
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SYSTEM_PHONE_NUMBER )]
     public class SystemPhoneNumberFieldType : FieldType, IEntityFieldType, ICachedEntitiesFieldType, IEntityReferenceFieldType

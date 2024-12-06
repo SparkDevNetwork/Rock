@@ -139,6 +139,12 @@ namespace Rock.Blocks.Lms
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 
+        /// <inheritdoc/>
+        protected override IQueryable<LearningProgram> GetOrderedListQueryable( IQueryable<LearningProgram> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( s => s.Name );
+        }
+
         #endregion
 
         #region Block Actions
@@ -161,7 +167,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${LearningProgram.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningProgram.FriendlyTypeName}." );
             }
 
             entityService.Delete( entity.Id );

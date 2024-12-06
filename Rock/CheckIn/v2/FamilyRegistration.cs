@@ -221,12 +221,13 @@ namespace Rock.CheckIn.v2
         /// the direct family members and those allowed via check-in relationship.
         /// </summary>
         /// <param name="group">The family <see cref="Group"/> that will be viewed or edited on a kiosk.</param>
+        /// <param name="canCheckInMembers">The <see cref="GroupMember"/> records that represent relationships allowed for check-in.</param>
         /// <returns>An list of <see cref="RegistrationPersonBag"/> objects.</returns>
-        public List<ValidPropertiesBox<RegistrationPersonBag>> GetFamilyMemberBags( Group group )
+        public List<ValidPropertiesBox<RegistrationPersonBag>> GetFamilyMemberBags( Group group, List<GroupMember> canCheckInMembers )
         {
             group.Members.Select( gm => gm.Person ).LoadAttributes( _rockContext );
 
-            return group.Members
+            var personBags = group.Members
                 .Select( gm => GetPersonBag( gm.Person, null ) )
                 .Select( bag => new ValidPropertiesBox<RegistrationPersonBag>
                 {
@@ -234,6 +235,42 @@ namespace Rock.CheckIn.v2
                     ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
                 } )
                 .ToList();
+
+            if ( canCheckInMembers != null )
+            {
+                AmendRelatedMemberBags( personBags, canCheckInMembers );
+            }
+
+            return personBags;
+        }
+
+        /// <summary>
+        /// Gets the person bags for the specified related members. This contains
+        /// the direct family members and those allowed via check-in relationship.
+        /// </summary>
+        /// <param name="personBags">The list of <see cref="RegistrationPersonBag"/> objects to amend.</param>
+        /// <param name="members">The related <see cref="GroupMember"/> that will be viewed or edited on a kiosk.</param>
+        private void AmendRelatedMemberBags( List<ValidPropertiesBox<RegistrationPersonBag>> personBags, List<GroupMember> members )
+        {
+            members.Select( gm => gm.Person )
+                .DistinctBy( p => p.Id )
+                .LoadAttributes( _rockContext );
+
+            foreach ( var member in members )
+            {
+                if ( personBags.Any( p => p.Bag.Id == member.Person.IdKey ) )
+                {
+                    continue;
+                }
+
+                var bag = GetPersonBag( member.Person, member.GroupRoleId );
+
+                personBags.Add( new ValidPropertiesBox<RegistrationPersonBag>
+                {
+                    Bag = bag,
+                    ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+                } );
+            }
         }
 
         /// <summary>
@@ -418,7 +455,7 @@ namespace Rock.CheckIn.v2
                 Ethnicity = GetDefinedValueBag( person.EthnicityValueId ),
                 RecordStatus = GetDefinedValueBag( person.RecordStatusValueId ),
                 ConnectionStatus = GetDefinedValueBag( person.ConnectionStatusValueId ),
-                RelationshipToAdult = GetDefinedValueBag( relationshipToAdultId ),
+                RelationshipToAdult = GetGroupTypeRoleBag( relationshipToAdultId ),
                 AttributeValues = person.GetPublicAttributeValuesForEdit(
                     _currentPerson,
                     false,
@@ -429,16 +466,31 @@ namespace Rock.CheckIn.v2
         /// <summary>
         /// Gets the bag instance for the <see cref="DefinedValue"/> specified.
         /// </summary>
-        /// <param name="definedValueId">The identifier of the <see cref="DefinedValue"/>.</param>
+        /// <param name="groupTypeRoleId">The identifier of the <see cref="DefinedValue"/>.</param>
         /// <returns>An instance of <see cref="ListItemBag"/> that represents the defined value or <c>null</c> if it was not found.</returns>
-        private ListItemBag GetDefinedValueBag( int? definedValueId )
+        private ListItemBag GetDefinedValueBag( int? groupTypeRoleId )
         {
-            if ( !definedValueId.HasValue )
+            if ( !groupTypeRoleId.HasValue )
             {
                 return null;
             }
 
-            return DefinedValueCache.Get( definedValueId.Value, _rockContext )?.ToListItemBag();
+            return DefinedValueCache.Get( groupTypeRoleId.Value, _rockContext )?.ToListItemBag();
+        }
+
+        /// <summary>
+        /// Gets the bag instance for the <see cref="GroupTypeRole"/> specified.
+        /// </summary>
+        /// <param name="groupTypeRoleId">The identifier of the <see cref="GroupTypeRole"/>.</param>
+        /// <returns>An instance of <see cref="ListItemBag"/> that represents the group type role or <c>null</c> if it was not found.</returns>
+        private ListItemBag GetGroupTypeRoleBag( int? groupTypeRoleId )
+        {
+            if ( !groupTypeRoleId.HasValue )
+            {
+                return null;
+            }
+
+            return GroupTypeRoleCache.Get( groupTypeRoleId.Value, _rockContext )?.ToListItemBag();
         }
 
         /// <summary>

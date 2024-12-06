@@ -59,6 +59,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Attribute field type
         /// </summary>
+        public const string ATTENDANCE = "45F2BE0A-43C2-40D6-9888-68A2E72ACD06";
+
+        /// <summary>
+        /// Attribute field type
+        /// </summary>
         public const string ATTRIBUTE = "99B090AA-4D7E-46D8-B393-BF945EA1BA8B";
 
         /// <summary>
@@ -85,6 +90,11 @@ namespace Rock.SystemGuid
         /// Benevolence Request field type
         /// </summary>
         public const string BENEVOLENCE_REQUEST = "44EEC881-3C07-4A58-ACC4-0F21D873DBE0";
+
+        /// <summary>
+        /// Benevolence Type field type
+        /// </summary>
+        public const string BENEVOLENCE_TYPE = "7BD3C3A3-DF4A-41EB-BF13-29EDB166078B";
 
         /// <summary>
         /// Binary File field type
@@ -395,6 +405,11 @@ namespace Rock.SystemGuid
         /// Financial Gateway field type
         /// </summary>
         public const string FINANCIAL_GATEWAY = "7B34F9D8-6BBA-423E-B50E-525ABB3A1013";
+
+        /// <summary>
+        /// Financial Statement Template field type
+        /// </summary>
+        public const string FINANCIAL_STATEMENT_TEMPLATE = "9E0CD807-D69F-4888-A9BE-BCD11DD083FE";
 
         /// <summary>
         /// Gender field type
