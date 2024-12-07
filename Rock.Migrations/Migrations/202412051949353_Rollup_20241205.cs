@@ -41,7 +41,7 @@ namespace Rock.Migrations
             UpdateCategorizedFieldTypeNameUp();
             UpdateAdaptiveMessageListPageUp();
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -60,15 +60,20 @@ namespace Rock.Migrations
         private void SwapBlocksUp()
         {
             RockMigrationHelper.ReplaceWebformsWithObsidianBlockMigration(
-                    "Swap Block Types - 1.17.0.33",
-                    blockTypeReplacements: new Dictionary<string, string> {
-                        { "B5EB66A1-7391-49D5-B613-5ED804A31E7B", "07BCB48D-746E-4364-80F3-C5BEB9075FC6" }, // Group Member Schedule Template Detail ( Group Scheduling )
-                        { "D930E08B-ACD3-4ADD-9FAC-3B61C021D0F7", "2B8A5A3D-BF9D-4319-B7E5-06757FA44759" }, // Group Member Schedule Template List ( Group Scheduling )
-                    },
-                    migrationStrategy: "Swap",
-                    jobGuid: SystemGuid.ServiceJob.DATA_MIGRATIONS_170_SWAP_OBSIDIAN_BLOCKS,
-                    null
-                  );
+                "Swap Block Types - 1.17.0.33",
+                blockTypeReplacements: new Dictionary<string, string> {
+                    // Swap Block Types - 1.17.0.33
+                    { "B5EB66A1-7391-49D5-B613-5ED804A31E7B", "07BCB48D-746E-4364-80F3-C5BEB9075FC6" }, // Group Member Schedule Template Detail ( Group Scheduling )
+                    { "D930E08B-ACD3-4ADD-9FAC-3B61C021D0F7", "2B8A5A3D-BF9D-4319-B7E5-06757FA44759" }, // Group Member Schedule Template List ( Group Scheduling )
+                        
+                    //Swap Block Types - 1.17.0.29
+                    { "37D43C21-1A4D-4B13-9555-EF0B7304EB8A", "511D8E2E-4AF3-48D8-88EF-2AB311CD47E0" }, // Group Scheduler
+                },
+                migrationStrategy: "Swap",
+                jobGuid: SystemGuid.ServiceJob.DATA_MIGRATIONS_170_SWAP_OBSIDIAN_BLOCKS,
+                blockAttributeKeysToIgnore: new Dictionary<string, string>{
+{ "37D43C21-1A4D-4B13-9555-EF0B7304EB8A",  "FutureWeeksToShow" }
+            } );
         }
 
         #endregion
