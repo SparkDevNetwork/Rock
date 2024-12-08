@@ -51,7 +51,7 @@ declare @confirmationStepTypeGuid AS uniqueidentifier = 'F109169F-C1F6-46ED-9091
 declare @baptismTedGuid AS uniqueidentifier = '02BB71C9-5FE9-45B8-B230-51C7A8475B6B';
 declare @marriage1TedGuid AS uniqueidentifier = '414EBE88-2CD2-40E1-893B-216DEA2CB25E';
 declare @marriage2TedGuid AS uniqueidentifier = '314F5303-C803-442B-AE39-DAA7BC30CCEE';
-declare @tedPersonAliasId AS INT = (SELECT pa.Id FROM PersonAlias pa JOIN Person p ON p.Id = pa.PersonId WHERE p.Guid = '8FEDC6EE-8630-41ED-9FC5-C7157FD1EAA4');
+declare @adminPersonAliasId AS INT = (SELECT pa.Id FROM PersonAlias pa JOIN Person p ON p.Id = pa.PersonId WHERE p.Guid = 'AD28DA19-4AF1-408F-9090-2672F8376F27');
 declare @sacramentsStatusSuccessGuid AS uniqueidentifier = 'A5C2A14F-9ED9-4DF4-A1C8-8ADF75E18833';
 declare @sacramentsStatusDangerGuid AS uniqueidentifier = 'B591240C-4D4D-49DA-82E3-F8C1738B8EC6';
 declare @prereqGuid AS uniqueidentifier = 'D96A2C67-2D76-4697-838F-3514CA11485E';
