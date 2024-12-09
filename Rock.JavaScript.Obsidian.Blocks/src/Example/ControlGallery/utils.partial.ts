@@ -28,7 +28,8 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * @returns A string of code that can be used to import the given control file
  */
 export function getControlImportPath(fileName: string): string {
-    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}";`;
+    const controlName = upperCaseFirstCharacter(fileName.replace("internal/", ""));
+    return `import ${controlName} from "@Obsidian/Controls/${fileName}";`;
 }
 
 /**
@@ -39,7 +40,8 @@ export function getControlImportPath(fileName: string): string {
  * @returns A string of code that can be used to import the given control file
  */
 export function getSfcControlImportPath(fileName: string): string {
-    return `import ${upperCaseFirstCharacter(fileName)} from "@Obsidian/Controls/${fileName}.obs";`;
+    const controlName = upperCaseFirstCharacter(fileName.replace("internal/", ""));
+    return `import ${controlName} from "@Obsidian/Controls/${fileName}.obs";`;
 }
 
 /**
@@ -87,7 +89,6 @@ export function buildExampleCode(elementName: string, attributes: Record<string,
 
     for (const attr in attributes) {
         let value = attributes[attr];
-        console.log("attributes", attr, value);
 
         if (isRef(value)) {
             value = value.value;
@@ -106,8 +107,6 @@ export function buildExampleCode(elementName: string, attributes: Record<string,
             /* Do nothing */
         }
     }
-
-    console.log(attrs);
 
     return `<${elementName} ${attrs.join(" ")} />`;
 }

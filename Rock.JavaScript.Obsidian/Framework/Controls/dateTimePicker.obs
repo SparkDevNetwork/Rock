@@ -163,7 +163,7 @@
             return;
         }
 
-        const date = DateTime.fromISO(props.modelValue);
+        const date = DateTime.fromISO(props.modelValue, { setZone: true });
 
         /*
          * This is an anti-pattern, but I couldn't find a quick way

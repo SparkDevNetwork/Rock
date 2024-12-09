@@ -170,6 +170,7 @@ namespace Rock.Blocks.Lms
             {
                 IdKey = entity.IdKey,
                 Description = entity.Description,
+                HighlightColor = entity.HighlightColor,
                 IsPassing = entity.IsPassing,
                 ThresholdPercentage = entity.ThresholdPercentage ?? 0,
                 Name = entity.Name
@@ -219,6 +220,9 @@ namespace Rock.Blocks.Lms
 
             box.IfValidProperty( nameof( box.Bag.IsPassing ),
                 () => entity.IsPassing = box.Bag.IsPassing );
+
+            box.IfValidProperty( nameof( box.Bag.HighlightColor ),
+                () => entity.HighlightColor = box.Bag.HighlightColor );
 
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
@@ -288,7 +292,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningGradingSystemScale.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningGradingSystemScale.FriendlyTypeName}." );
                 return false;
             }
 

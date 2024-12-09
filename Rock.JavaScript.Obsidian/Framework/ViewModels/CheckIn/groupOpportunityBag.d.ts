@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { LocationAndScheduleBag } from "@Obsidian/ViewModels/CheckIn/locationAndScheduleBag";
+
 /** Defines a single group that can be used during check-in. */
 export type GroupOpportunityBag = {
     /**
@@ -36,10 +38,11 @@ export type GroupOpportunityBag = {
     id?: string | null;
 
     /**
-     * Gets or sets the location identifiers. These are in proper order
+     * Gets or sets the locations that are valid for this group. These
+     * come as a LocationId and ScheduleId pair. These are in proper order
      * of location priority.
      */
-    locationIds?: string[] | null;
+    locations?: LocationAndScheduleBag[] | null;
 
     /** Gets or sets the display name of this item. */
     name?: string | null;

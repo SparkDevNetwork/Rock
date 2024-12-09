@@ -36,4 +36,7 @@ export type CheckInLabelDetailOptionsBag = {
 
     /** The filter sources available when editing a person label. */
     personLabelFilterSources?: FieldFilterSourceBag[] | null;
+
+    /** The filter sources available when editing a person location label. */
+    personLocationLabelFilterSources?: FieldFilterSourceBag[] | null;
 };

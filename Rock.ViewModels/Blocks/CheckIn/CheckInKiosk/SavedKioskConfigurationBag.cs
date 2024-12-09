@@ -45,5 +45,10 @@ namespace Rock.ViewModels.Blocks.CheckIn.CheckInKiosk
         /// configured to use.
         /// </summary>
         public List<string> AreaIds { get; set; }
+
+        /// <summary>
+        /// The web theme that should be used for this configuration.
+        /// </summary>
+        public string Theme { get; set; }
     }
 }

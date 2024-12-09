@@ -68,7 +68,7 @@
 <script setup lang="ts">
     import { computed, inject, PropType, provide, ref, watch } from "vue";
     import SignUpOccurrenceDate from "./signUpOccurrenceDate.partial.obs";
-    import { SaveSignUpErrorMessage, SelectedGroup, SelectedPersonGuid } from "./types.partial";
+    import { SaveSignUpErrorMessage, SelectedGroup, SelectedPersonGuid, SelectedSignUpKey } from "./types.partial";
     import { formatToolboxDate } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
@@ -108,7 +108,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:isLoadingSignUps"): void
+        (e: "update:isLoadingSignUps"): void;
     }>();
 
     // #region Values
@@ -126,6 +126,7 @@
     const schedulableGroups = ref<GroupBag[]>([]);
     const signUpOccurrences = ref<SignUpOccurrenceBag[]>([]);
 
+    const selectedSignUpKey = ref("");
     const saveSignUpErrorMessage = ref("");
 
     // #endregion Values
@@ -279,6 +280,7 @@
 
     // #endregion Watchers
 
+    provide(SelectedSignUpKey, selectedSignUpKey);
     provide(SaveSignUpErrorMessage, saveSignUpErrorMessage);
 
     getSignUps(selectedGroupGuidOrEmptyString.value);

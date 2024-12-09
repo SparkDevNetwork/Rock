@@ -1448,12 +1448,20 @@ namespace Rock.Model
                 nameParts = fullName.Split( ',' ).ToList();
                 if ( nameParts.Count >= 1 )
                 {
-                    lastNames.Add( nameParts[0].Trim() );
+                    var lastName = nameParts[0];
+                    if ( !string.IsNullOrWhiteSpace( lastName ) )
+                    {
+                        lastNames.Add( lastName.Trim() );
+                    }
                 }
 
                 if ( nameParts.Count >= 2 )
                 {
-                    firstNames.Add( nameParts[1].Trim() );
+                    var firstName = nameParts[1];
+                    if ( !string.IsNullOrWhiteSpace( firstName ) )
+                    {
+                        firstNames.Add( firstName.Trim() );
+                    }
                 }
             }
             else if ( fullName.Contains( ' ' ) )
@@ -1555,7 +1563,10 @@ namespace Rock.Model
                     {
                         var lastName = string.Join( " ", nameParts.TakeLast( 2 ) );
 
-                        qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ).Select( p => p.Id ) );
+                        if ( !string.IsNullOrWhiteSpace( lastName ) )
+                        {
+                            qry = qry.Union( GetByLastName( lastName, includeDeceased, includeBusinesses ).Select( p => p.Id ) );
+                        }
                     }
 
                     // If searching for businesses, search by the full name as well to handle "," in the name
@@ -1568,11 +1579,16 @@ namespace Rock.Model
                     // initially by the GetByFirstLastName() call.
                     return Queryable( includeDeceased, includeBusinesses ).Where( p => qry.Contains( p.Id ) );
                 }
-                else
+                else if ( allowFirstNameOnly && firstNames.Any() )
                 {
-                    // Blank string was used, return empty list
-                    return new List<Person>().AsQueryable();
+                    return GetByFirstLastName( firstNames[0], string.Empty, includeDeceased, includeBusinesses );
                 }
+                else if ( lastNames.Any() && !string.IsNullOrWhiteSpace( lastNames[0] ) )
+                {
+                    return GetByLastName( lastNames[0], includeDeceased, includeBusinesses );
+                }
+
+                return new List<Person>().AsQueryable();
             }
         }
 
@@ -3548,47 +3564,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Peer Networks can now be found in the PeerNetwork table, and are no longer tied to Groups." )]
         public Group GetPeerNetworkGroup( int personId )
         {
-            var peerNetworkGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK.AsGuid() );
-            var impliedOwnerRole = peerNetworkGroupType.Roles.Where( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ).FirstOrDefault();
-
-            var rockContext = this.Context as RockContext;
-
-            var peerNetworkGroup = new GroupMemberService( rockContext ).Queryable()
-                                    .Where(
-                                        m => m.PersonId == personId
-                                        && m.GroupRoleId == impliedOwnerRole.Id
-                                        && m.Group.GroupTypeId == peerNetworkGroupType.Id )
-                                    .Select( m => m.Group )
-                                    .FirstOrDefault();
-
-            // It's possible that a implied group does not exist for this person due to poor migration from a different system or a manual insert of the data
-            if ( peerNetworkGroup == null )
-            {
-                // Create the new peer network group using a new context so as not to save changes in the current one
-                using ( var rockContextClean = new RockContext() )
-                {
-                    var groupServiceClean = new GroupService( rockContextClean );
-
-                    var groupMember = new GroupMember();
-                    groupMember.PersonId = personId;
-                    groupMember.GroupRoleId = impliedOwnerRole.Id;
-
-                    var peerNetworkGroupClean = new Group();
-                    peerNetworkGroupClean.Name = peerNetworkGroupType.Name;
-                    peerNetworkGroupClean.GroupTypeId = peerNetworkGroupType.Id;
-                    peerNetworkGroupClean.Members.Add( groupMember );
-
-                    groupServiceClean.Add( peerNetworkGroupClean );
-                    rockContextClean.SaveChanges();
-
-                    // Get the new peer network group using the original context
-                    peerNetworkGroup = new GroupService( rockContext ).Get( peerNetworkGroupClean.Id );
-                }
-            }
-
-            return peerNetworkGroup;
+            return null;
         }
 
         #endregion
@@ -3696,30 +3676,6 @@ namespace Rock.Model
                     var group = new Group();
                     group.Name = knownRelationshipGroupType.Name;
                     group.GroupTypeId = knownRelationshipGroupType.Id;
-                    group.Members.Add( groupMember );
-
-                    var groupService = new GroupService( rockContext );
-                    groupService.Add( group );
-                }
-            }
-
-            // Create/Save Implied Relationship Group
-            var impliedRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK );
-            if ( impliedRelationshipGroupType != null )
-            {
-                var ownerRole = impliedRelationshipGroupType.Roles
-                    .FirstOrDefault( r =>
-                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ) );
-                if ( ownerRole != null )
-                {
-                    var groupMember = new GroupMember();
-                    groupMember.Person = person;
-                    groupMember.GroupRoleId = ownerRole.Id;
-                    groupMember.GroupTypeId = impliedRelationshipGroupType.Id;
-
-                    var group = new Group();
-                    group.Name = impliedRelationshipGroupType.Name;
-                    group.GroupTypeId = impliedRelationshipGroupType.Id;
                     group.Members.Add( groupMember );
 
                     var groupService = new GroupService( rockContext );

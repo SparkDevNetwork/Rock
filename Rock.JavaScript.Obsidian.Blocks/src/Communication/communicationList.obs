@@ -45,7 +45,8 @@
 
         <Column name="details"
                 title="Details"
-                visiblePriority="md">
+                visiblePriority="md"
+                :sortValue="getDetailsSortValue">
             <template #format="{ row }">
                 <div class="text-md">
                     <div v-if="row.sender">
@@ -67,7 +68,8 @@
         <DateTimeColumn name="sendDateTime"
                         title="Sent"
                         field="sendDateTime"
-                        itemClass="grid-item-pull-left"
+                        headerClass="title-right"
+                        itemClass="justify-content-end text-right"
                         :filter="dateValueFilter"
                         visiblePriority="xs" />
 
@@ -101,6 +103,7 @@
                       title="Copy"
                       iconClass="fa fa-clone"
                       visiblePriority="md"
+                      width="150"
                       @click="onCopyClick" />
 
         <DeleteColumn :rowDisabled="onDeleteRowDisabled" @click="onDeleteClick" />
@@ -113,9 +116,8 @@
 </template>
 
 <style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
+.title-right .grid-column-title {
+    text-align: right;
 }
 </style>
 
@@ -161,10 +163,6 @@
             lowerValue: preferences.getValue(PreferenceKey.FilterCreatedDateRangeFrom) || RockDateTime.now().addDays(-7).date.toISOString(),
             upperValue: preferences.getValue(PreferenceKey.FilterCreatedDateRangeTo)
         },
-        sentDateRange: {
-            lowerValue: preferences.getValue(PreferenceKey.FilterSentDateRangeFrom),
-            upperValue: preferences.getValue(PreferenceKey.FilterSentDateRangeTo)
-        },
         content: preferences.getValue(PreferenceKey.FilterContent),
         recipientCount: {
             lower: toNumberOrNull(preferences.getValue(PreferenceKey.FilterRecipientCountRangeFrom)),
@@ -183,7 +181,6 @@
             || !!gridSettings.value.status
             || !!gridSettings.value.createdBy?.value
             || (!!gridSettings.value.createdDateRange?.lowerValue || !!gridSettings.value.createdDateRange?.upperValue)
-            || (!!gridSettings.value.sentDateRange?.lowerValue || !!gridSettings.value.sentDateRange?.upperValue)
             || !!gridSettings.value.content
             || (!!gridSettings.value.recipientCount?.lower || !!gridSettings.value.recipientCount?.upper);
     });
@@ -356,6 +353,29 @@
         return CommunicationStatusDescription[status];
     }
 
+    /**
+    * Gets the sort value to use for the details column.
+    *
+    * @param row The row to be sorted.
+    */
+    function getDetailsSortValue(row: Record<string, unknown>): string {
+        const sender = row.sender as PersonFieldBag;
+        const reviewer = row.reviewer as PersonFieldBag;
+        const createdDateTime = row.createdDateTime as string;
+        const reviewedDateTime = row.reviewedDateTime as string;
+        let details = "";
+
+        if (sender) {
+            details += `Created on ${dateTimeText(createdDateTime)} by ${formatName(sender)}`;
+        }
+
+        if (reviewer) {
+            details += `Created on ${dateTimeText(reviewedDateTime)}} by ${formatName(reviewer)}`;
+        }
+
+        return details;
+    }
+
     // #endregion
 
     watch(gridSettings, async () => {
@@ -365,8 +385,6 @@
         preferences.setValue(PreferenceKey.FilterContent, gridSettings.value.content ?? "");
         preferences.setValue(PreferenceKey.FilterCreatedDateRangeFrom, gridSettings.value.createdDateRange?.lowerValue ?? RockDateTime.now().addDays(-7).date.toISOString());
         preferences.setValue(PreferenceKey.FilterCreatedDateRangeTo, gridSettings.value.createdDateRange?.upperValue ?? "");
-        preferences.setValue(PreferenceKey.FilterSentDateRangeFrom, gridSettings.value.sentDateRange?.upperValue ?? "");
-        preferences.setValue(PreferenceKey.FilterSentDateRangeTo, gridSettings.value.sentDateRange?.lowerValue ?? "");
         preferences.setValue(PreferenceKey.FilterRecipientCountRangeFrom, gridSettings.value.recipientCount?.lower?.toString() ?? "");
         preferences.setValue(PreferenceKey.FilterRecipientCountRangeTo, gridSettings.value.recipientCount?.upper?.toString() ?? "");
 

@@ -1088,6 +1088,11 @@ namespace RockWeb.Blocks.Reporting
                 quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
             }
 
+            if ( !report.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                return;
+            }
+
             pnlDetails.Visible = true;
             hfReportId.Value = report.Id.ToString();
 
@@ -1332,7 +1337,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( report.DataView != null )
             {
-                lDataView.Visible = UserCanEdit;
+                lDataView.Visible = report.DataView.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "DataViewId", report.DataViewId.ToString() );

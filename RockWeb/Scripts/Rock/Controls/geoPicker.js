@@ -16,6 +16,7 @@
             obj.drawingMode = options.drawingMode || "Polygon" || "Point";  // the available modes
             obj.strokeColor = options.strokeColor || "#0088cc";
             obj.fillColor = options.fillColor || "#0088cc";
+            obj.mapId = options.mapId || "DEFAULT_MAP_ID";
 
             // An array of styles that controls the look of the Google Map
             // http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html
@@ -331,13 +332,47 @@
                             });
                         }
                         else if (obj.drawingMode == "Point") {
+                            var point;
 
-                            var point = new google.maps.Marker({
-                                position: pathArray[0],
-                                map: map,
-                                clickable: true,
-                                icon: obj.getMarkerImage()
-                            });
+                            if (obj.mapId === "DEFAULT_MAP_ID") {
+                                point = new google.maps.Marker({
+                                    position: pathArray[0],
+                                    map: map,
+                                    clickable: true,
+                                    icon: obj.getMarkerImage()
+                                });
+                            }
+                            else {
+                                var pin = new google.maps.marker.PinElement({
+                                    background: '#FE7569',
+                                    borderColor: '#000',
+                                    scale: 1,
+                                    glyph: ''
+                                });
+
+                                point = {
+                                    position: pathArray[0],
+                                    map: map,
+                                    clickable: true,
+                                    icon: obj.getMarkerImage(),
+                                    marker_element: new google.maps.marker.AdvancedMarkerElement({
+                                        position: pathArray[0],
+                                        map: map,
+                                        content: pin.element
+                                    }),
+                                    setMap: function (newMap) {
+                                        this.map = newMap;
+                                        this.marker_element.map = newMap;
+                                    },
+                                    getPosition: function () {
+                                        return this.position;
+                                    },
+                                    setPosition: function (newPosition) {
+                                        this.position = newPosition;
+                                        this.marker_element.position = newPosition;
+                                    }
+                                };
+                            }
 
                             // Select the point
                             obj.setSelection(point, google.maps.drawing.OverlayType.MARKER);
@@ -633,8 +668,13 @@
                 streetViewControl: false,
                 mapTypeControlOptions: {
                     mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
-                }
+                },
             };
+
+            if (self.mapId !== "DEFAULT_MAP_ID") {
+                mapOptions.mapId = self.mapId;
+            }
+
             // center the map on the configured address
             self.centerMapOnAddress();
 

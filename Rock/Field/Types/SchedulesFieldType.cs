@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Stored as a List of Schedule Guids
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.SCHEDULES )]
     public class SchedulesFieldType : FieldType, IEntityReferenceFieldType, ISplitMultiValueFieldType

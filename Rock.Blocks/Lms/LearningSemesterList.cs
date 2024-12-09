@@ -95,14 +95,14 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningSemesterListOptionsBag();
 
-            var progamInfo = new LearningProgramService(RockContext).GetSelect(PageParameter(PageParameterKey.LearningProgramId), p => new
-            {
-                p.IdKey,
-                p.Name
-            } );
+            var progam = new LearningProgramService( RockContext ).Get( PageParameter( PageParameterKey.LearningProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
 
-            options.LearningProgramIdKey = progamInfo?.IdKey;
-            options.LearningProgramName = progamInfo?.Name;
+            if ( progam != null )
+            {
+                options.CanEditProgram = progam.IsAuthorized( Authorization.EDIT, GetCurrentPerson() );
+                options.LearningProgramIdKey = Rock.Utility.IdHasher.Instance.GetHash( progam.Id );
+                options.LearningProgramName = progam.Name;
+            }
 
             return options;
         }
@@ -159,6 +159,12 @@ namespace Rock.Blocks.Lms
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<LearningSemester> GetOrderedListQueryable( IQueryable<LearningSemester> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.StartDate );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<LearningSemester> GetGridBuilder()
         {
             return new GridBuilder<LearningSemester>()
@@ -195,7 +201,7 @@ namespace Rock.Blocks.Lms
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${LearningSemester.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {LearningSemester.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

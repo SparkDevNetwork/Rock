@@ -39,6 +39,8 @@
             </div>
         </div>
 
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+
         <div class="form-group">
             <h4>Workflows</h4>
             <div class="panel-body">
@@ -88,6 +90,7 @@
 
 <script setup lang="ts">
     import { PropType, computed, reactive, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
@@ -123,6 +126,8 @@
 
     // #region Values
 
+    const attributes = ref(props.modelValue?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
@@ -291,6 +296,8 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.attributeValues ?? {});
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(name, props.modelValue.name ?? "");
@@ -301,9 +308,10 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([...propRefs, workflows, maximumNumberOfDocuments], () => {
+    watch([...propRefs, attributeValues, workflows, maximumNumberOfDocuments], () => {
         const newValue: BenevolenceTypeBag = {
             ...props.modelValue,
+            attributeValues: attributeValues.value,
             description: description.value,
             isActive: isActive.value,
             name: name.value,

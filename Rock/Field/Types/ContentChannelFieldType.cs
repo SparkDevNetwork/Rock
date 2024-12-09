@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of Content Channels
     /// Stored as ContentChannel.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONTENT_CHANNEL )]
     public class ContentChannelFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

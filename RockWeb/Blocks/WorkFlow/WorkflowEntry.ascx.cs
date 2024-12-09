@@ -1326,7 +1326,7 @@ namespace RockWeb.Blocks.WorkFlow
                  See https://app.asana.com/0/1121505495628584/1200153314028124/f
                  */
 
-                cpPersonEntryCampus.IncludeInactive = true;
+                cpPersonEntryCampus.IncludeInactive = formPersonEntrySettings.IncludeInactiveCampus;
                 if ( formPersonEntrySettings.CampusStatusValueId.HasValue )
                 {
                     cpPersonEntryCampus.CampusStatusFilter = new List<int> { formPersonEntrySettings.CampusStatusValueId.Value };
@@ -1610,7 +1610,9 @@ namespace RockWeb.Blocks.WorkFlow
                 existingPersonSpouseId = matchedPersonsSpouse.Id;
             }
 
-            if ( formPersonEntrySettings.MaritalStatus != WorkflowActionFormPersonEntryOption.Hidden )
+
+            // Keeping the Marital Status in sync with the other controls in PersonEditor.
+            if ( formPersonEntrySettings.MaritalStatus != WorkflowActionFormPersonEntryOption.Hidden && dvpMaritalStatus.SelectedDefinedValueId.IsNotNullOrZero() )
             {
                 personEntryPerson.MaritalStatusValueId = dvpMaritalStatus.SelectedDefinedValueId;
             }

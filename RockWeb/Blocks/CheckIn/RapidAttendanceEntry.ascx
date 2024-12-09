@@ -258,7 +258,7 @@
                                         <Rock:DefinedValuePicker ID="dvpSuffix" CssClass="input-width-md" runat="server" Label="Suffix" ValidationGroup="vgEditMember" />
                                     </div>
                                     <div class="col-md-6">
-                                        <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" ValidationGroup="vgEditMember" />
+                                        <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birth Date" ValidationGroup="vgEditMember" />
                                     </div>
                                 </div>
                                 <div class="row">

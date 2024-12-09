@@ -37,10 +37,11 @@ namespace Rock.ViewModels.CheckIn
         public string AbilityLevelId { get; set; }
 
         /// <summary>
-        /// Gets or sets the location identifiers. These are in proper order
+        /// Gets or sets the locations that are valid for this group. These
+        /// come as a LocationId and ScheduleId pair. These are in proper order
         /// of location priority.
         /// </summary>
-        /// <value>The location identifiers.</value>
-        public List<string> LocationIds { get; set; }
+        /// <value>The locations that are valid for this group.</value>
+        public List<LocationAndScheduleBag> Locations { get; set; }
     }
 }

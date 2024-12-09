@@ -52,7 +52,7 @@
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     // TODO: Replace below imports with those specific to the new component you're creating.
-    import { AcknowledgementActivityCompletion, AcknowledgementActivityConfiguration, AcknowledgementActivityDefaults } from "./acknowledgementLearningActivity.partial";
+    import { AcknowledgmentActivityCompletion, AcknowledgmentActivityConfiguration, AcknowledgmentActivityDefaults } from "./acknowledgmentLearningActivity.partial";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -76,14 +76,14 @@
         // TODO: Add component specific properties to monitor...
         // These will be defined by the 2 types passed to useLearningComponent<TConfig, TCompletion>:
         // ...ActivityConfiguration and ...ActivityCompletion.
-    } = useLearningComponent<AcknowledgementActivityConfiguration, AcknowledgementActivityCompletion>(
+    } = useLearningComponent<AcknowledgmentActivityConfiguration, AcknowledgmentActivityCompletion>(
         activityBag,
         completionBag,
         screenToShow,
         // TODO: Create a class extending LearningComponentBaseDefaults<TConfig, TCompletion>
         // that will initialize all properties to default values.
         // This is necessary for the Refs to be returned by the useLearningComponent composable.
-        new AcknowledgementActivityDefaults()
+        new AcknowledgmentActivityDefaults()
     );
 
     /** Watch for modified component settings. */

@@ -16,10 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
-
-using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -39,35 +36,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of class activies for the specified person and class.
-        /// </summary>
-        /// <param name="personId">The identifier of the person for whom to get the activities.</param>
-        /// <param name="classIdKey">The hashed identifier of the class for which to get the activities.</param>
-        /// <returns>An IQueryable of <see cref="LearningActivityCompletion"/> records for the specified person and class.</returns>
-        public IQueryable<LearningActivityCompletion> GetClassActivities( int personId, string classIdKey )
-        {
-            var classId = IdHasher.Instance.GetId( classIdKey );
-            return classId.HasValue ?
-                GetClassActivities( personId, classId.Value ) :
-                new List<LearningActivityCompletion>().AsQueryable();
-        }
-
-        /// <summary>
-        /// Gets a list of class activies for the specified person and class.
-        /// </summary>
-        /// <param name="personId">The identifier of the person for whom to get the activities.</param>
-        /// <param name="classId">The identifier of the class for which to get the activities.</param>
-        /// <returns>An IQueryable of <see cref="LearningActivityCompletion"/> records for the specified person and class.</returns>
-        public IQueryable<LearningActivityCompletion> GetClassActivities( int personId, int classId )
-        {
-            return Queryable()
-                .Include( c => c.LearningActivity )
-                .Include( c => c.Student )
-                .Where( c => c.Student.LearningClassId == classId )
-                .Where( c => c.Student.PersonId == personId );
-        }
-
-        /// <summary>
         /// Gets a new instance of a <see cref="LearningActivityCompletion"/> whose initialized values
         /// are based on the provided parameters.
         /// </summary>
@@ -77,9 +45,9 @@ namespace Rock.Model
         /// <param name="activity">The <see cref="LearningActivity"/> the completion record is for.</param>
         /// <param name="participantId">The identifier of the <see cref="LearningParticipant"/> the completion record is for.</param>
         /// <param name="enrollmentDate">The date the participant enrolled in the <see cref="LearningClass"/>.</param>
-        /// <param name="progamCommuncationId">The SystemCommunicationId of the <see cref="LearningProgram"/> the completion record is for.</param>
+        /// <param name="programCommunicationId">The SystemCommunicationId of the <see cref="LearningProgram"/> the completion record is for.</param>
         /// <returns>A new untracked <see cref="LearningActivityCompletion"/>.</returns>
-        public LearningActivityCompletion GetNew( LearningActivity activity, int participantId, DateTime? enrollmentDate, int? progamCommuncationId )
+        public static LearningActivityCompletion GetNew( LearningActivity activity, int participantId, DateTime? enrollmentDate, int? programCommunicationId )
         {
             var semesterStartDate = activity.LearningClass.LearningSemester.StartDate;
 
@@ -99,7 +67,41 @@ namespace Rock.Model
                     activity.DueDateOffset,
                     semesterStartDate,
                     enrollmentDate ),
-                NotificationCommunicationId = activity.SendNotificationCommunication ? progamCommuncationId : null
+                NotificationCommunicationId = activity.SendNotificationCommunication ? programCommunicationId : null
+            };
+        }
+
+        /// <summary>
+        /// Gets a new <see cref="LearningActivityCompletion"/> using default values based on the provided parameters.
+        /// </summary>
+        /// <param name="activity">The <see cref="LearningActivity"/> this <see cref="LearningActivityCompletion"/> is for.</param>
+        /// <param name="student">The <see cref="LearningParticipant"/> this <see cref="LearningActivityCompletion"/> is for.</param>
+        /// <returns>A new <see cref="LearningActivityCompletion"/> record with default values.</returns>
+        public static LearningActivityCompletion GetNew( LearningActivity activity, LearningParticipant student )
+        {
+            var enrollmentDate = student?.CreatedDateTime;
+            var classStartDate = student.LearningClass?.LearningSemester?.StartDate;
+            var systemCommunicationId = student.LearningClass?.LearningSemester?.LearningProgram?.SystemCommunicationId;
+
+            return new LearningActivityCompletion
+            {
+                LearningActivity = activity,
+                LearningActivityId = activity.Id,
+                StudentId = student.Id,
+                Student = student,
+                AvailableDateTime = LearningActivity.CalculateAvailableDate(
+                    activity.AvailabilityCriteria,
+                    activity.AvailableDateDefault,
+                    activity.AvailableDateOffset,
+                    classStartDate,
+                    enrollmentDate ),
+                DueDate = LearningActivity.CalculateDueDate(
+                    activity.DueDateCriteria,
+                    activity.DueDateDefault,
+                    activity.DueDateOffset,
+                    classStartDate,
+                    enrollmentDate ),
+                NotificationCommunicationId = activity.SendNotificationCommunication ? systemCommunicationId : null
             };
         }
     }

@@ -164,7 +164,7 @@ export const ConfigurationComponent = defineComponent({
     },
 
     template: `
-<CheckBox v-model="enhancedSelection" label="Enhance For Long Lists" text="Yes" help="When set, will render a searchable selection of options." />
+<CheckBox v-model="enhancedSelection" label="Enhance For Long Lists" help="When set, will render a searchable selection of options." />
 <NumberBox v-if="!enhancedSelection" label="Number of Columns" v-model="numberOfColumns" help="Select how many columns the list should use before going to the next row. If blank or 0 then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space." />
 `
 });

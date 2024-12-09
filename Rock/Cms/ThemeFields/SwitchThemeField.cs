@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+
 using Newtonsoft.Json.Linq;
 
 using Rock.Enums.Cms;
@@ -49,6 +52,18 @@ namespace Rock.Cms.ThemeFields
         /// </summary>
         public string OffValue { get; set; }
 
+        /// <summary>
+        /// The URLs that should be added as imports when the switch field is on.
+        /// These may start with ~ or ~~ and will be resolved by Rock.
+        /// </summary>
+        public List<string> OnImports { get; set; }
+
+        /// <summary>
+        /// The URLs that should be added as imports when the switch field is off.
+        /// These may start with ~ or ~~ and will be resolved by Rock.
+        /// </summary>
+        public List<string> OffImports { get; set; }
+
         #endregion
 
         /// <summary>
@@ -63,6 +78,53 @@ namespace Rock.Cms.ThemeFields
             OffContent = jField.GetValue( "offContent" )?.ToString() ?? string.Empty;
             OnValue = jField.GetValue( "onValue" )?.ToString() ?? string.Empty;
             OffValue = jField.GetValue( "offValue" )?.ToString() ?? string.Empty;
+            OnImports = ParseImports( jField.GetValue( "onImport" ) );
+            OffImports = ParseImports( jField.GetValue( "offImport" ) );
+        }
+
+        /// <summary>
+        /// Gets the CSS Import URLs from the JSON token. This must be either
+        /// a string or an array of strings otherwise an exception will be
+        /// thrown.
+        /// </summary>
+        /// <param name="jValue">The JSON token value to parse.</param>
+        /// <returns>A list of strings that represents the URL(s).</returns>
+        private List<string> ParseImports( JToken jValue )
+        {
+            if ( jValue == null )
+            {
+                return new List<string>();
+            }
+
+            if ( jValue.Type == JTokenType.Array)
+            {
+                var list = new List<string>();
+
+                foreach ( var jItem in ( JArray ) jValue )
+                {
+                    if ( jItem.Type == JTokenType.String )
+                    {
+                        list.Add( jItem.ToString() );
+                    }
+                    else
+                    {
+                        throw new FormatException( "Import URLs must be of type string or an array of strings." );
+                    }
+                }
+
+                return list;
+            }
+            else if ( jValue.Type == JTokenType.String )
+            {
+                return new List<string>
+                {
+                    jValue.ToString()
+                };
+            }
+            else
+            {
+                throw new FormatException( "Import URLs must be of type string or an array of strings." );
+            }
         }
 
         /// <inheritdoc/>
@@ -74,11 +136,22 @@ namespace Rock.Cms.ThemeFields
             {
                 builder.AddVariable( Variable, OnValue );
                 builder.AddCustomContent( OnContent );
+
+                foreach ( var url in OnImports )
+                {
+                    builder.AddImport( url );
+                }
             }
             else
             {
                 builder.AddVariable( Variable, OffValue );
                 builder.AddCustomContent( OffContent );
+
+
+                foreach ( var url in OffImports )
+                {
+                    builder.AddImport( url );
+                }
             }
         }
     }

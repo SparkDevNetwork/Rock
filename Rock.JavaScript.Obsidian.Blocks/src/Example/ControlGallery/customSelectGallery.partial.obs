@@ -3,15 +3,17 @@
 
         <CustomSelect v-model="value" :items="items" itemKey="id" label="Custom Select" wrapperClass="my-select" itemClass="my-item">
             <template #default="{ item }">
-                <i class="fa fa-book fa-lg mr-3 text-primary"></i>
-                <div>
-                    <h3 class="my-0">{{ item.title }}</h3>
-                    <p class="text-muted ">{{ item.description }}</p>
+                <div class="d-flex align-items-center">
+                    <i :class="`fa ${item.icon} fa-lg mr-3 ${value === item ? 'text-primary' : 'text-muted'}`"></i>
+                    <div>
+                        <h3 class="my-0">{{ item.title }}</h3>
+                        <p class="text-muted">{{ item.description }}</p>
+                    </div>
                 </div>
             </template>
 
             <template #placeholder>
-                <p class="text-muted ">Tap here to select an item</p>
+                <p class="text-muted">Tap here to select an item</p>
             </template>
         </CustomSelect>
 
@@ -53,15 +55,27 @@
                     </tr>
                     <tr>
                         <td><code>itemClass</code></td>
-                        <td>String</td>
+                        <td><code>String | (item: TItem | null) => boolean</code></td>
                         <td>""</td>
-                        <td>CSS class(es) that will be applied to the element wrapping the individual items. Useful for custom styling.</td>
+                        <td>a string or a function that returns the CSS class(es) that will be applied to the element wrapping the individual items. Useful for custom styling.</td>
                     </tr>
                     <tr>
                         <td><code>selectedClass</code></td>
                         <td>String</td>
                         <td>"selected"</td>
                         <td>CSS class(es) that will be applied to the element wrapping the individual item that is selected. Useful for custom styling.</td>
+                    </tr>
+                    <tr>
+                        <td><code>mobileThreshold</code></td>
+                        <td>Number</td>
+                        <td>480</td>
+                        <td>The viewport width at which to switch to a mobile-friendly display.</td>
+                    </tr>
+                    <tr>
+                        <td><code>disabledKey</code></td>
+                        <td><code>String | (item: TItem | null) => boolean</code></td>
+                        <td>"isDisabled"</td>
+                        <td>The name of a property or a function accepting the item that returns a boolean signifying this item should not be selectable.</td>
                     </tr>
                 </tbody>
             </table>
@@ -99,7 +113,7 @@
             <h5>Note on Styles</h5>
 
             <p>
-                This control has very limited styling. It is recommended that you provide your own styles to customize
+                This control has relatively limited styling. You may wish to provide your own styles to customize
                 the look and feel of the control. Use the <code>wrapperClass</code> and <code>itemClass</code> props to
                 add classes you can use to style the control. The sample control above uses "my-item" as the
                 <code>itemClass</code> prop along with the following CSS:
@@ -112,27 +126,20 @@
 
 <style>
 .my-item {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    border-top-width: 0;
-    padding: .5rem .75rem;
-    display: flex;
-    align-items: center;
+    border-bottom: 1px solid var(--color-interface-soft);
+    transition: background-color 0.15s ease-in-out;
+}
+
+.my-item .fa {
+    transition: color 0.15s ease-in-out;
 }
 
 .my-item.selected {
-    background: #fff;
-}
-
-.my-item:first-child {
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-top-width: 1px;
+    background: var(--color-interface-softer);
 }
 
 .my-item:last-child {
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
+    border-bottom: 0;
 }
 </style>
 
@@ -145,46 +152,45 @@
     import { getSfcControlImportPath } from "./utils.partial";
 
     const items = ref([
-        { id: "matthew", title: "Matthew", description: "The gospel according to Matthew" },
-        { id: "mark", title: "Mark", description: "The gospel according to Mark" },
-        { id: "luke", title: "Luke", description: "The gospel according to Luke" },
-        { id: "john", title: "John", description: "The gospel according to John" }
+        { id: "matthew", title: "Matthew", description: "The gospel according to Matthew", isDisabled: false, icon: "fa-book" },
+        { id: "mark", title: "Mark", description: "The gospel according to Mark", isDisabled: false, icon: "fa-cross" },
+        { id: "luke", title: "Luke", description: "The gospel according to Luke", isDisabled: false, icon: "fa-church" },
+        { id: "john", title: "John", description: "The gospel according to John", isDisabled: true, icon: "fa-praying-hands" }
     ]);
 
     const value = ref(null);
 
     const importCode = getSfcControlImportPath("customSelect");
     const exampleCode = computed(() => `<CustomSelect v-model="value" :items="items" itemKey="id">
-    <template #default="{ item }">
-        <h3>{{ item.title }}</h3>
-        <p>{{ item.description }}</p>
-    </template>
-    <template #placeholder>
-        <p>Tap here to select an item</p>
-    </template>
+<template #default="{ item }">
+    <div class="d-flex align-items-center">
+        <i :class="\`fa \${item.icon} fa-lg mr-3 \${value === item ? 'text-primary' : 'text-muted'}\`"></i>
+        <div>
+            <h3 class="my-0">{{ item.title }}</h3>
+            <p class="text-muted">{{ item.description }}</p>
+        </div>
+    </div>
+</template>
+
+<template #placeholder>
+    <p class="text-muted">Tap here to select an item</p>
+</template>
 </CustomSelect>`);
 
     const sampleCSS = `.my-item {
-    background: #f5f5f5;
-    border: 1px solid #ddd;
-    border-top-width: 0;
-    padding: .5rem .75rem;
-    display: flex;
-    align-items: center;
+    border-bottom: 1px solid var(--color-interface-soft);
+    transition: background-color 0.15s ease-in-out;
+}
+
+.my-item .fa {
+    transition: color 0.15s ease-in-out;
 }
 
 .my-item.selected {
-    background: #fff;
-}
-
-.my-item:first-child {
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-top-width: 1px;
+    background: var(--color-interface-softer);
 }
 
 .my-item:last-child {
-    border-bottom-left-radius: 5px;
-    border-bottom-right-radius: 5px;
+    border-bottom: 0;
 }`;
 </script>

@@ -150,6 +150,9 @@
         else if (props.modelValue.labelType === LabelType.Checkout) {
             filterSources = props.options.checkoutLabelFilterSources ?? [];
         }
+        else if (props.modelValue.labelType === LabelType.PersonLocation) {
+            filterSources = props.options.personLocationLabelFilterSources ?? [];
+        }
         else {
             return undefined;
         }

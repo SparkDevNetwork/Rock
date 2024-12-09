@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -51,6 +51,8 @@
     <Compile Include="Blocks\Bus\ConsumerList\ConsumerListOptionsBag.cs" />
     <Compile Include="Blocks\Bus\QueueList\QueueListOptionsBag.cs" />
     <Compile Include="Blocks\Bus\QueueList\QueueListBag.cs" />
+    <Compile Include="Blocks\CheckIn\Configuration\CustomSettingsBag.cs" />
+    <Compile Include="Blocks\CheckIn\Configuration\CustomSettingsOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInAdvancedSettingsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInBarcodeSettingsBag.cs" />
     <Compile Include="Blocks\CheckIn\Config\CheckinTypeDetail\CheckInDisplaySettingsBag.cs" />
@@ -89,6 +91,10 @@
     <Compile Include="Blocks\CheckIn\CheckInKiosk\ScheduledLocationBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\SubscribeToRealTimeResponseBag.cs" />
     <Compile Include="Blocks\CheckIn\CheckInKiosk\WebKioskBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInScheduleBuilder\CheckInScheduleBuilderDataBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInScheduleBuilder\CheckInScheduleBuilderOptionsBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInScheduleBuilder\GroupLocationsBag.cs" />
+    <Compile Include="Blocks\CheckIn\CheckInScheduleBuilder\CloneScheduleBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInSimulator\CheckInSimulatorOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\DataSourceBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\LabelDesigner\IconItemBag.cs" />
@@ -109,6 +115,7 @@
     <Compile Include="Blocks\Cms\ContentChannelTypeList\ContentChannelTypeListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeBag.cs" />
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LavaShortcodeList\LavaShortcodeListBox.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushMediumOptionsBag.cs" />
@@ -123,6 +130,7 @@
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveRequestBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySendRequestBag.cs" />
     <Compile Include="Blocks\Core\DocumentTypeList\DocumentTypeListOptionsBag.cs" />
+    <Compile Include="Blocks\Crm\Disc\DiscBox.cs" />
     <Compile Include="Blocks\Crm\PhotoUpload\PersonPhotoBag.cs" />
     <Compile Include="Blocks\Crm\PhotoUpload\PhotoUploadInitializationBox.cs" />
     <Compile Include="Blocks\Event\RegistrationInstanceActiveList\RegistrationInstanceListOptionsBag.cs" />
@@ -153,6 +161,7 @@
     <Compile Include="Blocks\Lms\LearningSemesterDetail\LearningSemesterDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\PublicLearningClassWorkspace\PublicLearningClassWorkspaceNotificationBag.cs" />
     <Compile Include="Blocks\Lms\PublicLearningClassWorkspace\PublicLearningClassWorkspaceBox.cs" />
+    <Compile Include="Blocks\Lms\PublicLearningClassEnrollment\PublicLearningClassEnrollmentBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningCourseDetail\PublicLearningCourseDetailBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningProgramList\PublicLearningProgramListBox.cs" />
     <Compile Include="Blocks\Lms\PublicLearningCourseList\PublicLearningCourseListBox.cs" />
@@ -179,6 +188,17 @@
     <Compile Include="Blocks\Core\PersonFollowingList\PersonFollowingListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\ScheduledRedirectBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\UtmSettingsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPledgeEntry\FinancialPledgeEntryPhoneNumberBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\GetDynamicDataRequestBag.cs" />
+    <Compile Include="Blocks\Reporting\DynamicData\GetDynamicDataResponseBag.cs" />
+    <Compile Include="Blocks\Reporting\PageParameterFilter\GetUpdatedFiltersRequestBag.cs" />
+    <Compile Include="Blocks\Reporting\PageParameterFilter\GetUpdatedFiltersResponseBag.cs" />
+    <Compile Include="Blocks\Tv\RokuApplicationDetail\RokuApplicationBag.cs" />
+    <Compile Include="Blocks\Tv\RokuApplicationDetail\RokuApplicationOptionsBag.cs" />
+    <Compile Include="Blocks\Tv\RokuPageDetail\RokuPageBag.cs" />
+    <Compile Include="Blocks\Tv\RokuPageDetail\RokuPageDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Tv\TvApplicationList\TvApplicationOptionsBag.cs" />
+    <Compile Include="Blocks\Tv\TvPageList\TvPageListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessSavedSettingsBag.cs" />
     <Compile Include="Blocks\Communication\NcoaProcess\NcoaProcessPersonAddressBag.cs" />
@@ -194,12 +214,19 @@
     <Compile Include="Blocks\Core\TaggedItemList\TaggedItemListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakTypeExclusionList\StreakTypeExclusionListOptionsBag.cs" />
     <Compile Include="Blocks\Engagement\StreakMapEditor\StreakMapEditorBag.cs" />
+    <Compile Include="Blocks\Reporting\PageParameterFilter\EditableFilterBag.cs" />
+    <Compile Include="Blocks\Reporting\PageParameterFilter\PageParameterFilterCustomSettingsBag.cs" />
+    <Compile Include="Blocks\Reporting\PageParameterFilter\PageParameterFilterCustomSettingsOptionsBag.cs" />
+    <Compile Include="Blocks\Reporting\PageParameterFilter\PageParameterFilterInitializationBox.cs" />
     <Compile Include="Blocks\Security\AuthScopeList\AuthScopeListOptionsBag.cs" />
     <Compile Include="Blocks\Security\AuthClientList\AuthClientListOptionsBag.cs" />
     <Compile Include="Blocks\Security\SecurityChangeAuditList\SecurityChangeAuditListOptionsBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalBag.cs" />
     <Compile Include="Blocks\Core\PersonSignalList\PersonSignalListOptionsBag.cs" />
     <Compile Include="Blocks\Core\RestActionList\RestActionListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\SignatureDocumentDetail\SignatureDocumentBag.cs" />
+    <Compile Include="Blocks\Core\SignatureDocumentDetail\SignatureDocumentDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\SignatureDocumentList\SignatureDocumentListOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInLabelDetail\CheckInLabelBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInLabelDetail\CheckInLabelDetailOptionsBag.cs" />
     <Compile Include="Blocks\CheckIn\Configuration\CheckInLabelList\CheckInLabelListOptionsBag.cs" />
@@ -279,7 +306,6 @@
     <Compile Include="Blocks\Crm\NamelessPersonList\NamelessPersonListOptionsBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeBag.cs" />
     <Compile Include="Blocks\Crm\SignalTypeDetail\SignalTypeDetailOptionsBag.cs" />
-    <Compile Include="Blocks\Core\SignatureDocumentTemplateDetail\GetPdfPreviewUrlRequestBag.cs" />
     <Compile Include="Blocks\Core\ScheduledJobList\ScheduledJobListOptionsBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBag.cs" />
     <Compile Include="Blocks\Core\SuggestionDetail\SuggestionDetailBox.cs" />
@@ -368,7 +394,7 @@
     <Compile Include="Blocks\Reporting\PersistedDataViewList\PersistedDataViewListOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\InteractionDetail\InteractionDetailInitializationBox.cs" />
     <Compile Include="Blocks\Finance\FundraisingDonationList\FundraisingDonationListOptionsBag.cs" />
-	<Compile Include="Blocks\Event\RegistrationInstanceList\RegistrationInstanceListOptionsBag.cs" />
+    <Compile Include="Blocks\Event\RegistrationInstanceList\RegistrationInstanceListOptionsBag.cs" />
     <Compile Include="Blocks\Event\RegistrationInstancePaymentList\RegistrationInstancePaymentListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\BusinessContactList\BusinessContactListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\SavedAccountList\SavedAccountListOptionsBag.cs" />
@@ -716,6 +742,7 @@
     <Compile Include="CheckIn\AchievementBag.cs" />
     <Compile Include="CheckIn\AttendanceRequestBag.cs" />
     <Compile Include="CheckIn\AttendanceSessionRequestBag.cs" />
+    <Compile Include="CheckIn\CampusBag.cs" />
     <Compile Include="CheckIn\CheckInResultBag.cs" />
     <Compile Include="CheckIn\CheckoutResultBag.cs" />
     <Compile Include="CheckIn\CloudPrintProxyConnectionStatusBag.cs" />
@@ -742,6 +769,7 @@
     <Compile Include="CheckIn\Labels\LineFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\RectangleFieldConfigurationBag.cs" />
     <Compile Include="CheckIn\Labels\TextFieldConfigurationBag.cs" />
+    <Compile Include="CheckIn\LocationAndScheduleBag.cs" />
     <Compile Include="CheckIn\LocationOpportunityBag.cs" />
     <Compile Include="CheckIn\ConfigurationTemplateBag.cs" />
     <Compile Include="CheckIn\PersonBag.cs" />
@@ -763,6 +791,7 @@
     <Compile Include="Controls\FieldPropertyItemBag.cs" />
     <Compile Include="Controls\FieldSettingBag.cs" />
     <Compile Include="Controls\DatePartsPickerValueBag.cs" />
+    <Compile Include="Controls\MobileNavigationActionBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Rest\Controls\AIProviderPickerGetAIProviderOptionsBag.cs" />
@@ -823,6 +852,11 @@
     <Compile Include="Controls\RockCacheabilityBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlValidateTokenOptionsBag.cs" />
     <Compile Include="Rest\Controls\CaptchaControlTokenValidateTokenResultBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonAddReminderOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonReminderActionOptionsBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonGetRemindersResultsBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonGetRemindersReminderBag.cs" />
+    <Compile Include="Rest\Controls\ReminderButtonGetRemindersOptionsBag.cs" />
     <Compile Include="Rest\Controls\UniversalItemSearchPickerOptionsBag.cs" />
     <Compile Include="Rest\Controls\UniversalItemTreePickerOptionsBag.cs" />
     <Compile Include="Utility\TimeIntervalBag.cs" />

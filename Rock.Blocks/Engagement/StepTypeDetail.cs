@@ -170,11 +170,9 @@ namespace Rock.Blocks.Engagement
             using ( var rockContext = GetRockContext() )
             {
                 var box = new DetailBlockBox<StepTypeBag, StepTypeDetailOptionsBag>();
-                var stepProgramKey = PageParameter( PageParameterKey.StepProgramId );
-                var stepTypeKey = PageParameter( PageParameterKey.StepTypeId );
 
-                var stepProgramId = !PageCache.Layout.Site.DisablePredictableIds ? Rock.Utility.IdHasher.Instance.GetId( stepProgramKey ) ?? stepProgramKey.AsInteger() : 0;
-                var stepTypeId = !PageCache.Layout.Site.DisablePredictableIds ? Rock.Utility.IdHasher.Instance.GetId( stepTypeKey ) ?? stepTypeKey.AsInteger() : 0;
+                var stepProgramId = GetStepProgramId();
+                var stepTypeId = GetStepTypeId();
 
                 if ( stepProgramId == 0 && stepTypeId == 0 )
                 {
@@ -541,18 +539,25 @@ namespace Rock.Blocks.Engagement
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            var stepType = GetStepType();
-            var queryParams = new Dictionary<string, string>();
+            var stepTypeId = PageParameter( PageParameterKey.StepTypeId );
+            var stepProgramId = PageParameter( PageParameterKey.StepProgramId );
+            var linkedPageQueryParams = new Dictionary<string, string>();
+            var parentPageQueryParams = new Dictionary<string, string>();
 
-            if ( stepType != null )
+            if ( !string.IsNullOrWhiteSpace( stepTypeId ) )
             {
-                queryParams[PageParameterKey.StepTypeId] = stepType.Id.ToString();
+                linkedPageQueryParams[PageParameterKey.StepTypeId] = stepTypeId;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( stepProgramId ) )
+            {
+                parentPageQueryParams[PageParameterKey.StepProgramId] = stepProgramId;
             }
 
             return new Dictionary<string, string>
             {
-                [AttributeKey.BulkEntryPage] = this.GetLinkedPageUrl( AttributeKey.BulkEntryPage, queryParams ),
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [AttributeKey.BulkEntryPage] = this.GetLinkedPageUrl( AttributeKey.BulkEntryPage, linkedPageQueryParams ),
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( parentPageQueryParams )
             };
         }
 
@@ -663,12 +668,12 @@ namespace Rock.Blocks.Engagement
         {
             if ( _stepType == null )
             {
-                var stepTypeId = PageParameter( PageParameterKey.StepTypeId ).AsIntegerOrNull();
+                var stepTypeId = GetStepTypeId();
 
                 if ( stepTypeId > 0 )
                 {
                     var stepTypeService = new StepTypeService( GetRockContext() );
-                    _stepType = stepTypeService.Queryable( "StepProgram, StepTypePrerequisites" ).FirstOrDefault( stat => stat.Id == stepTypeId.Value );
+                    _stepType = stepTypeService.Queryable( "StepProgram, StepTypePrerequisites" ).FirstOrDefault( stat => stat.Id == stepTypeId );
                 }
             }
 
@@ -692,7 +697,8 @@ namespace Rock.Blocks.Engagement
 
             if ( programId == 0 )
             {
-                programId = RequestContext.GetPageParameter( PageParameterKey.StepProgramId ).AsInteger();
+                var stepProgramKey = RequestContext.GetPageParameter( PageParameterKey.StepProgramId );
+                programId = !PageCache.Layout.Site.DisablePredictableIds ? Rock.Utility.IdHasher.Instance.GetId( stepProgramKey ) ?? stepProgramKey.AsInteger() : 0;
             }
 
             return programId;
@@ -704,7 +710,11 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private int GetStepTypeId()
         {
-            return RequestContext.GetPageParameter( PageParameterKey.StepTypeId ).AsInteger();
+            var stepTypeKey = RequestContext.GetPageParameter( PageParameterKey.StepTypeId );
+
+            var stepTypeId = !PageCache.Layout.Site.DisablePredictableIds ? Rock.Utility.IdHasher.Instance.GetId( stepTypeKey ) ?? stepTypeKey.AsInteger() : 0;
+
+            return stepTypeId;
         }
 
         /// <summary>
@@ -1272,7 +1282,10 @@ namespace Rock.Blocks.Engagement
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    {  PageParameterKey.StepProgramId, PageParameter( PageParameterKey.StepProgramId ) },
+                } ) );
             }
         }
 

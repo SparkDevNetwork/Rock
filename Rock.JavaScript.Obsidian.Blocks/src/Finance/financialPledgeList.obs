@@ -39,6 +39,7 @@
         <CurrencyColumn name="totalAmount"
                         title="Total Amount"
                         field="totalAmount"
+                        headerClass="header-text-right"
                         :itemClass="'justify-content-end text-end'"
                         :filter="numberValueFilter"
                         v-if="!hideAmount"
@@ -53,6 +54,7 @@
         <DateColumn name="startDate"
                     title="Starts"
                     field="startDate"
+                    headerClass="header-text-right"
                     :itemClass="'justify-content-end text-end'"
                     :filter="dateValueFilter"
                     visiblePriority="sm" />
@@ -60,6 +62,7 @@
         <DateColumn name="endDate"
                     title="Ends"
                     field="endDate"
+                    headerClass="header-text-right"
                     :itemClass="'justify-content-end text-end'"
                     :filter="dateValueFilter"
                     visiblePriority="sm" />
@@ -67,6 +70,7 @@
         <DateColumn name="modifiedDate"
                     title="Last Modified"
                     field="modifiedDate"
+                    headerClass="header-text-right"
                     :itemClass="'justify-content-end text-end'"
                     :filter="dateValueFilter"
                     v-if="showLastModifiedDateColumn"
@@ -107,6 +111,12 @@
     <GridSettingsModal v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible" />
 </template>
+
+<style scoped>
+:deep(.header-text-right .grid-column-title) {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";

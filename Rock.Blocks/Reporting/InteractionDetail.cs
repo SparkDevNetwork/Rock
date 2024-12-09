@@ -35,7 +35,7 @@ namespace Rock.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Presents the details of a interaction using Lava" )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -204,12 +204,16 @@ namespace Rock.Blocks.Reporting
         private IEntity GetInteractionEntity( RockContext rockContext, Interaction interaction )
         {
             IEntity interactionEntity = null;
-            var interactionEntityType = EntityTypeCache.Get( interaction.InteractionComponent.InteractionChannel.InteractionEntityTypeId.Value ).GetEntityType();
-            IService serviceInstance = Reflection.GetServiceForEntityType( interactionEntityType, rockContext );
-            if ( serviceInstance != null )
+            var interactionEntityTypeId = interaction.InteractionComponent?.InteractionChannel?.InteractionEntityTypeId;
+            if ( interactionEntityTypeId.HasValue )
             {
-                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
-                interactionEntity = getMethod.Invoke( serviceInstance, new object[] { interaction.EntityId.Value } ) as Rock.Data.IEntity;
+                var interactionEntityType = EntityTypeCache.Get( interactionEntityTypeId.Value ).GetEntityType();
+                IService serviceInstance = Reflection.GetServiceForEntityType( interactionEntityType, rockContext );
+                if ( serviceInstance != null )
+                {
+                    System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                    interactionEntity = getMethod.Invoke( serviceInstance, new object[] { interaction.EntityId.Value } ) as Rock.Data.IEntity;
+                }
             }
 
             return interactionEntity;

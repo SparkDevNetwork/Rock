@@ -222,6 +222,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="namedLocation">The named location.</param>
         public void SetNamedLocation( NamedLocationCache namedLocation )
         {
+            CreateChildControls();
             _namedPicker?.SetValueFromLocationId( namedLocation?.Id );
         }
 

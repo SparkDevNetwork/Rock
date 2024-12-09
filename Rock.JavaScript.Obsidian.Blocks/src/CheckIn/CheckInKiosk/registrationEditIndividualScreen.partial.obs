@@ -2,7 +2,8 @@
 <template>
     <div class="registration-edit-individual-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <RockForm v-model:submit="submitForm"
                       @submit="onSaveClick">
 
@@ -344,8 +345,13 @@
             props.registrationData.editPersonGuid = person.bag.guid;
         }
 
+        const relationship: ListItemBag = {
+            value: relationshipToAdult.value,
+            text: relationshipToAdultItems.find(r => r.value === relationshipToAdult.value)?.text
+        };
+
         setPropertiesBoxValue(person, "isAdult", isAdult.value);
-        setPropertiesBoxValue(person, "relationshipToAdult", { value: relationshipToAdult.value });
+        setPropertiesBoxValue(person, "relationshipToAdult", relationship);
         setPropertiesBoxValue(person, "isMarried", isMarried.value);
         setPropertiesBoxValue(person, "gender", isFemale.value ? Gender.Female : Gender.Male);
         setPropertiesBoxValue(person, "nickName", nickName.value);
@@ -372,12 +378,17 @@
     function setInternalValues(): void {
         const person = props.registrationData.people
             ?.find(p => p.bag.guid === props.registrationData.editPersonGuid);
+        let defaultLastName = "";
+
+        if (props.registrationData.people.length > 0) {
+            defaultLastName = props.registrationData.people[0].bag.lastName ?? "";
+        }
 
         isAdult.value = person?.bag.isAdult ?? false;
         relationshipToAdult.value = person?.bag.relationshipToAdult?.value ?? getDefaultRelationship();
         isMarried.value = person?.bag.isMarried ?? false;
         nickName.value = person?.bag.nickName ?? "";
-        lastName.value = person?.bag.lastName ?? "";
+        lastName.value = person?.bag.lastName ?? defaultLastName;
         suffix.value = person?.bag.suffix?.value ?? "";
         birthDate.value = person?.bag.birthDate ?? "";
         grade.value = person?.bag.grade ?? undefined;

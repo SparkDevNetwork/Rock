@@ -23,7 +23,7 @@ using Rock.AI.Classes.TextCompletions;
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions
 {
     /// <summary>
-    /// The Reponse object for a completion.
+    /// The Response object for a completion.
     /// </summary>
     internal class OpenAITextCompletionsResponse
     {

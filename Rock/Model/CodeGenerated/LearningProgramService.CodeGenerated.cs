@@ -136,7 +136,6 @@ namespace Rock.Model
             target.CategoryId = source.CategoryId;
             target.CompletionWorkflowTypeId = source.CompletionWorkflowTypeId;
             target.ConfigurationMode = source.ConfigurationMode;
-            target.DefaultLearningGradingSystem = source.DefaultLearningGradingSystem;
             target.DefaultLearningGradingSystemId = source.DefaultLearningGradingSystemId;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;

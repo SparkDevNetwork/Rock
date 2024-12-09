@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// General purpose picker field type that allows one or more items to
     /// be picked by the person in a tree list.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [UniversalFieldTypeGuid( "c7485f3f-0c10-4db6-9574-c10b195617e4" )]
     public abstract class UniversalItemTreePickerFieldType : UniversalItemFieldType

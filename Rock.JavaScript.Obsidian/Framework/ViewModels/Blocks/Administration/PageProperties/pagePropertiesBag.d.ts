@@ -149,11 +149,11 @@ export type PagePropertiesBag = {
     /** Gets or sets the Id of the parent Page. */
     parentPageId?: number | null;
 
-    /** Gets or sets the rate limit period. */
-    rateLimitPeriod?: string | null;
+    /** Gets or sets the rate limit period (in seconds). */
+    rateLimitPeriodDurationSeconds?: number | null;
 
     /** Gets or sets the rate limit request per period. */
-    rateLimitRequestPerPeriod?: string | null;
+    rateLimitRequestPerPeriod?: number | null;
 
     /** Gets or sets a flag that indicates if the Page requires SSL encryption. */
     requiresEncryption: boolean;

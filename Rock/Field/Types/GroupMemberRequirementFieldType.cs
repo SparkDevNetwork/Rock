@@ -28,10 +28,11 @@ using System.Web.UI;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field Type to select a single (or null) group member requiement.
+    /// Field Type to select a single (or null) group member requirement.
     /// </summary>
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "C0797A18-B489-46C7-8C30-F5E4F8246E23" )]
+    [FieldTypeUsage( FieldTypeUsage.System )]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_MEMBER_REQUIREMENT )]
     public class GroupMemberRequirementFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
 
@@ -65,7 +66,17 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
-        // simple text box implemented by base FieldType
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
+        }
 
         #endregion
 

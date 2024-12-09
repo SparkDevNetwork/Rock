@@ -3,22 +3,26 @@
     <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="custom-select-field">
         <!-- MOBILE VERSION -->
         <div v-if="isMobile" class="custom-select-mobile-wrapper">
-            <div :class="`custom-select-wrapper ${wrapperClass}`">
-                <TransitionVerticalCollapse v-for="item in items" :key="(item[itemKey as keyof TItem] as string | number)">
-                    <div v-if="showOverlay || item == internalValue" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
-                        <slot v-bind="{ item }">
-                            {{ item }}
+            <div :class="`custom-select-wrapper ${wrapperClass} ${openStateCssClass()}`">
+                <TransitionVerticalCollapse speed="fast">
+                    <div v-if="!internalValue && !isExpanded" :class="`custom-select-item ${itemClasses(null)}`" @click="onItemClick(null)">
+                        <slot name="placeholder">
+                            <p class="text-muted">Select an item</p>
                         </slot>
                     </div>
                 </TransitionVerticalCollapse>
-                <div v-if="!internalValue && !showOverlay" :class="`custom-select-item ${itemClasses(null)}`" @click="onItemClick(null)">
-                    <slot name="placeholder">
-                        <p class="text-muted">Select an item</p>
-                    </slot>
-                </div>
+                <TransitionVerticalCollapse v-for="item in items" :key="(item[itemKey as keyof TItem] as string | number)">
+                    <div v-if="isExpanded || item[itemKey as keyof TItem] === internalValue?.[itemKey as keyof TItem]" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
+                        <div class="custom-select-item-content">
+                            <slot v-bind="{ item }">
+                                {{ item }}
+                            </slot>
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
             </div>
             <Transition name="fade">
-                <div class="custom-select-expand-icon" v-if="!showOverlay">
+                <div class="custom-select-expand-icon" v-if="!isExpanded" @click="onItemClick(null)">
                     <i class="fa fa-angle-up"></i><br>
                     <i class="fa fa-angle-down"></i>
                 </div>
@@ -27,63 +31,21 @@
         <!-- DESKTOP VERSION -->
         <div v-else :class="`custom-select-wrapper ${wrapperClass}`">
             <template v-for="item in items" :key="(item[itemKey as keyof TItem] as string | number)">
-                <div v-if="!isMobile || showOverlay || item == internalValue" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
-                    <slot v-bind="{ item }">
-                        {{ item }}
-                    </slot>
+                <div v-if="!isMobile || isExpanded || item[itemKey as keyof TItem] === internalValue?.[itemKey as keyof TItem]" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
+                    <div class="custom-select-item-content">
+                        <slot v-bind="{ item }">
+                            {{ item }}
+                        </slot>
+                    </div>
                 </div>
             </template>
         </div>
     </RockFormField>
 </template>
 
-<style>
-.custom-select-mobile-wrapper {
-    position: relative;
-}
-
-.custom-select-mobile-modal-wrapper {
-    position: relative;
-    margin: -15px;
-}
-
-.custom-select-item {
-    cursor: pointer;
-}
-
-.custom-select-expand-icon {
-    color: rgba(0, 0, 0, 0.25);
-    position: absolute;
-    line-height: 10px;
-    cursor: pointer;
-    top: 50%;
-    transform: translateY(-50%);
-    right: .5rem;
-}
-
-/* Fade Transition */
-.fade-enter-active {
-    transition: opacity 0.25s ease .35s;
-}
-
-.fade-leave-active {
-    transition: opacity .15s ease;
-}
-
-.fade-enter-to,
-.fade-leave-from {
-    opacity: 1;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
-</style>
-
 <script setup lang="ts" generic="TItem, TKey extends keyof TItem">
-    import { PropType, Ref, ref } from "vue";
-    import { useScreenSize } from "@Obsidian/Utility/screenSize";
+    import { PropType, Ref, ref, watch } from "vue";
+    import { useViewportWidth } from "@Obsidian/Utility/screenSize";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -113,9 +75,14 @@
             default: ""
         },
 
-        /** CSS class(es) to apply to the item element */
+        /**
+         * CSS class(es) to apply to the item element. If you supply a string,
+         * will apply that directly. You can also use a function that takes the
+         * item object and returns a string, which allows you to apply different
+         * classes to different items depending on the item data.
+         */
         itemClass: {
-            type: String,
+            type: [String, Function] as PropType<string | ((item: TItem | null) => string)>,
             default: ""
         },
 
@@ -123,6 +90,22 @@
         selectedClass: {
             type: String,
             default: "selected"
+        },
+
+        mobileThreshold: {
+            type: Number as PropType<number>,
+            default: 480
+        },
+
+        /**
+         * property name of the item to use to determine if the item is disabled.
+         * If you supply a string, will apply that directly. You can also use a
+         * function that takes the item object and returns a boolean, which
+         * allows you to use complex logic depending on the item data.
+         */
+        disabledKey: {
+            type: [String, Function] as PropType<string | ((item: TItem | null) => boolean)>,
+            default: "isDisabled"
         },
 
         ...standardRockFormFieldProps
@@ -136,42 +119,86 @@
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit) as Ref<TItem | null>;
     const fieldProps = useStandardRockFormFieldProps(props);
-    const { isMobile } = useScreenSize();
-    const showOverlay = ref(false);
+    const { isMobile } = useViewportWidth(props.mobileThreshold);
+    const isExpanded = ref(false);
 
     // #endregion
 
     // #region Functions
 
+    /**
+     * Determine if the item should be disabled.
+     */
+    function isItemDisabled(item: TItem | null): boolean {
+        if (typeof props.disabledKey === "string") {
+            return !!item?.[props.disabledKey as keyof TItem];
+        }
+
+        if (typeof props.disabledKey === "function") {
+            return props.disabledKey(item);
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine the class to apply to each item.
+     */
+    function getItemClass(item: TItem | null): string | undefined {
+        if (typeof props.itemClass === "string") {
+            return props.itemClass;
+        }
+
+        if (typeof props.itemClass === "function") {
+            return props.itemClass(item);
+        }
+
+        return undefined;
+    }
+
     function itemClasses(item: TItem | null): string {
         const classes = [
-            props.itemClass
+            getItemClass(item)
         ];
 
         if (item === internalValue.value || item === null) {
             classes.push(props.selectedClass);
         }
 
+        if (isItemDisabled(item)) {
+            classes.push("custom-select-item-disabled");
+        }
+
         return classes.join(" ");
     }
 
-    function onItemClick(item: TItem | null): void {
-        if (showOverlay.value || !isMobile.value && item !== null) {
-            internalValue.value = item;
-            showOverlay.value = false;
+    function openStateCssClass(): string {
+        if (isExpanded.value == true) {
+            return "is-open";
         }
-        else {
-            showOverlay.value = true;
+
+        return "is-closed";
+    }
+
+    function onItemClick(item: TItem | null): void {
+        if ((isExpanded.value || !isMobile.value) && item !== null && !isItemDisabled(item)) {
+            internalValue.value = item;
+            isExpanded.value = false;
+        }
+        else if (isMobile.value) {
+            isExpanded.value = true;
         }
     }
 
     // #endregion
 
-    // #region Event Handlers
+    // #region Watchers
 
-    // #endregion
-
-    // #region Lifecycle
+    watch(isMobile, () => {
+        // Whenever we switch back and forth between desktop and mobile, we
+        // want to make sure it isn't expanded.
+        isExpanded.value = false;
+    });
 
     // #endregion
 </script>

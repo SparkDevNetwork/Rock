@@ -1,9 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6" v-if="canViewGrades && gradeText">
                 <ValueDetailList :modelValue="leftSideValues" />
             </div>
 
@@ -43,6 +42,7 @@
                 <DateColumn
                             name="dateCompleted"
                             title="Date Completed"
+                            field="dateCompleted"
                             visiblePriority="sm">
                 </DateColumn>
 
@@ -50,18 +50,22 @@
                 <DateColumn
                             name="dateAvailable"
                             title="Date Available"
+                            field="dateAvailable"
                             visiblePriority="sm">
                 </DateColumn>
 
                 <DateColumn
                             name="dueDate"
                             title="Due Date"
+                            field="dueDate"
                             visiblePriority="sm">
                 </DateColumn>
 
                 <TextColumn
+                            v-if="canViewGrades"
                             name="grade"
                             title="Grade"
+                            field="grade"
                             visiblePriority="sm">
                 </TextColumn>
             </Grid>
@@ -103,22 +107,30 @@
     // #region Values
 
     const note = ref(props.modelValue?.note ?? "");
+    const currentGradePercent = ref(props.modelValue?.currentGradePercent ?? 0);
+    const currentGradeText = ref(props.modelValue?.currentGradeText ?? "");
+    const gradeText = computed(() => {
+        const gradePercentText = currentGradePercent.value ? `(${currentGradePercent.value}%)` : "";
+        return currentGradeText.value ? `${currentGradeText.value} ${gradePercentText}` : gradePercentText;
+    });
 
     // #endregion
 
     // #region Computed Values
 
+    const canViewGrades = computed(() => props.options.canViewGrades ?? false);
+
     /** The values to display at half-width on the left side of the block. */
     const leftSideValues = computed((): ValueDetailListItem[] => {
         const valueBuilder = new ValueDetailListItemBuilder();
-        console.warn(props.modelValue);
+
         if (!props.modelValue) {
             return valueBuilder.build();
         }
 
-        const gradePercentText = props.modelValue.currentGradePercent ? `(${props.modelValue.currentGradePercent}%)` : "";
-        const gradeText = props.modelValue.currentGradeText ? `${props.modelValue.currentGradeText} ${gradePercentText}` : gradePercentText;
-        valueBuilder.addTextValue("Current Grade", gradeText);
+        if (gradeText.value) {
+            valueBuilder.addTextValue("Current Grade", gradeText.value);
+        }
 
         return valueBuilder.build();
     });
@@ -143,13 +155,14 @@
     // #region Functions
 
     function getComponentHtml(row: Record<string, unknown>): string {
-        const baseColor = row.componentHighlightColor as string;
-        const pair = RockColor.calculateColorPair(new RockColor(baseColor));
+        const pair = RockColor.calculateColorPair(new RockColor(row.componentHighlightColor as string));
+        const backgroundColor = pair.backgroundColor.toRgba();
+        const forecolor = pair.foregroundColor.toRgba();
         const iconCssClass = row.componentIconCssClass as string;
 
         return `
-            <span class="label label-default component-label" style="background-color: ${pair.backgroundColor.toRgba()}">
-                <i class="${iconCssClass}" style="color: ${baseColor}"></i>${row.componentName}
+            <span class="label label-component" style="background-color: ${backgroundColor}; color: ${forecolor}">
+                <i class="${iconCssClass}" style="color: ${forecolor}"></i>${row.componentName}
             </span>`;
     }
 

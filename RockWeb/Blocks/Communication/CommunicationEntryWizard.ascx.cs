@@ -3439,6 +3439,10 @@ function onTaskCompleted( resultData )
             {
                 communication = UpdateCommunication( rockContext );
                 var sampleCommunicationRecipient = GetSampleCommunicationRecipient( communication, rockContext );
+                if ( communication.Id != default( int ) )
+                {
+                    hfCommunicationId.Value = communication.Id.ToString();
+                }
 
                 Person currentPerson;
                 if ( communication.CreatedByPersonAlias != null && communication.CreatedByPersonAlias.Person != null )
@@ -4196,7 +4200,13 @@ function onTaskCompleted( resultData )
                 // Add new recipients
                 ReportProgress( progressReporter, 5, activityMessage: "Creating Recipients List..." );
 
-                var recipientPersonIdQuery = GetRecipientPersonIdPersistedList( recipientPersonIdList, rockContext );
+                /*
+                 SK - 12/6/2024
+                 A new RockContext is created in the lines below because GetRecipientPersonIdPersistedList internally calls RockContext.SaveChanges.
+                 However, the goal is to prevent the Communication entity, created through the original RockContext, from being saved.
+                */
+                var newRockContext = new RockContext();
+                var recipientPersonIdQuery = GetRecipientPersonIdPersistedList( recipientPersonIdList, newRockContext );
 
                 if ( recipientPersonIdQuery == null )
                 {
@@ -4205,7 +4215,7 @@ function onTaskCompleted( resultData )
 
                 using ( var recipientPersonLookupActivity = ObservabilityHelper.StartActivity( "COMMUNICATION: Entry Wizard > Update Communication Recipients > Create Recipient Person Lookup Dictionary" ) )
                 {
-                    var recipientPersonsLookup = new PersonService( rockContext ).Queryable().Where( a => recipientPersonIdQuery.Contains( a.Id ) )
+                    var recipientPersonsLookup = new PersonService( newRockContext ).Queryable().Where( a => recipientPersonIdQuery.Contains( a.Id ) )
                         .Select( a => new
                         {
                             PersonId = a.Id,

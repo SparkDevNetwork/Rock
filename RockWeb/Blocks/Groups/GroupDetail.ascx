@@ -30,6 +30,7 @@
                         <Rock:HighlightLabel ID="hlArchived" runat="server" CssClass="js-archivedgroup-label" LabelType="Danger" Text="Archived" />
                         <Rock:HighlightLabel ID="hlIsPrivate" runat="server" CssClass="js-privategroup-label" LabelType="Default" Text="Private" />
                         <Rock:HighlightLabel ID="hlElevatedSecurityLevel" runat="server" LabelType="Warning" Visible="false" />
+                        <Rock:HighlightLabel ID="hlPeerNetwork" runat="server" LabelType="Info" Visible="false" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                         <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                     </div>
@@ -128,6 +129,67 @@
                                         Help="If members of this group need to have signed a document, select that document type here." />
                                 </div>
                             </div>
+
+                            <%-- Peer Network --%>
+                            <asp:Panel ID="pnlPeerNetworkOverride" runat="server">
+                                <Rock:RockCheckBox ID="cbOverrideRelationshipStrength" runat="server" AutoPostBack="true" Label="Override Relationship Strength" Help="A relationship strength has been set for this group type, but you can override that configuration here." OnCheckedChanged="cbOverrideRelationshipStrength_CheckedChanged" />
+                                <asp:Panel ID="pnlPeerNetwork" runat="server">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <Rock:RockRadioButtonList ID="rblRelationshipStrength" runat="server" Label="Relationship Strength" Help="Sets the relationship strength for individuals in groups of this type. Advanced settings offer additional customization options based on the individual's role in the group." RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblRelationshipStrength_SelectedIndexChanged" CssClass="js-relationship-strength" />
+                                        </div>
+                                        <div id="pnlRelationshipGrowth" runat="server" class="col-md-6">
+                                            <Rock:RockCheckBox ID="cbEnableRelationshipGrowth" runat="server" Label="Enable Relationship Growth Over Time" Help="Enable this setting to allow relationship strength to grow over time as individuals spend more time together in the group." />
+                                        </div>
+                                    </div>
+                                    <div id="pnlShowPeerNetworkAdvancedSettings" runat="server" class="row">
+                                        <div class="col-md-6">
+                                            <Rock:Switch ID="swShowPeerNetworkAdvancedSettings" runat="server" AutoPostBack="true" Text="Show Advanced Settings" OnCheckedChanged="swShowPeerNetworkAdvancedSettings_CheckedChanged" />
+                                        </div>
+                                    </div>
+                                    <asp:Panel ID="pnlPeerNetworkAdvanced" runat="server" Visible="false">
+                                        <Rock:RockLiteral ID="lRelationshipStrenghAdvanced" runat="server">
+                                            You can adjust the relationship score below based on the relationship type of the group members. For instance, if the group members have a strong relationship with the leaders but do not know other non-leaders, you can reduce or eliminate the relationship score percentage between non-leaders.
+                                        </Rock:RockLiteral>
+                                        <div class="d-grid grid-cols-3 gap-2" style="width: max-content;">
+                                            <div></div>
+                                            <div class="d-flex align-items-center">
+                                                <label class="control-label">
+                                                    Leader
+                                                </label>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <label class="control-label">
+                                                    Non-Leader
+                                                </label>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <label class="control-label">
+                                                    Leader
+                                                </label>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <Rock:RockTextBox ID="tbLeaderToLeaderRelationshipMultiplier" runat="server" CssClass="input-width-sm" />
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <Rock:RockTextBox ID="tbLeaderToNonLeaderRelationshipMultiplier" runat="server" CssClass="input-width-sm" />
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <label class="control-label">
+                                                    Non-Leader
+                                                </label>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <Rock:RockTextBox ID="tbNonLeaderToLeaderRelationshipMultiplier" runat="server" CssClass="input-width-sm" />
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <Rock:RockTextBox ID="tbNonLeaderToNonLeaderRelationshipMultiplier" runat="server" CssClass="input-width-sm" />
+                                            </div>
+                                        </div>
+                                    </asp:Panel>
+                                </asp:Panel>
+                            </asp:Panel>
+
                         </Rock:PanelWidget>
 
                         <%-- RSVP Settings --%>
@@ -186,22 +248,38 @@
                         <Rock:PanelWidget ID="wpScheduling" runat="server" Title="Scheduling">
                             <div class="row">
                                 <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbDisableGroupScheduling" runat="server" Label="Disable Group Scheduling" Help="Checking this box will opt the group out from the group scheduling system." />
                                     <Rock:RockCheckBox ID="cbSchedulingMustMeetRequirements" runat="server" Label="Scheduling Must Meet Requirements" Help="Indicates whether group members must meet the group member requirements before they can be scheduled." />
-
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbDisableScheduleToolboxAccess" runat="server" Label="Disable Schedule Toolbox Access" Help="Checking this will hide the group from the schedule toolbox." />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
                                     <Rock:RockDropDownList ID="ddlAttendanceRecordRequiredForCheckIn" runat="server" Label="Check-in Requirements" Help="Determines if the person must be scheduled prior to checking in." />
-
-                                    <Rock:PersonPicker ID="ppScheduleCancellationPerson" runat="server" EnableSelfSelection="true" Label="Schedule Cancellation Person to Notify" Help="The person to notify when a person cancels." />
                                 </div>
                                 <div class="col-md-6">
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbDisableGroupScheduling" runat="server" Label="Disable Group Scheduling" Help="Checking this box will opt the group out from the group scheduling system." />
                                     <Rock:RockDropDownList ID="ddlScheduleConfirmationLogic" runat="server" Label="Schedule Confirmation Logic" Help="Determines if the individual will be asked to Accept or Decline, or if their request will be auto accepted. This setting overrides the group type's setting." />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbDisableScheduleToolboxAccess" runat="server" Label="Disable Schedule Toolbox Access" Help="Checking this will hide the group from the schedule toolbox." />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:PersonPicker ID="ppScheduleCoordinatorPerson" runat="server" EnableSelfSelection="true" Label="Schedule Coordinator" Help="The person who receives notifications about changes to scheduled individuals." />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBoxList ID="cblScheduleCoordinatorNotificationTypes" runat="server" Label="Schedule Coordinator Notification Options" RepeatDirection="Horizontal" Help='Specifies the types of notifications the coordinator receives about scheduled individuals. Leave blank to use the Group Type settings, or select one or more options to override them.' OnSelectedIndexChanged="cblScheduleCoordinatorNotificationTypes_SelectedIndexChanged" AutoPostBack="true">
+                                        <asp:ListItem Value="0" Text="None" />
+                                        <asp:ListItem Value="1" Text="Accept" />
+                                        <asp:ListItem Value="2" Text="Decline" />
+                                        <asp:ListItem Value="4" Text="Self-Schedule" />
+                                    </Rock:RockCheckBoxList>
                                 </div>
                             </div>
                         </Rock:PanelWidget>
@@ -667,6 +745,35 @@
                     });
                 });
 
+                var $thisBlock = $('#<%= upnlGroupDetail.ClientID %>');
+
+                addRelationshipStrengthTooltips();
+
+                function addRelationshipStrengthTooltips() {
+                    var $relStrength = $thisBlock.find('.js-relationship-strength');
+                    if (!$relStrength.length) {
+                        return;
+                    }
+
+                    addTooltip('0', 'No established relationship or interaction.');
+                    addTooltip('5', 'Basic interactions with a familiar but limited bond.');
+                    addTooltip('10', 'Frequent interactions characterized by a strong and supportive relationship.');
+                    addTooltip('20', 'Intense and trusted relationship with a high level of personal engagement and understanding.');
+
+                    function addTooltip(value, tooltip) {
+                        var $label = $relStrength
+                            .find('input[type="radio"][value="' + value + '"]')
+                            .closest('label');
+
+                        $label.attr('title', tooltip);
+                        $label.tooltip();
+
+                        // Hide the tooltip when a selection is made.
+                        $label.find('input[type="radio"]').on('click', function () {
+                            $label.tooltip('hide');
+                        });
+                    }
+                }
             });
 
         </script>

@@ -8,6 +8,7 @@
   display: flex;
   gap: 6px;
   align-items: center;
+  flex-direction: column;
 }
 
 .picker {
@@ -468,3 +469,14 @@
   }
 }
 
+.ant-select-arrow:has(.fa.fa-plus-square) {
+  font-size: 24px !important;
+  color: var(--color-info-strong);
+  top: 35%;
+  right: 17px;
+  transition: ease-in-out 0.2s;
+}
+
+.ant-select-arrow:has(.fa.fa-plus-square):hover {
+  color: var(--color-info-soft);
+}

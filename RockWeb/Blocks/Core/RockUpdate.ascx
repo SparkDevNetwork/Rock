@@ -153,8 +153,7 @@
                         <i class="fa fa-exclamation-triangle"></i>
                         <p>
                             Update completed successfully... You're now running
-                            <asp:Literal ID="lSuccessVersion" runat="server" />
-                            .
+                            <asp:Literal ID="lSuccessVersion" runat="server" />.
                         </p>
 
                         <div class="text-center margin-t-md">

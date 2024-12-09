@@ -442,6 +442,10 @@ namespace Rock.Blocks.Event
         {
             using ( var rockContext = new RockContext() )
             {
+                // Ensure the arguments provided are in their proper format
+                // before use (e.g. proper currency formatting of amounts).
+                FixRegistrationArguments( args );
+
                 var context = GetContext( rockContext, args, out var errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
@@ -1144,6 +1148,10 @@ namespace Rock.Blocks.Event
         /// <exception cref="Exception">There was a problem with the payment</exception>
         private Registration SubmitRegistration( RockContext rockContext, RegistrationContext context, RegistrationEntryArgsBag args, out string errorMessage )
         {
+            // Ensure the arguments provided are in their proper format
+            // before use (e.g. proper currency formatting of amounts).
+            FixRegistrationArguments( args );
+
             /*
                 8/15/2023 - JPH
 
@@ -3100,7 +3108,7 @@ namespace Rock.Blocks.Event
         /// <param name="index">The index.</param>
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
-        /// <param name="forceWaitlist">if set to <c>true</c> then registrant is on the wait list.</param>
+        /// <param name="isWaitlist">if set to <c>true</c> then registrant is on the wait list.</param>
         /// <param name="isCreatedAsRegistrant">if set to <c>true</c> [is created as registrant].</param>
         /// <param name="isNewRegistration"><c>true</c> if the registration is new; otherwise <c>false</c>.</param>
         /// <param name="postSaveActions">Additional post save actions that can be appended to.</param>
@@ -3113,13 +3121,13 @@ namespace Rock.Blocks.Event
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
-            bool forceWaitlist,
+            bool isWaitlist,
             bool isCreatedAsRegistrant,
             bool isNewRegistration,
             List<Action> postSaveActions )
         {
             // Force waitlist if specified by param, but allow waitlist if requested
-            var isWaitlist = forceWaitlist || ( context.RegistrationSettings.IsWaitListEnabled && registrantInfo.IsOnWaitList );
+            isWaitlist |= (context.RegistrationSettings.IsWaitListEnabled && registrantInfo.IsOnWaitList);
 
             var personService = new PersonService( rockContext );
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
@@ -3173,12 +3181,6 @@ namespace Rock.Blocks.Event
                     Cost = context.RegistrationSettings.PerRegistrantCost
                 };
                 registrantService.Add( registrant );
-            }
-
-            if ( forceWaitlist )
-            {
-                // Clear the cost if the registrant is forced to be wait-listed.
-                registrant.Cost = 0;
             }
 
             registrant.OnWaitList = isWaitlist;
@@ -4620,8 +4622,6 @@ namespace Rock.Blocks.Event
         /// <returns></returns>
         private RegistrationEntrySuccessBag GetSuccessViewModel( int registrationId, string transactionCode, string gatewayPersonIdentifier )
         {
-            var currentPerson = GetCurrentPerson();
-
             // Create a view model with default values in case anything goes wrong
             var viewModel = new RegistrationEntrySuccessBag
             {
@@ -4650,12 +4650,10 @@ namespace Rock.Blocks.Event
                     registration.RegistrationInstance.RegistrationTemplate != null )
                 {
                     var template = registration.RegistrationInstance.RegistrationTemplate;
-                    var mergeFields = new Dictionary<string, object>
-                    {
-                        { "CurrentPerson", currentPerson },
-                        { "RegistrationInstance", registration.RegistrationInstance },
-                        { "Registration", registration }
-                    };
+
+                    var mergeFields = this.RequestContext.GetCommonMergeFields();
+                    mergeFields.Add( "RegistrationInstance", registration.RegistrationInstance );
+                    mergeFields.Add( "Registration", registration );
 
                     if ( template != null && !string.IsNullOrWhiteSpace( template.SuccessTitle ) )
                     {
@@ -4929,7 +4927,7 @@ namespace Rock.Blocks.Event
 
             var alreadyPaid = registrationService.GetTotalPayments( registration.Id );
 
-            var balanceDue = registration.DiscountedCost - alreadyPaid;
+            var balanceDue = ( registration.DiscountedCost - alreadyPaid ).AsCurrency();
 
             if ( balanceDue < 0 )
             {

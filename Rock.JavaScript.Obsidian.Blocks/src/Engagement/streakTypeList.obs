@@ -37,7 +37,7 @@
                     title="Start Date"
                     field="startDate"
                     :filter="dateValueFilter"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     visiblePriority="md" />
 
@@ -45,7 +45,7 @@
                       title="Enrollments"
                       field="enrollmentCount"
                       :filter="numberValueFilter"
-                      headerClass="text-right"
+                      headerClass="title-right"
                       itemClass="justify-content-end text-right"
                       visiblePriority="md" />
 
@@ -54,6 +54,12 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

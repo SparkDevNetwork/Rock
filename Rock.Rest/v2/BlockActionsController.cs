@@ -197,7 +197,7 @@ namespace Rock.Rest.v2
                 {
                     var canProcess = RateLimiterCache.CanProcessPage( pageCache.Id,
                         controller.RockRequestContext.ClientInformation.IpAddress,
-                        TimeSpan.FromSeconds( pageCache.RateLimitPeriod.Value ),
+                        TimeSpan.FromSeconds( pageCache.RateLimitPeriodDurationSeconds.Value ),
                         pageCache.RateLimitRequestPerPeriod.Value );
 
                     if ( !canProcess )
@@ -253,6 +253,11 @@ namespace Rock.Rest.v2
                                 if ( actionContext?.PageParameters != null )
                                 {
                                     rockBlock.RequestContext.SetPageParameters( actionContext.PageParameters );
+                                }
+
+                                if ( ( actionContext?.InteractionGuid ).HasValue )
+                                {
+                                    requestContext.RelatedInteractionGuid = actionContext.InteractionGuid.Value;
                                 }
 
                                 /*

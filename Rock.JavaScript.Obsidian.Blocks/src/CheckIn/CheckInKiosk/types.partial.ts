@@ -40,6 +40,8 @@ export type CampusBag = CheckInItemBag & {
 export type CheckInKioskOptionsBag = {
     kioskConfiguration?: KioskConfigurationBag | null;
 
+    isEditAllowed: boolean;
+
     isManualSetupAllowed: boolean;
 
     isConfigureByLocationEnabled: boolean;
@@ -324,6 +326,9 @@ export type AttendanceCountGroup = {
  * check-in session only.
  */
 export type LocationCountAdjustment = {
+    /** The encrypted identifier of the attendance record. */
+    id?: string | null;
+
     /** The timestamp that this adjustment was received. */
     timestamp: number;
 

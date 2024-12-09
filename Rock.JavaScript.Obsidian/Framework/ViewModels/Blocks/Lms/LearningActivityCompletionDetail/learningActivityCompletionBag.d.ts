@@ -31,7 +31,7 @@ export type LearningActivityCompletionBag = {
     /** Gets or sets the Learning Activity Bag for this completion instance. */
     activityBag?: LearningActivityBag | null;
 
-    /** Gets or sets the completion json for the activity component. */
+    /** Gets or sets the completion JSON for the activity component. */
     activityComponentCompletionJson?: string | null;
 
     /** Gets or sets the attributes. */
@@ -50,7 +50,7 @@ export type LearningActivityCompletionBag = {
     binaryFileSecurityGrant?: string | null;
 
     /**
-     * Gets or sets the date the individual
+     * Gets or sets the date the student
      * completed the related Rock.Model.LearningActivity.
      */
     completedDate?: string | null;
@@ -61,13 +61,16 @@ export type LearningActivityCompletionBag = {
     /** Gets or sets the facilitator's comment. */
     facilitatorComment?: string | null;
 
+    /** Gets or sets the highlight color of the achieved grade. */
+    gradeColor?: string | null;
+
     /** Gets or sets the PersonAlias of the Person who graded the activity. */
     gradedByPersonAlias?: ListItemBag | null;
 
     /** Gets or sets the text of the grade earned by the student. */
     gradeName?: string | null;
 
-    /** Gets or sets the text for the achieved grade. */
+    /** Gets or sets the text for the achieved grade. For example, "B (87%). */
     gradeText?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
@@ -85,23 +88,23 @@ export type LearningActivityCompletionBag = {
     /** Indicates whether or not the grade is a passing grade. */
     isGradePassing: boolean;
 
-    /** Indicates whether or not the related activity instance for the student is currently past due. */
-    isPastDue: boolean;
-
-    /** Indicates whether or not student commenting is enabled for this activity. */
-    isStudentCommentingEnabled: boolean;
+    /** Indicates whether or not the activity was completed late or is late (if incomplete). */
+    isLate: boolean;
 
     /** Indicates whether or not the related activity instance has been completed by the student. */
     isStudentCompleted: boolean;
 
+    /** Gets or sets the IdKey of the Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail.LearningActivityCompletionBag.ActivityBag. */
+    learningActivityIdKey?: string | null;
+
     /** Gets or sets the number of points the student earned by completing the activity. */
     pointsEarned: number;
 
-    /** Gets or sets whether the activity requires a facilitator to grade/score it. */
-    requiresScoring: boolean;
-
     /** Gets or sets whether the facilitator must complete the activity. */
     requiresFacilitatorCompletion: boolean;
+
+    /** Gets or sets whether the activity requires a facilitator to grade/score it. */
+    requiresScoring: boolean;
 
     /** Gets or sets the student the activity is for. */
     student?: LearningActivityParticipantBag | null;

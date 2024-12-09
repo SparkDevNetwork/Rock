@@ -280,8 +280,39 @@ namespace Rock.Model
         /// <value>
         /// The schedule cancellation person alias identifier.
         /// </value>
+        [Obsolete( "Use ScheduleCoordinatorPersonAliasId instead." )]
+        [RockObsolete( "1.16" )]
         [DataMember]
-        public int? ScheduleCancellationPersonAliasId { get; set; }
+        [NotMapped]
+        public int? ScheduleCancellationPersonAliasId
+        {
+            get => this.ScheduleCoordinatorPersonAliasId;
+            set => this.ScheduleCoordinatorPersonAliasId = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias">PersonAliasId</see> of the person who receives
+        /// notifications about changes to scheduled individuals.
+        /// </summary>
+        /// <value>
+        /// The schedule coordinator person alias identifier.
+        /// </value>
+        /// <remarks>
+        /// The notification types specified in this group's <see cref="GroupType.ScheduleCoordinatorNotificationTypes"/>
+        /// (or overridden in this group's own <see cref="ScheduleCoordinatorNotificationTypes"/>) will determine which
+        /// notifications - if any - are sent to this person.
+        /// </remarks>
+        [DataMember]
+        public int? ScheduleCoordinatorPersonAliasId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the types of notifications the coordinator receives about scheduled individuals.
+        /// </summary>
+        /// <value>
+        /// The schedule coordinator notification types.
+        /// </value>
+        [DataMember]
+        public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the group administrator <see cref="Rock.Model.PersonAlias"/> identifier.
@@ -645,7 +676,28 @@ namespace Rock.Model
         /// <value>
         /// The schedule cancellation person alias.
         /// </value>
-        public virtual PersonAlias ScheduleCancellationPersonAlias { get; set; }
+        [Obsolete( "Use ScheduleCoordinatorPersonAlias instead." )]
+        [RockObsolete( "1.16" )]
+        [NotMapped]
+        public virtual PersonAlias ScheduleCancellationPersonAlias
+        {
+            get => this.ScheduleCoordinatorPersonAlias;
+            set => this.ScheduleCoordinatorPersonAlias = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> of the person who receives notifications about changes
+        /// to scheduled individuals.
+        /// </summary>
+        /// <value>
+        /// The schedule coordinator person alias.
+        /// </value>
+        /// <remarks>
+        /// The notification types specified in this group's <see cref="GroupType.ScheduleCoordinatorNotificationTypes"/>
+        /// (or overridden in this group's own <see cref="ScheduleCoordinatorNotificationTypes"/>) will determine which
+        /// notifications - if any - are sent to this person.
+        /// </remarks>
+        public virtual PersonAlias ScheduleCoordinatorPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the inactive group reason.
@@ -716,7 +768,7 @@ namespace Rock.Model
             this.HasOptional( p => p.RequiredSignatureDocumentTemplate ).WithMany().HasForeignKey( p => p.RequiredSignatureDocumentTemplateId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ArchivedByPersonAlias ).WithMany().HasForeignKey( p => p.ArchivedByPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.StatusValue ).WithMany().HasForeignKey( p => p.StatusValueId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.ScheduleCancellationPersonAlias ).WithMany().HasForeignKey( p => p.ScheduleCancellationPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ScheduleCoordinatorPersonAlias ).WithMany().HasForeignKey( p => p.ScheduleCoordinatorPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.InactiveReasonValue ).WithMany().HasForeignKey( p => p.InactiveReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
 

@@ -380,6 +380,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public string LinkUrlLavaTemplate { get; private set; }
 
+        /// <inheritdoc cref="EntityType.IsRelatedToInteractionTrackedOnCreate"/>
+        [DataMember]
+        public bool IsRelatedToInteractionTrackedOnCreate { get; private set; }
+
         #endregion
 
         #region Constructors
@@ -542,6 +546,7 @@ namespace Rock.Web.Cache
             IndexResultTemplate = entityType.IndexResultTemplate;
             IndexDocumentUrl = entityType.IndexDocumentUrl;
             LinkUrlLavaTemplate = entityType.LinkUrlLavaTemplate;
+            IsRelatedToInteractionTrackedOnCreate = entityType.IsRelatedToInteractionTrackedOnCreate;
 
             IndexModelType = entityType.IndexModelType;
 

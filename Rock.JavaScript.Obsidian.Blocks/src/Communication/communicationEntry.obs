@@ -18,7 +18,7 @@
                                :tabs="mediums" />
 
                     <div :class="['tabbed-content', mediums.length <= 1 ? '' : 'mt-4']">
-                        <KeepAlive v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
+                        <template v-if="selectedMediumEntityTypeGuidOrEmptyString && config.communication && config.mediumOptions">
                             <Email v-if="selectedMedium === 'email'"
                                    v-model:disabled="disabled"
                                    v-model:recipients="recipients"
@@ -26,6 +26,17 @@
                                    v-model:scheduleSendIsoString="scheduleSendIsoString"
                                    v-model:communicationListGroupGuid="communicationListGroupGuid"
                                    v-model:isDuplicatePreventionOptionShown="isDuplicatePreventionOptionShown"
+                                   v-model:emailAttachmentBinaryFiles="emailAttachmentBinaryFiles"
+                                   v-model:communicationTemplateGuid="communicationTemplateGuid"
+                                   v-model:fromName="fromName"
+                                   v-model:fromAddress="fromAddress"
+                                   v-model:replyAddress="replyAddress"
+                                   v-model:ccAddresses="ccAddresses"
+                                   v-model:bccAddresses="bccAddresses"
+                                   v-model:subject="subject"
+                                   v-model:message="message"
+                                   v-model:excludeDuplicateRecipientAddress="excludeDuplicateRecipientAddress"
+                                   v-model:additionalEmailAddresses="additionalEmailAddresses"
                                    @saved="onSaved"
                                    @sent="onSent($event, true)" />
 
@@ -57,7 +68,7 @@
                                     <li>{{ EntityType.CommunicationMediumPushNotification }}</li>
                                 </ul>
                             </div>
-                        </KeepAlive>
+                        </template>
                     </div>
                 </div>
 
@@ -95,7 +106,7 @@
     import { CommunicationStatus, CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
     import { Mode } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/mode";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { areEqual } from "@Obsidian/Utility/guid";
     import { Guid } from "@Obsidian/Types";
     import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
@@ -106,6 +117,7 @@
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
     const reloadBlock = useReloadBlock();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     defineProps();
 
@@ -128,6 +140,17 @@
     const template = ref<CommunicationEntryCommunicationBag | null | undefined>(config.communication);
     const communicationListGroupGuid = ref<Guid | null | undefined>(config.communication?.communicationListGroupGuid);
     const isDuplicatePreventionOptionShown = ref<boolean>(config.isDuplicatePreventionOptionShown ?? false);
+    const emailAttachmentBinaryFiles = ref<ListItemBag[]>(config.communication?.emailAttachmentBinaryFiles ?? []);
+    const communicationTemplateGuid = ref<string>(config.communication?.communicationTemplateGuid ?? "");
+    const fromName = ref<string>(config.communication?.fromName ?? "");
+    const fromAddress = ref<string>(config.communication?.fromAddress ?? "");
+    const replyAddress = ref<string>(config.communication?.replyAddress ?? "");
+    const ccAddresses = ref<string>(config.communication?.ccAddresses ?? "");
+    const bccAddresses = ref<string>(config.communication?.bccAddresses ?? "");
+    const subject = ref<string>(config.communication?.subject ?? "");
+    const message = ref<string>(config.communication?.message ?? "");
+    const excludeDuplicateRecipientAddress = ref<boolean>(config.communication?.excludeDuplicateRecipientAddress ?? false);
+    const additionalEmailAddresses = ref<string>(config.communication?.additionalEmailAddresses?.join(", ") ?? "");
 
     //#endregion
 
@@ -175,10 +198,6 @@
             return "unknown";
         }
     });
-
-    //#endregion
-
-    //#region Functions
 
     //#endregion
 
@@ -263,14 +282,7 @@
 
     //#endregion
 
-    //#region Watchers
-
-    //#endregion
-
-    //#region Hooks
-
-    //#endregion
-
+    provideSecurityGrant(securityGrant);
     provideSelectedMediumType(selectedMedium);
     provideTemplate(template);
     onConfigurationValuesChanged(reloadBlock);

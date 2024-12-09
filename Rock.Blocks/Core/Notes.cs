@@ -308,7 +308,7 @@ namespace Rock.Blocks.Core
                 NoteTypeIdKey = noteType.IdKey,
                 Caption = note.Caption,
                 Text = note.Text,
-                ApprovalStatus = note.ApprovalStatus,
+                ApprovalStatus = ( noteType.RequiresApprovals ) ? note.ApprovalStatus : NoteApprovalStatus.Approved,
                 AnchorId = note.NoteAnchorId,
                 IsAlert = note.IsAlert ?? false,
                 IsPinned = note.IsPinned,
@@ -383,6 +383,7 @@ namespace Rock.Blocks.Core
                 AllowsReplies = noteType.AllowsReplies,
                 MaxReplyDepth = noteType.MaxReplyDepth ?? -1,
                 AllowsWatching = noteType.AllowsWatching,
+                RequiresApprovals = noteType.RequiresApprovals,
                 IsMentionEnabled = noteType.FormatType != NoteFormatType.Unstructured && noteType.IsMentionEnabled,
                 Attributes = note.GetPublicAttributesForEdit( currentPerson )
             };

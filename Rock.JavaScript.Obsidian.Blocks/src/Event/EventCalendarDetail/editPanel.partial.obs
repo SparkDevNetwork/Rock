@@ -23,11 +23,16 @@
                 <TextBox v-model="iconCssClass"
                          label="Calendar CSS Class" />
             </div>
+            <div v-if="indexingEnabled" class="col-md-6">
+                <CheckBox v-model="isIndexEnabled" label="Indexing Enabled" />
+            </div>
         </div>
 
         <Panel title="Event Attributes" hasCollapse>
 
-            <Grid :data="eventAttributesGridData" keyField="key" itemTerm="Event Occurrence Attributes" liveUpdates light @addItem="onAddAttribute">
+            <Grid :data="eventAttributesGridData" keyField="key" itemTerm="Event Attributes" liveUpdates light @addItem="onAddAttribute">
+                <ReorderColumn :onOrderChanged="onOrderChanged" />
+
                 <TextColumn name="name"
                             field="name"
                             title="Attribute" />
@@ -60,14 +65,6 @@
             <Modal v-model="isAttributeModalOpen" title="Calendar Event Attribute" saveText="Save" :onSave="onStartSaveAttribute">
                 <hr />
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                        Please correct the following:
-                        <ul>
-                            <li v-for="error of attributeErrors">
-                                {{ error }}
-                            </li>
-                        </ul>
-                    </NotificationBox>
                     <AttributeEditor v-model="eventAttribute" :reservedKeyNames="reservedKeyNames" />
                 </RockForm>
             </Modal>
@@ -119,11 +116,12 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import { newGuid } from "@Obsidian/Utility/guid";
-    import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn } from "@Obsidian/Controls/grid";
+    import { emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn, ReorderColumn } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 
     const props = defineProps({
         modelValue: {
@@ -148,6 +146,7 @@
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const isIndexEnabled = propertyRef(props.modelValue.isIndexEnabled ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "iconCssClass");
     const isContentChannelModalOpen = ref(false);
@@ -159,11 +158,12 @@
     const submitEditAttribute = ref(false);
     const eventAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
-    const attributeErrors = ref<string[]>([]);
+    const indexingEnabled = ref(props.options.indexingEnabled);
+    const invokeBlockAction = useInvokeBlockAction();
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, iconCssClass];
+    const propRefs = [description, isActive, name, iconCssClass, isIndexEnabled];
 
     // #endregion
 
@@ -250,11 +250,9 @@
         eventAttribute.value = {} as PublicEditableAttributeBag;
         eventAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
         isAttributeModalOpen.value = true;
-        attributeErrors.value = [];
     };
 
     const onEditAttribute = async (key: string): Promise<void> => {
-        attributeErrors.value = [];
         const selectedAttribute = eventAttributes.value.find(x => x.attribute?.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute?.attribute) {
@@ -326,13 +324,44 @@
     };
 
     const onStartSaveAttribute = (): void => {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(eventAttribute.value?.key ?? "");
-        submitEditAttribute.value = !isExistingKey;
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
+        submitEditAttribute.value = true;
     };
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        let isSuccess = false;
+
+        if (props.modelValue?.idKey) {
+            const data: {
+                idKey: string | null | undefined;
+                guid: Guid;
+                beforeGuid: Guid | null | undefined;
+            } = {
+                idKey: props.modelValue?.idKey,
+                guid: toGuidOrNull(item?.key as string) ?? emptyGuid,
+                beforeGuid: toGuidOrNull(beforeItem?.key as string)
+            };
+
+            const result = await invokeBlockAction<string>("ReorderAttributes", data);
+
+            isSuccess = result.isSuccess;
+        }
+
+        if (eventAttributesGridData.rows) {
+            const itemIndex = eventAttributes.value.findIndex(x => x.attribute?.guid === item.guid);
+            const beforeItemIndex = eventAttributes.value.findIndex(x => x.attribute?.guid === beforeItem?.guid);
+
+            if (itemIndex !== -1 && beforeItemIndex !== -1) {
+                [eventAttributes.value[itemIndex], eventAttributes.value[beforeItemIndex]] = [eventAttributes.value[beforeItemIndex], eventAttributes.value[itemIndex]];
+            }
+        }
+
+        return isSuccess;
+    }
 
     // #endregion
 
@@ -342,6 +371,7 @@
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(isIndexEnabled, props.modelValue.isIndexEnabled ?? false);
         updateRefValue(name, props.modelValue.name ?? "");
         updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
         updateRefValue(eventAttributes, props.modelValue.eventAttributes ?? []);
@@ -358,7 +388,8 @@
             name: name.value,
             iconCssClass: iconCssClass.value,
             savedContentChannels: savedContentChannels.value,
-            eventAttributes: eventAttributes.value
+            eventAttributes: eventAttributes.value,
+            isIndexEnabled: isIndexEnabled.value
         };
 
         emit("update:modelValue", newValue);

@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 
+using Rock.Model;
 using Rock.Obsidian;
 
 namespace Rock.Lms
@@ -46,17 +47,6 @@ namespace Rock.Lms
         #endregion
 
         /// <summary>
-        /// Scrubs the configuration data, removing anything the student should not know before completion.
-        /// </summary>
-        /// <remarks>
-        ///     This method should be used to remove any indication of correct answers from the configuration
-        ///     before the configuration data is sent to the <see cref="Model.LearningParticipant">Student</see> for completion.
-        /// </remarks>
-        /// <param name="rawConfigurationJsonString">The unparsed activity configuration data.</param>
-        /// <returns>The configuration data scrubbed of sensitive content as a JSON <c>string</c></returns>
-        public virtual string StudentScrubbedConfiguration( string rawConfigurationJsonString ) => rawConfigurationJsonString;
-
-        /// <summary>
         /// Gets the completion JSON string that should be persisted to the database.
         /// </summary>
         /// <remarks>
@@ -79,6 +69,25 @@ namespace Rock.Lms
         /// <param name="pointsPossible">The maximum points possible for the activity./></param>
         /// <returns>The actual points earned.</returns>
         public virtual int CalculatePointsEarned( string rawConfigurationJsonString, string rawCompletionJsonString, int pointsPossible ) => pointsPossible;
+
+        /// <summary>
+        /// Determines if the activity requires grading by a facilitator.
+        /// Defaults to false allowing LearningActivityComponents to opt-in.
+        /// </summary>
+        /// <param name="completion">The student completion to evaluate.</param>
+        /// <returns><c>true</c> if the completion requires grading/scoring by a facilitator; otherwise <c>false</c>.</returns>
+        public virtual bool RequiresGrading( LearningActivityCompletion completion ) => false;
+
+        /// <summary>
+        /// Scrubs the configuration data, removing anything the student should not know before completion.
+        /// </summary>
+        /// <remarks>
+        ///     This method should be used to remove any indication of correct answers from the configuration
+        ///     before the configuration data is sent to the <see cref="Model.LearningParticipant">Student</see> for completion.
+        /// </remarks>
+        /// <param name="rawConfigurationJsonString">The unparsed activity configuration data.</param>
+        /// <returns>The configuration data scrubbed of sensitive content as a JSON <c>string</c></returns>
+        public virtual string StudentScrubbedConfiguration( string rawConfigurationJsonString ) => rawConfigurationJsonString;
 
         /// <summary>
         /// Gets the attribute value defaults.

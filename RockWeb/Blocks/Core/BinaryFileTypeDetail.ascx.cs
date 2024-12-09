@@ -173,6 +173,7 @@ namespace RockWeb.Blocks.Core
             }
 
             cbRequiresViewSecurity.Checked = binaryFileType.RequiresViewSecurity;
+            cbAllowAnonymous.Checked = binaryFileType.AllowAnonymous;
 
             nbMaxWidth.Text = binaryFileType.MaxWidth.HasValue ? binaryFileType.MaxWidth.Value.ToString() : string.Empty;
             nbMaxHeight.Text = binaryFileType.MaxHeight.HasValue ? binaryFileType.MaxHeight.Value.ToString() : string.Empty;
@@ -244,6 +245,7 @@ namespace RockWeb.Blocks.Core
             cbCacheToServerFileSystem.Enabled = !readOnly;
             cpCacheSettings.Enabled = !readOnly;
             cbRequiresViewSecurity.Enabled = !readOnly;
+            cbAllowAnonymous.Enabled = !readOnly;
             cpStorageType.Enabled = !readOnly;
             nbMaxWidth.ReadOnly = readOnly;
             nbMaxHeight.ReadOnly = readOnly;
@@ -299,6 +301,7 @@ namespace RockWeb.Blocks.Core
             binaryFileType.CacheToServerFileSystem = cbCacheToServerFileSystem.Checked;
             binaryFileType.CacheControlHeaderSettings = cpCacheSettings.CurrentCacheability.ToJson();
             binaryFileType.RequiresViewSecurity = cbRequiresViewSecurity.Checked;
+            binaryFileType.AllowAnonymous = cbAllowAnonymous.Checked;
             binaryFileType.MaxWidth = nbMaxWidth.Text.AsIntegerOrNull();
             binaryFileType.MaxHeight = nbMaxHeight.Text.AsIntegerOrNull();
             binaryFileType.PreferredRequired = cbPreferredRequired.Checked;

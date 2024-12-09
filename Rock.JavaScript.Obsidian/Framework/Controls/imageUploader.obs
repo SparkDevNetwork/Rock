@@ -27,7 +27,7 @@
                         <div>{{ uploadProgressText }}</div>
                     </div>
 
-                    <div class="imageupload-dropzone">
+                    <div v-if="!disabled" class="imageupload-dropzone">
                         <span>{{ uploadButtonText }}</span>
                         <input ref="fileInputElement" type="file" style="display: none;" @change="onFileChange" @remove="onFileRemove" />
                     </div>
@@ -139,10 +139,6 @@
         return toGuidOrNull(internalValue.value?.value);
     });
 
-    const fileName = computed<string>(() => {
-        return internalValue.value?.text ?? "";
-    });
-
     /** The URL used to download the file. */
     const fileUrl = computed((): string | null => {
         if (fileGuid.value) {
@@ -184,6 +180,7 @@
     /** True if the delete button should be visible. */
     const isDeleteVisible = computed((): boolean => {
         return props.showDeleteButton
+            && !props.disabled
             && (!!fileGuid.value || internalValue.value?.value?.startsWith("/") === true);
     });
 

@@ -97,6 +97,7 @@
   padding: @card-cap-padding-y @card-cap-padding-x;
   background-color: @card-cap-bg;
   border-top: @card-border-width solid @card-border-color;
+  background-color: var(--color-interface-softest);
 
   &:last-child {
     border-radius: 0 0 @card-inner-border-radius @card-inner-border-radius;
@@ -146,6 +147,7 @@
 .card-img-bottom {
   flex-shrink: 0; // For IE: https://github.com/twbs/bootstrap/issues/29396
   width: 100%; // Required because we use flexbox and this inherently applies align-self: stretch
+  background-color: var(--color-interface-softer);
 }
 
 .card-img,

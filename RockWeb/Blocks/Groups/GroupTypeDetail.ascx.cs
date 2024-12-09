@@ -261,6 +261,8 @@ namespace RockWeb.Blocks.Groups
             gGroupTypeGroupRequirements.Actions.AddClick += gGroupTypeGroupRequirements_Add;
             gGroupTypeGroupRequirements.EmptyDataText = Server.HtmlEncode( None.Text );
             gGroupTypeGroupRequirements.GridRebind += gGroupTypeGroupRequirements_GridRebind;
+
+            rblRelationshipStrength.BindToEnum<RelationshipStrength>();
         }
 
         /// <summary>
@@ -545,6 +547,17 @@ namespace RockWeb.Blocks.Groups
             groupType.EnableInactiveReason = cbEnableInactiveReason.Checked;
             groupType.RequiresInactiveReason = cbRequireInactiveReason.Checked;
 
+            // Peer Network
+            groupType.IsPeerNetworkEnabled = cbEnablePeerNetwork.Checked;
+
+            groupType.RelationshipStrength = rblRelationshipStrength.SelectedValueAsInt() ?? ( int ) RelationshipStrength.None;
+            groupType.RelationshipGrowthEnabled = cbEnableRelationshipGrowth.Checked;
+
+            groupType.LeaderToLeaderRelationshipMultiplier = tbLeaderToLeaderRelationshipMultiplier.Text.AsDecimalPercentageOrNull( minPercentage: 0, maxPercentage: 100 ) ?? 1m;
+            groupType.LeaderToNonLeaderRelationshipMultiplier = tbLeaderToNonLeaderRelationshipMultiplier.Text.AsDecimalPercentageOrNull( minPercentage: 0, maxPercentage: 100 ) ?? 1m;
+            groupType.NonLeaderToLeaderRelationshipMultiplier = tbNonLeaderToLeaderRelationshipMultiplier.Text.AsDecimalPercentageOrNull( minPercentage: 0, maxPercentage: 100 ) ?? 1m;
+            groupType.NonLeaderToNonLeaderRelationshipMultiplier = tbNonLeaderToNonLeaderRelationshipMultiplier.Text.AsDecimalPercentageOrNull( minPercentage: 0, maxPercentage: 100 ) ?? 1m;
+
             // RSVP
             groupType.EnableRSVP = cbGroupRSVPEnabled.Checked;
             groupType.RSVPReminderSystemCommunicationId = ddlRsvpReminderSystemCommunication.SelectedValueAsInt();
@@ -566,6 +579,20 @@ namespace RockWeb.Blocks.Groups
             groupType.ScheduleReminderSystemCommunicationId = ddlScheduleReminderSystemCommunication.SelectedValue.AsIntegerOrNull();
             groupType.ScheduleReminderEmailOffsetDays = nbScheduleReminderOffsetDays.Text.AsIntegerOrNull();
             groupType.ScheduleConfirmationLogic = ddlScheduleConfirmationLogic.SelectedValueAsEnum<ScheduleConfirmationLogic>();
+
+            ScheduleCoordinatorNotificationType? notificationTypes = null;
+            foreach ( var li in cblScheduleCoordinatorNotificationTypes.Items.Cast<ListItem>() )
+            {
+                if ( li.Selected )
+                {
+                    var selectedType = ( ScheduleCoordinatorNotificationType ) li.Value.AsInteger();
+                    notificationTypes = notificationTypes.HasValue
+                        ? notificationTypes | selectedType
+                        : selectedType;
+                }
+            }
+
+            groupType.ScheduleCoordinatorNotificationTypes = notificationTypes;
 
             // if GroupHistory is turned off, we'll delete group and group member history for this group type
             bool deleteGroupHistory = false;
@@ -910,6 +937,22 @@ namespace RockWeb.Blocks.Groups
             cbGroupsRequireCampus.Checked = groupType.GroupsRequireCampus;
             cbShowAdministrator.Checked = groupType.ShowAdministrator;
 
+            // Peer Network
+            cbEnablePeerNetwork.Checked = groupType.IsPeerNetworkEnabled;
+            pnlPeerNetwork.Visible = groupType.IsPeerNetworkEnabled;
+
+            rblRelationshipStrength.SetValue( groupType.RelationshipStrength );
+            cbEnableRelationshipGrowth.Checked = groupType.RelationshipGrowthEnabled;
+
+            var showPeerNetworkAdvancedSettings = groupType.AreAnyRelationshipMultipliersCustomized;
+            swShowPeerNetworkAdvancedSettings.Checked = showPeerNetworkAdvancedSettings;
+            pnlPeerNetworkAdvanced.Visible = showPeerNetworkAdvancedSettings;
+
+            tbLeaderToLeaderRelationshipMultiplier.Text = groupType.LeaderToLeaderRelationshipMultiplier.FormatAsPercent();
+            tbLeaderToNonLeaderRelationshipMultiplier.Text = groupType.LeaderToNonLeaderRelationshipMultiplier.FormatAsPercent();
+            tbNonLeaderToLeaderRelationshipMultiplier.Text = groupType.NonLeaderToLeaderRelationshipMultiplier.FormatAsPercent();
+            tbNonLeaderToNonLeaderRelationshipMultiplier.Text = groupType.NonLeaderToNonLeaderRelationshipMultiplier.FormatAsPercent();
+
             // Display
             cbShowInGroupList.Checked = groupType.ShowInGroupList;
             cbShowInNavigation.Checked = groupType.ShowInNavigation;
@@ -997,6 +1040,12 @@ namespace RockWeb.Blocks.Groups
             wtpScheduleCancellationWorkflowType.SetValue( groupType.ScheduleCancellationWorkflowTypeId );
             ddlScheduleReminderSystemCommunication.SetValue( groupType.ScheduleReminderSystemCommunicationId );
             nbScheduleReminderOffsetDays.Text = groupType.ScheduleReminderEmailOffsetDays.ToString();
+
+            foreach ( var li in cblScheduleCoordinatorNotificationTypes.Items.Cast<ListItem>() )
+            {
+                var notificationType = ( ScheduleCoordinatorNotificationType ) li.Value.AsInteger();
+                li.Selected = ( groupType.ScheduleCoordinatorNotificationTypes & notificationType ) == notificationType;
+            }
 
             // Attributes
             gtpInheritedGroupType.Enabled = !groupType.IsSystem;
@@ -1623,6 +1672,7 @@ namespace RockWeb.Blocks.Groups
             cbCanEdit.Checked = groupTypeRole.CanEdit;
             cbCanManageMembers.Checked = groupTypeRole.CanManageMembers;
             cbIsCheckInAllowed.Checked = groupTypeRole.IsCheckInAllowed;
+            cbIsExcludedFromPeerNetwork.Checked = groupTypeRole.IsExcludedFromPeerNetwork;
 
             nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : string.Empty;
             nbMinimumRequired.Help = string.Format(
@@ -1711,6 +1761,7 @@ namespace RockWeb.Blocks.Groups
             groupTypeRole.CanEdit = cbCanEdit.Checked;
             groupTypeRole.CanManageMembers = cbCanManageMembers.Checked;
             groupTypeRole.IsCheckInAllowed = cbIsCheckInAllowed.Checked;
+            groupTypeRole.IsExcludedFromPeerNetwork = cbIsExcludedFromPeerNetwork.Checked;
             groupTypeRole.MinCount = nbMinimumRequired.Text.AsIntegerOrNull();
             groupTypeRole.MaxCount = nbMaximumAllowed.Text.AsIntegerOrNull();
             groupTypeRole.LoadAttributes();
@@ -3204,6 +3255,30 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion
+
+        #region Peer Network Controls
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbEnablePeerNetwork control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void cbEnablePeerNetwork_CheckedChanged( object sender, EventArgs e )
+        {
+            pnlPeerNetwork.Visible = cbEnablePeerNetwork.Checked;
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the swShowPeerNetworkAdvancedSettings control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void swShowPeerNetworkAdvancedSettings_CheckedChanged( object sender, EventArgs e )
+        {
+            pnlPeerNetworkAdvanced.Visible = swShowPeerNetworkAdvancedSettings.Checked;
+        }
+
+        #endregion Peer Network Controls
 
         protected void ddlGroupRequirementType_SelectedIndexChanged( object sender, EventArgs e )
         {

@@ -17,7 +17,6 @@
 
 using System;
 
-using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 using Rock.ViewModels.Blocks.Lms.LearningActivityDetail;
 using Rock.ViewModels.Utility;
@@ -35,7 +34,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public LearningActivityBag ActivityBag { get; set; }
 
         /// <summary>
-        /// Gets or sets the completion json for the activity component.
+        /// Gets or sets the completion JSON for the activity component.
         /// </summary>
         public string ActivityComponentCompletionJson { get; set; }
 
@@ -86,6 +85,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public string GradeText { get; set; }
 
         /// <summary>
+        /// Gets or sets the highlight color of the achieved grade.
+        /// </summary>
+        public string GradeColor { get; set; }
+
+        /// <summary>
         /// Indicates whether or not the activity is currently available.
         /// </summary>
         public bool IsAvailable { get; set; }
@@ -106,19 +110,19 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         public bool IsFacilitatorCompleted { get; set; }
 
         /// <summary>
-        /// Indicates whether or not the related activity instance for the student is currently past due.
+        /// Indicates whether or not the activity was completed late or is late (if incomplete).
         /// </summary>
-        public bool IsPastDue => DueDate != null && DueDate <= DateTime.Now;
-
-        /// <summary>
-        /// Indicates whether or not student commenting is enabled for this activity.
-        /// </summary>
-        public bool IsStudentCommentingEnabled { get; set; }
+        public bool IsLate { get; set; }
 
         /// <summary>
         /// Indicates whether or not the related activity instance has been completed by the student.
         /// </summary>
         public bool IsStudentCompleted { get; set; }
+
+        /// <summary>
+        /// Gets or sets the IdKey of the <see cref="ActivityBag"/>.
+        /// </summary>
+        public string LearningActivityIdKey { get; set; }
 
         /// <summary>
         /// Gets or sets the number of points the student earned by completing the activity.

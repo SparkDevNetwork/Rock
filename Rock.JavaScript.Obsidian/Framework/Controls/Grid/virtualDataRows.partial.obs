@@ -110,7 +110,8 @@
     });
 
     const emit = defineEmits<{
-        (e: "click", key: string): void
+        (e: "click", key: string): void,
+        (e: "width", width: { offsetWidth: number, scrollWidth: number }): void
     }>();
 
     // NOTE: Currently this only supports page scrolling. In the future
@@ -123,6 +124,7 @@
     const element = ref<HTMLElement>();
     const range = ref<Range>({ startIndex: 0, endIndex: 0, padBefore: 0, padAfter: 0 });
     let virtualScroller: VirtualScroller | undefined;
+    let resizeObserver: ResizeObserver | undefined;
 
     // #endregion
 
@@ -309,15 +311,32 @@
             virtualScroller.destroy();
             virtualScroller = undefined;
         }
+
+        if (resizeObserver) {
+            resizeObserver.disconnect();
+            resizeObserver = undefined;
+        }
     });
 
     onMounted(() => {
         virtualScroller = createVirtualScroller();
 
+        if (typeof ResizeObserver !== "undefined" && element.value) {
+
+            resizeObserver = new ResizeObserver(()=>{
+                const payload = {offsetWidth: element.value?.offsetWidth ?? 0, scrollWidth: element.value?.scrollWidth ?? 0};
+                emit("width", payload);
+            });
+
+            resizeObserver.observe(element.value);
+        }
+
         if (getScrollOffset() > 0) {
             onScroll();
         }
 
+
         document.addEventListener("scroll", onScroll, { passive: false });
     });
+
 </script>

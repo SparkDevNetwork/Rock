@@ -1,246 +1,532 @@
-
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div>
         <Grid :definition="config.gridDefinition ?? undefined"
               :data="gridDataSource"
               keyField="idKey"
               itemTerm="Nameless People"
               stickyHeader
               liveUpdates
+              :showMergeTemplate="false"
               :showLaunchWorkflow="false">
 
-            <TextColumn name="personLabel"
-                        title="Phone Number"
-                        field="personLabel"
-                        :filter="textValueFilter"
-                        visiblePriority="xs" />
-
-            <ButtonColumn name="showModal"
-                          :iconClass="icon"
-                          @click="onShowModal" />
+                <TextColumn name="personLabel"
+                            title="Phone Number"
+                            field="personLabel"
+                            :filter="textValueFilter"
+                            visiblePriority="xs"
+                            :excludeFromExport="true" />
+                <Column name="isSystem"
+                        title="Is System"
+                        field="isSystem"
+                        :hideOnScreen="true" />
+                <TextColumn name="recordType"
+                            title="Record Type Value Id"
+                            field="recordType"
+                            :hideOnScreen="true" />
+                <TextColumn name="recordStatus"
+                            title="Record Status Value Id"
+                            field="recordStatus"
+                            :hideOnScreen="true" />
+                <Column name="recordStatusLastModifiedDateTime"
+                        title="Record Status Last Modified Date Time"
+                        field="recordStatusLastModifiedDateTime"
+                        :hideOnScreen="true" />
+                <Column name="recordStatusReasonValue"
+                        title="Record Status Reason Value Id"
+                        field="recordStatusReasonValue"
+                        :hideOnScreen="true" />
+                <Column name="connectionStatusValue"
+                        title="Connection Status Value Id"
+                        field="connectionStatusValue"
+                        :hideOnScreen="true" />
+                <Column name="connectionStatusValue"
+                        title="Connection Status Value Id"
+                        field="connectionStatusValue"
+                        :hideOnScreen="true" />
+                <Column name="reviewReasonValue"
+                        title="Review Reason Value Id"
+                        field="reviewReasonValue"
+                        :hideOnScreen="true" />
+                <Column name="isDeceased"
+                        title="Is Deceased"
+                        field="isDeceased"
+                        :hideOnScreen="true" />
+                <Column name="titleValue"
+                        title="Title Value Id"
+                        field="titleValue"
+                        :hideOnScreen="true" />
+                <Column name="firstName"
+                        title="First Name"
+                        field="firstName"
+                        :hideOnScreen="true" />
+                <Column name="nickName"
+                        title="Nick Name"
+                        field="nickName"
+                        :hideOnScreen="true" />
+                <Column name="middleName"
+                        title="Middle Name"
+                        field="middleName"
+                        :hideOnScreen="true" />
+                <Column name="lastName"
+                        title="Last Name"
+                        field="lastName"
+                        :hideOnScreen="true" />
+                <Column name="suffixValue"
+                        title="Suffix Value Id"
+                        field="suffixValue"
+                        :hideOnScreen="true" />
+                <Column name="photoId"
+                        title="Photo Id"
+                        field="photoId"
+                        :hideOnScreen="true" />
+                <Column name="birthDay"
+                        title="Birth Day"
+                        field="birthDay"
+                        :hideOnScreen="true" />
+                <Column name="birthMonth"
+                        title="Birth Month"
+                        field="birthMonth"
+                        :hideOnScreen="true" />
+                <Column name="birthYear"
+                        title="Birth Year"
+                        field="birthYear"
+                        :hideOnScreen="true" />
+                <Column name="age"
+                        title="Age"
+                        field="age"
+                        :hideOnScreen="true" />
+                <Column name="gender"
+                        title="Gender"
+                        field="gender"
+                        :hideOnScreen="true" />
+                <Column name="martialStatusValue"
+                        title="Martial Status Value Id"
+                        field="martialStatusValue"
+                        :hideOnScreen="true" />
+                <DateColumn name="anniversaryDate"
+                            title="Anniversary Date"
+                            field="anniversaryDate"
+                            :hideOnScreen="true" />
+                <Column name="graduationYear"
+                        title="Graduation Year"
+                        field="graduationYear"
+                        :hideOnScreen="true" />
+                <Column name="givingId"
+                        title="Giving Id"
+                        field="givingId"
+                        :hideOnScreen="true" />
+                <Column name="givingLeaderId"
+                        title="Giving Leader Id"
+                        field="givingLeaderId"
+                        :hideOnScreen="true" />
+                <Column name="email"
+                        title="Email"
+                        field="email"
+                        :hideOnScreen="true" />
+                <Column name="isEmailActive"
+                        title="Is Email Active"
+                        field="isEmailActive"
+                        :hideOnScreen="true" />
+                <Column name="emailNote"
+                        title="Email Note"
+                        field="emailNote"
+                        :hideOnScreen="true" />
+                <Column name="emailPreference"
+                        title="Email Preference"
+                        field="emailPreference"
+                        :hideOnScreen="true" />
+                <Column name="communicationPreference"
+                        title="Communication Preference"
+                        field="communicationPreference"
+                        :hideOnScreen="true" />
+                <Column name="reviewReasonNote"
+                        title="Review Reason Note"
+                        field="reviewReasonNote"
+                        :hideOnScreen="true" />
+                <Column name="inactiveReasonNote"
+                        title="Inactive Reason Note"
+                        field="inactiveReasonNote"
+                        :hideOnScreen="true" />
+                <Column name="systemNote"
+                        title="System Note"
+                        field="systemNote"
+                        :hideOnScreen="true" />
+                <Column name="viewedCount"
+                        title="Viewed Count"
+                        field="viewedCount"
+                        :hideOnScreen="true" />
+                <Column name="topSignalColor"
+                        title="Top Signal Color"
+                        field="topSignalColor"
+                        :hideOnScreen="true" />
+                <Column name="topSignalIconCssClass"
+                        title="Top Signal Icon Css Class"
+                        field="topSignalIconCssClass"
+                        :hideOnScreen="true" />
+                <Column name="topSignalId"
+                        title="Top Signal Id"
+                        field="topSignalId"
+                        :hideOnScreen="true" />
+                <Column name="ageClassification"
+                        title="Age Classification"
+                        field="ageClassification"
+                        :hideOnScreen="true" />
+                <Column name="primaryFamilyId"
+                        title="Primary Family Id"
+                        field="primaryFamilyId"
+                        :hideOnScreen="true" />
+                <Column name="primaryCampusId"
+                        title="Primary Campus Id"
+                        field="primaryCampusId"
+                        :hideOnScreen="true" />
+                <Column name="isLockedAsChild"
+                        title="Is Locked As Child"
+                        field="isLockedAsChild"
+                        :hideOnScreen="true" />
+                <DateColumn name="deceasedDate"
+                            title="Deceased Date"
+                            field="deceasedDate"
+                            :hideOnScreen="true" />
+                <Column name="contributionFinancialAccountId"
+                        title="Contribution Financial Account Id"
+                        field="contributionFinancialAccountId"
+                        :hideOnScreen="true" />
+                <Column name="accountProtectionProfile"
+                        title="Account Protection Profile"
+                        field="accountProtectionProfile"
+                        :hideOnScreen="true" />
+                <Column name="preferredLanguageValueId"
+                        title="Preferred Language Value Id"
+                        field="preferredLanguageValueId"
+                        :hideOnScreen="true" />
+                <Column name="reminderCount"
+                        title="Reminder Count"
+                        field="reminderCount"
+                        :hideOnScreen="true" />
+                <Column name="raceValueId"
+                        title="Race Value Id"
+                        field="raceValueId"
+                        :hideOnScreen="true" />
+                <Column name="ethnicityValueId"
+                        title="Ethnicity Value Id"
+                        field="ethnicityValueId"
+                        :hideOnScreen="true" />
+                <Column name="birthDateKey"
+                        title="Birth Date Key"
+                        field="birthDateKey"
+                        :hideOnScreen="true" />
+                <Column name="ageBracket"
+                        title="Age Bracket"
+                        field="ageBracket"
+                        :hideOnScreen="true" />
+                <Column name="firstNamePronounciationOverride"
+                        title="First Name Pronounciation Override"
+                        field="firstNamePronounciationOverride"
+                        :hideOnScreen="true" />
+                <Column name="nickNamePronounciationOverride"
+                        title="Nick Name Pronounciation Override"
+                        field="nickNamePronounciationOverride"
+                        :hideOnScreen="true" />
+                <Column name="lastNamePronounciationOverride"
+                        title="Last Name Pronounciation Override"
+                        field="lastNamePronounciationOverride"
+                        :hideOnScreen="true" />
+                <Column name="pronounciationNote"
+                        title="Pronounciation Note"
+                        field="pronounciationNote"
+                        :hideOnScreen="true" />
+                <Column name="primaryAliasId"
+                        title="Primary Alias Id"
+                        field="primaryAliasId"
+                        :hideOnScreen="true" />
+                <Column name="daysUntilBirthday"
+                        title="Days Until Birthday"
+                        field="daysUntilBirthday"
+                        :hideOnScreen="true" />
+                <Column name="daysUntilBirthday"
+                        title="Days Until Birthday"
+                        field="daysUntilBirthday"
+                        :hideOnScreen="true" />
+                <Column name="givingGroupId"
+                        title="Giving Group Id"
+                        field="givingGroupId"
+                        :hideOnScreen="true" />
+                <DateColumn name="birthDate"
+                            title="Birth Date"
+                            field="birthDate"
+                            :hideOnScreen="true" />
+                <Column name="daysUntilAnniversary"
+                        title="Days Until Anniversary"
+                        field="daysUntilAnniversary"
+                        :hideOnScreen="true" />
+                <Column name="allowsInteractiveBulkIndexing"
+                        title="Allows Interactive Bulk Indexing"
+                        field="allowsInteractiveBulkIndexing"
+                        :hideOnScreen="true" />
+                <DateTimeColumn name="createdDateTime"
+                                title="Created Date Time"
+                                field="createdDateTime"
+                                :hideOnScreen="true" />
+                <DateTimeColumn name="modifiedDateTime"
+                                title="Modified Date Time"
+                                field="modifiedDateTime"
+                                :hideOnScreen="true" />
+                <Column name="createdByPersonAliasId"
+                        title="Created By Person Alias Id"
+                        field="createdByPersonAliasId"
+                        :hideOnScreen="true" />
+                <Column name="modifiedByPersonAliasId"
+                        title="Modified By Person Alias Id"
+                        field="modifiedByPersonAliasId"
+                        :hideOnScreen="true" />
+                <Column name="id"
+                        title="Id"
+                        field="id"
+                        :hideOnScreen="true" />
+                <Column name="idKey"
+                        title="Id Key"
+                        field="idKey"
+                        :hideOnScreen="true" />
+                <Column name="guid"
+                        title="Guid"
+                        field="guid"
+                        :hideOnScreen="true" />
+                <Column name="foreignId"
+                        title="Foreign Id"
+                        field="foreignId"
+                        :hideOnScreen="true" />
+                <Column name="foreignGuid"
+                        title="Foreign Guid"
+                        field="foreignGuid"
+                        :hideOnScreen="true" />
+                <Column name="foreignKey"
+                        title="Foreign Key"
+                        field="foreignKey"
+                        :hideOnScreen="true" />
+                <ButtonColumn name="showModal"
+                              iconClass="fa fa-user"
+                              @click="onShowModal"
+                              :excludeFromExport="true" />
         </Grid>
-    </div>
-    <div>
-        <!-- Modal Dialog -->
-        <Modal :onCloseModal="closeModal" :saveText="'Save'" :onSave="savePerson" :modelValue="isModalVisible" :title="`Link Phone Numbers ${selectedPhoneNumber} To Person`">
-            <NotificationBox :style="'font-weight: 600'" :alertType="AlertType.Info" :dismissible="false">
-                To prevent data loss and to ensure the highest level of security, a merge request will be created upon pressing Save.
-            </NotificationBox>
-            <div class="tabs">
-                <TabbedBar :onUpdate:modelValue="swapTabContent" :type="'pills'" :tabs="tabItems" :modelValue="currentTab" />
-            </div>
-            <!-- Add New Person Tab -->
-            <div v-if="currentTab === 'Add New Person'">
-                <PersonBasicEditor v-model="newPerson" :personGuid="selectedPersonGuid" />
-            </div>
-            <!-- Link Existing Person Tab -->
-            <div v-else="currentTab === 'Link Existing Person'" class="form-group">
-                <div class="col-md-6">
-                    <PersonPicker @update:modelValue="onPersonSelected" label="Person" help="Select a Person to link to this phone number" rules="required" />
-                </div>
-            </div>
-        </Modal>
-    </div>
+        <div>
+                <!-- Modal Dialog -->
+                <Modal :onCloseModal="closeModal" :saveText="'Save'" :onSave="savePerson" :modelValue="isModalVisible" title="Link Phone Numbers To Person">
+                        <NotificationBox :style="'font-weight: 600'" :alertType="AlertType.Info" :dismissible="false">
+                                To prevent data loss and to ensure the highest level of security, a merge request will be created upon pressing Save.
+                        </NotificationBox>
+                        <div class="tabs">
+                                <TabbedBar :onUpdate:modelValue="swapTabContent" :type="'pills'" :tabs="tabItems" :modelValue="currentTab" />
+                        </div>
+                        <!-- Add New Person Tab -->
+                        <div v-if="currentTab === 'Add New Person'">
+                                <PersonBasicEditor v-model="newPerson" :personGuid="selectedPersonGuid" />
+                        </div>
+                        <!-- Link Existing Person Tab -->
+                        <div v-else-if="currentTab === 'Link Existing Person'" class="form-group">
+                                <div class="col-md-6">
+                                        <PersonPicker @update:modelValue="onPersonSelected" label="Person" help="Select a Person to link to this phone number" rules="required" />
+                                </div>
+                        </div>
+                </Modal>
+        </div>
 </template>
 
 <script setup lang="ts">
-    import { ref } from "vue";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import Grid, { TextColumn, textValueFilter, ButtonColumn } from "@Obsidian/Controls/grid";
-    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { NamelessPersonListOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/NamelessPersonList/namelessPersonListOptionsBag";
-    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
-    import Modal from "@Obsidian/Controls/modal.obs";
-    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
-    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import PersonBasicEditor from "@Obsidian/Controls/personBasicEditor.obs";
-    import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag";
+        import { ref } from "vue";
+        import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+        import Grid, { TextColumn, textValueFilter, ButtonColumn, DateColumn, DateTimeColumn } from "@Obsidian/Controls/grid";
+        import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+        import { NamelessPersonListOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/NamelessPersonList/namelessPersonListOptionsBag";
+        import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+        import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+        import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+        import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+        import Modal from "@Obsidian/Controls/modal.obs";
+        import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+        import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+        import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+        import PersonBasicEditor from "@Obsidian/Controls/personBasicEditor.obs";
+        import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag";
 
-    // #region Values
-    const config = useConfigurationValues<ListBlockBox<NamelessPersonListOptionsBag>>();
-    const invokeBlockAction = useInvokeBlockAction();
-    const gridDataSource = ref<Promise<GridDataBag>>();
-    let gridData: GridDataBag | undefined;
-    const selectedPhoneNumber = ref<string | unknown>("");
-    const selectedPersonGuid = ref<string>("");
-    const selectedNamelessPersonId = ref<number>(0);
-    const selectedExistingPersonGuid = ref<number>(0);
-    const icon = "fa fa-user";
-    const isModalVisible = ref(false);
+        // #region Values
+        const config = useConfigurationValues<ListBlockBox<NamelessPersonListOptionsBag>>();
+        const invokeBlockAction = useInvokeBlockAction();
+        const gridDataSource = ref<Promise<GridDataBag>>();
+        let gridData: GridDataBag | undefined;
+        const selectedPhoneNumber = ref<string | unknown>("");
+        const selectedPersonGuid = ref<string>("");
+        const selectedNamelessPersonId = ref<number>(0);
+        const selectedExistingPersonGuid = ref<number>(0);
+        const isModalVisible = ref(false);
 
-    // Modal state
-    const currentTab = ref("Add New Person");
+        // Modal state
+        const currentTab = ref("Add New Person");
 
-    const tabItems: ListItemBag[] = [
-        {
-            text: "Add New Person",
-            value: "Add New Person"
-        },
-        {
-            text: "Link Existing Person",
-            value: "Link Existing Person"
-        },
-    ];
+        const tabItems: ListItemBag[] = [
+                {
+                        text: "Add New Person",
+                        value: "Add New Person"
+                },
+                {
+                        text: "Link Existing Person",
+                        value: "Link Existing Person"
+                },
+        ];
 
-    // Person Editor state
-    const newPerson = ref<PersonBasicEditorBag>({
-        personTitle: null,
-        personConnectionStatus: null,
-        personSuffix: null,
-        personMaritalStatus: null,
-        firstName: "",
-        lastName: "",
-        email: "",
-        mobilePhoneNumber: "",
-        mobilePhoneCountryCode: "",
-        isMessagingEnabled: false,
-        personRace: null,
-        personGender: undefined,
-        personBirthDate: null,
-        personEthnicity: null,
-        personGradeOffset: null,
-        personGroupRole: null,
-    });
-    // #endregion
+        // Person Editor state
+        const newPerson = ref<PersonBasicEditorBag>({
+                personTitle: null,
+                personConnectionStatus: null,
+                personSuffix: null,
+                personMaritalStatus: null,
+                firstName: "",
+                lastName: "",
+                email: "",
+                mobilePhoneNumber: "",
+                mobilePhoneCountryCode: "",
+                isMessagingEnabled: false,
+                personRace: null,
+                personGender: undefined,
+                personBirthDate: null,
+                personEthnicity: null,
+                personGradeOffset: null,
+                personGroupRole: null,
+        });
+        // #endregion
 
-    // #region Functions
-    /**
-     * Invokes the specified block action with the specified parameters.
-     * @param actionName The name of the block action to invoke.
-     * @param parameters The parameters to pass to the block action.
-     */
+        // #region Functions
+        /**
+         * Invokes the specified block action with the specified parameters.
+         * @param actionName The name of the block action to invoke.
+         * @param parameters The parameters to pass to the block action.
+         */
 
-    const invokeSaveNewPerson = async (): Promise<void> => {
-        const personBag = {
-            personTitle: newPerson.value.personTitle,
-            firstName: newPerson.value.firstName,
-            lastName: newPerson.value.lastName,
-            personSuffix: newPerson.value.personSuffix,
-            email: newPerson.value.email,
-            mobilePhoneNumber: newPerson.value.mobilePhoneNumber,
-            mobilePhoneCountryCode: newPerson.value.mobilePhoneCountryCode,
-            isMessagingEnabled: newPerson.value.isMessagingEnabled,
-            personConnectionStatus: newPerson.value.personConnectionStatus,
-            personGroupRole: newPerson.value.personGroupRole,
-            personBirthDate: {
-                month: newPerson.value.personBirthDate?.month,
-                day: newPerson.value.personBirthDate?.day,
-                year: newPerson.value.personBirthDate?.year
-            },
-            personGender: newPerson.value.personGender ?? null,
-            personGradeOffset: newPerson.value.personGradeOffset,
-            personMaritalStatus: newPerson.value.personMaritalStatus,
-            personRace: newPerson.value.personRace,
-            personEthnicity: newPerson.value.personEthnicity,
-            validProperties: newPerson.value.validProperties
+        const invokeSaveNewPerson = async (): Promise<void> => {
+                const personBag = {
+                        personTitle: newPerson.value.personTitle,
+                        firstName: newPerson.value.firstName,
+                        lastName: newPerson.value.lastName,
+                        personSuffix: newPerson.value.personSuffix,
+                        email: newPerson.value.email,
+                        mobilePhoneNumber: newPerson.value.mobilePhoneNumber,
+                        mobilePhoneCountryCode: newPerson.value.mobilePhoneCountryCode,
+                        isMessagingEnabled: newPerson.value.isMessagingEnabled,
+                        personConnectionStatus: newPerson.value.personConnectionStatus,
+                        personGroupRole: newPerson.value.personGroupRole,
+                        personBirthDate: {
+                                month: newPerson.value.personBirthDate?.month,
+                                day: newPerson.value.personBirthDate?.day,
+                                year: newPerson.value.personBirthDate?.year
+                        },
+                        personGender: newPerson.value.personGender ?? null,
+                        personGradeOffset: newPerson.value.personGradeOffset,
+                        personMaritalStatus: newPerson.value.personMaritalStatus,
+                        personRace: newPerson.value.personRace,
+                        personEthnicity: newPerson.value.personEthnicity,
+                        validProperties: newPerson.value.validProperties
+                };
+
+                const namelessPersonId = selectedNamelessPersonId.value;
+
+                // Invoke the "Save" block action
+                const result = await invokeBlockAction("Save", { personBag, namelessPersonId });
+                handleResult(result);
         };
 
-        const namelessPersonId = selectedNamelessPersonId.value;
+        const invokeLinkToExistingPerson = async (): Promise<void> => {
+                const existingPersonAliasGuid = selectedExistingPersonGuid.value;
+                const namelessPersonId = selectedNamelessPersonId.value;
 
-        // Invoke the "Save" block action
-        const result = await invokeBlockAction("Save", { personBag, namelessPersonId });
-        handleResult(result);
-    };
+                if (selectedExistingPersonGuid.value && selectedNamelessPersonId.value) {
+                        const result = await invokeBlockAction("LinkToExistingPerson", { existingPersonAliasGuid, namelessPersonId });
+                        handleResult(result);
+                }
+        };
 
-    const invokeLinkToExistingPerson = async (): Promise<void> => {
-        const existingPersonAliasGuid = selectedExistingPersonGuid.value;
-        const namelessPersonId = selectedNamelessPersonId.value;
+        // Generic method to handle results from block actions
+        const handleResult = (result): void => {
+                if (result.statusCode === 200 && result.data) {
+                        // Redirecting to the merge page
+                        const redirectUrl = result.data as string;
+                        window.location.href = makeUrlRedirectSafe(redirectUrl);
+                }
+                else {
+                        // Handle errors
+                        throw new Error("Error in operation:" + result.errorMessage);
+                }
+        };
 
-        if (selectedExistingPersonGuid.value && selectedNamelessPersonId.value) {
-            const result = await invokeBlockAction("LinkToExistingPerson", { existingPersonAliasGuid, namelessPersonId });
-            handleResult(result);
+        async function loadGridData(): Promise<GridDataBag> {
+                const result = await invokeBlockAction<GridDataBag>("GetGridData");
+                if (result.isSuccess && result.data) {
+                        gridData = result.data;
+                        return gridData;
+                }
+                else {
+                        throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+                }
         }
-    };
+        // #endregion
 
-    // Generic method to handle results from block actions
-    const handleResult = (result): void => {
-        if (result.statusCode === 200 && result.data) {
-            // Redirecting to the merge page
-            const redirectUrl = result.data as string;
-            window.location.href = makeUrlRedirectSafe(redirectUrl);
-        }
-        else {
-            // Handle errors
-            console.error("Error in operation:", result.errorMessage);
-        }
-    };
+        // #region Event Handlers
+        const closeModal = (): void => {
+                isModalVisible.value = false;
+        };
 
-    async function loadGridData(): Promise<GridDataBag> {
-        const result = await invokeBlockAction<GridDataBag>("GetGridData");
-        if (result.isSuccess && result.data) {
-            gridData = result.data;
-            return gridData;
-        }
-        else {
-            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
-        }
-    }
-    // #endregion
+        const swapTabContent = (): void => {
+                if (currentTab.value === "Add New Person") {
+                        currentTab.value = "Link Existing Person";
+                }
+                else {
+                        currentTab.value = "Add New Person";
+                }
+        };
 
-    // #region Event Handlers
-    const closeModal = (): void => {
-        isModalVisible.value = false;
-    };
+        const onPersonSelected = (selectedPerson): void => {
+                if (selectedPerson && selectedPerson.value) {
+                        // Capture the ID of the selected person
+                        selectedExistingPersonGuid.value = selectedPerson.value;
+                }
+        };
 
-    const swapTabContent = (): void => {
-        if (currentTab.value === "Add New Person") {
-            currentTab.value = "Link Existing Person";
-        }
-        else {
-            currentTab.value = "Add New Person";
-        }
-    };
+        /**
+        * Event handler for the modals's Save event. Sends the data to the server
+        * to be saved, then creates a merge request. Finally, redirects to the merge page.
+        *
+        */
+        const savePerson = async (): Promise<void> => {
+                if (currentTab.value === "Add New Person") {
+                        // Invoke the "Save" block action
+                        await invokeSaveNewPerson();
+                }
+                else if (currentTab.value === "Link Existing Person") {
+                        // Invoke the "LinkToExistingPerson" block action
+                        await invokeLinkToExistingPerson();
+                }
+        };
 
-    const onPersonSelected = (selectedPerson): void => {
-        if (selectedPerson && selectedPerson.value) {
-            // Capture the ID of the selected person
-            selectedExistingPersonGuid.value = selectedPerson.value;
-        }
-    };
+        /**
+         * Event handler for the grid's row click event. Opens the modal dialog.
+         * @param row The unique key of the row that was clicked.
+         */
+        function onShowModal(key: string): void {
+                const row = gridData?.rows?.find(r => r["idKey"] === key);
 
-    /**
-    * Event handler for the modals's Save event. Sends the data to the server
-    * to be saved, then creates a merge request. Finally, redirects to the merge page.
-    *
-    */
-    const savePerson = async (): Promise<void> => {
-        if (currentTab.value === "Add New Person") {
-            // Invoke the "Save" block action
-            await invokeSaveNewPerson();
+                if (row) {
+                        selectedPhoneNumber.value = row["phoneNumber"];
+                        selectedPersonGuid.value = row["guid"] as string;
+                        selectedNamelessPersonId.value = row["id"] as number;
+                        isModalVisible.value = true;
+                }
         }
-        else if (currentTab.value === "Link Existing Person") {
-            // Invoke the "LinkToExistingPerson" block action
-            await invokeLinkToExistingPerson();
-        }
-    };
+        // #endregion
 
-    /**
-     * Event handler for the grid's row click event. Opens the modal dialog.
-     * @param row The unique key of the row that was clicked.
-     */
-    function onShowModal(key: string): void {
-        const row = gridData?.rows?.find(r => r["idKey"] === key);
-
-        if (row) {
-            selectedPhoneNumber.value = row["phoneNumber"];
-            selectedPersonGuid.value = row["guid"] as string;
-            selectedNamelessPersonId.value = row["id"] as number;
-            isModalVisible.value = true;
-        }
-    }
-    // #endregion
-
-    gridDataSource.value = loadGridData();
+        gridDataSource.value = loadGridData();
 </script>
 <style scoped>
 .tabs {
-    margin-bottom: 2rem;
-    position: relative;
-    margin-left: -3%;
+        margin-bottom: 2rem;
+        position: relative;
+        margin-left: -3%;
 }
 </style>

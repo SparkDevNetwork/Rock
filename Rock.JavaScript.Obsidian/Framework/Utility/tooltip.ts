@@ -15,16 +15,31 @@
 // </copyright>
 //
 
+import { onBeforeUnmount } from "vue";
+import { getUniqueCssSelector } from "./dom";
+import { getFullscreenElement, isFullscreen } from "./fullscreen";
 
 // NOTE: Do not make this public yet. This is essentially temporary and
 // will likely move to a different place and be merged with the popover
 // concept code as well.
 type TooltipOptions = {
+    /** The container element to place the tooltip in. */
+    container?: string;
+
     /** Allow HTML content in the tooltip. */
     html?: boolean;
 
     /** Enables santization of HTML content. */
     sanitize?: boolean;
+
+    /** The delay before showing/hiding the tooltip. */
+    delay?: number | {
+        /** The delay before showing the tooltip. */
+        show?: number;
+
+        /** The delay before hiding the tooltip. */
+        hide?: number;
+    };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,17 +63,86 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
         return;
     }
 
-    if (typeof $ === "function") {
-        const $node = $(node);
-        $node.tooltip({
-            html: options?.html,
-            sanitize: options?.sanitize ?? true
-        });
-
-        $node.on("mouseleave", function () {
-            $node.tooltip("hide");
-        });
+    if (typeof $ !== "function") {
+        return;
     }
+
+    const $node = $(node);
+    let appliedContainer: string | undefined = undefined;
+    let fsElement: HTMLElement | undefined = undefined;
+
+    const getContainer = (): string | undefined => {
+        if (!isFullscreen() && fsElement) {
+            // No long in fullscreen mode, so reset everything.
+            fsElement.style.position = "";
+            fsElement = undefined;
+
+            return options?.container ?? "body";
+        }
+
+        const newFsElement = getFullscreenElement();
+
+        if (newFsElement && newFsElement === fsElement) {
+            // No change
+            return undefined;
+        }
+
+        if (newFsElement && newFsElement.contains(node)) {
+            // Newly in fullscreen mode, use the fullscreen element
+            fsElement = newFsElement as HTMLElement;
+            const fsElementPosition = getComputedStyle(fsElement).position;
+
+            if (fsElementPosition === "static") {
+                fsElement.style.position = "relative";
+            }
+
+            return getUniqueCssSelector(fsElement);
+        }
+
+        return options?.container ?? "body";
+    };
+
+    const applyTooltip = (container: string | undefined): void => {
+        // Already applied to this container, or no container provided so don't do anything.
+        if (appliedContainer === container || container === undefined) {
+            return;
+        }
+
+        if (appliedContainer) {
+            $node?.tooltip("destroy");
+
+            setTimeout(() => {
+                $node?.tooltip({
+                    container: container,
+                    html: options?.html,
+                    sanitize: options?.sanitize ?? true,
+                    delay: options?.delay
+                });
+
+            }, 151);
+        }
+        else {
+            $node?.tooltip({
+                container: container,
+                html: options?.html,
+                sanitize: options?.sanitize ?? true,
+                delay: options?.delay
+            });
+        }
+
+        appliedContainer = container;
+    };
+
+    // When we attach to the body/html element, we need to change the container when we're in fullscreen mode.
+    if (!options?.container || options.container === "body" || options.container === "html") {
+        document.addEventListener("fullscreenchange", () => applyTooltip(getContainer()));
+    }
+
+    applyTooltip(getContainer());
+
+    $node?.on("mouseleave", function () {
+        $node?.tooltip("hide");
+    });
 }
 
 /**
@@ -69,5 +153,16 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
 export function showTooltip(node: Element): void {
     if (typeof $ === "function") {
         $(node).tooltip("show");
+    }
+}
+
+/**
+ * Manually destroy a previously-configured tooltip for the specified node.
+ *
+ * @param node The node for which to destroy a tooltip.
+ */
+export function destroyTooltip(node: Element): void {
+    if (typeof $ === "function") {
+        $(node).tooltip("destroy");
     }
 }

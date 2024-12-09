@@ -1,0 +1,13 @@
+
+ @font-face {
+  font-family: FontAwesome;
+  font-style: normal;
+  font-weight: 300;
+  font-display: block;
+  src: url("../../../Assets/Fonts/FontAwesome/fa-light-300.eot");
+  src: url("../../../Assets/Fonts/FontAwesome/fa-light-300.eot?#iefix") format("embedded-opentype"), url("../../../Assets/Fonts/FontAwesome/fa-light-300.woff2") format("woff2"), url("../../../Assets/Fonts/FontAwesome/fa-light-300.woff") format("woff"), url("../../../Assets/Fonts/FontAwesome/fa-light-300.ttf") format("truetype"), url("../../../Assets/Fonts/FontAwesome/fa-light-300.svg#fontawesome") format("svg"); }
+
+.fa,
+.fal {
+  font-family: FontAwesome;
+  font-weight: 300; }

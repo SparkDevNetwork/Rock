@@ -1,15 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField v-bind="formFieldProps" :modelValue="internalMediaElement" name="media-element-picker">
-        <BaseAsyncPicker v-if="!hideAccountPicker" v-model="internalMediaAccount" v-bind="standardProps" label="Account" :multiple="false" :items="mediaAccountItems" showBlankItem />
-        <BaseAsyncPicker v-if="internalMediaAccount && !hideFolderPicker" v-model="internalMediaFolder" v-bind="standardProps" label="Folder" :multiple="false" :items="mediaFolderItems" showBlankItem :lazyMode="ControlLazyMode.Eager">
+        <BaseAsyncPicker v-if="!hideAccountPicker" v-model="internalMediaAccount" v-bind="standardProps" rules="" help="" label="Account" :multiple="false" :items="mediaAccountItems" showBlankItem :enhanceForLongLists="enhanceMediaAccountPickerForLongLists" />
+        <BaseAsyncPicker v-if="internalMediaAccount && !hideFolderPicker" v-model="internalMediaFolder" v-bind="standardProps" rules="" help="" label="Folder" :multiple="false" :items="mediaFolderItems" showBlankItem :lazyMode="ControlLazyMode.Eager" :enhanceForLongLists="enhanceMediaFolderPickerForLongLists">
             <template #inputGroupAppend v-if="!hideRefreshButtons">
                 <span class="input-group-addon">
                     <RockButton isSquare @click.prevent="fetchMediaFolders"><i class="fa fa-refresh"></i></RockButton>
                 </span>
             </template>
         </BaseAsyncPicker>
-        <BaseAsyncPicker v-if="internalMediaFolder && !hideMediaPicker" v-model="internalMediaElement" v-bind="standardProps" :label="mediaElementLabel" :items="mediaElementItems" showBlankItem :lazyMode="ControlLazyMode.Eager">
+        <BaseAsyncPicker v-if="internalMediaFolder && !hideMediaPicker" v-model="internalMediaElement" v-bind="standardProps" help="" :label="mediaElementLabel" :items="mediaElementItems" showBlankItem :lazyMode="ControlLazyMode.Eager" :enhanceForLongLists="enhanceMediaElementPickerForLongLists">
             <template #inputGroupAppend v-if="!hideRefreshButtons">
                 <span class="input-group-addon">
                     <RockButton isSquare @click.prevent="fetchMediaElements"><i class="fa fa-refresh"></i></RockButton>
@@ -86,6 +86,12 @@
             default: "Media"
         },
 
+        /** The item count threshold before the drop downs will have 'enhanceForLongLists' enabled */
+        enhanceForLongListsThreshold: {
+            type: Number,
+            default: 20
+        },
+
         ...standardAsyncPickerProps
     });
 
@@ -100,6 +106,9 @@
     const internalMediaAccount = ref<ListItemBag | null>(props.account);
     const internalMediaFolder = ref<ListItemBag | null>(props.folder);
     const internalMediaElement = ref<ListItemBag | null>(props.modelValue);
+    const enhanceMediaAccountPickerForLongLists = ref<boolean>(false);
+    const enhanceMediaFolderPickerForLongLists = ref<boolean>(false);
+    const enhanceMediaElementPickerForLongLists = ref<boolean>(false);
 
     const mediaAccountItems = ref<(() => Promise<ListItemBag[]>) | ListItemBag[] | null>(null);
     const mediaFolderItems = ref<(() => Promise<ListItemBag[]>) | ListItemBag[] | null>(null);
@@ -122,6 +131,17 @@
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/" + apiAction, undefined, payload);
 
         if (result.isSuccess && result.data) {
+            switch (apiAction) {
+                case "MediaElementPickerGetMediaAccounts":
+                    enhanceMediaAccountPickerForLongLists.value = result.data.length > props.enhanceForLongListsThreshold;
+                    break;
+                case "MediaElementPickerGetMediaFolders":
+                    enhanceMediaFolderPickerForLongLists.value = result.data.length > props.enhanceForLongListsThreshold;
+                    break;
+                case "MediaElementPickerGetMediaElements":
+                    enhanceMediaElementPickerForLongLists.value = result.data.length > props.enhanceForLongListsThreshold;
+                    break;
+            }
             return result.data;
         }
         else {

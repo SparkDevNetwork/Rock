@@ -48,6 +48,16 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         public string ClassIdKey { get; set; }
 
         /// <summary>
+        /// Gets or sets the date the class was completed.
+        /// </summary>
+        public DateTime? ClassCompletionDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the completion status of the class for the individual.
+        /// </summary>
+        public LearningCompletionStatus ClassCompletionStatus { get; set; }
+
+        /// <summary>
         /// Gets or sets the custom content pages for the class.
         /// </summary>
         public List<LearningClassContentPageBag> ContentPages { get; set; }
@@ -76,6 +86,11 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         /// Gets or sets the current Grade scale that the student has achieved in the class (if configured to show grades).
         /// </summary>
         public LearningGradingSystemScaleBag CurrentGrade {  get; set; }
+
+        /// <summary>
+        /// Whether announcements are enabled.
+        /// </summary>
+        public bool EnableAnnouncements { get; set; }
 
         /// <summary>
         /// Gets or sets the list of facilitators for the learning class.

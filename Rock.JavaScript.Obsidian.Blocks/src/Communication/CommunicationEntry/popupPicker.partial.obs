@@ -11,7 +11,7 @@
                      maxTagCount="responsive"
                      :multiple="true">
         <template #suffixIcon>
-            <i v-if="!isAddHidden" class="fa fa-plus" :style="{ 'pointer-events': !disabled ? 'all' : 'none' }" @click="onOpenPopupClicked"></i>
+            <i v-if="!isAddHidden" class="fa fa-plus-square" :style="{ 'pointer-events': !disabled ? 'all' : 'none' }" @click="onOpenPopupClicked"></i>
             <i v-else></i>
         </template>
 
@@ -56,15 +56,27 @@
 .item:not(.show-more-button) {
     margin-right: 8px;
 }
+
+.ant-select-arrow:has(.fa.fa-plus-square) {
+    font-size: 24px !important;
+    color: var(--color-info-strong);
+    top: 35%;
+    right: 17px;
+    transition: ease-in-out 0.2s;
+}
+
+.ant-select-arrow:has(.fa.fa-plus-square):hover {
+    color: var(--color-info-soft);
+}
 </style>
 
 <script setup lang="ts">
-    import { PropType, Ref, computed, ref, watch } from "vue";
+    import { PropType, Ref, computed, onMounted, onUnmounted, ref, watch } from "vue";
     import BaseAsyncPicker from "@Obsidian/Controls/baseAsyncPicker.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { destroyTooltip, tooltip } from "@Obsidian/Utility/tooltip";
     import { getArrayDiff } from "./utils.partial";
     import { Guid } from "@Obsidian/Types";
 
@@ -140,6 +152,25 @@
         (e: "showMore"): void;
     }>();
 
+    const trackedElementsWithTooltips: WeakSet<Node> = new WeakSet<Node>();
+
+    /**
+     * Cleans up tooltips whenever tracked items are removed.
+     */
+    const observer = new MutationObserver((mutationsList) => {
+        for (let mutation of mutationsList) {
+            if (mutation.type === "childList" && mutation.removedNodes.length) {
+                mutation.removedNodes.forEach((removedNode) => {
+                    const elementWithTooltip = getTrackedNode(removedNode, trackedElementsWithTooltips);
+                    if (elementWithTooltip) {
+                        destroyTooltip(elementWithTooltip);
+                        trackedElementsWithTooltips.delete(elementWithTooltip);
+                    }
+                });
+            }
+        }
+    });
+
     //#region Values
 
     //const internalListItemBags = useVModelPassthrough(props, "modelValue", emit);
@@ -192,6 +223,7 @@
         const htmlElement = el as HTMLElement;
         if (htmlElement) {
             tooltip(htmlElement);
+            trackedElementsWithTooltips.add(htmlElement);
         }
     }
 
@@ -295,6 +327,38 @@
             const ancestor = findAncestor(newValue, ".ant-select-selection-overflow-item-rest");
             ancestor?.replaceChildren(newValue);
         }
+    });
+
+    // #endregion
+
+    // #region Hooks
+
+    function getTrackedNode(node: Node, trackedElements: WeakSet<HTMLElement>): HTMLElement | null {
+        // Initialize a queue with the starting node
+        const queue = [node];
+
+        while (queue.length > 0) {
+            // Dequeue the next node
+            const currentNode = queue.shift()!;
+
+            // Check if the current node is in the trackedElements array
+            if (trackedElements.has(currentNode as HTMLElement)) {
+                return currentNode as HTMLElement;
+            }
+
+            // Enqueue all child nodes of the current node
+            queue.push(...currentNode.childNodes);
+        }
+
+        return null;
+    }
+
+    onMounted(() => {
+        observer.observe(document.body, { childList: true, subtree: true });
+    });
+
+    onUnmounted(() => {
+        observer.disconnect(); // stop observing after removal
     });
 
     //#endregion

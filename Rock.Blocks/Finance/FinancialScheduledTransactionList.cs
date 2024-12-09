@@ -370,8 +370,8 @@ namespace Rock.Blocks.Finance
         {
             return queryable.OrderBy( t => t.FinancialScheduledTransaction.AuthorizedPersonAlias.Person.LastName )
                         .ThenBy( t => t.FinancialScheduledTransaction.AuthorizedPersonAlias.Person.NickName )
-                        .ThenByDescending( t => t.FinancialScheduledTransaction.AuthorizedPersonAlias.Person )
-                        .ThenByDescending( t => t.FinancialScheduledTransaction.AuthorizedPersonAlias.Person );
+                        .ThenByDescending( t => t.FinancialScheduledTransaction.IsActive )
+                        .ThenByDescending( t => t.FinancialScheduledTransaction.StartDate );
         }
 
         /// <inheritdoc/>

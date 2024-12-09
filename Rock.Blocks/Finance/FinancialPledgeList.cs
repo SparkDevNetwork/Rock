@@ -41,7 +41,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays a list of financial pledges." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Key = AttributeKey.DetailPage,
@@ -109,7 +109,7 @@ namespace Rock.Blocks.Finance
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
-            public const string ShowAccountColumn = "ShowAccountsColumn";
+            public const string ShowAccountColumn = "ShowAccountColumn";
             public const string ShowLastModifiedDateColumn = "ShowLastModifiedDateColumn";
             public const string ShowGroupColumn = "ShowGroupColumn";
             public const string LimitPledgesToCurrentPerson = "LimitPledgesToCurrentPerson";

@@ -30,6 +30,7 @@ namespace Rock.Field.Types
     /// Field used to save and display value filter
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.VALUE_FILTER )]
     public class ValueFilterFieldType : FieldType

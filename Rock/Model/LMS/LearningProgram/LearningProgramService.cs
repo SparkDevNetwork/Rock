@@ -26,27 +26,39 @@ namespace Rock.Model
 {
     public partial class LearningProgramService
     {
-
         /// <summary>
-        /// Get a list of all active <see cref="LearningProgram"/>s.
+        /// Deletes the <see cref="LearningProgram"/> for the specified <paramref name="programId"/>.
+        /// Includes deleting related data like <see cref="LearningActivity"/>,
+        /// <see cref="LearningClassAnnouncement"/>, <see cref="LearningClassContentPage"/>
+        /// and <see cref="LearningParticipant"/> records.
         /// </summary>
-        /// <returns>A list of LearningProgram where the IsActive property is <c>true</c>.</returns>
-        public IQueryable<LearningProgram> GetActive()
+        /// <param name="programId">The identifier of the <see cref="LearningProgram"/> to delete.</param>
+        public void Delete( int programId )
         {
-            return Queryable().Where( p => p.IsActive );
-        }
+            var rockContext = ( RockContext ) Context;
+            rockContext.WrapTransaction( () =>
+            {
+                var learningClassService = new LearningClassService( rockContext );
+                var classes = learningClassService
+                    .Queryable()
+                    .Include( c => c.LearningActivities )
+                    .Include( c => c.LearningParticipants )
+                    .Include( c => c.ContentPages )
+                    .Include( c => c.Announcements )
+                    .Include( c => c.LearningCourse )
+                    .Include( c => c.LearningCourse.LearningCourseRequirements )
+                    .Where( c => c.LearningCourse.LearningProgramId == programId );
 
-        /// <summary>
-        /// Gets the configuration mode of the specified learning program.
-        /// </summary>
-        /// <param name="learningProgramId">The identifier of the learning program for which to get the configuration mode.</param>
-        /// <returns>The ConfigurationMode of the <see cref="LearningProgram"/>.</returns>
-        public ConfigurationMode GetConfigurationMode( int learningProgramId )
-        {
-            return Queryable()
-                .Where( p => p.Id == learningProgramId )
-                .Select( p => p.ConfigurationMode )
-                .FirstOrDefault();
+                learningClassService.DeleteRange( classes );
+
+                var program = Queryable()
+                    .Include( p => p.LearningCourses)
+                    .Include( p => p.LearningSemesters )
+                    .Include( p => p.LearningProgramCompletions )
+                    .FirstOrDefault( p => p.Id == programId );
+
+                base.Delete( program );
+            } );
         }
 
         /// <summary>
@@ -69,23 +81,13 @@ namespace Rock.Model
         /// <returns></returns>
         public LearningSemester GetDefaultSemester( int learningProgramId )
         {
+            var now = RockDateTime.Now;
             return learningProgramId > 0 ? Queryable()
                 .Where( p => p.Id == learningProgramId )
                 .Include( p => p.LearningSemesters )
-                .Select( p => p.LearningSemesters.FirstOrDefault() )
+                .Select( p => p.LearningSemesters.FirstOrDefault( s=> !s.EndDate.HasValue || s.EndDate >= now ) )
                 .FirstOrDefault() :
                 default;
-        }
-
-        /// <summary>
-        /// Gets the default <see cref="LearningSemester"/> for the specified Learning Program.
-        /// </summary>
-        /// <param name="learningProgramIdKey">The id key of the <see cref="LearningProgram"/> to get the default semester for.</param>
-        /// <returns></returns>
-        public LearningSemester GetDefaultSemester( string learningProgramIdKey )
-        {
-            var learningProgramId = IdHasher.Instance.GetId( learningProgramIdKey );
-            return learningProgramId.HasValue ? GetDefaultSemester( learningProgramId.Value ) : default;
         }
 
         /// <summary>
@@ -104,8 +106,8 @@ namespace Rock.Model
                 .AsNoTracking()
                 .Where( c => c.IsActive )
                 .Where( c => c.LearningCourse.LearningProgramId == learningProgramId )
-                .Where( c => c.LearningSemester.EndDate >= now )
-                .Where( c => c.LearningSemester.StartDate <= now )
+                .Where( c => ( !c.LearningSemester.EndDate.HasValue || c.LearningSemester.EndDate >= now ) )
+                .Where( c => ( !c.LearningSemester.StartDate.HasValue || c.LearningSemester.StartDate <= now ) )
                 .Select( c => new
                 {
                     ClassId = c.Id,
@@ -132,15 +134,18 @@ namespace Rock.Model
         /// Gets a list of active, public programs, optionally filtered to the specified categoryIds and optionally with completion status for the specified person.
         /// </summary>
         /// <param name="includeCompletionsForPersonId">The identifier of the <see cref="Person"/> to include completion status for.</param>
+        /// <param name="publicOnly"><c>true</c> to include <see cref="LearningProgram"/> records whose IsPublic property is true; <c>false</c> to include regardless of IsPublic.</param>
         /// <param name="categoryGuids">The optional list of category Guids to filter for.</param>
         /// <returns>An enumerable of PublicLearningProgramBag.</returns>
-        public IQueryable<PublicLearningProgramBag> GetPublicPrograms( int includeCompletionsForPersonId = 0, params Guid[] categoryGuids )
+        public IQueryable<PublicLearningProgramBag> GetPublicPrograms( int includeCompletionsForPersonId = 0, bool publicOnly = true, params Guid[] categoryGuids )
         {
             var baseQuery = Queryable()
-                    .AsNoTracking()
-                    .Include( p => p.ImageBinaryFile )
-                    .Include( p => p.Category )
-                    .Where( p => p.IsActive && p.IsPublic );
+                .AsNoTracking()
+                .Include( p => p.ImageBinaryFile )
+                .Include( p => p.Category )
+                .Where( p =>
+                    p.IsActive
+                    && ( p.IsPublic || !publicOnly ) );
 
             if ( categoryGuids.Any() )
             {
@@ -154,7 +159,7 @@ namespace Rock.Model
                 .Queryable()
                 .AsNoTracking()
                 .Include( c => c.PersonAlias )
-                .Where( c => c.PersonAlias.PersonId == includeCompletionsForPersonId );
+                .Where( c => c.PersonAlias.PersonId == includeCompletionsForPersonId ) ?? default;
 
                 return baseQuery
                     .Select( p => new PublicLearningProgramBag
@@ -179,18 +184,6 @@ namespace Rock.Model
                     ImageFileGuid = p.ImageBinaryFile.Guid
                 } );
             }
-        }
-
-        /// <summary>
-        /// Determines if the <see cref="LearningProgram"/> has any existing enrollments (students or facilitators).
-        /// </summary>
-        /// <param name="learningProgramId">The identifier of the <see cref="LearningProgram"/>.</param>
-        /// <returns><c>True</c> if anyone has enrolled in the program; false otherwise.</returns>
-        public bool HasEnrollments( int learningProgramId )
-        {
-            return new LearningClassService( ( RockContext ) Context ).Queryable()
-                .AsNoTracking()
-                .Any( c => c.LearningCourse.LearningProgramId == learningProgramId && c.LearningParticipants.Any() );
         }
 
         #region Nested Classes

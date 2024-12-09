@@ -269,10 +269,10 @@ namespace Rock.Blocks.Cms
             string path;
 
             // If this is a Person, use the Person properties.
-            if ( site != null && site.SiteLogoBinaryFileId.HasValue )
+            if ( site != null && site.FavIconBinaryFileId.HasValue )
             {
                 var options = new GetImageUrlOptions { Height = 50 };
-                path = FileUrlHelper.GetImageUrl( site.SiteLogoBinaryFileId.Value, options );
+                path = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value, options );
             }
             // Otherwise, use the first letter of the entity type.
             else

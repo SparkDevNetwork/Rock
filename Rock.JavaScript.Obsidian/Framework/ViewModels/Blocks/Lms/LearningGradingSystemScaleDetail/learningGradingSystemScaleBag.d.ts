@@ -34,6 +34,9 @@ export type LearningGradingSystemScaleBag = {
     /** Gets or sets the description of the grading system scale. */
     description?: string | null;
 
+    /** Gets or sets the highlight color of the grading system scale. */
+    highlightColor?: string | null;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 

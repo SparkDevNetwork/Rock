@@ -25,5 +25,6 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Additional configuration data for the EventItemDetail block. */
 export type EventItemDetailOptionsBag = {
+    /** Gets or sets the Audiences */
     audiences?: ListItemBag[] | null;
 };

@@ -18,6 +18,8 @@ using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -174,10 +176,23 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             PersistedDatasetService persistedDatasetService = new PersistedDatasetService( rockContext );
             PersistedDataset persistedDataset = persistedDatasetService.Get( e.RowKeyId );
-            persistedDataset.UpdateResultData();
-            rockContext.SaveChanges();
+            var result = persistedDataset.UpdateResultData();
+            if ( result.IsSuccess )
+            {
+                rockContext.SaveChanges();
+                BindGrid();
+            }
+            else
+            {
+                // First collapse extra newlines and convert them to HTML BRs:
+                var cleanWarningMessage = Regex.Replace( result.WarningMessage, @"\n(\s*\n)+", "\n" ).ConvertCrLfToHtmlBr();
+                // Now, truncate it down to 500 characters and wrap the warning in a <pre>
+                cleanWarningMessage = "<pre>" + cleanWarningMessage.TruncateHtml( 500 ) + "</pre>";
 
-            BindGrid();
+                // Lastly, convert it so it's safe to display in the JavaScript modal:
+                mdGridWarning.Show( JsonEncodedText.Encode( cleanWarningMessage ).ToString(), ModalAlertType.Warning );
+                return;
+            }
         }
 
         /// <summary>
@@ -187,6 +202,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void lbPreview_Click( object sender, RowEventArgs e )
         {
+            PersistedDataset.UpdateResult result = null;
             try
             {
                 var rockContext = new RockContext();
@@ -194,7 +210,7 @@ namespace RockWeb.Blocks.Cms
                 PersistedDataset persistedDataset = persistedDatasetService.GetNoTracking( e.RowKeyId );
                 if ( persistedDataset.LastRefreshDateTime == null )
                 {
-                    persistedDataset.UpdateResultData();
+                    result = persistedDataset.UpdateResultData();
                 }
 
                 // limit preview size (default is 1MB)
@@ -226,7 +242,7 @@ namespace RockWeb.Blocks.Cms
             catch ( Exception ex )
             {
                 nbPreviewMessage.Text = "Error building Dataset object from the JSON generated from the Build Script";
-                nbPreviewMessage.Details = ex.Message;
+                nbPreviewMessage.Details = result?.WarningMessage ?? ex.Message;
                 nbPreviewMessage.NotificationBoxType = NotificationBoxType.Danger;
                 nbPreviewMessage.Visible = true;
             }

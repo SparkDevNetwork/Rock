@@ -2629,6 +2629,33 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets whether the provided attendance record indicates the person is Scheduled To Attend (Confirmed).
+        /// </summary>
+        /// <param name="attendance">The attendance record to check.</param>
+        /// <returns>Whether the provided attendance record indicates the person is Scheduled To Attend (Confirmed).</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.7" )]
+        public static bool IsScheduledPersonConfirmed( Attendance attendance )
+        {
+            if ( attendance == null )
+            {
+                return false;
+            }
+
+            return attendance.ScheduledToAttend.GetValueOrDefault() == true
+                && attendance.RSVPDateTime.HasValue
+                && attendance.RSVP == RSVP.Yes
+                && attendance.DeclineReasonValueId == null;
+        }
+
+        /// <summary>
         /// Updates attendance record to indicate person is Scheduled To Attend (Confirmed)
         /// </summary>
         /// <param name="attendanceId">The attendance identifier.</param>
@@ -2710,24 +2737,81 @@ namespace Rock.Model
         /// </summary>
         /// <param name="attendanceId">The attendance identifier.</param>
         /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
+        [Obsolete( "Use SendScheduledPersonResponseEmail instead." )]
+        [RockObsolete( "1.16" )]
         public void SendScheduledPersonResponseEmailToScheduler( int attendanceId, Guid? schedulingResponseEmailGuid )
         {
-            var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
-            var recipientPerson = attendance.ScheduledByPersonAlias?.Person;
+            if ( !schedulingResponseEmailGuid.HasValue )
+            {
+                return;
+            }
+
+            // Get all the supporting data we'll need to send the email.
+            var attendance = GetWithScheduledPersonResponseData().FirstOrDefault( a => a.Id == attendanceId );
+
+            var recipientPerson = attendance?.ScheduledByPersonAlias?.Person;
+            if ( recipientPerson == null )
+            {
+                return;
+            }
+
             SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
         }
 
         /// <summary>
-        /// Sends a decline email to the <see cref="Group.ScheduleCancellationPersonAlias">Scheduling Cancellation Person</see>
-        /// for this attendance's <see cref="AttendanceOccurrence.Group"/>
+        /// Sends a decline email to the <see cref="Group.ScheduleCoordinatorPersonAlias">Scheduling Coordinator Person</see>
+        /// for this attendance's <see cref="AttendanceOccurrence.Group"/>, if supported by group/group type configuration.
         /// </summary>
         /// <param name="attendanceId">The attendance identifier.</param>
         /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
+        [Obsolete( "Use SendScheduledPersonResponseEmail instead." )]
+        [RockObsolete( "1.16" )]
         public void SendScheduledPersonDeclineEmail( int attendanceId, Guid? schedulingResponseEmailGuid )
         {
-            var attendance = new AttendanceService( new RockContext() ).Get( attendanceId );
-            var recipientPerson = attendance.Occurrence?.Group?.ScheduleCancellationPersonAlias?.Person;
-            SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+            if ( !schedulingResponseEmailGuid.HasValue )
+            {
+                return;
+            }
+
+            // Get all the supporting data we'll need to send the email.
+            var attendance = GetWithScheduledPersonResponseData().FirstOrDefault( a => a.Id == attendanceId );
+
+            var recipientPerson = attendance?.Occurrence?.Group?.ScheduleCancellationPersonAlias?.Person;
+            if ( recipientPerson == null )
+            {
+                return;
+            }
+
+            if ( attendance.Occurrence.Group.ShouldSendScheduleCoordinatorNotificationType( ScheduleCoordinatorNotificationType.Decline ) )
+            {
+                SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, recipientPerson );
+            }
+        }
+
+        /// <summary>
+        /// Gets a queryable of attendance records along with eager-loaded supporting data we'll need to send "scheduled
+        /// person response" communications.
+        /// </summary>
+        /// <returns>A queryable of attendance records along with eager-loaded supporting data we'll need to send
+        /// "scheduled person response" communications.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.7" )]
+        public IQueryable<Attendance> GetWithScheduledPersonResponseData()
+        {
+            return this.Queryable()
+                .Include( a => a.Occurrence.Group.GroupType )
+                .Include( a => a.Occurrence.Group.ScheduleCoordinatorPersonAlias.Person )
+                .Include( a => a.Occurrence.Location )
+                .Include( a => a.Occurrence.Schedule )
+                .Include( a => a.PersonAlias.Person )
+                .Include( a => a.ScheduledByPersonAlias.Person );
         }
 
         /// <summary>
@@ -2736,8 +2820,16 @@ namespace Rock.Model
         /// <param name="attendance">The attendance.</param>
         /// <param name="schedulingResponseEmailGuid">The scheduling response email unique identifier.</param>
         /// <param name="recipientPerson">The recipient person.</param>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
         [RockInternal( "1.16.1" )]
-        public void SendScheduledPersonResponseEmail( Attendance attendance, Guid? schedulingResponseEmailGuid, Person recipientPerson )
+        public static void SendScheduledPersonResponseEmail( Attendance attendance, Guid? schedulingResponseEmailGuid, Person recipientPerson )
         {
             if ( !schedulingResponseEmailGuid.HasValue )
             {

@@ -274,7 +274,14 @@ namespace Rock.Jobs
 
             // Add job history
             var serviceJobHistoryService = new ServiceJobHistoryService( rockContext );
+            var lastRunJobHistory = serviceJobHistoryService.GetServiceJobHistoryForLastRun( job );
             serviceJobHistoryService.AddCompletedServiceJobHistory( job );
+
+            if ( lastRunJobHistory?.Status == "Running" )
+            {
+                lastRunJobHistory.Status = "Incomplete";
+            }
+
             rockContext.SaveChanges();
 
             // send notification

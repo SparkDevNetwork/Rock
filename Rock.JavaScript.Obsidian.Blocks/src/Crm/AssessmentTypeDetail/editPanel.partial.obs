@@ -18,7 +18,10 @@
 
         <div class="row">
             <div class="col-md-3">
-                <NumberBox v-model="minimumDaysToRetake" label="Minimum Days To Retake" help="The minimum number of days after the test has been taken before it can be taken again.">
+                <NumberBox v-model="minimumDaysToRetake"
+                           label="Minimum Days To Retake"
+                           help="The minimum number of days after the test has been taken before it can be taken again."
+                           :minimumValue="0">
                     <template v-slot:inputGroupAppend>
                         <span class="input-group-addon">days</span>
                     </template>
@@ -26,6 +29,19 @@
             </div>
             <div class="col-md-6 col-md-offset-3">
                 <CheckBox v-model="requiresRequest" label="Requires Request" help="Is a person required to receive a request before this test can be taken?" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <NumberBox v-model="validDuration"
+                           label="Valid Duration"
+                           help="The number of days the assessment is valid for before it must be taken again."
+                           :minimumValue="0">
+                    <template v-slot:inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
             </div>
         </div>
 
@@ -71,22 +87,11 @@
     const assessmentResultsPath = propertyRef(props.modelValue.assessmentResultsPath ?? "", "AssessmentResultsPath");
     const minimumDaysToRetake = propertyRef(props.modelValue.minimumDaysToRetake ?? null, "MinimumDaysToRetake");
     const requiresRequest = propertyRef(props.modelValue.requiresRequest ?? false, "RequiresRequest");
+    const validDuration = propertyRef(props.modelValue.validDuration, "ValidDuration");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [title, description, isActive, assessmentPath, assessmentResultsPath, minimumDaysToRetake, requiresRequest];
-
-    // #endregion
-
-    // #region Computed Values
-
-    // #endregion
-
-    // #region Functions
-
-    // #endregion
-
-    // #region Event Handlers
+    const propRefs = [title, description, isActive, assessmentPath, assessmentResultsPath, minimumDaysToRetake, requiresRequest, validDuration];
 
     // #endregion
 
@@ -101,6 +106,7 @@
         updateRefValue(assessmentResultsPath, props.modelValue.assessmentResultsPath ?? "");
         updateRefValue(minimumDaysToRetake, props.modelValue.minimumDaysToRetake ?? null);
         updateRefValue(requiresRequest, props.modelValue.requiresRequest ?? false);
+        updateRefValue(validDuration, props.modelValue.validDuration ?? null);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -115,7 +121,8 @@
             assessmentPath: assessmentPath.value,
             assessmentResultsPath: assessmentResultsPath.value,
             minimumDaysToRetake: minimumDaysToRetake.value,
-            requiresRequest: requiresRequest.value
+            requiresRequest: requiresRequest.value,
+            validDuration: validDuration.value
         };
 
         emit("update:modelValue", newValue);

@@ -47,6 +47,11 @@ namespace Rock.AI.Classes.Moderations
         /// <summary>
         /// Is the text hateful.
         /// </summary>
+        /// <remarks>
+        /// Content that expresses, incites, or promotes hate based on race, gender,
+        /// ethnicity, religion, nationality, sexual orientation, disability status, or caste.
+        /// Hateful content aimed at non-protected groups (e.g. chess players) is harassment. 
+        /// </remarks>
         public bool IsHate { get; set; }
 
         /// <summary>
@@ -57,6 +62,9 @@ namespace Rock.AI.Classes.Moderations
         /// <summary>
         /// Is the text a threat.
         /// </summary>
+        /// <remarks>
+        /// Harassment content that also includes violence or serious harm towards any target.
+        /// </remarks>
         public bool IsThreat { get; set; }
 
         /// <summary>
@@ -67,6 +75,10 @@ namespace Rock.AI.Classes.Moderations
         /// <summary>
         /// Does the text indicate self-harm.
         /// </summary>
+        /// <remarks>
+        /// Content that promotes, encourages, or depicts acts of self-harm,
+        /// such as suicide, cutting, and eating disorders.
+        /// </remarks>
         public bool IsSelfHarm { get; set; }
 
         /// <summary>
@@ -77,6 +89,10 @@ namespace Rock.AI.Classes.Moderations
         /// <summary>
         /// Is the text sexual.
         /// </summary>
+        /// <remarks>
+        /// Content meant to arouse sexual excitement, such as the description of sexual activity,
+        /// or that promotes sexual services (excluding sex education and wellness).
+        /// </remarks>
         public bool IsSexual { get; set; }
 
         /// <summary>
@@ -87,6 +103,9 @@ namespace Rock.AI.Classes.Moderations
         /// <summary>
         /// Does the text indicate sexual content with a minor.
         /// </summary>
+        /// <remarks>
+        /// Sexual content that includes an individual who is under 18 years old.
+        /// </remarks>
         public bool IsSexualMinor { get; set; }
 
         /// <summary>
@@ -97,6 +116,9 @@ namespace Rock.AI.Classes.Moderations
         /// <summary>
         /// Is the text violent in nature.
         /// </summary>
+        /// <remarks>
+        /// Content that depicts death, violence, or physical injury.
+        /// </remarks>
         public bool IsViolent { get; set; }
 
         /// <summary>

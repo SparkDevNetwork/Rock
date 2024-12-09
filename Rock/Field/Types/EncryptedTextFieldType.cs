@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     /// Field used to save and display a text value
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ENCRYPTED_TEXT )]
     public class EncryptedTextFieldType : TextFieldType
