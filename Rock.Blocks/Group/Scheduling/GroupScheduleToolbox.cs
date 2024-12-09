@@ -1006,7 +1006,9 @@ namespace Rock.Blocks.Group.Scheduling
                 return null;
             }
 
-            return $"{GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" )}GetPersonGroupScheduleFeed.ashx?paguid={selectedPrimaryAliasGuid}";
+            // Start date for group schedule feed is set to current date because GetCurrentScheduleRows returns attendances occurring after that date,
+            // if that changes this will have to change too.
+            return $"{GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" )}GetPersonGroupScheduleFeed.ashx?paguid={selectedPrimaryAliasGuid}&startdate={RockDateTime.Now.ToString( "yyyyMMdd" )}";
         }
 
         /// <summary>
