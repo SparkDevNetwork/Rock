@@ -124,6 +124,14 @@ export const ConfigurationComponent = defineComponent({
             }
         };
 
+        // Watch for changes coming in from the parent component and update our
+        // data to match the new information.
+        watch(() => [props.modelValue, props.configurationProperties], () => {
+            groupPickerLabel.value = props.modelValue[ConfigurationValueKey.GroupPickerLabel] ?? "Group";
+        }, {
+            immediate: true
+        });
+
         // Watch for changes in properties that only require a local UI update.
         watch(groupPickerLabel, () => maybeUpdateConfiguration(ConfigurationValueKey.GroupPickerLabel, groupPickerLabel.value));
 
