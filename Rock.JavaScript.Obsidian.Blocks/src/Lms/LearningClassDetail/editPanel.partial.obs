@@ -5,6 +5,7 @@
             <div class="col-md-6">
                 <TextBox v-model="name"
                          label="Name"
+                         :maxLength="100"
                          rules="required" />
 
             </div>
