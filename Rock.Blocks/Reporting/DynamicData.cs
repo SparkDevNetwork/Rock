@@ -360,6 +360,7 @@ namespace Rock.Blocks.Reporting
                         ColumnType.Currency,
                         ColumnType.Date,
                         ColumnType.DateTime,
+                        ColumnType.Html,
                         ColumnType.Number,
                         ColumnType.Person
                     };
@@ -721,7 +722,7 @@ namespace Rock.Blocks.Reporting
                 // Do not change this to use Rock's `ToCamelCase()` extension method,
                 // as this block's private `GetCamelCase()` method is more thorough,
                 // and will cover cases that are more likely to be encountered within
-                // the the block's dynamic query value.
+                // the block's dynamic query value.
                 c.CamelCaseName = GetCamelCase( c.SplitCaseName );
             } );
         }
@@ -1922,6 +1923,7 @@ namespace Rock.Blocks.Reporting
             public const string CurrencyValue = "currency";
             public const string DateValue = "date";
             public const string DateTimeValue = "dateTime";
+            public const string HtmlValue = "html";
             public const string NumberValue = "number";
             public const string PersonValue = "person";
             public const string TextValue = "text";
@@ -1937,6 +1939,9 @@ namespace Rock.Blocks.Reporting
 
             private static readonly ListItemBag _dateTime = new ListItemBag { Text = "Date Time", Value = DateTimeValue };
             public static ListItemBag DateTime => _dateTime;
+
+            private static readonly ListItemBag _html = new ListItemBag { Text = "HTML", Value = HtmlValue };
+            public static ListItemBag Html => _html;
 
             private static readonly ListItemBag _number = new ListItemBag { Text = "Number", Value = NumberValue };
             public static ListItemBag Number => _number;

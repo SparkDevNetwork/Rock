@@ -1,0 +1,54 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-html="html" @click="onClick"></div>
+</template>
+
+<script setup lang="ts">
+    import { standardCellProps } from "@Obsidian/Core/Controls/grid";
+    import { computed } from "vue";
+
+    const props = defineProps(standardCellProps);
+
+    // #region Computed Values
+
+    const html = computed(() => {
+        if (props.column.field) {
+            return props.row[props.column.field];
+        }
+        else {
+            return "";
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the cell is clicked.
+     *
+     * @param event The event that triggered this handler.
+     */
+    function onClick(event: MouseEvent): void {
+        // If it's not any kind of HTML Element, then just ignore it.
+        if (!(event.target instanceof HTMLElement)) {
+            return;
+        }
+
+        const target = event.target as HTMLElement;
+
+        // Check if the clicked element is one that should stop event propagation.
+        if ([
+            "A",
+            "BUTTON",
+            "INPUT",
+            "LABEL",
+            "SELECT",
+            "TEXTAREA"
+        ].some(tagName => target.tagName === tagName)) {
+            event.stopPropagation();
+        }
+    }
+
+    // #endregion Event Handlers
+</script>
