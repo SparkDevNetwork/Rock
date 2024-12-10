@@ -403,6 +403,10 @@
     min-width: fit-content;
 }
 
+.grid-cell.grid-wrapcell {
+    flex-wrap: wrap;
+}
+
 .grid-select-field {
     min-width: 60px;
 }

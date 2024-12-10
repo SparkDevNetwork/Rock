@@ -1302,6 +1302,7 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateMediaElementDefaultUrls.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateNoteData.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdatePersonPrimaryAliasId.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV168UpdateIndexes.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17InteractionIndexPostMigration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateWorkflowIds.cs" />
     <Compile Include="Jobs\PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
@@ -1605,6 +1606,7 @@
     <Compile Include="Plugin\HotFixes\199_MigrationRollupsForV17_0_7.cs" />
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
+    <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
     <Compile Include="Plugin\HotFixes\224_MigrationRollupsForV16_8_0.cs" />
     <Compile Include="Plugin\HotFixes\196_MigrationRollupsForV16_5_1.cs" />
     <Compile Include="Plugin\HotFixes\194_MigratoinRollupForV17_0_3.cs" />
