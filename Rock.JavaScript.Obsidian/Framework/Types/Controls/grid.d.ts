@@ -496,7 +496,16 @@ type StandardColumnProps = {
     width: {
         type: PropType<string>,
         required: false
-    }
+    },
+
+    /**
+     * If `true` then the cell will wrap content by way of adding the class
+     * `grid-wrapcell` to the data cells.
+     */
+    wrapped: {
+        type: PropType<boolean>,
+        default: false
+    },
 
     /**
      * If 'true', disables sorting for this column.
@@ -827,6 +836,12 @@ export type ColumnDefinition = {
 
     /** Custom data that the column and cells can use any way they desire. */
     data: Record<string, unknown>;
+
+    /**
+     * If `true`, the CSS class `grid-wrapcell` will be added to cause the
+     * content to wrap.
+     */
+    wrapped: boolean;
 
     /**
      * If 'true', disables sorting for this column.

@@ -146,6 +146,11 @@ export default defineComponent({
             default: "label"
         },
 
+        wrapped: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
         /**
          * The lookup table to use to translate the raw value into a string.
          * This can be used, for example, to translate an enum into its text

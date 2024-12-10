@@ -201,6 +201,11 @@ export const standardColumnProps: StandardColumnProps = {
         required: false
     },
 
+    wrapped: {
+        type: Boolean as PropType<boolean>,
+        default: false
+    },
+
     disableSort: {
         type: Boolean as PropType<boolean>,
         default: false
@@ -893,6 +898,7 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
                 value: 10,
                 unitType: "%"
             },
+            wrapped: false,
             disableSort: false,
             props: {},
             slots: {},
@@ -987,6 +993,7 @@ function insertCustomColumns(columns: ColumnDefinition[], customColumns: CustomC
                 value: 10,
                 unitType: "%"
             },
+            wrapped: false,
             disableSort: false,
             props: {},
             slots: {},
@@ -1035,6 +1042,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
     const excludeFromExport = getVNodeProp<boolean>(node, "excludeFromExport") === true || getVNodeProp<string>(node, "excludeFromExport") === "";
     const visiblePriority = getVNodeProp<"xs" | "sm" | "md" | "lg" | "xl">(node, "visiblePriority") || "xs";
     const width = getVNodeProp<string>(node, "width");
+    const wrapped = getVNodeProp<boolean>(node, "wrapped") || false;
     const disableSort = getVNodeProp<boolean>(node, "disableSort") || false;
     const filterPrependComponent = node.children?.["filterPrepend"] as Component | undefined;
 
@@ -1192,6 +1200,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         columnType,
         headerClass,
         itemClass,
+        wrapped,
         props: getVNodeProps(node),
         slots: node.children as Record<string, Component> ?? {},
         data: {}
