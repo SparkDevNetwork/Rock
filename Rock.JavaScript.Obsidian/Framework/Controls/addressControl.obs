@@ -269,11 +269,11 @@
             address1.rules = data.addressLine1Requirement;
 
             // Address Line 2 is only shown if it's required or it's requested by the prop; Label is static
-            address2.isVisible = data.addressLine2Requirement == RequirementLevel.Required || (props.showAddressLine2 && data.addressLine2Requirement != RequirementLevel.Unavailable);
+            address2.isVisible = !(data.addressLine2Requirement == RequirementLevel.Unavailable || (!props.disableFrontEndValidation && !props.showAddressLine2 && data.addressLine2Requirement == RequirementLevel.Optional));
             address2.rules = data.addressLine2Requirement;
 
             // County / Locality is only shown if it's required or it's requested by the prop
-            county.isVisible = data.localityRequirement == RequirementLevel.Required || (props.showCounty && data.localityRequirement != RequirementLevel.Unavailable);
+            county.isVisible = !(data.localityRequirement == RequirementLevel.Unavailable || (!props.disableFrontEndValidation && props.showCounty && data.localityRequirement == RequirementLevel.Optional));
             county.rules = data.localityRequirement;
             county.label = data.localityLabel ?? county.label;
 
