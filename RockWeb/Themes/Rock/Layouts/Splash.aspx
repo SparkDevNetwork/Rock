@@ -40,9 +40,7 @@
         <div id="content">
 
             <div class="logo-background">
-                <div id="logo">
-                    <asp:Literal ID="lLogoSvg" runat="server" />
-                </div>
+                <div id="logo"></div>
             </div>
 
             <div id="content-box" class="clearfix">

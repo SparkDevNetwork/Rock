@@ -1238,8 +1238,10 @@ $hamburger-spacing: 4px;
     min-height: 500px;
 
     @media (max-width: $screen-medium) {
+      margin-top: 10vh;
       grid-template-columns: 1fr;
-      grid-template-rows: 1fr 1fr;
+      grid-template-rows: 8fr 10fr;
+      gap: 0;
       
       min-width: 480px;
       width: 80vw;
@@ -1266,8 +1268,6 @@ $hamburger-spacing: 4px;
 
     @media (max-width: $screen-medium) {
       animation: none;
-      grid-column: 1 / 2;
-      grid-row: 1 / 2;
     }
   }
 
@@ -1275,6 +1275,7 @@ $hamburger-spacing: 4px;
     margin: var(--spacing-large) 0;
     display: flex;
     align-items: center;
+    justify-content: center;
 
     grid-column: 2 / 3;
     grid-row: 1 / 2; 
@@ -1287,10 +1288,22 @@ $hamburger-spacing: 4px;
     }
   }
 
-  #logo {
-    width: 200px;
-    height: 200px;
+  #logo::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    content: "";
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 200px;
     fill: var(--color-interface-softest);
+    background-image: var(--logo-image);
+    
+    @media (max-width: $screen-medium) {
+      background-size: 120px;
+    }
   }
 
   .login-block {
