@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Web.Cache;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
@@ -59,6 +58,22 @@ namespace Rock.Field.Types
         /// The default image tag template
         /// </summary>
         protected const string DefaultImageTagTemplate = "<img src='{{ ImageUrl }}' class='img-responsive' />";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            return new Dictionary<string, string>( privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            // Create a new dictionary to protect against the passed dictionary
+            // being changed after we are called.
+            return new Dictionary<string, string>( publicConfigurationValues );
+        }
 
         #endregion
 
