@@ -20,7 +20,7 @@ import { NumberFilterMethod } from "@Obsidian/Enums/Core/Grid/numberFilterMethod
 import { DateFilterMethod } from "@Obsidian/Enums/Core/Grid/dateFilterMethod";
 import { PickExistingFilterMethod } from "@Obsidian/Enums/Core/Grid/pickExistingFilterMethod";
 import { TextFilterMethod } from "@Obsidian/Enums/Core/Grid/textFilterMethod";
-import { ColumnFilter, ColumnDefinition, IGridState, StandardFilterProps, StandardCellProps, IGridCache, IGridRowCache, ColumnSort, SortValueFunction, FilterValueFunction, QuickFilterValueFunction, StandardColumnProps, StandardHeaderCellProps, EntitySetOptions, ExportValueFunction, StandardSkeletonCellProps, GridLength, BooleanSearchBag } from "@Obsidian/Types/Controls/grid";
+import { ColumnFilter, ColumnDefinition, IGridState, StandardFilterProps, StandardCellProps, IGridCache, IGridRowCache, ColumnSort, SortValueFunction, FilterValueFunction, QuickFilterValueFunction, StandardColumnProps, StandardHeaderCellProps, EntitySetOptions, ExportValueFunction, StandardSkeletonCellProps, GridLength, BooleanSearchBag, FilterValuesFunction } from "@Obsidian/Types/Controls/grid";
 import { ICancellationToken } from "@Obsidian/Utility/cancellation";
 import { extractText, getVNodeProp, getVNodeProps } from "@Obsidian/Utility/component";
 import { DayOfWeek, RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -138,6 +138,11 @@ export const standardColumnProps: StandardColumnProps = {
 
     filterValue: {
         type: Object as PropType<(FilterValueFunction | string)>,
+        required: false
+    },
+
+    filterValues: {
+        type: Object as PropType<FilterValuesFunction>,
         required: false
     },
 
@@ -1022,6 +1027,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
     const skeletonComponent = skeletonTemplate ?? getVNodeProp<Component>(node, "skeletonComponent");
     const exportTemplate = node.children?.["export"] as Component | undefined;
     const filter = getVNodeProp<ColumnFilter>(node, "filter");
+    const filterValues = getVNodeProp<FilterValuesFunction>(node, "filterValues");
     const headerClass = getVNodeProp<string>(node, "headerClass");
     const itemClass = getVNodeProp<string>(node, "itemClass");
     const columnType = getVNodeProp<string>(node, "columnType");
@@ -1176,6 +1182,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         sortValue,
         disableSort,
         filterValue,
+        filterValues,
         quickFilterValue,
         exportValue,
         hideOnScreen,
@@ -1983,7 +1990,9 @@ export class GridState implements IGridState {
 
             // Check if the row matches the column specific filters.
             return columns.every(column => {
-                if (!column.filter) {
+                const filter = column.filter;
+
+                if (!filter) {
                     return true;
                 }
 
@@ -1993,9 +2002,17 @@ export class GridState implements IGridState {
                     return true;
                 }
 
-                const value: unknown = column.filterValue(row, column, this);
+                if (column.filterValues) {
+                    const values = column.filterValues(row, column, this);
 
-                return column.filter.matches(columnFilterValue, value, column, this);
+                    return values.some(v =>
+                        filter.matches(columnFilterValue, v.value, column, this));
+                }
+                else {
+                    const value = column.filterValue(row, column, this);
+
+                    return filter.matches(columnFilterValue, value, column, this);
+                }
             });
         });
 

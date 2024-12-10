@@ -253,6 +253,20 @@ export type SortValueFunction = (row: Record<string, unknown>, column: ColumnDef
 export type FilterValueFunction = (row: Record<string, unknown>, column: ColumnDefinition, grid: IGridState) => string | number | boolean | undefined;
 
 /**
+ * A function that will be called to determine the values to use when
+ * performing a column filter operation. This value will be cached by the
+ * grid until the row is modified. This is used by components that handle
+ * multiple values in a single cell.
+ *
+ * @param row The data object that represents the row.
+ * @param column The column definition for this operation.
+ * @param grid The grid that owns this operation.
+ *
+ * @returns The individual values that can be filtered.
+ */
+export type FilterValuesFunction = (row: Record<string, unknown>, column: ColumnDefinition, grid: IGridState) => MultiValueFilterItem[];
+
+/**
  * A function that will be called to get the value to use when exporting the
  * cell to an external document.
  */
@@ -360,6 +374,21 @@ type StandardColumnProps = {
      */
     filterValue: {
         type: PropType<(FilterValueFunction | string)>,
+        required: false
+    },
+
+    /**
+     * Specifies how to get the values to use when filtering by this column if
+     * it supports multiple values. Each value of the multi-value set will be
+     * treated as a distinct value for filtering. Only one of the values needs
+     * to match. If the column does not support multiple values then this should
+     * be left undefined. The function will be called with the row and column
+     * definition.
+     *
+     * This will only be used by filters that support multiple values.
+     */
+    filterValues: {
+        type: PropType<FilterValuesFunction>,
         required: false
     },
 
@@ -627,6 +656,22 @@ type TextSearchBag = {
 
 // #endregion
 
+/**
+ * Defines a single filter value returned by columns that support multi-value
+ * cells. An example of this is the label column.
+ */
+export type MultiValueFilterItem = {
+    /** The value that will be passed to {@link ColumnFilterMatchesFunction}. */
+    value: string | number | boolean;
+
+    /**
+     * The row data that represents this single value. This would normally be
+     * a copy of the original row with the field value replaced with the single
+     * value instead of an array value.
+     */
+    rowData: Record<string, unknown>;
+};
+
 /** Defines a single action related to a Grid control. */
 export type GridAction = {
     /**
@@ -732,6 +777,9 @@ export type ColumnDefinition = {
 
     /** Gets the value to use when performing column filtering. */
     filterValue: FilterValueFunction;
+
+    /** Gets the values to use when performing multi-value column filtering. */
+    filterValues?: FilterValuesFunction;
 
     /**
      * Gets the function to call that will provide the value to use when

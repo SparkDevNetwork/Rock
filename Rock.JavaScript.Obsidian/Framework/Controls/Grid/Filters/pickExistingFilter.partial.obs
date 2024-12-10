@@ -9,12 +9,14 @@
         <TextBox label="Search"
                  v-model="searchValue" />
 
-            <div v-for="value in displayedValues" class="checkbox">
-                <label>
-                    <input type="checkbox" :checked="value.selected" @change="onSelected(value, $event)" />
-                    <span class="label-text"><component :is="column.condensedComponent" :row="value.row" :column="column" /></span>
-                </label>
-            </div>
+        <div v-for="value in displayedValues" class="checkbox">
+            <label>
+                <input type="checkbox" :checked="value.selected" @change="onSelected(value, $event)" />
+                <span class="label-text">
+                    <component :is="column.condensedComponent" :row="value.row" :column="column" />
+                </span>
+            </label>
+        </div>
     </div>
 </template>
 
@@ -107,27 +109,22 @@
         }
 
         for (let i = 0; i < rows.length; i++) {
-            // Get the quick filter and filter values.
-            const quickFilterValue = props.column.quickFilterValue(rows[i], props.column, props.grid) ?? "";
-            const filterValue = props.column.filterValue(rows[i], props.column, props.grid);
+            if (props.column.filterValues) {
+                const filterValues = props.column.filterValues(rows[i], props.column, props.grid);
 
-            // If we don't have a filter value, then we can't do anything with
-            // it. If we already have recorded this unique value then skip
-            // any futher occurrences of it.
-            if (filterValue === undefined || valueRows.has(filterValue)) {
-                continue;
+                if (!filterValues) {
+                    continue;
+                }
+
+                for (const filterValue of filterValues) {
+                    addOrSkipDistinctValue(filterValue.value, filterValue.rowData, valueRows);
+                }
             }
+            else {
+                const filterValue = props.column.filterValue(rows[i], props.column, props.grid);
 
-            // Store the distinct value in an object. This is much faster than
-            // storing in an array and then searching the array to see if we
-            // already have this unique value.
-            valueRows.set(filterValue, {
-                row: rows[i],
-                selected: false,
-                sortValue: props.column.sortValue?.(rows[i], props.column, props.grid) ?? "",
-                quickFilterValue: quickFilterValue.toLowerCase(),
-                filterValue
-            });
+                addOrSkipDistinctValue(filterValue, rows[i], valueRows);
+            }
         }
 
         // Return just the values from the object. Sort them by the sort value
@@ -154,6 +151,28 @@
                     return 0;
                 }
             });
+    }
+
+    function addOrSkipDistinctValue(filterValue: string | number | boolean | undefined, row: Record<string, unknown>, valueRows: Map<string | number | boolean, DistinctValue>): void {
+        // If we don't have a filter value, then we can't do anything with
+        // it. If we already have recorded this unique value then skip
+        // any futher occurrences of it.
+        if (filterValue === undefined || valueRows.has(filterValue)) {
+            return;
+        }
+
+        const quickFilterValue = props.column.quickFilterValue(row, props.column, props.grid) ?? "";
+
+        // Store the distinct value in an object. This is much faster than
+        // storing in an array and then searching the array to see if we
+        // already have this unique value.
+        valueRows.set(filterValue, {
+            row: row,
+            selected: false,
+            sortValue: props.column.sortValue?.(row, props.column, props.grid) ?? "",
+            quickFilterValue: quickFilterValue.toLowerCase(),
+            filterValue
+        });
     }
 
     /**
