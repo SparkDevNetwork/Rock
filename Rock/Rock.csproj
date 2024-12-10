@@ -1233,9 +1233,7 @@
     <Compile Include="Drawing\Avatar\AvatarSettings.cs" />
     <Compile Include="Drawing\Avatar\AvatarStyle.cs" />
     <Compile Include="Drawing\RockImage.cs" />
-    <Compile Include="Event\InteractiveExperiences\ActionTypeComponent.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Event\InteractiveExperiences\ActionTypeComponent.cs" />
     <Compile Include="Event\InteractiveExperiences\ActionTypeComponents\EmbedWebpage.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -2552,9 +2550,7 @@
     <Compile Include="Plugin\HotFixes\107_MigrationRollupsFor10_3_1.cs" />
     <Compile Include="Plugin\HotFixes\108_UpdateSpiritualGifts.cs" />
     <Compile Include="Reporting\DataFilter\IRelatedChildDataView.cs" />
-    <Compile Include="Storage\AssetStorage\AzureCloudStorageComponent.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Storage\AssetStorage\AzureCloudStorageComponent.cs" />
     <Compile Include="SystemGuid\Metric.cs" />
     <Compile Include="Transactions\RunReportTransaction.cs" />
     <Compile Include="Plugin\HotFixes\110_UpdateSpiritualGiftsResultsLava.cs" />
@@ -3390,9 +3386,7 @@
     <Compile Include="Lava\LavaHelper.cs" />
     <Compile Include="Lava\Shortcodes\BootstrapAlertShortcode.cs" />
     <Compile Include="MergeTemplates\HtmlMergeTemplateType.cs" />
-    <Compile Include="MergeTemplates\MergeTemplateType.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="MergeTemplates\MergeTemplateType.cs" />
     <Compile Include="MergeTemplates\MergeTemplateTypeContainer.cs" />
     <Compile Include="MergeTemplates\WordDocumentMergeTemplateType.cs">
       <SubType>Component</SubType>
@@ -3914,9 +3908,7 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="Storage\AssetStorage\AmazonS3Component.cs" />
     <Compile Include="Storage\AssetStorage\Asset.cs" />
-    <Compile Include="Storage\AssetStorage\AssetStorageComponent.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Storage\AssetStorage\AssetStorageComponent.cs" />
     <Compile Include="Storage\AssetStorage\AssetStorageContainer.cs" />
     <Compile Include="Storage\AssetStorage\FileSystemComponent.cs">
       <SubType>Component</SubType>
@@ -4319,9 +4311,7 @@
     <Compile Include="Services\NuGet\RockProjectManager.cs" />
     <Compile Include="Services\NuGet\WebProjectManager.cs" />
     <Compile Include="Services\NuGet\WebProjectSystem.cs" />
-    <Compile Include="Storage\ProviderComponent.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs">
       <SubType>Component</SubType>

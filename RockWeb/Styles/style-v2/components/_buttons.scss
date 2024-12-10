@@ -106,13 +106,14 @@
   &.facebook,
   &.google,
   &.twitter {
-    background-color:   var(--color-interface-softest);
-    border-color:       var(--color-interface-soft);
+    background-color: var(--color-interface-softest);
+    border-color:     var(--color-interface-soft);
 
     &::before {
+      color:          var(--btn-bg);
       display:        inline-block;
       margin-right:   12px;
-      font-family:    "@{fa-font-face} Brands";
+      font-family:    "Font Awesome 5 Brands";
       font-weight:    var(--font-weight-regular);
       content:        var(--social-icon);
       flex:           0 0 1.25em;
@@ -120,9 +121,8 @@
   }
 
   &.facebook {
-    color:          var(--color-interface-softest);
-    --btn-bg:       $brand-facebook;
-    --btn-hover-bg: $brand-facebook; // TODO darken by 10% when available
+    --btn-bg:       #{$brand-facebook};
+    --btn-hover-bg: #{$brand-facebook}; // TODO darken by 10% when available
     --social-icon:  "\f39e";
   }
 
@@ -140,10 +140,17 @@
   }
 
   &.twitter {
-    color:          var(--color-interface-softest);
-    --btn-bg:       $brand-twitter;
-    --btn-hover-bg: $brand-twitter; // TODO darken by 10% when available
-    --social-icon:  @fa-var-twitter;
+    --btn-bg:       #{$brand-twitter};
+    --btn-hover-bg: #{$brand-twitter}; // TODO darken by 10% when available
+    &:before {
+      background-image:     url("/Assets/Icons/X_logo_2023.svg");
+      background-size:      contain;
+      background-repeat:    no-repeat;
+      background-position:  center;
+      width:                1em;
+      height:               1em;
+      content: "  ";
+    }
   }
 
   &:hover {
