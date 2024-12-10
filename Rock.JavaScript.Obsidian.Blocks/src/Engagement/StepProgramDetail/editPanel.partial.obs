@@ -190,6 +190,7 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -280,7 +281,7 @@
         }
 
         return {
-            key: attribute.key,
+            key: attribute.guid,
             name: attribute.name,
             description: attribute.description,
             isRequired: attribute.isRequired
@@ -355,12 +356,11 @@
     }
 
     const onEditAttribute = async (key: string): Promise<void> => {
-        const selectedSiteAttribute = stepProgramAttributes.value.find(x => x.key === key);
+        const selectedSiteAttribute = stepProgramAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedSiteAttribute) {
             stepAttribute.value = selectedSiteAttribute;
             isAttributeModalOpen.value = true;
-            reservedKeyNames.value = reservedKeyNames.value.filter(x => x !== selectedSiteAttribute.key);
         }
         else {
             onAddAttribute();
@@ -370,10 +370,8 @@
     const onDeleteAttribute = async (key: string): Promise<void> => {
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
-        stepProgramAttributes.value = stepProgramAttributes.value.filter(s => s.key !== key);
+        stepProgramAttributes.value = stepProgramAttributes.value.filter(s => s.guid !== key);
         reservedKeyNames.value = stepProgramAttributes.value.map(k => k.key!);
-
-        workflows.value = workflows.value.filter(s => s.idKey !== key);
 
         // Update the grid.
         if (attributesGridData.rows) {
@@ -388,11 +386,11 @@
     function onSaveAttribute(): void {
 
         if (stepAttribute.value) {
-            const index = stepProgramAttributes.value.findIndex(a => a.key === stepAttribute.value?.key);
+            const index = stepProgramAttributes.value.findIndex(a => a.guid === stepAttribute.value?.guid);
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
-                let editedAttribute = stepProgramAttributes.value.find(a => a.key == stepAttribute.value?.key);
-                let rowItem = attributesGridData.rows?.find(x => x.key == stepAttribute.value?.key);
+                let editedAttribute = stepProgramAttributes.value.find(a => a.guid == stepAttribute.value?.guid);
+                let rowItem = attributesGridData.rows?.find(x => x.key == stepAttribute.value?.guid);
 
                 if (editedAttribute) {
                     // Replace old attribute with updated attribute.
@@ -402,12 +400,13 @@
 
                 if (rowItem && attributesGridData.rows && editedAttribute) {
                     // Update GridRowItem so changes are reflected in the UI.
-                    const rowIndex = attributesGridData.rows.findIndex(r => r.key === stepAttribute.value?.key);
+                    const rowIndex = attributesGridData.rows.findIndex(r => r.key === stepAttribute.value?.guid);
                     rowItem = convertToAttributeGridRowItem(editedAttribute);
                     attributesGridData.rows?.splice(rowIndex, 1, rowItem);
                 }
             }
             else {
+                stepAttribute.value.guid = newGuid();
                 stepProgramAttributes.value.push(stepAttribute.value);
 
                 // Add new RowItem to the grid to represent the newly added attribute.
@@ -422,6 +421,17 @@
     const onStartSaveAttribute = (): void => {
         saveAttribute.value = true;
     };
+
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== stepAttribute.value?.key);
+        }
+        else {
+            if (stepAttribute.value?.key && !reservedKeyNames.value.some(k => k === stepAttribute.value?.key)) {
+                reservedKeyNames.value.push(stepAttribute.value.key);
+            }
+        }
+    });
     // #endregion
 
     // #region Workflows Grid

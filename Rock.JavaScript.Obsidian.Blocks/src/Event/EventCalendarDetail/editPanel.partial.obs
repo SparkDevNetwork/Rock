@@ -363,6 +363,17 @@
         return isSuccess;
     }
 
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== eventAttribute.value?.key);
+        }
+        else {
+            if (eventAttribute.value?.key && !reservedKeyNames.value.some(k => k === eventAttribute.value?.key)) {
+                reservedKeyNames.value.push(eventAttribute.value.key);
+            }
+        }
+    });
+
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.

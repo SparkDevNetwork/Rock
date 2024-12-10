@@ -532,9 +532,9 @@ namespace Rock.Blocks.Lms
         /// <param name="box">The box to set the Notifications property on.</param>
         private void SetNotifications( PublicLearningClassWorkspaceBox box )
         {
-            // Get the available activities that the student hasn't yet completed.
+            // Get the available activities that the student or facilitator haven't yet completed.
             box.Notifications = box.Activities
-                .Where( a => ( a.IsAvailable && !a.IsStudentCompleted ) )
+                .Where( a => ( a.IsAvailable && !a.IsStudentCompleted && !a.IsFacilitatorCompleted ) )
                 .Select( a => new PublicLearningClassWorkspaceNotificationBag
                 {
                     Content = a.IsDueSoon || a.IsLate ? $"Due in {a.DueDate.ToElapsedString()}" : a.AvailableDate.HasValue ? $"Available {a.AvailableDate.ToElapsedString()}" : "Available",
@@ -546,7 +546,7 @@ namespace Rock.Blocks.Lms
                 .ToList();
 
             var nextAvailableActivity = box.Activities.OrderBy( a => a.AvailableDate )
-                    .FirstOrDefault( a => !a.IsStudentCompleted && !a.IsAvailable );
+                    .FirstOrDefault( a => !a.IsStudentCompleted && !a.IsFacilitatorCompleted && !a.IsAvailable );
 
             // If there's no available activities that the student hasn't completed.
             // Then show them their next available activity.

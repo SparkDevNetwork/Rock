@@ -86,7 +86,7 @@ namespace Rock.Model
                                     {
                                         LogError( $"PersistedDataset (Id: {this.Id}) build script created invalid result data: {output}" );
                                         result.IsSuccess = false;
-                                        result.WarningMessage = $"Invalid result data for dataset {this.Id}, {output}";
+                                        result.WarningMessage = $"Unable to parse dataset {this.Id} JSON:\n{output}";
                                     }
                                     else
                                     {

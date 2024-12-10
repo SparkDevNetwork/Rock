@@ -62,7 +62,7 @@
                     <PagePicker v-model="redirectPage"
                                 label="Redirect Page"
                                 help="If set, will redirect to the selected page when applying filters."
-                                :promptForPageRoute="promptForPageRoute"
+                                :promptForPageRoute="true"
                                 :showSelectCurrentPage="true"
                                 :securityGrant="securityGrantToken" />
                     <CheckBox v-model="isFilterButtonVisible"
@@ -76,6 +76,20 @@
                               help="If enabled, a full page reload will be triggered to apply the filter selections (helpful when using this block to drive the behavior of legacy blocks on the page). If disabled, the filter selections will be communicated directly to any Obsidian blocks listening for these filters, so they can respond accordingly." />
                 </div>
             </div>
+
+            <NotificationBox v-if="isEarlyRedirectPossible" :alertType="AlertType.Warning">
+                <p>
+                    With the current settings:
+                </p>
+                <ul>
+                    <li><strong>Filter Selection Action:</strong> Apply Filters</li>
+                    <li><strong>Redirect Page:</strong> {{ redirectPage?.page?.text }}</li>
+                    <li><strong>Filters:</strong> More than 1 filter</li>
+                </ul>
+                <p>
+                    The individual might not have an opportunity to make all desired filter selections before the page automatically redirects. Consider choosing a different <strong>Filter Selection Action</strong> to prevent this behavior.
+                </p>
+            </NotificationBox>
 
             <SectionHeader title="Filters" />
 
@@ -136,6 +150,7 @@
         <AttributeEditor v-model="editableFilter"
                          :attributeEntityTypeGuid="EntityType.Block"
                          :isCategoriesVisible="false"
+                         :isIsRequiredVisible="false"
                          :isAnalyticsVisible="false"
                          :isShowInGridVisible="false"
                          :isShowOnBulkVisible="false"
@@ -217,6 +232,7 @@
 
     const filtersGridDefinition = ref<GridDefinitionBag | null>(null);
     const filtersGridDataSource = ref<Promise<GridDataBag>>();
+    const filterCount = ref(0);
     let filtersGridData: GridDataBag | undefined;
 
     const blockActionErrorMessage = ref("");
@@ -237,23 +253,6 @@
         return !loadSettingsErrorMessage.value && !isLoadingSettings.value ? "Save" : "";
     });
 
-    const promptForPageRoute = computed((): boolean => {
-        /*
-            10/7/2024 - JPH
-
-            We are purposefully disallowing the selection of a page route here,
-            to prevent confusion and to match the behavior of the legacy version
-            of this block, which always hard-coded a `~/page/{Id}` route for this
-            redirect. If a route were to be selected that happens to embed one
-            or more of the resulting filter parameter key/value pairs, it could
-            get messy; better to keep it simple for this redirect.
-
-            Reason: Match behavior of legacy block.
-            https://github.com/SparkDevNetwork/Rock/blob/1c15fe075623c842a532bbe2cc4c93337b9a96ab/RockWeb/Blocks/Reporting/PageParameterFilter.ascx.cs#L864
-        */
-        return false;
-    });
-
     const isNewFilter = computed((): boolean => {
         return !editableFilter.value?.guid;
     });
@@ -264,6 +263,12 @@
 
     const saveFilterButtonText = computed((): string => {
         return !isSavingFilter.value ? "Save" : "";
+    });
+
+    const isEarlyRedirectPossible = computed((): boolean => {
+        return filterCount.value > 1
+            && filterSelectionAction.value === FilterSelectionAction.ApplyFilters
+            && !!(redirectPage.value);
     });
 
     const securityGrantToken = computed((): string | null => {
@@ -321,11 +326,19 @@
 
         if (result.isSuccess && result.data) {
             filtersGridData = reactive(result.data);
+            setFilterCount();
             return filtersGridData;
         }
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load filters grid data.");
         }
+    }
+
+    /**
+     * Sets the filter count ref value, based on the current filters grid data.
+     */
+    function setFilterCount(): void {
+        filterCount.value = filtersGridData?.rows?.length ?? 0;
     }
 
     /**
@@ -477,6 +490,7 @@
         }
         else {
             filtersGridData.rows.push(result.data);
+            setFilterCount();
         }
     }
 
@@ -536,6 +550,7 @@
 
         if (index !== -1) {
             filtersGridData.rows.splice(index, 1);
+            setFilterCount();
         }
     }
 

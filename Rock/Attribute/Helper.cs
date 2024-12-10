@@ -124,14 +124,12 @@ namespace Rock.Attribute
                 entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
             }
 
-            bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type );
-
             // Create any attributes that need to be created
             foreach ( var entityProperty in entityProperties )
             {
                 try
                 {
-                    attributesUpdated = UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, dynamicAttributesBlock, rockContext ) || attributesUpdated;
+                    attributesUpdated = UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, rockContext ) || attributesUpdated;
                 }
                 catch ( Exception ex )
                 {
@@ -143,18 +141,14 @@ namespace Rock.Attribute
             try
             {
                 var attributeService = new Model.AttributeService( rockContext );
+                var existingKeys = entityProperties.Select( a => a.Key ).ToList();
 
-                // if the entity is a block that implements IDynamicAttributesBlock, don't delete the attribute
-                if ( !dynamicAttributesBlock )
+                foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
                 {
-                    var existingKeys = entityProperties.Select( a => a.Key ).ToList();
-                    foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
+                    if ( !existingKeys.Contains( a.Key ) )
                     {
-                        if ( !existingKeys.Contains( a.Key ) )
-                        {
-                            attributeService.Delete( a );
-                            attributesDeleted = true;
-                        }
+                        attributeService.Delete( a );
+                        attributesDeleted = true;
                     }
                 }
 
@@ -185,24 +179,6 @@ namespace Rock.Attribute
         /// </remarks>
 
         internal static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
-        {
-            return UpdateAttribute( property, entityTypeId, entityQualifierColumn, entityQualifierValue, false, rockContext );
-        }
-
-        /// <summary>
-        /// Adds or Updates a <see cref="Rock.Model.Attribute" /> item for the attribute.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
-        /// <param name="entityQualifierValue">The entity qualifier value.</param>
-        /// <param name="dynamicAttributesBlock">if set to <c>true</c> [dynamic attributes block].</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
-        private static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, bool dynamicAttributesBlock, RockContext rockContext = null )
         {
             bool updated = false;
 
@@ -237,14 +213,10 @@ namespace Rock.Attribute
                 if ( attribute.Name != property.Name ||
                     attribute.DefaultValue != property.DefaultValue ||
                     attribute.Description != property.Description ||
+                    attribute.Order != property.Order ||
                     attribute.FieldType.Assembly != property.FieldTypeAssembly ||
                     attribute.FieldType.Class != property.FieldTypeClass ||
                     attribute.IsRequired != property.IsRequired )
-                {
-                    updated = true;
-                }
-
-                if ( attribute.Order != property.Order && !dynamicAttributesBlock )
                 {
                     updated = true;
                 }
@@ -286,13 +258,7 @@ namespace Rock.Attribute
             attribute.Name = property.Name;
             attribute.Description = property.Description;
             attribute.DefaultValue = property.DefaultValue;
-
-            // if the block is IDynamicAttributesBlock, only update the attribute.Order if this is a new attribute 
-            if ( !dynamicAttributesBlock || attribute.Id == 0 )
-            {
-                attribute.Order = property.Order;
-            }
-
+            attribute.Order = property.Order;
             attribute.IsRequired = property.IsRequired;
 
             attribute.Categories.Clear();

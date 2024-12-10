@@ -285,6 +285,9 @@ namespace Rock.Jobs
             // Search for and delete group memberships duplicates (same person, group, and role)
             RunCleanupTask( "group membership", () => GroupMembershipCleanup() );
 
+            // Search for and delete previous family location if it's the same as their current home address.
+            RunCleanupTask( "family location", () => DeleteDuplicatePreviousFamilyLocations() );
+
             RunCleanupTask( "primary family", () => UpdateMissingPrimaryFamily() );
 
             RunCleanupTask( "attendance label data", () => AttendanceDataCleanup() );
@@ -2162,6 +2165,39 @@ namespace Rock.Jobs
 
             // Return the count of memberships deleted
             return groupMemberIds.Count();
+        }
+
+        private int DeleteDuplicatePreviousFamilyLocations()
+        {
+            var rockContext = CreateRockContext();
+
+            var groupLocationService = new GroupLocationService( rockContext );
+            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+            var previousLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS ).Id;
+            var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
+
+            var duplicateFamilyLocations = groupLocationService.Queryable()
+                .Where( gl => gl.Group.GroupTypeId == familyGroupTypeId )
+                .GroupBy( gl => new { gl.GroupId, gl.LocationId } )
+                .Where( g => g.Count() > 1 )
+                .ToList();
+            var recordsToDelete = new List<GroupLocation>();
+
+            foreach ( var duplicateFamilyLocation in duplicateFamilyLocations )
+            {
+                var previousLocation = duplicateFamilyLocation.FirstOrDefault( x => x.GroupLocationTypeValueId == previousLocationTypeId );
+                var isOtherDuplicateHomeLocation = duplicateFamilyLocation.Any( gl => gl.GroupLocationTypeValueId == homeLocationTypeId );
+
+                if ( previousLocation != null && isOtherDuplicateHomeLocation )
+                {
+                    recordsToDelete.Add( previousLocation );
+                }
+            }
+
+            groupLocationService.DeleteRange( recordsToDelete );
+            rockContext.SaveChanges();
+
+            return recordsToDelete.Count;
         }
 
         /// <summary>

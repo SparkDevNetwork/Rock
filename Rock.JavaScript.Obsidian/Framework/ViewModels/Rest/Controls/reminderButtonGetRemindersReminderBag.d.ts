@@ -31,21 +31,21 @@ export type ReminderButtonGetRemindersReminderBag = {
     /** The Reminder's Unique Identifier */
     guid: Guid;
 
-    /** TODO */
+    /** Reminder type's representative color */
     highlightColor?: string | null;
 
     /** The Reminder's Id */
     id: number;
 
-    /** TODO */
+    /** Whether or not the reminder renews */
     isRenewing: boolean;
 
-    /** TODO */
+    /** Text note regarding what the reminder is about/for */
     note?: string | null;
 
-    /** TODO */
+    /** Date to be reminded */
     reminderDate?: string | null;
 
-    /** TODO */
+    /** Text name of the type of reminder */
     reminderTypeName?: string | null;
 };

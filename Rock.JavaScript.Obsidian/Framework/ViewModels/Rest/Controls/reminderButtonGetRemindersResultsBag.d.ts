@@ -29,21 +29,21 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  * the ReminderButton control.
  */
 export type ReminderButtonGetRemindersResultsBag = {
-    /** TODO */
+    /** URL to go to to edit a reminder */
     editUrl?: string | null;
 
-    /** TODO */
+    /** Name of the entity the reminder is about */
     entityName?: string | null;
 
-    /** TODO */
+    /** Name of the type of entity that the entity is */
     entityTypeName?: string | null;
 
-    /** TODO */
+    /** A list of reminders to display */
     reminders?: ReminderButtonGetRemindersReminderBag[] | null;
 
-    /** TODO */
+    /** List of available reminder types to choose from */
     reminderTypes?: ListItemBag[] | null;
 
-    /** TODO */
+    /** URL to go to for viewing all of the person's reminders */
     viewUrl?: string | null;
 };

@@ -23,30 +23,30 @@
 
 /** The bag containing the results of the assessment. */
 export type AssessmentResultsBag = {
-    /* Gets or sets the adaptive behavior score for the 'D' trait. */
-    adaptiveBehaviorD: number | null;
+    /** Gets or sets the adaptive behavior score for the 'S' trait. */
+    adaptiveBehaviorC: number;
 
-    /* Gets or sets the adaptive behavior score for the 'I' trait. */
-    adaptiveBehaviorI: number | null;
+    /** Gets or sets the adaptive behavior score for the 'D' trait. */
+    adaptiveBehaviorD: number;
 
-    /* Gets or sets the adaptive behavior score for the 'S' trait. */
-    adaptiveBehaviorC: number | null;
+    /** Gets or sets the adaptive behavior score for the 'I' trait. */
+    adaptiveBehaviorI: number;
 
-    /* Gets or sets the adaptive behavior score for the 'C' trait. */
-    adaptiveBehaviorS: number | null;
+    /** Gets or sets the adaptive behavior score for the 'C' trait. */
+    adaptiveBehaviorS: number;
 
-    /* Gets or sets the natural behavior score for the 'D' trait. */
-    naturalBehaviorD: number | null;
+    /** Gets or sets the natural behavior score for the 'C' trait. */
+    naturalBehaviorC: number;
 
-    /* Gets or sets the natural behavior score for the 'I' trait. */
-    naturalBehaviorI: number | null;
+    /** Gets or sets the natural behavior score for the 'D' trait. */
+    naturalBehaviorD: number;
 
-    /* Gets or sets the natural behavior score for the 'S' trait. */
-    naturalBehaviorS: number | null;
+    /** Gets or sets the natural behavior score for the 'I' trait. */
+    naturalBehaviorI: number;
 
-    /* Gets or sets the natural behavior score for the 'C' trait. */
-    naturalBehaviorC: number | null;
+    /** Gets or sets the natural behavior score for the 'S' trait. */
+    naturalBehaviorS: number;
 
-    /* Gets or sets the personality type code. */
-    personalityType: number | null;
+    /** Gets or sets the personality type code. */
+    personalityType?: string | null;
 };

@@ -367,7 +367,7 @@ namespace Rock.Plugin.HotFixes {
         
         /// <summary>
         ///   Looks up a localized string similar to 
-        ///
+        ////*
         ///&lt;doc&gt;
         /// &lt;summary&gt;
         ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
@@ -932,6 +932,25 @@ namespace Rock.Plugin.HotFixes {
         public static string _221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateGroupConnections {
             get {
                 return ResourceManager.GetString("_221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateGroupConnections", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure updates the peer network for groups.
+        ///    &lt;/summary&gt;
+        ///    &lt;remarks&gt;
+        ///        GROUP PEER NETWORK NOTES
+        ///        1.  The group processing will have 3 phases:
+        ///            a. Update the peer network connections in the PeerNetwork table.
+        ///            b. Recalc the relationship score for each connection with logic for time adjusting. We need to do this as a
+        ///               separate step as some of the individuals who previously had peer connections are no l [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections {
+            get {
+                return ResourceManager.GetString("_225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections", resourceCulture);
             }
         }
     }

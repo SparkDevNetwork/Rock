@@ -34,4 +34,7 @@ export type CheckInScheduleBuilderOptionsBag = {
 
     /** The list of GroupTypes that can be chosen from */
     groupTypes?: Guid[] | null;
+
+    /** Gets or sets the navigation urls. */
+    navigationUrls?: Record<string, string> | null;
 };

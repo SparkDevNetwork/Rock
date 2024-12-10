@@ -48,6 +48,21 @@ namespace Rock.CheckIn.v2.Filters
         /// <value>The person age.</value>
         private Lazy<decimal?> PersonAge { get; }
 
+        /// <summary>
+        /// <para>
+        /// Determines if check-in is configured to prioritize grade matching
+        /// groups over others. The primary use of this is to prioritize a grade
+        /// match over an age match; but it will apply to other group matching
+        /// filters as well.
+        /// </para>
+        /// <para>
+        /// This will intentionally not apply to groups with a DataView filter or
+        /// Group Membership required as those types of filters explicitely list
+        /// the people that can check-in.
+        /// </para>
+        /// </summary>
+        private bool PrioritizeGradeOverAge => TemplateConfiguration.GradeAndAgeMatchingBehavior == GradeAndAgeMatchingMode.PrioritizeGradeOverAge;
+
         #endregion
 
         #region Constructors
@@ -80,12 +95,9 @@ namespace Rock.CheckIn.v2.Filters
 
             // If one or more groups were matched by grade then remove all
             // groups that were not matched by grade.
-            if ( TemplateConfiguration.GradeAndAgeMatchingBehavior == GradeAndAgeMatchingMode.PrioritizeGradeOverAge )
+            if ( PrioritizeGradeOverAge && _matchedByGradeGroupIds != null )
             {
-                if ( _matchedByGradeGroupIds != null )
-                {
-                    opportunities.Groups.RemoveAll( g => !_matchedByGradeGroupIds.Contains( g.Id ) );
-                }
+                opportunities.Groups.RemoveAll( g => !SkipGroupForPrioritization( g ) && !_matchedByGradeGroupIds.Contains( g.Id ) );
             }
         }
 
@@ -109,7 +121,7 @@ namespace Rock.CheckIn.v2.Filters
                 // If we are configured such that grade matches take priority
                 // over other matches then we need to track groups that were
                 // positively matched by grade.
-                if ( TemplateConfiguration.GradeAndAgeMatchingBehavior == GradeAndAgeMatchingMode.PrioritizeGradeOverAge && gradeRangeMatch.Value )
+                if ( PrioritizeGradeOverAge && gradeRangeMatch.Value )
                 {
                     if ( _matchedByGradeGroupIds == null )
                     {
@@ -138,6 +150,33 @@ namespace Rock.CheckIn.v2.Filters
             // Either had a definitive yes, or a "we don't know" which also
             // means yes.
             return true;
+        }
+
+        /// <summary>
+        /// Determines if this group should be skipped when removing groups
+        /// that are not in the priority list.
+        /// </summary>
+        /// <param name="group">The group opportunity that is being considered for removal.</param>
+        /// <returns><c>true</c> if the group opportunity should not be removed; otherwise <c>false</c> if removal is allowed.</returns>
+        private bool SkipGroupForPrioritization( GroupOpportunity group )
+        {
+            // If the group uses any Data Views to determine who can check-in
+            // to the group then do not allow it to be removed. They have
+            // provided a set list of people.
+            if ( group.CheckInData.DataViewGuids.Count > 0 )
+            {
+                return true;
+            }
+
+            // If the group requires membership in order to check-in then do
+            // not allow it to be removed. Again, they have provided a set
+            // list of people.
+            if ( group.CheckInAreaData.AttendanceRule == Model.AttendanceRule.AlreadyEnrolledInGroup )
+            {
+                return true;
+            }
+
+            return false;
         }
 
         #endregion

@@ -14,7 +14,7 @@
                             <DropDownList label="Date Range Type" v-model="dateRangeType" :items="dateRangeTypeOptions" :showBlankItem="false" />
                         </div>
                         <div class="col-xs-6">
-                            <CheckBox label="Include Time" v-model="includeTime" help="Should the Date Range include the time of day along with the date?" />
+                            <CheckBox v-if="isIncludeTimeVisible" label="Include Time" v-model="includeTime" help="Should the Date Range include the time of day along with the date?" />
                         </div>
                     </div>
                 </div>
@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch, Ref } from "vue";
+    import { PropType, reactive, ref, watch, Ref, computed } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
@@ -90,11 +90,12 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { ContentChannelTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelTypeDetail/contentChannelTypeBag";
     import { ContentChannelTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelTypeDetail/contentChannelTypeDetailOptionsBag";
-    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
 
     const props = defineProps({
         modelValue: {
@@ -149,6 +150,10 @@
 
     const channelAttributesGridData: GridDataBag = reactive<GridDataBag>({
         rows: channelAttributes.value.map((x: PublicEditableAttributeBag) => convertToAttributeGridRowItem(x, channelAttributesReservedKeyNames))
+    });
+
+    const isIncludeTimeVisible = computed((): boolean => {
+        return toNumberOrNull(dateRangeType.value) !== ContentChannelDateType.NoDates;
     });
 
     // #endregion
@@ -226,7 +231,7 @@
 
                 if (rowItem && itemAttributesGridData.rows && editedAttribute) {
                     // Update GridRowItem so changes are reflected in the UI.
-                    const rowIndex = itemAttributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.key);
+                    const rowIndex = itemAttributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.guid);
                     rowItem = convertToAttributeGridRowItem(editedAttribute, itemAttributesReservedKeyNames);
                     itemAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
                 }
@@ -241,7 +246,6 @@
             }
 
             isItemAttributeModalOpen.value = false;
-            itemAttributesReservedKeyNames.value.push(itemAttribute.value.key ?? "");
         }
     }
 
@@ -281,6 +285,18 @@
             return true;
         }
     }
+
+    watch(isItemAttributeModalOpen, () => {
+        if (isItemAttributeModalOpen.value) {
+            itemAttributesReservedKeyNames.value = itemAttributesReservedKeyNames.value.filter(k => k !== itemAttribute.value?.key);
+        }
+        else {
+            if (itemAttribute.value?.key && !itemAttributesReservedKeyNames.value.some(k => k === itemAttribute.value?.key)) {
+                itemAttributesReservedKeyNames.value.push(itemAttribute.value.key);
+            }
+        }
+    });
+
     // #endregion
 
     // #region Channel Attributes
@@ -335,7 +351,7 @@
 
                 if (rowItem && channelAttributesGridData.rows && editedAttribute) {
                     // Update GridRowItem so changes are reflected in the UI.
-                    const rowIndex = channelAttributesGridData.rows.findIndex(r => r.key === channelAttribute.value?.key);
+                    const rowIndex = channelAttributesGridData.rows.findIndex(r => r.key === channelAttribute.value?.guid);
                     rowItem = convertToAttributeGridRowItem(editedAttribute, channelAttributesReservedKeyNames);
                     channelAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
                 }
@@ -350,7 +366,6 @@
             }
 
             isChannelAttributeModalOpen.value = false;
-            channelAttributesReservedKeyNames.value.push(channelAttribute.value.key ?? "");
         }
     }
 
@@ -386,6 +401,17 @@
             return true;
         }
     }
+
+    watch(isChannelAttributeModalOpen, () => {
+        if (isChannelAttributeModalOpen.value) {
+            channelAttributesReservedKeyNames.value = channelAttributesReservedKeyNames.value.filter(k => k !== channelAttribute.value?.key);
+        }
+        else {
+            if (channelAttribute.value?.key && !channelAttributesReservedKeyNames.value.some(k => k === channelAttribute.value?.key)) {
+                channelAttributesReservedKeyNames.value.push(channelAttribute.value.key);
+            }
+        }
+    });
 
     // #endregion
 

@@ -5,6 +5,7 @@
             <div class="col-md-6">
                 <TextBox v-model="title"
                          label="Title"
+                         :maxLength="250"
                          help="The title for the announcement that will be shown to class participants."
                          rules="required" />
             </div>
@@ -19,12 +20,11 @@
         <div class="row">
             <div class="col-md-6">
                 <RadioButtonList v-model="communicationMode"
-                    horizontal
-                    rules="required"
-                    label="Communication Mode"
-                    help="Determines what medium to use for communicating the announcement."
-                    :items="communicationModeItems"
-     />
+                                 horizontal
+                                 rules="required"
+                                 label="Communication Mode"
+                                 help="Determines what medium to use for communicating the announcement."
+                                 :items="communicationModeItems" />
             </div>
         </div>
 

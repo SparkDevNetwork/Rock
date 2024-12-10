@@ -708,7 +708,12 @@ namespace Rock.CheckIn
 
             this.ScheduleIds = this.Attendances.Select( a => a.ScheduleId ?? 0 ).Distinct().ToArray();
 
-            this.RoomName = NamedLocationCache.Get( latestAttendance.LocationId ?? 0 )?.Name;
+            this.RoomName = this.Attendances
+                .OrderByDescending( a => a.StartDateTime )
+                .Select( a => NamedLocationCache.Get( a.LocationId ?? 0 )?.Name )
+                .Where( a => a.IsNotNullOrWhiteSpace() )
+                .Distinct()
+                .JoinStrings( ", " );
         }
 
         /// <summary>

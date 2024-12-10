@@ -995,7 +995,7 @@ $(document).ready(function() {
             var reports = reportService.Queryable().AsNoTracking().Where( r => r.DataViewId == dataView.Id ).OrderBy( r => r.Name );
             var reportDetailPage = GetAttributeValue( AttributeKey.ReportDetailPage );
 
-            foreach ( var report in reports )
+            foreach ( var report in reports.AsEnumerable().Where( r => r.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) )
             {
                 if ( !string.IsNullOrWhiteSpace( reportDetailPage ) )
                 {

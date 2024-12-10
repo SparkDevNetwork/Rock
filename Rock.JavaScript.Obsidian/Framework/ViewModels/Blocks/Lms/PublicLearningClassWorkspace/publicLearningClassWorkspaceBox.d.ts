@@ -40,14 +40,14 @@ export type PublicLearningClassWorkspaceBox = {
     /** Gets or sets the announcements specific to this class and student. */
     announcements?: LearningClassAnnouncementBag[] | null;
 
-    /** Gets or sets the id for the class. */
-    classIdKey?: string | null;
-
     /** Gets or sets the date the class was completed. */
     classCompletionDate?: string | null;
 
     /** Gets or sets the completion status of the class for the individual. */
     classCompletionStatus: LearningCompletionStatus;
+
+    /** Gets or sets the id for the class. */
+    classIdKey?: string | null;
 
     /** Gets or sets the custom content pages for the class. */
     contentPages?: LearningClassContentPageBag[] | null;

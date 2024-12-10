@@ -87,8 +87,6 @@ namespace Rock.Blocks.Cms
 
         private Guid? _categoryGuid;
 
-        private Guid? _adaptiveMessageGuid;
-
         #endregion
 
         #region Methods

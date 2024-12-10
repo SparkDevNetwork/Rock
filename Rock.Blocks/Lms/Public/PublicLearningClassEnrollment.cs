@@ -52,7 +52,7 @@ namespace Rock.Blocks.Lms
 
     [CodeEditorField( "Confirmation Lava Template",
         Key = AttributeKey.ConfirmationLavaTemplate,
-        Description = "The Lava template to use when displaying the confirmation messaging to the individual. Merge fields include: ErrorKey (one of: 'unmet_course_requirements', 'class_full', 'enrollment_closed'), UnmetRequirements, LearningClass, Facilitators, Registrant, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>", EditorMode = CodeEditorMode.Lava,
+        Description = "The Lava template to use when displaying the confirmation messaging to the individual. Merge fields include: ErrorKey (one of: 'unmet_course_requirements', 'class_full', 'enrollment_closed', 'already_enrolled'), UnmetRequirements, LearningClass, Facilitators, Registrant, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>", EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = false,
@@ -70,7 +70,7 @@ namespace Rock.Blocks.Lms
 
     [CodeEditorField( "Enrollment Error Lava Template",
         Key = AttributeKey.EnrollmentErrorLavaTemplate,
-        Description = "The Lava template to use when the individual is not able to enroll. Merge fields include: ErrorKey (one of: 'unmet_course_requirements', 'class_full', 'enrollment_closed'), UnmetRequirements, Facilitators, LearningClass, Registrant, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>", EditorMode = CodeEditorMode.Lava,
+        Description = "The Lava template to use when the individual is not able to enroll. Merge fields include: ErrorKey (one of: 'unmet_course_requirements', 'class_full', 'enrollment_closed', 'already_enrolled'), UnmetRequirements, Facilitators, LearningClass, Registrant, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>", EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
         IsRequired = true,

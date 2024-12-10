@@ -36,7 +36,7 @@ namespace Rock.Plugin.HotFixes
         {
             UpdateStarkListAndStarkDetailBlockNameUp();
             AddObsidianControlGalleryToCMSUp();
-            SwapBlocksUp();
+            //SwapBlocksUp();
             ChopBlocksUp();
         }
 

@@ -25,7 +25,7 @@ using Rock.AI.Classes.Moderations;
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
 {
     /// <summary>
-    /// The Reponse object for a moderation.
+    /// The Response object for a moderation.
     /// </summary>
     internal class OpenAIModerationsResponse
     {
@@ -63,7 +63,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations
 
         #region Methods
         /// <summary>
-        /// Converst the OpenAI completion response to a generic response.
+        /// Converts the OpenAI completion response to a generic response.
         /// </summary>
         /// <returns></returns>
         internal ModerationsResponse AsModerationsResponse()

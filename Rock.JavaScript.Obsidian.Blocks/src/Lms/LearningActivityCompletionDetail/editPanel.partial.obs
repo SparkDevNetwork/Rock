@@ -15,8 +15,12 @@
             </div>
 
         </div>
-        <div class="student-comments-section" v-if="isStudentCommentingEnabled">
-            {{ studentComment }}
+
+        <div class="student-comments-section" v-if="isStudentCommentingEnabled && studentComment">
+            <div class="form-group">
+                <RockLabel>Student Comment</RockLabel>
+                <div>{{ studentComment }}</div>
+            </div>
         </div>
 
         <div class="facilitator-comments-section">
@@ -66,6 +70,7 @@
     import { deepEqual } from "@Obsidian/Utility/util";
     import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
 
     const props = defineProps({
         modelValue: {
@@ -92,7 +97,7 @@
     const completionBag = ref(props.modelValue.bag ?? {} as LearningActivityCompletionBag);
 
     const dueDate = ref(completionBag.value.dueDate);
-    const isStudentCommentingEnabled = ref(completionBag.value.isStudentCommentingEnabled ?? false);
+    const isStudentCommentingEnabled = ref(activityBag.value.isStudentCommentingEnabled ?? false);
     const studentComment = ref(completionBag.value.studentComment ?? "");
     const pointsPossible = ref(activityBag.value?.points);
     const isFacilitatorCompleted = propertyRef(completionBag.value.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
