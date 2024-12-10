@@ -237,8 +237,7 @@
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
         templateAttributes.value = templateAttributes.value.filter(s => s.guid !== key);
-        const deletedAttribute = templateAttributes.value.find(a => a.guid === key);
-        reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== deletedAttribute?.key);
+        reservedKeyNames.value = templateAttributes.value.map(k => k.key!);
 
         // Update the grid.
         if (attributesGridData.rows) {
@@ -335,6 +334,17 @@
         };
 
         emit("update:modelValue", newValue);
+    });
+
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== templateAttribute.value?.key);
+        }
+        else {
+            if (templateAttribute.value?.key && !reservedKeyNames.value.some(k => k === templateAttribute.value?.key)) {
+                reservedKeyNames.value.push(templateAttribute.value.key);
+            }
+        }
     });
 
     // Watch for any changes to props that represent properties and then

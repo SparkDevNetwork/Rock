@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, reactive, ref } from "vue";
+    import { computed, PropType, reactive, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
@@ -170,7 +170,6 @@
         isAttributeModalOpen.value = false;
 
         const deletedAttribute = definedTypeAttributes.value.find(a => a.key == key);
-        reservedKeyNames.value = definedTypeAttributes.value.map(k => k.key!);
 
         if (deletedAttribute) {
             if (deletedAttribute.guid) {
@@ -192,6 +191,7 @@
 
     function removeAttributeFromGrid(key: string): void {
         definedTypeAttributes.value = definedTypeAttributes.value.filter(s => s.key !== key);
+        reservedKeyNames.value = definedTypeAttributes.value.map(k => k.key!);
 
         // Update the grid.
         if (attributesGridData.rows) {
@@ -266,5 +266,16 @@
 
         return result.isSuccess;
     }
+
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== definedTypeAttribute.value?.key);
+        }
+        else {
+            if (definedTypeAttribute.value?.key && !reservedKeyNames.value.some(k => k === definedTypeAttribute.value?.key)) {
+                reservedKeyNames.value.push(definedTypeAttribute.value.key);
+            }
+        }
+    });
     // #endregion
 </script>
