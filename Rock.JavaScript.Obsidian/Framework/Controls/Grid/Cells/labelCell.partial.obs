@@ -99,6 +99,9 @@
         if (classSource && text in classSource) {
             return `label label-${classSource[text]}`;
         }
+        else if (props.column.props["defaultLabelClass"]) {
+            return `label label-${props.column.props["defaultLabelClass"]}`;
+        }
         else {
             return "label label-default";
         }

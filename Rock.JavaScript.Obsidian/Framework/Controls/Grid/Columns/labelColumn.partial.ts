@@ -168,6 +168,16 @@ export default defineComponent({
         },
 
         /**
+         * The default label class to use if no matching value is found in
+         * classSource. If not specified this will be `default`. This should be
+         * a standard label suffix such as `primary` or `danger`.
+         */
+        defaultLabelClass: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
          * The lookup table to use when applying a custom label type tag to
          * the badge. The key is the text value of the field. The value is
          * a standard label suffix such as `primary` or `danger`.
