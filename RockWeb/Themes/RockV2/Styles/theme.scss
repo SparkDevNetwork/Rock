@@ -667,9 +667,9 @@ $navbar-element-height: 40px;
         }
       }
 
-      &:last-child {
+      // &:last-child {
         // margin-bottom: 72px; // dont know the margin botton is here in the first place why???????
-      }
+      // }
     }
 
     &::-webkit-scrollbar {
@@ -1236,6 +1236,14 @@ $hamburger-spacing: 4px;
     // TO change the height or width of the content
     width: 1000px;
     min-height: 500px;
+
+    @media (max-width: $screen-medium) {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr 1fr;
+      
+      min-width: 480px;
+      width: 80vw;
+    }
   }
 
   .logo-background {
@@ -1255,6 +1263,12 @@ $hamburger-spacing: 4px;
 
     z-index: 1001;
     animation: slide-left 1.3s ease-in-out forwards;
+
+    @media (max-width: $screen-medium) {
+      animation: none;
+      grid-column: 1 / 2;
+      grid-row: 1 / 2;
+    }
   }
 
   #content-box {
@@ -1264,6 +1278,13 @@ $hamburger-spacing: 4px;
 
     grid-column: 2 / 3;
     grid-row: 1 / 2; 
+
+    @media (max-width: $screen-medium) {
+      display: block;
+      grid-column: 1 / 2;
+      grid-row: 2 / 3;
+      width: -webkit-fill-available;
+    }
   }
 
   #logo {
