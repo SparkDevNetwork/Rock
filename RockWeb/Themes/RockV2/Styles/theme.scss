@@ -1219,10 +1219,10 @@ $hamburger-spacing: 4px;
 #splash {
   display: flex;
   justify-content: center;
-
   height: 100vh;
 
   #content {
+    position: relative;
     display: grid;
     grid-template-columns: 10fr 8fr;
     align-items: center;
@@ -1231,28 +1231,39 @@ $hamburger-spacing: 4px;
     padding: var(--spacing-large);
     border-radius: var(--rounded-large);
     gap: var(--spacing-xlarge);
-    width: 1000px;
     margin-top:22vh;
 
+    // TO change the height or width of the content
+    width: 1000px;
+    min-height: 500px;
   }
 
   .logo-background {
+    position: absolute;
+
     display: flex;
     align-items: center;
     justify-content: center;
 
-    min-height: 500px;
-    height: -webkit-fill-available;
     border-radius: var(--rounded-large);
     background-color: var(--color-primary);
 
-    z-index: 2;
-    animation: slide-left 1s ease-in-out forwards;
+    height: -webkit-fill-available;
+    width: -webkit-fill-available;
+    grid-column: 1 / 2;  
+    grid-row: 1 / 2; 
+
+    z-index: 1001;
+    animation: slide-left 1.3s ease-in-out forwards;
   }
 
   #content-box {
+    margin: var(--spacing-large) 0;
     display: flex;
     align-items: center;
+
+    grid-column: 2 / 3;
+    grid-row: 1 / 2; 
   }
 
   #logo {
@@ -1266,15 +1277,22 @@ $hamburger-spacing: 4px;
       display: none;
     }
   }
+
+  .checkbox {
+    // Override the normal check box margin.
+    margin-bottom: var(--spacing-medium);
+  }
 }
 
 @keyframes slide-left {
   0% {
-    grid-column: 1 / 3;  
+    width: 190%;
+  }
+  50% {
+    width: 190%;
   }
   100% {
-    grid-column: 1 / 2;  
-    grid-row: 1 / 2; 
+    width: 100%;
   }
 }
 // .obsidian-loading {
