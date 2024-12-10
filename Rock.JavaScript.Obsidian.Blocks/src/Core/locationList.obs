@@ -10,7 +10,7 @@
           @selectItem="onSelectItem">
 
         <template #gridHeaderPrepend>
-            <RockForm class="p-3" @submit="onSubmitFilter">
+            <RockForm class="p-3 bg-body" @submit="onSubmitFilter">
                 <div class="row">
                     <div class="col-lg-4">
                         <TextBox v-model="streetFilter" label="Street Address Starts With" />
