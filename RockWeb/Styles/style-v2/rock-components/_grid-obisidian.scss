@@ -22,10 +22,10 @@
 //         border-radius: var(--spacing-xsmall);
 //     }
     
-//     .grid-heading {
-//         background: var(--color-interface-softest);
-//         border-radius: var(--rounded-xsmall) var(--spacing-xsmall) 0 0;
-//     }
+    .grid-heading {
+        background: var(--color-interface-softest);
+        border-radius: var(--rounded-xsmall) var(--spacing-xsmall) 0 0;
+    }
     
 //     .grid-obsidian.grid-sticky > .grid-heading {
 //         position: sticky;
@@ -39,13 +39,13 @@
 //         z-index: 9;
 //     }
     
-//     .grid-obsidian > .grid-heading > .grid-title-heading {
-//         display: flex;
-//         flex-wrap: wrap;
-//         border-bottom: 1px solid var(--color-interface-soft);
-//         align-items: center;
-//         font-size: var(--font-size-h5);
-//     }
+    .grid-obsidian > .grid-heading > .grid-title-heading {
+        display: flex;
+        flex-wrap: wrap;
+        // border-bottom: 1px solid var(--color-interface-soft);
+        align-items: center;
+        font-size: var(--font-size-h5);
+    }
     
 //     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-title {
 //         flex-grow: 1;
@@ -132,10 +132,13 @@
 //     }
     
     .grid-column-heading {
-        display: flex;
-        font-weight: 500;
-        color: var(--theme-dark);
-        border-bottom: 1px solid var(--color-interface-soft);
+      display: flex;
+      font-weight: 500;
+      color: var(--theme-dark);
+      // border-bottom: 1px solid var(--color-interface-soft);
+    }
+    .grid-column-heading > *{
+      border-bottom: 1px solid var(--color-interface-soft);
     }
     
 //     .grid-column-header {
@@ -272,7 +275,7 @@
         display: flex;
         background-color: var(--color-interface-softest);
         transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
-        border-bottom: 1px solid var(--color-interface-soft);
+        // border-bottom: 1px solid var(--color-interface-soft);
     }
     
 //     .grid-row:hover > .grid-cell {
@@ -291,26 +294,26 @@
 //         background-color: var(--color-interface-softer);
 //     }
     
-//     .grid-cell {
-//         border-bottom: 1px solid var(--color-interface-soft);
-//         display: flex;
-//         align-items: center;
-//         padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
-//         line-height: 1.4;
-//         align-self: stretch;
-//         background-color: inherit;
-//         text-overflow: ellipsis;
-//         overflow: hidden;
-//         min-width: 120px;
-//     }
+    .grid-cell {
+        border-bottom: 1px solid var(--color-interface-soft);
+        display: flex;
+        align-items: center;
+        padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+        line-height: 1.4;
+        align-self: stretch;
+        background-color: inherit;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        min-width: 120px;
+    }
     
 //     .grid-cell.grid-columnreorder {
 //         min-width: fit-content;
 //     }
     
-//     .grid-select-field {
-//         min-width: 60px;
-//     }
+    .grid-select-field {
+        min-width: 60px;
+    }
     
 //     .grid-select-field:first-child {
 //         align-items: center;
@@ -338,12 +341,12 @@
 //         align-items: center;
 //     }
     
-//     .grid-footing {
-//         color: var(--color-interface-strongest);
-//         background-color: var(--color-interface-softest);
-//         border-radius: 0 0 var(--rounded-xsmall) var(--rounded-xsmall);
-//         overflow: hidden;
-//     }
+    .grid-footing {
+        color: var(--color-interface-strongest);
+        background-color: var(--color-interface-softest);
+        border-radius: 0 0 var(--rounded-xsmall) var(--rounded-xsmall);
+        overflow: hidden;
+    }
     
 //     .grid-paging-footer {
 //         display: flex;
@@ -575,12 +578,12 @@
       padding-right: var(--table-cell-padding-x);
     }
 
-//     .grid-row:has(.table-empty) {
-//         border-bottom: 1px solid var(--color-interface-soft);
-//     }
+    .grid-row:has(.table-empty) {
+        border-bottom: 1px solid var(--color-interface-soft);
+    }
 
-//     .grid-cell.table-empty {
-//         border-bottom: none;
-//     }
+    .grid-cell.table-empty {
+        border-bottom: none;
+    }
 }
 
