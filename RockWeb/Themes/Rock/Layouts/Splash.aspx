@@ -38,8 +38,11 @@
     <form id="form1" runat="server">
 
         <div id="content">
-            <div id="logo">
-                <asp:Literal ID="lLogoSvg" runat="server" />
+
+            <div class="logo-background">
+                <div id="logo">
+                    <asp:Literal ID="lLogoSvg" runat="server" />
+                </div>
             </div>
 
             <div id="content-box" class="clearfix">
