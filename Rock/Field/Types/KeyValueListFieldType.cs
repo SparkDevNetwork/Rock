@@ -23,7 +23,6 @@ using System.Web.UI;
 #endif
 
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -68,68 +67,13 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string privateValue )
         {
-            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
-
-            var options = GetCustomValues( privateConfigurationValues )
-                .Select( kvp => new
-                {
-                    value = kvp.Key,
-                    text = kvp.Value
-                } )
-                .ToCamelCaseJson( false, true );
-
-            publicConfigurationValues[VALUES_KEY] = options;
-
-            if ( usage != ConfigurationValueUsage.Configure )
-            {
-                publicConfigurationValues.Remove( "definedtype" );
-                publicConfigurationValues.Remove( "customvalues" );
-            }
-
-            if ( publicConfigurationValues.ContainsKey( "definedtype" ) )
-            {
-                var definedTypeId = publicConfigurationValues["definedtype"].AsIntegerOrNull();
-
-                if ( definedTypeId.HasValue )
-                {
-                    publicConfigurationValues["definedtype"] = DefinedTypeCache.Get( definedTypeId.Value )?.Guid.ToString() ?? "";
-                }
-                else
-                {
-                    publicConfigurationValues["definedtype"] = "";
-                }
-            }
-
-            return publicConfigurationValues;
+            return base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
         }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            var privateConfigurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
-
-            // Don't allow them to provide the actual value items.
-            if ( privateConfigurationValues.ContainsKey( VALUES_KEY ) )
-            {
-                privateConfigurationValues.Remove( VALUES_KEY );
-            }
-
-            // Convert the defined type value from Guid to Id.
-            if ( privateConfigurationValues.ContainsKey( "definedtype" ) )
-            {
-                var definedTypeGuid = privateConfigurationValues["definedtype"].AsGuidOrNull();
-
-                if ( definedTypeGuid.HasValue )
-                {
-                    privateConfigurationValues["definedtype"] = DefinedTypeCache.Get( definedTypeGuid.Value )?.Id.ToString() ?? "";
-                }
-                else
-                {
-                    privateConfigurationValues["definedtype"] = "";
-                }
-            }
-
-            return privateConfigurationValues;
+            return base.GetPrivateConfigurationValues( publicConfigurationValues );
         }
 
         /// <summary>
