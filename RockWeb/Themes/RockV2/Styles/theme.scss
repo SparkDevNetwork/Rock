@@ -715,6 +715,7 @@ $navbar-element-height: 40px;
 
     .nav-open & {
       z-index: 2000;
+      border-radius: 0 0 0 12px;
     }
 
     .navbar-side:first-child {
