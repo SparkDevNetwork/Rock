@@ -184,13 +184,8 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                // First collapse extra newlines and convert them to HTML BRs:
-                var cleanWarningMessage = Regex.Replace( result.WarningMessage, @"\n(\s*\n)+", "\n" ).ConvertCrLfToHtmlBr();
-                // Now, truncate it down to 500 characters and wrap the warning in a <pre>
-                cleanWarningMessage = "<pre>" + cleanWarningMessage.TruncateHtml( 500 ) + "</pre>";
-
                 // Lastly, convert it so it's safe to display in the JavaScript modal:
-                mdGridWarning.Show( JsonEncodedText.Encode( cleanWarningMessage ).ToString(), ModalAlertType.Warning );
+                mdGridWarning.Show( "Failed to parse the build script output into valid JSON.", ModalAlertType.Warning );
                 return;
             }
         }
