@@ -671,6 +671,8 @@ namespace Rock.Blocks.Crm
         {
             public static string CampusGuid = "CampusGuid";
             public static string CampusId = "CampusId";
+            public static string Campus = "Campus";
+            public static string CampusCode = "CampusCode";
         }
 
         #endregion Attribute Keys, Categories and Values
@@ -2056,6 +2058,8 @@ namespace Rock.Blocks.Crm
         {
             var campusGuid = PageParameter( PageParameterKey.CampusGuid ).AsGuidOrNull();
             var campusId = PageParameter( PageParameterKey.CampusId ).AsIntegerOrNull();
+            var campusIdKey = PageParameter( PageParameterKey.Campus );
+            var campusCode = PageParameter( PageParameterKey.CampusCode );
 
             CampusCache initialCampus = null;
 
@@ -2063,9 +2067,19 @@ namespace Rock.Blocks.Crm
             {
                 initialCampus = CampusCache.Get( campusGuid.Value );
             }
-            else if ( campusId.HasValue )
+            else if ( campusId.HasValue && !PageCache.Layout.Site.DisablePredictableIds )
             {
                 initialCampus = CampusCache.Get( campusId.Value );
+            }
+            else if ( !string.IsNullOrWhiteSpace( campusIdKey ) )
+            {
+                initialCampus = CampusCache.Get( campusIdKey, !PageCache.Layout.Site.DisablePredictableIds );
+            }
+            else if ( !string.IsNullOrWhiteSpace( campusCode ) )
+            {
+                var campuses = CampusCache.All( false );
+
+                initialCampus = campuses.Where( c => c.ShortCode.ToUpper() == campusCode.ToUpper() ).FirstOrDefault();
             }
 
             if ( initialCampus == null && this.DefaultCampusGuid != Guid.Empty )

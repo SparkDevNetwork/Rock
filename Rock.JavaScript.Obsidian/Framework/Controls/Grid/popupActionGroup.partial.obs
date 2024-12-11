@@ -1,31 +1,31 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-actions btn-group">
+    <div ref="btnGroupElement"
+         class="grid-actions btn-group">
         <button type="button"
                 class="btn btn-grid-action"
-                style="position: relative;"
-                data-toggle="dropdown">
+                @click.prevent="onGroupClick">
             <i class="fa fa-ellipsis-v fa-fw"></i>
         </button>
-        <ul class="dropdown-menu dropdown-menu-right"
-            ref="secondaryActionMenu">
-            <PopupActionButton v-for="action in props.gridActions"
-                               :action="action"
-                               :grid="grid"
-                               @click="onActionClick" />
-        </ul>
+
+        <Teleport v-if="isPopupOpen"
+                  :to="popupTarget"
+                  :disabled="!popupTarget">
+            <ul class="dropdown-menu dropdown-menu-right grid-actions-dropdown-menu"
+                :style="popupStyle">
+                <PopupActionButton v-for="action in props.gridActions"
+                                   :action="action"
+                                   :grid="grid"
+                                   @click="onActionClick" />
+            </ul>
+        </Teleport>
     </div>
 </template>
-
-<script lang="ts">
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    declare function $(element: any): any;
-</script>
 
 <script setup lang="ts">
     import PopupActionButton from "./popupActionButton.partial.obs";
     import { GridAction, IGridState } from "@Obsidian/Types/Controls/grid";
-    import { PropType, ref } from "vue";
+    import { onBeforeUnmount, PropType, ref, watch } from "vue";
 
     const props = defineProps({
         gridActions: {
@@ -36,18 +36,98 @@
         /**
          * The grid state that this action belongs to.
          */
-         grid: {
+        grid: {
             type: Object as PropType<IGridState>,
             required: true
         }
     });
 
-    const secondaryActionMenu = ref<HTMLElement | undefined>();
+    const btnGroupElement = ref<HTMLElement>();
+    const popupTarget = ref<Element>();
+    const isPopupOpen = ref(false);
+    const popupStyle = ref({});
 
-    function onActionClick(): void {
-        // Close the drop down since we are hijacking the click event.
-        if (secondaryActionMenu.value) {
-            $(secondaryActionMenu.value).dropdown("toggle");
+    /**
+     * Updates the position of the popup based on the current scroll position
+     * of the sticky header.
+     */
+    function updatePopupPosition(): void {
+        const gridElement = btnGroupElement.value?.closest(".grid-obsidian") as HTMLElement | null;
+
+        if (btnGroupElement.value && gridElement) {
+            const btnGroupRect = btnGroupElement.value.getBoundingClientRect();
+
+            popupStyle.value = {
+                right: (document.documentElement.clientWidth - btnGroupRect.right - 1) + "px",
+                top: (btnGroupRect.top + 56) + "px"
+            };
         }
+
     }
+
+    /**
+     * Called when the ellipsis button is clicked. Open or close the popup.
+     */
+    function onGroupClick(): void {
+        // If we are already open, close the popup.
+        if (isPopupOpen.value) {
+            isPopupOpen.value = false;
+            return;
+        }
+
+        updatePopupPosition();
+
+        popupTarget.value = document.fullscreenElement || document.body;
+        isPopupOpen.value = true;
+    }
+
+    /**
+     * Called when an action is clicked. Ensure the popup is closed.
+     */
+    function onActionClick(): void {
+        isPopupOpen.value = false;
+    }
+
+    /**
+     * Called whenever the mouse is clicked down anywhere on the page. This is
+     * used to automatically close the popup if the click wasn't inside the
+     * popup somewhere.
+     *
+     * @param ev The mouse event that triggered this call.
+     */
+    function onDocumentMouseDown(ev: MouseEvent): void {
+        if (ev.target && ev.target instanceof HTMLElement) {
+            if (btnGroupElement.value && btnGroupElement.value.contains(ev.target)) {
+                return;
+            }
+        }
+
+        isPopupOpen.value = false;
+    }
+
+    /**
+     * Called when the document has scrolled, update the position of the popup.
+     */
+    function onDocumentScroll(): void {
+        updatePopupPosition();
+    }
+
+    // Whenever the popup is open, register our event listeners on the
+    // whole document. When the popup closes, remove the listeners.
+    watch(isPopupOpen, () => {
+        if (isPopupOpen.value) {
+            document.addEventListener("mousedown", onDocumentMouseDown);
+            document.addEventListener("scroll", onDocumentScroll);
+        }
+        else {
+            document.removeEventListener("scroll", onDocumentScroll);
+            document.removeEventListener("mousedown", onDocumentMouseDown);
+        }
+    });
+
+    // Remove the event listeners if we get removed from the page.
+    onBeforeUnmount(() => {
+        document.removeEventListener("scroll", onDocumentScroll);
+        document.removeEventListener("mousedown", onDocumentMouseDown);
+    });
 </script>

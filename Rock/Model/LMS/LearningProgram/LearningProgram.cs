@@ -157,7 +157,7 @@ namespace Rock.Model
         public bool IsCompletionStatusTracked { get; set; }
 
         /// <summary>
-        /// Gets or sets theid of the system communication.
+        /// Gets or sets the id of the system communication.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.SystemCommunication"/> identifier.

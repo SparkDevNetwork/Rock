@@ -15,6 +15,7 @@
 // </copyright>
 //
 import { computed, defineComponent, ref, watch } from "vue";
+import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
 import RockFormField from "@Obsidian/Controls/rockFormField.obs";
@@ -23,9 +24,6 @@ import { asBoolean, asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ClientValue, ConfigurationPropertyKey, ConfigurationValueKey, ValueItem } from "./keyValueListField.partial";
 import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
-import type { ValidationRule } from "@Obsidian/Types/validationRules";
-import { normalizeRules } from "@Obsidian/ValidationRules";
-import { isNullOrWhiteSpace, containsHtmlTag } from "@Obsidian/Utility/stringUtils";
 
 function parseModelValue(modelValue: string | undefined): ClientValue[] {
     try {
@@ -40,6 +38,7 @@ export const EditComponent = defineComponent({
     name: "KeyValueListField.Edit",
 
     components: {
+        KeyValueList,
         RockFormField,
         DropDownList,
         TextBox
@@ -71,14 +70,12 @@ export const EditComponent = defineComponent({
             return providedOptions;
         });
 
-        const hasValues = computed((): boolean => valueOptions.value.length > 0);
-
         const keyPlaceholder = computed((): string => {
-            return props.configurationValues[ConfigurationValueKey.KeyPrompt] ?? "";
+            return props.configurationValues[ConfigurationValueKey.KeyPrompt]?.trimEnd() || "Key";
         });
 
         const valuePlaceholder = computed((): string => {
-            return props.configurationValues[ConfigurationValueKey.ValuePrompt] ?? "";
+            return props.configurationValues[ConfigurationValueKey.ValuePrompt]?.trimEnd() || "Value";
         });
 
         const displayValueFirst = computed((): boolean => {
@@ -95,101 +92,25 @@ export const EditComponent = defineComponent({
 
         watch(() => internalValues.value, () => {
             emit("update:modelValue", JSON.stringify(internalValues.value));
-        }, {
-            deep: true
-        });
-
-        const onAddClick = (): void => {
-            let defaultValue = "";
-
-            if (hasValues.value) {
-                defaultValue = valueOptions.value[0].value;
-            }
-
-            internalValues.value.push({ key: "", value: defaultValue });
-        };
-
-        const onRemoveClick = (index: number): void => {
-            internalValues.value.splice(index, 1);
-        };
-
-        const augmentedRules = computed((): ValidationRule[] => {
-            const rules = [] as ValidationRule[];
-
-            if (!allowHtml.value) {
-                rules.push(function (value: unknown) {
-                    const isArr = Array.isArray(value);
-                    if (isNullOrWhiteSpace(value) || (isArr && value.length === 0)) {
-                        return true;
-                    }
-
-                    if (isArr) {
-                        for (let i = 0; i < value.length; i++) {
-                            const { key: k, value: v } = value[i];
-                            if (containsHtmlTag(String(k)) || containsHtmlTag(String(v))) {
-                                return "contains invalid characters. Please make sure that your entries do not contain any angle brackets like < or >.";
-                            }
-                        }
-                    }
-
-                    return true;
-                });
-            }
-
-            return rules;
-        });
+        }, { deep: true });
 
         return {
-            augmentedRules,
             internalValues,
-            hasValues,
             displayValueFirst,
             options,
             keyPlaceholder,
             valuePlaceholder,
-            onAddClick,
-            onRemoveClick
+            allowHtml
         };
     },
 
     template: `
-<RockFormField
-    :modelValue="internalValues"
-    formGroupClasses="key-value-list"
-    name="key-value-list"
-    :rules="augmentedRules">
-    <template #default="{uniqueId}">
-        <div class="control-wrapper">
-<span :id="uniqueId" class="key-value-list">
-    <span class="key-value-rows">
-        <div v-for="(value, valueIndex) in internalValues" class="controls controls-row form-control-group">
-            <template v-if="!displayValueFirst">
-                <input v-model="value.key" class="key-value-key form-control" type="text" :placeholder="keyPlaceholder">
-
-                <select v-if="hasValues" v-model="value.value" class="form-control input-width-xl">
-                    <option v-for="option in options" :value="option.value" :key="option.value">{{ option.text }}</option>
-                </select>
-                <input v-else v-model="value.value" class="key-value-value form-control" type="text" :placeholder="valuePlaceholder">
-            </template>
-            <template v-else>
-                <select v-if="hasValues" v-model="value.value" class="form-control input-width-xl">
-                    <option v-for="option in options" :value="option.value" :key="option.value">{{ option.text }}</option>
-                </select>
-                <input v-else v-model="value.value" class="key-value-value form-control" type="text" :placeholder="valuePlaceholder">
-
-                <input v-model="value.key" class="key-value-key form-control" type="text" :placeholder="keyPlaceholder">
-            </template>
-
-            <a href="#" @click.prevent="onRemoveClick(valueIndex)" class="btn btn-sm btn-danger"><i class="fa fa-times"></i></a>
-        </div>
-    </span>
-    <div class="control-actions">
-        <a class="btn btn-action btn-square btn-xs" href="#" @click.prevent="onAddClick"><i class="fa fa-plus-circle"></i></a>
-    </div>
-</span>
-        </div>
-    </template>
-</RockFormField>
+<KeyValueList v-model="internalValues"
+    :keyPlaceholder="keyPlaceholder"
+    :valuePlaceholder="valuePlaceholder"
+    :displayValueFirst="displayValueFirst"
+    :valueOptions="options"
+    :allowHtml="allowHtml" />
 `
 });
 
@@ -299,7 +220,7 @@ export const ConfigurationComponent = defineComponent({
 
         // Watch for changes in properties that require new configuration
         // properties to be retrieved from the server.
-        watch([definedType, internalCustomValues], () => {
+        watch([definedType, internalCustomValues, keyPrompt, labelPrompt, allowHtml, displayValueFirst], () => {
             if (maybeUpdateModelValue()) {
                 emit("updateConfiguration");
             }
@@ -308,6 +229,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes in properties that only require a local UI update.
         watch(keyPrompt, () => maybeUpdateConfiguration(ConfigurationValueKey.KeyPrompt, keyPrompt.value ?? ""));
         watch(labelPrompt, () => maybeUpdateConfiguration(ConfigurationValueKey.ValuePrompt, labelPrompt.value ?? ""));
+        watch(definedType, () => maybeUpdateConfiguration(ConfigurationValueKey.DefinedType, definedType.value ?? ""));
         watch(allowHtml, () => maybeUpdateConfiguration(ConfigurationValueKey.AllowHtml, asTrueFalseOrNull(allowHtml.value) ?? "False"));
         watch(displayValueFirst, () => maybeUpdateConfiguration(ConfigurationValueKey.DisplayValueFirst, asTrueFalseOrNull(displayValueFirst.value) ?? "False"));
 

@@ -9,6 +9,7 @@
                          :multiple="false"
                          rules=""
                          onlyGroupListItems
+                         :isSortedByName="true"
                          formGroupClasses="mt-0"
                          :disabled="disabled" />
         <BaseAsyncPicker v-model="internalGroupValue"

@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -136,6 +137,12 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<PersistedDataset> GetOrderedListQueryable( IQueryable<PersistedDataset> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( p => p.Name ).ThenBy( p => p.AccessKey );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<PersistedDataset> GetGridBuilder()
         {
             return new GridBuilder<PersistedDataset>()
@@ -170,13 +177,21 @@ namespace Rock.Blocks.Cms
                 }
 
                 // Refresh the dataset and save changes
-                persistedDataset.UpdateResultData();
-                rockContext.SaveChanges();
+                var result = persistedDataset.UpdateResultData();
 
-                // Update the cache
-                PersistedDatasetCache.UpdateCachedEntity( persistedDataset.Id, EntityState.Modified );
+                if ( result.IsSuccess )
+                {
+                    rockContext.SaveChanges();
 
-                return ActionOk();
+                    // Update the cache
+                    PersistedDatasetCache.UpdateCachedEntity( persistedDataset.Id, EntityState.Modified );
+
+                    return ActionOk();
+                }
+                else
+                {
+                    return ActionBadRequest( "Failed to parse the build script output into valid JSON." );
+                }
             }
         }
 
@@ -214,8 +229,19 @@ namespace Rock.Blocks.Cms
                 maxPreviewSizeMB = Math.Max( 1, maxPreviewSizeMB );
                 var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
 
+                if ( persistedDataset.ResultData.IsNullOrWhiteSpace() )
+                {
+                    return ActionOk( new
+                    {
+                        PreviewData = "The result data for this dataset is empty, rebuild the dataset to refresh the result data.",
+                        TimeToBuildMS = persistedDataset.TimeToBuildMS
+                    } );
+                }
+
+                var preViewObject = persistedDataset.ResultData.FromJsonDynamic().ToJson( true );
+
                 // Truncate data if it exceeds max size
-                var previewData = persistedDataset.ResultData;
+                var previewData =  preViewObject.Truncate( maxPreviewSizeLength );
                 if ( previewData?.Length > maxPreviewSizeLength )
                 {
                     previewData = previewData.Substring( 0, maxPreviewSizeLength );

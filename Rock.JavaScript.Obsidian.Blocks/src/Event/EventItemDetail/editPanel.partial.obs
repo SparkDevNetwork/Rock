@@ -368,8 +368,8 @@
                 occurenceAttributesGridData.rows?.push(newRowItem);
             }
 
-            occurrenceAttribute.value = null;
             isAttributeModalOpen.value = false;
+            occurrenceAttribute.value = null;
         }
     };
 
@@ -416,6 +416,17 @@
 
         emit("update:modelValue", newValue);
     }, { deep: true });
+
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== occurrenceAttribute.value?.key);
+        }
+        else {
+            if (occurrenceAttribute.value?.key && !reservedKeyNames.value.some(k => k === occurrenceAttribute.value?.key)) {
+                reservedKeyNames.value.push(occurrenceAttribute.value.key);
+            }
+        }
+    });
 
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
