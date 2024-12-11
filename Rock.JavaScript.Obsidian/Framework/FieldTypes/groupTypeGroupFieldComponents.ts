@@ -123,7 +123,6 @@ export const ConfigurationComponent = defineComponent({
             }
         };
 
-        /** The CSS class names to be applied to the full screen wrapper. */
         const groupPickerLabel = computed((): string => {
             return props.modelValue[ConfigurationValueKey.GroupPickerLabel] ?? "Group";
         });
