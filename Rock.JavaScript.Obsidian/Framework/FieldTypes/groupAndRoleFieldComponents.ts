@@ -14,100 +14,62 @@
 // limitations under the License.
 // </copyright>
 //
-import { defineComponent, ref, watch } from "vue";
+import { computed, defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps, getFieldConfigurationProps } from "./utils";
-import { useHttp } from "@Obsidian/Utility/http";
-import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
-import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+import GroupAndRolePicker from "@Obsidian/Controls/groupAndRolePicker.obs";
 import TextBox from "@Obsidian/Controls/textBox.obs";
 import { ConfigurationValueKey, GroupAndRoleValue } from "./groupAndRoleField.partial";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { GroupRolePickerGetGroupRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/groupRolePickerGetGroupRolesOptionsBag";
-import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
-const http = useHttp();
 
 export const EditComponent = defineComponent({
     name: "GroupAndRoleField.Edit",
 
     components: {
-        DropDownList,
-        RockLabel,
-        GroupTypeGroupPicker
+        GroupAndRolePicker
     },
 
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-
-        const internalValue = ref({} as GroupAndRoleValue);
         const group = ref({} as ListItemBag);
         const groupType = ref({} as ListItemBag);
-        const groupRoleValue = ref("");
-        const roleOptions = ref([] as ListItemBag[]);
-        const groupLabel = ref("");
+        const groupRoleValue = ref({} as ListItemBag);
 
         watch(() => props.modelValue, () => {
             if (props.modelValue) {
-                internalValue.value = JSON.parse(props.modelValue || "{}");
-                group.value = internalValue.value.group;
-                groupType.value = internalValue.value.groupType;
-                groupRoleValue.value = internalValue.value.groupRole?.value ?? "";
-                roleOptions.value = internalValue.value.groupTypeRoles;
+                const internalValue = JSON.parse(props.modelValue || "{}") as GroupAndRoleValue;
+                group.value = internalValue.group;
+                groupType.value = internalValue.groupType;
+                groupRoleValue.value = internalValue.groupRole;
             }
-            groupLabel.value = props.configurationValues[ConfigurationValueKey.GroupRolePickerLabel] ?? "Group";
         }, { immediate: true });
+
+        const groupLabel = computed((): string => {
+            return props.configurationValues[ConfigurationValueKey.GroupRolePickerLabel] || "Group";
+        });
 
         watch(() => [group.value, groupType.value, groupRoleValue], () => {
 
             const newValue = {
                 groupType: groupType.value,
                 group: group.value,
-                groupRole: { value: groupRoleValue.value },
-                groupTypeRoles: roleOptions.value
+                groupRole: groupRoleValue.value
             };
             emit("update:modelValue", JSON.stringify(newValue));
         }, { deep: true });
-
-        // Watch for changes to the groupType value and get the corresponding roles
-        watch(() => groupType.value, async () => {
-            const groupTypeGuid = toGuidOrNull(groupType.value?.value);
-
-            if (groupTypeGuid && !areEqual(groupTypeGuid, emptyGuid)) {
-                const options: GroupRolePickerGetGroupRolesOptionsBag = {
-                    groupTypeGuid,
-                };
-
-                const result = await http.post<ListItemBag[]>("/api/v2/Controls/GroupRolePickerGetGroupRoles", null, options);
-
-                if (result.isSuccess && result.data) {
-                    roleOptions.value = result.data ?? [];
-                }
-                else {
-                    roleOptions.value = [];
-                }
-            }
-            else{
-                roleOptions.value = [];
-            }
-
-        });
 
         return {
             group,
             groupType,
             groupRoleValue,
-            roleOptions,
             groupLabel
         };
     },
 
     template: `
     <div>
-        <RockLabel>Default Value</RockLabel>
-        <GroupTypeGroupPicker :groupLabel="groupLabel" v-model="group" v-model:groupType="groupType" />
-        <DropDownList v-model="groupRoleValue" label="Role" :items="roleOptions" :multiple="false" />
+        <GroupAndRolePicker v-model="groupRoleValue" :groupLabel="groupLabel" v-model:groupType="groupType" v-model:group="group" />
     </div>
 `
 });
