@@ -79,6 +79,7 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int ComponentEntityTypeId { get; set; }
 
         /// <summary>

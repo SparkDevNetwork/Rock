@@ -63,6 +63,7 @@ namespace Rock.Model
         /// The entity type identifier.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? EntityTypeId { get; set; }
 
         /// <summary>

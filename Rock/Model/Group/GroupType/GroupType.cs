@@ -39,6 +39,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupType" )]
     [DataContract]
+    [EnableAttributeQualification( nameof( Id ) )]
     [Rock.SystemGuid.EntityTypeGuid( "0DD30B04-01CF-4B38-8E83-BE661E2F7286" )]
     public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
     {
