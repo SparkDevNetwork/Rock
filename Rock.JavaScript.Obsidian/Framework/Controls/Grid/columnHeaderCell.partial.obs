@@ -94,7 +94,7 @@
     const filterElement = ref<HTMLElement | null>(null);
     const filterButtonElement = ref<HTMLElement | null>(null);
     const columnHeaderElement = ref<HTMLElement | null>(null);
-    const popupTarget = ref<HTMLElement>();
+    const popupTarget = ref<Element>();
     const popupContainerStyle = ref({});
     let columnResizeObserver: ResizeObserver | undefined = window.ResizeObserver ? new ResizeObserver(onColumnResized) : undefined;
 
@@ -186,16 +186,20 @@
 
     // #region Functions
 
+    /**
+     * Updates the position of the popup based on the current scroll position
+     * of the sticky header.
+     */
     function updatePopupPosition(): void {
         const gridElement = columnHeaderElement.value?.closest(".grid-obsidian") as HTMLElement | null;
 
         if (columnHeaderElement.value && gridElement) {
-            const gridRect = gridElement.getBoundingClientRect();
             const columnRect = columnHeaderElement.value.getBoundingClientRect();
 
             popupContainerStyle.value = {
-                left: (columnRect.left - gridRect.left) + "px",
-                width: columnRect.width + "px"
+                left: columnRect.left + "px",
+                width: columnRect.width + "px",
+                top: (columnRect.top + 55) + "px"
             };
         }
     }
@@ -238,7 +242,7 @@
 
         updatePopupPosition();
 
-        popupTarget.value = columnHeaderElement.value?.closest(".grid-obsidian") ?? undefined;
+        popupTarget.value = document.fullscreenElement || document.body;
         isFilterOpen.value = true;
     };
 
@@ -280,14 +284,24 @@
         }
     };
 
-    function onColumnResized(entries: ResizeObserverEntry[]): void {
+    /**
+     * Called when the column or grid has been resized.
+     */
+    function onColumnResized(): void {
+        updatePopupPosition();
+    }
+
+    /**
+     * Called when the document has scrolled, update the position of the popup.
+     */
+    function onDocumentScroll(): void {
         updatePopupPosition();
     }
 
     // #endregion
 
-    // Whenever the filter is open, register our mouse down event listener
-    // on the whole document. When the filter closes, remove the listener.
+    // Whenever the filter is open, register out event listeners on the
+    // whole document. When the filter closes, remove the listeners.
     watch(isFilterOpen, () => {
         if (isFilterOpen.value) {
             if (columnHeaderElement.value && columnResizeObserver) {
@@ -301,6 +315,7 @@
             }
 
             document.addEventListener("mousedown", onMouseDownEvent);
+            document.addEventListener("scroll", onDocumentScroll);
 
             nextTick(() => {
                 // TODO: Make filter components do default focus.
@@ -309,6 +324,7 @@
             });
         }
         else {
+            document.removeEventListener("scroll", onDocumentScroll);
             document.removeEventListener("mousedown", onMouseDownEvent);
 
             if (columnHeaderElement.value && columnResizeObserver) {
@@ -323,8 +339,9 @@
         }
     });
 
-    // Remove the mousedown listener if we get removed from the DOM.
+    // Remove the event listeners if we get removed from the DOM.
     onBeforeUnmount(() => {
+        document.removeEventListener("scroll", onDocumentScroll);
         document.removeEventListener("mousedown", onMouseDownEvent);
 
         columnResizeObserver?.disconnect();

@@ -127,6 +127,7 @@
 .grid-heading {
     background: var(--theme-white);
     border-radius: 4px 4px 0 0;
+    z-index: 1;
 }
 
 .grid-obsidian.grid-sticky > .grid-heading {
@@ -136,7 +137,7 @@
 
 .grid-obsidian.grid-sticky .sticky-column-header {
     position: sticky;
-    top: calc(var(--sticky-element-offset) + 57px);
+    top: calc(var(--sticky-element-offset) + 56px);
     z-index: 1;
 }
 
@@ -192,9 +193,9 @@
     background-color: var(--theme-light);
 }
 
-.grid-obsidian .grid-actions-dropdown-menu {
+.grid-actions-dropdown-menu {
+    position: fixed;
     display: block;
-    top: 56px;
     margin-top: 0;
 }
 
@@ -327,14 +328,13 @@
     color: var(--color-info);
 }
 
-.grid-obsidian .grid-filter-popup-container {
-    position: absolute;
-    top: 112px;
+.grid-filter-popup-container {
+    position: fixed;
     /* 1050 matches the bootstrap dropdown menu used in other parts of the grid. */
     z-index: 1050;
 }
 
-.grid-obsidian .grid-filter-popup {
+.grid-filter-popup-container .grid-filter-popup {
     display: flex;
     flex-direction: column;
     margin-top: 1px;
@@ -353,18 +353,18 @@
     font-weight: initial;
 }
 
-.grid-obsidian .grid-filter-popup > .grid-filter-popup-content {
+.grid-filter-popup-container .grid-filter-popup > .grid-filter-popup-content {
     flex-grow: 1;
     overflow-y: auto;
 }
 
-.grid-obsidian .grid-filter-popup > .grid-filter-popup-content > .grid-filter-popup-body {
+.grid-filter-popup-container .grid-filter-popup > .grid-filter-popup-content > .grid-filter-popup-body {
     margin: 10px;
     padding: 2px;
     overflow-x: clip;
 }
 
-.grid-obsidian .grid-filter-popup > .actions {
+.grid-filter-popup-container .grid-filter-popup > .actions {
     display: flex;
     border-top: 1px solid var(--theme-light);
     background-color: #fcfcfc;
@@ -372,7 +372,7 @@
     gap: 8px;
 }
 
-.grid-column-header > .grid-filter-popup .alert {
+.grid-filter-popup-container .grid-filter-popup .alert {
     border-top: 0;
     box-shadow: none;
     padding: 8px;

@@ -11,7 +11,8 @@
         <Teleport v-if="isPopupOpen"
                   :to="popupTarget"
                   :disabled="!popupTarget">
-            <ul class="dropdown-menu dropdown-menu-right grid-actions-dropdown-menu">
+            <ul class="dropdown-menu dropdown-menu-right grid-actions-dropdown-menu"
+                :style="popupStyle">
                 <PopupActionButton v-for="action in props.gridActions"
                                    :action="action"
                                    :grid="grid"
@@ -42,8 +43,27 @@
     });
 
     const btnGroupElement = ref<HTMLElement>();
-    const popupTarget = ref<HTMLElement>();
+    const popupTarget = ref<Element>();
     const isPopupOpen = ref(false);
+    const popupStyle = ref({});
+
+    /**
+     * Updates the position of the popup based on the current scroll position
+     * of the sticky header.
+     */
+    function updatePopupPosition(): void {
+        const gridElement = btnGroupElement.value?.closest(".grid-obsidian") as HTMLElement | null;
+
+        if (btnGroupElement.value && gridElement) {
+            const btnGroupRect = btnGroupElement.value.getBoundingClientRect();
+
+            popupStyle.value = {
+                right: (document.documentElement.clientWidth - btnGroupRect.right - 1) + "px",
+                top: (btnGroupRect.top + 56) + "px"
+            };
+        }
+
+    }
 
     /**
      * Called when the ellipsis button is clicked. Open or close the popup.
@@ -55,7 +75,9 @@
             return;
         }
 
-        popupTarget.value = btnGroupElement.value?.closest(".grid-obsidian") ?? undefined;
+        updatePopupPosition();
+
+        popupTarget.value = document.fullscreenElement || document.body;
         isPopupOpen.value = true;
     }
 
@@ -73,7 +95,7 @@
      *
      * @param ev The mouse event that triggered this call.
      */
-    const onDocumentMouseDown = (ev: MouseEvent): void => {
+    function onDocumentMouseDown(ev: MouseEvent): void {
         if (ev.target && ev.target instanceof HTMLElement) {
             if (btnGroupElement.value && btnGroupElement.value.contains(ev.target)) {
                 return;
@@ -81,21 +103,31 @@
         }
 
         isPopupOpen.value = false;
-    };
+    }
 
-    // Whenever the popup is open, register our mouse down event listener
-    // on the whole document. When the popup closes, remove the listener.
+    /**
+     * Called when the document has scrolled, update the position of the popup.
+     */
+    function onDocumentScroll(): void {
+        updatePopupPosition();
+    }
+
+    // Whenever the popup is open, register our event listeners on the
+    // whole document. When the popup closes, remove the listeners.
     watch(isPopupOpen, () => {
         if (isPopupOpen.value) {
             document.addEventListener("mousedown", onDocumentMouseDown);
+            document.addEventListener("scroll", onDocumentScroll);
         }
         else {
+            document.removeEventListener("scroll", onDocumentScroll);
             document.removeEventListener("mousedown", onDocumentMouseDown);
         }
     });
 
-    // Remove the mouse down event listener if we get removed from the page.
+    // Remove the event listeners if we get removed from the page.
     onBeforeUnmount(() => {
+        document.removeEventListener("scroll", onDocumentScroll);
         document.removeEventListener("mousedown", onDocumentMouseDown);
     });
 </script>
