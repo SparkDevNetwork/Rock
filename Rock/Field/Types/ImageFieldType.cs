@@ -59,20 +59,38 @@ namespace Rock.Field.Types
         /// </summary>
         protected const string DefaultImageTagTemplate = "<img src='{{ ImageUrl }}' class='img-responsive' />";
 
+        /// <summary>
+        /// The image URL generated from the image guid.
+        /// </summary>
+        protected const string IMAGE_URL = "imageUrl";
+
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
         {
-            // Create a new dictionary to protect against the passed dictionary
-            // being changed after we are called.
-            return new Dictionary<string, string>( privateConfigurationValues );
+            var publicValues = new Dictionary<string, string>( base.GetPublicConfigurationValues( privateConfigurationValues, usage, value ) );
+
+            if ( publicValues.ContainsKey( IMG_TAG_TEMPLATE ) )
+            {
+                var imageTagTemplate = publicValues[IMG_TAG_TEMPLATE];
+                if ( imageTagTemplate.IsNullOrWhiteSpace() )
+                {
+                    publicValues[IMG_TAG_TEMPLATE] = DefaultImageTagTemplate;
+                }
+            }
+
+            publicValues[IMAGE_URL] = FileUrlHelper.GetImageUrl( value.AsGuid() );
+
+            return publicValues;
         }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            // Create a new dictionary to protect against the passed dictionary
-            // being changed after we are called.
-            return new Dictionary<string, string>( publicConfigurationValues );
+            var privateValues = new Dictionary<string, string>( base.GetPrivateConfigurationValues( publicConfigurationValues ) );
+
+            privateValues.Remove( IMAGE_URL );
+
+            return privateValues;
         }
 
         #endregion
