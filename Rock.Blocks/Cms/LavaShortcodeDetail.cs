@@ -576,10 +576,7 @@ namespace Rock.Blocks.Cms
 
                 if ( isNew )
                 {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.LavaShortcodeId] = entity.IdKey
-                    } ) );
+                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
                 }
 
                 // Ensure navigation properties will work now.
