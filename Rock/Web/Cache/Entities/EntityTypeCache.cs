@@ -513,10 +513,20 @@ namespace Rock.Web.Cache
                 return new List<string>();
             }
 
-            return type.GetProperties()
-                .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null )
+            var qualifiedProperties = type.GetProperties()
+                .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null
+                    && p.DeclaringType == type )
                 .Select( p => p.Name )
                 .ToList();
+
+            var typeQualificationAttribute = type.GetCustomAttribute<EnableAttributeQualificationAttribute>();
+
+            if ( typeQualificationAttribute != null )
+            {
+                qualifiedProperties = qualifiedProperties.Union( typeQualificationAttribute.PropertyNames ).ToList();
+            }
+
+            return qualifiedProperties;
         }
 
         /// <summary>

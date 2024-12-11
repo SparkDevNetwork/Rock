@@ -974,12 +974,20 @@ AS
             var additionalJoins = string.Empty;
 
             // Find all properties that have been decorated as valid for use
-            // with attribute qualification.
+            // with attribute qualification. We can't use cache yet because
+            // it might not be ready for use.
             var qualifierColumns = type.GetProperties()
                 .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null
                     && p.DeclaringType == type )
                 .Select( p => p.Name )
                 .ToList();
+
+            var typeQualificationAttribute = type.GetCustomAttribute<EnableAttributeQualificationAttribute>();
+
+            if ( typeQualificationAttribute != null )
+            {
+                qualifierColumns = qualifierColumns.Union( typeQualificationAttribute.PropertyNames ).ToList();
+            }
 
             // If we found any then construct an additional where clause to be
             // used to limit to those qualifications.
