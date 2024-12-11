@@ -216,17 +216,24 @@ namespace RockWeb.Blocks.Cms
 
                 var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
 
-                var preViewObject = persistedDataset.ResultData.FromJsonDynamic().ToJson( true );
-
-                lPreviewJson.Text = ( string.Format( "<pre>{0}</pre>", preViewObject ) ).Truncate( maxPreviewSizeLength );
-
-                nbPreviewMessage.Visible = false;
-                nbPreviewMaxLengthWarning.Visible = false;
-
-                if ( preViewObject.Length > maxPreviewSizeLength )
+                if ( persistedDataset.ResultData.IsNullOrWhiteSpace() )
                 {
-                    nbPreviewMaxLengthWarning.Text = string.Format( "JSON size is {0}. Showing first {1}.", preViewObject.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() );
-                    nbPreviewMaxLengthWarning.Visible = true;
+                    lPreviewJson.Text = ( string.Format( "<pre>{0}</pre>", "The result data for this dataset is empty, rebuild the dataset to refresh the result data." ) );
+                }
+                else
+                {
+                    var preViewObject = persistedDataset.ResultData.FromJsonDynamic().ToJson( true );
+
+                    lPreviewJson.Text = ( string.Format( "<pre>{0}</pre>", preViewObject ) ).Truncate( maxPreviewSizeLength );
+
+                    nbPreviewMessage.Visible = false;
+                    nbPreviewMaxLengthWarning.Visible = false;
+
+                    if ( preViewObject.Length > maxPreviewSizeLength )
+                    {
+                        nbPreviewMaxLengthWarning.Text = string.Format( "JSON size is {0}. Showing first {1}.", preViewObject.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() );
+                        nbPreviewMaxLengthWarning.Visible = true;
+                    }
                 }
 
                 nbPreviewMessage.Text = string.Format( "Time to build Dataset: {0:F0}ms", persistedDataset.TimeToBuildMS );
