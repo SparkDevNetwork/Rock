@@ -832,7 +832,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _ddlState );
             _ddlState.ID = "ddlState";
             _ddlState.DataValueField = "Id";
-            _ddlState.CssClass = "form-control js-state";
+            _ddlState.CssClass = "form-control js-address-field js-state";
 
             _tbPostalCode = new TextBox();
             Controls.Add( _tbPostalCode );
@@ -984,6 +984,7 @@ namespace Rock.Web.UI.Controls
                 _tbCity.CssClass += ( _CityRequirement == DataEntryRequirementLevelSpecifier.Required ? " required" : string.Empty );
                 _tbCounty.CssClass += ( _LocalityRequirement == DataEntryRequirementLevelSpecifier.Required ? " required" : string.Empty );
                 _tbState.CssClass += ( _StateRequirement == DataEntryRequirementLevelSpecifier.Required ? " required" : string.Empty );
+                _ddlState.CssClass += ( _StateRequirement == DataEntryRequirementLevelSpecifier.Required ? " required" : string.Empty );
                 _tbPostalCode.CssClass += ( _PostalCodeRequirement == DataEntryRequirementLevelSpecifier.Required ? " required" : string.Empty );
             }
         }
@@ -1411,9 +1412,10 @@ namespace Rock.Web.UI.Controls
 
                 showStateList = stateList.Any();
 
-                if ( showStateList && this.PartialAddressIsAllowed )
+                var useDefaultState = SystemSettings.GetValue( SystemKey.SystemSetting.ENABLE_DEFAULT_ADDRESS_STATE_SELECTION ).AsBoolean();
+                if ( ( showStateList && this.PartialAddressIsAllowed ) || !useDefaultState )
                 {
-                    // If partial addresses are allowed, add an empty entry to the state list.
+                    // If partial addresses are allowed (or default state selection is disabled), add an empty entry to the state list.
                     stateList.Insert( 0, new StateListSelectionItem { Id = string.Empty, Value = string.Empty } );
                 }
             }

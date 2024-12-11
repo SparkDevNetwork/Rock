@@ -390,5 +390,10 @@ namespace Rock.SystemKey
         /// Whether the giving month should use Sunday date for the analytics calendar dimension.
         /// </summary>
         public const string ANALYTICS_CALENDAR_DIMENSION_GIVING_MONTH_USE_SUNDAY_DATE = "core_AnalyticsCalendarDimensionGivingMonthUseSundayDate";
+
+        /// <summary>
+        /// Whether the Organization's state should be selected by default.
+        /// </summary>
+        public const string ENABLE_DEFAULT_ADDRESS_STATE_SELECTION = "core_EnableDefaultAddressStateSelection";
     }
 }

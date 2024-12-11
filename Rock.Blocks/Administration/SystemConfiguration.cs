@@ -157,7 +157,8 @@ namespace Rock.Blocks.Administration
                 CaptchaSiteKey = Rock.Web.SystemSettings.GetValue( SystemSetting.CAPTCHA_SITE_KEY ),
                 EthnicityLabel = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_ETHNICITY_LABEL ),
                 RaceLabel = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSON_RACE_LABEL ),
-                SmsOptInMessage = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL )
+                SmsOptInMessage = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL ),
+                EnableDefaultAddressStateSelection = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ENABLE_DEFAULT_ADDRESS_STATE_SELECTION ).AsBoolean()
             };
         }
 
@@ -595,6 +596,8 @@ namespace Rock.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.CAPTCHA_SECRET_KEY, bag.CaptchaSecretKey );
 
             Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL, bag.SmsOptInMessage );
+
+            Rock.Web.SystemSettings.SetValue( Rock.SystemKey.SystemSetting.ENABLE_DEFAULT_ADDRESS_STATE_SELECTION, bag.EnableDefaultAddressStateSelection.ToString() );
 
             return ActionOk( GetSuccessResponseBag( "Settings saved successfully." ) );
         }
