@@ -95,8 +95,8 @@ body.navbar-side-open {
     .page-header {
       padding:        var(--spacing-medium) var(--spacing-large);
       margin:         0 0 24px 0;
-      box-shadow:     0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
-      border-radius:  4px;
+      box-shadow:     var(--box-shadow);
+      border-radius:  var(--rounded-medium);
     }
   }
 
@@ -116,8 +116,9 @@ body.navbar-side-open {
   background-color: var(--color-interface-softest);
   margin: 24px 0 8px;
   padding: 16px 24px;
-  box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
-  border-radius: 4px;
+  box-shadow: var(--box-shadow);
+  border-radius: var(--rounded-medium);
+  border: 1px solid var(--color-interface-soft);
 
   p {
     margin: 0;
@@ -181,7 +182,8 @@ $navbar-element-height: 40px;
   // =============
 
   @media (min-width: $screen-medium) {
-    padding-top: $navbar-top-height;
+    margin-top: $navbar-top-height;
+    height: calc(100vh - 80px);
   }
 
 }
@@ -504,7 +506,7 @@ $navbar-element-height: 40px;
       &.open {
         .nav-childpages {
           display: inline-block;
-          box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+          box-shadow: var(--box-shadow);
         }
       }
 
@@ -668,7 +670,7 @@ $navbar-element-height: 40px;
       }
 
       // &:last-child {
-        // margin-bottom: 72px; // dont know the margin botton is here in the first place why???????
+        // margin-bottom: 72px; // don't know the margin button is here in the first place why???????
       // }
     }
 
@@ -765,7 +767,7 @@ $navbar-element-height: 40px;
 
     .nav-childpages {
       top: 0;
-      left: calc($navbarside-width + 9px);
+      left: calc($navbarside-width + 8px);
       width: 280px;
       border-radius: 0 14px 14px 0;
       margin-top:     var(--spacing-xsmall);

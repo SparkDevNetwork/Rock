@@ -13,12 +13,12 @@
   --base-interface-softer:    #f1f1f8;
   --base-interface-softest:   #FFFFFF;
 
-  --base-critical:    #FF8C3D;
+  --base-critical:    #ee7725;
   --base-danger:      #D70015;
   --base-info:        #007AFF;
   --base-success:     #248A3D;
 
-  --base-primary:     #EE7725;
+  --base-primary:     #FF8C3D;
   --base-warning:     #E58600;
   --base-link:        #006DCC;
   --base-secondary:   #83758F;
@@ -208,6 +208,8 @@
   --adminbar-bg:              #45474c;
   --modal-backdrop:           rgba(94, 94, 94, 0.6);
 
+  --box-shadow:               0 0 1px 0 rgba(0, 0, 0, 0.03), 
+                              0 1px 3px 0 rgba(0, 0, 0, 0.08);
   --dropdown-box-shadow:      0 4px 8px 0 rgba(0,0,0,.1);
   --input-focus-box-shadow:   0 0 0 2px var(--color-primary-tint);
 
