@@ -327,6 +327,15 @@
         if (result.isSuccess && result.data) {
             courseRequirements.value.push(result.data);
             courseRequirements.value = Array.from(courseRequirements.value);
+
+            // Remove the added course from the list of options.
+            const indexOfAddedCourse = courseOptions.value.findIndex(c => c.value === requiredCourse.value);
+            courseOptions.value.splice(indexOfAddedCourse, 1);
+
+            // Clear the modal selections in case another item will be added.
+            requiredCourse.value = "";
+            addRequirementType.value = undefined;
+
             showAddCourseRequirementModal.value = false;
         }
     }

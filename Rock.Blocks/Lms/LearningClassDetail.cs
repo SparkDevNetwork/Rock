@@ -415,9 +415,24 @@ namespace Rock.Blocks.Lms
                 var isOnDemandLearning = program.ConfigurationMode == ConfigurationMode.OnDemandLearning;
                 var defaultLearningSemester = isOnDemandLearning ? learningProgramService.GetDefaultSemester( program.Id ) : null;
 
+                /*
+                    12/12/2024 - JC
+
+                    We must load the parent LearningCourse for new records.
+                    When the authorization is checked the LearningCourse (the ParentAuthority)
+                    might be checked for approving/denying access (see LearningClass.IsAuthorized).
+
+                    Reason: ParentAuthority (LearningCourse) might be checked for authorization.
+                */
+                var course = new LearningCourseService( RockContext ).Get(
+                    PageParameter( PageParameterKey.LearningCourseId ),
+                    !this.PageCache.Layout.Site.DisablePredictableIds );
+
                 return new LearningClass
                 {
                     Id = 0,
+                    LearningCourse = course,
+                    LearningCourseId = course.Id,
                     Guid = Guid.Empty,
                     LearningSemester = defaultLearningSemester,
                     LearningSemesterId = defaultLearningSemester?.Id,
@@ -1020,7 +1035,7 @@ namespace Rock.Blocks.Lms
             var gridBuilder = new GridBuilder<LearningParticipant>()
                 .AddTextField( "idKey", p => p.IdKey )
                 .AddPersonField( "name", p => p.Person )
-                .AddField( "currentGradePercent", p => canViewGrades ? (decimal?)Math.Round( p.LearningGradePercent, 1 ) : null )
+                .AddField( "currentGradePercent", p => canViewGrades ? ( decimal? ) Math.Round( p.LearningGradePercent, 1 ) : null )
                 .AddField( "currentGrade", p => canViewGrades ? p.LearningGradingSystemScale?.Name : null )
                 .AddTextField( "note", p => p.Note )
                 .AddTextField( "role", p => p.GroupRole.Name )

@@ -706,7 +706,7 @@ namespace Rock.Blocks.Core
         }
 
         /// <summary>
-        /// Gets a list of Categories that are direct children of specified category identifer.
+        /// Gets a list of Categories that are direct children of specified category identifier.
         /// </summary>
         /// <returns>A list of categories.</returns>
         [BlockAction]

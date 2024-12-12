@@ -21,10 +21,9 @@ using System.Linq;
 
 using Rock.Data;
 using Rock.Enums.Lms;
+using Rock.Lava;
 using Rock.Utility;
-using Rock.ViewModels.Blocks.Lms.LearningClassDetail;
 using Rock.ViewModels.Blocks.Lms.LearningCourseRequirement;
-using Rock.ViewModels.Utility;
 
 using WebGrease.Css.Extensions;
 
@@ -56,49 +55,85 @@ namespace Rock.Model
         /// <param name="publicOnly"><c>true</c> to include <see cref="LearningClass"/> records whose IsPublic property is true; <c>false</c> to include regardless of IsPublic.</param>
         /// <param name="semesterStartFrom">Optional filter for the next session Semester Start. Only Start Dates greater than this date will be included.</param>
         /// <param name="semesterStartTo">Optional filter for the next session Semester Start. Only Start Dates less than this date will be included.</param>
-        /// <returns>A <see cref="PublicLearningCourseDetailBag"/> containing the data necessary for rendering the details.</returns>
-        public PublicLearningCourseDetailBag GetPublicCourseDetails( int courseId, Person person, bool publicOnly = true, DateTime? semesterStartFrom = null, DateTime? semesterStartTo = null )
+        /// <returns>A <see cref="PublicLearningCourseBag"/> containing the data necessary for rendering the course details.</returns>
+        public PublicLearningCourseBag GetPublicCourseDetails( int courseId, Person person, bool publicOnly = true, DateTime? semesterStartFrom = null, DateTime? semesterStartTo = null )
         {
             var rockContext = ( RockContext ) Context;
             var participantService = new LearningParticipantService( rockContext );
             var hasPersonId = person?.Id.ToIntSafe() > 0;
-
             var now = RockDateTime.Now;
+
+            var orderedPersonCompletions =
+                !hasPersonId ?
+                default :
+                new LearningParticipantService( rockContext )
+                .GetClasses( person.Id )
+                .AsNoTracking()
+                // If the student has taken the class multiple times take in this order:
+                // 'Pass' - 'Incomplete' - 'Fail'.
+                .OrderBy( p =>
+                            LearningCompletionStatus.Pass == p.LearningCompletionStatus ? 0 :
+                            LearningCompletionStatus.Incomplete == p.LearningCompletionStatus ? 1 :
+                            2 // Fail
+                        );
+
             var course = Queryable()
                 .AsNoTracking()
                 .Include( c => c.ImageBinaryFile )
                 .Include( c => c.LearningProgram )
+                .Include( c => c.LearningProgram.ImageBinaryFile )
                 .Include( c => c.Category )
                 .Include( c => c.LearningCourseRequirements )
                 .Include( c => c.LearningClasses )
                 .Where( c => c.IsActive && c.Id == courseId )
                 .Where( c => !publicOnly || c.IsPublic )
-                .Select( c => new PublicLearningCourseDetailBag
+                .Select( c => new PublicLearningCourseBag
                 {
-                    Entity = c,
+                    AllowHistoricalAccess = c.AllowHistoricalAccess,
                     Category = c.Category.Name,
                     CategoryColor = c.Category.HighlightColor,
+                    CourseCode = c.CourseCode,
                     CourseRequirements = c.LearningCourseRequirements.ToList(),
+                    Credits = c.Credits,
+                    Description = c.Description,
+                    Id = c.Id,
                     ImageFileGuid = c.ImageBinaryFile.Guid,
-                    Program = c.LearningProgram
+
+                    // Get the person's completion status for this course.
+                    LearningCompletionStatus = !hasPersonId ?
+                        null :
+                        ( LearningCompletionStatus? ) orderedPersonCompletions
+                        .FirstOrDefault( p => p.LearningClass.LearningCourseId == c.Id )
+                        .LearningCompletionStatus,
+                    ProgramInfo = new LearningProgramService.PublicLearningProgramBag
+                    {
+                        Id = c.LearningProgramId,
+                        PublicName = c.LearningProgram.PublicName,
+                        Summary = c.LearningProgram.Summary,
+                        Category = c.LearningProgram.Category.Name,
+                        CategoryColor = c.LearningProgram.Category.HighlightColor,
+                        ConfigurationMode = c.LearningProgram.ConfigurationMode,
+                        ImageFileGuid = c.LearningProgram.ImageBinaryFile.Guid
+                    },
+                    PublicName = c.PublicName,
+                    Order = c.Order,
+                    Summary = c.Summary
                 } )
                 .FirstOrDefault();
 
             if ( course == null )
             {
                 // This can happen if a course is still being configured.
-                return new PublicLearningCourseDetailBag
-                {
-                    CourseRequirements = new List<LearningCourseRequirement>(),
-                    Entity = new LearningCourse(),
-                    Semesters = new List<PublicLearningSemesterBag>(),
-                    UnmetPrerequisites = new List<LearningCourseRequirement>()
-                };
+                return default;
             }
 
+            course.IdKey = IdHasher.Instance.GetHash( course.Id );
+            course.ProgramInfo.IdKey = IdHasher.Instance.GetHash( course.ProgramInfo.Id );
+
             // Get the available classes
-            // Include only the active classes (and optionally public only) -
-            // Ensure only classes that are under their 'MaxStudents' are included.
+            // Include only the active classes (and optionally public only) 
+            // Include courses that have exceeded their max student count
+            // (in case the Lava Template wants to specially handle requests to be added).
             var classesQuery = new LearningClassService( rockContext )
                 .Queryable()
                 .AsNoTracking()
@@ -108,19 +143,43 @@ namespace Rock.Model
                 .Include( c => c.Schedule )
                 .Include( c => c.Campus )
                 .Where( c => c.LearningCourseId == courseId )
-                .Where( c => c.IsActive && ( !publicOnly || c.IsPublic ) )
-                .Where( c => !c.LearningCourse.MaxStudents.HasValue || c.LearningParticipants.Count( p => !p.GroupRole.IsLeader ) < c.LearningCourse.MaxStudents );
+                .Where( c => c.IsActive && ( !publicOnly || c.IsPublic ) );
+
+            /*
+	            12/12/2024 - JC
+
+	            If the individual is currently enrolled,
+                but enrollment is closed - still include
+                their class as they'd have no way to access their course-work.
+
+	            Reason: Maintain access to enrolled courses after enrollment closes.
+            */
+            // If the individual is enrolled include their class;
+            // otherwise restrict to only classes that are still available for enrollment.
+            if ( hasPersonId )
+            {
+                classesQuery = classesQuery.Where( c =>
+                    !c.LearningSemester.EnrollmentCloseDate.HasValue
+                    || c.LearningSemester.EnrollmentCloseDate >= now
+                    || c.LearningParticipants.Any( p => p.PersonId == person.Id ) );
+            }
+            else
+            {
+                classesQuery = classesQuery.Where( c =>
+                    !c.LearningSemester.EnrollmentCloseDate.HasValue
+                    || c.LearningSemester.EnrollmentCloseDate >= now );
+            }
 
             if ( semesterStartFrom.HasValue )
             {
                 classesQuery = classesQuery
-                    .Where( c => c.LearningSemester.StartDate >= semesterStartFrom.Value );
+                    .Where( c => c.LearningSemester.StartDate.HasValue && c.LearningSemester.StartDate >= semesterStartFrom.Value );
             }
 
             if ( semesterStartTo.HasValue )
             {
                 classesQuery = classesQuery
-                    .Where( c => c.LearningSemester.StartDate <= semesterStartTo.Value );
+                    .Where( c => c.LearningSemester.StartDate.HasValue && c.LearningSemester.StartDate <= semesterStartTo.Value );
             }
 
             var classes = classesQuery.ToList();
@@ -132,19 +191,31 @@ namespace Rock.Model
                 .DistinctBy( s => s.Id )
                 .ToList()
                 .OrderBy( s => s.StartDate )
-                .Select( s => new PublicLearningSemesterBag {
-                    Entity = s,
+                .Select( s => new PublicLearningSemesterBag
+                {
+                    Id = s.Id,
+                    StartDate = s.StartDate,
+                    EndDate = s.EndDate,
+                    EnrollmentCloseDate = s.EnrollmentCloseDate,
                     AvailableClasses = classes
                         .Where( c => c.LearningSemesterId == s.Id )
-                        .Select( c => new PublicLearningClassDetailBag
+                        .Select( c => new PublicLearningClassBag
                         {
-                            Entity = c
+                            Campus = c.Campus,
+                            GradingSystem = c.LearningGradingSystem,
+                            Id = c.Id,
+                            Location = c.GroupLocations.FirstOrDefault(),
+                            Order = c.Order,
+                            Schedule = c.Schedule
                         } )
                         .ToList()
                 } )
                 .ToList();
 
-            var hasActiveSemesters = course.Semesters != null;
+            if ( hasPersonId )
+            {
+                course.UnmetPrerequisites = GetUnmetCourseRequirements( person.Id, course.CourseRequirements );
+            }
 
             // Get all the facilitators and this person's participant records in one query.
             var classIds = classes.Select( c => c.Id );
@@ -154,50 +225,50 @@ namespace Rock.Model
                 .Where( p => classIds.Contains( p.LearningClassId ) )
                 .AreFacilitatorsOrPerson( person?.Id );
 
-            if ( hasPersonId )
+            foreach ( var semester in course?.Semesters )
             {
-                course.UnmetPrerequisites = GetUnmetCourseRequirements( person.Id, course.CourseRequirements );
+                semester.IdKey = IdHasher.Instance.GetHash( semester.Id );
 
-                course.CanShowHistoricalAccess = course.AllowHistoricalAccess && hasActiveSemesters;
-            }
-
-            foreach ( var semester in course.Semesters )
-            {
                 foreach ( var availableClass in semester.AvailableClasses )
                 {
+                    var classEntity = classes.FirstOrDefault( c => c.Id == availableClass.Id );
+                    availableClass.IdKey = classEntity.IdKey;
+
                     if ( hasPersonId )
                     {
-                        availableClass.CanEnroll = participantService.CanEnroll( availableClass.Entity, person, course.UnmetPrerequisites, out var errorKey );
+                        availableClass.CanEnroll = participantService.CanEnroll( classEntity, person, course.UnmetPrerequisites, out var errorKey );
                         availableClass.EnrollmentErrorKey = errorKey;
+
+                        // Set the IsEnrolled flags for both the semester and class.
+                        var isEnrolledInClass = errorKey.Equals( "already_enrolled", StringComparison.OrdinalIgnoreCase );
+                        availableClass.IsEnrolled = isEnrolledInClass;
+                        semester.IsEnrolled = semester.IsEnrolled || isEnrolledInClass;
 
                         availableClass.StudentParticipant = facilitatorsAndPerson
                             .AreStudents()
-                            .FirstOrDefault( p => p.LearningClassId == availableClass.Entity.Id && p.PersonId == person.Id );
+                            .FirstOrDefault( p => p.LearningClassId == classEntity.Id && p.PersonId == person.Id );
                     }
 
                     var facilitatorPersonIds = facilitatorsAndPerson
                         .AreFacilitators()
-                        .Where( p => p.LearningClassId == availableClass.Entity.Id )
+                        .Where( p => p.LearningClassId == classEntity.Id )
                         .Select( p => p.PersonId )
                         .ToArray();
 
-                    availableClass.Facilitators = participantService.GetFacilitatorBags( availableClass.Entity.Id, facilitatorPersonIds )
-                        .Select( p => new LearningClassFacilitatorBag
+                    availableClass.Facilitators = participantService.GetFacilitatorBags( classEntity.Id, facilitatorPersonIds )
+                        .Select( p => new PublicFacilitatorBag
                         {
-                            IdKey = p.IdKey,
-                            FacilitatorName = p.Name,
-                            FacilitatorRole = p.RoleName,
-                            Facilitator = new ListItemBag
-                            {
-                                Value = p.Guid.ToString(),
-                                Text = p.Name
-                            }
+                            ParticipantIdKey = p.IdKey,
+                            ParticipantId = IdHasher.Instance.GetId( p.IdKey ).ToIntSafe(),
+                            Name = p.Name,
+                            Role = p.RoleName,
+                            Email = p.Email
                         } )
                         .ToList();
                 }
 
                 // By default sort the classes by the campus name.
-                semester.AvailableClasses = semester.AvailableClasses.OrderBy( c => c.Campus?.Name ).ToList();
+                semester.AvailableClasses = semester.AvailableClasses.OrderBy( c => c.Order ).ToList();
             }
 
             return course;
@@ -232,58 +303,90 @@ namespace Rock.Model
 
             // Get all Semesters for the program.
             // Include the active (optionally public only) classes for joining to the Course.
-            // Ensure only classes that are under their 'MaxStudents' are included.
+            // Include courses that have exceeded their max student count
+            // (in case the Lava Template wants to specially handle requests to be added).
             var semesters = new LearningClassService( rockContext )
                 .Queryable()
                 .AsNoTracking()
                 .Include( c => c.LearningSemester )
+                .Include( c => c.LearningSemester.LearningClasses )
                 .Where( c => c.LearningSemester.LearningProgramId == programId )
                 .Where( c => ( c.IsPublic || !publicOnly ) && c.IsActive )
-                .Where( c => !c.LearningCourse.MaxStudents.HasValue || c.LearningParticipants.Count( p => !p.GroupRole.IsLeader ) < c.LearningCourse.MaxStudents )
                 .Select( c => c.LearningSemester )
-                .Where( s =>
-                    ( s.EnrollmentCloseDate == null || s.EnrollmentCloseDate >= now ) &&
-                    s.StartDate >= now &&
-                    ( !semesterStartFrom.HasValue || s.StartDate >= semesterStartFrom.Value ) &&
-                    ( !semesterStartTo.HasValue || s.StartDate <= semesterStartTo.Value )
-                    );
+                .Where( s => s.LearningProgramId == programId );
+
+            if ( semesterStartFrom.HasValue )
+            {
+                semesters = semesters
+                    .Where( s => s.StartDate.HasValue && s.StartDate >= semesterStartFrom.Value );
+            }
+
+            if ( semesterStartTo.HasValue )
+            {
+                semesters = semesters
+                   .Where( s => s.StartDate.HasValue && s.StartDate <= semesterStartTo.Value );
+            }
 
             var unmetPrerequisiteTypes = new List<RequirementType> { RequirementType.Prerequisite, RequirementType.Equivalent };
 
             var courses = Queryable()
+                .AsNoTracking()
                 .Include( c => c.ImageBinaryFile )
                 .Include( c => c.LearningProgram )
+                .Include( c => c.LearningProgram.Category )
+                .Include( c => c.LearningProgram.ImageBinaryFile )
+                .Include( c => c.LearningClasses )
                 .Include( c => c.Category )
                 .Include( c => c.LearningCourseRequirements )
                 .Where( c =>
                     c.IsActive
                     && c.LearningProgramId == programId
                     && ( c.IsPublic || !publicOnly ) )
+                .ToList()
+                .OrderBy( c => c.Order )
                 .Select( c => new PublicLearningCourseBag
                 {
-                    Entity = c,
-                    Category = c.Category.Name,
-                    CategoryColor = c.Category.HighlightColor,
-                    ImageFileGuid = c.ImageBinaryFile.Guid,
+                    AllowHistoricalAccess = c.AllowHistoricalAccess,
+                    Category = c.Category?.Name,
+                    CategoryColor = c.Category?.HighlightColor,
+                    CourseCode = c.CourseCode,
+                    CourseRequirements = c.LearningCourseRequirements?.ToList() ?? default,
+                    Credits = c.Credits,
+                    Description = c.Description,
+                    Id = c.Id,
+                    ImageFileGuid = c.ImageBinaryFile?.Guid,
 
                     // Get the person's completion status for this course.
                     LearningCompletionStatus = !personId.HasValue ?
                         null :
-                        ( LearningCompletionStatus? ) orderedPersonCompletions
-                        .FirstOrDefault( p => p.LearningClass.LearningCourseId == c.Id )
+                        orderedPersonCompletions
+                        .FirstOrDefault( p => p.LearningClass.LearningCourseId == c.Id )?
                         .LearningCompletionStatus,
-
-                    Semesters = semesters
-                        .Where( s => s.LearningClasses.Any( c2 => c2.LearningCourseId == c.Id ) )
-                        .ToList()
+                    ProgramInfo = new LearningProgramService.PublicLearningProgramBag
+                    {
+                        Id = c.LearningProgramId,
+                        PublicName = c.LearningProgram?.PublicName,
+                        Summary = c.LearningProgram?.Summary,
+                        Category = c.LearningProgram?.Category?.Name,
+                        CategoryColor = c.LearningProgram?.Category?.HighlightColor,
+                        ConfigurationMode = c.LearningProgram?.ConfigurationMode ?? ConfigurationMode.AcademicCalendar,
+                        ImageFileGuid = c.LearningProgram?.ImageBinaryFile?.Guid
+                    },
+                    PublicName = c.PublicName,
+                    Order = c.Order,
+                    Semesters = semesters.Where( s => s.LearningClasses.Any( c2 => c2.LearningCourseId == c.Id ) )
                         .Select( s => new PublicLearningSemesterBag
                         {
-                            Entity = s
+                            Id = s.Id,
+                            StartDate = s.StartDate,
+                            EndDate = s.EndDate,
+                            EnrollmentCloseDate = s.EnrollmentCloseDate
                         } )
                         .ToList(),
+                    Summary = c.Summary,
 
                     // Only Prerequisites/Equivalents where the course completions for the student aren't 'Passed'.
-                    UnmetPrerequisites = c.LearningCourseRequirements
+                    UnmetPrerequisites = c.LearningCourseRequirements?
                         .Where( r =>
                             unmetPrerequisiteTypes.Contains( r.RequirementType ) &&
                             (
@@ -291,27 +394,37 @@ namespace Rock.Model
                                 || !orderedPersonCompletions.Any( comp =>
                                 comp.LearningCompletionStatus == LearningCompletionStatus.Pass &&
                                 comp.LearningClass.LearningCourseId == r.RequiredLearningCourseId ) ) )
-                        .ToList()
+                        .ToList() ?? default
                 } )
-                .ToList()
-                .OrderBy( c => c.Entity.Order )
-                .ThenBy( c => c.Entity.Id );
+                .ToList();
 
-            if ( courses.Any( c => c.Entity.LearningCourseRequirements.Any() ) )
+            // Set the IdKeys for the entities.
+            foreach ( var course in courses )
+            {
+                course.ProgramInfo.IdKey = IdHasher.Instance.GetHash( course.ProgramInfo.Id );
+                course.IdKey = IdHasher.Instance.GetHash( course.Id );
+
+                foreach ( var s in course.Semesters )
+                {
+                    s.IdKey = IdHasher.Instance.GetHash( s.Id );
+                }
+            }
+
+            if ( courses.Any( c => c.CourseRequirements.Any() ) )
             {
                 // Get the required courses in a single query.
-                var requiredCourseIds = courses.SelectMany( c => c.Entity.LearningCourseRequirements.Select( r => r.RequiredLearningCourseId ) );
+                var requiredCourseIds = courses.SelectMany( c => c.CourseRequirements.Select( r => r.RequiredLearningCourseId ) );
                 var requiredCourses = Queryable().Where( c => requiredCourseIds.Contains( c.Id ) );
 
                 // Then match them up based on the course id of the required course.
                 foreach ( var course in courses )
                 {
-                    if ( !course.Entity.LearningCourseRequirements.Any() )
+                    if ( !course.CourseRequirements.Any() )
                     {
                         continue;
                     }
 
-                    course.Entity.LearningCourseRequirements.ForEach( cr =>
+                    course.CourseRequirements.ForEach( cr =>
                         cr.RequiredLearningCourse =
                             requiredCourses.FirstOrDefault( r => r.Id == cr.RequiredLearningCourseId ) );
                 }
@@ -362,20 +475,15 @@ namespace Rock.Model
             return new List<LearningCourseRequirement>();
         }
 
-        #region Nested Classes
+        #region Nested Classes for Lava
 
         /// <summary>
         /// Represents the Lava enabled data sent to the public courses list block.
         /// </summary>
-        public class PublicLearningCourseBag : RockDynamic
+        public class PublicLearningCourseBag : LavaDataObject
         {
             /// <summary>
-            /// Gets or sets the Learning Program entity for this bag.
-            /// </summary>
-            public LearningCourse Entity { get; set; }
-
-            /// <summary>
-            /// Gets or sets whether the course allows historical access.
+            /// Gets or sets whether this course is allowed to show historical access.
             /// </summary>
             public bool AllowHistoricalAccess { get; set; }
 
@@ -390,9 +498,9 @@ namespace Rock.Model
             public string CategoryColor { get; set; }
 
             /// <summary>
-            /// Gets or sets the completion status of the course for the current person.
+            /// Gets or sets the code for the course.
             /// </summary>
-            public LearningCompletionStatus? LearningCompletionStatus { get; set; }
+            public string CourseCode { get; set; }
 
             /// <summary>
             /// Gets or sets the link to the course details.
@@ -400,26 +508,76 @@ namespace Rock.Model
             public string CourseDetailsLink { get; set; }
 
             /// <summary>
+            /// Gets or sets the list of course requirements for the requested course.
+            /// </summary>
+            public List<LearningCourseRequirement> CourseRequirements { get; set; }
+
+            /// <summary>
+            /// Gets or sets the number of credits awarded for successful completion of this
+            /// <see cref="LearningCourse"/>.
+            /// </summary>
+            public int Credits { get; set; }
+
+            /// <summary>
+            /// Gets or sets the description.
+            /// </summary>
+            public string Description { get; set; }
+
+            /// <summary>
+            /// Gets or sets the description as an HTML string.
+            /// </summary>
+            public string DescriptionAsHtml { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier for the <see cref="LearningCourse"/>.
+            /// </summary>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the IdKey for the <see cref="LearningCourse"/>.
+            /// </summary>
+            public string IdKey { get; set; }
+
+            /// <summary>
             /// Gets or sets the Guid for the Image file of this Program.
             /// </summary>
             public Guid? ImageFileGuid { get; set; }
 
             /// <summary>
-            /// Gets or sets the next semester where a class is available for the course
-            /// and the enrollment close date is in the future or null.
+            /// Gets or sets the completion status of the course for the current person.
             /// </summary>
-            public PublicLearningSemesterBag NextSemester
-            {
-                get
-                {
-                    return Semesters?.OrderBy( s => s.Entity?.StartDate ).FirstOrDefault();
-                }
-            }
+            /// <remarks>
+            /// If the Individual has ever Passed the Course this will show 'Passed';
+            /// otherwise the most recent occurrence (if any) will show: 'Incomplete' or 'Failed'.
+            /// </remarks>
+            public LearningCompletionStatus? LearningCompletionStatus { get; set; }
 
             /// <summary>
-            /// All current and future semesters that have classes available for enrollment.
+            /// Gets or sets the sort order for the <see cref="LearningCourse"/>.
+            /// </summary>
+            public int Order { get; set; }
+
+            /// <summary>
+            /// Gets or sets the
+            /// <see cref="LearningProgramService.PublicLearningProgramBag"/>
+            /// for the <see cref="LearningCourse"/>.
+            /// </summary>
+            public LearningProgramService.PublicLearningProgramBag ProgramInfo { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Public Name for the <see cref="LearningCourse"/>.
+            /// </summary>
+            public string PublicName { get; set; }
+
+            /// <summary>
+            ///  Gets or sets the current and future semesters that have classes available for enrollment.
             /// </summary>
             public List<PublicLearningSemesterBag> Semesters { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Summary for the <see cref="LearningCourse"/>.
+            /// </summary>
+            public string Summary { get; set; }
 
             /// <summary>
             /// Gets or sets a list of LearningCourseRequirements where the Person hasn't yet Passed the Prerequisite.
@@ -428,123 +586,68 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Represents the Lava enabled data sent to the public course detail block.
-        /// </summary>
-        public class PublicLearningCourseDetailBag : PublicLearningCourseBag
-        {
-            /// <summary>
-            /// Gets or sets whether this course can show historical access.
-            /// </summary>
-            public bool CanShowHistoricalAccess { get; set; }
-
-            /// <summary>
-            /// Gets or sets the list of course requirements for the requested course.
-            /// </summary>
-            public List<LearningCourseRequirement> CourseRequirements { get; set; }
-
-            /// <summary>
-            /// Gets or sets the description as an HTML string.
-            /// </summary>
-            public string DescriptionAsHtml { get; set; }
-
-            /// <summary>
-            /// Gets or sets the related <see cref="LearningProgram"/> for the course.
-            /// </summary>
-            public LearningProgram Program { get; set; }
-        }
-
-        /// <summary>
         /// The Semester for displaying on public pages.
         /// </summary>
-        public class PublicLearningSemesterBag : RockDynamic
+        public class PublicLearningSemesterBag : LavaDataObject
         {
             /// <summary>
-            /// The <see cref="LearningSemester"/> entity.
+            ///  Gets or sets the list of available classes.
             /// </summary>
-            public LearningSemester Entity { get; set; }
+            public List<PublicLearningClassBag> AvailableClasses { get; set; }
 
             /// <summary>
-            /// The list of available classes.
+            /// Gets or sets the end date for classes in this <see cref="LearningSemester"/>.
             /// </summary>
-            public List<PublicLearningClassDetailBag> AvailableClasses { get; set; }
+            public DateTime? EndDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the enrollment close date for classes in this <see cref="LearningSemester"/>.
+            /// </summary>
+            public DateTime? EnrollmentCloseDate { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier for the <see cref="LearningSemester"/>.
+            /// </summary>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the IdKey for the <see cref="LearningSemester"/>.
+            /// </summary>
+            public string IdKey { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether the individual is enrolled in a class for this <see cref="LearningSemester"/>.
+            /// </summary>
+            public bool IsEnrolled { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the <see cref="LearningSemester"/>.
+            /// </summary>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the start date for classes in this <see cref="LearningSemester"/>.
+            /// </summary>
+            public DateTime? StartDate { get; set; }
         }
 
         /// <summary>
         /// The <see cref="LearningClass"/> for displaying on public pages.
         /// </summary>
-        public class PublicLearningClassDetailBag : RockDynamic
+        public class PublicLearningClassBag : LavaDataObject
         {
             /// <summary>
-            /// The <see cref="Campus"/> that the class meets at or is associated with.
+            /// Gets or sets the <see cref="Campus"/> that the class meets at or is associated with.
             /// </summary>
-            public Campus Campus
-            {
-                get
-                {
-                    return Entity?.Campus;
-                }
-            }
+            public Campus Campus { get; set; }
 
             /// <summary>
-            /// The <see cref="LearningClass"/> entity.
-            /// </summary>
-            public LearningClass Entity { get; set; }
-
-            /// <summary>
-            /// The link to the enrollment page for this class.
-            /// </summary>
-            public string EnrollmentLink { get; set; }
-
-            /// <summary>
-            /// The <see cref="LearningGradingSystem "/> the class uses.
-            /// </summary>
-            public LearningGradingSystem GradingSystem
-            {
-                get
-                {
-                    return Entity?.LearningGradingSystem;
-                }
-            }
-
-            /// <summary>
-            /// The Location for the LearningClass to meet.
-            /// </summary>
-            public GroupLocation Location
-            {
-                get
-                {
-                    return Entity?.GroupLocations?.FirstOrDefault();
-                }
-            }
-
-            /// <summary>
-            /// The schedule that the class meets.
-            /// </summary>
-            public Schedule Schedule
-            {
-                get
-                {
-                    return Entity?.Schedule;
-                }
-            }
-
-            /// <summary>
-            /// The link to the workspace page for this class.
-            /// </summary>
-            public string WorkspaceLink { get; set; }
-
-            /// <summary>
-            /// The current <see cref="Person"/> <see cref="LearningParticipant"/> record for this class.
-            /// </summary>
-            public LearningParticipant StudentParticipant { get; set; }
-
-            /// <summary>
-            /// Whether the current person can enroll in this class.
+            /// Gets or sets whether the current person can enroll in this class.
             /// </summary>
             public bool CanEnroll { get; set; }
 
             /// <summary>
-            /// The enrollment error key (if any)
+            /// Gets or sets the enrollment error key (if any).
             /// </summary>
             /// <remarks>
             /// (one of: 'unmet_course_requirements', 'class_full', 'enrollment_closed', 'already_enrolled').
@@ -552,9 +655,90 @@ namespace Rock.Model
             public string EnrollmentErrorKey { get; set; }
 
             /// <summary>
-            /// The list of Facilitators for this class.
+            /// Gets or sets the link to the enrollment page for this class.
             /// </summary>
-            public List<LearningClassFacilitatorBag> Facilitators { get; set; }
+            public string EnrollmentLink { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether the individual is enrolled in this <see cref="LearningClass"/>.
+            /// </summary>
+            public bool IsEnrolled { get; set; }
+
+            /// <summary>
+            /// Gets or sets the list of Facilitators for this class.
+            /// </summary>
+            public List<PublicFacilitatorBag> Facilitators { get; set; }
+
+            /// <summary>
+            /// Gets or sets the <see cref="LearningGradingSystem "/> the class uses.
+            /// </summary>
+            public LearningGradingSystem GradingSystem { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier for the <see cref="LearningClass"/>.
+            /// </summary>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the IdKey for the <see cref="LearningClass"/>.
+            /// </summary>
+            public string IdKey { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Location for the LearningClass to meet.
+            /// </summary>
+            public GroupLocation Location { get; set; }
+
+            /// <summary>
+            /// Gets or sets the sort order for the <see cref="LearningClass"/>.
+            /// </summary>
+            public int Order { get; set; }
+
+            /// <summary>
+            /// Gets or sets the schedule that the class meets.
+            /// </summary>
+            public Schedule Schedule { get; set; }
+
+            /// <summary>
+            /// Gets or sets the current <see cref="Person"/> <see cref="LearningParticipant"/> record for this class.
+            /// </summary>
+            public LearningParticipant StudentParticipant { get; set; }
+
+            /// <summary>
+            /// Gets or sets the link to the workspace page for this class.
+            /// </summary>
+            public string WorkspaceLink { get; set; }
+        }
+
+        /// <summary>
+        /// The <see cref="LearningParticipant">facilitator(s)</see> for displaying on public pages.
+        /// </summary>
+        public class PublicFacilitatorBag : LavaDataObject
+        {
+            /// <summary>
+            ///  Gets or sets the email of the facilitator.
+            /// </summary>
+            public string Email { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the facilitator.
+            /// </summary>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier for the facilitator's <see cref="LearningParticipant"/> record.
+            /// </summary>
+            public int ParticipantId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the IdKey for the facilitator's <see cref="LearningParticipant"/> record.
+            /// </summary>
+            public string ParticipantIdKey { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the facilitator's role.
+            /// </summary>
+            public string Role { get; set; }
         }
 
         #endregion

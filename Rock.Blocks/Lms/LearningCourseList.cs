@@ -193,26 +193,58 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            var entityService = new LearningCourseService( RockContext );
-            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+            var courseService = new LearningCourseService( RockContext );
 
-            if ( entity == null )
+            var course = courseService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( course == null )
             {
                 return ActionBadRequest( $"{LearningCourse.FriendlyTypeName} not found." );
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !course.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete {LearningCourse.FriendlyTypeName}." );
             }
 
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            var coursesDependingOnThisCourse = new LearningCourseRequirementService( RockContext )
+                .Queryable()
+                .Where( c => c.RequiredLearningCourseId == course.Id )
+                .Select( c => c.LearningCourse.Name );
+
+            // If other courses are dependent on this one, don't allow deletion.
+            if ( coursesDependingOnThisCourse.Count() > 0 )
             {
+                var errorMessage = string.Format(
+                    "This {0} is required by {1}: {2}.",
+                    LearningCourse.FriendlyTypeName,
+                    "course".PluralizeIf( coursesDependingOnThisCourse.Count() != 1 ),
+                    coursesDependingOnThisCourse.JoinStringsWithCommaAnd() );
                 return ActionBadRequest( errorMessage );
             }
 
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
+            // Use a new context so that we can delete the classes
+            // before loading the Course and preventing EF tracking errors
+            // like "Collection was modified; enumeration operation may not execute."
+            var deletionContext = new RockContext();
+
+            deletionContext.WrapTransaction( () =>
+            {
+                var classService = new LearningClassService( deletionContext );
+                var classesForCourse = classService.Queryable()
+                    .Where( c => c.LearningCourseId == course.Id );
+
+                foreach ( var courseClass in classesForCourse )
+                {
+                    classService.Delete( courseClass );
+                }
+
+                var courseServiceInDeletionContext = new LearningCourseService( deletionContext );
+                var courseInDeletionContext = courseServiceInDeletionContext
+                    .Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+                courseServiceInDeletionContext.Delete( courseInDeletionContext );
+                RockContext.SaveChanges();
+            } );
 
             return ActionOk();
         }
