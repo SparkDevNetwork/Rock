@@ -1,13 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.RealTime;
+using Rock.RealTime.Topics;
+using Rock.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Examples
@@ -18,59 +25,185 @@ namespace RockWeb.Blocks.Examples
     [Rock.SystemGuid.BlockTypeGuid( "cad1b43e-4a40-4af7-94a8-c4da1af9b846" )]
     public partial class TestAttributeValues : RockBlock
     {
-        protected void Page_Load( object sender, EventArgs e )
+        private static CancellationTokenSource _cancellationTokenSource;
+
+        protected override void OnLoad( EventArgs e )
         {
+            if ( !IsPostBack )
+            {
+                _cancellationTokenSource?.Cancel();
+
+                ProblemDemo();
+            }
+
+            base.OnLoad( e );
+        }
+
+        public void CompareOneEntityType( TaskActivityProgress progress, CancellationToken cancellationToken )
+        {
+            var entityType = EntityTypeCache.Get<Group>();
             var loadAll = false;
 
-            if ( !CompareEntities<Group>( loadAll, out var count, out var errorMessage ) )
+            Action<int, int> updateCount = ( int processed, int total ) =>
             {
-                ltMessage.Text = errorMessage;
+                progress.ReportProgressUpdate( processed, total, $"{entityType.Name}: {processed:N0} of {total:N0}" );
+            };
+
+            if ( !CompareEntities<LearningClass>( loadAll, out var count, out var errorMessage, updateCount, cancellationToken ) )
+            {
+                progress.StopTask( errorMessage, new string[] { errorMessage }, null );
             }
             else
             {
-                ltMessage.Text = $"{count:N0} records were equal.";
+                progress.StopTask( $"{count:N0} records were equal." );
             }
         }
 
-        private bool CompareEntities<TEntity>( bool loadAll, out int count, out string errorMessage )
-            where TEntity : Rock.Data.Entity<TEntity>, IEntity, IHasAttributes, new()
+        private void CompareAllEntityTypes( string startAtName, TaskActivityProgress progress, CancellationToken cancellationToken )
         {
+            var entityTypes = EntityTypeCache.All()
+                .Where( et => typeof( IHasAttributes ).IsAssignableFrom( et.GetEntityType() ) )
+                .Where( et => typeof( IEntity ).IsAssignableFrom( et.GetEntityType() ) )
+                .Where( et => et.Name != "Rock.Model.Attribute"
+                    && et.Name != "Rock.Model.AttributeValue"
+                    && et.Name != "Rock.Model.BinaryFileData"
+                    && et.Name != "Rock.Model.UserLoginWithPlainTextPassword"
+                    && et.Name != "Rock.Rest.Controllers.MetricYTDData" )
+                .OrderBy( et => et.Name )
+                .ToList();
+
+            if ( startAtName != null )
+            {
+                entityTypes = entityTypes.SkipWhile( et => et.Name != startAtName ).ToList();
+            }
+
+            var messages = new List<string>();
+            var method = GetType()
+                .GetMethods( System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance )
+                .Where( m => m.Name == nameof( CompareEntities ) )
+                .Where( m => m.GetParameters().Length == 5 )
+                .First();
+
+            for ( int i = 0; i < entityTypes.Count; i++ )
+            {
+                if ( cancellationToken.IsCancellationRequested )
+                {
+                    progress.StopTask( "Cancelled" );
+                    return;
+                }
+
+                var entityType = entityTypes[i];
+                Action<int, int> updateCount = ( int processed, int total ) =>
+                {
+                    progress.ReportProgressUpdate( i, entityTypes.Count, $"{entityType.Name}: {processed:N0} of {total:N0}" );
+                };
+
+                progress.ReportProgressUpdate( i, entityTypes.Count, $"{entityType.Name} (loading)" );
+
+                var mi = method.MakeGenericMethod( entityType.GetEntityType() );
+                var parameters = new object[] { true, null, null, updateCount, cancellationToken };
+
+                var result = ( bool ) mi.Invoke( this, parameters );
+
+                if ( result )
+                {
+                    var count = ( int ) parameters[1];
+                    messages.Add( $"{entityType.Name}: {count:N0} records were equal." );
+                }
+                else
+                {
+                    var errorMessage = ( string ) parameters[2];
+
+                    messages.Add( $"{entityType.Name}: {errorMessage}" );
+
+                    progress.StopTask( $"{entityType.Name}: {errorMessage}", messages );
+
+                    return;
+                }
+            }
+
+            progress.StopTask( "Completed", null, messages );
+        }
+
+        protected bool CompareEntities<TEntity>( bool loadAll, out int count, out string errorMessage, Action<int, int> updateCount, CancellationToken cancellationToken )
+            where TEntity : class, IHasAttributes, new()
+        {
+            var entityId = 257678;
+            var lastEntityId = 0;
+            var batchSize = 1000;
+
+            count = 0;
+
             using ( var rockContextA = new RockContext() )
             {
-                var serviceA = rockContextA.Set<TEntity>();
-                var setA = serviceA.Where( a => loadAll || a.Id == 2 ).OrderBy( a => a.Id ).ToList();
-
-                setA.LoadAttributes( rockContextA );
-
                 using ( var rockContextB = new RockContext() )
                 {
-                    var serviceB = rockContextB.Set<TEntity>();
-                    var setB = serviceB.Where( a => loadAll || a.Id == 2 ).OrderBy( a => a.Id ).ToList();
-
                     using ( var rockContextC = new RockContext() )
                     {
-                        var serviceC = rockContextC.Set<TEntity>();
-                        var setC = serviceC.Where( a => loadAll || a.Id == 2 ).OrderBy( a => a.Id ).ToList();
+                        var totalCount = rockContextA.Set<TEntity>().Where( a => loadAll || a.Id == entityId ).Count();
 
-                        if ( !CompareEntities( setA, setB, setC, rockContextB, rockContextC, out errorMessage ) )
+                        updateCount( 0, totalCount );
+
+                        while ( true )
                         {
-                            count = 0;
-                            return false;
-                        }
-                        else
-                        {
-                            count = setA.Count;
-                            return true;
+                            // Set A uses the new LoadAttributes() call on the enumerable to load
+                            // them all at once.
+                            var serviceA = rockContextA.Set<TEntity>();
+                            var setA = serviceA.Where( a => loadAll || a.Id == entityId )
+                                .Where( a => a.Id > lastEntityId )
+                                .OrderBy( a => a.Id )
+                                .Take( batchSize )
+                                .AsNoTracking()
+                                .ToList();
+
+                            setA.LoadAttributes( rockContextA );
+
+                            // Set B uses the legacy LoadAttributes() call on each individual entity.
+                            var serviceB = rockContextB.Set<TEntity>();
+                            var setB = serviceB.Where( a => loadAll || a.Id == entityId )
+                                .Where( a => a.Id > lastEntityId )
+                                .OrderBy( a => a.Id )
+                                .Take( batchSize )
+                                .AsNoTracking()
+                                .ToList();
+
+                            // Set C will use the new SQL Attribute Value Views.
+                            var serviceC = rockContextC.Set<TEntity>();
+                            var setC = serviceC.Where( a => loadAll || a.Id == entityId )
+                                .Where( a => a.Id > lastEntityId )
+                                .OrderBy( a => a.Id )
+                                .Take( batchSize )
+                                .AsNoTracking()
+                                .ToList();
+
+                            if ( setA.Count == 0 && setB.Count == 0 && setC.Count == 0 )
+                            {
+                                break;
+                            }
+
+                            if ( !CompareEntitySets( setA, setB, setC, rockContextB, rockContextC, out errorMessage, cancellationToken ) )
+                            {
+                                count = 0;
+                                return false;
+                            }
+
+                            count += setA.Count;
+                            lastEntityId = setA.Last().Id;
+
+                            updateCount( count, totalCount );
                         }
                     }
                 }
             }
+
+            errorMessage = null;
+            return true;
         }
 
-        private bool CompareEntities<TEntity>( List<TEntity> setA, List<TEntity> setB, List<TEntity> setC, RockContext rockContextB, RockContext rockContextC, out string errorMessage )
+        private bool CompareEntitySets<TEntity>( List<TEntity> setA, List<TEntity> setB, List<TEntity> setC, RockContext rockContextB, RockContext rockContextC, out string errorMessage, CancellationToken cancellationToken )
             where TEntity : IHasAttributes
         {
-            if ( setA.Count != setB.Count )
+            if ( setA.Count != setB.Count || setA.Count != setC.Count )
             {
                 errorMessage = "Entity set count mismatch.";
                 return false;
@@ -78,6 +211,12 @@ namespace RockWeb.Blocks.Examples
 
             for ( int i = 0; i < setA.Count; i++ )
             {
+                if ( cancellationToken.IsCancellationRequested )
+                {
+                    errorMessage = "Cancelled";
+                    return false;
+                }
+
                 if ( !CompareEntityAttributes<TEntity>( setA[i], setB[i], setC[i], rockContextB, rockContextC, out errorMessage ) )
                 {
                     return false;
@@ -90,6 +229,13 @@ namespace RockWeb.Blocks.Examples
 
         private bool CompareEntityAttributes<TEntity>( IHasAttributes entityA, IHasAttributes entityB, IHasAttributes entityC, RockContext rockContextB, RockContext rockContextC, out string errorMessage )
         {
+            // Skip TPT instances that don't match the queried type.
+            if ( entityA.GetType().BaseType != typeof( TEntity ) || entityB.GetType().BaseType != typeof( TEntity ) )
+            {
+                errorMessage = null;
+                return true;
+            }
+
             if ( entityA.Id != entityB.Id || entityA.Id != entityC.Id )
             {
                 errorMessage = $"Identifier mismatch: '{entityA}:{entityA.Id}', '{entityB}:{entityB.Id}', '{entityC}:{entityC.Id}'.";
@@ -102,7 +248,7 @@ namespace RockWeb.Blocks.Examples
 
             if ( entityA.Attributes.Count != entityB.Attributes.Count || entityA.Attributes.Count != entityCAttributes.Attributes.Count )
             {
-                errorMessage = $"Attribute count mismatch in '{entityA}:{entityA.Id}'.";
+                errorMessage = $"Attribute count mismatch in '{entityA}:{entityA.Id}' ({entityA.Attributes.Count}, {entityB.Attributes.Count}, {entityCAttributes.Attributes.Count}).";
                 return false;
             }
 
@@ -142,6 +288,108 @@ namespace RockWeb.Blocks.Examples
         private static string QuotedValue( string value )
         {
             return value == null ? "null" : $"'{value}'";
+        }
+
+        private static void ProblemDemo()
+        {
+            var entityId = 257678;
+
+            using ( var rockContext = new RockContext() )
+            {
+                var expectedToBeGroup = new GroupService( rockContext ).Get( entityId );
+                var expectedToBeGroupType = expectedToBeGroup.GetType().FullName;
+                var expectedToBeGroupBaseType = expectedToBeGroup.GetType().BaseType.FullName;
+                // expectedToBeGroupBaseType = "Rock.Model.LearningClass"
+
+                var groupEntityTypeId = new Group().TypeId;
+                var learningClassEntityTypeId = new LearningClass().TypeId;
+                // groupEntityTypeId = 16
+                // learningClassEntityTypeId = 16
+
+                var groupTypeName = new Group().TypeName;
+                var learningClassTypeName = new LearningClass().TypeName;
+                // groupTypeName = "Rock.Model.Group"
+                // learningClassTypeName = "Rock.Model.Group"
+
+                var learningClassEntityTypeName = EntityTypeCache.Get( expectedToBeGroup.TypeId ).Name;
+                var learningClassEntityTypeNameTwo = EntityTypeCache.Get( expectedToBeGroup.GetType(), false, rockContext ).Name;
+                // learningClassEntityTypeName = "Rock.Model.Group"
+                // learningClassEntityTypeNameTwo = "Rock.Model.LearningClass"
+
+                var group = new Group
+                {
+                    Id = expectedToBeGroup.Id,
+                    GroupTypeId = expectedToBeGroup.GroupTypeId
+                };
+                group.LoadAttributes( rockContext );
+                expectedToBeGroup.LoadAttributes( rockContext );
+
+                var groupAttributeCount = group.Attributes.Count;
+                var expectedToBeGroupAttributeCount = expectedToBeGroup.Attributes.Count;
+                // groupAttributeCount = 0
+                // expectedToBeGroupAttributeCount = 1
+            }
+        }
+
+        protected void btnRun_Click( object sender, EventArgs e )
+        {
+            ltMessage.Text = "";
+
+            if ( tapReporter.ConnectionId.IsNullOrWhiteSpace() )
+            {
+                ltMessage.Text = "Real-time not connected.";
+                return;
+            }
+
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            var progress = new TaskActivityProgress( RealTimeHelper.GetTopicContext<ITaskActivityProgress>().Clients.Client( tapReporter.ConnectionId ) )
+            {
+                StartNotificationDelayMilliseconds = 0,
+                NotificationIntervalMilliseconds = 250
+            };
+            tapReporter.TaskId = progress.TaskId;
+
+            if ( ddlMethod.SelectedValueAsInt() == 1 )
+            {
+                // Define a background task for the bulk update process, because it may take considerable time.
+                Task.Run( async () =>
+                {
+                    // Wait for the browser to finish loading.
+                    await Task.Delay( 1000 );
+
+                    progress.StartTask();
+                    try
+                    {
+                        CompareOneEntityType( progress, _cancellationTokenSource.Token );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex );
+                        progress.StopTask( ex.Message, new string[] { ex.Message } );
+                    }
+                } );
+            }
+            else
+            {
+                // Define a background task for the bulk update process, because it may take considerable time.
+                Task.Run( async () =>
+                {
+                    // Wait for the browser to finish loading.
+                    await Task.Delay( 1000 );
+
+                    progress.StartTask();
+                    try
+                    {
+                        CompareAllEntityTypes( null, progress, _cancellationTokenSource.Token );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex );
+                        progress.StopTask( ex.Message, new string[] { ex.Message } );
+                    }
+                } );
+            }
         }
     }
 }
