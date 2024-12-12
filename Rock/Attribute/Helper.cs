@@ -1058,6 +1058,12 @@ This can be due to multiple threads updating the same attribute at the same time
         {
             var setMethod = GetQueryableAttributeSetMethod( entityType );
 
+            // Entity doesn't support queryable attributes.
+            if ( setMethod == null )
+            {
+                return new QueryableAttributeWrapper( id, new QueryableAttributeValue[0] );
+            }
+
             // Load all the attributes for this entity.
             var dbSet = ( IQueryable<QueryableAttributeValue> ) setMethod.Invoke( rockContext, new object[0] );
             var values = dbSet.Where( v => v.EntityId == id ).ToList();

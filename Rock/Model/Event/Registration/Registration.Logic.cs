@@ -150,28 +150,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the registration template identifier.
-        /// NOTE: this is needed so that Registration Attributes can have a RegistrationTemplateId qualifier
-        /// </summary>
-        /// <value>
-        /// The registration template identifier.
-        /// </value>
-        [NotMapped]
-        [LavaVisible]
-        public virtual int? RegistrationTemplateId
-        {
-            get
-            {
-                if ( this.RegistrationInstance == null )
-                {
-                    return new RegistrationInstanceService( new RockContext() ).GetSelect( this.RegistrationInstanceId, a => a.RegistrationTemplateId );
-                }
-
-                return this.RegistrationInstance.RegistrationTemplateId;
-            }
-        }
-
-        /// <summary>
         /// Gets the <see cref="Rock.Model.FinancialTransactionDetail">payments</see>.
         /// </summary>
         /// <value>
