@@ -1827,6 +1827,12 @@ namespace Rock
             return new string( chars );
         }
 
+        public static bool IsSingleSpecialCharacter( this string value )
+        {
+            string specialCharacters = "!@#$%^&*()_+[]{}|;:'\",.<>/?`~";
+            return !string.IsNullOrEmpty( value ) && value.Length == 1 && specialCharacters.Contains( value );
+        }
+
         #endregion String Extensions
     }
 }
