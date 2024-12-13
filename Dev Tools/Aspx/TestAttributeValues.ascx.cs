@@ -33,7 +33,14 @@ namespace RockWeb.Blocks.Examples
             {
                 _cancellationTokenSource?.Cancel();
 
-                ProblemDemo();
+                etPicker.Visible = ddlMethod.SelectedValueAsInt() == 2;
+
+                using ( var rockContext = new RockContext() )
+                {
+                    etPicker.EntityTypes = new EntityTypeService( rockContext ).GetEntities().ToList();
+                }
+
+                //ProblemDemo();
             }
 
             base.OnLoad( e );
@@ -42,14 +49,13 @@ namespace RockWeb.Blocks.Examples
         public void CompareOneEntityType( TaskActivityProgress progress, CancellationToken cancellationToken )
         {
             var entityType = EntityTypeCache.Get<Group>();
-            var loadAll = false;
 
             Action<int, int> updateCount = ( int processed, int total ) =>
             {
                 progress.ReportProgressUpdate( processed, total, $"{entityType.Name}: {processed:N0} of {total:N0}" );
             };
 
-            if ( !CompareEntities<LearningClass>( loadAll, out var count, out var errorMessage, updateCount, cancellationToken ) )
+            if ( !CompareEntities<ContentChannelItem>( 502, out var count, out var errorMessage, updateCount, cancellationToken ) )
             {
                 progress.StopTask( errorMessage, new string[] { errorMessage }, null );
             }
@@ -68,6 +74,13 @@ namespace RockWeb.Blocks.Examples
                     && et.Name != "Rock.Model.AttributeValue"
                     && et.Name != "Rock.Model.BinaryFileData"
                     && et.Name != "Rock.Model.UserLoginWithPlainTextPassword"
+                    && et.Name != "Rock.Model.History"
+                    && et.Name != "Rock.Model.IdentityVerificationCode"
+                    && et.Name != "Rock.Model.Interaction"
+                    && et.Name != "Rock.Model.InteractionSession"
+                    && et.Name != "Rock.Model.InteractionSessionLocation"
+                    && et.Name != "Rock.Model.ServiceLog"
+                    && et.Name != "Rock.Model.WebFarmNodeMetric"
                     && et.Name != "Rock.Rest.Controllers.MetricYTDData" )
                 .OrderBy( et => et.Name )
                 .ToList();
@@ -101,7 +114,7 @@ namespace RockWeb.Blocks.Examples
                 progress.ReportProgressUpdate( i, entityTypes.Count, $"{entityType.Name} (loading)" );
 
                 var mi = method.MakeGenericMethod( entityType.GetEntityType() );
-                var parameters = new object[] { true, null, null, updateCount, cancellationToken };
+                var parameters = new object[] { null, null, null, updateCount, cancellationToken };
 
                 var result = ( bool ) mi.Invoke( this, parameters );
 
@@ -125,10 +138,9 @@ namespace RockWeb.Blocks.Examples
             progress.StopTask( "Completed", null, messages );
         }
 
-        protected bool CompareEntities<TEntity>( bool loadAll, out int count, out string errorMessage, Action<int, int> updateCount, CancellationToken cancellationToken )
+        protected bool CompareEntities<TEntity>( int? entityId, out int count, out string errorMessage, Action<int, int> updateCount, CancellationToken cancellationToken )
             where TEntity : class, IHasAttributes, new()
         {
-            var entityId = 257678;
             var lastEntityId = 0;
             var batchSize = 1000;
 
@@ -140,7 +152,7 @@ namespace RockWeb.Blocks.Examples
                 {
                     using ( var rockContextC = new RockContext() )
                     {
-                        var totalCount = rockContextA.Set<TEntity>().Where( a => loadAll || a.Id == entityId ).Count();
+                        var totalCount = rockContextA.Set<TEntity>().Where( a => !entityId.HasValue || a.Id == entityId ).Count();
 
                         updateCount( 0, totalCount );
 
@@ -149,7 +161,7 @@ namespace RockWeb.Blocks.Examples
                             // Set A uses the new LoadAttributes() call on the enumerable to load
                             // them all at once.
                             var serviceA = rockContextA.Set<TEntity>();
-                            var setA = serviceA.Where( a => loadAll || a.Id == entityId )
+                            var setA = serviceA.Where( a => !entityId.HasValue || a.Id == entityId )
                                 .Where( a => a.Id > lastEntityId )
                                 .OrderBy( a => a.Id )
                                 .Take( batchSize )
@@ -160,7 +172,7 @@ namespace RockWeb.Blocks.Examples
 
                             // Set B uses the legacy LoadAttributes() call on each individual entity.
                             var serviceB = rockContextB.Set<TEntity>();
-                            var setB = serviceB.Where( a => loadAll || a.Id == entityId )
+                            var setB = serviceB.Where( a => !entityId.HasValue || a.Id == entityId )
                                 .Where( a => a.Id > lastEntityId )
                                 .OrderBy( a => a.Id )
                                 .Take( batchSize )
@@ -169,7 +181,7 @@ namespace RockWeb.Blocks.Examples
 
                             // Set C will use the new SQL Attribute Value Views.
                             var serviceC = rockContextC.Set<TEntity>();
-                            var setC = serviceC.Where( a => loadAll || a.Id == entityId )
+                            var setC = serviceC.Where( a => !entityId.HasValue || a.Id == entityId )
                                 .Where( a => a.Id > lastEntityId )
                                 .OrderBy( a => a.Id )
                                 .Take( batchSize )
@@ -292,10 +304,10 @@ namespace RockWeb.Blocks.Examples
 
         private static void ProblemDemo()
         {
-            var entityId = 257678;
-
             using ( var rockContext = new RockContext() )
             {
+                var entityId = 257678;
+
                 var expectedToBeGroup = new GroupService( rockContext ).Get( entityId );
                 var expectedToBeGroupType = expectedToBeGroup.GetType().FullName;
                 var expectedToBeGroupBaseType = expectedToBeGroup.GetType().BaseType.FullName;
@@ -311,8 +323,8 @@ namespace RockWeb.Blocks.Examples
                 // groupTypeName = "Rock.Model.Group"
                 // learningClassTypeName = "Rock.Model.Group"
 
-                var learningClassEntityTypeName = EntityTypeCache.Get( expectedToBeGroup.TypeId ).Name;
-                var learningClassEntityTypeNameTwo = EntityTypeCache.Get( expectedToBeGroup.GetType(), false, rockContext ).Name;
+                var learningClassEntityTypeName = EntityTypeCache.Get( new LearningClass().TypeId ).Name;
+                var learningClassEntityTypeNameTwo = EntityTypeCache.Get( new LearningClass().GetType() ).Name;
                 // learningClassEntityTypeName = "Rock.Model.Group"
                 // learningClassEntityTypeNameTwo = "Rock.Model.LearningClass"
 
@@ -321,6 +333,7 @@ namespace RockWeb.Blocks.Examples
                     Id = expectedToBeGroup.Id,
                     GroupTypeId = expectedToBeGroup.GroupTypeId
                 };
+
                 group.LoadAttributes( rockContext );
                 expectedToBeGroup.LoadAttributes( rockContext );
 
@@ -328,6 +341,16 @@ namespace RockWeb.Blocks.Examples
                 var expectedToBeGroupAttributeCount = expectedToBeGroup.Attributes.Count;
                 // groupAttributeCount = 0
                 // expectedToBeGroupAttributeCount = 1
+
+
+                var groups = new GroupService( rockContext ).Queryable().Take( 100 ).ToList();
+                // groups[0-49] = typeof Group
+                // groups[50] = typeof LearningClass
+                // groups[51-99] = typeof Group
+
+                groups.LoadAttributes( rockContext );
+
+                // groups[50] will have wrong attribute values loaded.
             }
         }
 
@@ -381,7 +404,14 @@ namespace RockWeb.Blocks.Examples
                     progress.StartTask();
                     try
                     {
-                        CompareAllEntityTypes( null, progress, _cancellationTokenSource.Token );
+                        string startingEntityType = null;
+
+                        if ( etPicker.SelectedValueAsInt().HasValue )
+                        {
+                            startingEntityType = EntityTypeCache.Get( etPicker.SelectedValueAsInt().Value ).Name;
+                        }
+
+                        CompareAllEntityTypes( startingEntityType, progress, _cancellationTokenSource.Token );
                     }
                     catch ( Exception ex )
                     {
@@ -390,6 +420,11 @@ namespace RockWeb.Blocks.Examples
                     }
                 } );
             }
+        }
+
+        protected void ddlMethod_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            etPicker.Visible = ddlMethod.SelectedValueAsInt() == 2;
         }
     }
 }
