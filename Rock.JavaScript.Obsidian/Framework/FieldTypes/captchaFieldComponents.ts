@@ -16,9 +16,12 @@
 //
 
 import { defineComponent, ref, watch } from "vue";
-import { getFieldEditorProps } from "./utils";
-import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+import { getFieldConfigurationProps, getFieldEditorProps } from "./utils";
+import { asBoolean, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import Captcha from "@Obsidian/Controls/captcha.obs";
+import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+import { ConfigurationPropertyKey } from "./captchaField.partial";
+import { CaptchaControlTokenValidateTokenResultBag } from "@Obsidian/ViewModels/Rest/Controls/captchaControlTokenValidateTokenResultBag";
 
 export const EditComponent = defineComponent({
     name: "CaptchaField.Edit",
@@ -35,14 +38,14 @@ export const EditComponent = defineComponent({
         const internalBooleanValue = ref(asBoolean(props.modelValue));
         const internalValue = ref("");
 
-        watch(captchaElement.value, () => {
+        watch(captchaElement, async () => {
             if (captchaElement.value) {
-                internalValue.value = captchaElement.value.getToken();
-                captchaElement.value.refreshToken();
-                internalBooleanValue.value = true;
+                internalValue.value = await captchaElement.value.getToken();
+                const captchaControlTokenValidateTokenResultBag = await captchaElement.value.validateToken(internalValue.value) as CaptchaControlTokenValidateTokenResultBag;
+                internalBooleanValue.value = captchaControlTokenValidateTokenResultBag?.isTokenValid;
             }
 
-            emit("update:modelValue", internalBooleanValue);
+            emit("update:modelValue", asTrueFalseOrNull(internalBooleanValue.value) || "");
         });
 
         watch(() => props.modelValue, () => {
@@ -50,6 +53,7 @@ export const EditComponent = defineComponent({
         });
 
         return {
+            captchaElement,
             internalBooleanValue
         };
     },
@@ -60,8 +64,26 @@ export const EditComponent = defineComponent({
 
 export const ConfigurationComponent = defineComponent({
     name: "CaptchaField.Configuration",
+    components: {
+        NotificationBox
+    },
+    props: getFieldConfigurationProps(),
+    setup(props) {
+        // Define the properties that will hold the current selections.
+        const notificationWarning = ref<string>(props.modelValue[ConfigurationPropertyKey.NotificationWarning]);
 
-    template: ``
+        return {
+            notificationWarning,
+        };
+    },
+
+
+    template: `
+<div>
+    <NotificationBox alertType="info">The user will be prompted to complete verify they are human each time this field is displayed in edit mode.</NotificationBox>
+    <NotificationBox v-if="notificationWarning" alertType="warning">{{ notificationWarning }}</NotificationBox>
+</div>
+`
 });
 
 

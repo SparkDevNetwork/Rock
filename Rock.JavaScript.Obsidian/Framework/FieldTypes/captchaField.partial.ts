@@ -18,6 +18,10 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 
+export const enum ConfigurationPropertyKey {
+    NotificationWarning = "notificationWarning"
+}
+
 // The edit component can be quite large, so load it only as needed.
 const editComponent = defineAsyncComponent(async () => {
     return (await import("./captchaFieldComponents")).EditComponent;
@@ -39,5 +43,9 @@ export class CaptchaFieldType extends FieldTypeBase {
 
     public override getConfigurationComponent(): Component {
         return configurationComponent;
+    }
+
+    public override hasDefaultComponent(): boolean {
+        return false;
     }
 }
