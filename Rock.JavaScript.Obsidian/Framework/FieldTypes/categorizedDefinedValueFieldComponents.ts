@@ -94,18 +94,13 @@ export const ConfigurationComponent = defineComponent({
     ],
 
     setup(props, { emit }) {
-        const definedType = ref<ListItemBag>({});
+        const definedTypeValue = ref<string>("");
         const selectableDefinedValues = ref<string[]>([]);
-
-        const definedTypes = computed((): ListItemBag[] => {
-            return JSON.parse(props.modelValue[ConfigurationValueKey.DefinedTypes] || "[]");
-        });
+        const definedTypes = ref<ListItemBag[]>([]);
 
         /** The defined value options to choose from in the check box list */
         const options = computed((): ListItemBag[] => {
             try {
-                const definedTypeValue = definedType.value;
-
                 if (definedTypeValue.value) {
                     const definedTypeValues = JSON.parse(props.modelValue[ConfigurationValueKey.DefinedTypeValues] || "{}");
                     return JSON.parse(definedTypeValues[definedTypeValue.value] || "[]") as ListItemBag[];
@@ -129,17 +124,18 @@ export const ConfigurationComponent = defineComponent({
          */
         const maybeUpdateModelValue = (): boolean => {
             const newValue: Record<string, string> = {};
+            const definedType = definedTypes.value.find(dt => dt.value == definedTypeValue.value);
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.DefinedType] = JSON.stringify(definedType.value ?? "");
+            newValue[ConfigurationValueKey.DefinedType] = JSON.stringify(definedType ?? "");
             newValue[ConfigurationValueKey.SelectableDefinedValues] = JSON.stringify(selectableDefinedValues.value ?? "");
             newValue[ConfigurationValueKey.DefinedTypeValues] = props.modelValue[ConfigurationValueKey.DefinedTypeValues];
             newValue[ConfigurationValueKey.DefinedTypes] = props.modelValue[ConfigurationValueKey.DefinedTypes];
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.DefinedType] !== (props.modelValue[ConfigurationValueKey.DefinedType] ?? "")
-            || newValue[ConfigurationValueKey.SelectableDefinedValues] !== (props.modelValue[ConfigurationValueKey.SelectableDefinedValues] ?? "");
+                || newValue[ConfigurationValueKey.SelectableDefinedValues] !== (props.modelValue[ConfigurationValueKey.SelectableDefinedValues] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -167,17 +163,19 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            definedType.value = JSON.parse(props.modelValue[ConfigurationValueKey.DefinedType] || "{}");
+            const definedType = JSON.parse(props.modelValue[ConfigurationValueKey.DefinedType] || "{}");
+            definedTypeValue.value = definedType.value ?? "";
             selectableDefinedValues.value = JSON.parse(props.modelValue[ConfigurationValueKey.SelectableDefinedValues] || "[]");
+            definedTypes.value = JSON.parse(props.modelValue[ConfigurationValueKey.DefinedTypes] || "[]");
         }, {
             immediate: true
         });
 
-        watch(definedType, val => maybeUpdateConfiguration(ConfigurationValueKey.DefinedType, JSON.stringify(val ?? "")));
+        watch(definedTypeValue, val => maybeUpdateConfiguration(ConfigurationValueKey.DefinedType, val));
         watch(selectableDefinedValues, val => maybeUpdateConfiguration(ConfigurationValueKey.SelectableDefinedValues, JSON.stringify(val ?? "")));
 
         return {
-            definedType,
+            definedTypeValue,
             definedTypes,
             selectableDefinedValues,
             options
@@ -185,7 +183,7 @@ export const ConfigurationComponent = defineComponent({
     },
 
     template: `
-    <DropDownList label="Defined Type" v-model="definedType.value" :items="definedTypes" help="A Defined Type that is configured to support categorized values." :showBlankItem="true" :enhanceForLongLists="true" />
-    <CheckBoxList v-if="definedType.value" label="Selectable Values" v-model="selectableDefinedValues" :items="options" horizontal repeatColumns="4" />
+    <DropDownList label="Defined Type" v-model="definedTypeValue" :items="definedTypes" help="A Defined Type that is configured to support categorized values." :showBlankItem="true" :enhanceForLongLists="true" />
+    <CheckBoxList v-if="definedTypeValue" label="Selectable Values" v-model="selectableDefinedValues" :items="options" horizontal repeatColumns="4" />
     `
 });
