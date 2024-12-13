@@ -28,12 +28,21 @@ namespace Rock.Migrations
         /// Initializes a new instance of the <see cref="Configuration"/> class.
         /// </summary>
         public Configuration()
+            : this( true )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Configuration"/> class.
+        /// </summary>
+        /// <param name="isAddMigration">Determines if this is being called during an Add-Migration process.</param>
+        public Configuration( bool isAddMigration )
         {
             AutomaticMigrationsEnabled = false;
             MigrationsNamespace = "Rock.Migrations";
             CodeGenerator = new RockCSharpMigrationCodeGenerator<Rock.Data.RockContext>();
             CommandTimeout = 300;
-            Rock.Data.RockContext.IsAddMigration = true;
+            Rock.Data.RockContext.IsAddMigration = isAddMigration;
         }
 
         /// <summary>

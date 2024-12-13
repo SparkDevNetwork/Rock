@@ -533,7 +533,7 @@ namespace Rock.WebStartup
             }
 
             // get the pendingmigrations sorted by name (in the order that they run), then run to the latest migration
-            var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
+            var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration( false ) );
             var pendingMigrations = migrator.GetPendingMigrations().OrderBy( a => a );
 
             // double check if there are migrations to run
