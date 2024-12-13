@@ -16,9 +16,6 @@
 //
 namespace Rock.Migrations
 {
-    using System;
-    using System.Data.Entity.Migrations;
-    
     /// <summary>
     ///
     /// </summary>
@@ -29,11 +26,10 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            // Create all the columns as nullable first, then we'll switch to
-            // non-nullable after we populate the data.
-            AddColumn("dbo.Page", "SiteId", c => c.Int());
-            AddColumn("dbo.Registration", "RegistrationTemplateId", c => c.Int());
-            AddColumn("dbo.AttributeMatrixItem", "AttributeMatrixTemplateId", c => c.Int());
+            // Create all the columns as nullable so existing data works.
+            AddColumn( "dbo.Page", "SiteId", c => c.Int( nullable: true ) );
+            AddColumn( "dbo.Registration", "RegistrationTemplateId", c => c.Int( nullable: true ) );
+            AddColumn( "dbo.AttributeMatrixItem", "AttributeMatrixTemplateId", c => c.Int( nullable: true ) );
 
             //AddColumn("dbo.Attribute", "DefaultValueChecksum", c => c.Int(nullable: false));
             Sql( "ALTER TABLE [dbo].[Attribute] ADD [DefaultValueChecksum] AS (checksum([DefaultValue])) PERSISTED" );
@@ -61,10 +57,10 @@ UPDATE [AMI] SET
 FROM [AttributeMatrixItem] AS [AMI]
 INNER JOIN [AttributeMatrix] AS [AM] ON [AM].[Id] = [AMI].[AttributeMatrixId]" );
 
-            // Switch columns to non-null.
-            AlterColumn( "dbo.Page", "SiteId", c => c.Int( nullable: false ) );
-            AlterColumn( "dbo.Registration", "RegistrationTemplateId", c => c.Int( nullable: false ) );
-            AlterColumn( "dbo.AttributeMatrixItem", "AttributeMatrixTemplateId", c => c.Int( nullable: false ) );
+            // Switch the columns to non-null now.
+            AlterColumn( "dbo.Page", "SiteId", c => c.Int() );
+            AlterColumn( "dbo.Registration", "RegistrationTemplateId", c => c.Int() );
+            AlterColumn( "dbo.AttributeMatrixItem", "AttributeMatrixTemplateId", c => c.Int() );
         }
 
         /// <summary>
@@ -73,10 +69,10 @@ INNER JOIN [AttributeMatrix] AS [AM] ON [AM].[Id] = [AMI].[AttributeMatrixId]" )
         public override void Down()
         {
             DropIndex( "dbo.Attribute", "IX_DefaultValueChecksum" );
-            DropColumn("dbo.AttributeMatrixItem", "AttributeMatrixTemplateId");
-            DropColumn("dbo.Registration", "RegistrationTemplateId");
-            DropColumn("dbo.Attribute", "DefaultValueChecksum");
-            DropColumn("dbo.Page", "SiteId");
+            DropColumn( "dbo.AttributeMatrixItem", "AttributeMatrixTemplateId" );
+            DropColumn( "dbo.Registration", "RegistrationTemplateId" );
+            DropColumn( "dbo.Attribute", "DefaultValueChecksum" );
+            DropColumn( "dbo.Page", "SiteId" );
         }
     }
 }
