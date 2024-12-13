@@ -1027,6 +1027,7 @@ FROM [{entityTableName}] AS [E]
 CROSS JOIN [Attribute] AS [A]
 LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]{additionalJoins}
 WHERE [A].[EntityTypeId] = {entityTypeId}
+    AND [A].[IsActive] = 1
     AND (
         (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = ''){qualifierChecks}
     )
@@ -1072,6 +1073,7 @@ FROM
         CROSS JOIN [Attribute] AS [A]
         LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]
         WHERE [A].[EntityTypeId] = {entityTypeId}
+            AND [A].[IsActive] = 1
             AND (
                 (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = '')
             )
@@ -1093,6 +1095,7 @@ FROM
         CROSS JOIN [Attribute] AS [A]
         LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [ECI].[Id]
         WHERE [A].[EntityTypeId] = {eventCalendarItemEntityTypeId}
+            AND [A].[IsActive] = 1
             AND (
                 (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = '')
                 OR ([A].[EntityTypeQualifierColumn] = 'EventCalendarId' AND [A].[EntityTypeQualifierValue] = [ECI].[EventCalendarId])
