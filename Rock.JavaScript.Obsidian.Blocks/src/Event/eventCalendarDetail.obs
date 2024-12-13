@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, onMounted, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -48,10 +48,12 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { EventCalendarBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarBag";
     import { EventCalendarDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarDetailOptionsBag";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<DetailBlockBox<EventCalendarBag, EventCalendarDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
+    const store = useStore();
 
     // #region Values
 
@@ -73,7 +75,8 @@
         "iconCssClass",
         "isActive",
         "isIndexEnabled",
-        "name"
+        "name",
+        "isIndexEnabled"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(eventCalendarEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -146,7 +149,7 @@
     });
 
     const options = computed((): EventCalendarDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {} as EventCalendarDetailOptionsBag;
     });
 
     // #endregion
@@ -182,7 +185,7 @@
 
             return false;
         }
-
+        store.setAreSecondaryBlocksShown(true);
         return true;
     }
 
@@ -222,7 +225,7 @@
 
         if (result.isSuccess && result.data && result.data.entity) {
             eventCalendarEditBag.value = result.data.entity;
-
+            store.setAreSecondaryBlocksShown(false);
             return true;
         }
         else {
@@ -297,4 +300,13 @@
         eventCalendarEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
+
+    onMounted(() => {
+        if (config.entity?.idKey) {
+            store.setAreSecondaryBlocksShown(true);
+        }
+        else {
+            store.setAreSecondaryBlocksShown(false);
+        }
+    });
 </script>

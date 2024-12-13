@@ -38,21 +38,12 @@ namespace Rock.Blocks.Core
     [IconCssClass( "fa fa-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the service job history details.",
-        Key = AttributeKey.DetailPage )]
-
     [Rock.SystemGuid.EntityTypeGuid( "4b46834f-c9d3-43f3-9de2-8990d3a232c2" )]
     [Rock.SystemGuid.BlockTypeGuid( "2306068d-3551-4c10-8db8-133c030fa4fa" )]
     [CustomizedGrid]
     public class ScheduledJobHistoryList : RockEntityListBlockType<ServiceJobHistory>
     {
         #region Keys
-
-        private static class AttributeKey
-        {
-            public const string DetailPage = "DetailPage";
-        }
 
         private static class PageParameterKey
         {
@@ -92,7 +83,7 @@ namespace Rock.Blocks.Core
         {
             var options = new ScheduledJobHistoryListOptionsBag()
             {
-                IsJobIdValid = PageParameter( PageParameterKey.ScheduledJobId ).IsNotNullOrWhiteSpace(),
+                IsJobIdValid = GetScheduledJobId().HasValue,
                 ServiceJobName = GetServiceJobName(),
             };
 
@@ -102,15 +93,22 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<ServiceJobHistory> GetListQueryable( RockContext rockContext )
         {
-            var scheduledJobId = PageParameter( PageParameterKey.ScheduledJobId ).AsIntegerOrNull();
+            var scheduledJobId = GetScheduledJobId();
 
-            if ( scheduledJobId.HasValue )
+            if (scheduledJobId.HasValue)
             {
-                var jobHistoryService = new ServiceJobHistoryService( rockContext );
-                return jobHistoryService.GetServiceJobHistory( scheduledJobId );
+                var jobHistoryService = new ServiceJobHistoryService(rockContext);
+                return jobHistoryService.GetServiceJobHistory(scheduledJobId);
             }
 
             return new List<ServiceJobHistory>().AsQueryable();
+        }
+
+        private int? GetScheduledJobId()
+        {
+            var scheduledJobIdParam = PageParameter(PageParameterKey.ScheduledJobId);
+            var scheduledJobId = Rock.Utility.IdHasher.Instance.GetId(scheduledJobIdParam) ?? scheduledJobIdParam.AsIntegerOrNull();
+            return scheduledJobId;
         }
 
         /// <inheritdoc/>
@@ -176,7 +174,7 @@ namespace Rock.Blocks.Core
         {
             if ( _serviceJobName.IsNullOrWhiteSpace() )
             {
-                var scheduledJobId = PageParameter( PageParameterKey.ScheduledJobId ).AsIntegerOrNull();
+                var scheduledJobId = GetScheduledJobId(); ;
 
                 if ( scheduledJobId.HasValue )
                 {

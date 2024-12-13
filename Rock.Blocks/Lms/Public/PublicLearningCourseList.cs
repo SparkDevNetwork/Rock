@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Lms.PublicLearningCourseList;
+using Rock.Web;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Lms
@@ -37,14 +38,13 @@ namespace Rock.Blocks.Lms
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-
     [CodeEditorField( "Lava Template",
         Key = AttributeKey.LavaTemplate,
-        Description = "The lava template to use to render the page. Merge fields include: Program, Courses, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
+        Description = "The Lava template to use to render the page. Merge fields include: Program, Courses, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
-        IsRequired = true,
+        IsRequired = false,
         DefaultValue = AttributeDefault.CourseListTemplate,
         Order = 1 )]
 
@@ -62,20 +62,18 @@ namespace Rock.Blocks.Lms
         DefaultValue = "Show",
         Order = 3 )]
 
-    [SlidingDateRangeField( "Next Session Date Range",
-        Description = "Filter to limit the display of upcoming sessions.",
-        Order = 4,
+    [BooleanField(
+        "Public Only",
+        Description = "If selected, all non-public courses will be excluded.",
         IsRequired = false,
-        Key = AttributeKey.NextSessionDateRange )]
-
-    [LinkedPage( "Enrollment Page",
-        Description = "The page that will enroll the student in the course.",
-        Key = AttributeKey.CourseEnrollmentPage,
-        Order = 5 )]
+        DefaultBooleanValue = true,
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
+        Key = AttributeKey.PublicOnly,
+        Order = 4 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "4356febe-5efd-421a-bfc4-05942b6bd910" )]
     [Rock.SystemGuid.BlockTypeGuid( "5d6ba94f-342a-4ec1-b024-fc5046ffe14d" )]
-    public class PublicLearningCourseList : RockBlockType
+    public class PublicLearningCourseList : RockBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -84,7 +82,7 @@ namespace Rock.Blocks.Lms
             public const string CourseEnrollmentPage = "CourseEnrollmentPage";
             public const string LavaTemplate = "LavaTemplate";
             public const string DetailPage = "DetailPage";
-            public const string NextSessionDateRange = "NextSessionDateRange";
+            public const string PublicOnly = "PublicOnly";
             public const string ShowCompletionStatus = "ShowCompletionStatus";
         }
 
@@ -96,126 +94,138 @@ namespace Rock.Blocks.Lms
         private static class AttributeDefault
         {
             public const string CourseListTemplate = @"
-//- Variables
-{% assign imageFileNameLength = Program.ImageBinaryFile.Guid | Size %}
+<style>
+    
+    .lms-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1.5rem;
+    }
+    
+    .card-img-h {
+        height: 180px
+    }
+    
+    .card {
+        display: grid;
+        grid-row: auto / span 5;
+        grid-template-rows: subgrid;
+    }
+    
+    .credits {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
 
-//- Styles
-{% stylesheet %}
-    .page-container {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 12px;
+    @media (max-width: 767px) {
+        .lms-grid {
+           grid-template-columns: 1fr; 
+        }
+        h1 {
+            font-size: 28px;
+        }
     }
     
-    .page-header-section {
-        {% if imageFileNameLength > 0 %}
-            height: 280px; 
-        {% endif %}
-        align-items: center; 
-        border-radius: 12px; 
-        background-image: url('/GetImage.ashx?guid={{Program.ImageBinaryFile.Guid}}'); 
-        background-size: cover;
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .lms-grid {
+           grid-template-columns: 1fr 1fr; 
+        }
     }
     
-    .header-block {
-        display: flex;
-        flex-direction: column;
-        position: relative;
-        left: 10%;
-        {% if imageFileNameLength > 0 %}
-            bottom: -85%;
-            -webkit-transform: translateY(-30%);
-            transform: translateY(-30%);
-        {% endif %}
-        background-color: white; 
-        border-radius: 12px; 
-        width: 80%; 
-    }
-    
-    .page-sub-header {
-        padding-left: 10%; 
-        padding-right: 10%; 
-        padding-bottom: 12px;
-        margin-bottom: 12px;
-    }
-    
-    .course-item-container {
-        max-width: 300px;
-        background-color: white; 
-        border-radius: 12px;
-        margin: 8px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-{% endstylesheet %}
-<div class=""page-container"">
-	<div class=""page-header-section mb-5"">
-		<div class=""header-block text-center"">
-			<h2>
-				{{ Program.Name }}
-			</h2>
-			<div class=""page-sub-header"">
-				{{ Program.Summary }}
-			</div>
-		</div>
-	</div>
+</style>
+
+
+<div>
 	
-	<div class=""course-list-header-section center-block text-center mb-4"">
-		<span class=""course-list-header h5"">
-			Courses
-		</span>
-	</div>
+	<div class=""hero-section"">
+        <div class=""hero-section-image"" style=""background-image: url('/GetImage.ashx?guid={{ Program.ImageBinaryFile.Guid }}')""></div>
+        <div class=""hero-section-content"">
+            <h1 class=""hero-section-title""> {{ Program.Name }} </h1>
+            <p class=""hero-section-description""> {{ Program.Summary }} </p>
+        </div>
+    </div>
+    <div class=""center-block text-center mt-4 mb-4"">
+        <div class=""d-flex flex-column gap-2"">
+            <h3> Courses Available </h3>
+            <p class=""text-muted""> The following training courses are available for enrollment. </p>
+        </div>
+    </div>
 	
-	<div class=""course-list-container d-flex flex-fill"">
-		{% for course in Courses %}
-		<div class=""course-item-container"">
-			<div class=""course-item-middle p-3"">
-			
-				<h4 class=""course-name"">
-					{{ course.Entity.PublicName }}
-				</h4>
-				<div class=""course-category d-flex justify-content-between mb-2"">
-				    {% if course.Category and course.Category <> '' %}
-					    <span class=""badge badge-info"">{{ course.Category }}</span>
-					{% else %}
-					    <span> </span>
-				    {% endif %}
-				    {% if course.Entity.Credits %}
-				        <span class=""badge"" style=""background-color: #ddedf2; color: #546a71;"">Credits: {{ course.Entity.Credits }}</span>
-				    {% endif %}
-				</div>
-				<div class=""course-summary text-muted"">
-					{{ course.Entity.Summary }} 
-				</div>
-			</div>
-		
-			<div class=""course-item-footer d-flex flex-column mt-4 p-3"">
-                <div class=""course-next-session text-muted mb-3"">
-                    <div class=""text-bold"">Next Session Starts</div>
-                    <ul><li>{{ course.NextSemester.StartDate | Date:'MMMM dd, yyyy' }}</li></ul>
+	<div> //- Main Body - Container for course grid
+
+        <div class=""lms-grid""> //- Grid for Cards
+
+            {% for course in Courses %}
+
+            <div class=""card"">
+                //- 1 IMAGE
+                
+                {% if course.ImageFileGuid %}
+                    <img src=""/GetImage.ashx?guid={{ course.ImageFileGuid }}"" class=""card-img-top card-img-h object-cover"" alt=""course image"" />
+                        
+                    {% else %}
+                        <div class=""d-flex justify-content-center align-items-center card-img-top card-img-h"">
+                            <i class=""fa fa-image fa-2x text-gray-200""></i>
+                        </div>
+                        
+                {% endif %}
+                
+                //- 2 CARD HEADER
+
+                    <div class=""card-body d-flex justify-content-between align-items-start pt-0 pb-0"">
+                        <h4 class=""card-title mb-0"">{{ course.Entity.PublicName }}</h4>
+                        {% if course.Entity.Credits > 0 %}
+        			        <div class=""d-flex w-auto"">
+        			            <p class=""credits w-auto text-muted mb-0"">Credits: {{ course.Entity.Credits }}</p>
+        			        </div>
+    			        {% endif %}
+                    </div>
+                
+                //- 3 BODY TEXT
+                <div class=""card-body pt-0 pb-0"">
+                    <p class=""line-clamp-3"">
+                        {{ course.Entity.Summary }}    
+                    </p>
                 </div>
                 
-                <div class=""d-flex justify-content-between"">
-    				<a class=""btn btn-default"" href=""{{ course.CourseDetailsLink }}"">Learn More</a>
-
+                //- 4 CATEGORY
+			        <div class=""card-body pt-0 pb-0"">
+			            <div class=""badge badge-default"">{{ course.Category }}</div>
+            		</div>
+                
+                //- 5 FOOTER
+                <div class=""card-footer bg-transparent d-flex justify-content-between"">
+                    <a href=""{{ course.CourseDetailsLink }}"" class=""btn btn-default"">Learn More</a>
+                    
                     {% if ShowCompletionStatus %}
-    				    {% if course.LearningCompletionStatus == 'Pass' %}
-    					    <span class=""badge badge-success p-2"" style=""line-height: normal;"">Completed</span>
-    				    {% elseif course.LearningCompletionStatus == 'Incomplete' %}
-    					    <span class=""badge badge-info p-2"" style=""line-height: normal;"">Enrolled</span>
-    				    {% elseif course.UnmetPrerequisites != empty %}
-                            <a class=""text-muted"" href=""{{ course.PrerequisiteEnrollmentLink }}"">Prerequisites Not Met</a>
-                        {% else %}
-                            <a class=""text-bold ml-3"" href=""{{ course.CourseEnrollmentLink }}"">Enroll</a>
-    				    {% endif %}
+                                            
+                        {% if course.LearningCompletionStatus == 'Incomplete' %}
+                            <div class=""d-flex align-items-center"">
+                                <h4 class=""m-0""><span class=""label label-warning"">Enrolled</span></h4>
+                            </div>
+                                
+                            {% elseif course.LearningCompletionStatus == 'Fail' %}
+                            <div class=""d-flex align-items-center"">
+                                <h4 class=""m-0""><span class=""label label-danger"">Failed</span></h4>
+                            </div>
+                            
+                            {% elseif course.LearningCompletionStatus == 'Pass' %}
+                                <div class=""d-flex align-items-center"">
+                                    <h4 class=""m-0""><span class=""label label-success"">Passed</span></h4>
+                                </div>
+                        {% endif %}
+    
                     {% endif %}
-			    </div>
-			</div>
-		</div>
-		{% endfor %}
-	</div>
-</div>";
+                </div>
+
+            </div>
+            
+            {% endfor %}
+        
+        </div>
+    </div>
+</div>
+";
         }
 
         #endregion Keys
@@ -244,19 +254,18 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Provide html to the block for it's initial rendering.
+        /// Provide HTML to the block for it's initial rendering.
         /// </summary>
         /// <returns>The HTML content to initially render.</returns>
         protected override string GetInitialHtmlContent()
         {
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
-            var rockContext = new RockContext();
-            var program = new LearningProgramService( rockContext )
+            var program = new LearningProgramService( RockContext )
                 .Queryable()
                 .Include( p => p.ImageBinaryFile )
                 .FirstOrDefault( p => p.Id == programId );
 
-            var courses = GetCourses( programId, rockContext );
+            var courses = GetCourses( programId, RockContext );
 
             var queryParams = new Dictionary<string, string>
             {
@@ -272,8 +281,6 @@ namespace Rock.Blocks.Lms
                 // If there are unmet requirements include the link for enrollment to that course.
                 var prerequisiteCourseIdKey = course.UnmetPrerequisites?.FirstOrDefault()?.IdKey ?? string.Empty;
                 course.CourseDetailsLink = courseDetailUrlTemplate.Replace( "((Key))", course.Entity.IdKey );
-                course.PrerequisiteEnrollmentLink = courseEnrollmentUrlTemplate.Replace( "((Key))", prerequisiteCourseIdKey );
-                course.CourseEnrollmentLink = courseEnrollmentUrlTemplate.Replace( "((Key))", course.Entity.IdKey );
             }
 
             var mergeFields = this.RequestContext.GetCommonMergeFields();
@@ -292,9 +299,31 @@ namespace Rock.Blocks.Lms
 
         private List<Rock.Model.LearningCourseService.PublicLearningCourseBag> GetCourses( int programId, RockContext rockContext )
         {
-            var semesterDates = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now );
+            var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
 
-            return new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson().Id, semesterDates.Start, semesterDates.End );
+            return new LearningCourseService( rockContext ).GetPublicCourses( programId, GetCurrentPerson()?.Id, publicOnly );
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbText = "Courses";
+
+            // Include only the parameters necessary to construct the breadcrumb
+            // (prevent unused/unnecessary query string parameters). 
+            var includedParamKeys = new[] { "learningprogramid" };
+            var paramsToInclude = pageReference.Parameters.Where( kv => includedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
+            var breadCrumb = new BreadCrumbLink( breadCrumbText ?? "", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                {
+                    breadCrumb
+                }
+            };
         }
 
         #endregion

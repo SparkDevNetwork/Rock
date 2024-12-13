@@ -1,6 +1,6 @@
 <template>
     <div class="tithing-overview">
-        <NotificationBox v-if="!config.hasData" alertType="info">There are no computed tithing metrics available.</NotificationBox>
+        <NotificationBox v-if="!config.hasData" alertType="info">There are no computed tithing indexes available.</NotificationBox>
         <Panel v-else title="Tithing Overview By Campus" type="block">
             <template #headerActions>
                 <div class="control-wrapper mr-3">
@@ -296,13 +296,13 @@
 
                 if (chartType.value == ChartTypeKey.BarChart) {
                     const titheMetric = toolTipInfo.titheMetric ? `${toCurrencyOrNull(toolTipInfo.titheMetric, toolTipInfo.currencyInfo)}` : "N/A";
-                    innerHtml += `<tr><td><span style="border-width: 2px">Tithe Metric : ${titheMetric}</span></td><tr>`;
+                    innerHtml += `<tr><td><span style="border-width: 2px">Tithe Index : ${titheMetric}</span></td><tr>`;
                     innerHtml += `<tr><td><span style="border-width: 2px">Campus Age : ${formatAge(toolTipInfo.campusOpenedDate, toolTipInfo.campusClosedDate)}</span></td><tr>`;
                     innerHtml += `<tr><td><span style="border-width: 2px">Giving Households : ${toolTipInfo.givingHouseHolds}</span></td><tr>`;
                     innerHtml += `<tr><td><span style="border-width: 2px">Tithing Households : ${toolTipInfo.tithingHouseHolds} | ${toolTipInfo.value}%</span></td><tr>`;
                 }
                 else {
-                    innerHtml += `<tr><td><span style="border-width: 2px">Tithe Metric : ${RockDateTime.parseISO(dataPoint?.label)?.toASPString("d")} - ${dataPoint?.formattedValue}%</span></td><tr>`;
+                    innerHtml += `<tr><td><span style="border-width: 2px">Tithe Index : ${RockDateTime.parseISO(dataPoint?.label)?.toASPString("d")} - ${dataPoint?.formattedValue}%</span></td><tr>`;
                 }
 
                 innerHtml += "</tbody>";

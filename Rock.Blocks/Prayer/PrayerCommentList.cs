@@ -115,7 +115,7 @@ namespace Rock.Blocks.Prayer
         private PrayerCommentListOptionsBag GetBoxOptions()
         {
             var options = new PrayerCommentListOptionsBag();
-
+            options.IsCategoryFilterVisible = !GetAttributeValue( AttributeKey.PrayerRequestCategory ).AsGuidOrNull().HasValue;
             return options;
         }
 

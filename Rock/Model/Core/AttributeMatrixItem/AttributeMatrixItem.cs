@@ -45,6 +45,16 @@ namespace Rock.Model
         public int AttributeMatrixId { get; set; }
 
         /// <summary>
+        /// Gets the attribute matrix template identifier (Need this so that Attributes can be qualified on AttributeMatrix's AttributeMatrixTempleId)
+        /// </summary>
+        /// <value>
+        /// The attribute matrix template identifier.
+        /// </value>
+        [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
+        public int AttributeMatrixTemplateId { get; private set; }
+
+        /// <summary>
         /// Gets or sets the order.
         /// </summary>
         /// <value>
@@ -56,29 +66,6 @@ namespace Rock.Model
         #endregion Entity Properties
 
         #region Navigation Properties
-
-        /// <summary>
-        /// Gets the attribute matrix template identifier (Need this so that Attributes can be qualified on AttributeMatrix's AttributeMatrixTempleId)
-        /// </summary>
-        /// <value>
-        /// The attribute matrix template identifier.
-        /// </value>
-        public virtual int AttributeMatrixTemplateId
-        {
-            get
-            {
-                // Need to check for a null in case the AttributeMatrix obj didn't get lazy loaded as is the case with the REST API.
-                if ( this.AttributeMatrix == null )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        return new AttributeMatrixService( rockContext ).GetNoTracking( this.AttributeMatrixId ).AttributeMatrixTemplateId;
-                    }
-                }
-
-                return this.AttributeMatrix.AttributeMatrixTemplateId;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the attribute matrix.

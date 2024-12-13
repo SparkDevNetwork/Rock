@@ -168,14 +168,12 @@ namespace Rock.Attribute
                 entityProperties.Add( new BooleanFieldAttribute( CustomGridOptionsConfig.EnableDefaultWorkflowLauncherAttributeKey, category: "CustomSetting", defaultValue: true ) );
             }
 
-            bool dynamicAttributesBlock = typeof( Rock.Web.UI.IDynamicAttributesBlock ).IsAssignableFrom( type );
-
             // Create any attributes that need to be created
             foreach ( var entityProperty in entityProperties )
             {
                 try
                 {
-                    attributesUpdated = UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, dynamicAttributesBlock, rockContext ) || attributesUpdated;
+                    attributesUpdated = UpdateAttribute( entityProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, rockContext ) || attributesUpdated;
                 }
                 catch ( Exception ex )
                 {
@@ -187,18 +185,14 @@ namespace Rock.Attribute
             try
             {
                 var attributeService = new Model.AttributeService( rockContext );
+                var existingKeys = entityProperties.Select( a => a.Key ).ToList();
 
-                // if the entity is a block that implements IDynamicAttributesBlock, don't delete the attribute
-                if ( !dynamicAttributesBlock )
+                foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
                 {
-                    var existingKeys = entityProperties.Select( a => a.Key ).ToList();
-                    foreach ( var a in attributeService.GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, true ).ToList() )
+                    if ( !existingKeys.Contains( a.Key ) )
                     {
-                        if ( !existingKeys.Contains( a.Key ) )
-                        {
-                            attributeService.Delete( a );
-                            attributesDeleted = true;
-                        }
+                        attributeService.Delete( a );
+                        attributesDeleted = true;
                     }
                 }
 
@@ -229,24 +223,6 @@ namespace Rock.Attribute
         /// </remarks>
 
         internal static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, RockContext rockContext = null )
-        {
-            return UpdateAttribute( property, entityTypeId, entityQualifierColumn, entityQualifierValue, false, rockContext );
-        }
-
-        /// <summary>
-        /// Adds or Updates a <see cref="Rock.Model.Attribute" /> item for the attribute.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="entityQualifierColumn">The entity qualifier column.</param>
-        /// <param name="entityQualifierValue">The entity qualifier value.</param>
-        /// <param name="dynamicAttributesBlock">if set to <c>true</c> [dynamic attributes block].</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        /// <remarks>
-        /// If a rockContext value is included, this method will save any previous changes made to the context
-        /// </remarks>
-        private static bool UpdateAttribute( FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, bool dynamicAttributesBlock, RockContext rockContext = null )
         {
             bool updated = false;
 
@@ -281,14 +257,10 @@ namespace Rock.Attribute
                 if ( attribute.Name != property.Name ||
                     attribute.DefaultValue != property.DefaultValue ||
                     attribute.Description != property.Description ||
+                    attribute.Order != property.Order ||
                     attribute.FieldType.Assembly != property.FieldTypeAssembly ||
                     attribute.FieldType.Class != property.FieldTypeClass ||
                     attribute.IsRequired != property.IsRequired )
-                {
-                    updated = true;
-                }
-
-                if ( attribute.Order != property.Order && !dynamicAttributesBlock )
                 {
                     updated = true;
                 }
@@ -330,13 +302,7 @@ namespace Rock.Attribute
             attribute.Name = property.Name;
             attribute.Description = property.Description;
             attribute.DefaultValue = property.DefaultValue;
-
-            // if the block is IDynamicAttributesBlock, only update the attribute.Order if this is a new attribute 
-            if ( !dynamicAttributesBlock || attribute.Id == 0 )
-            {
-                attribute.Order = property.Order;
-            }
-
+            attribute.Order = property.Order;
             attribute.IsRequired = property.IsRequired;
 
             attribute.Categories.Clear();
@@ -1091,6 +1057,12 @@ This can be due to multiple threads updating the same attribute at the same time
         public static IHasAttributes LoadAttributes( Type entityType, int id, RockContext rockContext )
         {
             var setMethod = GetQueryableAttributeSetMethod( entityType );
+
+            // Entity doesn't support queryable attributes.
+            if ( setMethod == null )
+            {
+                return new QueryableAttributeWrapper( id, new QueryableAttributeValue[0] );
+            }
 
             // Load all the attributes for this entity.
             var dbSet = ( IQueryable<QueryableAttributeValue> ) setMethod.Invoke( rockContext, new object[0] );
@@ -2233,7 +2205,8 @@ INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
 
         /// <summary>
         /// Bulk updates the persisted values for all the values of an attribute
-        /// that have the specified value.
+        /// that have the specified value. This updates whether they are marked
+        /// as <see cref="AttributeValue.IsPersistedValueDirty"/> or not.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -2286,15 +2259,17 @@ WHERE [AttributeId] = @AttributeId
         /// <param name="attributeId">The attribute identifier.</param>
         /// <param name="valueIds">The value identifiers that should be updated.</param>
         /// <param name="persistedValues">The persisted values to use during the update.</param>
+        /// <param name="onlyDirty">Only update the <see cref="AttributeValue"/> objects if they marked dirty.</param>
         /// <param name="rockContext">The database context to use when updating.</param>
         /// <returns>The number of attribute value rows that were updated.</returns>
-        internal static int BulkUpdateAttributeValuePersistedValues( int attributeId, IEnumerable<int> valueIds, Rock.Field.PersistedValues persistedValues, RockContext rockContext )
+        internal static int BulkUpdateAttributeValuePersistedValues( int attributeId, IEnumerable<int> valueIds, Rock.Field.PersistedValues persistedValues, bool onlyDirty, RockContext rockContext )
         {
             var textValueParameter = new SqlParameter( "@TextValue", ( object ) persistedValues.TextValue ?? DBNull.Value );
             var htmlValueParameter = new SqlParameter( "@HtmlValue", ( object ) persistedValues.HtmlValue ?? DBNull.Value );
             var condensedTextValueParameter = new SqlParameter( "@CondensedTextValue", ( object ) persistedValues.CondensedTextValue ?? DBNull.Value );
             var condensedHtmlValueParameter = new SqlParameter( "@CondensedHtmlValue", ( object ) persistedValues.CondensedHtmlValue ?? DBNull.Value );
             var attributeIdParameter = new SqlParameter( "@AttributeId", attributeId );
+            var onlyDirtyParameter = new SqlParameter( "@OnlyDirty", onlyDirty );
 
             // Initialize the ValueId SQL parameter.
             var attributeIdsTable = new DataTable();
@@ -2321,12 +2296,13 @@ SET [AV].[PersistedTextValue] = @TextValue,
 FROM [AttributeValue] AS [AV]
 INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]
 WHERE [AV].[AttributeId] = @AttributeId
-  AND [AV].[IsPersistedValueDirty] = 1",
+  AND (@OnlyDirty = 0 OR [AV].[IsPersistedValueDirty] = 1)",
                 textValueParameter,
                 htmlValueParameter,
                 condensedTextValueParameter,
                 condensedHtmlValueParameter,
                 attributeIdParameter,
+                onlyDirtyParameter,
                 valueIdParameter );
         }
 
@@ -2343,7 +2319,7 @@ WHERE [AV].[AttributeId] = @AttributeId
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public static void UpdateAttributeValueEntityReferences( AttributeValue attributeValue, RockContext rockContext )
         {
             var referencedEntitySet = rockContext.Set<AttributeValueReferencedEntity>();
@@ -2495,7 +2471,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public static void UpdateAttributeEntityReferences( Rock.Model.Attribute attribute, RockContext rockContext )
         {
             var referencedEntitySet = rockContext.Set<AttributeReferencedEntity>();
@@ -2557,7 +2533,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.14" )]
+        [RockInternal( "1.14", true )]
         public static void UpdateAttributeValuePersistedValues( Rock.Model.AttributeValue attributeValue, AttributeCache attribute )
         {
             var field = attribute?.FieldType?.Field;
@@ -2595,7 +2571,6 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
         internal static void UpdateDependantAttributesAndValues( IReadOnlyList<int> attributeIds, int entityTypeId, int entityId, RockContext rockContext )
         {
             var qry = rockContext.Set<AttributeReferencedEntity>()
-                .AsNoTracking()
                 .Where( re => re.EntityTypeId == entityTypeId && re.EntityId == entityId );
 
             if ( attributeIds != null && attributeIds.Any() )
@@ -2707,7 +2682,7 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
                         };
                     }
 
-                    BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, rockContext );
+                    BulkUpdateAttributeValuePersistedValues( attributeId, attributeValueIds, persistedValues, false, rockContext );
                 }
             }
         }

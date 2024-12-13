@@ -17,8 +17,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 using Rock.ViewModels.CheckIn;
+
+[assembly: DebuggerDisplay( "FullName = {FullName}", Target = typeof( PersonBag ) )]
 
 namespace Rock.CheckIn.v2
 {
@@ -26,6 +29,7 @@ namespace Rock.CheckIn.v2
     /// Represents a person and all the check-in related values that will be
     /// used during the check-in process.
     /// </summary>
+    [DebuggerDisplay( "FullName = {Person.FullName}" )]
     internal class Attendee : AttendeeBag
     {
         /// <summary>

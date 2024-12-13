@@ -6,6 +6,7 @@
             <SlidingDateRangePicker v-model="dateRange"
                                     formGroupClasses="margin-b-sm"
                                     label="Date Range"
+                                    :enabledTimeUnits="[TimeUnit.Day, TimeUnit.Week, TimeUnit.Month, TimeUnit.Year]"
                                     :enabledSlidingDateRangeUnits="[RangeType.Previous, RangeType.Last, RangeType.Current, RangeType.DateRange]" />
             <RockButton btnType="default" btnSize="xs" @click="refreshCheckboxData">
                 <i class="fa fa-refresh"></i> Update

@@ -299,5 +299,139 @@ namespace Rock.Tests.Utility.ExtensionMethods
         }
 
         #endregion
+
+        #region AsDecimalPercentage
+
+        [TestMethod]
+        public void AsDecimalPercentage_Invalid()
+        {
+            var output = @"25p".AsDecimalPercentage();
+            Assert.That.AreEqual( 0m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentage_ValidInteger()
+        {
+            var output = @"25".AsDecimalPercentage();
+            Assert.That.AreEqual( 0.25m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentage_ValidIntegerWithPercentageSymbol()
+        {
+            var output = @"25%".AsDecimalPercentage();
+            Assert.That.AreEqual( 0.25m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentage_ValidIntegerWithSpaceAndPercentageSymbol()
+        {
+            var output = @"25 %".AsDecimalPercentage();
+            Assert.That.AreEqual( 0.25m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentage_ValidIntegerGreaterThan100()
+        {
+            var output = @"567".AsDecimalPercentage();
+            Assert.That.AreEqual( 5.67m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentage_ValidIntegerLessThanZero()
+        {
+            var output = @"-33".AsDecimalPercentage();
+            Assert.That.AreEqual( -0.33m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentage_ValidIntegerOverridePrecision()
+        {
+            var output = @"35".AsDecimalPercentage( precision: 1 );
+            Assert.That.AreEqual( 0.4m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentage_ValidIntegerLessThanMinimumPercentage()
+        {
+            var output = @"4".AsDecimalPercentage( minPercentage: 5 );
+            Assert.That.AreEqual( 0.05m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentage_ValidIntegerMoreThanMaximumPercentage()
+        {
+            var output = @"80".AsDecimalPercentage( maxPercentage: 75 );
+            Assert.That.AreEqual( 0.75m, output );
+        }
+
+        #endregion
+
+        #region AsDecimalPercentageOrNull
+
+        [TestMethod]
+        public void AsDecimalPercentageOrNull_Invalid()
+        {
+            var output = @"25p".AsDecimalPercentageOrNull();
+            Assert.That.IsNull( output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentageOrNull_ValidInteger()
+        {
+            var output = @"25".AsDecimalPercentageOrNull();
+            Assert.That.AreEqual( 0.25m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentageOrNull_ValidIntegerWithPercentageSymbol()
+        {
+            var output = @"25%".AsDecimalPercentageOrNull();
+            Assert.That.AreEqual( 0.25m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentageOrNull_ValidIntegerWithSpaceAndPercentageSymbol()
+        {
+            var output = @"25 %".AsDecimalPercentageOrNull();
+            Assert.That.AreEqual( 0.25m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentageOrNull_ValidIntegerGreaterThan100()
+        {
+            var output = @"567".AsDecimalPercentageOrNull();
+            Assert.That.AreEqual( 5.67m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentageOrNull_ValidIntegerLessThanZero()
+        {
+            var output = @"-33".AsDecimalPercentageOrNull();
+            Assert.That.AreEqual( -0.33m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentageOrNull_ValidIntegerOverridePrecision()
+        {
+            var output = @"35".AsDecimalPercentageOrNull( precision: 1 );
+            Assert.That.AreEqual( 0.4m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentageOrNull_ValidIntegerLessThanMinimumPercentage()
+        {
+            var output = @"4".AsDecimalPercentageOrNull( minPercentage: 5 );
+            Assert.That.AreEqual( 0.05m, output );
+        }
+
+        [TestMethod]
+        public void AsDecimalPercentageOrNull_ValidIntegerMoreThanMaximumPercentage()
+        {
+            var output = @"80".AsDecimalPercentageOrNull( maxPercentage: 75 );
+            Assert.That.AreEqual( 0.75m, output );
+        }
+
+        #endregion
     }
 }

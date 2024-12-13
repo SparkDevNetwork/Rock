@@ -27,6 +27,11 @@ namespace Rock.ViewModels.Blocks.Core.CategoryDetail
     public class CategoryBag : EntityBagBase
     {
         /// <summary>
+        /// Gets or sets the CategoryId of the currently selected Category.
+        /// </summary>
+        public int CategoryId { get; set; }
+
+        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         public string Description { get; set; }

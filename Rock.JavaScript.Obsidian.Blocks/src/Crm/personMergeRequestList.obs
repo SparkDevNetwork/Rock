@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Merge Request"
+          title="Merge Requests"
           stickyHeader
           liveUpdates
           :showLaunchWorkflow="false"
@@ -13,7 +14,9 @@
                         title="Date"
                         field="date"
                         :filter="dateValueFilter"
-                        visiblePriority="xs" />
+                        visiblePriority="xs"
+                        headerClass="title-right"
+                        itemClass="justify-content-end text-right"/>
 
         <TextColumn name="requestor"
                     title="Requestor"
@@ -25,6 +28,7 @@
                 title="Merge Records"
                 :filter="textValueFilter"
                 :filterValue="getMergeRecordsRowFilterValue"
+                :quickFilterValue="getMergeRecordsRowFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div class="text-lg">
@@ -48,6 +52,12 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

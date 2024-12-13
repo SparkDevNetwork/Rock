@@ -28,8 +28,9 @@
             <div class="col-md-6">
                 <CategoryPicker v-model="categories"
                                 label="Categories"
+                                rules="required"
                                 multiple
-                                :entityTypeGuid="EntityType.AdaptiveMessage" />
+                                :entityTypeGuid="EntityType.AdaptiveMessageCategory" />
             </div>
         </div>
 
@@ -68,14 +69,6 @@
             </div>
             <Modal v-model="isModalOpen" title="Adaptation Attributes">
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                        Please correct the following:
-                        <ul>
-                            <li v-for="error of attributeErrors">
-                                {{ error }}
-                            </li>
-                        </ul>
-                    </NotificationBox>
                     <AttributeEditor v-model="adaptationAttribute" :reservedKeyNames="reservedKeyNames" />
                 </RockForm>
 
@@ -140,7 +133,6 @@
     const adaptationAttributes = ref(props.modelValue.adaptationAttributes ?? []);
     const adaptationAttribute = ref<PublicEditableAttributeBag | null>(null);
     const isModalOpen = ref<boolean>(false);
-    const attributeErrors = ref<string[]>([]);
     const submitEditAttribute = ref<boolean>(false);
     const reservedKeyNames = ref(props.options.reservedKeyNames ?? []);
 
@@ -179,11 +171,9 @@
     async function onAddItem(): Promise<void> {
         adaptationAttribute.value = {} as PublicEditableAttributeBag;
         isModalOpen.value = true;
-        attributeErrors.value = [];
     }
 
     const onEditItem = async (key: string): Promise<void> => {
-        attributeErrors.value = [];
         const selectedSiteAttribute = adaptationAttributes.value.find(x => x.key === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedSiteAttribute) {
@@ -198,6 +188,7 @@
         // Close modal and remove deleted attribute from the current collection of attributes.
         isModalOpen.value = false;
         adaptationAttributes.value = adaptationAttributes.value.filter(s => s.key !== key);
+        reservedKeyNames.value = reservedKeyNames.value.filter(r => r !== key);
 
         // Update the grid.
         if (gridData.rows) {
@@ -239,22 +230,13 @@
                 gridData.rows?.push(newRowItem);
             }
 
-            const key = adaptationAttribute.value?.key ?? "";
-            adaptationAttribute.value = null;
             isModalOpen.value = false;
-            if (!reservedKeyNames.value.includes(key)) {
-                reservedKeyNames.value.push(key);
-            }
+            adaptationAttribute.value = null;
         }
     }
 
     const onStartSaveAttribute = (): void => {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(adaptationAttribute.value?.key ?? "") && !adaptationAttribute.value?.guid;
-        submitEditAttribute.value = !isExistingKey;
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
+        submitEditAttribute.value = true;
     };
 
     // #endregion
@@ -272,7 +254,7 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues,adaptationAttributes, ...propRefs], () => {
+    watch([attributeValues, adaptationAttributes, ...propRefs], () => {
         const newValue: AdaptiveMessageBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -285,6 +267,17 @@
         };
 
         emit("update:modelValue", newValue);
+    });
+
+    watch(isModalOpen, () => {
+        if (isModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== adaptationAttribute.value?.key);
+        }
+        else {
+            if (adaptationAttribute.value?.key && !reservedKeyNames.value.some(k => k === adaptationAttribute.value?.key)) {
+                reservedKeyNames.value.push(adaptationAttribute.value.key);
+            }
+        }
     });
 
     // Watch for any changes to props that represent properties and then

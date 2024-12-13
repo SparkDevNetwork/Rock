@@ -78,6 +78,7 @@
     <Compile Include="OpenAIApiClient\Enums\OpenAIChatMessageRole.cs" />
     <Compile Include="OpenAIApiClient\OpenAIApi.cs" />
     <Compile Include="OpenAIApiClient\OpenAIChatError.cs" />
+    <Compile Include="OpenAIApiClient\OpenAINewtonsoftSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Provider\OpenAICompatibleProvider.cs" />
     <Compile Include="Provider\OpenAIProvider.cs" />

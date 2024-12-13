@@ -120,12 +120,13 @@ namespace Rock.Model
         /// <summary>
         /// Indicates whether or not this LearningProgram should
         /// be displayed in public contexts (e.g. on a public site).
+        /// Defaults to <c>true</c>.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this LearningProgram should be publicly visible; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsPublic { get; set; }
+        public bool IsPublic { get; set; } = true;
 
         /// <summary>
         /// Gets or sets the <see cref="Model.Category"/> identifier.
@@ -156,7 +157,7 @@ namespace Rock.Model
         public bool IsCompletionStatusTracked { get; set; }
 
         /// <summary>
-        /// Gets or sets theid of the system communication.
+        /// Gets or sets the id of the system communication.
         /// </summary>
         /// <value>
         /// The <see cref="Rock.Model.SystemCommunication"/> identifier.
@@ -247,7 +248,7 @@ namespace Rock.Model
         /// <see cref="LearningClass"/> is created automatically.
         /// </remarks>
         [DataMember]
-        public LearningGradingSystem DefaultLearningGradingSystem { get; set; }
+        public virtual LearningGradingSystem DefaultLearningGradingSystem { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.LearningProgramCompletion">LearningProgramCompletions</see> for this LearningProgram.

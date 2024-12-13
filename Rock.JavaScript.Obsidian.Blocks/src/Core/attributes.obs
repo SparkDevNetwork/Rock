@@ -467,6 +467,17 @@
         gridDataSource.value = loadGridData();
     });
 
+    watch(showEditAttributeModal, () => {
+        if (showEditAttributeModal.value) {
+            usedKeyNames.value = usedKeyNames.value.filter(k => k !== editableAttribute.value?.key);
+        }
+        else {
+            if (editableAttribute.value?.key && !usedKeyNames.value.some(k => k === editableAttribute.value?.key)) {
+                usedKeyNames.value.push(editableAttribute.value.key);
+            }
+        }
+    });
+
     // #endregion
 
     // #region Grid Data

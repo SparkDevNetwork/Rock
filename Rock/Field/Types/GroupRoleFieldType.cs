@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) group role filtered by a selected group type
     /// Stored as GroupTypeRole.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.GROUP_ROLE )]
     public class GroupRoleFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

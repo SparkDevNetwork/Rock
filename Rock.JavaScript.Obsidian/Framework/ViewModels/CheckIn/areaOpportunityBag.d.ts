@@ -21,10 +21,18 @@
 // </copyright>
 //
 
+import { LocationSelectionStrategy } from "@Obsidian/Enums/CheckIn/locationSelectionStrategy";
+
 /** Defines a single area that can be used during check-in. */
 export type AreaOpportunityBag = {
     /** Gets or sets the identifier of this item. */
     id?: string | null;
+
+    /**
+     * How locations should be selected when a group in this area is
+     * being used for check-in.
+     */
+    locationSelectionStrategy: LocationSelectionStrategy;
 
     /** Gets or sets the display name of this item. */
     name?: string | null;

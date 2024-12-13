@@ -284,6 +284,11 @@ namespace Rock.SystemGuid
         public const string INTERACTION = "3BB4B095-2DE4-4009-8FA2-705BF284F7B7";
 
         /// <summary>
+        /// The guid for the <see cref="Rock.Model.InteractionEntity"/> entity.
+        /// </summary>
+        public const string INTERACTION_ENTITY = "AB3AC547-CCEF-4662-9646-64F16813DAC4";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.InteractiveExperience"/>
         /// </summary>
         public const string INTERACTIVE_EXPERIENCE = "3D90E693-476E-4DFC-B958-A28D1DD370BF";
@@ -685,7 +690,7 @@ namespace Rock.SystemGuid
         public const string MOBILE_CRM_GROUP_MEMBERS = "592242ED-7536-49EA-94DE-7B4EBA7E87A6";
 
         /// <summary>
-        /// The GUID for the mobile check-in block
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.CheckIn.CheckIn.
         /// </summary>
         public const string MOBILE_CHECKIN_CHECKIN = "BC0A4B6C-9F6D-4D39-8FFE-B6F9FA4B2F49";
 
@@ -1990,6 +1995,11 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessageAdaptationSegment"/> 
         /// </summary>
         public const string ADAPTIVE_MESSAGE_ADAPTATION_SEGMENT = "40EDF82B-EFF5-4253-A129-965F7BC90033";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AdaptiveMessageCategory"/> 
+        /// </summary>
+        public const string ADAPTIVE_MESSAGE_CATEGORY = "D47BDA25-03A3-46EE-A0A6-F8B220E39E4A";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.CheckInLabel"/> 

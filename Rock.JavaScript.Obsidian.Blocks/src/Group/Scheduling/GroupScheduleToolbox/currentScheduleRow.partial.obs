@@ -139,8 +139,8 @@
     });
 
     const emit = defineEmits<{
-        (e: "removeScheduleRow", entityGuid: string): void,
-        (e: "personGroupScheduleFeedUrlUpdated", personGroupScheduleFeedUrl: string | null | undefined): void
+        (e: "removeScheduleRow", entityGuid: string): void;
+        (e: "personGroupScheduleFeedUrlUpdated", personGroupScheduleFeedUrl: string | null | undefined): void;
     }>();
 
     // #region Values

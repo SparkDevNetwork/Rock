@@ -50,6 +50,22 @@ namespace Rock.Model
         public int RegistrationInstanceId { get; set; }
 
         /// <summary>
+        /// Gets the registration template identifier.
+        /// NOTE: this is needed so that Registration Attributes can have a RegistrationTemplateId qualifier
+        /// </summary>
+        /// <remarks>
+        /// This shouldn't be nullable as it can never return null, but we can't
+        /// change it without it being a breaking change.
+        /// </remarks>
+        /// <value>
+        /// The registration template identifier.
+        /// </value>
+        [DataMember]
+        [IgnoreCanDelete]
+        [EnableAttributeQualification]
+        public int? RegistrationTemplateId { get; private set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> identifier.
         /// </summary>
         /// <value>

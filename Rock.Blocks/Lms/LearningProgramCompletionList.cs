@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -107,9 +106,14 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                ["LearningProgramCompletionId"] = "((Key))"
+            };
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LearningProgramCompletionId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams )
             };
         }
 
@@ -128,7 +132,7 @@ namespace Rock.Blocks.Lms
                 queryable = queryable.Where( a => a.LearningProgramId == contextProgram.Id );
             }
 
-            return queryable;
+            return queryable.OrderBy( a => a.PersonAlias.Person.NickName ).ThenBy( a => a.PersonAlias.Person.LastName );
         }
 
         /// <inheritdoc/>
@@ -180,7 +184,7 @@ namespace Rock.Blocks.Lms
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${LearningProgramCompletion.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {LearningProgramCompletion.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

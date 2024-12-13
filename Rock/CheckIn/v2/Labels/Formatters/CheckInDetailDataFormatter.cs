@@ -20,10 +20,10 @@ using Rock.ViewModels.CheckIn.Labels;
 namespace Rock.CheckIn.v2.Labels.Formatters
 {
     /// <summary>
-    /// Formats an <see cref="AttendanceLabel"/> value into a selected format from
+    /// Formats an <see cref="LabelAttendanceDetail"/> value into a selected format from
     /// the list of options.
     /// </summary>
-    internal sealed class CheckInDetailDataFormatter : DataFormatter<AttendanceLabel>
+    internal sealed class CheckInDetailDataFormatter : DataFormatter<LabelAttendanceDetail>
     {
         /// <summary>
         /// The singleton instance of the full name formatter.
@@ -79,31 +79,31 @@ namespace Rock.CheckIn.v2.Labels.Formatters
         }
 
         /// <inheritdoc/>
-        protected override string GetFormattedValue( AttendanceLabel value, string optionValue, LabelField field, PrintLabelRequest printRequest )
+        protected override string GetFormattedValue( LabelAttendanceDetail value, string optionValue, LabelField field, PrintLabelRequest printRequest )
         {
             if ( optionValue == "NickName ScheduleName" )
             {
-                return $"{value.Person.NickName} {value.Schedule.Name}";
+                return $"{value.Person?.NickName} {value.Schedule?.Name}";
             }
             else if ( optionValue == "ScheduleName NickName" )
             {
-                return $"{value.Schedule.Name} {value.Person.NickName}";
+                return $"{value.Schedule?.Name} {value.Person?.NickName}";
             }
             else if ( optionValue == "NickName LocationName" )
             {
-                return $"{value.Person.NickName}, {value.Location.Name}";
+                return $"{value.Person?.NickName}, {value.Location?.Name}";
             }
             else if ( optionValue == "LocationName NickName" )
             {
-                return $"{value.Location.Name} {value.Person.NickName}";
+                return $"{value.Location?.Name} {value.Person?.NickName}";
             }
             else if ( optionValue == "NickName GroupName" )
             {
-                return $"{value.Person.NickName} {value.Group.Name}";
+                return $"{value.Person?.NickName} {value.Group?.Name}";
             }
             else if ( optionValue == "GroupName NickName" )
             {
-                return $"{value.Group.Name} {value.Person.NickName}";
+                return $"{value.Group?.Name} {value.Person?.NickName}";
             }
             else
             {

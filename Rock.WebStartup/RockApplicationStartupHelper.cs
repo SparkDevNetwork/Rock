@@ -533,7 +533,7 @@ namespace Rock.WebStartup
             }
 
             // get the pendingmigrations sorted by name (in the order that they run), then run to the latest migration
-            var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
+            var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration( false ) );
             var pendingMigrations = migrator.GetPendingMigrations().OrderBy( a => a );
 
             // double check if there are migrations to run
@@ -919,19 +919,75 @@ WHERE [o].[name] LIKE 'AttributeValue_%' AND [o].[type] = 'V'
         /// At this stage, the RockContext is initialized but standard framework
         /// methods that generate EF queries may or may not work so be careful.
         /// </remarks>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="type">The CLR type for the model we are generating the SQL View for.</param>
+        /// <param name="entityTypeId">The identifier of the <see cref="EntityType"/> representing <paramref name="type"/>. This will be used to filter attributes.</param>
+        /// <param name="entityTableName">The name of the table that stores the data rows for <paramref name="type"/>.</param>
+        /// <param name="viewDefinitions">The SQL views that are already defined in the database.</param>
         private static string CreateOrUpdateAttributeValueView( RockContext rockContext, Type type, int entityTypeId, string entityTableName, List<SqlViewDefinition> viewDefinitions )
         {
             var viewName = $"AttributeValue_{entityTableName}";
+
+            var existingDefinition = viewDefinitions.Where( v => v.Name == viewName )
+                .Select( v => v.Definition )
+                .FirstOrDefault();
+
+            var query = GenerateQueryForAttributeValueView( type, entityTypeId, entityTableName, rockContext );
+
+            var sql = $@"CREATE VIEW [dbo].[{viewName}]
+AS
+{query}";
+
+            // We only need to create the view if it doesn't exist or doesn't match.
+            if ( existingDefinition == null )
+            {
+                // View doesn't exist.
+                rockContext.Database.ExecuteSqlCommand( sql );
+            }
+            else if ( existingDefinition != sql )
+            {
+                // View exists but doesn't match definition.
+                rockContext.Database.ExecuteSqlCommand( $"DROP VIEW [dbo].[{viewName}]" );
+                rockContext.Database.ExecuteSqlCommand( sql );
+            }
+
+            return viewName;
+        }
+
+        /// <summary>
+        /// Generates the SQL query that will be used to gather all the attribute
+        /// value data for the <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The CLR type for the model we are generating the SQL View for.</param>
+        /// <param name="entityTypeId">The identifier of the <see cref="EntityType"/> representing <paramref name="type"/>. This will be used to filter attributes.</param>
+        /// <param name="entityTableName">The name of the table that stores the data rows for <paramref name="type"/>.</param>
+        /// <param name="rockContext">The context that will be used to load additional data from the database.</param>
+        /// <returns>The SQL query to retrieve all the attribute values.</returns>
+        private static string GenerateQueryForAttributeValueView( Type type, int entityTypeId, string entityTableName, RockContext rockContext )
+        {
+            if ( type == typeof( EventItem ) )
+            {
+                return GenerateQueryForEventItemAttributeValueView( entityTypeId, rockContext );
+            }
+
             var qualifierChecks = string.Empty;
             var additionalJoins = string.Empty;
 
             // Find all properties that have been decorated as valid for use
-            // with attribute qualification.
+            // with attribute qualification. We can't use cache yet because
+            // it might not be ready for use.
             var qualifierColumns = type.GetProperties()
                 .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null
                     && p.DeclaringType == type )
                 .Select( p => p.Name )
                 .ToList();
+
+            var typeQualificationAttribute = type.GetCustomAttribute<EnableAttributeQualificationAttribute>();
+
+            if ( typeQualificationAttribute != null )
+            {
+                qualifierColumns = qualifierColumns.Union( typeQualificationAttribute.PropertyNames ).ToList();
+            }
 
             // If we found any then construct an additional where clause to be
             // used to limit to those qualifications.
@@ -955,10 +1011,7 @@ WHERE [o].[name] LIKE 'AttributeValue_%' AND [o].[type] = 'V'
                 qualifierChecks += "\n        OR ([A].[EntityTypeQualifierColumn] = 'Id' AND [A].[EntityTypeQualifierValue] = [GTI].[InheritedGroupTypeId])";
             }
 
-            var sql = $@"
-CREATE VIEW [dbo].[{viewName}]
-AS
-SELECT
+            return $@"SELECT
     CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Id] ELSE CAST([A].[Id] + 10000000000 AS BIGINT) END AS [Id],
     [E].[Id] AS [EntityId],
     [A].[Id] AS [AttributeId],
@@ -974,29 +1027,83 @@ FROM [{entityTableName}] AS [E]
 CROSS JOIN [Attribute] AS [A]
 LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]{additionalJoins}
 WHERE [A].[EntityTypeId] = {entityTypeId}
+    AND [A].[IsActive] = 1
     AND (
         (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = ''){qualifierChecks}
     )
 ";
+        }
 
-            var existingDefinition = viewDefinitions.Where( v => v.Name == viewName )
-                .Select( v => v.Definition )
-                .FirstOrDefault();
+        /// <summary>
+        /// Generates the SQL query that will be used to gather all the attribute
+        /// value data for <see cref="EventItem"/>. This is a special query
+        /// because the attributes are pulled from <see cref="EventCalendarItem"/>.
+        /// So we have to run some special logic to pull all the attributes and
+        /// values and then make sure we don't have any duplicates.
+        /// </summary>
+        /// <param name="entityTypeId">The identifier of the <see cref="EntityType"/> that represents <see cref="EventItem"/>. This will be used to filter attributes.</param>
+        /// <param name="rockContext">The context that will be used to load additional data from the database.</param>
+        /// <returns>The SQL query to retrieve all the attribute values.</returns>
+        private static string GenerateQueryForEventItemAttributeValueView( int entityTypeId, RockContext rockContext )
+        {
+            var eventCalendarItemEntityTypeId = new EntityTypeService( rockContext ).Get( typeof( EventCalendarItem ), true, null ).Id;
 
-            // We only need to create the view if it doesn't exist or doesn't match.
-            if ( existingDefinition == null )
-            {
-                // View doesn't exist.
-                rockContext.Database.ExecuteSqlCommand( sql );
-            }
-            else if ( existingDefinition != sql )
-            {
-                // View exists but doesn't match definition.
-                rockContext.Database.ExecuteSqlCommand( $"DROP VIEW [dbo].[{viewName}]" );
-                rockContext.Database.ExecuteSqlCommand( sql );
-            }
-
-            return viewName;
+            return $@"SELECT
+    [PQ].*
+FROM
+(
+    SELECT
+        [UQ].*,
+        ROW_NUMBER() OVER (PARTITION BY [UQ].[EntityId], [UQ].[Key] ORDER BY [UQ].[AttributeId]) AS [row_number]
+    FROM
+    (
+        SELECT
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Id] ELSE CAST([A].[Id] + 10000000000 AS BIGINT) END AS [Id],
+            [E].[Id] AS [EntityId],
+            [A].[Id] AS [AttributeId],
+            [A].[Key],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Value] ELSE ISNULL([A].[DefaultValue], '') END AS [Value],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedTextValue] ELSE [A].[DefaultPersistedTextValue] END AS [PersistedTextValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedHtmlValue] ELSE [A].[DefaultPersistedHtmlValue] END AS [PersistedHtmlValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedTextValue] ELSE [A].[DefaultPersistedCondensedTextValue] END AS [PersistedCondensedTextValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedHtmlValue] ELSE [A].[DefaultPersistedCondensedHtmlValue] END AS [PersistedCondensedHtmlValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[IsPersistedValueDirty] ELSE [A].[IsDefaultPersistedValueDirty] END AS [IsPersistedValueDirty],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN 0 ELSE CHECKSUM(ISNULL([A].[DefaultValue], '')) END AS [ValueChecksum]
+        FROM [EventItem] AS [E]
+        CROSS JOIN [Attribute] AS [A]
+        LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]
+        WHERE [A].[EntityTypeId] = {entityTypeId}
+            AND [A].[IsActive] = 1
+            AND (
+                (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = '')
+            )
+        UNION
+        SELECT
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Id] ELSE CAST([A].[Id] + 10000000000 AS BIGINT) END AS [Id],
+            [E].[Id] AS [EntityId],
+            [A].[Id] AS [AttributeId],
+            [A].[Key],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Value] ELSE ISNULL([A].[DefaultValue], '') END AS [Value],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedTextValue] ELSE [A].[DefaultPersistedTextValue] END AS [PersistedTextValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedHtmlValue] ELSE [A].[DefaultPersistedHtmlValue] END AS [PersistedHtmlValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedTextValue] ELSE [A].[DefaultPersistedCondensedTextValue] END AS [PersistedCondensedTextValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedHtmlValue] ELSE [A].[DefaultPersistedCondensedHtmlValue] END AS [PersistedCondensedHtmlValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[IsPersistedValueDirty] ELSE [A].[IsDefaultPersistedValueDirty] END AS [IsPersistedValueDirty],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN 0 ELSE CHECKSUM(ISNULL([A].[DefaultValue], '')) END AS [ValueChecksum]
+        FROM [EventItem] AS [E]
+        INNER JOIN [EventCalendarItem] AS [ECI] ON [ECI].[EventItemId] = [E].[Id]
+        CROSS JOIN [Attribute] AS [A]
+        LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [ECI].[Id]
+        WHERE [A].[EntityTypeId] = {eventCalendarItemEntityTypeId}
+            AND [A].[IsActive] = 1
+            AND (
+                (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = '')
+                OR ([A].[EntityTypeQualifierColumn] = 'EventCalendarId' AND [A].[EntityTypeQualifierValue] = [ECI].[EventCalendarId])
+            )
+    ) AS [UQ]
+) AS [PQ]
+WHERE [PQ].[row_number] = 1
+";
         }
 
         /// <summary>

@@ -32,6 +32,7 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Connection Request Activity
     /// Stored as ConnectionRequestActivity.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_REQUEST_ACTIVITY )]
     public class ConnectionRequestActivityFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

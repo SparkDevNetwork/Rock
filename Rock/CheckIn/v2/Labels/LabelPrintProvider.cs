@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Bus.Message;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2.Labels
@@ -160,6 +161,7 @@ namespace Rock.CheckIn.v2.Labels
                 }
                 catch ( Exception ex )
                 {
+                    ExceptionLogService.LogException( ex );
                     return new List<string> { $"Unable to print label: {ex.Message}" };
                 }
             }
@@ -244,6 +246,12 @@ namespace Rock.CheckIn.v2.Labels
                 catch ( NullReferenceException ) when ( cancellationToken.IsCancellationRequested )
                 {
                     // NRE is thrown in .NET Framework when the socket is closed
+                    // while still connecting.
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+                catch ( ObjectDisposedException ) when ( cancellationToken.IsCancellationRequested )
+                {
+                    // OBE is sometimes thrown in .NET Framework when the socket is closed
                     // while still connecting.
                     cancellationToken.ThrowIfCancellationRequested();
                 }

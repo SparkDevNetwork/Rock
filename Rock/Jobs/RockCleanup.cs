@@ -285,6 +285,9 @@ namespace Rock.Jobs
             // Search for and delete group memberships duplicates (same person, group, and role)
             RunCleanupTask( "group membership", () => GroupMembershipCleanup() );
 
+            // Search for and delete previous family location if it's the same as their current home address.
+            RunCleanupTask( "family location", () => DeleteDuplicatePreviousFamilyLocations() );
+
             RunCleanupTask( "primary family", () => UpdateMissingPrimaryFamily() );
 
             RunCleanupTask( "attendance label data", () => AttendanceDataCleanup() );
@@ -847,9 +850,6 @@ namespace Rock.Jobs
             //// Add any missing Implied/Known relationship groups
             // Known Relationship Group
             resultCount += AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid(), commandTimeout );
-
-            // Implied Relationship Group
-            resultCount += AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK ), Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid(), commandTimeout );
 
             // Find family groups that have no members or that have only 'inactive' people (record status) and mark the groups inactive.
             using ( var familyRockContext = CreateRockContext() )
@@ -2202,6 +2202,39 @@ namespace Rock.Jobs
             return groupMemberIds.Count();
         }
 
+        private int DeleteDuplicatePreviousFamilyLocations()
+        {
+            var rockContext = CreateRockContext();
+
+            var groupLocationService = new GroupLocationService( rockContext );
+            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+            var previousLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS ).Id;
+            var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
+
+            var duplicateFamilyLocations = groupLocationService.Queryable()
+                .Where( gl => gl.Group.GroupTypeId == familyGroupTypeId )
+                .GroupBy( gl => new { gl.GroupId, gl.LocationId } )
+                .Where( g => g.Count() > 1 )
+                .ToList();
+            var recordsToDelete = new List<GroupLocation>();
+
+            foreach ( var duplicateFamilyLocation in duplicateFamilyLocations )
+            {
+                var previousLocation = duplicateFamilyLocation.FirstOrDefault( x => x.GroupLocationTypeValueId == previousLocationTypeId );
+                var isOtherDuplicateHomeLocation = duplicateFamilyLocation.Any( gl => gl.GroupLocationTypeValueId == homeLocationTypeId );
+
+                if ( previousLocation != null && isOtherDuplicateHomeLocation )
+                {
+                    recordsToDelete.Add( previousLocation );
+                }
+            }
+
+            groupLocationService.DeleteRange( recordsToDelete );
+            rockContext.SaveChanges();
+
+            return recordsToDelete.Count;
+        }
+
         /// <summary>
         /// Merges the streaks.
         /// </summary>
@@ -2804,6 +2837,41 @@ WHERE [CreatedByPersonAliasId] IS NOT NULL
 SET [ModifiedByPersonAliasId] = NULL
 WHERE [ModifiedByPersonAliasId] IS NOT NULL
   AND [ModifiedByPersonAliasId] NOT IN (SELECT [Id] FROM [PersonAlias])" );
+            }
+
+            // Fix any anonymous PersonAlias records that have a NULL LastVisitDate.
+            // These could happen because older versions of Rock created the
+            // PersonAlias initially with a NULL value. It was only the second page
+            // load for that same visitor that would set the LastVisitDate value.
+            // This was fixed in 1.16.7, which means this code can probably be
+            // safely removed in Rock v18.
+            var stopProcessingAfter = RockDateTime.Now.AddMinutes( 2 );
+
+            while ( RockDateTime.Now < stopProcessingAfter )
+            {
+                using ( var rockContext = CreateRockContext() )
+                {
+                    var anonymousVisitorId = new PersonService( rockContext ).GetId( Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid() );
+                    var personAliasService = new PersonAliasService( rockContext );
+                    var now = RockDateTime.Now;
+
+                    var aliasesToUpdate = personAliasService
+                        .Queryable()
+                        .Where( a => a.PersonId == anonymousVisitorId
+                            && !a.LastVisitDateTime.HasValue )
+                        .Take( 500 )
+                        .ToList();
+
+                    // If no aliases need to be updated, then we are done.
+                    if ( !aliasesToUpdate.Any() )
+                    {
+                        break;
+                    }
+
+                    aliasesToUpdate.ForEach( a => a.LastVisitDateTime = now );
+
+                    rockContext.SaveChanges( disablePrePostProcessing: true );
+                }
             }
 
             return deleteCount;

@@ -19,14 +19,86 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.Data;
 using Rock.Enums.Lms;
-using Rock.Utility;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 
 namespace Rock.Model
 {
     public partial class LearningParticipantService
     {
+        private static class ErrorKey
+        {
+            /// <summary>
+            /// THe error key used when a participant is already enrolled as a student.
+            /// </summary>
+            public const string ALREADY_ENROLLED = "already_enrolled";
+
+            /// <summary>
+            /// The error key used when the learning class has reached it's maximum allowed student count.
+            /// </summary>
+            public const string CLASS_FULL = "class_full";
+
+            /// <summary>
+            /// The error key used when the semester for the learning class no longer accepts enrollments.
+            /// </summary>
+            public const string ENROLLMENT_CLOSED = "enrollment_closed";
+
+            /// <summary>
+            /// The error key used when the registrant has not met the course requirements.
+            /// </summary>
+            public const string UNMET_COURSE_REQUIREMENTS = "unmet_course_requirements";
+        }
+
+        /// <summary>
+        /// Checks the <paramref name="learningClass"/> and <paramref name="registrant"/> to verify that the <paramref name="registrant"/>
+        /// can enroll in the <paramref name="learningClass"/> based on the provided <paramref name="unmetRequirements"/>.
+        /// </summary>
+        /// <param name="learningClass">The learning class to check whether the <paramref name="registrant"/> can enroll.</param>
+        /// <param name="registrant">The <see cref="Person"/> to check whether they can enroll.</param>
+        /// <param name="unmetRequirements">The list of course requirements not yet met by the Person.</param>
+        /// <param name="errorKey">The error code for the type of error.</param>
+        /// <returns><c>true</c> if the registrant should be allowed to enroll; otherwise <c>false</c>.</returns>
+        public bool CanEnroll( LearningClass learningClass, Person registrant, List<LearningCourseRequirement> unmetRequirements, out string errorKey )
+        {
+            errorKey = string.Empty;
+
+            if ( learningClass.LearningSemester?.EnrollmentCloseDate != null
+                && learningClass.LearningSemester.EnrollmentCloseDate.Value.IsPast() )
+            {
+                errorKey = ErrorKey.ENROLLMENT_CLOSED;
+                return false;
+            }
+
+            var participantService = new LearningParticipantService( (RockContext)Context );
+            var studentCount = participantService.GetStudents( learningClass.Id ).Count();
+            if ( studentCount >= learningClass.LearningCourse.MaxStudents )
+            {
+                errorKey = ErrorKey.CLASS_FULL;
+                return false;
+            }
+
+            // Already enrolled (as a student).
+            var alreadyEnrolled = participantService.Queryable().Any( p =>
+                p.PersonId == registrant.Id
+                && p.LearningClassId == learningClass.Id
+                && !p.GroupRole.IsLeader );
+
+            if ( alreadyEnrolled )
+            {
+                errorKey = ErrorKey.ALREADY_ENROLLED;
+                return false;
+            }
+
+            if ( unmetRequirements.Any() )
+            {
+                errorKey = ErrorKey.UNMET_COURSE_REQUIREMENTS;
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// <para>Gets a list of <see cref="LearningActivity">Activities</see> for the course that the <see cref="LearningParticipant"/>
         /// is enrolled in.</para>.
@@ -47,33 +119,57 @@ namespace Rock.Model
                     .Where( a => a.AssignTo == ( p.GroupRole.IsLeader ? AssignTo.Facilitator : AssignTo.Student ) )
                 );
         }
-        /// <summary>
-        /// <para>Gets a list of <see cref="LearningActivityCompletion">Activities</see> for the course that the <see cref="LearningParticipant"/>
-        /// is enrolled in.</para>
-        /// These are the activity instances. For template data use <seealso cref="GetActivities"/>.
-        /// </summary>
-        /// <param name="participantId">The Id of the <see cref="LearningParticipant"/> for which to get activities.</param>
-        /// <returns>Queryable of LearningActivitCompletions for the given participant and class.</returns>
-        public IQueryable<LearningActivityCompletion> GetActivityCompletions( int participantId )
-        {
-            return Queryable()
-                .Include( p => p.LearningActivities )
-                .Include( p => p.LearningClass )
-                .Where( p => p.Id == participantId )
-                .SelectMany( p => p.LearningActivities );
-        }
 
         /// <summary>
-        /// <para>Gets a list of <see cref="LearningActivityCompletion">Activities</see> for the course that the <see cref="LearningParticipant"/>
-        /// is enrolled in.</para>
-        /// These are the activity instances. For template data use <seealso cref="GetActivities"/>.
+        /// Gets a list of <see cref="LearningActivityCompletion" /> for the specified <paramref name="activityId"/>.
         /// </summary>
-        /// <param name="participantIdKey">The hashed identifier of the <see cref="LearningParticipant"/> for which to get activities.</param>
-        /// <returns>Queryable of LearningActivitCompletions for the given participant and class.</returns>
-        public IQueryable<LearningActivityCompletion> GetActivityCompletions( string participantIdKey )
+        /// <param name="activityId">The identifier of the <see cref="LearningActivity"/> for which to retrieve the list of activity completions.</param>
+        /// <returns>A <c>Queryable</c> of LearningActivityCompletion for the specified <see cref="LearningActivity"/> identifier.</returns>
+        public IQueryable<LearningActivityCompletion> GetActivityCompletions( int activityId )
         {
-            var participantId = IdHasher.Instance.GetId( participantIdKey );
-            return participantId.HasValue ? GetActivityCompletions( participantId.Value ) : new List<LearningActivityCompletion>().AsQueryable();
+            var rockContext = ( RockContext ) Context;
+
+            var activity = new LearningActivityService( rockContext ).Get( activityId );
+
+            // Get all the activities for this class.
+            var students = Queryable()
+                .Include( p => p.Person )
+                .Include( p => p.LearningClass )
+                .Include( p => p.LearningClass.LearningSemester )
+                .AreStudents()
+                .Where( p => p.LearningClassId == activity.LearningClassId )
+                .ToList();
+
+            // Get any of the completions that exist for this participant.
+            var existingCompletions = Queryable()
+                .AsNoTracking()
+                .Include( c => c.LearningActivities )
+                .Where( c => c.LearningClassId == activity.LearningClassId )
+                .SelectMany( c => c.LearningActivities )
+                .ToList();
+
+            var completions = new List<LearningActivityCompletion>();
+
+            foreach ( var student in students )
+            {
+                var existingCompletion = existingCompletions
+                    .FirstOrDefault( c =>
+                        c.LearningActivityId == activity.Id
+                        && c.StudentId == student.Id );
+
+                if ( existingCompletion != null )
+                {
+                    completions.Add( existingCompletion );
+                }
+                else
+                {
+                    // If a completion doesn't exist create it using default values.
+                    completions.Add( LearningActivityCompletionService.GetNew( activity, student ) );
+                }
+            }
+
+            // Return a list of completions specific to this participant.
+            return completions.AsQueryable();
         }
 
         /// <summary>
@@ -110,10 +206,13 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The <see cref="Person"/> identifier of the participant to retrieve.</param>
         /// <param name="classId">The identifier of the <see cref="LearningClass"/> within which to search for the participant.</param>
-        /// <returns></returns>
-        public int GetFacilitatorId( int personId, int classId )
+        /// <returns>
+        /// The integer identifier of the <see cref="LearningParticipant"/> where the specified <paramref name="personId"/>
+        /// is a facilitator; <c>null</c> if not found.</returns>
+        public int? GetFacilitatorId( int personId, int classId )
         {
             return GetParticipant( personId, classId )
+                .AreFacilitators()
                 .Select( p => p.Id )
                 .FirstOrDefault();
         }
@@ -125,7 +224,7 @@ namespace Rock.Model
         /// <returns>Queryable of LearningParticipants that have a Group role of IsLeader.</returns>
         public IQueryable<LearningParticipant> GetFacilitators( int classId )
         {
-            return GetParticipants( classId ).Where( a => a.GroupRole.IsLeader );
+            return GetParticipants( classId ).AreFacilitators();
         }
 
         /// <summary>
@@ -142,7 +241,7 @@ namespace Rock.Model
                 .Include( c => c.GroupRole )
                 .Where( c => c.LearningClass.LearningCourseId == courseId )
                 .Where( c => c.LearningClass.LearningSemesterId == semesterId )
-                .Where( c => c.GroupRole.IsLeader == true );
+                .AreFacilitators();
 
             return includePerson ? baseQuery.Include( c => c.Person ) : baseQuery;
         }
@@ -195,11 +294,12 @@ namespace Rock.Model
             // Optionally filter by facilitators only.
             if ( facilitatorsOnly )
             {
-                baseQuery = baseQuery.Where( p => p.GroupRole.IsLeader );
+                baseQuery = baseQuery.AreFacilitators();
             }
 
             return baseQuery
-                .Select( p => new {
+                .Select( p => new
+                {
                     p.Id,
                     p.Person.Email,
                     IsFacilitator = p.GroupRole.IsLeader,
@@ -209,7 +309,8 @@ namespace Rock.Model
                     RoleName = p.GroupRole.Name,
                     p.Guid
                 } )
-                .ToList().Select( p => new LearningActivityParticipantBag
+                .ToList()
+                .Select( p => new LearningActivityParticipantBag
                 {
                     Email = p.Email,
                     Guid = p.Guid,
@@ -223,7 +324,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets a list of <see cref="LearningParticipant">Participants</see> for a specified <see cref="LearningClass"/>
         /// </summary>
-        /// <param name="classId">The identifier of the class for which to retreive participants.</param>
+        /// <param name="classId">The identifier of the class for which to retrieve participants.</param>
         /// <param name="includeGradingScales">Whether to include the list of <see cref="LearningGradingSystemScale"/> for the course.</param>
         /// <returns>Queryable of LearningParticipants.</returns>
         public IQueryable<LearningParticipant> GetParticipants( int classId, bool includeGradingScales = false )
@@ -249,7 +350,132 @@ namespace Rock.Model
         /// <returns>Queryable of LearningParticipants that have a Group role of not IsLeader.</returns>
         public IQueryable<LearningParticipant> GetStudents( int classId )
         {
-            return GetParticipants( classId, true ).Where( a => !a.GroupRole.IsLeader );
+            return GetParticipants( classId, true ).AreStudents();
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="LearningActivity">LearningActivities</see> matching the specified <paramref name="classId">LearningClassId</paramref>.
+        /// Includes the <see cref="LearningActivityCompletion">LearningActivityCompletions</see> the specified <paramref name="personId"/>.
+        /// </summary>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> for which to retrieve activities.</param>
+        /// <param name="personId">The person for whom to include <see cref="LearningActivityCompletion"/> records.</param>
+        /// <param name="learningActivityId">The identifier of the <see cref="LearningActivity"/> to get the completion for.</param>
+        /// <returns>A <c>Queryable</c> of LearningActivity for the specified LearningClass identifier.</returns>
+        public LearningActivityCompletion GetStudentActivity( int classId, int personId, int learningActivityId )
+        {
+            // Get the participant based on class and person identifiers.
+            var participant = Queryable()
+                .AreStudents()
+                .Include( p => p.LearningClass )
+                .Include( p => p.LearningClass.LearningActivities )
+                .Include( p => p.LearningClass.LearningSemester )
+                .Include( p => p.LearningClass.LearningSemester.LearningProgram )
+                .FirstOrDefault( p => p.PersonId == personId && p.LearningClassId == classId );
+
+            // If the participant has a completion for this activity return it.
+            var existingCompletion = participant?.LearningActivities?.FirstOrDefault( c => c.LearningActivityId == learningActivityId );
+            if ( existingCompletion != null )
+            {
+                return existingCompletion;
+            }
+
+            // Otherwise get the default completion for this activity.
+            return LearningActivityCompletionService.GetNew( new LearningActivityService( ( RockContext ) Context ).Get( learningActivityId ), participant );
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="LearningActivityCompletion" /> for all activities in the class for the specified <paramref name="learningParticipantId" />.
+        /// </summary>
+        /// <param name="learningParticipantId">The identifier of the <see cref="LearningParticipant"/> for whom to get the learning plan.</param>
+        /// <returns>A <c>Queryable</c> of LearningActivityCompletion for the specified LearningClass identifier.</returns>
+        public List<LearningActivityCompletion> GetStudentLearningPlan( int learningParticipantId )
+        {
+            // Get the participant based on the LearningParticipant identifier.
+            var participant = Queryable()
+                .Include( p => p.LearningClass )
+                .Include( p => p.LearningClass.LearningSemester )
+                .Include( p => p.LearningClass.LearningSemester.LearningProgram )
+                .FirstOrDefault( p => p.Id == learningParticipantId );
+
+            return GetStudentLearningPlan( participant );
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="LearningActivityCompletion" /> for all activities in the specified <paramref name="classId">LearningClassId</paramref>.
+        /// Includes the <see cref="LearningActivityCompletion">LearningActivityCompletions</see> the specified <paramref name="personId"/>.
+        /// </summary>
+        /// <param name="classId">The identifier of the <see cref="LearningClass"/> for which to retrieve activities.</param>
+        /// <param name="personId">The person for whom to include <see cref="LearningActivityCompletion"/> records.</param>
+        /// <returns>A <c>Queryable</c> of LearningActivityCompletion for the specified LearningClass identifier.</returns>
+        public List<LearningActivityCompletion> GetStudentLearningPlan( int classId, int personId )
+        {
+            // Get the participant based on class and person identifiers.
+            // Order by IsLeader so that Student roles are included first
+            // This prevents potential issues when a facilitator is also a student.
+            var participant = Queryable()
+                .Include( p => p.LearningClass )
+                .Include( p => p.LearningClass.LearningSemester )
+                .Include( p => p.LearningClass.LearningSemester.LearningProgram )
+                .OrderBy( p => p.GroupRole.IsLeader )
+                .FirstOrDefault( p => p.PersonId == personId && p.LearningClassId == classId );
+
+            return GetStudentLearningPlan( participant );
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="LearningActivityCompletion" /> for all activities in the class for the specified <paramref name="student" />.
+        /// If a the <see cref="LearningParticipant"/> doesn't have a persisted <see cref="LearningActivityCompletion" /> then a new instance is generated 
+        /// (but not tracked) with default values.
+        /// </summary>
+        /// <remarks>
+        /// If a student has completed the class any <see cref="LearningActivity"/> records created after that
+        /// <see cref="LearningParticipant.LearningCompletionDateTime"/> will be excluded from the learning plan.
+        /// </remarks>
+        /// <param name="student">The<see cref="LearningParticipant"/> for which to retrieve activities.</param>
+        /// <returns>A <c>Queryable</c> of LearningActivityCompletions - one for each <see cref="LearningActivity"/> in the class.</returns>
+        private List<LearningActivityCompletion> GetStudentLearningPlan( LearningParticipant student )
+        {
+            // Get the activities for this class
+            // excluding those created after a student completed.
+            var activities = Queryable()
+                .Include( p => p.LearningClass )
+                .Where( p => p.Id == student.Id )
+                .SelectMany( p => p.LearningClass.LearningActivities )
+                .ToList()
+                .Where( c =>
+                    !student.LearningCompletionDateTime.HasValue
+                    || !c.CreatedDateTime.HasValue
+                    || c.CreatedDateTime <= student.LearningCompletionDateTime );
+
+            // Get any of the completions that exist for this participant.
+            var existingCompletions = Queryable()
+                .Include( c => c.LearningActivities )
+                .Where( c => c.Id == student.Id )
+                .SelectMany( c => c.LearningActivities )
+                .ToList();
+
+            var completions = new List<LearningActivityCompletion>();
+
+            foreach ( var activity in activities )
+            {
+                var existingCompletion = existingCompletions.FirstOrDefault( c => c.LearningActivityId == activity.Id );
+
+                if ( existingCompletion != null )
+                {
+                    completions.Add( existingCompletion );
+                }
+                else
+                {
+                    // If a completion doesn't exist create it using default values.
+                    completions.Add( LearningActivityCompletionService.GetNew( activity, student) );
+                }
+            }
+
+            // Return a list of completions specific to this participant.
+            return completions
+                .OrderBy( a => a.LearningActivity.Order )
+                .ThenBy( a => a.LearningActivityId )
+                .ToList();
         }
     }
 }

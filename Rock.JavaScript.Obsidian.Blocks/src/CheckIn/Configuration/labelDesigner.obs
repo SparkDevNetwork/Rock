@@ -15,7 +15,8 @@
 
         <div class="panel-flex-fill-body">
             <div style="display: flex; flex-grow: 1; overflow: hidden">
-                <Menu :labelManager="labelManager" />
+                <Menu :labelManager="labelManager"
+                      :systemLabel="config.isSystem" />
 
                 <Editor ref="editor"
                         :labelManager="labelManager" />
@@ -24,6 +25,7 @@
             <div class="actions">
                 <RockButton btnType="primary"
                             autoDisable
+                            :disabled="config.isSystem"
                             @click="onSave">Save</RockButton>
 
                 <RockButton btnType="link"

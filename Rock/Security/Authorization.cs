@@ -167,6 +167,21 @@ namespace Rock.Security
         /// </summary>
         public const string VIEW_PROTECTION_PROFILE = "ViewProtectionProfile";
 
+        /// <summary>
+        /// Browser recognition cookie key (.ROCK_BROWSER_KEY).
+        /// </summary>
+        public const string ROCK_BROWSER_RECOGNITION_COOKIE = ".ROCK_BROWSER_KEY";
+
+        /// <summary>
+        /// Authorization to view grades in the LMS system.
+        /// </summary>
+        public const string VIEW_GRADES = "ViewGrades";
+
+        /// <summary>
+        /// Authorization to edit grades in the LMS system.
+        /// </summary>
+        public const string EDIT_GRADES = "EditGrades";
+
         #endregion
 
         #region Public Methods
@@ -886,6 +901,34 @@ namespace Rock.Security
                 };
 
             RockPage.AddOrUpdateCookie( domainCookie );
+        }
+
+        /// <summary>
+        /// Checks to see if the user's browser is recognized and sets the recognition cookie for future checks.
+        /// </summary>
+        /// <param name="personRecognitionValue">The short person guid string.</param>
+        /// <returns>
+        ///   <c>true</c> if the user's browser is recognized; otherwise, <c>false</c>.
+        /// </returns>
+        internal static bool IsBrowserRecognized( string personRecognitionValue )
+        {
+            var browserRecognitionCookie = WebRequestHelper.GetCookieFromContext( HttpContext.Current, ROCK_BROWSER_RECOGNITION_COOKIE );
+
+            var isValid = ( browserRecognitionCookie != null && browserRecognitionCookie.Value.ToLower() == personRecognitionValue.ToLower() );
+
+            // set even if it matches, to slide the expiration.
+            SetBrowserRecognitionCookie( personRecognitionValue );
+
+            return isValid;
+        }
+
+        /// <summary>
+        /// Sets the recognition cookie for future checks.
+        /// </summary>
+        /// <param name="personRecognitionValue">The short person guid string.</param>
+        private static void SetBrowserRecognitionCookie( string personRecognitionValue )
+        {
+            RockPage.AddOrUpdateCookie( ROCK_BROWSER_RECOGNITION_COOKIE, personRecognitionValue, RockDateTime.SystemDateTime.AddYears( 1 ) );
         }
 
         /// <summary>

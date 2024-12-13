@@ -64,6 +64,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the <see cref="Rock.Model.BinaryFileType"/>.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary>

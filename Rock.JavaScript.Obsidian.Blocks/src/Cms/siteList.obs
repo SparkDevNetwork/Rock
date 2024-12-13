@@ -15,6 +15,7 @@
 
         <Column name="name"
                 title="Name"
+                sortValue="{{ row.name }} {{  row.description }}"
                 :filter="textValueFilter"
                 filterValue="{{ row.name }} {{  row.description }}"
                 quickFilterValue="{{ row.name }} {{  row.description }}"

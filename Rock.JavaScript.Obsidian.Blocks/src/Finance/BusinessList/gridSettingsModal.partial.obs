@@ -8,12 +8,10 @@
 
         <div class="row">
             <div class="col-md-4">
-                <TextBox v-model="businessName"
-                         label="Business Name" />
-            </div>
-            <div class="col-md-4">
-                <DropDownList v-model="active" :items="activeStatus"
-                         label="Active" />
+                <DropDownList v-model="recordStatus"
+                              :items="recordStatusBag"
+                              blankValue="All"
+                              label="Record Status" />
             </div>
         </div>
     </Modal>
@@ -27,7 +25,6 @@
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { deepEqual } from "@Obsidian/Utility/util";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
@@ -47,7 +44,7 @@
         (e: "close"): void;
     }>();
 
-    const activeStatus: ListItemBag[] = [
+    const recordStatusBag: ListItemBag[] = [
         {
             text: "Active",
             value: "Active"
@@ -62,14 +59,12 @@
         },
     ];
 
-    const businessName = ref(props.modelValue.businessName ?? "");
-    const active = ref(props.modelValue.active ?? "");
+    const recordStatus = ref(props.modelValue.recordStatus ?? "");
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
     function onSave(): void {
         const value: GridSettingsOptions = {
-            businessName: businessName.value,
-            active: active.value,
+            recordStatus: recordStatus.value,
         };
 
         if (!deepEqual(value, props.modelValue, true)) {
@@ -80,8 +75,7 @@
     }
 
     watch(() => props.modelValue, () => {
-        businessName.value = props.modelValue.businessName ?? "";
-        active.value = props.modelValue.active ?? "";
+        recordStatus.value = props.modelValue.recordStatus ?? "";
     });
 
     watch(isVisible, () => {

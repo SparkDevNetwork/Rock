@@ -133,6 +133,8 @@
                         <div class="col-md-6">
                             <KeyValueList v-model="endpointHeaders"
                                           label="Endpoint Headers"
+                                          keyPlaceholder="Key"
+                                          valuePlaceholder="Value"
                                           help="List of HTTP headers to be added to the HTTP calls when sending telemetry." />
                         </div>
                         <div class="col-md-6">
@@ -185,7 +187,7 @@
                         </div>
                     </div>
 
-                    <NotificationBox v-if="experimentalSettingsNotificationMessage" :alertType="experimentalSettingsNotificationAlertType" v-html="experimentalSettingsNotificationMessage"/>
+                    <NotificationBox v-if="experimentalSettingsNotificationMessage" :alertType="experimentalSettingsNotificationAlertType" v-html="experimentalSettingsNotificationMessage" />
 
                     <div class="actions">
                         <RockButton :btnType="BtnType.Primary"

@@ -15,36 +15,14 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
 
 export const enum PreferenceKey {
-    FilterStartDate = "filter-start-date",
-
-    FilterEndDate = "filter-end-date",
-
-    FilterStatus = "filter-status",
-
-    FilterApprovalStatus = "filter-approval-status",
-
-    FilterCampus = "filter-campus",
-
-    FilterAudience = "filter-audience"
+    FilterCampus = "filter-campus"
 }
 
 export type GridSettingsOptions = {
-    startDate?: string | null;
-
-    endDate?: string | null;
-
-    status?: string | null;
-
-    approvalStatus?: string | null;
-
     campuses: string[];
-
-    audiences: ListItemBag[];
 };

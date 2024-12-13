@@ -326,8 +326,8 @@ namespace RockWeb.Blocks.Reporting
                 ( person, phoneNumber ) => new { person, phoneNumber } )
                 .Count();
             dataItems.Add( new DataItem( "Mobile Phone", DataItem.GetPercentage( hasMobilePhoneCount, total ) ) );
-
-            var hasMaritalStatusCount = qry.Count( p => p.MaritalStatusValue != null && p.MaritalStatusValue.Value != "Unknown" );
+            
+            var hasMaritalStatusCount = qry.Count( p => p.MaritalStatusValue?.Value != null );
             dataItems.Add( new DataItem( "Marital Status", DataItem.GetPercentage( hasMaritalStatusCount, total ) ) );
 
             var hasPhotoCount = qry.Count( p => p.PhotoId.HasValue );

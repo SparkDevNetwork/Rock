@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentDropDownPicker
-                           @primaryButtonClicked="onSelect"
+    <ContentDropDownPicker @primaryButtonClicked="onSelect"
                            @secondaryButtonClicked="onCancel"
                            @clearButtonClicked="onClear"
                            :iconCssClass="pickerIconClass"
@@ -10,7 +9,16 @@
                            :fullWidth="fullWidth"
                            v-model:showPopup="showPopup">
 
-        <TreeList v-model="internalValues" :multiple="multiple" :items="items" :provider="provider" @update:items="onUpdateItems" @update:modelValue="selectItemOnClick" :disableFolderSelection="disableFolderSelection" :autoExpand="autoExpand" :showChildCount="showChildCount" :isVisible="showPopup" />
+        <TreeList v-model="internalValues"
+                  :multiple="multiple"
+                  :items="items"
+                  :provider="provider"
+                  @update:items="onUpdateItems"
+                  @update:modelValue="selectItemOnClick"
+                  :disableFolderSelection="disableFolderSelection"
+                  :autoExpand="autoExpand"
+                  :showChildCount="showChildCount"
+                  :isVisible="showPopup" />
 
         <template #innerLabel><span class="selected-names">{{ selectedNames || blankValue }}</span></template>
 
@@ -55,6 +63,7 @@
     import TreeList from "./treeList.obs";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import ContentDropDownPicker from "./contentDropDownPicker.obs";
+    import { forceToArray } from "@Obsidian/Utility/arrayUtils";
 
     const props = defineProps({
         modelValue: {
@@ -243,7 +252,7 @@
 
     // The picker should select on item click when we are not selecting multiple items.
     const selectItemOnClick = (): void => {
-        if(!props.multiple) {
+        if (!props.multiple) {
             onSelect();
         }
     };
@@ -270,30 +279,5 @@
         }
 
         return flatArray;
-    }
-
-    /**
-     * Convert a single item to an array of one item. If the value is already an
-     * array then it is just returned as is.
-     *
-     * @param value The value from the parent component.
-     *
-     * @returns The value trimmed down to just the actual selection value.
-     */
-    function forceToArray(value: ListItemBag | ListItemBag[] | undefined | null, multiple: boolean): ListItemBag[] {
-        if (value === undefined || value === null) {
-            return [];
-        }
-        else if (Array.isArray(value)) {
-            if (!multiple && value.length > 1) {
-                return [value[0]];
-            }
-            else {
-                return value;
-            }
-        }
-        else {
-            return [value];
-        }
     }
 </script>

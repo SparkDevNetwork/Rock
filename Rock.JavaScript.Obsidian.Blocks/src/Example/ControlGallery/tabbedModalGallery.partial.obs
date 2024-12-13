@@ -1,0 +1,154 @@
+<template>
+    <GalleryAndResult :value="{ isModalOpen, selectedTab }" :importCode="importCode" :exampleCode="exampleCode" enableReflection hasMultipleValues>
+
+        <RockButton @click="isModalOpen = !isModalOpen">Toggle Modal</RockButton>
+
+        <TabbedModal v-model="isModalOpen" v-model:selectedTab="selectedTab" :tabs="tabs" @save="onSave" saveText="Save" title="Bible Book Type">
+            <template #tabpane="{ item }">
+                <!-- This v-if prevents the tab panes that aren't shown from rendering, so they can't have required fields making the form invalid. -->
+                <div v-if="item === selectedTab">
+                    <DropDownList v-model="bookType" :items="options[item]" :label="`Book Type: ${item}`" rules="required" />
+                </div>
+            </template>
+        </TabbedModal>
+
+        <template #props>
+            <p>
+                This component is a wrapper around a <a href="#ModalGallery">Modal</a> component, with a
+                <a href="#TabbedContentGallery">TabbedContent</a> component inside it. See Modal for usage
+                information. The following props are available for this component.
+            </p>
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Prop</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>modelValue</code></td>
+                        <td>Boolean</td>
+                        <td><em>Required</em></td>
+                        <td>
+                            The <code>v-model</code> for specifying whether the modal is shown
+                            or not.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>tabs</code></td>
+                        <td>String[]</td>
+                        <td><em>Required</em></td>
+                        <td>A list of the tab labels. Forwarded to the TabbedContent component.</td>
+                    </tr>
+                    <tr>
+                        <td><code>selectedTab</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>
+                            A <code>v-model</code> for specifying which tab is currently selected.
+                            Forwarded to the TabbedContent component.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">
+                            All other props are passed through to the Modal component, so read
+                            <a href="#ModalGallery">its documentation</a> for more details.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4 class="mt-0 mb-3">Slots</h4>
+
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Slot Name</th>
+                        <th>Scoped Variables</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>tabpane</td>
+                        <td><code>{ item }</code></td>
+                        <td>
+                            This slot is used to render the tab panes. Define a template once inside
+                            this slot and use the <code>item</code> variable to determine what to
+                            render.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import TabbedModal from "@Obsidian/Controls/tabbedModal.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const options = {
+        "Old Testament": [
+            { value: "Torah / Law", text: "Torah / Law" },
+            { value: "OT Historical", text: "Historical (OT)" },
+            { value: "Wisdom", text: "Wisdom" },
+            { value: "Major Prophets", text: "Major Prophets" },
+            { value: "Minor Prophets", text: "Minor Prophets" },
+        ],
+        "New Testament": [
+            { value: "Gospels", text: "Gospels" },
+            { value: "NT Historical", text: "Historical (NT)" },
+            { value: "Epistles", text: "Epistles" },
+            { value: "Prophecy", text: "Prophecy" },
+        ]
+    } as const;
+
+    const isModalOpen = ref(false);
+    const tabs = ref(Object.keys(options));
+    const selectedTab = ref("");
+    const bookType = ref("");
+
+    watch(selectedTab, () => {
+        bookType.value = "";
+    });
+
+    watch(isModalOpen, (val) => {
+        if (val) {
+            selectedTab.value = "";
+        }
+    });
+
+    function onSave(): void {
+        isModalOpen.value = false;
+        alert(`Saved! You chose "${bookType.value}"`);
+    }
+
+    const importCode = getSfcControlImportPath("tabbedModal");
+    const exampleCode = computed(() => {
+        return `
+<TabbedModal v-model="isModalOpen"
+             v-model:selectedTab="selectedTab"
+             :tabs="['Tab 1', 'Tab 2']"
+             @save="onSave"
+             saveText="Save"
+             title="Modal Title">
+    <template #tabpane="{ item }">
+        <div v-if="item === 'Tab 1'">
+            <!-- Tab 1 Content -->
+        </div>
+        <div v-else>
+            <!-- Tab 2 Content -->
+        </div>
+    </template>
+</TabbedModal>`;
+    });
+</script>

@@ -817,7 +817,13 @@ namespace Rock.Web.UI.Controls
             }
             catch { } // oh well...
 
+            var mapId = GlobalAttributesCache.Get().GetValue( "core_GoogleMapId" );
             string options = string.Format( "controlId: '{0}', drawingMode: '{1}', strokeColor: '{2}', fillColor: '{2}', mapStyle: {3}", this.ClientID, this.DrawingMode, markerColor, mapStyle );
+
+            if ( !mapId.IsNullOrWhiteSpace() && mapId != "DEFAULT_MAP_ID" )
+            {
+                options += $", mapId: '{mapId}'";
+            }
 
             DbGeography centerPoint = CenterPoint;
             if ( centerPoint != null && centerPoint.Latitude != null && centerPoint.Longitude != null )

@@ -24,11 +24,15 @@ export type PluginsFeatureArgs = {
 };
 
 export type PluginHelper = {
-    onConfigureEditorOptions(callback: (currentOptions: RawEditorOptions) => RawEditorOptions): void;
+    onConfigureEditorOptions(callback: (currentOptions: RawEditorOptions, utilities: ConfigureEditorUtilities) => RawEditorOptions): void;
     editorInstance: ComputedRef<Editor | undefined>;
     toolbarElement: ComputedRef<HTMLElement | undefined>;
 };
 
 export type PluginManager = {
     configureEditorOptions(currentOptions: RawEditorOptions): RawEditorOptions;
+};
+
+export type ConfigureEditorUtilities = {
+    allowRootElement<K extends keyof HTMLElementTagNameMap>(editorOptions: RawEditorOptions, tagName: K): void;
 };

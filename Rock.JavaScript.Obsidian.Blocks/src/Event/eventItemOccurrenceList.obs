@@ -27,7 +27,7 @@
                     field="date"
                     :filter="dateValueFilter"
                     visiblePriority="xs"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     width="8%">
             <template #format="{ row }">
@@ -126,6 +126,7 @@
                       iconClass="fa fa-clone"
                       visiblePriority="xs"
                       :excludeFromExport="true"
+                      width="150"
                       @click="onCopyClick" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
@@ -135,6 +136,12 @@
                        v-model:visible="isGridSettingsVisible"
                        :campusItems="config.options?.campusItems ?? []" />
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";

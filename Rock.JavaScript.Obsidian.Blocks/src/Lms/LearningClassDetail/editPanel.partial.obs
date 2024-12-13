@@ -5,6 +5,7 @@
             <div class="col-md-6">
                 <TextBox v-model="name"
                          label="Name"
+                         :maxLength="100"
                          rules="required" />
 
             </div>
@@ -24,9 +25,10 @@
                          textMode="multiline" />
             </div>
         </div>
-        <div class="row" v-if="isAcademicCalendarMode">
+        <div class="row">
             <div class="col-md-6">
                 <DropDownList
+                              v-if="isAcademicCalendarMode"
                               label="Semester"
                               v-model="semester"
                               :grouped="false"

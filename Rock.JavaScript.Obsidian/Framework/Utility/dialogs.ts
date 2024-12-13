@@ -351,5 +351,5 @@ export function showSecurity(entityTypeIdKey: Guid | string | number, entityIdKe
  * @param pageId The page identifier
  */
 export function showChildPages(pageId: Guid | string | number): void {
-    Rock.controls.modal.show(undefined, `/pages/${pageId}?t=Child Pages&amp;pb=&amp;sb=Done`);
+    Rock.controls.modal.show(undefined, `/pages/${pageId}?t=Child Pages&pb=&sb=Done`);
 }

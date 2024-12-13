@@ -38,6 +38,8 @@ export const FieldType = {
     /** Asset Storage System field type */
     AssetStorageSystem: "A57109EE-35A2-45D0-A575-02DBBDFBC0D0",
     /** Attribute field type */
+    Attendance: "45F2BE0A-43C2-40D6-9888-68A2E72ACD06",
+    /** Attribute field type */
     Attribute: "99B090AA-4D7E-46D8-B393-BF945EA1BA8B",
     /** Audio File field type */
     AudioFile: "9772CB1F-3BC4-432E-80DD-D635CDB2DA32",
@@ -49,6 +51,8 @@ export const FieldType = {
     Badges: "602F273B-7EC2-42E6-9AA7-A36A268192A3",
     /** Benevolence Request field type */
     BenevolenceRequest: "44EEC881-3C07-4A58-ACC4-0F21D873DBE0",
+    /** Benevolence Type field type */
+    BenevolenceType: "7BD3C3A3-DF4A-41EB-BF13-29EDB166078B",
     /** Binary File field type */
     BinaryFile: "C403E219-A56B-439E-9D50-9302DFE760CF",
     /** Binary File Type field type */
@@ -173,6 +177,8 @@ export const FieldType = {
     FinancialAccounts: "17033CDD-EF97-4413-A483-7B85A787A87F",
     /** Financial Gateway field type */
     FinancialGateway: "7B34F9D8-6BBA-423E-B50E-525ABB3A1013",
+    /** Financial Statement Template field type */
+    FinancialStatementTemplate: "9E0CD807-D69F-4888-A9BE-BCD11DD083FE",
     /** Gender field type */
     Gender: "2E28779B-4C76-4142-AE8D-49EA31DDB503",
     /** Group field type */
@@ -183,6 +189,8 @@ export const FieldType = {
     GroupLocationType: "48624B0B-6A58-45B8-9E47-B67B67898D25",
     /** Group Member field type */
     GroupMember: "D092B5BB-A7F4-45B7-AB01-72CC4FC589A9",
+    /** Group Member Requirement field type */
+    GroupMemberRequirement: "C0797A18-B489-46C7-8C30-F5E4F8246E23",
     /** Group Role field type */
     GroupRole: "3BB25568-E793-4D12-AE80-AC3FDA6FD8A8",
     /** Group Type field type */
@@ -239,6 +247,8 @@ export const FieldType = {
     MetricEntity: "3A7FB32E-1CCD-4F79-B085-BDBADEB56CCF",
     /** Metrics field type */
     Metrics: "3AF9AD35-9F3E-4497-BFDE-60C6C1827653",
+    /** Mobile Navigation Action field type */
+    MobileNavigationAction: "8AF3E49F-4FF1-47D8-BCD2-150201B7F1B8",
     /** Month Day field type */
     MonthDay: "8BED8DD8-8167-4052-B807-A1E72C133611",
     /** Multi-Select field type */
@@ -285,6 +295,8 @@ export const FieldType = {
     Schedule: "E9C12C59-98EA-4977-8318-647435BE9A9C",
     /** Schedules field type */
     Schedules: "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B",
+    /** Secondary auths field type */
+    SecondaryAuths: "98F57599-2DC3-4022-BE33-14A22C3043E1",
     /** Security Role field type */
     SecurityRole: "7BD25DC9-F34A-478D-BEF9-0C787F5D39B8",
     /** Single-Select field type */

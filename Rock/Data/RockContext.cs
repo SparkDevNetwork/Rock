@@ -228,12 +228,6 @@ namespace Rock.Data
                     var entityTableName = entityType.GetCustomAttribute<TableAttribute>()?.Name;
                     var attributeValuesPropertyName = hasQueryableAttributesAttribute?.PropertyName;
                     var attributeValueType = hasQueryableAttributesAttribute?.AttributeValueType;
-
-                    // This is a bit unusual, but we have a few models (like
-                    // LearningClass) that inherit from other concrete models.
-                    // This causes a problem for normal GetProperty() method
-                    // because it will find two properties, even though one is
-                    // hidden in C#.
                     var entityAttributeValuesProperty = attributeValuesPropertyName != null
                         ? entityType.GetProperty( attributeValuesPropertyName )
                         : null;

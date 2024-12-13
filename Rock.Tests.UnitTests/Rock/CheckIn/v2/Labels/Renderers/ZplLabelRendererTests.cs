@@ -2429,6 +2429,49 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
         }
 
         [TestMethod]
+        public void WriteAttendeePhotoField_WithoutPhoto_DoesNotEmitField()
+        {
+            var dpi = 300;
+            var imageData = Enumerable.Range( 0, 4 ).Select( i => ( byte ) i ).ToArray();
+
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var renderer = new Mock<ZplLabelRenderer>( MockBehavior.Loose )
+            {
+                CallBase = true
+            };
+
+            renderer.Setup( f => f.GetPersonPhoto( It.IsAny<ZplImageOptions>() ) )
+                .Returns<ZplImageCache>( null );
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.AttendeePhoto
+            } );
+
+            field.Setup( f => f.GetConfiguration<AttendeePhotoFieldConfiguration>() )
+                .Returns( new AttendeePhotoFieldConfiguration() );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.Object.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.Object.WriteField( field.Object );
+                renderer.Object.Dispose();
+            } );
+
+            Assert.That.IsEmpty( zpl );
+        }
+
+        [TestMethod]
         public void WriteAttendeePhotoField_WithoutHighQuality_SetsDitheringToFast()
         {
             var expectedDithering = DitherMode.Fast;
@@ -2663,7 +2706,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             {
                 Label = new DesignedLabelBag(),
                 Capabilities = new PrinterCapabilities(),
-                LabelData = new PersonLabelData( person, null, new List<AttendanceLabel>(), rockContext.Object ),
+                LabelData = new PersonLabelData( person, null, new List<LabelAttendanceDetail>(), rockContext.Object ),
                 RockContext = rockContext.Object
             };
 
@@ -2722,7 +2765,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             {
                 Label = new DesignedLabelBag(),
                 Capabilities = new PrinterCapabilities(),
-                LabelData = new PersonLabelData( person, null, new List<AttendanceLabel>(), rockContext.Object ),
+                LabelData = new PersonLabelData( person, null, new List<LabelAttendanceDetail>(), rockContext.Object ),
                 RockContext = rockContext.Object
             };
 
@@ -2772,7 +2815,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             {
                 Label = new DesignedLabelBag(),
                 Capabilities = new PrinterCapabilities(),
-                LabelData = new PersonLabelData( person, null, new List<AttendanceLabel>(), rockContext.Object ),
+                LabelData = new PersonLabelData( person, null, new List<LabelAttendanceDetail>(), rockContext.Object ),
                 RockContext = rockContext.Object
             };
 
@@ -2893,6 +2936,175 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             } );
 
             Assert.That.Matches( zpl, expectedPattern );
+        }
+
+        #endregion
+
+        #region Font Size Test
+
+        [TestMethod]
+        public void WriteTextField_InBaseFontSize_NoAdaptiveFontSizesProvided()
+        {
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = 72 // keep dpi for testing as 72 to have the dot font size evaluate to same value as the font size.
+                }
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Loose, new LabelFieldBag() );
+
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+               .Returns( new TextFieldConfiguration
+               {
+                   FontSize = 24
+               } );
+
+            field.Setup( f => f.GetFormattedValues( request ) )
+               .Returns( new List<string> { "Text" } );
+
+            var renderer = new ZplLabelRenderer();
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0,24,24^FDText^FS
+", zpl );
+        }
+
+
+        [TestMethod]
+        public void WriteTextField_InProvidedFontSize_TextLengthGreaterThanKey()
+        {
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = 72 // keep dpi for testing as 72 to have the dot font size evaluate to same value as the font size.
+                }
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Loose, new LabelFieldBag() );
+
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+               .Returns( new TextFieldConfiguration
+               {
+                   FontSize = 24,
+                   AdaptiveFontSize = new Dictionary<int, double>
+                   {
+                       { 30, 12 }
+                   }
+               } );
+
+            field.Setup( f => f.GetFormattedValues( request ) )
+               .Returns( new List<string> { "Text With Length Greater Than Thirty" } );
+
+            var renderer = new ZplLabelRenderer();
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0,12,12^FDText With Length Greater Than Thirty^FS
+", zpl );
+        }
+
+        [TestMethod]
+        public void WriteTextField_InProvidedFontSize_TextLengthLesserThanKey()
+        {
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = 72 // keep dpi for testing as 72 to have the dot font size evaluate to same value as the font size.
+                }
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Loose, new LabelFieldBag() );
+
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+               .Returns( new TextFieldConfiguration
+               {
+                   FontSize = 24,
+                   AdaptiveFontSize = new Dictionary<int, double>
+                   {
+                       { 30, 12 }
+                   }
+               } );
+
+            field.Setup( f => f.GetFormattedValues( request ) )
+               .Returns( new List<string> { "Text" } );
+
+            var renderer = new ZplLabelRenderer();
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0,24,24^FDText^FS
+", zpl );
+        }
+
+
+
+        [TestMethod]
+        public void WriteTextField_InBaseFontSize_TextLengthEqualToKey()
+        {
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = 72 // keep dpi for testing as 72 to have the dot font size evaluate to same value as the font size.
+                }
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Loose, new LabelFieldBag() );
+
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+               .Returns( new TextFieldConfiguration
+               {
+                   FontSize = 24,
+                   AdaptiveFontSize = new Dictionary<int, double>
+                   {
+                       { 15, 18 },
+                       { 30, 12 },
+                       { 45, 6 }
+                   }
+               } );
+
+            field.Setup( f => f.GetFormattedValues( request ) )
+               .Returns( new List<string> { "Text With Length Greater Than Thirty" } );
+
+            var renderer = new ZplLabelRenderer();
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0,12,12^FDText With Length Greater Than Thirty^FS
+", zpl );
         }
 
         #endregion

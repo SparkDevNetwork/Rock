@@ -31,7 +31,14 @@
         </template>
     </DetailBlock>
 
-    <LearningClassSecondaryLists v-if="panelMode === DetailPanelMode.View" :isEditable="isEditable" :navigationUrls="config.navigationUrls" :showAbsences="takesAttendance" v-model="learningClassViewBag" />
+    <LearningClassSecondaryLists
+                                 v-if="panelMode === DetailPanelMode.View"
+                                 :isEditable="isEditable"
+                                 :canViewGrades="canViewGrades"
+                                 :navigationUrls="config.navigationUrls"
+                                 :showAbsences="takesAttendance"
+                                 :includeAnnouncements="includeAnnouncementsTab"
+                                 :includeContentPages="includeContentTab" />
 </template>
 
 <script setup lang="ts">
@@ -53,6 +60,7 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { isValidGuid } from "@Obsidian/Utility/guid";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const config = useConfigurationValues<DetailBlockBox<LearningClassBag, LearningClassDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -81,20 +89,22 @@
     const activeClassesUsingDefaultGradingSystem = ref(config.options?.activeClassesUsingDefaultGradingSystem ?? 0);
     let initialGradingSystemGuid = learningClassViewBag.value?.gradingSystem?.value ?? "";
 
+    const configurationMode = ref(config.options?.programConfigurationMode);
+    const isAcademicCalendarMode = configurationMode.value === ConfigurationMode.AcademicCalendar;
+    const courseAllowsAnnouncements = ref(config.options?.courseAllowsAnnouncements ?? false);
+    const includeAnnouncementsTab = isAcademicCalendarMode && courseAllowsAnnouncements.value === true;
+    const includeContentTab = ref(isAcademicCalendarMode);
+
     // #endregion
 
     // #region Computed Values
 
+    const canViewGrades = computed((): boolean => options.value?.canViewGrades ?? false);
+
     /**
      * The entity name to display in the block panel.
      */
-    const panelName = computed((): string => {
-        return [
-            learningClassViewBag.value?.courseCode ?? "",
-            learningClassViewBag.value?.semester?.text ?? "",
-            learningClassViewBag.value?.schedule?.text ?? ""
-        ].filter(s => s.length > 0).join(" | ");
-    });
+    const panelName = computed((): string => learningClassViewBag.value?.name ?? "Class");
 
     /**
      * The identifier key value for this entity.
@@ -127,13 +137,20 @@
             });
         }
 
-        if (learningClassViewBag.value?.isActive === true) {
+        if (learningClassViewBag.value?.isPublic === true) {
             labels.push({
-                title: "Active",
+                title: "Public",
                 type: "success"
             });
         }
         else {
+            labels.push({
+                title: "Internal",
+                type: "warning"
+            });
+        }
+
+        if (learningClassViewBag.value?.isActive === false) {
             labels.push({
                 title: "Inactive",
                 type: "danger"
@@ -153,7 +170,7 @@
 
         const secondaryActions: PanelAction[] = [];
 
-        if (isEditable) {
+        if (isEditable.value === true) {
             secondaryActions.push({
                 iconCssClass: "fa fa-clone",
                 title: "Copy",
@@ -162,7 +179,7 @@
             });
         }
 
-        if (learningClassViewBag.value?.takesAttendance === true) {
+        if (showAttendanceButton.value === true) {
             secondaryActions.push({
                 iconCssClass: "fa fa-check-square-o",
                 title: "Take Attendance",
@@ -185,8 +202,13 @@
     });
 
     const options = computed((): LearningClassDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? { activeClassesUsingDefaultGradingSystem: 0, courseAllowsAnnouncements: true, canViewGrades: false };
     });
+
+    const showAttendanceButton = computed((): boolean =>
+        learningClassViewBag.value?.takesAttendance === true
+        && (config.navigationUrls?.[NavigationUrlKey.AttendancePage] ?? "").length > 0
+    );
 
     // #endregion
 

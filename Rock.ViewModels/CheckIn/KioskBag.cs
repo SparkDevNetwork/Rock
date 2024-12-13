@@ -36,6 +36,11 @@ namespace Rock.ViewModels.CheckIn
         public bool IsCameraEnabled { get; set; }
 
         /// <summary>
+        /// Determines how the camera should operate on this kiosk device.
+        /// </summary>
+        public CameraBarcodeConfiguration CameraMode { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this kiosk supports
         /// registration mode.
         /// </summary>

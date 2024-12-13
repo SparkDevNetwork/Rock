@@ -31,7 +31,7 @@ const configurationComponent = defineAsyncComponent(async () => {
 });
 
 /**
- * The field type handler for the Asset Storage Provider Type field.
+ * The field type handler for the Asset field.
  */
 export class AssetFieldType extends FieldTypeBase {
     public override getTextValue(value: string, _configurationValues: Record<string, string>): string {

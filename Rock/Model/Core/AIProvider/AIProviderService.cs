@@ -119,7 +119,7 @@ namespace Rock.Model
 
             // Get the AI Provider and populate it from the Cache.
             var aiProviderAttribute = categoryWithAttributeValues.FirstOrDefault( av => av.Attribute.Guid == SystemGuid.Attribute.AI_AUTOMATION_AI_PROVIDER.AsGuid() );
-            var aiProviderGuid = aiProviderAttribute.Value.AsGuid();
+            var aiProviderGuid = aiProviderAttribute?.Value.AsGuid() ?? Guid.Empty;
             var aiProvider = aiProviderGuid.IsEmpty() ? AIProviderCache.All().FirstOrDefault( ai => ai.IsActive ) : AIProviderCache.Get( aiProviderAttribute.Value );
 
             // Parse the remaining Attributes.

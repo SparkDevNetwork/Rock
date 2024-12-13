@@ -27,7 +27,6 @@ namespace Rock.Model
 {
     public partial class LearningClassService
     {
-
         /// <summary>
         /// Determines if the <see cref="LearningClass"/> should allow updates to the <see cref="LearningGradingSystem"/>.
         /// </summary>
@@ -135,6 +134,25 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Deletes the <see cref="LearningClass"/> for the specified <paramref name="learningClassId"/>.
+        /// Includes deleting related data like <see cref="LearningActivity"/>,
+        /// <see cref="LearningClassAnnouncement"/>, <see cref="LearningClassContentPage"/>
+        /// and <see cref="LearningParticipant"/> records.
+        /// </summary>
+        /// <param name="learningClassId">The identifier of the <see cref="LearningClass"/> to delete.</param>
+        public void Delete( int learningClassId )
+        {
+            var classForDeletion = Queryable()
+                .Include( c => c.LearningActivities )
+                .Include( c => c.Announcements )
+                .Include( c => c.ContentPages )
+                .Include( c => c.LearningParticipants )
+                .FirstOrDefault( c => c.Id == learningClassId );
+
+            base.Delete( classForDeletion );
+        }
+
+        /// <summary>
         /// Gets the related <see cref="GroupType"/> for the <see cref="LearningClass"/> with the specified id key.
         /// </summary>
         /// <param name="idKey">The idKey of the <see cref="LearningClass"/> for which to retrieve roles.</param>
@@ -176,26 +194,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the Default <see cref="LearningClass"/> for the specified id key of the <see cref="LearningCourse"/>.
-        /// </summary>
-        /// <typeparam name="TResult">The type of the result.</typeparam>
-        /// <param name="courseIdKey">The id key of the <see cref="Rock.Model.LearningCourse" /> to retrieve the default class for.</param>
-        /// <param name="selector">The selector.</param>
-        /// <returns>
-        /// The entity containing the provided selected properties for the default class.
-        /// </returns>
-        public TResult GetCourseDefaultClass<TResult>( string courseIdKey, Expression<Func<LearningClass, TResult>> selector )
-        {
-            var courseId = IdHasher.Instance.GetId( courseIdKey ).ToIntSafe();
-            if ( courseId == 0 )
-            {
-                return default;
-            }
-
-            return GetCourseDefaultClass( courseId, selector );
-        }
-
-        /// <summary>
         /// Gets the Default <see cref="LearningClass"/> for the specified identifier of the <see cref="LearningCourse"/>.
         /// </summary>
         /// <typeparam name="TResult">The type of the result.</typeparam>
@@ -230,7 +228,6 @@ namespace Rock.Model
         /// </returns>
         public TResult GetCourseDefaultClass<TResult>( LearningCourse course, Expression<Func<LearningClass, TResult>> selector )
         {
-
             if ( course == null || course.LearningClasses == null )
             {
                 return default;

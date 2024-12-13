@@ -387,7 +387,7 @@ namespace Rock.Model
         /// <returns>A List of ChatCompletionsRequestMessage objects.</returns>
         public static List<ChatCompletionsRequestMessage> PrayerRequestAnalyzerMessages( PrayerRequest prayerRequest, string template, AIAutomation aiAutomation )
         {
-            var sentiments = DefinedTypeCache.Get( SystemGuid.DefinedType.SENTIMENT_EMOTIONS );
+            var sentiments = DefinedTypeCache.Get( SystemGuid.DefinedType.SENTIMENT_EMOTIONS ).ToEntity();
 
             // Get any data for use across all merge objects.
             var mergeObjects = new Dictionary<string, object>

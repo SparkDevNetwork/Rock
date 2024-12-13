@@ -308,7 +308,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningClassAnnouncement.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningClassAnnouncement.FriendlyTypeName}." );
                 return false;
             }
 
@@ -372,8 +372,6 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Save( ValidPropertiesBox<LearningClassAnnouncementBag> box )
         {
-            var entityService = new LearningClassAnnouncementService( RockContext );
-
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;

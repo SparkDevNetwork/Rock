@@ -1,6 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid
+          v-if="hasLoadedData"
+          :definition="config.gridDefinition ?? undefined"
+          :class="visibleCssClass"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Course"
@@ -25,7 +28,7 @@
                 width="30%"
                 :filter="textValueFilter"
                 visiblePriority="xs">
-            <template #format="{ row }" >
+            <template #format="{ row }">
                 <div class="d-flex flex-fill align-items-center">
                     <i :style="'color: ' + row.categoryColor" :class="'mr-2 flex-shrink-0 fa-2x fw ' + (row.categoryIconCssClass ?? '')"></i>
                     <div class="flex-grow-1">
@@ -41,7 +44,7 @@
                 field="category"
                 :filter="pickExistingValueFilter"
                 width="15%"
-                visiblePriority="lg">
+                visiblePriority="md">
             <template #format="{ row }">
                 <span class="label label-default category-label" :style="'color: ' + row.categoryColor">
                     {{ row.category }}
@@ -54,19 +57,20 @@
                        field="isPublic"
                        width="5%"
                        :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       visiblePriority="sm" />
 
         <TextColumn name="code"
                     title="Code"
                     field="code"
-                    :filter="textValueFilter" />
+                    :filter="textValueFilter"
+                    visiblePriority="sm" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
                        width="5%"
                        :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       visiblePriority="sm" />
 
         <SecurityColumn />
 
@@ -75,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { textValueFilter, Column, BooleanColumn, TextColumn, ReorderColumn, DeleteColumn, SecurityColumn, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -83,11 +87,30 @@
     import { LearningCourseListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseList/learningCourseListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningCourseList/types.partial";
-    import { reactive, ref } from "vue";
+    import { onMounted, reactive, ref } from "vue";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<ListBlockBox<LearningCourseListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     onConfigurationValuesChanged(useReloadBlock());
+
+    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
+    const browserBus = useBlockBrowserBus();
+    const hasLoadedData = ref(false);
+    const visibleCssClass = ref("show");
+
+    // When another block on the page begins editing hide this block.
+    browserBus.subscribe(BlockMessages.BeginEdit, () => {
+        visibleCssClass.value = "hidden";
+    });
+
+    // When another block begins editing show this block.
+    browserBus.subscribe(BlockMessages.EndEdit, () => {
+        visibleCssClass.value = "show";
+        if (!hasLoadedData.value) {
+            gridDataSource.value = loadGridData();
+        }
+    });
 
     // #region Values
 
@@ -106,6 +129,7 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
+            hasLoadedData.value = true;
 
             return gridData;
         }
@@ -180,5 +204,17 @@
 
     // #endregion
 
-    gridDataSource.value = loadGridData();
+    onMounted(() => {
+
+        // Because the grid may be hidden when a primary block is hidden
+        // only load the grid data if visible. Additionally we need to
+        // give time for the autoEdit of detail blocks to emit browserBus events.
+        setTimeout(() => {
+            if (visibleCssClass.value === "show") {
+                gridDataSource.value = loadGridData();
+            }
+        }, 250);
+
+    });
+
 </script>

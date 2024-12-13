@@ -55,7 +55,7 @@
         <NumberColumn name="currentStreakCount"
                       title="Current Streak"
                       field="currentStreakCount"
-                      headerClass="text-right"
+                      headerClass="title-right"
                       itemClass="justify-content-end text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
@@ -64,7 +64,7 @@
         <NumberColumn name="longestStreakCount"
                       title="Longest Streak"
                       field="longestStreakCount"
-                      headerClass="text-right"
+                      headerClass="title-right"
                       itemClass="justify-content-end text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
@@ -73,7 +73,7 @@
         <NumberColumn name="engagementCount"
                       title="Engagements"
                       field="engagementCount"
-                      headerClass="text-right"
+                      headerClass="title-right"
                       itemClass="justify-content-end text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
@@ -82,7 +82,7 @@
         <DateColumn name="enrollmentDate"
                     title="Enrollment Date"
                     field="enrollmentDate"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     :filter="dateValueFilter"
                     visiblePriority="xs"
@@ -97,6 +97,12 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

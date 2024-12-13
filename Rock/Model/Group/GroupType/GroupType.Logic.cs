@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.Linq;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Tasks;
 using Rock.Transactions;
@@ -58,6 +60,25 @@ namespace Rock.Model
                 this.AttendanceReminderFollowupDays = value.AsDelimited( "," );
             }
         }
+
+        /// <summary>
+        /// Gets whether any relationship multipliers have been customized for this group type (if any of them don't
+        /// equal 100%).
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.17.0" )]
+        public bool AreAnyRelationshipMultipliersCustomized =>
+            LeaderToLeaderRelationshipMultiplier != 1m
+            || LeaderToNonLeaderRelationshipMultiplier != 1m
+            || NonLeaderToLeaderRelationshipMultiplier != 1m
+            || NonLeaderToNonLeaderRelationshipMultiplier != 1m;
 
         #endregion Properties
 

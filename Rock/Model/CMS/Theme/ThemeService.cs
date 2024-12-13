@@ -217,36 +217,51 @@ namespace Rock.Model
         /// <param name="theme">The theme to build.</param>
         internal static void BuildTheme( Theme theme )
         {
+            var websitePurposeValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.THEME_PURPOSE_WEBSITE_NEXTGEN.AsGuid() );
+            var checkinPurposeValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.THEME_PURPOSE_CHECKIN.AsGuid() );
+
+            if ( theme.PurposeValueId != websitePurposeValueId && theme.PurposeValueId != checkinPurposeValueId )
+            {
+                return;
+            }
+
             var customization = theme.GetAdditionalSettings<ThemeCustomizationSettings>();
 
             var webRoot = RockApp.Current.HostingSettings.WebRootPath;
             var themePath = Path.Combine( webRoot, "Themes", theme.Name );
             var stylesPath = Path.Combine( themePath, "Styles" );
             var jsonPath = Path.Combine( themePath, "theme.json" );
-            var overridePath = Path.Combine( themePath, "Styles", "overrides.css" );
+            var themeCssPath = Path.Combine( stylesPath, "theme.css" );
 
             var json = File.ReadAllText( jsonPath );
             var themeDefinition = ThemeDefinition.Parse( json );
-
-            var cssContent = GetCssOverridesContent( themeDefinition, customization, theme.Name );
+            var cssContent = string.Empty;
 
             if ( !Directory.Exists( stylesPath ) )
             {
                 Directory.CreateDirectory( stylesPath );
             }
 
-            File.WriteAllText( overridePath, cssContent );
+            if ( File.Exists( themeCssPath ) )
+            {
+                cssContent = File.ReadAllText( themeCssPath );
+            }
+
+            cssContent = GetThemeCssContent( themeDefinition, customization, theme.Name, cssContent );
+
+            File.WriteAllText( themeCssPath, cssContent );
         }
 
         /// <summary>
-        /// Gets the content of the overrides.css file that match the
-        /// customized settings of the theme.
+        /// Gets the content of the theme.css file that match the original
+        /// content with the customized settings of the theme applied.
         /// </summary>
-        /// <param name="themeDefinition">This describes the theme and how the overrides file should be structured.</param>
+        /// <param name="themeDefinition">This describes the theme and how the overrides should be structured.</param>
         /// <param name="customization">The customization settings that were set by an administrator.</param>
         /// <param name="themeName">The name of the theme, this is used to resolve <c>~~/</c> image references.</param>
-        /// <returns>The content that should be written to the overrides.css file.</returns>
-        internal static string GetCssOverridesContent( ThemeDefinition themeDefinition, ThemeCustomizationSettings customization, string themeName )
+        /// <param name="originalCssContent">The original content of the theme.css file.</param>
+        /// <returns>The content that should be written to the theme.css file.</returns>
+        internal static string GetThemeCssContent( ThemeDefinition themeDefinition, ThemeCustomizationSettings customization, string themeName, string originalCssContent )
         {
             var builder = new ThemeOverrideBuilder( themeName, customization.VariableValues );
 
@@ -260,7 +275,7 @@ namespace Rock.Model
                 builder.AddCustomContent( customization.CustomOverrides );
             }
 
-            return builder.Build();
+            return builder.Build( originalCssContent );
         }
     }
 }

@@ -33,6 +33,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) registration template
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.REGISTRATION_TEMPLATE )]
     public class RegistrationTemplateFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     ///  Media Selector Field Type
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MEDIA_SELECTOR )]
     public class MediaSelectorFieldType : FieldType, ILinkableFieldType

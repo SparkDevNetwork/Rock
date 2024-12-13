@@ -37,6 +37,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of binary files of a specific type
     /// Stored as BinaryFile's Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BINARY_FILE )]
     public class BinaryFileFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

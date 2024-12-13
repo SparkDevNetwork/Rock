@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.SystemGuid
 {
     /// <summary>
@@ -49,6 +51,8 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Peer network group type guid
         /// </summary>
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Peer Networks of this Group Type have been replaced with a formal Peer Network feature." )]
         public const string GROUPTYPE_PEER_NETWORK = "8C0E5852-F08F-4327-9AA5-87800A6AB53E";
 
         /// <summary>

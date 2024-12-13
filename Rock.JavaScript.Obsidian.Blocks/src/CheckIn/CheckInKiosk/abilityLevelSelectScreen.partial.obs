@@ -3,11 +3,13 @@
     <div class="ability-level-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="session.getCurrentAttendee()?.person">
+                   :person="session.getCurrentAttendee()?.person"
+                   :configuration="session.configuration">
             <div class="button-list">
                 <RockButton v-for="abilityLevel in abilityLevels"
                             btnType="primary"
                             class="ability-level-button"
+                            :class="{ 'btn-dimmed': abilityLevel.isDeprioritized }"
                             :disabled="abilityLevel.isDisabled || isProcessing"
                             @click="onAbilityLevelClick(abilityLevel)">
                     <span v-if="abilityLevel.id === currentAbilityLevelId"
@@ -64,6 +66,9 @@
     });
 
     const abilityLevels = computed((): AbilityLevelOpportunityBag[] => {
+        // We don't call .getAvailableAbilityLevels() here
+        // because to keep check in V2 consistent with check in V1, we need to show all ability levels
+        // and disable the buttons that are not available.
         return props.session.attendeeOpportunities?.abilityLevels ?? [];
     });
 

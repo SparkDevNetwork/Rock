@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="config.options?.isGridVisible" :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Active Registration Instance"
@@ -9,22 +9,22 @@
           :showLaunchWorkflow="false"
           liveUpdates
           @selectItem="onSelectItem">
-        <SelectColumn />
 
         <TextColumn name="name"
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
+                    width="30%"
                     visiblePriority="xs" />
 
         <DateColumn name="startDateTime"
-                        title="Start Date Time"
+                        title="Start Date"
                         field="startDateTime"
                         :filter="dateValueFilter"
                         visiblePriority="xs" />
 
         <DateColumn name="endDateTime"
-                        title="End Date Time"
+                        title="End Date"
                         field="endDateTime"
                         :filter="dateValueFilter"
                         visiblePriority="xs" />
@@ -36,13 +36,13 @@
                     visiblePriority="xs" />
 
         <NumberColumn name="registrantsCount"
-                      title="Registrant Count"
+                      title="Registrants"
                       field="registrantsCount"
                       :filter="numberValueFilter"
                       visiblePriority="xs" />
 
         <BooleanColumn name="isActive"
-                       title="Is Active"
+                       title="Active"
                        field="isActive"
                        visiblePriority="xs" />
 

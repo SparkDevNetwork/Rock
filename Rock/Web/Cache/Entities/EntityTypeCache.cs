@@ -380,6 +380,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public string LinkUrlLavaTemplate { get; private set; }
 
+        /// <inheritdoc cref="EntityType.IsRelatedToInteractionTrackedOnCreate"/>
+        [DataMember]
+        public bool IsRelatedToInteractionTrackedOnCreate { get; private set; }
+
         #endregion
 
         #region Constructors
@@ -494,8 +498,15 @@ namespace Rock.Web.Cache
         /// that are allowed to participate in qualifying attributes for this
         /// entity type.
         /// </summary>
+        /// <remarks>
+        /// This is marked private because it isn't actually used. But the logic
+        /// is good so I will leave it for now. This can probably be removed in
+        /// the future. It has one issue, the qualifier properties for
+        /// <see cref="EventItem"/> are wrong because we had to use custom SQL
+        /// to make that SQL view.
+        /// </remarks>
         /// <returns>A list of property names.</returns>
-        public List<string> GetAttributeQualifierProperties()
+        private List<string> GetAttributeQualifierProperties()
         {
             if ( !IsEntity )
             {
@@ -509,10 +520,20 @@ namespace Rock.Web.Cache
                 return new List<string>();
             }
 
-            return type.GetProperties()
-                .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null )
+            var qualifiedProperties = type.GetProperties()
+                .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null
+                    && p.DeclaringType == type )
                 .Select( p => p.Name )
                 .ToList();
+
+            var typeQualificationAttribute = type.GetCustomAttribute<EnableAttributeQualificationAttribute>();
+
+            if ( typeQualificationAttribute != null )
+            {
+                qualifiedProperties = qualifiedProperties.Union( typeQualificationAttribute.PropertyNames ).ToList();
+            }
+
+            return qualifiedProperties;
         }
 
         /// <summary>
@@ -542,6 +563,7 @@ namespace Rock.Web.Cache
             IndexResultTemplate = entityType.IndexResultTemplate;
             IndexDocumentUrl = entityType.IndexDocumentUrl;
             LinkUrlLavaTemplate = entityType.LinkUrlLavaTemplate;
+            IsRelatedToInteractionTrackedOnCreate = entityType.IsRelatedToInteractionTrackedOnCreate;
 
             IndexModelType = entityType.IndexModelType;
 

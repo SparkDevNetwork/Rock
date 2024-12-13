@@ -20,11 +20,37 @@ using System;
 namespace Rock.Data
 {
     /// <summary>
+    /// <para>
     /// Specifies that the property can be used for qualifying attributes
     /// when matching against the entity.
+    /// </para>
+    /// <para>
+    /// When used on a class you must specify the names of the properties that
+    /// can be used for qualifying attributes.
+    /// </para>
     /// </summary>
-    [AttributeUsage( AttributeTargets.Property )]
+    [AttributeUsage( AttributeTargets.Property | AttributeTargets.Class, Inherited = false )]
     public class EnableAttributeQualificationAttribute : System.Attribute
     {
+        internal string[] PropertyNames { get; }
+
+        /// <summary>
+        /// Specifies that the property this attribute is placed on supports
+        /// qualification.
+        /// </summary>
+        public EnableAttributeQualificationAttribute()
+        {
+            PropertyNames = new string[0];
+        }
+
+        /// <summary>
+        /// Used on class definitions to specify additional property names that
+        /// are available for qualification.
+        /// </summary>
+        /// <param name="propertyNames">The names of the properties.</param>
+        public EnableAttributeQualificationAttribute( params string[] propertyNames )
+        {
+            PropertyNames = propertyNames;
+        }
     }
 }

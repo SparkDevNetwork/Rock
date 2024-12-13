@@ -178,6 +178,7 @@ namespace Rock.Blocks.Finance
 
             if ( box.IsEditable )
             {
+                entity.LoadAttributes( rockContext );
                 box.Entity = GetEntityBag( entity );
                 box.SecurityGrantToken = GetSecurityGrantToken( entity );
             }
@@ -213,6 +214,13 @@ namespace Rock.Blocks.Finance
                 .ThenBy( w => w.WorkflowTypeName )
                 .ToList()
             };
+
+            var attributeGuidList = GetAttributeValue( AttributeKey.BenevolenceTypeAttributes ).SplitDelimitedValues().AsGuidList();
+
+            if ( attributeGuidList.Any() )
+            {
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) );
+            }
 
             return bag;
         }
@@ -316,6 +324,14 @@ namespace Rock.Blocks.Finance
 
             box.IfValidProperty( nameof( box.Entity.MaximumNumberOfDocuments ),
                 () => SaveAdditionalSettings( box.Entity, entity ) );
+
+            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+                () =>
+                {
+                    entity.LoadAttributes( rockContext );
+
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                } );
 
             return true;
         }
@@ -494,22 +510,14 @@ namespace Rock.Blocks.Finance
                     return ActionBadRequest( validationMessage );
                 }
 
-                rockContext.WrapTransaction( () => rockContext.SaveChanges() );
+                rockContext.WrapTransaction( () =>
+                {
+                    rockContext.SaveChanges();
+                    entity.SaveAttributeValues( RockContext );
+                } );
 
                 return ActionOk( this.GetParentPageUrl() );
             }
-        }
-
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag> box )
-        {
-            return ActionBadRequest( "Attributes are not supported by this block." );
         }
 
         /// <summary>

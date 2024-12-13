@@ -22,5 +22,13 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceActiveList
     /// </summary>
     public class RegistrationInstanceActiveListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the grid should be visible.
+        /// The grid will not be displayed if the 'RegistrationTemplateId' or 'CategoryId' is provided in the URL.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is grid visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsGridVisible { get; set; }
     }
 }

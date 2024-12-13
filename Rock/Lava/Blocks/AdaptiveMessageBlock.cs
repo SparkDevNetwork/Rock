@@ -21,9 +21,15 @@ using System.Data.Entity;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+
 using DocumentFormat.OpenXml.Bibliography;
+
+using Lucene.Net.Search.Similarities;
+
 using Nest;
+
 using PuppeteerSharp.Media;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting.DataFilter.ContentChannelItem;
@@ -45,19 +51,29 @@ namespace Rock.Lava.Blocks
         #region Filter Parameter Names
 
         /// <summary>
-        /// Parameter name for specifying the key.
+        /// Parameter name for specifying the message key.
         /// </summary>
-        public static readonly string ParameterKey = "key";
+        public static readonly string ParameterMessageKey = "messagekey";
 
         /// <summary>
-        /// Parameter name for specifying the count.
+        /// Parameter name for specifying the adaptation per message.
         /// </summary>
-        public static readonly string ParameterCount = "count";
+        public static readonly string ParameterAdaptationPerMessage = "adaptationspermessage";
 
         /// <summary>
         /// Parameter name for specifying the trackviews.
         /// </summary>
         public static readonly string ParameterTrackviews = "trackviews";
+
+        /// <summary>
+        /// Parameter name for specifying the category identifier.
+        /// </summary>
+        public static readonly string ParameterCategoryId = "categoryid";
+
+        /// <summary>
+        /// Parameter name for specifying the max adaptation count.
+        /// </summary>
+        public static readonly string ParameterMaxAdaptations = "maxadaptations";
 
         #endregion
 
@@ -90,20 +106,40 @@ namespace Rock.Lava.Blocks
                 return;
             }
 
-            _settings.ParseFromMarkup( _markup, context );
+            // Parse the Lava Command markup to retrieve paramters.
+            var parms = new Dictionary<string, string>();
+            LavaHelper.ParseCommandMarkup( _markup, context, parms );
 
             try
             {
-                var key = _settings.GetString( ParameterKey );
-                if ( key.IsNullOrWhiteSpace() )
+                CommandMode commandMode = CommandMode.Message;
+                var messageKey = parms.GetValueOrNull( ParameterMessageKey );
+                int? categoryId = null;
+                if ( messageKey.IsNullOrWhiteSpace() )
                 {
-                    throw new Exception( $"Invalid configuration setting. Key is unknown" );
+                    categoryId = parms.GetValueOrNull( ParameterCategoryId ).AsIntegerOrNull();
+                    if ( !categoryId.HasValue )
+                    {
+                        throw new Exception( $"Invalid configuration setting. Key is unknown" );
+                    }
+
+                    commandMode = CommandMode.Category;
                 }
 
-                var count = _settings.GetIntegerOrNull( ParameterCount );
-                if ( !count.HasValue )
+                var adaptationPerMessage = parms.GetValueOrNull( ParameterAdaptationPerMessage ).AsIntegerOrNull();
+                if ( !adaptationPerMessage.HasValue )
                 {
-                    count = 1;
+                    adaptationPerMessage = 1;
+                }
+
+                int? maxAdaptations = null;
+                if ( commandMode == CommandMode.Category )
+                {
+                    maxAdaptations = parms.GetValueOrNull( ParameterMaxAdaptations ).AsIntegerOrNull();
+                    if ( !maxAdaptations.HasValue )
+                    {
+                        maxAdaptations = adaptationPerMessage;
+                    }
                 }
 
                 var rockContext = new RockContext();
@@ -121,26 +157,42 @@ namespace Rock.Lava.Blocks
                 }
 
                 var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPersonFromContextCookie( context, System.Web.HttpContext.Current, person );
-                var adaptiveMessage = AdaptiveMessageCache.All().Where( a => a.Key == key ).FirstOrDefault();
-                var adaptations = adaptiveMessage.Adaptations
-                    .Where( a => !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name )
-                    .Take( count.Value )
-                    .ToList();
-                
-                AddLavaMergeFieldsToContext( context, adaptations );
-
-                if ( isTrackViews && adaptations.Any() && adaptiveMessage != null )
+                List<AdaptiveMessageCache> adaptiveMessages = new List<AdaptiveMessageCache>();
+                if ( commandMode == CommandMode.Message )
                 {
-                    foreach ( var adaptation in adaptations )
+                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.Key == messageKey ).ToList();
+                }
+                else
+                {
+                    var categoryService = new CategoryService( rockContext );
+                    var categoryGuid = categoryService.GetGuid( categoryId.Value );
+
+                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.CategoryIds.Contains( categoryId.Value ) ).ToList();
+                    GetAaptiveMessageForChildCategories( rockContext, adaptiveMessages, categoryGuid );
+                }
+
+
+                var adaptationQry = adaptiveMessages
+                       .SelectMany( a => a.Adaptations.OrderBy( b => b.Order ).ThenBy( b => b.Name ).Take( adaptationPerMessage.Value ) )
+                       .Where( a => !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) );
+
+                if ( commandMode == CommandMode.Category )
+                {
+                    adaptationQry = adaptationQry.Take( maxAdaptations.Value );
+                }
+                       
+                AddLavaMergeFieldsToContext( context, adaptationQry.ToList() );
+
+                if ( isTrackViews && adaptationQry.Any() )
+                {
+                    foreach ( var adaptation in adaptationQry )
                     {
                         var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.ADAPTIVE_MESSAGES.AsGuid() );
                         var info = new InteractionTransactionInfo
                         {
                             InteractionChannelId = interactionChannelId.Value,
-                            ComponentEntityId = adaptiveMessage.Id,
-                            ComponentName = adaptiveMessage.Name,
+                            ComponentEntityId = adaptation.AdaptiveMessage.Id,
+                            ComponentName = adaptation.AdaptiveMessage.Name,
                             InteractionOperation = "Viewed",
                             InteractionSummary = adaptation.Name,
                             InteractionEntityId = adaptation.Id,
@@ -160,9 +212,38 @@ namespace Rock.Lava.Blocks
             base.OnRender( context, result );
         }
 
+        private static void GetAaptiveMessageForChildCategories( RockContext rockContext, List<AdaptiveMessageCache> adaptiveMessages, Guid? categoryGuid )
+        {
+            var categories = new CategoryService( rockContext )
+                .GetChildCategoryQuery( new Rock.Model.Core.Category.Options.ChildCategoryQueryOptions
+                {
+                    ParentGuid = categoryGuid
+                } )
+                .ToList()
+                .OrderBy( c => c.Order )
+                .ThenBy( c => c.Name )
+                .ThenBy( c => c.Id )
+                .ToList();
+
+            // Message Should be in order of Category order.
+            // When considering a tree of categories all of the 1's will be considered first, then all the 2's, then 3's
+            foreach ( var category in categories )
+            {
+                var categoryAdaptiveMessages = AdaptiveMessageCache.All().Where( a => a.CategoryIds.Contains( category.Id ) );
+                if ( categoryAdaptiveMessages.Any() )
+                {
+                    adaptiveMessages.AddRange( categoryAdaptiveMessages.ToList() );
+                }
+            }
+        }
+
         private void AddLavaMergeFieldsToContext( ILavaRenderContext context, List<AdaptiveMessageAdaptationCache> adaptations )
         {
             context["messageAdaptations"] = adaptations;
+            if ( adaptations.Count == 1 )
+            {
+                context["messageAdaptation"] = adaptations.First();
+            }
             //context.SetMergeField( "messageAdaptations", adaptations, LavaContextRelativeScopeSpecifier.Root );
         }
 
@@ -202,6 +283,22 @@ namespace Rock.Lava.Blocks
                 result = null;
                 return false;
             }
+        }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public enum CommandMode
+        {
+            /// <summary>
+            /// Message
+            /// </summary>
+            Message,
+
+            /// <summary>
+            /// Category
+            /// </summary>
+            Category
         }
     }
 }

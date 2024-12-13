@@ -499,6 +499,7 @@
             session: {
                 guid: sessionGuid,
                 familyId: selectFamilyData.value.familyId,
+                isCapacityThresholdEnforced: false,
                 isPending: saveAttendanceIsPending.value,
                 searchMode: <FamilySearchMode>toNumber(familySearchType.value),
                 searchTerm: familySearchTerm.value

@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Lms;
 using Rock.Model;
 using Rock.Security;
@@ -63,7 +64,6 @@ namespace Rock.Blocks.Lms
             public const string LearningProgramId = "LearningProgramId";
             public const string LearningCourseId = "LearningCourseId";
             public const string LearningClassId = "LearningClassId";
-            public const string CloneId = "CloneId";
             public const string AutoEdit = "autoEdit";
             public const string ReturnUrl = "returnUrl";
         }
@@ -111,7 +111,9 @@ namespace Rock.Blocks.Lms
                 IconCssClass = component.Value.Value.IconCssClass,
                 IdKey = component.Value.Value.EntityType.IdKey,
                 Guid = component.Value.Value.EntityType.Guid.ToString()
-            } ).ToList();
+            } )
+                .OrderBy( a => a.Name )
+                .ToList();
 
             // Get a list of Activity Types for the user to select from.
             options.ActivityTypeListItems = options.ActivityTypes.Select( a => new ListItemBag
@@ -220,11 +222,15 @@ namespace Rock.Blocks.Lms
                 return null;
             }
 
-            var completionStatistics = new LearningActivityService( RockContext ).GetCompletionStatistics( entity );
+            var learningActivityService = new LearningActivityService( RockContext );
+            var completionStatistics = learningActivityService.GetCompletionStatistics( entity );
 
             // Get the current persons info.
             var currentPerson = GetCurrentPerson();
-            var isClassFacilitator = new LearningParticipantService( RockContext ).GetFacilitatorId( currentPerson.Id, entity.LearningClassId ) > 0;
+            var facilitatorId = new LearningParticipantService( RockContext )
+                .GetFacilitatorId( currentPerson.Id, entity.LearningClassId );
+
+            var isClassFacilitator = facilitatorId.HasValue && facilitatorId.Value > 0;
             var currentPersonBag = new LearningActivityParticipantBag
             {
                 Name = currentPerson.FullName,
@@ -249,13 +255,26 @@ namespace Rock.Blocks.Lms
                 };
             }
 
+            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
+            var isFirstClassActivity = !learningActivityService.Queryable().Any( a => a.LearningClassId == classId );
+            var isNew = entity.Id == 0;
+
+            // If this is an existing record use it's availability criteria
+            // If new - use "Always Available" for the first activity in a class
+            // and "After Previous Completed" for all subsequent activities.
+            var availabilityCriteria =
+                !isNew ?
+                entity.AvailabilityCriteria :
+                isFirstClassActivity ? AvailabilityCriteria.AlwaysAvailable :
+                AvailabilityCriteria.AfterPreviousCompleted;
+
             return new LearningActivityBag
             {
                 IdKey = entity.IdKey,
                 ActivityComponent = activityComponentBag,
                 ActivityComponentSettingsJson = entity.ActivityComponentSettingsJson,
                 AssignTo = entity.AssignTo,
-                AvailabilityCriteria = entity.AvailabilityCriteria,
+                AvailabilityCriteria = availabilityCriteria,
                 AvailableDateCalculated = entity.AvailableDateCalculated,
                 AvailableDateDefault = entity.AvailableDateDefault,
                 AvailableDateDescription = entity.AvailableDateDescription,
@@ -290,7 +309,7 @@ namespace Rock.Blocks.Lms
             {
                 Id = 0,
                 Guid = Guid.Empty,
-                AvailabilityCriteria = Enums.Lms.AvailabilityCriteria.AlwaysAvailable,
+                AvailabilityCriteria = Enums.Lms.AvailabilityCriteria.AfterPreviousCompleted,
                 DueDateCriteria = Enums.Lms.DueDateCriteria.NoDate
             };
         }
@@ -362,14 +381,19 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.AvailableDateOffset ),
                 () => entity.AvailableDateOffset = box.Bag.AvailableDateOffset );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateCriteria ),
+            var canUpdateDueDates = entity.Id == 0 || box.Bag.DueDateChangeType.HasValue;
+
+            if ( canUpdateDueDates )
+            {
+                box.IfValidProperty( nameof( box.Bag.DueDateCriteria ),
                 () => entity.DueDateCriteria = box.Bag.DueDateCriteria );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateDefault ),
-                () => entity.DueDateDefault = box.Bag.DueDateDefault );
+                box.IfValidProperty( nameof( box.Bag.DueDateDefault ),
+                    () => entity.DueDateDefault = box.Bag.DueDateDefault );
 
-            box.IfValidProperty( nameof( box.Bag.DueDateOffset ),
-                () => entity.DueDateOffset = box.Bag.DueDateOffset );
+                box.IfValidProperty( nameof( box.Bag.DueDateOffset ),
+                    () => entity.DueDateOffset = box.Bag.DueDateOffset );
+            }
 
             box.IfValidProperty( nameof( box.Bag.IsStudentCommentingEnabled ),
                 () => entity.IsStudentCommentingEnabled = box.Bag.IsStudentCommentingEnabled );
@@ -472,7 +496,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningActivity.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningActivity.FriendlyTypeName}." );
                 return false;
             }
 
@@ -486,7 +510,9 @@ namespace Rock.Blocks.Lms
 
             // Exclude the auto edit and return URL parameters from the page reference parameters (if any).
             var excludedParamKeys = new[] { PageParameterKey.AutoEdit.ToLower(), PageParameterKey.ReturnUrl.ToLower() };
-            var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
+            var paramsToInclude = pageReference.Parameters
+                .Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) )
+                .ToDictionary( kv => kv.Key, kv => kv.Value );
 
             var entityName = entityKey.Length > 0 ? new Service<LearningActivity>( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Activity";
             var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
@@ -545,11 +571,25 @@ namespace Rock.Blocks.Lms
                 return actionError;
             }
 
+            // Get the previous Available & DueDates in case we need it for
+            // updating existing LearningActivityCompletion records.
+            var previousAvailableDate = entity.AvailableDateCalculated;
+            var previousDueDate = entity.DueDateCalculated;
+
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
             }
+
+            var newAvailableDate = entity.AvailableDateCalculated;
+            var newDueDate = entity.DueDateCalculated;
+
+            // Check to see if we should also update LearningActivityCompletion records.
+            // If the available dates changes
+            // or if the due date changed and we have a due date change type.
+            var updateAvailableDates = previousAvailableDate != newAvailableDate;
+            var updateDueDates = previousDueDate != newDueDate && box.Bag.DueDateChangeType.HasValue;
 
             // Ensure everything is valid before saving.
             if ( !ValidateLearningActivity( entity, out var validationMessage ) )
@@ -561,6 +601,34 @@ namespace Rock.Blocks.Lms
             if ( isNew )
             {
                 entity.LearningClassId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
+            }
+            else if ( updateAvailableDates || updateDueDates )
+            {
+                // If there is a change to the available or due date for an
+                // existing LearningActivity we need to update any those completions
+                // to use the new date.
+                var allCompletions = new LearningActivityCompletionService( RockContext )
+                    .Queryable()
+                    .Where( c => c.LearningActivityId == entity.Id );
+
+                foreach ( var c in allCompletions )
+                {
+                    if ( updateAvailableDates )
+                    {
+                        c.AvailableDateTime = newAvailableDate;
+                    }
+
+                    if ( updateDueDates )
+                    {
+                        // Update the DueDate if we're updating all records
+                        // or if this record matches the previous value -
+                        // per the user provided DueDateChangeType.
+                        if ( box.Bag.DueDateChangeType == DueDateChangeType.UpdateAll || c.DueDate.Value.Date == previousDueDate.Value.Date )
+                        {
+                            c.DueDate = newDueDate;
+                        }
+                    }
+                }
             }
 
             RockContext.SaveChanges();

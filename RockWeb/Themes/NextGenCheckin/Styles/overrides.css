@@ -1,0 +1,17 @@
+@import url('/Styles/style-v2/icons/fontawesome-icon.css');
+@import url('/Styles/style-v2/icons/fontawesome-solid.css');
+
+:root {
+    --color-primary: #ee7725;
+    --logo-image: url('/Assets/Images/rock-logo-gray.svg');
+    --color-interface-strongest: #000000;
+    --color-interface-stronger: #1C1C1E;
+    --color-interface-strong: #5D5D6F;
+    --color-interface-medium: #8B8BA7;
+    --color-interface-soft: #D9D9E3;
+    --color-interface-softer: #F2F2F7;
+    --color-interface-softest: #FFFFFF;
+    --color-success-soft: #D7F4DE;
+    --color-success-strong: #248A3D;
+}
+

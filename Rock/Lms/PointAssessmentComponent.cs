@@ -17,6 +17,8 @@
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
+using Rock.Model;
+
 namespace Rock.Lms
 {
     /// <summary>
@@ -33,7 +35,7 @@ namespace Rock.Lms
         /// <summary>
         /// Gets the Highlight color for the component.
         /// </summary>
-        public override string HighlightColor => "#ebe9f1";
+        public override string HighlightColor => "#9d174d";
 
         /// <summary>
         /// Gets the icon CSS class for the component.
@@ -49,5 +51,23 @@ namespace Rock.Lms
         /// Initializes a new instance of the CheckOffComponent.
         /// </summary>
         public PointAssessmentComponent(): base( @"/Obsidian/Controls/Internal/LearningActivity/pointAssessmentLearningActivity.obs" ) { }
+
+        /// <summary>
+        /// Point Assessments require grading when the due date is in the past and the activity hasn't yet been graded.
+        /// </summary>
+        /// <remarks>
+        /// Because there's no way to know when a student has completed the activity
+        /// we are using the due date as a qualifier for when to consider the activity
+        /// "completed" by a student.
+        /// </remarks>
+        /// <param name="completion">The learning activity completion.</param>
+        /// <returns><c>true</c> if the facilitator needs to grade the activity; otherwise <c>false</c>.</returns>
+        public override bool RequiresGrading( LearningActivityCompletion completion )
+        {
+            return
+                completion.DueDate.HasValue &&
+                completion.DueDate.Value.IsPast() &&
+                !completion.GradedByPersonAliasId.HasValue;
+        }
     }
 }

@@ -77,6 +77,8 @@
 
     function onSwitchIsScheduled(value: boolean): void {
         if (value) {
+            tempScheduleSendIsoString.value = internalScheduleSendIsoString.value;
+
             // Open the scheduled send modal!
             if (!isScheduleSendModalOpen.value) {
                 isScheduleSendModalOpen.value = true;

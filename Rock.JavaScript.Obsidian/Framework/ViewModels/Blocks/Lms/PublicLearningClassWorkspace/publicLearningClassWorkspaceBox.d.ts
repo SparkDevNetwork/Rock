@@ -22,6 +22,7 @@
 //
 
 import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+import { LearningCompletionStatus } from "@Obsidian/Enums/Lms/learningCompletionStatus";
 import { Guid } from "@Obsidian/Types";
 import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
 import { LearningClassAnnouncementBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassAnnouncementDetail/learningClassAnnouncementBag";
@@ -38,6 +39,12 @@ export type PublicLearningClassWorkspaceBox = {
 
     /** Gets or sets the announcements specific to this class and student. */
     announcements?: LearningClassAnnouncementBag[] | null;
+
+    /** Gets or sets the date the class was completed. */
+    classCompletionDate?: string | null;
+
+    /** Gets or sets the completion status of the class for the individual. */
+    classCompletionStatus: LearningCompletionStatus;
 
     /** Gets or sets the id for the class. */
     classIdKey?: string | null;
@@ -59,6 +66,9 @@ export type PublicLearningClassWorkspaceBox = {
 
     /** Gets or sets the current Grade scale that the student has achieved in the class (if configured to show grades). */
     currentGrade?: LearningGradingSystemScaleBag | null;
+
+    /** Whether announcements are enabled. */
+    enableAnnouncements: boolean;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that

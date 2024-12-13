@@ -27,6 +27,18 @@ namespace Rock.CheckIn.v2.Labels
     internal class RenderedLabel
     {
         /// <summary>
+        /// The encrypted identifier of the <see cref="CheckInLabel"/> that was
+        /// used to generate this instance.
+        /// </summary>
+        public string LabelId { get; set; }
+
+        /// <summary>
+        /// The name of the <see cref="CheckInLabel"/> that was used to generate
+        /// this instance.
+        /// </summary>
+        public string LabelName { get; set; }
+
+        /// <summary>
         /// The data that should be sent to the printer. This may be <c>null</c>
         /// if an error occurred during rendering.
         /// </summary>

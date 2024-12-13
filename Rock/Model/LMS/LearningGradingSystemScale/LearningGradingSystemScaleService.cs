@@ -47,7 +47,7 @@ namespace Rock.Model
                 .OrderByDescending( s => s.ThresholdPercentage )
                 .FirstOrDefault( s =>
                     s.LearningGradingSystemId == learningGradingSystemId
-                    && s.ThresholdPercentage >= gradePercent
+                    && gradePercent >= s.ThresholdPercentage
                 );
         }
     }

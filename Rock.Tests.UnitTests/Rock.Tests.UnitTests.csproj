@@ -229,11 +229,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rock\Blocks\Mobile\Cms\DailyChallengeEntryTests.cs" />
     <Compile Include="Rock\CheckIn\v2\CheckInMockDatabase.cs" />
+    <Compile Include="Rock\CheckIn\v2\Filters\AbilityLevelOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\AgeOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\BirthMonthOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\DataViewOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\DuplicateCheckInOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\GenderOpportunityFilterTests.cs" />
+    <Compile Include="Rock\CheckIn\v2\Filters\GradeAndAgeOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\GradeOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\LocationClosedOpportunityFilterTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Filters\LocationOverflowOpportunityFilterTests.cs" />
@@ -244,6 +246,7 @@
     <Compile Include="Rock\CheckIn\v2\Labels\Renderers\ZplImageHelperTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Labels\Renderers\ZplImageOptionsTests.cs" />
     <Compile Include="Rock\CheckIn\v2\Labels\Renderers\ZplLabelRendererTests.cs" />
+    <Compile Include="Rock\CheckIn\v2\Labels\TextFieldConfigurationTests.cs" />
     <Compile Include="Rock\CheckIn\v2\TemplateConfigurationDataTests.cs" />
     <Compile Include="Rock\CheckIn\v2\AreaConfigurationDataTests.cs" />
     <Compile Include="Rock\Cms\ThemeDefinitionTests.cs" />

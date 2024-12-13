@@ -341,6 +341,7 @@ namespace Rock.Blocks.Reporting
         {
             if ( metricValue.Metric?.MetricPartitions != null )
             {
+                var campusEntityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.CAMPUS.AsGuid() );
                 foreach ( var metricPartition in metricValue.Metric.MetricPartitions )
                 {
                     var entityTypeCache = EntityTypeCache.Get( metricPartition.EntityTypeId ?? 0 );
@@ -358,9 +359,9 @@ namespace Rock.Blocks.Reporting
                     {
                         var fieldType = entityTypeCache.SingleValueFieldType;
                         Dictionary<string, Rock.Field.ConfigurationValue> configurationValues;
-                        if ( fieldType.Field is IEntityQualifierFieldType )
+                        if ( fieldType.Field is IEntityQualifierFieldType entityQualifier )
                         {
-                            configurationValues = ( fieldType.Field as IEntityQualifierFieldType ).GetConfigurationValuesFromEntityQualifier( metricPartition.EntityTypeQualifierColumn, metricPartition.EntityTypeQualifierValue );
+                            configurationValues = entityQualifier.GetConfigurationValuesFromEntityQualifier( metricPartition.EntityTypeQualifierColumn, metricPartition.EntityTypeQualifierValue );
                         }
                         else
                         {
@@ -371,6 +372,15 @@ namespace Rock.Blocks.Reporting
                         var editValue = fieldType.Field.GetPrivateEditValue( metricValuePartitionBag?.Value, privateConfigurationValues );
                         var entity = entityFieldType.GetEntity( editValue, RockContext );
                         metricValuePartition.EntityId = entity?.Id;
+
+                        if ( !metricValuePartition.EntityId.HasValue && entityTypeCache.Guid == campusEntityType.Guid )
+                        {
+                            var campuses = CampusCache.All( false );
+                            if ( campuses.Count == 1 )
+                            {
+                                metricValuePartition.EntityId = campuses[0].Id;
+                            }
+                        }
                     }
                     else
                     {

@@ -65,7 +65,6 @@ function getQuickFilterValue(row: Record<string, unknown>, column: ColumnDefinit
     }
 
     if (typeof column.props.detailField === "string") {
-        console.log("has detailField");
         const detailValue = row[column.props.detailField];
 
         if (typeof detailValue === "string") {

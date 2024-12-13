@@ -19,7 +19,7 @@
                        field="didAttend"
                        :filter="booleanValueFilter"
                        itemClass="justify-content-center text-center"
-                       width="120"
+                       width="150"
                        visiblePriority="xs" />
 
         <TextColumn name="note"
@@ -39,12 +39,18 @@
                         field="createdDateTime"
                         :filter="dateValueFilter"
                         visiblePriority="md"
-                        headerClass="text-right"
+                        headerClass="title-right"
                         itemClass="justify-content-end text-right" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

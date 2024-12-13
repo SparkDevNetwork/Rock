@@ -14,11 +14,11 @@
 
         <Column name="iconCssClass"
                 visiblePriority="xs"
-                width="52">
+                :excludeFromExport="true"
+                width="52"
+                itemClass="icon-column">
             <template #format="{ row }">
-                <div>
-                    <i v-if="row.iconCssClass" :class="row.iconCssClass"></i>
-                </div>
+                <i v-if="row.iconCssClass" :class="row.iconCssClass"></i>
             </template>
 
             <template #skeleton>
@@ -38,7 +38,7 @@
                        :filter="booleanValueFilter"
                        visiblePriority="xs"
                        width="120"
-                       headerClass="text-center"
+                       headerClass="title-center"
                        itemClass="justify-content-center text-center" />
 
         <TextColumn name="componentName"
@@ -56,6 +56,20 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+
+.title-center .grid-column-title {
+    text-align: center;
+}
+
+.icon-column {
+    min-width: 52px !important;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

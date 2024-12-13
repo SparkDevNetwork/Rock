@@ -31,6 +31,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.AdaptiveMessageAdaptationDetail;
 using Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail;
 using Rock.ViewModels.Blocks.Cms.LavaShortcodeDetail;
+using Rock.ViewModels.Blocks.Core.ScheduleDetail;
 using Rock.ViewModels.Blocks.Engagement.StepTypeDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -69,6 +70,7 @@ namespace Rock.Blocks.Cms
         private static class PageParameterKey
         {
             public const string AdaptiveMessageId = "AdaptiveMessageId";
+            public const string AdaptiveMessageCategoryId = "AdaptiveMessageCategoryId";
         }
 
         private static class NavigationUrlKey
@@ -84,11 +86,26 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
+            if ( PageParameter( PageParameterKey.AdaptiveMessageId ).IsNullOrWhiteSpace() && PageParameter( PageParameterKey.AdaptiveMessageCategoryId ).IsNullOrWhiteSpace() )
+            {
+                return new DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag>();
+            }
+
             using ( var rockContext = new RockContext() )
             {
-                var box = new DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag>();
+                var entity = GetInitialEntity( rockContext );
 
+                var box = new DetailBlockBox<AdaptiveMessageBag, AdaptiveMessageDetailOptionsBag>();
+                if ( entity == null )
+                {
+                    return null;
+                }
+                
                 SetBoxInitialEntityState( box, rockContext );
+                if ( box.Entity == null )
+                {
+                    return box;
+                }
 
                 box.NavigationUrls = GetBoxNavigationUrls();
                 box.Options = GetBoxOptions( box.IsEditable, rockContext );
@@ -198,7 +215,7 @@ namespace Rock.Blocks.Cms
                 IsActive = entity.IsActive,
                 Key = entity.Key,
                 Name = entity.Name,
-                Categories = entity.Categories.ToListItemBagList(),
+                Categories = entity.AdaptiveMessageCategories.Select( a => a.Category ).ToListItemBagList(),
             };
         }
 
@@ -370,7 +387,22 @@ namespace Rock.Blocks.Cms
         /// <returns>The <see cref="AdaptiveMessage"/> to be viewed or edited on the page.</returns>
         private AdaptiveMessage GetInitialEntity( RockContext rockContext )
         {
-            return GetInitialEntity<AdaptiveMessage, AdaptiveMessageService>( rockContext, PageParameterKey.AdaptiveMessageId );
+            var entity = GetInitialEntity<AdaptiveMessage, AdaptiveMessageService>( rockContext, PageParameterKey.AdaptiveMessageId );
+
+            if ( PageParameter( PageParameterKey.AdaptiveMessageCategoryId ).IsNotNullOrWhiteSpace() )
+            {
+                var adaptiveMessageCategoryId = PageParameter( PageParameterKey.AdaptiveMessageCategoryId ).AsIntegerOrNull();
+                if ( adaptiveMessageCategoryId.HasValue )
+                {
+                    var adaptiveMessageCategory = new AdaptiveMessageCategoryService( rockContext ).Get( adaptiveMessageCategoryId.Value );
+                    if ( adaptiveMessageCategory != null )
+                    {
+                        entity = adaptiveMessageCategory.AdaptiveMessage;
+                    }
+                }
+            }
+
+            return entity;
         }
 
         /// <summary>
@@ -466,16 +498,33 @@ namespace Rock.Blocks.Cms
         /// <param name="bag">The bag.</param>
         private void UpdateCategories( RockContext rockContext, AdaptiveMessage entity, AdaptiveMessageBag bag )
         {
-            entity.Categories.Clear();
-
             var categoryService = new CategoryService( rockContext );
+            var adaptiveMessageCategoryService = new AdaptiveMessageCategoryService(rockContext );
+            var adaptiveMessageCategories = entity.AdaptiveMessageCategories.ToList();
+            foreach ( var adaptiveMessageCategory in adaptiveMessageCategories )
+            {
+                var category = categoryService.Get( adaptiveMessageCategory.CategoryId );
+
+                if ( category != null )
+                {
+                    if ( !bag.Categories.Any( a => a.Value == category.Guid.ToString() ) )
+                    {
+                        entity.AdaptiveMessageCategories.Remove( adaptiveMessageCategory );
+                        adaptiveMessageCategoryService.Delete( adaptiveMessageCategory );
+                    };
+                }
+            }
+
             foreach ( var categoryGuid in bag.Categories.Select( c => c.Value.AsGuid() ) )
             {
                 var category = categoryService.Get( categoryGuid );
 
                 if ( category != null )
                 {
-                    entity.Categories.Add( category );
+                    if ( !entity.AdaptiveMessageCategories.Any( a => a.CategoryId == category.Id ) )
+                    {
+                        entity.AdaptiveMessageCategories.Add( new AdaptiveMessageCategory { CategoryId = category.Id } );
+                    };
                 }
             }
         }
@@ -768,6 +817,7 @@ namespace Rock.Blocks.Cms
 
 
         #endregion
+
         #region Support Classes
 
         /// <summary>

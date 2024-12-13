@@ -14,7 +14,7 @@
                             <DropDownList label="Date Range Type" v-model="dateRangeType" :items="dateRangeTypeOptions" :showBlankItem="false" />
                         </div>
                         <div class="col-xs-6">
-                            <CheckBox label="Include Time" text="Yes" v-model="includeTime" help="Should the Date Range include the time of day along with the date?" />
+                            <CheckBox v-if="isIncludeTimeVisible" label="Include Time" v-model="includeTime" help="Should the Date Range include the time of day along with the date?" />
                         </div>
                     </div>
                 </div>
@@ -23,20 +23,20 @@
                 <div class="col-md-6">
                     <div class="row">
                         <div class="col-sm-6">
-                            <CheckBox label="Disable Priority" text="Yes" v-model="disablePriority" help="Should channels of this type disable the use of priorities?" />
+                            <CheckBox label="Disable Priority" v-model="disablePriority" help="Should channels of this type disable the use of priorities?" />
                         </div>
                         <div class="col-sm-6">
-                            <CheckBox label="Disable Content Field" text="Yes" v-model="disableContentField" help="Should channels of this type disable the use of the content field?" />
+                            <CheckBox label="Disable Content Field" v-model="disableContentField" help="Should channels of this type disable the use of the content field?" />
                         </div>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="row">
                         <div class="col-sm-6">
-                            <CheckBox label="Disable Status" text="Yes" v-model="disableStatus" help="Should channels of this type disable the use of the status and all be treated as 'Approved'?" />
+                            <CheckBox label="Disable Status" v-model="disableStatus" help="Should channels of this type disable the use of the status and all be treated as 'Approved'?" />
                         </div>
                         <div class="col-sm-6">
-                            <CheckBox label="Show in Channel Lists" text="Yes" v-model="showInChannelList" help="Unchecking this option means any channel block's 'Channel Types Include' settings MUST specifically include the type in order to show it." />
+                            <CheckBox label="Show in Channel Lists" v-model="showInChannelList" help="Unchecking this option means any channel block's 'Channel Types Include' settings MUST specifically include the type in order to show it." />
                         </div>
                     </div>
                 </div>
@@ -54,14 +54,6 @@
                     </Grid>
                 </div>
                 <Modal v-model="isChannelAttributeModalOpen" title="Content Channel Attributes" saveText="Save" @save="onSaveChannelAttribute">
-                    <NotificationBox v-show="channelAttributeErrors.length > 0" alertType="validation">
-                        Please correct the following:
-                        <ul>
-                            <li v-for="error of channelAttributeErrors">
-                                {{ error }}
-                            </li>
-                        </ul>
-                    </NotificationBox>
                     <AttributeEditor v-model="channelAttribute" :reservedKeyNames="channelAttributesReservedKeyNames" />
                 </Modal>
             </Panel>
@@ -78,14 +70,6 @@
                     </Grid>
                 </div>
                 <Modal v-model="isItemAttributeModalOpen" title="Item Attributes" saveText="Save" @save="onSaveItemAttribute">
-                    <NotificationBox v-show="itemAttributeErrors.length > 0" alertType="validation">
-                        Please correct the following:
-                        <ul>
-                            <li v-for="error of itemAttributeErrors">
-                                {{ error }}
-                            </li>
-                        </ul>
-                    </NotificationBox>
                     <AttributeEditor v-model="itemAttribute" :reservedKeyNames="itemAttributesReservedKeyNames" />
                 </Modal>
             </Panel>
@@ -94,8 +78,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch, Ref } from "vue";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { PropType, reactive, ref, watch, Ref, computed } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
@@ -107,11 +90,12 @@
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { ContentChannelTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelTypeDetail/contentChannelTypeBag";
     import { ContentChannelTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelTypeDetail/contentChannelTypeDetailOptionsBag";
-    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
 
     const props = defineProps({
         modelValue: {
@@ -146,13 +130,11 @@
     const isItemAttributeModalOpen = ref(false);
     const itemAttribute = ref<PublicEditableAttributeBag | null>(null);
     const itemAttributesReservedKeyNames = ref<string[]>([]);
-    const itemAttributeErrors = ref<string[]>([]);
 
     const channelAttributes = ref(props.modelValue.channelAttributes ?? []);
     const isChannelAttributeModalOpen = ref(false);
     const channelAttribute = ref<PublicEditableAttributeBag | null>(null);
     const channelAttributesReservedKeyNames = ref<string[]>([]);
-    const channelAttributeErrors = ref<string[]>([]);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -168,6 +150,10 @@
 
     const channelAttributesGridData: GridDataBag = reactive<GridDataBag>({
         rows: channelAttributes.value.map((x: PublicEditableAttributeBag) => convertToAttributeGridRowItem(x, channelAttributesReservedKeyNames))
+    });
+
+    const isIncludeTimeVisible = computed((): boolean => {
+        return toNumberOrNull(dateRangeType.value) !== ContentChannelDateType.NoDates;
     });
 
     // #endregion
@@ -199,11 +185,9 @@
         itemAttribute.value = {} as PublicEditableAttributeBag;
         itemAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
         isItemAttributeModalOpen.value = true;
-        itemAttributeErrors.value = [];
     }
 
     const onEditItemAttribute = async (key: string): Promise<void> => {
-        itemAttributeErrors.value = [];
         const selectedAttribute = itemAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute) {
@@ -232,45 +216,36 @@
     };
 
     function onSaveItemAttribute(): void {
-        itemAttributeErrors.value = [];
-        const isExistingKey = itemAttributesReservedKeyNames.value.includes(itemAttribute.value?.key ?? "");
+        if (itemAttribute.value) {
+            const index = itemAttributes.value.findIndex(a => a.guid === itemAttribute.value?.guid);
+            if (index !== -1) {
+                // Get the updated attribute and rowItem.
+                let editedAttribute = itemAttributes.value.find(a => a.guid == itemAttribute.value?.guid);
+                let rowItem = itemAttributesGridData.rows?.find(x => x.guid == itemAttribute.value?.guid);
 
-        if (isExistingKey) {
-            itemAttributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
-        else {
-            if (itemAttribute.value) {
-                const index = itemAttributes.value.findIndex(a => a.guid === itemAttribute.value?.guid);
-                if (index !== -1) {
-                    // Get the updated attribute and rowItem.
-                    let editedAttribute = itemAttributes.value.find(a => a.guid == itemAttribute.value?.guid);
-                    let rowItem = itemAttributesGridData.rows?.find(x => x.guid == itemAttribute.value?.guid);
-
-                    if (editedAttribute) {
-                        // Replace old attribute with updated attribute.
-                        editedAttribute = itemAttribute.value;
-                        itemAttributes.value.splice(index, 1, editedAttribute);
-                    }
-
-                    if (rowItem && itemAttributesGridData.rows && editedAttribute) {
-                        // Update GridRowItem so changes are reflected in the UI.
-                        const rowIndex = itemAttributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.key);
-                        rowItem = convertToAttributeGridRowItem(editedAttribute, itemAttributesReservedKeyNames);
-                        itemAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
-                    }
-                }
-                else {
-                    itemAttribute.value.guid = newGuid();
-                    itemAttributes.value.push(itemAttribute.value);
-
-                    // Add new RowItem to the grid to represent the newly added attribute.
-                    const newRowItem = convertToAttributeGridRowItem(itemAttribute.value, itemAttributesReservedKeyNames);
-                    itemAttributesGridData.rows?.push(newRowItem);
+                if (editedAttribute) {
+                    // Replace old attribute with updated attribute.
+                    editedAttribute = itemAttribute.value;
+                    itemAttributes.value.splice(index, 1, editedAttribute);
                 }
 
-                isItemAttributeModalOpen.value = false;
-                itemAttributesReservedKeyNames.value.push(itemAttribute.value.key ?? "");
+                if (rowItem && itemAttributesGridData.rows && editedAttribute) {
+                    // Update GridRowItem so changes are reflected in the UI.
+                    const rowIndex = itemAttributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.guid);
+                    rowItem = convertToAttributeGridRowItem(editedAttribute, itemAttributesReservedKeyNames);
+                    itemAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
+                }
             }
+            else {
+                itemAttribute.value.guid = newGuid();
+                itemAttributes.value.push(itemAttribute.value);
+
+                // Add new RowItem to the grid to represent the newly added attribute.
+                const newRowItem = convertToAttributeGridRowItem(itemAttribute.value, itemAttributesReservedKeyNames);
+                itemAttributesGridData.rows?.push(newRowItem);
+            }
+
+            isItemAttributeModalOpen.value = false;
         }
     }
 
@@ -310,6 +285,18 @@
             return true;
         }
     }
+
+    watch(isItemAttributeModalOpen, () => {
+        if (isItemAttributeModalOpen.value) {
+            itemAttributesReservedKeyNames.value = itemAttributesReservedKeyNames.value.filter(k => k !== itemAttribute.value?.key);
+        }
+        else {
+            if (itemAttribute.value?.key && !itemAttributesReservedKeyNames.value.some(k => k === itemAttribute.value?.key)) {
+                itemAttributesReservedKeyNames.value.push(itemAttribute.value.key);
+            }
+        }
+    });
+
     // #endregion
 
     // #region Channel Attributes
@@ -318,11 +305,9 @@
         channelAttribute.value = {} as PublicEditableAttributeBag;
         channelAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
         isChannelAttributeModalOpen.value = true;
-        channelAttributeErrors.value = [];
     }
 
     const onEditChannelAttribute = async (key: string): Promise<void> => {
-        channelAttributeErrors.value = [];
         const selectedAttribute = channelAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute) {
@@ -351,45 +336,36 @@
     };
 
     function onSaveChannelAttribute(): void {
-        channelAttributeErrors.value = [];
-        const isExistingKey = channelAttributesReservedKeyNames.value.includes(channelAttribute.value?.key ?? "");
+        if (channelAttribute.value) {
+            const index = channelAttributes.value.findIndex(a => a.guid === channelAttribute.value?.guid);
+            if (index !== -1) {
+                // Get the updated attribute and rowItem.
+                let editedAttribute = channelAttributes.value.find(a => a.guid == channelAttribute.value?.guid);
+                let rowItem = channelAttributesGridData.rows?.find(x => x.guid == channelAttribute.value?.guid);
 
-        if (isExistingKey) {
-            channelAttributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
-        else {
-            if (channelAttribute.value) {
-                const index = channelAttributes.value.findIndex(a => a.guid === channelAttribute.value?.guid);
-                if (index !== -1) {
-                    // Get the updated attribute and rowItem.
-                    let editedAttribute = channelAttributes.value.find(a => a.guid == channelAttribute.value?.guid);
-                    let rowItem = channelAttributesGridData.rows?.find(x => x.guid == channelAttribute.value?.guid);
-
-                    if (editedAttribute) {
-                        // Replace old attribute with updated attribute.
-                        editedAttribute = channelAttribute.value;
-                        channelAttributes.value.splice(index, 1, editedAttribute);
-                    }
-
-                    if (rowItem && channelAttributesGridData.rows && editedAttribute) {
-                        // Update GridRowItem so changes are reflected in the UI.
-                        const rowIndex = channelAttributesGridData.rows.findIndex(r => r.key === channelAttribute.value?.key);
-                        rowItem = convertToAttributeGridRowItem(editedAttribute, channelAttributesReservedKeyNames);
-                        channelAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
-                    }
-                }
-                else {
-                    channelAttribute.value.guid = newGuid();
-                    channelAttributes.value.push(channelAttribute.value);
-
-                    // Add new RowItem to the grid to represent the newly added attribute.
-                    const newRowItem = convertToAttributeGridRowItem(channelAttribute.value, channelAttributesReservedKeyNames);
-                    channelAttributesGridData.rows?.push(newRowItem);
+                if (editedAttribute) {
+                    // Replace old attribute with updated attribute.
+                    editedAttribute = channelAttribute.value;
+                    channelAttributes.value.splice(index, 1, editedAttribute);
                 }
 
-                isChannelAttributeModalOpen.value = false;
-                channelAttributesReservedKeyNames.value.push(channelAttribute.value.key ?? "");
+                if (rowItem && channelAttributesGridData.rows && editedAttribute) {
+                    // Update GridRowItem so changes are reflected in the UI.
+                    const rowIndex = channelAttributesGridData.rows.findIndex(r => r.key === channelAttribute.value?.guid);
+                    rowItem = convertToAttributeGridRowItem(editedAttribute, channelAttributesReservedKeyNames);
+                    channelAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
+                }
             }
+            else {
+                channelAttribute.value.guid = newGuid();
+                channelAttributes.value.push(channelAttribute.value);
+
+                // Add new RowItem to the grid to represent the newly added attribute.
+                const newRowItem = convertToAttributeGridRowItem(channelAttribute.value, channelAttributesReservedKeyNames);
+                channelAttributesGridData.rows?.push(newRowItem);
+            }
+
+            isChannelAttributeModalOpen.value = false;
         }
     }
 
@@ -425,6 +401,17 @@
             return true;
         }
     }
+
+    watch(isChannelAttributeModalOpen, () => {
+        if (isChannelAttributeModalOpen.value) {
+            channelAttributesReservedKeyNames.value = channelAttributesReservedKeyNames.value.filter(k => k !== channelAttribute.value?.key);
+        }
+        else {
+            if (channelAttribute.value?.key && !channelAttributesReservedKeyNames.value.some(k => k === channelAttribute.value?.key)) {
+                channelAttributesReservedKeyNames.value.push(channelAttribute.value.key);
+            }
+        }
+    });
 
     // #endregion
 

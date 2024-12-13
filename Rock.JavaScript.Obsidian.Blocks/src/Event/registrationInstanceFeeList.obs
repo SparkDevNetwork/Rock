@@ -21,7 +21,7 @@
         <DateColumn name="registrationDate"
                     title="Registration Date"
                     field="registrationDate"
-                    headerClass="text-right"
+                    headerClass="title-right"
                     itemClass="justify-content-end text-right"
                     :filter="dateValueFilter"
                     visiblePriority="md" />
@@ -68,7 +68,7 @@
                         field="cost"
                         :quickFilterValue="getCostQuickFilterValue"
                         :filter="numberValueFilter"
-                        headerClass="text-right"
+                        headerClass="title-right"
                         itemClass="justify-content-end text-right"
                         visiblePriority="md" />
 
@@ -77,11 +77,17 @@
                         field="feeTotal"
                         :quickFilterValue="getFeesQuickFilterValue"
                         :filter="numberValueFilter"
-                        headerClass="text-right"
+                        headerClass="title-right"
                         itemClass="justify-content-end text-right"
                         visiblePriority="xs" />
     </Grid>
 </template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";

@@ -550,6 +550,9 @@ namespace RockWeb.Blocks.Mobile
                 nbPageViewRetentionPeriodDays.Text = interactionChannelForSite.RetentionDuration.ToString();
             }
 
+            site.LoadAttributes();
+            avcAttributes.AddEditControls(site, Rock.Security.Authorization.EDIT, CurrentPerson );
+
             //
             // Set the API Key.
             //
@@ -612,6 +615,12 @@ namespace RockWeb.Blocks.Mobile
                 cpWarningStrong.Value = colors.WarningStrong;
                 cpWarningSoft.Value = colors.WarningSoft;
 
+                cpEditMenuButtonColor.Value = additionalSettings.MenuButtonColor;
+                cpEditActivityIndicatorColor.Value = additionalSettings.ActivityIndicatorColor;
+                cpTextColor.Value = additionalSettings.DownhillSettings.TextColor;
+                cpHeadingColor.Value = additionalSettings.DownhillSettings.HeadingColor;
+                cpBackgroundColor.Value = additionalSettings.DownhillSettings.BackgroundColor;
+
 #pragma warning disable CS0618 // Type or member is obsolete
                 cpPrimary.Value = additionalSettings.DownhillSettings.ApplicationColors.Primary;
                 cpSecondary.Value = additionalSettings.DownhillSettings.ApplicationColors.Secondary;
@@ -624,7 +633,6 @@ namespace RockWeb.Blocks.Mobile
                 cpBrand.Value = additionalSettings.DownhillSettings.ApplicationColors.Brand;
                 cpInfo.Value = additionalSettings.DownhillSettings.ApplicationColors.Info;
 #pragma warning restore CS0618 // Type or member is obsolete
-
 
                 cbNavbarTransclucent.Checked = additionalSettings.IOSEnableBarTransparency;
                 ddlNavbarBlurStyle.Visible = cbNavbarTransclucent.Checked;
@@ -1163,6 +1171,14 @@ namespace RockWeb.Blocks.Mobile
 
                 rockContext.SaveChanges();
             }
+
+            avcAttributes.GetEditValues( site );
+            // only save if everything saves:
+            rockContext.WrapTransaction( () =>
+            {
+                rockContext.SaveChanges();
+                site.SaveAttributeValues();
+            } );
 
             //
             // Create the default interaction channel for this site, and set the Retention Duration.

@@ -23,6 +23,8 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Group;
 using Rock.Security;
@@ -92,6 +94,68 @@ namespace Rock.Model
         [RockObsolete( "1.14" )]
         [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
         public virtual History.HistoryChangeList HistoryChangeList { get; set; }
+
+        /// <summary>
+        /// Gets whether this group is overriding its parent group type's relationship strength configuration.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.17.0" )]
+        public bool IsOverridingGroupTypeRelationshipStrength =>
+            GroupType?.IsPeerNetworkEnabled == true
+            && (
+                RelationshipStrengthOverride != null
+                || RelationshipGrowthEnabledOverride != null
+                || LeaderToLeaderRelationshipMultiplierOverride != null
+                || LeaderToNonLeaderRelationshipMultiplierOverride != null
+                || NonLeaderToLeaderRelationshipMultiplierOverride != null
+                || NonLeaderToNonLeaderRelationshipMultiplierOverride != null
+            );
+
+        /// <summary>
+        /// Gets whether any relationship multipliers have been customized for this group or its parent group type.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.17.0" )]
+        public bool AreAnyRelationshipMultipliersCustomized
+        {
+            get
+            {
+                // First, if all of this group's direct values are 100%, treat this as not customized.
+                if ( LeaderToLeaderRelationshipMultiplierOverride.GetValueOrDefault() == 1m
+                    && LeaderToNonLeaderRelationshipMultiplierOverride.GetValueOrDefault() == 1m
+                    && NonLeaderToLeaderRelationshipMultiplierOverride.GetValueOrDefault() == 1m
+                    && NonLeaderToNonLeaderRelationshipMultiplierOverride.GetValueOrDefault() == 1m )
+                {
+                    return false;
+                }
+
+                // Next, check if any of the parent group type's values are customized (not 100%).
+                if ( GroupType?.AreAnyRelationshipMultipliersCustomized == true )
+                {
+                    return true;
+                }
+
+                // Last, check if any of this group's direct values are defined.
+                return LeaderToLeaderRelationshipMultiplierOverride != null
+                    || LeaderToNonLeaderRelationshipMultiplierOverride != null
+                    || NonLeaderToLeaderRelationshipMultiplierOverride != null
+                    || NonLeaderToNonLeaderRelationshipMultiplierOverride != null;
+            }
+        }
 
         #endregion Properties
 
@@ -504,6 +568,40 @@ namespace Rock.Model
             }
 
             return scheduleConfirmationLogic;
+        }
+
+        /// <summary>
+        /// Gets whether a notification of the provided type should be sent to a group schedule coordinator.
+        /// If any notification types are defined at the group level, they will take precedence over any that are
+        /// defined at the group type level.
+        /// </summary>
+        /// <param name="notificationType">The notification type in question.</param>
+        /// <returns>Whether a notification of the provided type should be sent to a group schedule coordinator.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.16.7" )]
+        public bool ShouldSendScheduleCoordinatorNotificationType( ScheduleCoordinatorNotificationType notificationType )
+        {
+            // Just in case the caller of this method passed in "None".
+            if ( notificationType == ScheduleCoordinatorNotificationType.None )
+            {
+                return false;
+            }
+
+            // Prefer notification types defined on the group.
+            if ( this.ScheduleCoordinatorNotificationTypes.HasValue )
+            {
+                return this.ScheduleCoordinatorNotificationTypes.Value.HasFlag( notificationType );
+            }
+
+            // Fall back to notification types defined on the group type.
+            return this.GroupType?.ScheduleCoordinatorNotificationTypes?.HasFlag( notificationType ) == true;
         }
 
         #endregion

@@ -81,8 +81,8 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.phoneNumber) {
-            valueBuilder.addTextValue("Phone Number", props.modelValue.phoneNumber);
+        if (props.modelValue.displayPhoneNumber) {
+            valueBuilder.addTextValue("Phone Number", props.modelValue.displayPhoneNumber);
         }
 
         if (props.modelValue.emailTag) {
@@ -92,13 +92,5 @@
         return valueBuilder.build();
     });
 
-        // #endregion
-
-        // #region Functions
-
-        // #endregion
-
-        // #region Event Handlers
-
-        // #endregion
+    // #endregion
 </script>

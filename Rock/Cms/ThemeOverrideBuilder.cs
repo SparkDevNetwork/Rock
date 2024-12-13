@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 using Rock.Configuration;
 using Rock.Enums.Cms;
@@ -33,9 +34,46 @@ namespace Rock.Cms
         #region Fields
 
         /// <summary>
+        /// The marker used to indicate the start of the top overrides section.
+        /// </summary>
+        internal const string TopOverrideStartMarker = "/* CSS Overrides Top Start */";
+
+        /// <summary>
+        /// The marker used to indicate the end of the top overrides section.
+        /// </summary>
+        internal const string TopOverrideEndMarker = "/* CSS Overrides Top End */";
+
+        /// <summary>
+        /// The marker used to indicate the start of the bottom overrides section.
+        /// </summary>
+        internal const string BottomOverrideStartMarker = "/* CSS Overrides Bottom Start */";
+
+        /// <summary>
+        /// The marker used to indicate the end of the bottom overrides section.
+        /// </summary>
+        internal const string BottomOverrideEndMarker = "/* CSS Overrides Bottom End */";
+
+        /// <summary>
+        /// A regular expression that finds all the top override section content
+        /// including the start and end markers.
+        /// </summary>
+        private static readonly Regex TopOverridePattern = new Regex( $"{TopOverrideStartMarker.Replace( "/", "\\/" ).Replace( "*", "\\*" )}.*{TopOverrideEndMarker.Replace( "/", "\\/" ).Replace( "*", "\\*" )}", RegexOptions.Compiled | RegexOptions.Singleline );
+
+        /// <summary>
+        /// A regular expression that finds all the bottom override section content
+        /// including the start and end markers.
+        /// </summary>
+        private static readonly Regex BottomOverridePattern = new Regex( $"{BottomOverrideStartMarker.Replace( "/", "\\/" ).Replace( "*", "\\*" )}.*{BottomOverrideEndMarker.Replace( "/", "\\/" ).Replace( "*", "\\*" )}", RegexOptions.Compiled | RegexOptions.Singleline );
+
+        /// <summary>
         /// The variables that we should include in the output.
         /// </summary>
         private readonly OrderedDictionary _variables = new OrderedDictionary();
+
+        /// <summary>
+        /// The list of CSS files to be imported into the output.
+        /// </summary>
+        private readonly List<string> _urlImports = new List<string>();
 
         /// <summary>
         /// Any strings of custom content that should be included after all
@@ -80,6 +118,15 @@ namespace Rock.Cms
         }
 
         /// <inheritdoc/>
+        public void AddImport( string url )
+        {
+            if ( url.IsNotNullOrWhiteSpace() )
+            {
+                _urlImports.Add( url );
+            }
+        }
+
+        /// <inheritdoc/>
         public void AddCustomContent( string content )
         {
             if ( content.IsNotNullOrWhiteSpace() )
@@ -103,12 +150,8 @@ namespace Rock.Cms
 
             if ( enabledIconSets.HasFlag( ThemeIconSet.FontAwesome ) )
             {
-                var sb = new StringBuilder();
-
                 // Append the standard FontAwesome CSS file.
-                var fontAwesomeUrl = RockApp.Current.ResolveRockUrl( "~/Styles/style-v2/icons/fontawesome-icon.css" );
-
-                sb.AppendLine( $"@import url('{fontAwesomeUrl}');" );
+                AddImport( "~/Styles/style-v2/icons/fontawesome-icon.css" );
 
                 // Append each additional font weight file.
                 if ( customization.AdditionalFontAwesomeWeights != null )
@@ -116,31 +159,89 @@ namespace Rock.Cms
                     foreach ( var weight in customization.AdditionalFontAwesomeWeights )
                     {
                         var weightName = weight.ToString().ToLower();
-                        var fontUrl = RockApp.Current.ResolveRockUrl( $"~/Styles/style-v2/icons/fontawesome-{weightName}.css" );
 
-                        sb.AppendLine( $"@import url('{fontUrl}');" );
+                        AddImport( $"~/Styles/style-v2/icons/fontawesome-{weightName}.css" );
                     }
                 }
 
                 // Append the default font weight file.
                 var defaultFontWeight = customization.DefaultFontAwesomeWeight.ToString().ToLower();
-                var defaultFontUrl = RockApp.Current.ResolveRockUrl( $"~/Styles/style-v2/icons/fontawesome-{defaultFontWeight}.css" );
 
-                sb.AppendLine( $"@import url('{defaultFontUrl}');" );
-
-                AddCustomContent( sb.ToString() );
+                AddImport( $"~/Styles/style-v2/icons/fontawesome-{defaultFontWeight}.css" );
             }
 
             if ( enabledIconSets.HasFlag( ThemeIconSet.Tabler ) )
             {
-                var fontUrl = RockApp.Current.ResolveRockUrl( $"~/Styles/style-v2/icons/tabler-icon.css" );
-
-                AddCustomContent( $"@import url('{fontUrl}');" );
+                AddImport( $"~/Styles/style-v2/icons/tabler-icon.css" );
             }
         }
 
         /// <inheritdoc/>
-        public string Build()
+        public string Build( string originalThemeCss )
+        {
+            var sb = new StringBuilder();
+
+            originalThemeCss = TopOverridePattern.Replace( originalThemeCss, string.Empty );
+            originalThemeCss = BottomOverridePattern.Replace( originalThemeCss, string.Empty );
+            originalThemeCss = originalThemeCss.Trim();
+
+            var topOverrides = BuildTopOverrides().Trim();
+            var bottomOverrides = BuildBottomOverrides().Trim();
+
+            if ( topOverrides.Length > 0 )
+            {
+                sb.AppendLine( TopOverrideStartMarker );
+                sb.AppendLine( topOverrides );
+                sb.AppendLine( TopOverrideEndMarker );
+                sb.AppendLine();
+            }
+
+            if ( originalThemeCss.Length > 0 )
+            {
+                sb.AppendLine( originalThemeCss );
+            }
+
+            if ( bottomOverrides.Length > 0 )
+            {
+                sb.AppendLine();
+                sb.AppendLine( BottomOverrideStartMarker );
+                sb.AppendLine( bottomOverrides );
+                sb.AppendLine( BottomOverrideEndMarker );
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Builds the overrides that need to go at the top of the theme.css
+        /// file.
+        /// </summary>
+        /// <returns>A string that contains the top overrides content.</returns>
+        private string BuildTopOverrides()
+        {
+            var sb = new StringBuilder();
+
+            if ( _urlImports.Any() )
+            {
+                foreach ( var importUrl in _urlImports )
+                {
+                    var url = importUrl.StartsWith( "~" )
+                        ? RockApp.Current.ResolveRockUrl( importUrl, ThemeName )
+                        : importUrl;
+
+                    sb.AppendLine( $"@import url('{url}');" );
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Builds the overrides that need to go at the bottom of the theme.css
+        /// file.
+        /// </summary>
+        /// <returns>A string that contains the bottom overrides content.</returns>
+        private string BuildBottomOverrides()
         {
             var sb = new StringBuilder();
 
@@ -159,12 +260,13 @@ namespace Rock.Cms
                 }
 
                 sb.AppendLine( "}" );
+                sb.AppendLine();
             }
 
             foreach ( var content in _customContent )
             {
-                sb.AppendLine();
                 sb.AppendLine( content.Trim() );
+                sb.AppendLine();
             }
 
             return sb.ToString();

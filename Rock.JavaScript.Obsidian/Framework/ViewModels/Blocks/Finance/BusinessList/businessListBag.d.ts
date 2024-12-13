@@ -34,7 +34,7 @@ export type BusinessListBag = {
     city?: string | null;
 
     /** Gets or sets the contacts of the business */
-    contacts?: string | null;
+    contacts?: string[] | null;
 
     /** Gets or sets the email of the business */
     email?: string | null;

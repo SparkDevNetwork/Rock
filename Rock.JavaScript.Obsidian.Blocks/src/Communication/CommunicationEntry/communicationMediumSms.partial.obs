@@ -45,9 +45,9 @@
                                      :recipientManagerDisabledMessage="disabledMessage" />
                     <template v-else>
                         <RockLabel>Recipients</RockLabel>
-                        <StaticFormControl :modelValue="`Communication List: ${config.communication.communicationListName} (${config.communication.communicationListRecipientCount} individuals)`">
+                        <StaticFormControl :modelValue="`Communication List: ${config.communication.communicationListName} (${recipients.length} individuals)`">
                             <template #default="{ value }">
-                                {{ value }} <RockButton btnType="link" btnSize="sm" @click="onConvertListToRecipients">Convert List to Recipients</RockButton>
+                                {{ value }} <RockButton btnType="link" btnSize="sm" :disabled="disabled" @click="onConvertListToRecipients">Convert List to Recipients</RockButton>
                             </template>
                         </StaticFormControl>
                     </template>
@@ -80,7 +80,6 @@
 
             <div v-if="isDuplicatePreventionOptionShown">
                 <CheckBox label="Prevent Duplicate SMS Addresses"
-                          text="Yes"
                           help="Check this option to prevent communications from being sent to people with the same SMS addresses.This will mean two people who share an address will not receive a personalized communication, only one of them will."
                           v-model="excludeDuplicateRecipientAddress" />
             </div>
@@ -479,14 +478,15 @@
             const bag: CommunicationEntrySendRequestBag = {
                 communicationGuid: communicationGuid.value,
                 communicationListGroupGuid: internalCommunicationListGroupGuid.value,
+                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value,
+                futureSendDateTime: props.scheduleSendIsoString,
                 isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
                 recipients: internalRecipients.value,
                 smsAttachmentBinaryFiles: attachment.value ? [attachment.value] : null,
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
-                status: CommunicationStatus.Transient,
-                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
+                status: CommunicationStatus.Transient
             };
 
             const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("Send", { bag });
@@ -513,14 +513,15 @@
             const bag: CommunicationEntryTestRequestBag = {
                 communicationGuid: communicationGuid.value,
                 communicationListGroupGuid: internalCommunicationListGroupGuid.value,
+                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value,
+                futureSendDateTime: props.scheduleSendIsoString,
                 isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
                 recipients: internalRecipients.value,
                 smsAttachmentBinaryFiles: attachment.value ? [attachment.value] : null,
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
-                status: CommunicationStatus.Transient,
-                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
+                status: CommunicationStatus.Transient
             };
 
             const result = await invokeBlockAction<CommunicationEntryTestResponseBag>("Test", { bag });
@@ -547,15 +548,15 @@
             const bag: CommunicationEntrySaveRequestBag = {
                 communicationGuid: communicationGuid.value,
                 communicationListGroupGuid: internalCommunicationListGroupGuid.value,
-                futureSendDateTime: internalScheduleSendIsoString.value,
+                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value,
+                futureSendDateTime: props.scheduleSendIsoString,
                 isBulkCommunication: internalIsBulkCommunication.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumSms,
                 recipients: internalRecipients.value,
                 smsAttachmentBinaryFiles: attachment.value ? [attachment.value] : null,
                 smsFromSystemPhoneNumberGuid: toGuidOrNull(fromNumberGuidOrEmptyString.value),
                 smsMessage: message.value,
-                status: CommunicationStatus.Transient,
-                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
+                status: CommunicationStatus.Transient
             };
 
             const result = await invokeBlockAction<CommunicationEntrySaveResponseBag>("Save", { bag });

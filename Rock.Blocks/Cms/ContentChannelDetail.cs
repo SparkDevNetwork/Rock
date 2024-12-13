@@ -96,7 +96,8 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            int? contentChannelId = pageReference.GetPageParameter( PageParameterKey.ContentChannelId ).AsIntegerOrNull();
+            var pageParameter = pageReference.GetPageParameter( PageParameterKey.ContentChannelId );
+            var contentChannelId = pageParameter.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( pageParameter );
             var breadCrumbs = new List<IBreadCrumb>();
 
             if ( contentChannelId != null )
@@ -1050,6 +1051,30 @@ namespace Rock.Blocks.Cms
 
                 return ActionOk( new { IsMessageVisible = false, Message = "" } );
             }
+        }
+
+        /// <summary>
+        /// Changes the ordered position of a single item.
+        /// </summary>
+        /// <param name="guid">The identifier of the item that will be moved.</param>
+        /// <param name="beforeGuid">The identifier of the item it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderAttributes( string idKey, Guid guid, Guid? beforeGuid )
+        {
+            // Get the queryable and make sure it is ordered correctly.
+            var id = Rock.Utility.IdHasher.Instance.GetId( idKey );
+
+            var attributes = GetItemAttributes( id ?? 0, RockContext );
+
+            if ( !attributes.ReorderEntity( guid.ToString(), beforeGuid.ToString() ) )
+            {
+                return ActionBadRequest( "Invalid reorder attempt." );
+            }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion

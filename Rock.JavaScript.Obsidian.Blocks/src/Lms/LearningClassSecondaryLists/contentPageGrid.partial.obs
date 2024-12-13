@@ -9,6 +9,7 @@
           tooltipField="title"
           stickyHeader
           liveUpdates
+          itemTerm="Content Page"
           :onSelectItem="onRowClicked"
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
         <SelectColumn />
@@ -20,13 +21,13 @@
                     visiblePriority="xs" />
 
         <DateColumn
-                name="startDate"
-                title="Start Date"
-                field="startDate"
-                :filter="dateValueFilter"
-                filterValue="startDate"
-                quickFilterValue="startDate"
-                visiblePriority="xs" />
+                    name="startDate"
+                    title="Start Date"
+                    field="startDate"
+                    :filter="dateValueFilter"
+                    filterValue="startDate"
+                    quickFilterValue="startDate"
+                    visiblePriority="xs" />
 
         <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
     </Grid>

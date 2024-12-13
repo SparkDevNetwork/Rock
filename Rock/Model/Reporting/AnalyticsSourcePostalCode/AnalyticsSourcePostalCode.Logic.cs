@@ -39,7 +39,10 @@ namespace Rock.Model
     /// </summary>
     public partial class AnalyticsSourcePostalCode
     {
-        private const string CensusDataPath = "App_Data\\Formatted_Census_Data.xlsx";
+        /// <summary>
+        /// The Census Data Path
+        /// </summary>
+        public const string CensusDataPath = "App_Data\\Formatted_Census_Data.xlsx";
 
         /// <summary>
         /// Saves the analytics source postal code data.
@@ -141,6 +144,11 @@ namespace Rock.Model
         {
             var path = System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, CensusDataPath );
             var fileInfo = new FileInfo( path );
+
+            if ( !fileInfo.Exists )
+            {
+                return new List<AnalyticsSourcePostalCode>();
+            }
 
             using ( var excelPackage = new ExcelPackage( fileInfo ) )
             {

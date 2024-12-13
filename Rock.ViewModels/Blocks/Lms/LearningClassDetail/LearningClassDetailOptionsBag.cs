@@ -33,6 +33,16 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
         public int ActiveClassesUsingDefaultGradingSystem { get; set; }
 
         /// <summary>
+        /// Gets or sets whether the current person is authorized to view grades.
+        /// </summary>
+        public bool CanViewGrades { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the course has announcements enabled.
+        /// </summary>
+        public bool CourseAllowsAnnouncements { get; set; }
+
+        /// <summary>
         /// Gets or sets the available grading systems.
         /// </summary>
         public List<ListItemBag> GradingSystems { get; set; }

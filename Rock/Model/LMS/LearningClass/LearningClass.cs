@@ -28,6 +28,10 @@ namespace Rock.Model
     /// <summary>
     /// Represents a learning class (an instance of a course for a given semester).
     /// </summary>
+    /// <remarks>
+    /// WARNING - This class inherits from another model, Group, but this Table-Per-Type
+    /// (TPT) inheritance strategy should not be used and is not supported for plugins.
+    /// </remarks>
     [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Due to inheritance from Group.
     [CodeGenerateRest( CodeGenerateRestEndpoint.None )]
     [RockDomain( "LMS" )]
@@ -162,6 +166,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> that represents the entity object type's friendly name.
         /// </value>
+        [NotAudited]
         public new static string FriendlyTypeName
         {
             get

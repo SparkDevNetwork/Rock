@@ -47,14 +47,12 @@
                         <div class="col-md-6">
                             <CheckBox v-model="requiresApprovals"
                                     label="Enabled Approvals"
-                                    @click="toggleRequiresApprovals()"
-                                    text="Yes" />
+                                    @click="toggleRequiresApprovals()" />
                         </div>
                         <div class="col-md-6" v-if="requiresApprovals">
                             <CheckBox v-model="enabledAIApprovals"
                                     label="Enabled AI Approvals"
-                                    help="Determines if AI should be used to automatically approve notes of this type. Ensure to provide guidelines on what constitutes an appropriate note."
-                                    text="Yes" />
+                                    help="Determines if AI should be used to automatically approve notes of this type. Ensure to provide guidelines on what constitutes an appropriate note." />
 
                         </div>
                     </div>

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays the details of the given financial account." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -510,7 +510,7 @@ namespace Rock.Blocks.Finance
                 // Ensure everything is valid before saving.
                 if ( !ValidateFinancialAccount( entity, rockContext, out var validationMessage ) )
                 {
-                    return ActionBadRequest( validationMessage );
+                    return ActionBadRequest( new { isValidationError = true, message = validationMessage }.ToCamelCaseJson( false, true ) );
                 }
 
                 var isNew = entity.Id == 0;

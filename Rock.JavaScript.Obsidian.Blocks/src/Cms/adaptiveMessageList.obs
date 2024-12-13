@@ -1,11 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="row mb-2">
-        <div class="col">
-            <a href="/admin/cms/adaptive-messages/attributes" class='btn btn-xs btn-default pull-right'><i class="fa fa-plus"></i> Adaptive Message Attributes</a>
-        </div>
-    </div>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="config.options?.isGridVisible"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Adaptive Message"
@@ -16,39 +12,35 @@
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
-        <SelectColumn />
+        <ReorderColumn @orderChanged="onOrderChanged" />
 
-        <!-- Name column that will always show in the Grid -->
-        <HighlightDetailColumn name="name"
-                               title="Name"
-                               field="name"
-                               :filter="textValueFilter"
-                               :filterValue="getRowNameFilterValue"
-                               :quickFilterValue="getRowNameFilterValue"
-                               visiblePriority="xs"
-                               :hideOnScreen="false"
-                               :excludeFromExport="true">
-            <template #detailFormat="{ row }">
-                <template v-if="row.description">{{ row.description }}</template>
-            </template>
-        </HighlightDetailColumn>
-
-       <Column name="categories"
-                title="Categories"
+        <Column name="name"
+                title="Name"
                 :filter="textValueFilter"
-                :filterValue="getRowCategoriesFilterValue"
-                :quickFilterValue="getRowCategoriesFilterValue"
-                visiblePriority="lg">
+                :filterValue="getRowNameFilterValue"
+                :quickFilterValue="getRowNameFilterValue"
+                visiblePriority="xs">
             <template #format="{ row }">
-                <span class='label label-default margin-l-sm' v-for="category in row.categories">
-                    {{ category }}
-                </span>
+                <div>
+                    <div>
+                        <span class="text-semibold">{{ row.name }}</span> <span class="text-muted text-xs">{{ row.id }}</span>
+                    </div>
+                    <div v-if="row.description">
+                        {{ row.description }}
+                    </div>
+                </div>
             </template>
 
             <template #skeleton>
                 <div class="skeleton skeleton-text skeleton-rounded" />
             </template>
         </Column>
+
+        <LabelColumn name="categories"
+                     title="Categories"
+                     field="categories"
+                     :filter="pickExistingValueFilter"
+                     visiblePriority="lg" />
 
         <NumberColumn name="views"
                       title="Views"
@@ -61,11 +53,12 @@
                 </div>
             </template>
         </NumberColumn>
+
         <NumberColumn name="adaptations"
                       title="Adaptations"
                       field="adaptations"
                       :filter="numberValueFilter"
-                      visiblePriority="xs" >
+                      visiblePriority="xs">
             <template #format="{ row }">
                 <div class="flex-grow-1 text-right">
                     {{ row.adaptations }}
@@ -81,10 +74,10 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { NumberColumn, HighlightDetailColumn, textValueFilter, DeleteColumn, SelectColumn, numberValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { Column, LabelColumn, NumberColumn, ReorderColumn, pickExistingValueFilter, textValueFilter, DeleteColumn, numberValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { AdaptiveMessageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageList/adaptiveMessageListOptionsBag";
+    import { AdaptiveMessageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageList/AdaptiveMessageListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey, Row } from "./AdaptiveMessageList/types.partial";
     import { reactive, ref } from "vue";
@@ -117,26 +110,11 @@
     }
 
     /**
-     * Gets the filter value text to use for the accounts column.
-     *
-     * @param row The row to be filtered.
-     */
-     function getRowCategoriesFilterValue(row: Record<string, unknown>): string {
-        let filterValue = "";
-
-        for (const category of (row as Row).categories) {
-            filterValue += ` ${category} ?? ""}`;
-        }
-
-        return filterValue;
-    }
-
-    /**
      * Gets the filter value text to use for the name column.
      *
      * @param row The row to be filtered.
      */
-     function getRowNameFilterValue(row: Record<string, unknown>): string {
+    function getRowNameFilterValue(row: Record<string, unknown>): string {
         const r = row as Row;
 
         return `${r.name} ${r.id} ${r.description ?? ""}`;
@@ -187,6 +165,23 @@
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
         }
+    }
+
+    /**
+    * Called when a row has been dragged from one position to a new position.
+    *
+    * @param item The item that was moved to a new position.
+    * @param beforeItem The item that the first item was dropped before.
+    *
+    * @returns `true` if the operation succeeded; otherwise `false`.
+    */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        const result = await invokeBlockAction<string>("ReorderItem", {
+            idKey: item["adaptiveMessageCategoryIdKey"],
+            beforeIdKey: beforeItem?.["adaptiveMessageCategoryIdKey"] ?? null
+        });
+
+        return result.isSuccess;
     }
 
     // #endregion

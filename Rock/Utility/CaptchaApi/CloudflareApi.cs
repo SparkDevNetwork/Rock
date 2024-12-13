@@ -131,7 +131,7 @@ namespace Rock.Utility.CaptchaApi
         }
 
         /// <summary>
-        /// Support class to handle the response Cloudflares captcha reponse
+        /// Support class to handle the response Cloudflares captcha response
         /// </summary>
         private sealed class CloudFlareCaptchaResponse
         {

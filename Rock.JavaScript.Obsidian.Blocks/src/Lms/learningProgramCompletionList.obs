@@ -1,14 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid
+          v-if="hasLoadedData"
+          :definition="config.gridDefinition ?? undefined"
+          :class="visibleCssClass"
           :data="gridDataSource"
           keyField="idKey"
-          :isSearchVisible="false"
-          :isTitleHidden="true"
-          :isCountMessageVisible="false"
           :showMergeTemplate="false"
           :showLaunchWorkflow="false"
           :showExport="false"
+          itemTerm="Completion"
           :entityTypeGuid="EntityType.LearningProgramCompletion"
           stickyHeader
           liveUpdates
@@ -21,14 +22,14 @@
                       field="individual"
                       :filter="pickExistingValueFilter"
                       :filterValue="getPersonNameFilterValue"
-                      visiblePriority="sm" />
+                      visiblePriority="xs" />
 
         <TextColumn
                     name="campus"
                     title="Campus"
                     field="campus"
                     :filter="textValueFilter"
-                    visiblePriority="sm" />
+                    visiblePriority="md" />
 
         <TextColumn
                     v-if="config.options?.showSemesterColumn"
@@ -36,7 +37,7 @@
                     title="Semester"
                     field="semester"
                     :filter="textValueFilter"
-                    visiblePriority="sm" />
+                    visiblePriority="md" />
 
         <DateColumn
                     name="startDate"
@@ -50,7 +51,7 @@
                     title="End Date"
                     field="endDate"
                     :filter="dateValueFilter"
-                    visiblePriority="sm" />
+                    visiblePriority="md" />
 
         <Column
                 name="status"
@@ -58,7 +59,7 @@
                 field="status"
                 :filter="pickExistingValueFilter"
                 width="10%"
-                visiblePriority="sm">
+                visiblePriority="xs">
             <template #format="{ row }">
                 <span :class="'label label-' + statusLabelTypeMap[row.status] + ' category-label'">
                     {{ CompletionStatusDescription[row.status] }}
@@ -70,7 +71,7 @@
                 name="profile"
                 title=""
                 width="48px"
-                visiblePriority="md">
+                visiblePriority="xs">
             <template #format="{ row }">
                 <i class="fa fa-user pr-3" @click="onPersonProfileClick(row.individual?.idKey)"></i>
             </template>
@@ -79,20 +80,39 @@
 </template>
 
 <script setup lang="ts">
-    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { textValueFilter, dateValueFilter, pickExistingValueFilter, Column, TextColumn, DateColumn, PersonColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningProgramCompletionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramCompletionList/learningProgramCompletionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningProgramCompletionList/types.partial";
-    import { reactive, ref } from "vue";
+    import { onMounted, reactive, ref } from "vue";
     import { CompletionStatusDescription } from "@Obsidian/Enums/Lms/completionStatus";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<ListBlockBox<LearningProgramCompletionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     onConfigurationValuesChanged(useReloadBlock());
+
+    // Use the browser bus to listen for changes to edit mode for any blocks on the page.
+    const browserBus = useBlockBrowserBus();
+    const hasLoadedData = ref(false);
+    const visibleCssClass = ref("show");
+
+    // When another block on the page begins editing hide this block.
+    browserBus.subscribe(BlockMessages.BeginEdit, () => {
+        visibleCssClass.value = "hidden";
+    });
+
+    // When another block begins editing show this block.
+    browserBus.subscribe(BlockMessages.EndEdit, () => {
+        visibleCssClass.value = "show";
+        if (!hasLoadedData.value) {
+            gridDataSource.value = loadGridData();
+        }
+    });
 
     // #region Values
 
@@ -123,6 +143,8 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
+            hasLoadedData.value = true;
+
             return gridData;
         }
         else {
@@ -147,11 +169,22 @@
      */
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key)
+                + "?autoEdit=true&returnUrl=" + encodeURIComponent(window.location.href);
         }
     }
 
     // #endregion
 
-    gridDataSource.value = loadGridData();
+    onMounted(() => {
+        // Because the grid may be hidden when a primary block is hidden
+        // only load the grid data if visible. Additionally we need to
+        // give time for the autoEdit of detail blocks to emit browserBus events.
+        setTimeout(() => {
+            if (visibleCssClass.value === "show") {
+                gridDataSource.value = loadGridData();
+            }
+        }, 250);
+    });
+
 </script>

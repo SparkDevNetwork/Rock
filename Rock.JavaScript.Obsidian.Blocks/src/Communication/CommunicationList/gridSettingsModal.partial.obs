@@ -26,11 +26,6 @@
             </div>
 
             <div class="col-md-4">
-                <DateRangePicker v-model="sentDateRange"
-                                 label="Sent Date Range" />
-            </div>
-
-            <div class="col-md-4">
                 <TextBox v-model="content"
                          label="Content" />
             </div>
@@ -91,7 +86,6 @@
     const status = ref(props.modelValue.status ?? "");
     const createdBy = ref(props.modelValue.createdBy);
     const createdDateRange = ref(props.modelValue.createdDateRange ?? undefined);
-    const sentDateRange = ref(props.modelValue.sentDateRange ?? undefined);
     const content = ref(props.modelValue.content ?? "");
     const recipientCount = ref(props.modelValue.recipientCount);
 
@@ -109,7 +103,6 @@
             status: status.value,
             createdBy: createdBy.value,
             createdDateRange: createdDateRange.value,
-            sentDateRange: sentDateRange.value,
             content: content.value,
             recipientCount: recipientCount.value
         };
@@ -127,7 +120,6 @@
         status.value = props.modelValue.status ?? "";
         createdBy.value = props.modelValue.createdBy;
         createdDateRange.value = props.modelValue.createdDateRange ?? undefined;
-        sentDateRange.value = props.modelValue.sentDateRange ?? undefined;
         content.value = props.modelValue.content ?? "";
         recipientCount.value = props.modelValue.recipientCount;
     });
