@@ -275,7 +275,7 @@ namespace Rock.Lava.Shortcodes
             };
 
             // Construct the CSS style for this media player.
-            var style = $"width: {settings.Attributes[ParameterKeys.Width]}; height: {settings.Attributes[ParameterKeys.Height]};";
+            var style = $"width: {settings.Attributes[ParameterKeys.Width]}; height: {settings.Attributes[ParameterKeys.Height]}; position: relative;";
 
             // Construct the JavaScript to initialize the graph.
             var script = $@"<script>

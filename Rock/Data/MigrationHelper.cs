@@ -2591,7 +2591,7 @@ END" );
                     VALUES(
                           1
                         , @FieldTypeId
-                        , @EntityTypeid
+                        , @EntityTypeId
                         , '{entityTypeQualifierColumn}'
                         , '{entityTypeQualifierValue}'
                         , '{key}'
