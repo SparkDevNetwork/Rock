@@ -23,7 +23,7 @@ namespace Rock.Blocks.CheckIn
 
     [Rock.SystemGuid.EntityTypeGuid( "28B9DAB2-C58A-4459-9EE7-8D1895C09592" )]
     [Rock.SystemGuid.BlockTypeGuid( "03C8EA07-DAF5-4B5A-9BB6-3A1AF99BB135" )]
-    [CustomizedGrid]
+    [CustomizedGrid( IsCustomColumnsSupported = false )]
     public class CheckInScheduleBuilder : RockBlockType
     {
         #region Keys
