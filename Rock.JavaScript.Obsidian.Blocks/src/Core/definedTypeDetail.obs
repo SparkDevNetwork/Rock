@@ -13,7 +13,7 @@
                  entityTypeName="DefinedType"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
-                 :isDeleteVisible="isEditable && !isStandAlone"
+                 :isDeleteVisible="false"
                  :isEditVisible="isEditable && !isStandAlone"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
