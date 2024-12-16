@@ -329,10 +329,10 @@ END
                 "Check-in",
                 "Saved Check-in Configurations",
                 "The common configurations that have been saved for use with the check-in kiosk.",
-                SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS );
+                SystemGuid.DefinedType.SAVED_KIOSK_TEMPLATES );
 
             RockMigrationHelper.AddDefinedTypeAttribute(
-                SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS,
+                SystemGuid.DefinedType.SAVED_KIOSK_TEMPLATES,
                 SystemGuid.FieldType.CAMPUSES,
                 "Campuses",
                 "Campuses",
@@ -345,7 +345,7 @@ END
                 "764AB4C0-631F-479D-A9AE-1333CFDB7CFD" );
 
             RockMigrationHelper.AddDefinedTypeAttribute(
-                SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS,
+                SystemGuid.DefinedType.SAVED_KIOSK_TEMPLATES,
                 SystemGuid.FieldType.CODE_EDITOR,
                 "Settings",
                 "SettingsJson",
@@ -370,7 +370,7 @@ END
         /// </summary>
         private void AddSavedCheckInConfigurationsDefinedTypeDown()
         {
-            RockMigrationHelper.DeleteDefinedType( SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS );
+            RockMigrationHelper.DeleteDefinedType( SystemGuid.DefinedType.SAVED_KIOSK_TEMPLATES );
         }
 
         /// <summary>

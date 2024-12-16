@@ -404,6 +404,14 @@ namespace Rock.SystemGuid
         /// The "Saved Check-in Configurations" defined type that provides a list
         /// of saved configuration settings for quickly starting up kiosks.
         /// </summary>
+        public const string SAVED_KIOSK_TEMPLATES = "F986008C-99BB-4C48-8A6E-38C8A121D75B";
+
+        /// <summary>
+        /// The "Saved Check-in Configurations" defined type that provides a list
+        /// of saved configuration settings for quickly starting up kiosks.
+        /// </summary>
+        [RockObsolete( "1.16.7" )]
+        [Obsolete( "Use SAVED_KIOSK_TEMPLATES instead." )]
         public const string SAVED_CHECKIN_CONFIGURATIONS = "F986008C-99BB-4C48-8A6E-38C8A121D75B";
 
         /// <summary>
