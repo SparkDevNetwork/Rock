@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            <div class="margin-b-md">
+            <div class="form-inline row margin-b-md">
                 <div class="d-flex flex-row justify-content-evenly">
                     <div class="col-md-2" v-if="!groupTypeIdFromParam">
                         <GroupTypePicker v-model="groupType" label="Group Type" :showBlankItem="true" blankValue="All" :groupTypes="[...groupTypeItems]" />
