@@ -34,8 +34,6 @@ using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
 using Rock.ViewModels.CheckIn.Labels;
 
-
-
 #if WEBFORMS
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
 using FromQueryAttribute = System.Web.Http.FromUriAttribute;

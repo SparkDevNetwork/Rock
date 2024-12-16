@@ -23,9 +23,6 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Web;
-using System.Web.Http;
-using System.Web.Http.Results;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -40,15 +37,34 @@ using Rock.Utility.CaptchaApi;
 using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
 
+#if WEBFORMS
+using BadRequestErrorMessageResult = System.Web.Http.Results.BadRequestErrorMessageResult;
+using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
+using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
+using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
+using IActionResult = System.Web.Http.IHttpActionResult;
+using NakedBodyAttribute = System.Web.Http.NakedBodyAttribute;
+using NotFoundResult = System.Web.Http.Results.NotFoundResult;
+using OkResult = System.Web.Http.Results.OkResult;
+using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
+using RouteAttribute = System.Web.Http.RouteAttribute;
+using StatusCodeResult = System.Web.Http.Results.StatusCodeResult;
+#endif
+
 namespace Rock.Rest.v2
 {
     /// <summary>
     /// API controller for the /api/v2/BlockActions endpoints.
     /// </summary>
     /// <seealso cref="Rock.Rest.ApiControllerBase" />
+    [RoutePrefix( "api/v2/blockactions" )]
     [Rock.SystemGuid.RestControllerGuid( "31D6B6FC-7740-483A-81D2-D62283F67C0A")]
-    public class BlockActionsController : ApiControllerBase 
+    public class BlockActionsController : ApiControllerBase, BlockActionsController.IBlockActionsController
     {
+        internal interface IBlockActionsController
+        {
+
+        }
         #region Fields
 
         /// <summary>
@@ -82,9 +98,9 @@ namespace Rock.Rest.v2
         /// <returns></returns>
         [Authenticate]
         [HttpGet]
-        [System.Web.Http.Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
+        [Route( "{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
         [Rock.SystemGuid.RestActionGuid( "CC3DE0C2-8703-4925-A16C-F47A31FE9C69" )]
-        public async Task<IHttpActionResult> BlockAction( Guid pageGuid, Guid blockGuid, string actionName )
+        public async Task<IActionResult> BlockAction( Guid pageGuid, Guid blockGuid, string actionName )
         {
             return await ProcessAction( this, pageGuid, blockGuid, actionName, null, _serviceProvider );
         }
@@ -99,9 +115,9 @@ namespace Rock.Rest.v2
         /// <returns></returns>
         [Authenticate]
         [HttpPost]
-        [System.Web.Http.Route( "api/v2/BlockActions/{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
+        [System.Web.Http.Route( "{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
         [Rock.SystemGuid.RestActionGuid( "05EAF919-0D36-496E-8924-88DC50A9CD8E" )]
-        public async Task<IHttpActionResult> BlockActionAsPost( Guid pageGuid, Guid blockGuid, string actionName, [NakedBody] string parameters )
+        public async Task<IActionResult> BlockActionAsPost( Guid pageGuid, Guid blockGuid, string actionName, [NakedBody] string parameters )
         {
             if ( parameters == string.Empty )
             {
@@ -140,7 +156,7 @@ namespace Rock.Rest.v2
         /// <param name="parameters">The parameters.</param>
         /// <param name="serviceProvider">The provider of the services that will be used to process the action.</param>
         /// <returns>The result of the block action method.</returns>
-        internal static async Task<IHttpActionResult> ProcessAction( ApiControllerBase controller, Guid? pageGuid, Guid? blockGuid, string actionName, JToken parameters, IServiceProvider serviceProvider )
+        internal static async Task<IActionResult> ProcessAction( ApiControllerBase controller, Guid? pageGuid, Guid? blockGuid, string actionName, JToken parameters, IServiceProvider serviceProvider )
         {
             try
             {
@@ -182,7 +198,11 @@ namespace Rock.Rest.v2
                 // Get the authenticated person and make sure it's cached.
                 //
                 var person = GetPerson( controller, null );
-                HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
+#if WEBFORMS
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
+#else
+#error Not implemented yet.
+#endif
 
                 //
                 // Ensure the user has access to both the page and block.
@@ -307,7 +327,11 @@ namespace Rock.Rest.v2
             {
                 ExceptionLogService.LogApiException( ex, controller.Request, GetPerson( controller, null )?.PrimaryAlias );
 
-                return new NegotiatedContentResult<HttpError>( HttpStatusCode.InternalServerError, new HttpError( ex.Message ), controller );
+#if WEBFORMS
+                return new System.Web.Http.Results.NegotiatedContentResult<System.Web.Http.HttpError>( HttpStatusCode.InternalServerError, new System.Web.Http.HttpError( ex.Message ), controller );
+#else
+#error Not implemented yet.
+#endif
             }
         }
 
@@ -323,7 +347,7 @@ namespace Rock.Rest.v2
         /// <exception cref="ArgumentNullException">actionName
         /// or
         /// actionData</exception>
-        internal static async Task<IHttpActionResult> InvokeAction( ApiControllerBase controller, Blocks.IRockBlockType block, string actionName, Dictionary<string, JToken> actionParameters, JToken bodyParameters )
+        internal static async Task<IActionResult> InvokeAction( ApiControllerBase controller, Blocks.IRockBlockType block, string actionName, Dictionary<string, JToken> actionParameters, JToken bodyParameters )
         {
             // Parse the body content into our normal parameters.
             if ( bodyParameters != null )
@@ -472,7 +496,7 @@ namespace Rock.Rest.v2
             };
 
             // Handle the result type.
-            if ( result is IHttpActionResult httpActionResult )
+            if ( result is IActionResult httpActionResult )
             {
                 return httpActionResult;
             }
@@ -486,7 +510,11 @@ namespace Rock.Rest.v2
             }
             else
             {
-                return new OkNegotiatedContentResult<object>( result, defaultContentNegotiator, controller.Request, validFormatters );
+#if WEBFORMS
+                return new System.Web.Http.Results.OkNegotiatedContentResult<object>( result, defaultContentNegotiator, controller.Request, validFormatters );
+#else
+#error Not implemented yet.
+#endif
             }
         }
 
