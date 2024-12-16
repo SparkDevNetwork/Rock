@@ -710,7 +710,15 @@ This can be due to multiple threads updating the same attribute at the same time
         }
 
         /// <summary>
-        /// Loads the <see cref="IHasAttributes.Attributes" /> and <see cref="IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
+        /// <para>
+        /// Loads the <see cref="IHasAttributes.Attributes" /> and <see cref="IHasAttributes.AttributeValues" /> of
+        /// any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
+        /// </para>
+        /// <para>
+        /// This method can only operate on lists comprised of a single object type.
+        /// Meaning, you can't mix Person and Group objects and expect to get valid
+        /// attributes back.
+        /// </para>
         /// </summary>
         /// <param name="entities">The entities whose attributes are to be loaded.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -728,7 +736,15 @@ This can be due to multiple threads updating the same attribute at the same time
         }
 
         /// <summary>
-        /// Loads the <see cref="IHasAttributes.Attributes" /> and <see cref="IHasAttributes.AttributeValues" /> of any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
+        /// <para>
+        /// Loads the <see cref="IHasAttributes.Attributes" /> and <see cref="IHasAttributes.AttributeValues" />
+        /// of any <see cref="IHasAttributes" /> object with an option to limit to specific attributes
+        /// </para>
+        /// <para>
+        /// This method can only operate on lists comprised of a single object type.
+        /// Meaning, you can't mix Person and Group objects and expect to get valid
+        /// attributes back.
+        /// </para>
         /// </summary>
         /// <param name="entities">The entities whose attributes are to be loaded.</param>
         /// <param name="rockContext">The rock context.</param>

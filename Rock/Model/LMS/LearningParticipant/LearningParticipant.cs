@@ -27,6 +27,14 @@ using Rock.Utility;
 
 namespace Rock.Model
 {
+    /*
+    12/16/2024 - DSH
+
+    The LearningParticipant model participates in the the TPT (Table-Per-Type) pattern. This
+    can cause some rare unexpected results. See the engineering note above the
+    Group class for details.
+    */
+
     /// <summary>
     /// Represents a participant in a <see cref="Rock.Model.LearningClass"/>.
     /// </summary>
