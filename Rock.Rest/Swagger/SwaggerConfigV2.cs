@@ -16,10 +16,10 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Routing;
 
@@ -82,6 +82,15 @@ namespace Rock.Rest.Swagger
                     // types with the same name in different namespaces.
                     c.UseFullTypeNameInSchemaIds();
 
+                    c.GroupActionsBy( a =>
+                    {
+                        var prefix = a.ActionDescriptor.ControllerDescriptor.ControllerType.GetCustomAttribute<RoutePrefixAttribute>();
+
+                        return prefix != null
+                            ? prefix.Prefix
+                            : a.ActionDescriptor.ControllerDescriptor.ControllerName;
+                    } );
+
                     // Apply custom filter rules to how operations and
                     // documents are generated.
                     c.OperationFilter<RockV2OperationFilter>();
@@ -103,6 +112,9 @@ namespace Rock.Rest.Swagger
                 {
                     // Disable validation against the remote swagger server.
                     c.DisableValidator();
+
+                    // Use our custom UI for v2 of the swagger-ui.
+                    c.CustomAsset( "index", thisAssembly, "Rock.Rest.Swagger.CustomAssets.v2.index.html" );
                 } );
 
             // Since we are using a custom route for the swagger ui, manually set up the shortcut

@@ -1,0 +1,32 @@
+﻿﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rock Rest API v2</title>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui.min.css">
+</head>
+
+<body>
+    <div id="swagger-ui"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui-bundle.min.js" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2/swagger-ui-standalone-preset.min.js" charset="utf-8"></script>
+
+    <script>
+        window.onload = () => {
+            SwaggerUIBundle({
+                dom_id: "#swagger-ui",
+                url: "/api/v2/doc",
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                layout: "BaseLayout",
+                docExpansion: "none",
+                defaultModelsExpandDepth: -1,
+                filter: true
+            });
+        };
+    </script>
+</body>
+</html>
