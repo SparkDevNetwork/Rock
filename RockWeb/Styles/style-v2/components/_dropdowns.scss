@@ -230,7 +230,7 @@
 
 
 .dropdown-menu {
-  box-shadow: 0 4px 8px 0 rgba(0,0,0,.1);
+  box-shadow: var(--popup-box-shadow);
   max-height: 85vh;
   overflow-y: auto;
 

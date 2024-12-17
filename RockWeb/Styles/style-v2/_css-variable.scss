@@ -10,7 +10,7 @@
   --base-interface-strong:    #3d444d;
   --base-interface-medium:    #8B8BA7;
   --base-interface-soft:      #D9D9E3;
-  --base-interface-softer:    #f1f1f8;
+  --base-interface-softer:    #f8f8fc;
   --base-interface-softest:   #FFFFFF;
 
   --base-critical:    #ee7725;
@@ -77,34 +77,34 @@
     --tint-white-percentage: 100%;
     --shade-black-percentage: 15%;
 
-    --color-critical-tint:  color-mix(in srgb, var(--color-critical-strong) 50%, #FFF var(--tint-white-percentage));
-    --color-critical-soft:  color-mix(in srgb, var(--color-critical-strong) 25%, #FFF var(--tint-white-percentage));
-    --color-critical-shade: color-mix(in srgb, var(--color-critical-strong) 100%, #000 var(--shade-black-percentage));
+    --color-critical-tint:  color-mix(in srgb, var(--base-critical) 50%, transparent var(--tint-white-percentage));
+    --color-critical-soft:  color-mix(in srgb, var(--base-critical) 25%, transparent var(--tint-white-percentage));
+    --color-critical-shade: color-mix(in srgb, var(--base-critical) 100%, #000 var(--shade-black-percentage));
   
-    --color-danger-tint:    color-mix(in srgb, var(--color-danger-strong) 50%, #FFF var(--tint-white-percentage));
-    --color-danger-soft:    color-mix(in srgb, var(--color-danger-strong) 25%, #FFF var(--tint-white-percentage));
-    --color-danger-shade:   color-mix(in srgb, var(--color-danger-strong) 100%, #000 var(--shade-black-percentage));
+    --color-danger-tint:    color-mix(in srgb, var(--base-danger) 50%, transparent var(--tint-white-percentage));
+    --color-danger-soft:    color-mix(in srgb, var(--base-danger) 25%, transparent var(--tint-white-percentage));
+    --color-danger-shade:   color-mix(in srgb, var(--base-danger) 100%, #000 var(--shade-black-percentage));
   
-    --color-info-tint:      color-mix(in srgb, var(--color-info-strong) 50%, #FFF var(--tint-white-percentage));
-    --color-info-soft:      color-mix(in srgb, var(--color-info-strong) 25%, #FFF var(--tint-white-percentage));
-    --color-info-shade:     color-mix(in srgb, var(--color-info-strong) 100%, #000 var(--shade-black-percentage));
+    --color-info-tint:      color-mix(in srgb, var(--base-info) 50%, transparent var(--tint-white-percentage));
+    --color-info-soft:      color-mix(in srgb, var(--base-info) 25%, transparent var(--tint-white-percentage));
+    --color-info-shade:     color-mix(in srgb, var(--base-info) 100%, #000 var(--shade-black-percentage));
   
-    --color-success-tint:   color-mix(in srgb, var(--color-success-strong) 50%, #FFF var(--tint-white-percentage));
-    --color-success-soft:   color-mix(in srgb, var(--color-success-strong) 25%, #FFF var(--tint-white-percentage));
-    --color-success-shade:  color-mix(in srgb, var(--color-success-strong) 100%, #000 var(--shade-black-percentage));
+    --color-success-tint:   color-mix(in srgb, var(--base-success) 50%, transparent var(--tint-white-percentage));
+    --color-success-soft:   color-mix(in srgb, var(--base-success) 25%, transparent var(--tint-white-percentage));
+    --color-success-shade:  color-mix(in srgb, var(--base-success) 100%, #000 var(--shade-black-percentage));
   
-    --color-warning-tint:   color-mix(in srgb, var(--color-warning-strong) 50%, #FFF var(--tint-white-percentage));
-    --color-warning-soft:   color-mix(in srgb, var(--color-warning-strong) 25%, #FFF var(--tint-white-percentage));
-    --color-warning-shade:  color-mix(in srgb, var(--color-warning-strong) 100%, #000 var(--shade-black-percentage));
+    --color-warning-tint:   color-mix(in srgb, var(--base-warning) 50%, transparent var(--tint-white-percentage));
+    --color-warning-soft:   color-mix(in srgb, var(--base-warning) 25%, transparent var(--tint-white-percentage));
+    --color-warning-shade:  color-mix(in srgb, var(--base-warning) 100%, #000 var(--shade-black-percentage));
   
-    --color-primary-tint:   color-mix(in srgb, var(--color-primary) 50%, #FFF var(--tint-white-percentage));
-    --color-primary-shade:  color-mix(in srgb, var(--color-primary) 100%, #000 var(--shade-black-percentage));
+    --color-primary-tint:   color-mix(in srgb, var(--base-primary) 50%, transparent var(--tint-white-percentage));
+    --color-primary-shade:  color-mix(in srgb, var(--base-primary) 100%, #000 var(--shade-black-percentage));
   
-    --color-link-tint:      color-mix(in srgb, var(--color-link) 50%, #FFF var(--tint-white-percentage));
-    --color-link-shade:     color-mix(in srgb, var(--color-link) 100%, #000 var(--shade-black-percentage));
+    --color-link-tint:      color-mix(in srgb, var(--base-link) 50%, transparent var(--tint-white-percentage));
+    --color-link-shade:     color-mix(in srgb, var(--base-link) 100%, #000 var(--shade-black-percentage));
   
-    --color-secondary-tint: color-mix(in srgb, var(--color-secondary) 50%, #FFF var(--tint-white-percentage));
-    --color-secondary-shade: color-mix(in srgb, var(--color-secondary) 100%, #000 var(--shade-black-percentage));
+    --color-secondary-tint: color-mix(in srgb, var(--base-secondary) 50%, transparent var(--tint-white-percentage));
+    --color-secondary-shade: color-mix(in srgb, var(--base-secondary) 100%, #000 var(--shade-black-percentage));
   }
 
   // CATEGORICAL COLORS 
@@ -208,9 +208,11 @@
   --adminbar-bg:              #45474c;
   --modal-backdrop:           rgba(94, 94, 94, 0.6);
 
-  --box-shadow:               0 0 1px 0 rgba(0, 0, 0, 0.03), 
-                              0 1px 3px 0 rgba(0, 0, 0, 0.08);
-  --dropdown-box-shadow:      0 4px 8px 0 rgba(0,0,0,.1);
+  --box-shadow:               rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+  --popup-box-shadow:         0 1rem 3rem rgba(0,0,0,.175);
+  // --box-shadow: 0 .75rem 1.5rem #12263f08;
+
+  --dropdown-box-shadow:      0 4px 8px 0 rgba(145, 158, 171,.12);
   --input-focus-box-shadow:   0 0 0 2px var(--color-primary-tint);
 
   // BORDER RADIUS
@@ -239,20 +241,23 @@
     --color-interface-softer:    var(--base-interface-strongest);
     --color-interface-softest:   var(--base-interface-stronger);
   
-    --color-critical-soft:    var(--base-critical);
-    --color-critical-strong:  color-mix(in srgb, var(--base-critical) 25%, #FFF var(--tint-white-percentage));
+    --box-shadow:               rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
+    --popup-box-shadow:         0 1rem 3rem rgba(255, 255, 255,.04);
+
+    // --color-critical-soft:    var(--base-critical);
+    // --color-critical-strong:  color-mix(in srgb, var(--base-critical) 25%, #FFF var(--tint-white-percentage));
   
-    --color-danger-soft:      var(--base-danger);
-    --color-danger-strong:    color-mix(in srgb, var(--base-danger) 25%, #FFF var(--tint-white-percentage));
+    // --color-danger-soft:      var(--base-danger);
+    // --color-danger-strong:    color-mix(in srgb, var(--base-danger) 25%, #FFF var(--tint-white-percentage));
   
-    --color-info-soft:        var(--base-info);
-    --color-info-strong:      color-mix(in srgb, var(--base-info) 25%, #FFF var(--tint-white-percentage));
+    // --color-info-soft:        var(--base-info);
+    // --color-info-strong:      color-mix(in srgb, var(--base-info) 25%, #FFF var(--tint-white-percentage));
   
-    --color-success-soft:     var(--base-success);
-    --color-success-strong:   color-mix(in srgb, var(--base-success) 25%, #FFF var(--tint-white-percentage));
+    // --color-success-soft:     var(--base-success);
+    // --color-success-strong:   color-mix(in srgb, var(--base-success) 25%, #FFF var(--tint-white-percentage));
   
-    --color-warning-soft:     var(--base-warning);
-    --color-warning-strong:   color-mix(in srgb, var(--base-warning) 25%, #FFF var(--tint-white-percentage));
+    // --color-warning-soft:     var(--base-warning);
+    // --color-warning-strong:   color-mix(in srgb, var(--base-warning) 25%, #FFF var(--tint-white-percentage));
   }
 }
 
@@ -265,20 +270,8 @@
   --color-interface-softer:    var(--base-interface-softer);
   --color-interface-softest:   var(--base-interface-softest);
 
-  --color-critical-soft:      color-mix(in srgb, var(--base-critical) 25%, #FFF var(--tint-white-percentage));
-  --color-critical-strong:    var(--base-critical);
-
-  --color-danger-soft:        color-mix(in srgb, var(--base-danger) 25%, #FFF var(--tint-white-percentage));
-  --color-danger-strong:      var(--base-danger);
-
-  --color-info-soft:          color-mix(in srgb, var(--base-info) 25%, #FFF var(--tint-white-percentage));
-  --color-info-strong:        var(--base-info);
-
-  --color-success-soft:       color-mix(in srgb, var(--base-success) 25%, #FFF var(--tint-white-percentage));
-  --color-success-strong:     var(--base-success);
-
-  --color-warning-soft:       color-mix(in srgb, var(--base-warning) 25%, #FFF var(--tint-white-percentage));
-  --color-warning-strong:     var(--base-warning);
+  --box-shadow:               rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+  --popup-box-shadow:         0 1rem 3rem rgba(0,0,0,.175);
 }
 
 [theme = "dark"] {
@@ -290,19 +283,21 @@
   --color-interface-softer:    var(--base-interface-strongest);
   --color-interface-softest:   var(--base-interface-stronger);
 
-  
-  --color-critical-soft:    var(--base-critical);
-  --color-critical-strong:  color-mix(in srgb, var(--base-critical) 25%, #FFF var(--tint-white-percentage));
+  --box-shadow:               rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
+  --popup-box-shadow:         0 1rem 3rem rgba(255, 255, 255,.04);
 
-  --color-danger-soft:      var(--base-danger);
-  --color-danger-strong:    color-mix(in srgb, var(--base-danger) 25%, #FFF var(--tint-white-percentage));
+  // --color-critical-soft:    var(--base-critical);
+  // --color-critical-strong:  color-mix(in srgb, var(--base-critical) 25%, #FFF var(--tint-white-percentage));
 
-  --color-info-soft:        var(--base-info);
-  --color-info-strong:      color-mix(in srgb, var(--base-info) 25%, #FFF var(--tint-white-percentage));
+  // --color-danger-soft:      var(--base-danger);
+  // --color-danger-strong:    color-mix(in srgb, var(--base-danger) 25%, #FFF var(--tint-white-percentage));
 
-  --color-success-soft:     var(--base-success);
-  --color-success-strong:   color-mix(in srgb, var(--base-success) 25%, #FFF var(--tint-white-percentage));
+  // --color-info-soft:        var(--base-info);
+  // --color-info-strong:      color-mix(in srgb, var(--base-info) 25%, #FFF var(--tint-white-percentage));
 
-  --color-warning-soft:     var(--base-warning);
-  --color-warning-strong:   color-mix(in srgb, var(--base-warning) 25%, #FFF var(--tint-white-percentage));
+  // --color-success-soft:     var(--base-success);
+  // --color-success-strong:   color-mix(in srgb, var(--base-success) 25%, #FFF var(--tint-white-percentage));
+
+  // --color-warning-soft:     var(--base-warning);
+  // --color-warning-strong:   color-mix(in srgb, var(--base-warning) 25%, #FFF var(--tint-white-percentage));
 }

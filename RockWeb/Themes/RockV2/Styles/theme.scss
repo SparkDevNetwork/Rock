@@ -63,7 +63,7 @@ body.navbar-side-open {
 
     .breadcrumb {
       padding: 0;
-      margin: 0;
+      margin-top: var(--spacing-tiny);
       font-size: var(--font-size-xsmall);
 
       a:hover {
@@ -506,7 +506,7 @@ $navbar-element-height: 40px;
       &.open {
         .nav-childpages {
           display: inline-block;
-          box-shadow: var(--box-shadow);
+          box-shadow: var(--popup-box-shadow);
         }
       }
 
@@ -573,7 +573,7 @@ $navbar-element-height: 40px;
 
     .nav-item {
       .nav-link {
-        padding: var(--spacing-tiny);
+        padding: var(--spacing-xsmall);
         line-height: 1.4;
         display: flex;
         align-items: center;
@@ -601,9 +601,9 @@ $navbar-element-height: 40px;
         }
 
         &:hover {
-          color: var(--color-interface-strong);
-          background-color: var(--color-interface-soft);
-          border-radius: var(--rounded-small);
+          color: var(--color-primary);
+          background-color:  color-mix(in srgb, var(--color-primary) 25%, transparent 90%);
+          border-radius: var(--rounded-medium);
 
           &::before {
             width: 8px;
@@ -616,9 +616,9 @@ $navbar-element-height: 40px;
       &.current {
         .nav-link {
           font-weight: 600;
-          color: var(--color-interface-strong);
-          // background-color: var(--color-primary);
-          // border-radius: var(--rounded-small);
+          color: #FFFFFF;
+          background-color: var(--color-primary);
+          border-radius: var(--rounded-medium);
 
           &::before {
             width: 8px;

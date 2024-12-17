@@ -49,8 +49,8 @@ ul.rocklist {
     }
 
     &:hover {
-      color:        var(--color-interface-softest);
-      background:   var(--color-interface-soft);
+      color:        inherit;
+      background:   var(--color-interface-softer);
     }
 
     &.selected {
