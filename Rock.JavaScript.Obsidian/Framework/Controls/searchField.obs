@@ -1,0 +1,125 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="smartsearch searchinput" style="height: 40px;width: 340px;">
+        <i class="fa fa-search"></i>
+        <ul class="nav pull-right smartsearch-type">
+            <li class="dropdown"><a class="dropdown-toggle navbar-link" data-toggle="dropdown"><span>Name</span><b class="fa fa-caret-down"></b></a>
+                <ul class="dropdown-menu">
+                    <li v-for="(filter, key) in searchFilters" :key="key" :data-key="key" :data-target="filter.value"><a>{{ filter.text }}</a></li>
+                </ul>
+            </li>
+        </ul>
+        <input type="search" ref="inputElement" :id="uniqueId" v-model="internalValue" accesskey="q" class="searchinput tt-query" autocomplete="off" spellcheck="false" style="position: relative; vertical-align: top; background-color: transparent;" dir="auto">
+        <input type="hidden" name="searchField_hSearchFilter" id="searchField_hSearchFilter" value="1">
+    </div>
+</template>
+
+<style scoped>
+.smartsearch {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 36px;
+    padding: 0;
+    margin: 0;
+    font-size: 0.875em;
+    color: inherit;
+    border-color: var(--input-border);
+}
+
+@media (min-width:768px) {
+    .smartsearch {
+        height: 40px;
+        width: 340px
+    }
+}
+
+.smartsearch i {
+    margin: 0 0 0 10px
+}
+
+.smartsearch input {
+    color: inherit;
+}
+
+.smartsearch .twitter-typeahead {
+    flex-grow: 1;
+    margin-right: 0
+}
+
+.smartsearch .smartsearch-type {
+    order: 10;
+    width: auto
+}
+
+.smartsearch .dropdown .navbar-link {
+    color: inherit;
+}
+
+.smartsearch .dropdown .dropdown-menu {
+    font-size: 1em
+}
+
+.smartsearch .tt-suggestion p {
+    padding: 10px 15px 10px 10px
+}
+
+.smartsearch .tt-hint {
+    height: 100%;
+    padding: 0 0 0 34px;
+    color: inherit;
+    opacity: 0.5
+}
+
+.smartsearch .tt-dropdown-menu {
+    min-width: 340px;
+    padding: 0
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { useHttp } from "@Obsidian/Utility/http";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const http = useHttp();
+    const uniqueId = `rock-searchField-${newGuid()}`;
+
+    const inputElement = ref<HTMLInputElement>();
+
+    const searchFilters = ref<ListItemBag[]>();
+
+    async function fetchSearchFilters(): Promise<void> {
+        const url = "/api/v2/Controls/SearchFieldGetSearchFilters";
+        const response = await http.post<ListItemBag[]>(url);
+
+        if (response.isSuccess && response.data) {
+            searchFilters.value = response.data;
+        }
+        else {
+            console.error("Error fetching items from server", response.errorMessage);
+        }
+    }
+
+    watch([inputElement, searchFilters], () => {
+        if (inputElement.value && searchFilters.value) {
+            window.Rock.controls.searchField.initialize({ controlId: uniqueId });
+        }
+    });
+
+    fetchSearchFilters();
+</script>

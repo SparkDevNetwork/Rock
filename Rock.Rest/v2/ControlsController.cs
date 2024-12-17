@@ -7984,6 +7984,47 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Search Field
+
+        /// <summary>
+        /// Gets the search filters available for the Search Field control
+        /// </summary>
+        /// <returns>A Dictionary of <see cref="ListItemBag"/> objects that represent all of the availabe filters.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "SearchFieldGetSearchFilters" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "6FF52C9E-985B-46C3-B5A5-E69312D189CB" )]
+        public IHttpActionResult SearchFieldGetSearchFilters()
+        {
+            var searchExtensions = new Dictionary<string, ListItemBag>();
+
+            var currentPerson = RockRequestContext.CurrentPerson;
+            if ( currentPerson != null )
+            {
+                foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
+                {
+                    var searchComponent = service.Value.Value;
+                    if ( searchComponent.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    {
+                        if ( !searchComponent.AttributeValues.ContainsKey( "Active" ) || bool.Parse( searchComponent.AttributeValues["Active"].Value ) )
+                        {
+                            var item = new ListItemBag
+                            {
+                                Value = searchComponent.ResultUrl,
+                                Text = searchComponent.SearchLabel,
+
+                            };
+                            searchExtensions.Add( service.Key.ToString(), item );
+                        }
+                    }
+                }
+            }
+
+            return Ok( searchExtensions );
+        }
+
+        #endregion
+
         #region Step Program Picker
 
         /// <summary>
