@@ -1024,17 +1024,27 @@ namespace RockWeb.Blocks.Core
         private void UpdateQualifierField( EntityTypeCache entityTypeCache, string entityTypeQualifierColumn )
         {
             var qualifiedProperties = entityTypeCache?.GetAttributeQualifierProperties() ?? new List<string>();
+            var isLegacyPlugin = entityTypeCache?.Name.StartsWith( "Rock.Model." ) == false && qualifiedProperties.Count == 0;
 
             ddlAttrQualifierField.Items.Clear();
             ddlAttrQualifierField.Items.Add( new ListItem() );
+
             foreach ( var property in qualifiedProperties.OrderBy( p => p ) )
             {
                 ddlAttrQualifierField.Items.Add( new ListItem( property, property ) );
             }
 
+            // Check for legacy plugins that have not defined qualified properties
+            // yet. This check should be removed in Rock v18.
+            if ( isLegacyPlugin )
+            {
+                tbAttrQualifierField.Visible = true;
+                ddlAttrQualifierField.Visible = false;
+            }
+
             // If the qualifier column is blank or a valid value then show
             // the dropdown. Otherwise show the text input.
-            if ( entityTypeQualifierColumn.IsNullOrWhiteSpace() || qualifiedProperties.Contains( entityTypeQualifierColumn ) )
+            else if ( entityTypeQualifierColumn.IsNullOrWhiteSpace() || qualifiedProperties.Contains( entityTypeQualifierColumn ) )
             {
                 tbAttrQualifierField.Visible = false;
                 ddlAttrQualifierField.Visible = true;
@@ -1068,8 +1078,9 @@ namespace RockWeb.Blocks.Core
             }
 
             var qualifiedProperties = entityTypeCache?.GetAttributeQualifierProperties() ?? new List<string>();
+            var isLegacyPlugin = entityTypeCache?.Name.StartsWith( "Rock.Model." ) == false && qualifiedProperties.Count == 0;
 
-            if ( !qualifiedProperties.Contains( tbAttrQualifierField.Text ) )
+            if ( !isLegacyPlugin && !qualifiedProperties.Contains( tbAttrQualifierField.Text ) )
             {
                 nbInvalidQualifier.Visible = true;
                 nbInvalidQualifier.Text = $"The Qualifier Field '{tbAttrQualifierField.Text}' is not fully supported and will not work correctly in some places in Rock. See the model map for the supported fields.";

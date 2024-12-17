@@ -127,6 +127,7 @@
         entityTypeQualifierColumn?: string | null;
         entityTypeQualifierValue?: string | null;
         validQualifierColumns?: string[] | null;
+        isLegacyPlugin: boolean;
         entityTypeGuid?: Guid | null;
         attribute: PublicEditableAttributeBag;
     };
@@ -173,6 +174,7 @@
 
     // Fields for editing an attribute
     const isInitialQualifierColumnValid = ref(false);
+    const isLegacyPlugin = ref(false);
     const entityTypeGuidForEditOrEmptyString = ref<string>("");
     const entityTypeQualifierColumn = ref("");
     const entityTypeQualifierValue = ref("");
@@ -220,8 +222,10 @@
             ?.map(c => ({ value: c, text: c }))
             ?? [];
 
-        isInitialQualifierColumnValid.value = !entityTypeQualifierColumn.value
-            || entityTypeQualifierColumnItems.value.some(q => q.value === entityTypeQualifierColumn.value);
+        isLegacyPlugin.value = result.data.isLegacyPlugin === true;
+        isInitialQualifierColumnValid.value = !result.data?.isLegacyPlugin
+            && (!entityTypeQualifierColumn.value
+                || entityTypeQualifierColumnItems.value.some(q => q.value === entityTypeQualifierColumn.value));
 
         updateQualifierFieldWarning();
 
@@ -305,8 +309,10 @@
             ?.map(c => ({ value: c, text: c }))
             ?? [];
 
-        isInitialQualifierColumnValid.value = !entityTypeQualifierColumn.value
-            || entityTypeQualifierColumnItems.value.some(q => q.value === entityTypeQualifierColumn.value);
+        isLegacyPlugin.value = result.data.isLegacyPlugin === true;
+        isInitialQualifierColumnValid.value = !result.data?.isLegacyPlugin
+            && (!entityTypeQualifierColumn.value
+                || entityTypeQualifierColumnItems.value.some(q => q.value === entityTypeQualifierColumn.value));
 
         updateQualifierFieldWarning();
 
@@ -367,8 +373,10 @@
             ?.map(c => ({ value: c, text: c }))
             ?? [];
 
-        isInitialQualifierColumnValid.value = !entityTypeQualifierColumn.value
-            || entityTypeQualifierColumnItems.value.some(q => q.value === entityTypeQualifierColumn.value);
+        isLegacyPlugin.value = result.data?.isLegacyPlugin === true;
+        isInitialQualifierColumnValid.value = !result.data?.isLegacyPlugin
+            && (!entityTypeQualifierColumn.value
+                || entityTypeQualifierColumnItems.value.some(q => q.value === entityTypeQualifierColumn.value));
 
         updateQualifierFieldWarning();
     }
@@ -378,15 +386,14 @@
      * not valid.
      */
     function updateQualifierFieldWarning(): void {
-        if (isInitialQualifierColumnValid.value) {
+        if (isInitialQualifierColumnValid.value || !entityTypeQualifierColumn.value) {
             invalidQualificationMessage.value = "";
             return;
         }
 
-        const isValid = !entityTypeQualifierColumn.value
-            || entityTypeQualifierColumnItems.value.some(q => q.value === entityTypeQualifierColumn.value);
+        const isValidColumn = entityTypeQualifierColumnItems.value.some(q => q.value === entityTypeQualifierColumn.value);
 
-        if (!isValid) {
+        if (!isLegacyPlugin.value && !isValidColumn) {
             invalidQualificationMessage.value = `The Qualifier Field '${entityTypeQualifierColumn.value}' is not fully supported and will not work correctly in some places in Rock. See the model map for the supported fields.`;
         }
         else {

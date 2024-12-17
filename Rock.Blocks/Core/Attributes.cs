@@ -442,12 +442,15 @@ namespace Rock.Blocks.Core
                 validQualifierProperties = entityTypeCache?.GetAttributeQualifierProperties();
             }
 
+            var isLegacyPlugin = entityTypeCache?.Name.StartsWith( "Rock.Model." ) == false && validQualifierProperties.Count == 0;
+
             return new EditAttributeViewModel
             {
                 Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ),
                 EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn,
                 EntityTypeQualifierValue = attribute.EntityTypeQualifierValue,
                 ValidQualifierColumns = validQualifierProperties,
+                IsLegacyPlugin = isLegacyPlugin,
                 EntityTypeGuid = entityTypeCache?.Guid ?? Guid.Empty
             };
         }
@@ -732,6 +735,8 @@ namespace Rock.Blocks.Core
         public string EntityTypeQualifierValue { get; set; }
 
         public List<string> ValidQualifierColumns { get; set; }
+
+        public bool IsLegacyPlugin { get; set; }
 
         public Guid EntityTypeGuid { get; set; }
 
