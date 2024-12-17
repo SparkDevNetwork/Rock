@@ -145,38 +145,22 @@ namespace Rock.Blocks.Lms
                         </div>
                         <div class=""card-text"">
                             {% if CourseInfo.CourseCode != empty %}
-                            <div class=""text-gray-600"">
-                                <span class=""text-bold"">Course Code: </span>
-                                <span>{{CourseInfo.CourseCode}}</span>
+                            <div class=""text-gray-600 d-flex gap-1"">
+                                <p class=""text-bold mb-0"">Course Code: </p>
+                                <p class=""mb-0"">{{CourseInfo.CourseCode}}</p>
                             </div>
                             {% endif %}
 
-                            <div class=""text-gray-600"">
-                                <span class=""text-bold"">Credits: </span>
-                                <span>{{CourseInfo.Credits}}</span>
+                            <div class=""d-flex text-gray-600 gap-1 pb-3"">
+                                <p class=""text-bold mb-0"">Credits: </p>
+                                <p class=""mb-0"">{{CourseInfo.Credits}}</p>
                             </div>
-
-                            <div class=""pb-3 text-gray-600"">
-                                {% if CourseInfo.CourseRequirements != empty %}
-                                        {% assign requirementsText = CourseInfo.CourseRequirements |
-                                        Where:'RequirementType','Prerequisite' | Select:'RequiredLearningCourse' |
-                                        Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
-                                        <div class=""text-gray-600"">
-                                            <div class=""d-flex align-items-center"">
-                                                <p class=""text-bold mb-0"">Prerequisites: <span class=""text-normal"">{{requirementsText}}</span></p>
-                                                {% if CourseInfo.UnmetPrerequisites != empty %}
-                                                    <i class=""fa fa-exclamation-circle text-danger ml-2""></i>
-                                                {% else %}
-                                                    <i class=""fa fa-check-circle text-success ml-2""></i>
-                                                {% endif %}
-                                            </div>
-                                            
-                                        </div>
-                                {% endif %}
-                            </div>
-
                             <div class=""pt-3 border-top border-gray-200"">
-                                <span>{{CourseInfo.DescriptionAsHtml}}</span>
+                                {% if CourseInfo.DescriptionAsHtml == empty %}
+                                    <span>No course description provided.</span>
+                                {% else %}
+                                    <span>{{CourseInfo.DescriptionAsHtml}}</span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -186,21 +170,57 @@ namespace Rock.Blocks.Lms
             </div>
 
             <div class=""col-xs-12 col-sm-12 col-md-4""> //- RIGHT CONTAINER
+                <div class=""card rounded-lg mb-4"">
+                    <div class=""card-body"">
+                        <div class=""card-title d-flex align-items-center"">
+							<h4 class=""m-0""><span><i class=""fa fa-clipboard-list mr-2""></i></span>Requirements
+							    {% if CourseInfo.UnmetPrerequisites != empty %}
+                                    <i class=""fa fa-exclamation-circle text-danger""></i>
+                                    </h4>
+                                {% else %}
+                                    <i class=""fa fa-check-circle text-success""></i>
+                                    </h4>
+                                {% endif %}
+							</h4>
+						</div>
+						<div class=""card-text text-muted"">
+							{% if CourseInfo.CourseRequirements != empty %}
+                                {% assign requirementsText = CourseInfo.CourseRequirements |
+                                Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
+                                {% if CourseInfo.UnmetPrerequisites != empty %}
+                                    </p>
+                                    <p class=""mb-0"">{{requirementsText}}</p>
+                                    <p class=""text-danger mb-0 mt-3"">You do not meet the course requirements.</p>
+                                {% else %}
+                                    </p>
+                                    <p class=""mb-0"">{{requirementsText}}</p>
+                                {% endif %}
+                            {% else %}
+                            <p class=""mb-0"">None</p>
+                            {% endif %}
+						</div>
+                    </div>
+                </div>
+                
+                {% assign today = 'Now' | Date:'yyyy-MM-dd' %}
                 {% assign hasClasses = false %}
                 {% for semesterInfo in CourseInfo.Semesters %}
+                    
                     {% for classInfo in semesterInfo.AvailableClasses %}
-                        {% assign hasClasses = true %}
-						
+                        {% if semesterInfo.EnrollmentCloseDate == null or semesterInfo.EnrollmentCloseDate >= today %}
+                            {% assign hasClasses = true %}
+						{% endif %}
 						//-CURRENTLY ENROLLED
-						{% if classInfo.IsEnrolled %} 
+						{% if classInfo.IsEnrolled and classInfo.StudentParticipant.LearningCompletionStatus == ""Incomplete"" and today >= semesterInfo.StartDate %} 
 							<div class=""card rounded-lg mb-4"">
 								<div class=""card-body"">
 									<div class=""card-title d-flex align-items-center"">
 										<i class=""fa fa-user-check mr-2""></i>
 										<h4 class=""m-0"">Currently Enrolled</h4>
 									</div>
-									<div class=""card-text text-muted"">
+									<div class=""card-text text-muted mb-3"">
 										<p>You are currently enrolled in this course.</p>
+										<p class=""text-gray-800""><i class=""fa fa-arrow-right mr-2""></i>{{classInfo.Name}}</p>
 									</div>
 									<div>
 										<a class=""btn btn-info"" href=""{{ classInfo.WorkspaceLink }}"">View Class Workspace</a>
@@ -220,9 +240,8 @@ namespace Rock.Blocks.Lms
                                             <h4 class=""m-0"">History</h4>
                                         </div>
                                         <div class=""text-muted"">You completed this class on {{
-                                            classInfo.StudentParticipant.LearningCompletionDateTime | Date: 'sd' }}</div>
-                            
-                                        <div>
+                                            classInfo.StudentParticipant.LearningCompletionDateTime | Date: 'sd' }}.</div>
+                                        <div class=""mt-2"">
                                             <a href=""{{ classInfo.WorkspaceLink }}"">View Class Workspace</a>
                                         </div>
                                     </div>
@@ -272,10 +291,11 @@ namespace Rock.Blocks.Lms
                             //-SCOPING TO CLASS DETAILS
                             
                             {% for semesterInfo in CourseInfo.Semesters %}
+
                                 {% assign semesterStartDate = semesterInfo.StartDate | Date: 'sd' %}
                                 {% assign semesterEndDate = semesterInfo.EndDate | Date: 'sd' %}
                                 {% if CourseInfo.ProgramInfo.ConfigurationMode == ""AcademicCalendar"" %}
-                                    <div>
+                                    <div class=""py-1"">
                                         <h5 class=""mt-0 mb-0"">{{semesterInfo.Name}}</h5>
                                         {% if semesterStartDate and semesterEndDate %}
                                             <p class=""text-gray-600"">{{semesterStartDate}}-{{semesterEndDate}}</p>
@@ -295,13 +315,15 @@ namespace Rock.Blocks.Lms
                                                     <div class=""d-grid grid-flow-row gap-0 mb-3""> //-BEGIN CLASS DETAILS
                                                         
                                                         {% if CourseInfo.ProgramInfo.ConfigurationMode == ""AcademicCalendar"" %}
-                                                            <p class=""text-bold"">{{classInfo.Entity.Name}}
-                                                            {% if classInfo.IsEnrolled %}
-                                                                <span class=""text-normal"">(Enrolled)</span>
+                                                            <p class=""text-bold"">{{classInfo.Name}}
+                                                            {% if classInfo.IsEnrolled and classInfo.StudentParticipant.LearningCompletionStatus == ""Incomplete"" %}
+                                                                <span class=""text-normal align-top badge bg-info"">Enrolled</span>
+                                                            {% elseif classInfo.IsEnrolled %}
+																<span class=""text-normal align-top badge bg-success"">Recently Completed</span>
                                                             {% endif %}
                                                             </p>
                                                         {% else %}
-                                                            <h4 class=""mt-0"">Class Details</h4>
+                                                        <h4 class=""mt-0"">Class Details</h4>
                                                         {% endif %}
                                                         
                                                         <div class=""d-flex flex-column"">
@@ -331,15 +353,11 @@ namespace Rock.Blocks.Lms
                                                                 </div>
                                                             {% endif %}
                                                             
-                                                            {% if classInfo.StudentParticipant and classInfo.StudentParticipant.LearningCompletionStatus == ""Incomplete"" %}
-                                                                
-                                                                {% if semesterInfo.IsEnrolled and classInfo.IsEnrolled == false %}
-                                                                    <p class=""text-danger"">You've already enrolled in a class this semester.</p>
-                                                                {% endif %}
-                                                            
-                                                            {% else %}
-                                                            
-                                                                {% if classInfo.CanEnroll == false %}
+                                                            {% if classInfo.IsEnrolled  == false %} //-NEVER ENROLLED?
+                                                                {% if semesterInfo.IsEnrolled == true and classInfo.IsEnrolled == false %}
+                                                                    <p class=""text-danger"">You've already enrolled in this course this semester.</p>
+
+                                                                {% elseif classInfo.CanEnroll == false %}
                                                                     {% if classInfo.EnrollmentErrorKey == 'class_full' %}
                                                                         <p class=""text-danger"">Class is full.</p>
                                                                     {% endif %}
@@ -357,7 +375,7 @@ namespace Rock.Blocks.Lms
                                                 </div>
                                             </div>
                                         {% endfor %}
-                                    
+       
                             {% endfor %}
                         
                         </div>

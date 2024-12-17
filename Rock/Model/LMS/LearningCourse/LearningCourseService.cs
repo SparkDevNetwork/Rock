@@ -197,6 +197,7 @@ namespace Rock.Model
                     StartDate = s.StartDate,
                     EndDate = s.EndDate,
                     EnrollmentCloseDate = s.EnrollmentCloseDate,
+                    Name = s.Name,
                     AvailableClasses = classes
                         .Where( c => c.LearningSemesterId == s.Id )
                         .Select( c => new PublicLearningClassBag
@@ -204,6 +205,7 @@ namespace Rock.Model
                             Campus = c.Campus,
                             GradingSystem = c.LearningGradingSystem,
                             Id = c.Id,
+                            Name = c.Name,
                             Location = c.GroupLocations.FirstOrDefault(),
                             Order = c.Order,
                             Schedule = c.Schedule
@@ -688,6 +690,11 @@ namespace Rock.Model
             /// Gets or sets the Location for the LearningClass to meet.
             /// </summary>
             public GroupLocation Location { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Name for the LearningClass.
+            /// </summary>
+            public string Name { get; set; }
 
             /// <summary>
             /// Gets or sets the sort order for the <see cref="LearningClass"/>.
