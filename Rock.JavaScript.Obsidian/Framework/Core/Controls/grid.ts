@@ -1320,6 +1320,7 @@ export function getColumnStyles(column: ColumnDefinition): Record<string, string
 
     if (column.width.unitType === "px") {
         styles.flex = `0 0 ${column.width.value}px`;
+        styles.minWidth = `unset`;
     }
     else {
         styles.flex = `1 1 ${column.width.value}%`;
