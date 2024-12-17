@@ -94,17 +94,19 @@ namespace Rock.Blocks.Engagement.SignUp
     [DefinedValueField( "Connection Status",
         Key = AttributeKey.ConnectionStatus,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
-        Description = "The connection status to use for new individuals.",
-        IsRequired = false,
+        Description = "The connection status to use for new individuals (default: 'Prospect').",
+        IsRequired = true,
         AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         Order = 6 )]
 
     [DefinedValueField( "Record Status",
         Key = AttributeKey.RecordStatus,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
-        Description = "The record status to use for new individuals.",
-        IsRequired = false,
+        Description = "The record status to use for new individuals (default: 'Pending').",
+        IsRequired = true,
         AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
         Order = 7 )]
 
     #endregion
