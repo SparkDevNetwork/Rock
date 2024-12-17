@@ -269,6 +269,7 @@ import AssetPickerGallery from "./ControlGallery/assetPickerGallery.partial.obs"
 import CustomSelectGallery from "./ControlGallery/customSelectGallery.partial.obs";
 import TabbedModalGallery from "./ControlGallery/tabbedModalGallery.partial.obs";
 import CategoryTreeGallery from "./ControlGallery/categoryTreeGallery.partial.obs";
+import PageNavButtonsGallery from "./ControlGallery/pageNavButtonsGallery.partial.obs";
 import { Guid } from "@Obsidian/Types";
 
 
@@ -8144,6 +8145,7 @@ const controlGalleryComponents: Record<string, Component> = [
     CustomSelectGallery,
     TabbedModalGallery,
     CategoryTreeGallery,
+    PageNavButtonsGallery
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

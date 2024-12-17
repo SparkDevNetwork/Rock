@@ -62,6 +62,8 @@ export class Store {
         state.interactionGuid = pageConfig.interactionGuid;
         state.executionStartTime = pageConfig.executionStartTime;
         state.loginUrlWithReturnUrl = pageConfig.loginUrlWithReturnUrl;
+
+        console.debug("PAGE CONFIG", state);
     }
 
     addPageDebugTiming(timing: PageDebugTiming): void {

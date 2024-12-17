@@ -796,6 +796,7 @@
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Rest\Controls\AIProviderPickerGetAIProviderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerExtractFileOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PageNavButtonsGetLinksOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerMoveFolderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerGetListOfAllFoldersOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerRenameFolderOptionsBag.cs" />
