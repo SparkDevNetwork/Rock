@@ -498,15 +498,8 @@ namespace Rock.Web.Cache
         /// that are allowed to participate in qualifying attributes for this
         /// entity type.
         /// </summary>
-        /// <remarks>
-        /// This is marked private because it isn't actually used. But the logic
-        /// is good so I will leave it for now. This can probably be removed in
-        /// the future. It has one issue, the qualifier properties for
-        /// <see cref="EventItem"/> are wrong because we had to use custom SQL
-        /// to make that SQL view.
-        /// </remarks>
         /// <returns>A list of property names.</returns>
-        private List<string> GetAttributeQualifierProperties()
+        public List<string> GetAttributeQualifierProperties()
         {
             if ( !IsEntity )
             {
