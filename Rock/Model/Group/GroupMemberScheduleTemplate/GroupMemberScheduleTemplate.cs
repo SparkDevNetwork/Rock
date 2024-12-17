@@ -30,7 +30,7 @@ namespace Rock.Model
     [Table( "GroupMemberScheduleTemplate" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "D84ED719-B659-433C-BFA0-E798E52C6B24")]
-    public class GroupMemberScheduleTemplate : Model<GroupMemberScheduleTemplate>
+    public partial class GroupMemberScheduleTemplate : Model<GroupMemberScheduleTemplate>
     {
         #region Entity Properties
 

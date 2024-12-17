@@ -808,6 +808,12 @@ GO
                 string viewName = readerViews["TABLE_NAME"] as string;
                 string script = readerViews["VIEW_DEFINITION"] as string;
 
+                // Skip the dynamically generated views for attribute values.
+                if ( viewName.StartsWith( "AttributeValue_" ) )
+                {
+                    continue;
+                }
+
                 string filePath = Path.Combine( databaseRootFolder, "Views", viewName + ".sql" );
                 Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
 
@@ -902,6 +908,10 @@ GO
                 dbContextFullName = dbContextFullName.Replace( "Rock.Data.", "" );
             }
 
+            var hasQueryableAttributes = typeof( Rock.Attribute.IHasAttributes ).IsAssignableFrom( type )
+                && type != typeof( Rock.Model.Attribute )
+                && type != typeof( Rock.Model.AttributeValue );
+
             var properties = GetEntityProperties( type, true, true );
 
             var sb = new StringBuilder();
@@ -929,6 +939,12 @@ GO
             sb.AppendLine( "" );
 
             sb.AppendLine( "using System;" );
+
+            if ( hasQueryableAttributes )
+            {
+                sb.AppendLine( "using System.Collections.Generic;" );
+            }
+
             sb.AppendLine( "using System.Linq;" );
             sb.AppendLine( "" );
             sb.AppendLine( @"using Rock.Data;
@@ -954,6 +970,29 @@ GO
             sb.Append( GetCanDeleteCode( rootFolder, type ) );
 
             sb.AppendLine( "    }" );
+
+            if ( hasQueryableAttributes )
+            {
+                sb.AppendLine();
+                sb.AppendLine( $"    [HasQueryableAttributes( typeof( {type.Name}.{type.Name}QueryableAttributeValue ), nameof( {type.Name}AttributeValues ) )]" );
+                sb.AppendLine( $"    public partial class {type.Name}" );
+                sb.AppendLine( "    {" );
+
+                sb.AppendLine( "        /// <summary>" );
+                sb.AppendLine( "        /// Gets the entity attribute values. This should only be used inside" );
+                sb.AppendLine( "        /// LINQ statements when building a where clause for the query. This" );
+                sb.AppendLine( "        /// property should only be used inside LINQ statements for filtering" );
+                sb.AppendLine( "        /// or selecting values. Do <b>not</b> use it for accessing the" );
+                sb.AppendLine( "        /// attributes after the entity has been loaded." );
+                sb.AppendLine( "        /// </summary>" );
+                sb.AppendLine( $"        public virtual ICollection<{type.Name}QueryableAttributeValue> {type.Name}AttributeValues {{ get; set; }} " );
+                sb.AppendLine();
+                sb.AppendLine( "        /// <inheritdoc/>" );
+                sb.AppendLine( $"        public class {type.Name}QueryableAttributeValue : QueryableAttributeValue" );
+                sb.AppendLine( "        {" );
+                sb.AppendLine( "        }" );
+                sb.AppendLine( "    }" );
+            }
 
             sb.AppendFormat( @"
     /// <summary>

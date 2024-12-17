@@ -1347,6 +1347,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( options.OpportunityGuid );
 
                 connectionRequest.ConnectionOpportunityId = newOpportunity.Id;
+                connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
 
                 //
                 // Set the new connection status, which requires a lookup.

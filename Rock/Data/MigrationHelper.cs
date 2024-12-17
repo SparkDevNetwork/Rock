@@ -819,6 +819,7 @@ namespace Rock.Data
 
                 DECLARE @ParentPageId int = ( SELECT [Id] FROM [Page] WHERE [Guid] = {0} )
                 DECLARE @LayoutId int = ( SELECT [Id] FROM [Layout] WHERE [Guid] = '{1}' )
+                DECLARE @SiteId int = ( SELECT [SiteId] FROM [Layout] WHERE [Guid] = '{1}' )
                 DECLARE @Order int = ( SELECT [order] + 1 FROM [Page] WHERE [Guid] = {6} )
 
                 IF @Order IS NULL
@@ -830,22 +831,57 @@ namespace Rock.Data
                     UPDATE [Page] SET [Order] = [Order] + 1 WHERE [ParentPageId] = @ParentPageId AND [Order] >= @Order
                 END
 
-                INSERT INTO [Page] (
-                    [InternalName],[PageTitle],[BrowserTitle],[IsSystem],[ParentPageId],[LayoutId],
-                    [RequiresEncryption],[EnableViewState],
-                    [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
-                    [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
-                    [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
-                    [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
-                    [IconCssClass],[Guid])
-                VALUES(
-                    '{2}','{2}','{2}',1,@ParentPageId,@LayoutId,
-                    0,1,
-                    1,1,1,1,
-                    0,0,1,0,
-                    1,0,
-                    @Order,0,'{3}',1,
-                    '{5}','{4}')
+                IF EXISTS (SELECT 1 FROM sys.columns WHERE [Name] = N'SiteId' AND [Object_ID] = Object_ID(N'dbo.Page'))
+                BEGIN
+                    -- The database may not be in a state yet where it has the SiteId column.
+                    -- If that is the case we can't have a SQL statement with SiteId referenced
+                    -- in it otherwise SQL parser will fail. Running it inside the sp_executesql
+                    -- means it won't parse it until we've already detected that we have SiteId.
+                    EXECUTE sp_executesql N'
+                        INSERT INTO [Page] (
+                            [InternalName],[PageTitle],[BrowserTitle],[IsSystem],[ParentPageId],[LayoutId],[SiteId],
+                            [RequiresEncryption],[EnableViewState],
+                            [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
+                            [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                            [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
+                            [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
+                            [IconCssClass],[Guid])
+                        VALUES(
+                            @Name,@Name,@Name,1,@ParentPageId,@LayoutId,@SiteId,
+                            0,1,
+                            1,1,1,1,
+                            0,0,1,0,
+                            1,0,
+                            @Order,0,@Description,1,
+                            @IconCssClass,''{4}'')',
+                            N'@ParentPageId INT, @LayoutId INT, @SiteId INT, @Order INT, @Name NVARCHAR(MAX), @Description NVARCHAR(MAX), @IconCssClass NVARCHAR(MAX)',
+                            @ParentPageId = @ParentPageId,
+                            @LayoutId = @LayoutId,
+                            @SiteId = @SiteId,
+                            @Order = @Order,
+                            @Name = '{2}',
+                            @Description = '{3}',
+                            @IconCssClass = '{5}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [Page] (
+                        [InternalName],[PageTitle],[BrowserTitle],[IsSystem],[ParentPageId],[LayoutId],
+                        [RequiresEncryption],[EnableViewState],
+                        [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
+                        [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
+                        [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
+                        [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
+                        [IconCssClass],[Guid])
+                    VALUES(
+                        '{2}','{2}','{2}',1,@ParentPageId,@LayoutId,
+                        0,1,
+                        1,1,1,1,
+                        0,0,1,0,
+                        1,0,
+                        @Order,0,'{3}',1,
+                        '{5}','{4}')
+                END
 ",
                     string.IsNullOrWhiteSpace( parentPageGuid ) ? "NULL" : "'" + parentPageGuid + "'",
                     layoutGuid,

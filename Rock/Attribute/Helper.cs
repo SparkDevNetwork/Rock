@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
@@ -41,6 +42,49 @@ namespace Rock.Attribute
     /// </summary>
     public static class Helper
     {
+        /// <summary>
+        /// Contains cached reflection information on for the method to call
+        /// to DbContext.Set&lt;T&gt;() for the given type. Specifically
+        /// the "T" is the attribute value view for accessing attribute values
+        /// via pure SQL.
+        /// </summary>
+        private static readonly ConcurrentDictionary<Type, MethodInfo> _queryableAttributeSetMethods = new ConcurrentDictionary<Type, MethodInfo>();
+
+        /// <summary>
+        /// Gets the DbContext.Set&lt;T&gt;() method for the given entity type
+        /// to retrieve the DbSet for the queryable attributes view.
+        /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <returns>MethodInfo.</returns>
+        private static MethodInfo GetQueryableAttributeSetMethod( Type entityType )
+        {
+            // Cache the reflection lookup as this saves about 400 ticks per
+            // call and this could end up being called a lot.
+            return _queryableAttributeSetMethods.GetOrAdd( entityType, t =>
+            {
+                try
+                {
+                    var hasQueryableAttributeValuesAttribute = entityType
+                        .GetCustomAttribute<HasQueryableAttributesAttribute>();
+                    var attributeValueType = hasQueryableAttributeValuesAttribute?.AttributeValueType;
+
+                    if ( attributeValueType == null )
+                    {
+                        return null;
+                    }
+
+                    var method = typeof( Data.DbContext ).GetMethod( "Set", BindingFlags.Public | BindingFlags.Instance, null, new Type[0], null );
+                    method = method.MakeGenericMethod( attributeValueType );
+
+                    return method;
+                }
+                catch
+                {
+                    return null;
+                }
+            } );
+        }
+
         /// <summary>
         /// Updates the attributes.
         /// </summary>
@@ -1010,6 +1054,37 @@ This can be due to multiple threads updating the same attribute at the same time
 
                 entity.AttributeValues = attributeValues;
             }
+        }
+
+        /// <summary>
+        /// Loads the attributes for the specified entity by its identifier.
+        /// This only works if the entity is decorated with <see cref="HasQueryableAttributesAttribute"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is an internal method used for testing. It may be removed or changed at any time.
+        /// It is faster to load the full entity and then call LoadAttributes() on it than
+        /// it is to call this method.
+        /// </remarks>
+        /// <param name="entityType">The type of entity whose attributes should be loaded.</param>
+        /// <param name="id">The identifier of the entity.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>An object that can be used to access the attribute values or <c>null</c> if the entity type is not valid.</returns>
+        [RockInternal( "1.17", true )]
+        public static IHasAttributes LoadAttributes( Type entityType, int id, RockContext rockContext )
+        {
+            var setMethod = GetQueryableAttributeSetMethod( entityType );
+
+            // Entity doesn't support queryable attributes.
+            if ( setMethod == null )
+            {
+                return new QueryableAttributeWrapper( id, new QueryableAttributeValue[0] );
+            }
+
+            // Load all the attributes for this entity.
+            var dbSet = ( IQueryable<QueryableAttributeValue> ) setMethod.Invoke( rockContext, new object[0] );
+            var values = dbSet.Where( v => v.EntityId == id ).ToList();
+
+            return new QueryableAttributeWrapper( id, values );
         }
 
         /// <summary>

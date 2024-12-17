@@ -218,6 +218,7 @@ namespace Rock.Model
         /// </value>
         [HideFromReporting]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int BenevolenceTypeId { get; set; }
 
         /// <summary>

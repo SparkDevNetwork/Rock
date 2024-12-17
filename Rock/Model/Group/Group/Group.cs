@@ -115,6 +115,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> representing the Id of the Group's Parent Group.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? ParentGroupId { get; set; }
 
         /// <summary>
@@ -126,6 +127,7 @@ namespace Rock.Model
         [Required]
         [HideFromReporting]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int GroupTypeId { get; set; }
 
         /// <summary>
@@ -138,6 +140,7 @@ namespace Rock.Model
         [HideFromReporting]
         [DataMember]
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
+        [EnableAttributeQualification]
         public int? CampusId { get; set; }
 
         /// <summary>

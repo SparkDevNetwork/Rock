@@ -109,6 +109,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public string Class { get; set; }
 
         /// <summary>

@@ -44,6 +44,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that is being executed.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int WorkflowTypeId { get; set; }
 
         /// <summary>

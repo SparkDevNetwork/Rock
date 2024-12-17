@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -78,6 +78,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.LOCATION_TYPE )]
+        [EnableAttributeQualification]
         public int? LocationTypeValueId { get; set; }
 
         /// <summary>

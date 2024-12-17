@@ -46,6 +46,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int EventItemId { get; set; }
 
         /// <summary>

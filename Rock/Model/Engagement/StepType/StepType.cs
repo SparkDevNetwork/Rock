@@ -76,6 +76,7 @@ namespace Rock.Model
         /// </summary>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int StepProgramId { get; set; }
 
         /// <summary>

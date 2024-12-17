@@ -1268,7 +1268,8 @@ namespace RockWeb.Blocks.Event
                 {
                     registration = new Registration
                     {
-                        RegistrationInstance = this.RegistrationInstanceState
+                        RegistrationInstance = this.RegistrationInstanceState,
+                        RegistrationTemplateId = this.RegistrationInstanceState.RegistrationTemplateId
                     };
                 }
 
@@ -2822,6 +2823,7 @@ namespace RockWeb.Blocks.Event
             }
 
             registration.RegistrationInstanceId = RegistrationInstanceState.Id;
+            registration.RegistrationTemplateId = RegistrationInstanceState.RegistrationTemplateId;
 
             // If the Registration Instance linkage specified a group, load it now
             Group group = null;
@@ -3456,6 +3458,7 @@ namespace RockWeb.Blocks.Event
                         registrant.Guid = registrantInfo.Guid;
                         registrantService.Add( registrant );
                         registrant.RegistrationId = registration.Id;
+                        registrant.RegistrationTemplateId = registration.RegistrationTemplateId ?? 0;
                     }
 
                     registrant.OnWaitList = registrantInfo.OnWaitList;
