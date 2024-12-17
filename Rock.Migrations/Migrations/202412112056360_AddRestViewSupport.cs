@@ -62,6 +62,8 @@ INNER JOIN [AttributeMatrix] AS [AM] ON [AM].[Id] = [AMI].[AttributeMatrixId]" )
             AlterColumn( "dbo.Registration", "RegistrationTemplateId", c => c.Int() );
             AlterColumn( "dbo.AttributeMatrixItem", "AttributeMatrixTemplateId", c => c.Int() );
 
+            // This is used by the Attribute Value SQL Views related to Groups
+            // so they can find propert attributes on the nested inheritence.
             Sql( @"
 CREATE VIEW [dbo].[GroupTypeInheritance]
 AS
