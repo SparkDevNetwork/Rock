@@ -25,17 +25,6 @@ namespace Rock.Tests.Shared.TestFramework
         {
             var rockContextMock = new Mock<RockContext>( MockBehavior.Strict, "invalidConnectionString" );
 
-            // TODO: This should be removed in v17 after all the DbSet properties are gone.
-            // This is here so the base RockContext constructor doesn't throw an error when
-            // trying to initialize all the DbSet properties.
-            rockContextMock.Setup( m => m.Set<It.IsAnyType>() ).Returns( new InvocationFunc( invocation =>
-            {
-                var dbSetType = invocation.Method.GetGenericArguments()[0];
-                var mockType = typeof( Mock<> ).MakeGenericType( typeof( DbSet<> ).MakeGenericType( dbSetType ) );
-                var dbSetMock = ( Mock ) Activator.CreateInstance( mockType, new object[] { MockBehavior.Strict } );
-                return dbSetMock.Object;
-            } ) );
-
             // Ignore any call to dispose.
             rockContextMock.Protected().Setup( "Dispose", ItExpr.IsAny<bool>() );
 

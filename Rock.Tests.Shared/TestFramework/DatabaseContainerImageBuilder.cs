@@ -242,7 +242,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 FabricateAttendance = true,
                 EnableGiving = true,
                 Password = "password",
-                RandomizerSeed = 42283823
+                RandomizerSeed = 42283823,
+                AttendanceCodeIssuedDateTime = RockDateTime.Now.AddDays( -1 )
             };
 
             factory.CreateFromXmlDocumentFile( sampleDataUrl, args );
