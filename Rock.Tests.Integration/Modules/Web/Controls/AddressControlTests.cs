@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Tests.Shared.TestFramework;
+using Rock.Web;
 
 namespace Rock.Tests.Integration.Modules.Web.Controls
 {
@@ -28,6 +29,8 @@ namespace Rock.Tests.Integration.Modules.Web.Controls
         [TestMethod]
         public void AddressControl_SetsDefaultValuesforCountryAndState()
         {
+            SystemSettings.SetValue( SystemKey.SystemSetting.ENABLE_DEFAULT_ADDRESS_STATE_SELECTION, "true" );
+
             var addressControl = new Rock.Web.UI.Controls.AddressControl();
 
             // Create an address with a Street and City only.
@@ -49,6 +52,8 @@ namespace Rock.Tests.Integration.Modules.Web.Controls
         [TestMethod]
         public void AddressControl_RequiredFieldNotSupplied_ValidationFails()
         {
+            SystemSettings.SetValue( SystemKey.SystemSetting.ENABLE_DEFAULT_ADDRESS_STATE_SELECTION, "true" );
+
             var addressControl = new Rock.Web.UI.Controls.AddressControl();
 
             // Set an incomplete address value.
