@@ -78,7 +78,7 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { ref, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -86,7 +86,7 @@
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<ListItemBag>,
+            type: String,
             required: true
         }
     });
