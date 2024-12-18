@@ -1,7 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span :class="labelClass" :style="labelStyle">{{ text }}</span>
+    <span v-for="item in items"
+          :class="item.labelClass"
+          :style="item.labelStyle">
+        {{ item.text }}
+    </span>
 </template>
+
+<style>
+.grid-obsidian .grid-cell-label {
+    gap: 4px;
+}
+</style>
 
 <script setup lang="ts">
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
@@ -9,16 +19,54 @@
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { computed } from "vue";
 
+    type LabelItem = {
+        text: string;
+        labelClass: string;
+        labelStyle: Record<string, string> | undefined;
+    };
+
     const props = defineProps(standardCellProps);
 
-    /** Contains the display text of the cell. */
-    const text = computed((): string => {
+    const items = computed((): LabelItem[] => {
         if (!props.column.field) {
-            return "";
+            return [];
         }
 
         const value = props.row[props.column.field];
 
+        if (Array.isArray(value)) {
+            return value.map(v => getLabelItem(v));
+        }
+        else {
+            return [getLabelItem(value)];
+        }
+    });
+
+    /**
+     * Gets an object that contains the data required to display a single label.
+     *
+     * @param value The raw value that will be used to construct the item.
+     *
+     * @returns An instance of {@link LabelItem} that represents the value.
+     */
+    function getLabelItem(value: unknown): LabelItem {
+        const text = getTextValue(value);
+
+        return {
+            text: text,
+            labelClass: getLabelClass(text),
+            labelStyle: getLabelStyle(value, text)
+        };
+    }
+
+    /**
+     * Gets the display text of a single label.
+     *
+     * @param value The raw value in the grid data.
+     *
+     * @returns A string that contains the text to display.
+     */
+    function getTextValue(value: unknown): string {
         // If the value is an object, that means it should be a ListItemBag.
         if (typeof value === "object") {
             if (value === null || value["text"] === null || value["text"] === undefined) {
@@ -36,27 +84,36 @@
         }
 
         return `${value}`;
-    });
+    }
 
-    /** Contains the CSS classes to apply to the span label. */
-    const labelClass = computed(() => {
+    /**
+     * Gets the CSS classes to apply to the span label.
+     *
+     * @param text The text value that will be displayed in the label.
+     *
+     * @returns The CSS classes to apply to the label.
+     */
+    function getLabelClass(text: string): string {
         const classSource = props.column.props["classSource"] as Record<string, string>;
 
-        if (classSource && text.value in classSource) {
-            return `label label-${classSource[text.value]}`;
+        if (classSource && text in classSource) {
+            return `label label-${classSource[text]}`;
+        }
+        else if (props.column.props["defaultLabelClass"]) {
+            return `label label-${props.column.props["defaultLabelClass"]}`;
         }
         else {
             return "label label-default";
         }
-    });
+    }
 
     /** Contains the custom style values to apply to the span label. */
-    const labelStyle = computed(() => {
+    function getLabelStyle(rawValue: unknown, text: string): Record<string, string> | undefined {
         const colorSource = props.column.props["colorSource"] as Record<string, string>;
 
-        if (props.column.field && props.row[props.column.field] && (props.row[props.column.field] as ListItemBag).value) {
+        if (rawValue && typeof rawValue === "object" && Object.keys(rawValue).includes("value")) {
             // Looks like a ListItemBag, extract the color information.
-            const baseColor = (props.row[props.column.field] as ListItemBag).value ?? "gray";
+            const baseColor = (rawValue as ListItemBag).value ?? "gray";
 
             const pair = RockColor.calculateColorPair(new RockColor(baseColor));
 
@@ -65,8 +122,8 @@
                 "color": pair.foregroundColor.toRgba()
             };
         }
-        else if (colorSource && text.value in colorSource) {
-            const baseColor = colorSource[text.value];
+        else if (colorSource && text in colorSource) {
+            const baseColor = colorSource[text];
             const pair = RockColor.calculateColorPair(new RockColor(baseColor));
 
             // We are using the color lookup and we have a match.
@@ -75,5 +132,5 @@
                 "color": pair.foregroundColor.toRgba()
             };
         }
-    });
+    }
 </script>

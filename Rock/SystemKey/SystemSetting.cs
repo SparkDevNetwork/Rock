@@ -399,11 +399,17 @@ namespace Rock.SystemKey
         public const string ANALYTICS_CALENDAR_DIMENSION_GIVING_MONTH_USE_SUNDAY_DATE = "core_AnalyticsCalendarDimensionGivingMonthUseSundayDate";
 
         /// <summary>
+
         /// The Lava template containing the Prayer Request AI Completions template.
         /// </summary>
         /// <remarks>
         /// Available fields are ParentCategoryId, SelectedCategoryId, PrayerRequest (the Entity).
         /// </remarks>
         public const string PRAYER_REQUEST_AI_COMPLETIONS = "core_PrayerRequestAICompletions";
+
+        /// <summary>
+        /// Whether the Organization's state should be selected by default.
+        /// </summary>
+        public const string ENABLE_DEFAULT_ADDRESS_STATE_SELECTION = "core_EnableDefaultAddressStateSelection";
     }
 }

@@ -207,9 +207,11 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningClass> GetListQueryable( RockContext rockContext )
         {
+            // Eagerly load the LearningProgram in case it needs to be checked for VIEW authorization.
             var baseQuery = new LearningClassService( rockContext )
                 .Queryable()
                 .Include( c => c.LearningCourse )
+                .Include( c => c.LearningCourse.LearningProgram )
                 .Include( c => c.LearningSemester )
                 .Include( c => c.LearningParticipants )
                 .Include( c => c.LearningParticipants.Select( p => p.LearningActivities ));
@@ -232,7 +234,8 @@ namespace Rock.Blocks.Lms
                 baseQuery = baseQuery.Where( c => c.IsActive );
             }
 
-            return baseQuery;
+            var currentPerson = GetCurrentPerson();
+            return baseQuery.ToList().Where( c => c.IsAuthorized( Authorization.VIEW, currentPerson ) ).AsQueryable();
         }
 
         /// <inheritdoc/>

@@ -21,6 +21,7 @@
                 title="Program"
                 field="name"
                 :filter="textValueFilter"
+                :quickFilterValue="getProgramQuickFilterValue"
                 width="50%"
                 visiblePriority="xs">
             <template #format="{ row }">
@@ -36,6 +37,7 @@
         </Column>
         <Column name="category"
                 title="Category"
+                field="category"
                 :filter="pickExistingValueFilter"
                 width="20%"
                 visiblePriority="md">
@@ -47,7 +49,9 @@
         </Column>
         <Column name="configurationMode"
                 title="Configuration Mode"
+                field="configurationMode"
                 :filter="pickExistingValueFilter"
+                :quickFilterValue="getConfigurationModeQuickFilterValue"
                 width="20%"
                 visiblePriority="lg">
             <template #format="{ row }">
@@ -107,6 +111,14 @@
     // #endregion
 
     // #region Functions
+
+    function getProgramQuickFilterValue(row: Record<string, unknown>): string {
+        return `${row.name} ${row.summary}`;
+    }
+
+    function getConfigurationModeQuickFilterValue(row: Record<string, unknown>): string {
+        return getConfigurationModeText(row["configurationMode"] as ConfigurationMode);
+    }
 
     function getConfigurationModeLabelClass(configurationMode: ConfigurationMode): string {
         return `label label-${configurationMode === ConfigurationMode.AcademicCalendar ? "success" : "info"}`;

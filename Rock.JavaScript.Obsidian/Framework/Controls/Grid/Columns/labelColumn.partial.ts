@@ -19,7 +19,7 @@ import { standardColumnProps } from "@Obsidian/Core/Controls/grid";
 import { Component, defineComponent, PropType } from "vue";
 import LabelCell from "../Cells/labelCell.partial.obs";
 import LabelSkeletonCell from "../Cells/labelSkeletonCell.partial.obs";
-import { ColumnDefinition, ExportValueFunction, FilterValueFunction, QuickFilterValueFunction, SortValueFunction } from "@Obsidian/Types/Controls/grid";
+import { ColumnDefinition, ExportValueFunction, FilterValueFunction, FilterValuesFunction, MultiValueFilterItem, QuickFilterValueFunction, SortValueFunction } from "@Obsidian/Types/Controls/grid";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
@@ -38,7 +38,52 @@ function getTextValue(row: Record<string, unknown>, column: ColumnDefinition): s
 
     const value = row[column.field];
 
-    // Check if it is a ListItemBag value type.
+    if (value !== undefined && Array.isArray(value)) {
+        return value.map(v => getSingleTextValue(v, column)).join(", ");
+    }
+    else {
+        return getSingleTextValue(value, column);
+    }
+}
+
+/**
+ * Gets the value to use when quick filtering or exporting a cell of this
+ * column.
+ *
+ * @param row The row that will be filtered or exported.
+ * @param column The column that will be filtered or exported.
+ *
+ * @returns A string value or undefined if the cell has no value.
+ */
+function getFilterValues(row: Record<string, unknown>, column: ColumnDefinition): MultiValueFilterItem[] {
+    const field = column.field;
+
+    if (!field) {
+        return [];
+    }
+
+    const value = row[field];
+
+    if (value !== undefined && Array.isArray(value)) {
+        return value.map(v => {
+            const r = { ...row };
+            r[field] = v;
+
+            return {
+                value: getSingleTextValue(v, column),
+                rowData: r
+            };
+        });
+    }
+    else {
+        return [{
+            value: getSingleTextValue(value, column),
+            rowData: row
+        }];
+    }
+}
+
+function getSingleTextValue(value: unknown, column: ColumnDefinition): string {
     if (typeof value === "object") {
         if (value === null || value["text"] === null || value["text"] === undefined) {
             return "";
@@ -86,6 +131,11 @@ export default defineComponent({
             default: getTextValue
         },
 
+        filterValues: {
+            type: Object as PropType<FilterValuesFunction>,
+            default: getFilterValues
+        },
+
         sortValue: {
             type: Function as PropType<SortValueFunction>,
             default: getTextValue
@@ -101,6 +151,11 @@ export default defineComponent({
             default: "label"
         },
 
+        wrapped: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
         /**
          * The lookup table to use to translate the raw value into a string.
          * This can be used, for example, to translate an enum into its text
@@ -109,6 +164,16 @@ export default defineComponent({
          */
         textSource: {
             type: Object as PropType<Record<string | number, string>>,
+            required: false
+        },
+
+        /**
+         * The default label class to use if no matching value is found in
+         * classSource. If not specified this will be `default`. This should be
+         * a standard label suffix such as `primary` or `danger`.
+         */
+        defaultLabelClass: {
+            type: String as PropType<string>,
             required: false
         },
 

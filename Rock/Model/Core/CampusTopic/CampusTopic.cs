@@ -30,7 +30,7 @@ namespace Rock.Model
     [Table( "CampusTopic" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "0FFDCB0B-B435-4E66-9085-2750534E706A" )]
-    public class CampusTopic : Model<CampusTopic>
+    public partial class CampusTopic : Model<CampusTopic>
     {
         #region Entity Properties
 

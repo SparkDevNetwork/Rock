@@ -2,7 +2,7 @@
 <template>
     <RockFormField v-if="error" v-bind="formFieldProps" :modelValue="internalValue" name="cat-val-picker">
         <NotificationBox :alertType="AlertType.Danger">
-            An error occurred while fetching category tree.&nbsp;<RockButton @click="loadTree">Retry</RockButton>
+            {{ errorMessage }}&nbsp;<RockButton @click="loadTree">Retry</RockButton>
         </NotificationBox>
     </RockFormField>
     <RockFormField v-else-if="loadedItems" v-bind="formFieldProps" :modelValue="internalValue" name="cat-val-picker">
@@ -54,6 +54,7 @@
     const http = useHttp();
     const loadedItems = ref<CategorizedValuePickerNodeBag | null>(null);
     const error = ref<boolean>(false);
+    const errorMessage = ref<string>("");
     const definedTypeName = ref<string>("");
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
 
@@ -61,6 +62,7 @@
 
     async function loadTree(): Promise<void> {
         error.value = false;
+        errorMessage.value = "";
         const options: CategorizedValuePickerGetTreeOptionsBag = {
             definedTypeGuid: toGuidOrNull(props.definedTypeGuid) ?? emptyGuid,
             onlyIncludeGuids: props.onlyIncludeGuids
@@ -75,6 +77,7 @@
 
         console.error(result.errorMessage ?? "Unknown error while loading data.");
         error.value = true;
+        errorMessage.value = result.errorMessage ?? "An error occurred while fetching category tree";
         loadedItems.value = null;
         definedTypeName.value = "";
     }

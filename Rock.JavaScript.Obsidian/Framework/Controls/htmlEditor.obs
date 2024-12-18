@@ -454,7 +454,7 @@
                 // and have access to the same APIs loaded in the page.
                 // https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#persistent-inline-editor-toolbar-options
                 selector: `#${editorId.value}`,
-                
+
                 toolbar_mode: "wrap",
                 height: props.editorHeight,
 
@@ -465,6 +465,8 @@
                 // Content CSS is not needed since TinyMCE is loaded inline (instead of in an iframe)
                 // and will inherit global Rock styles.
                 content_css: false,
+
+                content_style: `body { font-family: ${defaultSystemFont || "arial,helvetica,sans-serif"} }`,
 
                 // Hide the header menu bar and the footer status bar (which includes the TinyMCE attribution).
                 menubar: false,

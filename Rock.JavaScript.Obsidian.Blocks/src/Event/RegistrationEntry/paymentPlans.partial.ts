@@ -1162,7 +1162,13 @@ export function getPaymentPlanConfiguration(options: PaymentPlanConfigurationOpt
     const zero = RockCurrency.create(0, options.balanceDue.currencyInfo);
 
     const minAmountToPayToday = options.minAmountToPayToday.noLessThan(zero);
-    const amountToPayToday = options.amountToPayToday.noLessThan(minAmountToPayToday);
+
+    // This calculation needs to leave some balance available for the payment plan, or it will break
+    // the maximum payment calculation.
+    const amountToPayToday = options.balanceDue.subtract(options.amountToPayToday).isZero
+        ? minAmountToPayToday
+        : options.amountToPayToday.noLessThan(minAmountToPayToday);
+
     const amountForPaymentPlan = options.balanceDue.subtract(amountToPayToday);
 
     const allowedPaymentPlanFrequencies = getAllowedPaymentPlanFrequencies(

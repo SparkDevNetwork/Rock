@@ -305,10 +305,25 @@ namespace Rock.Blocks.Lms
 
         private LearningActivity GetDefaultEntity()
         {
+            /*
+	            12/12/2024 - JC
+
+	            We must load the parent LearningClass for new records.
+                When the authorization is checked the LearningClass (the ParentAuthority)
+                will be responsible for approving/denying access (see LearningActvity.IsAuthorized).
+
+	            Reason: ParentAuthority (LearningClass) will be checked for authorization.
+            */
+            var learningClass = new LearningClassService( RockContext ).Get(
+                PageParameter( PageParameterKey.LearningClassId ),
+                !this.PageCache.Layout.Site.DisablePredictableIds );
+
             return new LearningActivity
             {
                 Id = 0,
                 Guid = Guid.Empty,
+                LearningClass = learningClass,
+                LearningClassId = learningClass.Id,
                 AvailabilityCriteria = Enums.Lms.AvailabilityCriteria.AfterPreviousCompleted,
                 DueDateCriteria = Enums.Lms.DueDateCriteria.NoDate
             };
@@ -439,6 +454,7 @@ namespace Rock.Blocks.Lms
 
             return entityService.Queryable()
                 .AsNoTracking()
+                .Include( a => a.LearningClass )
                 .Include( a => a.CompletionWorkflowType )
                 .FirstOrDefault( a => a.Id == entityId );
         }

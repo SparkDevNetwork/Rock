@@ -324,6 +324,7 @@ namespace Rock.Tests.Integration.Modules.Core
 
                     var matrixItem = new AttributeMatrixItem();
                     matrixItem.AttributeMatrix = matrix;
+                    matrixItem.AttributeMatrixTemplateId = matrix.AttributeMatrixTemplateId;
 
                     matrixItem.LoadAttributes( rockContext );
 

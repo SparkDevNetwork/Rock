@@ -164,6 +164,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.CAMPUS_STATUS )]
+        [EnableAttributeQualification]
         public int? CampusStatusValueId { get; set; }
 
         /// <summary>
@@ -174,6 +175,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.CAMPUS_TYPE )]
+        [EnableAttributeQualification]
         public int? CampusTypeValueId { get; set; }
 
         /// <summary>

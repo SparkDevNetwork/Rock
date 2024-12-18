@@ -16,7 +16,9 @@
         <Column name="name"
                 title="Name"
                 field="name"
-                :filter="textValueFilter"
+                :filter="pickExistingValueFilter"
+                :sortValue="getFormattedName"
+                :quickFilterValue="getPersonNameFilterValue"
                 :filterValue="getPersonNameFilterValue">
             <template #format="{ row }">
 
@@ -53,7 +55,7 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { Column, DeleteColumn, SelectColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { Column, DeleteColumn, SelectColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
@@ -105,7 +107,7 @@
     * @param row The row to be filtered.
     */
     function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["individual"] as PersonFieldBag;
+        const person = row["name"] as PersonFieldBag;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 

@@ -9,6 +9,7 @@
                  :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
+                 entityTypeName="Learning Semester"
                  :isAuditHidden="false"
                  :isBadgesVisible="false"
                  :isDeleteVisible="isEditable"

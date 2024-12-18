@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.Routing;
 using Rock.Data;
 using Rock.Tasks;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -41,7 +42,14 @@ namespace Rock.Model
                     Entity._originalParentPageId = Entry.OriginalValues[nameof( Page.ParentPageId )]?.ToString().AsIntegerOrNull();
                 }
 
-                if ( State == EntityContextState.Deleted )
+                if ( State == EntityContextState.Added )
+                {
+                    if ( Entity.LayoutId != 0 )
+                    {
+                        Entity.SiteId = LayoutCache.Get( Entity.LayoutId, RockContext )?.Id ?? 0;
+                    }
+                }
+                else if ( State == EntityContextState.Deleted )
                 {
                     Dictionary<string, object> parameters = new Dictionary<string, object>();
                     parameters.Add( "PageId", Entity.Id );
@@ -76,6 +84,12 @@ namespace Rock.Model
                 {
                     var previousInternalName = Entry.OriginalValues[nameof( Page.InternalName )].ToStringSafe();
                     _didNameChange = previousInternalName != Entity.InternalName;
+
+                    var previousLayoutId = ( int ) Entry.OriginalValues[nameof( Page.LayoutId )];
+                    if ( previousLayoutId != Entity.LayoutId && Entity.LayoutId != 0 )
+                    {
+                        Entity.SiteId = LayoutCache.Get( Entity.LayoutId, RockContext )?.Id ?? 0;
+                    }
                 }
 
                 base.PreSave();

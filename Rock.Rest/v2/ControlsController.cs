@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data.Entity;
 using System.IO;
 using System.IO.Compression;
@@ -6993,6 +6994,105 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Page Nav Buttons
+
+        /// <summary>
+        /// Gets the tree list of pages
+        /// </summary>
+        /// <param name="options">The options that describe which pages to retrieve.</param>
+        /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the pages.</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PageNavButtonsGetLinks" )]
+        [Rock.SystemGuid.RestActionGuid( "49F4C35C-5528-44F3-9057-DCD3C387C8A5" )]
+        public IHttpActionResult PageNavButtonsGetLinks( [FromBody] PageNavButtonsGetLinksOptionsBag options )
+        {
+            if ( options.RootPageGuid == null || options.RootPageGuid.IsEmpty() )
+            {
+                return BadRequest( "Please provide a valid Root Page Guid." );
+            }
+
+            Person currentPerson = RockRequestContext.CurrentPerson;
+            PageCache rootPage = PageCache.Get( options.RootPageGuid );
+            List<ListItemBag> linkList = new List<ListItemBag>();
+
+            if ( rootPage == null )
+            {
+                return BadRequest( "Root Page Does Not Exist" );
+            }
+
+            foreach ( PageCache page in GetPageNavButtonsChildPages( rootPage, currentPerson ) )
+            {
+                // href
+                var pageReference = new PageReference( page.Id );
+                if ( options.Parameters != null )
+                {
+                    pageReference.Parameters = options.Parameters;
+                }
+
+                if ( options.QueryString != null )
+                {
+                    var nvcQueryString = new NameValueCollection();
+
+                    foreach ( var kvp in options.QueryString )
+                    {
+                        nvcQueryString.Add( kvp.Key.ToString(), kvp.Value.ToString() );
+                    }
+
+                    pageReference.QueryString = nvcQueryString;
+                }
+
+                var item = new ListItemBag
+                {
+                    Value = pageReference.BuildUrl(),
+                    Text = page.PageTitle,
+                };
+
+                // class
+                if ( page.Guid.Equals( options.CurrentPageGuid ) )
+                {
+                    item.Category = "active";
+                }
+
+                linkList.Add( item );
+            }
+
+            return Ok( linkList );
+        }
+
+        /// <summary>
+        /// Gets the child pages of the given root.
+        /// </summary>
+        /// <param name="rootPage">The root page.</param>
+        /// <param name="currentPerson">The current person.</param>
+        private List<PageCache> GetPageNavButtonsChildPages( PageCache rootPage, Person currentPerson )
+        {
+            var pages = new List<PageCache>();
+
+            using ( var rockContext = new RockContext() )
+            {
+                foreach ( PageCache page in rootPage.GetPages( rockContext ) )
+                {
+                    // IsAuthorized() knows how to handle a null person argument.
+                    if ( page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed && !page.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    {
+                        continue;
+                    }
+
+                    if ( page.DisplayInNavWhen == DisplayInNavWhen.Never )
+                    {
+                        continue;
+                    }
+
+                    pages.Add( page );
+                }
+            }
+
+            return pages;
+        }
+
+        #endregion
+
         #region Person Link
 
         /// <summary>
@@ -7880,6 +7980,47 @@ namespace Rock.Rest.v2
 
                 return Ok( items );
             }
+        }
+
+        #endregion
+
+        #region Search Field
+
+        /// <summary>
+        /// Gets the search filters available for the Search Field control
+        /// </summary>
+        /// <returns>A Dictionary of <see cref="ListItemBag"/> objects that represent all of the availabe filters.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "SearchFieldGetSearchFilters" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "6FF52C9E-985B-46C3-B5A5-E69312D189CB" )]
+        public IHttpActionResult SearchFieldGetSearchFilters()
+        {
+            var searchExtensions = new Dictionary<string, ListItemBag>();
+
+            var currentPerson = RockRequestContext.CurrentPerson;
+            if ( currentPerson != null )
+            {
+                foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
+                {
+                    var searchComponent = service.Value.Value;
+                    if ( searchComponent.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    {
+                        if ( !searchComponent.AttributeValues.ContainsKey( "Active" ) || bool.Parse( searchComponent.AttributeValues["Active"].Value ) )
+                        {
+                            var item = new ListItemBag
+                            {
+                                Value = searchComponent.ResultUrl,
+                                Text = searchComponent.SearchLabel,
+
+                            };
+                            searchExtensions.Add( service.Key.ToString(), item );
+                        }
+                    }
+                }
+            }
+
+            return Ok( searchExtensions );
         }
 
         #endregion

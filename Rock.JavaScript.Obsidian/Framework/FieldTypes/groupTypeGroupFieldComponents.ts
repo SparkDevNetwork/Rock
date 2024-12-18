@@ -63,7 +63,7 @@ export const EditComponent = defineComponent({
         };
     },
 
-    template: `<GroupTypeGroupPicker v-model="group" v-model:groupType="groupType" :groupLabel="groupPickerLabel"/>`
+    template: `<GroupTypeGroupPicker v-model="group" v-model:groupType="groupType" :isGroupTypeSortedByName="true" :groupLabel="groupPickerLabel"/>`
 });
 
 export const ConfigurationComponent = defineComponent({
@@ -82,7 +82,6 @@ export const ConfigurationComponent = defineComponent({
     ],
 
     setup(props, { emit }) {
-        const groupPickerLabel = ref(props.modelValue[ConfigurationValueKey.GroupPickerLabel]);
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -124,12 +123,8 @@ export const ConfigurationComponent = defineComponent({
             }
         };
 
-        // Watch for changes coming in from the parent component and update our
-        // data to match the new information.
-        watch(() => [props.modelValue, props.configurationProperties], () => {
-            groupPickerLabel.value = props.modelValue[ConfigurationValueKey.GroupPickerLabel] ?? "Group";
-        }, {
-            immediate: true
+        const groupPickerLabel = computed((): string => {
+            return props.modelValue[ConfigurationValueKey.GroupPickerLabel] ?? "Group";
         });
 
         // Watch for changes in properties that only require a local UI update.

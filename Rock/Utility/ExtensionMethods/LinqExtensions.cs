@@ -563,6 +563,21 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns a new queryable after updating any where expressions so
+        /// that if you are making a comparison to an attribute value it will
+        /// also compare to the checksum value to gain additional performance.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements of the System.Linq.IQueryable`1 that is returned.</typeparam>
+        /// <param name="source">The source query to be updated.</param>
+        /// <returns>A new queryable instance that has been modified for attribute value performance.</returns>
+        public static IQueryable<T> WithQueryableAttributeValues<T>( this IQueryable<T> source )
+        {
+            var visitedExpression = new AttributeValueExpressionVisitor().Visit( source.Expression );
+
+            return source.Provider.CreateQuery<T>( visitedExpression );
+        }
+
+        /// <summary>
         /// Wheres the campus.
         /// </summary>
         /// <typeparam name="T"></typeparam>

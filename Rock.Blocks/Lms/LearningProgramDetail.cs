@@ -91,6 +91,12 @@ namespace Rock.Blocks.Lms
             public const string ShowKPIs = "ShowKPIs";
         }
 
+        private static class AttributeDisplayMode
+        {
+            public const string All = "All";
+            public const string IsGridColumn = "Is Grid Column";
+        }
+
         private static class DisplayMode
         {
             public const string Summary = "Summary";
@@ -110,6 +116,13 @@ namespace Rock.Blocks.Lms
         }
 
         #endregion Keys
+
+        #region Properties
+
+        private bool OnlyShowIsGridColumnAttributes =>
+            GetAttributeValue( AttributeKey.AttributeDisplayMode ) == AttributeDisplayMode.IsGridColumn;
+
+        #endregion
 
         #region Methods
 
@@ -214,8 +227,7 @@ namespace Rock.Blocks.Lms
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
-                    var onlyShowIsGridColumn = GetAttributeValue( AttributeKey.DisplayMode ) == DisplayMode.Summary;
-                    box.Entity = GetEntityBagForView( entity, onlyShowIsGridColumn );
+                    box.Entity = GetEntityBagForView( entity, OnlyShowIsGridColumnAttributes );
                 }
                 else
                 {
@@ -290,8 +302,7 @@ namespace Rock.Blocks.Lms
             if ( onlyShowIsGridColumn )
             {
                 bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson,
-                    attributeFilter: a => a.IsGridColumn
-                    );
+                    attributeFilter: a => a.IsGridColumn );
             }
             else
             {
@@ -618,9 +629,7 @@ namespace Rock.Blocks.Lms
             entity = entityService.Get( entity.Id );
             entity.LoadAttributes( RockContext );
 
-            var onlyShowIsGridColumn = GetAttributeValue( AttributeKey.DisplayMode ) == DisplayMode.Summary;
-
-            var bag = GetEntityBagForView( entity, onlyShowIsGridColumn );
+            var bag = GetEntityBagForView( entity, OnlyShowIsGridColumnAttributes );
 
             return ActionOk( new ValidPropertiesBox<LearningProgramBag>
             {
@@ -755,7 +764,7 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Gets the Learning Smester Queryable for semesters grid.
+        /// Gets the Learning Semester Queryable for semesters grid.
         /// </summary>
         /// <returns>A Queryable of LearningSemester.</returns>
         private IQueryable<LearningSemester> GetSemesterListQueryable()

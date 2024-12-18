@@ -1610,5 +1610,15 @@ namespace Rock.Migrations.Migrations {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] lms_header_min {
+            get {
+                object obj = ResourceManager.GetObject("lms_header_min", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

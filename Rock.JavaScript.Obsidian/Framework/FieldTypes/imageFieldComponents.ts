@@ -25,6 +25,7 @@ import { updateRefValue } from "@Obsidian/Utility/component";
 import { asBooleanOrNull, asTrueFalseOrNull } from "@Obsidian/Utility/booleanUtils";
 import { toGuidOrNull } from "@Obsidian/Utility/guid";
 import { Guid } from "@Obsidian/Types";
+import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
 
 export const EditComponent = defineComponent({
     name: "ImageField.Edit",
@@ -77,7 +78,8 @@ export const ConfigurationComponent = defineComponent({
 
     components: {
         CheckBox,
-        DropDownList
+        DropDownList,
+        CodeEditor
     },
 
     props: getFieldConfigurationProps(),
@@ -92,6 +94,7 @@ export const ConfigurationComponent = defineComponent({
         // Define the properties that will hold the current selections.
         const fileType = ref("");
         const formatAsLink = ref(false);
+        const imageTagTemplate = ref("");
 
         /** The binary file types the individual can select from. */
         const fileTypeOptions = computed((): ListItemBag[] => {
@@ -116,12 +119,14 @@ export const ConfigurationComponent = defineComponent({
 
             // Construct the new value that will be emitted if it is different
             // than the current value.
-            newValue[ConfigurationValueKey.BinaryFileType] = fileType.value ?? "";
+            newValue[ConfigurationValueKey.BinaryFileType] = fileType.value ? JSON.stringify({ text: "", value: fileType.value }) : "";
             newValue[ConfigurationValueKey.FormatAsLink] = asTrueFalseOrNull(formatAsLink.value) ?? "False";
+            newValue[ConfigurationValueKey.ImageTagTemplate] = imageTagTemplate.value ?? "";
 
             // Compare the new value and the old value.
             const anyValueChanged = newValue[ConfigurationValueKey.BinaryFileType] !== (props.modelValue[ConfigurationValueKey.BinaryFileType] ?? "")
-                || newValue[ConfigurationValueKey.FormatAsLink] !== (props.modelValue[ConfigurationValueKey.FormatAsLink] ?? "False");
+                || newValue[ConfigurationValueKey.FormatAsLink] !== (props.modelValue[ConfigurationValueKey.FormatAsLink] ?? "False")
+                || newValue[ConfigurationValueKey.ImageTagTemplate] !== (props.modelValue[ConfigurationValueKey.ImageTagTemplate] ?? "");
 
             // If any value changed then emit the new model value.
             if (anyValueChanged) {
@@ -148,8 +153,9 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            fileType.value = props.modelValue[ConfigurationValueKey.BinaryFileType];
+            fileType.value = JSON.parse(props.modelValue[ConfigurationValueKey.BinaryFileType] || "{}").value;
             formatAsLink.value = asBooleanOrNull(props.modelValue[ConfigurationValueKey.FormatAsLink]) ?? false;
+            imageTagTemplate.value = props.modelValue[ConfigurationValueKey.ImageTagTemplate];
         }, {
             immediate: true
         });
@@ -165,13 +171,15 @@ export const ConfigurationComponent = defineComponent({
         });
 
         // Watch for changes in properties that only require a local UI update.
-        watch(fileType, () => maybeUpdateConfiguration(ConfigurationValueKey.BinaryFileType, fileType.value ?? ""));
+        watch(fileType, () => maybeUpdateConfiguration(ConfigurationValueKey.BinaryFileType, fileType.value ? JSON.stringify({ text: "", value: fileType.value }) : ""));
         watch(formatAsLink, () => maybeUpdateConfiguration(ConfigurationValueKey.FormatAsLink, asTrueFalseOrNull(formatAsLink.value) ?? "False"));
+        watch(imageTagTemplate, () => maybeUpdateConfiguration(ConfigurationValueKey.ImageTagTemplate, imageTagTemplate.value ?? ""));
 
         return {
             fileType,
             fileTypeOptions,
-            formatAsLink
+            formatAsLink,
+            imageTagTemplate
         };
     },
 
@@ -180,11 +188,19 @@ export const ConfigurationComponent = defineComponent({
     <DropDownList v-model="fileType"
         label="File Type"
         help="File type to use to store and retrieve the file. New file types can be configured under 'Admins Tools &gt; General Settings &gt; File Types'."
-        :items="fileTypeOptions" />
+        :items="fileTypeOptions"
+        enhanceForLongLists />
 
     <CheckBox v-model="formatAsLink"
         label="Format as Link"
         help="Enable this to navigate to a full size image when the image is clicked." />
+
+    <CodeEditor v-model="imageTagTemplate"
+        label="Image Tag Template"
+        help="The Lava template to use when rendering as an html img tag."
+        theme="rock"
+        mode="lava"
+        :editorHeight="100" />
 </div>
 `
 });

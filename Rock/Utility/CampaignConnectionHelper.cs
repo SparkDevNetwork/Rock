@@ -590,6 +590,7 @@ namespace Rock.Utility
 
                 var connectionRequest = new ConnectionRequest();
                 connectionRequest.ConnectionOpportunityId = opportunity.Id;
+                connectionRequest.ConnectionTypeId = opportunity.ConnectionTypeId;
 
                 /*
                     3/30/2020 - NA 

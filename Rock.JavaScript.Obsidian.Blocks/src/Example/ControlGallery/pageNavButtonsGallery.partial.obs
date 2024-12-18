@@ -1,0 +1,111 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <PageNavButtons :rootPageGuid="rootPageGuid" :includeCurrentQueryString="includeCurrentQueryString" :includeCurrentParameters="includeCurrentParameters" :queryStringParametersToAdd="includeCustomQueryString ? { custom: 'string' } : {}" :cssClass="cssClass" :cssClassActive="cssClassActive" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <TextBox v-model="rootPageGuid" label="Root Page Guid" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="includeCurrentQueryString" label="Include Current Query String" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="includeCurrentParameters" label="Include Current Parameters" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="includeCustomQueryString" label="Include Custom Query String" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="cssClass" label="CSS Class to Include on Every Link" help="Default 'btn'" />
+                </div>
+                <div class="col-md-6">
+                    <TextBox v-model="cssClassActive" label="CSS Class to Include on Active Link" help="Default 'btn-primary'" />
+                </div>
+            </div>
+        </template>
+
+        <template #props>
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Prop</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>rootPageGuid</code></td>
+                        <td>Guid</td>
+                        <td>Current Page's Guid</td>
+                        <td>The root page ID to use for the child page collection. Defaults to the current page instance if not set.</td>
+                    </tr>
+                    <tr>
+                        <td><code>includeCurrentQueryString</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>Flag indicating if the current page's QueryString should be used when building the URL for child pages.</td>
+                    </tr>
+                    <tr>
+                        <td><code>includeCurrentParameters</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>Flag indicating if the current page's parameters should be used when building the URL for child pages.</td>
+                    </tr>
+                    <tr>
+                        <td><code>queryStringParametersToAdd</code></td>
+                        <td><code>Record&lt;string, string&gt;</code></td>
+                        <td>undefined</td>
+                        <td>Any query string parameters that should be added to each <code>a</code> element's <code>href</code> attribute. If a matching key is found in the current query string, it's value will be replaced with the value specified here.</td>
+                    </tr>
+                    <tr>
+                        <td><code>cssClass</code></td>
+                        <td>String</td>
+                        <td>"btn"</td>
+                        <td>The CSS class(es) to be added to each <code>a</code> element created (one per page in the child page collection).</td>
+                    </tr>
+                    <tr>
+                        <td><code>cssClass</code></td>
+                        <td>String</td>
+                        <td>"btn-primary"</td>
+                        <td>The CSS class(es) to be added to the <code>a</code> element created for any active page within the child page collection (Pages that have the same ID as the current page).</td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import PageNavButtons from "@Obsidian/Controls/pageNavButtons.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getSfcControlImportPath } from "./utils.partial";
+
+    const rootPageGuid = ref("b4a24ab7-9369-4055-883f-4f4892c39ae3");
+    const includeCurrentQueryString = ref(false);
+    const includeCurrentParameters = ref(false);
+    const includeCustomQueryString = ref(false);
+
+    const cssClass = ref("btn");
+    const cssClassActive = ref("btn-primary");
+
+    const importCode = getSfcControlImportPath("pageNavButtons");
+    const exampleCode = computed(() => {
+        const rootPageProp = rootPageGuid.value ? ` rootPageGuid="${rootPageGuid.value}"` : "";
+        const includeCurrentQueryStringProp = includeCurrentQueryString.value ? ` includeCurrentQueryString` : "";
+        const includeCurrentParametersProp = includeCurrentParameters.value ? ` includeCurrentParameters` : "";
+        const queryStringParametersToAddProp = includeCustomQueryString.value ? ` :queryStringParametersToAdd="{ custom: 'string' }"` : "";
+        const cssClassProp = cssClass.value !== "btn" ? ` cssClass="${cssClass.value}"` : "";
+        const cssClassActiveProp = cssClassActive.value !== "btn-primary" ? ` cssClassActive="${cssClassActive.value}"` : "";
+
+        return `<PageNavButtons${rootPageProp}${includeCurrentQueryStringProp}${includeCurrentParametersProp}${queryStringParametersToAddProp}${cssClassProp}${cssClassActiveProp} />`;
+    });
+</script>

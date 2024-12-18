@@ -31,7 +31,7 @@ namespace Rock.Model
     [Table( "AuthScope" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( "8926FE3B-5AB6-4E48-8191-09EB1682F743")]
-    public class AuthScope : Model<AuthScope>, IHasActiveFlag
+    public partial class AuthScope : Model<AuthScope>, IHasActiveFlag
     {
         /// <summary>
         /// Gets or sets a flag indicating if this item is active or not.

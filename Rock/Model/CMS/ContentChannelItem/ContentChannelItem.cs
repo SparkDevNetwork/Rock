@@ -54,6 +54,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [EnableAttributeQualification]
         [IgnoreCanDelete]
         public int ContentChannelId { get; set; }
 
@@ -65,6 +66,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [EnableAttributeQualification]
         public int ContentChannelTypeId { get; set; }
 
         /// <summary>

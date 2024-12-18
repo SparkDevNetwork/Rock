@@ -47,7 +47,7 @@ namespace Rock.Model
                 }
             }
 
-            return authorized;
+            return false;
         }
 
         /// <summary>

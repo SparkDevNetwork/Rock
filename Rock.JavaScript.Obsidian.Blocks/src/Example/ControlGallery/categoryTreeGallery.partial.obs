@@ -1,0 +1,126 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <CategoryTree v-model="value" :multiple="multiple" :entityTypeGuid="entityTypeGuid" :enableDeselect="enableDeselect" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Enable Deselection" v-model="enableDeselect" />
+                </div>
+                <div class="col-md-4">
+                    <EntityTypePicker label="For Entity Type" v-model="entityType" enhanceForLongLists showBlankItem />
+                </div>
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+
+        <template #props>
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Prop</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>modelValue</code></td>
+                        <td><code>ListItemBag | ListItemBag[] | null | undefined</code></td>
+                        <td>undefined</td>
+                        <td>
+                            The <code>v-model</code> for specifying the selected category/categories.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><code>multiple</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>Whether or not to allow selecting multiple categories.</td>
+                    </tr>
+                    <tr>
+                        <td><code>rootCategoryGuid</code></td>
+                        <td>Guid</td>
+                        <td>undefined</td>
+                        <td>If provided, the categories will be filtered to only those under this root category.</td>
+                    </tr>
+                    <tr>
+                        <td><code>entityTypeGuid</code></td>
+                        <td>Guid</td>
+                        <td>undefined</td>
+                        <td>If provided, the categories will be filtered to only those related to the entity type matching this Guid.</td>
+                    </tr>
+                    <tr>
+                        <td><code>entityTypeQualifierColumn</code></td>
+                        <td>String</td>
+                        <td>undefined</td>
+                        <td>If provided, the categories will be filtered to only those with this column matching the given <code>entityTypeQualifierValue</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>entityTypeQualifierValue</code></td>
+                        <td>String</td>
+                        <td>undefined</td>
+                        <td>If provided, the categories will be filtered to only those with the given <code>entityTypeQualifierValue</code> column matching this value.</td>
+                    </tr>
+                    <tr>
+                        <td><code>items</code></td>
+                        <td><code>TreeItemBag[]</code></td>
+                        <td>undefined</td>
+                        <td>Override which items are available for selection, rather than allowing the component to fetch them.</td>
+                    </tr>
+                    <tr>
+                        <td><code>disableFolderSelection</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>Whether or not to allow folders (or categories with sub-categories) to be selected.</td>
+                    </tr>
+                    <tr>
+                        <td><code>showChildCount</code></td>
+                        <td>Boolean</td>
+                        <td>false</td>
+                        <td>Whether or not to show an indicator of the number of children a category has next to its name.</td>
+                    </tr>
+                    <tr>
+                        <td><code>height</code></td>
+                        <td>String</td>
+                        <td>200px</td>
+                        <td>CSS length value for defining how tall the box is.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import CategoryTree from "@Obsidian/Controls/categoryTree.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getSfcControlImportPath } from "./utils.partial";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
+
+    const entityType = ref<ListItemBag | null>(null);
+    const entityTypeGuid = computed<Guid | undefined>(() => {
+        return toGuidOrNull(entityType?.value?.value) ?? undefined;
+    });
+
+    const multiple = ref(false);
+    const enableDeselect = ref(false);
+    const value = ref(null);
+    const importCode = getSfcControlImportPath("categoryTree");
+    const exampleCode = computed(() => `<CategoryTree v-model="value"${multiple.value ? " multiple" : ""}${entityTypeGuid.value ? ` entityTypeGuid="${entityTypeGuid.value}"` : ""} />`);
+</script>

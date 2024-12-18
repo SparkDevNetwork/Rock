@@ -54,6 +54,11 @@ namespace Rock.Search.Finance
         /// <inheritdoc/>
         public override IOrderedQueryable<object> SearchQuery( string searchTerm )
         {
+            if ( searchTerm.IsSingleSpecialCharacter() )
+            {
+                return Enumerable.Empty<object>().AsQueryable().OrderBy( _ => true );
+            }
+
             var rockContext = new RockContext();
             var financialAccountService = new FinancialAccountService( rockContext );
             var qry = financialAccountService.GetAccountsBySearchTerm( searchTerm );
@@ -69,6 +74,11 @@ namespace Rock.Search.Finance
         /// <returns></returns>
         public override IQueryable<string> Search( string searchTerm )
         {
+            if ( searchTerm.IsSingleSpecialCharacter() )
+            {
+                return Enumerable.Empty<string>().AsQueryable();
+            }
+
             var rockContext = new RockContext();
             var financialAccountService = new FinancialAccountService( rockContext );
 

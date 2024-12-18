@@ -84,6 +84,10 @@
                             <td>These fields are available where Lava is supported.</td>
                         </tr>
                         <tr>
+                            <td class="w-0 text-center"><small><i class="fa fa-filter fa-fw text-info"></i></small></td>
+                            <td>These fields can be used as qualifiers on attributes.</td>
+                        </tr>
+                        <tr>
                             <td class="text-center"><small><i class='fa fa-ban fa-fw text-danger'></i></small></td>
                             <td>These methods or fields are obsolete and should not be used.</td>
                         </tr>
@@ -113,6 +117,12 @@
                         </Rock:RockDropDownList>
 
                         <Rock:RockDropDownList ID="ddlIsLava" runat="server" Label="Lava Supported">
+                            <asp:ListItem Value="" Text="" />
+                            <asp:ListItem Value="True" Text="Yes" />
+                            <asp:ListItem Value="False" Text="No" />
+                        </Rock:RockDropDownList>
+
+                        <Rock:RockDropDownList ID="ddlIsAttributeQualifier" runat="server" Label="Attribute Qualifier">
                             <asp:ListItem Value="" Text="" />
                             <asp:ListItem Value="True" Text="Yes" />
                             <asp:ListItem Value="False" Text="No" />

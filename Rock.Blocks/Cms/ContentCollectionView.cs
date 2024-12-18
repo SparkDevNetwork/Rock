@@ -73,6 +73,12 @@ namespace Rock.Blocks.Cms
         Category = "CustomSetting",
         Key = AttributeKey.ShowSort )]
 
+    [BooleanField( "Auto Focus",
+        Description = "Decide whether the textbox should automatically receive focus when the page loads.",
+        DefaultBooleanValue = true,
+        Category = "CustomSetting",
+        Key = AttributeKey.AutoFocus )]
+
     [IntegerField( "Number Of Results",
         Description = "The number of results to include.",
         DefaultIntegerValue = 10,
@@ -195,6 +201,8 @@ namespace Rock.Blocks.Cms
             public const string ShowFullTextSearch = "ShowFullTextSearch";
 
             public const string ShowSort = "ShowSort";
+
+            public const string AutoFocus = "AutoFocus";
 
             public const string NumberOfResults = "NumberOfResults";
 
@@ -1352,6 +1360,7 @@ namespace Rock.Blocks.Cms
                 ShowFilters = GetAttributeValue( AttributeKey.ShowFiltersPanel ).AsBoolean(),
                 ShowFullTextSearch = GetAttributeValue( AttributeKey.ShowFullTextSearch ).AsBoolean(),
                 ShowSort = GetAttributeValue( AttributeKey.ShowSort ).AsBoolean(),
+                AutoFocus = GetAttributeValue( AttributeKey.AutoFocus ).AsBoolean(),
                 NumberOfResults = GetAttributeValue( AttributeKey.NumberOfResults ).AsIntegerOrNull(),
                 SearchOnLoad = GetAttributeValue( AttributeKey.SearchOnLoad ).AsBoolean(),
                 GroupResultsBySource = GetAttributeValue( AttributeKey.GroupResultsBySource ).AsBoolean(),
@@ -1456,6 +1465,7 @@ namespace Rock.Blocks.Cms
                     ShowFiltersPanel = GetAttributeValue( AttributeKey.ShowFiltersPanel ).AsBoolean(),
                     ShowFullTextSearch = GetAttributeValue( AttributeKey.ShowFullTextSearch ).AsBoolean(),
                     ShowSort = GetAttributeValue( AttributeKey.ShowSort ).AsBoolean(),
+                    AutoFocus = GetAttributeValue( AttributeKey.AutoFocus ).AsBoolean(),
                     NumberOfResults = GetAttributeValue( AttributeKey.NumberOfResults ).AsIntegerOrNull(),
                     SearchOnLoad = GetAttributeValue( AttributeKey.SearchOnLoad ).AsBoolean(),
                     GroupResultsBySource = GetAttributeValue( AttributeKey.GroupResultsBySource ).AsBoolean(),
@@ -1538,6 +1548,9 @@ namespace Rock.Blocks.Cms
 
                 box.IfValidProperty( nameof( box.Settings.ShowSort ),
                     () => block.SetAttributeValue( AttributeKey.ShowSort, box.Settings.ShowSort.ToString() ) );
+
+                box.IfValidProperty( nameof( box.Settings.AutoFocus ),
+                                           () => block.SetAttributeValue( AttributeKey.AutoFocus, box.Settings.AutoFocus.ToString() ) );
 
                 box.IfValidProperty( nameof( box.Settings.NumberOfResults ),
                     () => block.SetAttributeValue( AttributeKey.NumberOfResults, box.Settings.NumberOfResults.ToString() ) );

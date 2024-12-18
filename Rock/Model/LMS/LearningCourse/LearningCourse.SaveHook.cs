@@ -40,10 +40,7 @@ namespace Rock.Model
                 if ( State == EntityContextState.Added )
                 {
                     var programService = new LearningProgramService( RockContext );
-                    var configurationMode = Entity.LearningProgram != null ?
-                        Entity.LearningProgram.ConfigurationMode :
-                        programService.GetSelect( Entity.LearningProgramId, p => p.ConfigurationMode );
-
+                    
                     if ( !Entity.LearningClasses.Any() )
                     {
                         var defaultSemesterId = programService.GetDefaultSemester( Entity.LearningProgramId )?.Id;

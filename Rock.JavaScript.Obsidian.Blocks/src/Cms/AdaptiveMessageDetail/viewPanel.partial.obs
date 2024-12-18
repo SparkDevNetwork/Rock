@@ -33,19 +33,11 @@
                             field="name"
                             visiblePriority="xs" />
 
-                <Column name="segments"
-                        title="Segments"
-                        visiblePriority="lg">
-                    <template #format="{ row }">
-                        <span class='label label-info margin-r-sm' v-for="segment in row.segments">
-                            {{ segment }}
-                        </span>
-                    </template>
-
-                    <template #skeleton>
-                        <div class="skeleton skeleton-text skeleton-rounded" />
-                    </template>
-                </Column>
+                <LabelColumn name="segments"
+                             title="Segments"
+                             field="segments"
+                             defaultLabelClass="info"
+                             visiblePriority="lg" />
 
                 <TextColumn name="saturation"
                             title="Saturation"
@@ -77,7 +69,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { NavigationUrlKey } from "./types.partial";
-    import Grid, { TextColumn, DeleteColumn, ReorderColumn, EditColumn } from "@Obsidian/Controls/grid";
+    import Grid, { LabelColumn, TextColumn, DeleteColumn, ReorderColumn, EditColumn } from "@Obsidian/Controls/grid";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { Guid } from "@Obsidian/Types";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";

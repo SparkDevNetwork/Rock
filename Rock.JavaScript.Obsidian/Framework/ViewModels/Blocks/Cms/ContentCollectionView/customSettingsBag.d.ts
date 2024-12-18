@@ -125,6 +125,11 @@ export type CustomSettingsBag = {
      */
     showSort: boolean;
 
+    /**
+     * Gets or sets a value indication whether to auto focus the searchbar.
+     */
+    autoFocus: boolean;
+
     /** Gets or sets the site type for the block. */
     siteType?: string | null;
 

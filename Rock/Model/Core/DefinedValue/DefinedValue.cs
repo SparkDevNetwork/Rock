@@ -57,6 +57,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int DefinedTypeId { get; set; }
 
         /// <summary>

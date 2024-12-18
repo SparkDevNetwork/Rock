@@ -718,5 +718,4 @@
         void nextTick(() => backButtonClicked.value = false);
     });
 
-    console.warn({ classCompletionDate: classCompletionDate.value, config });
 </script>

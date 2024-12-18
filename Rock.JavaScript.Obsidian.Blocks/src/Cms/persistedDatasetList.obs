@@ -61,18 +61,22 @@
         <!-- The following columns will only appear in the Excel/CSV Export -->
 
         <Column name="id"
-                    title="Id"
-                    field="id"
-                    :hideOnScreen="true" />
+                title="Id"
+                field="id"
+                :hideOnScreen="true" />
 
         <BooleanColumn name="allowManualRefresh"
-                      title="Allow Manual Refresh"
-                      field="allowManualRefresh"
-                      :hideOnScreen="true" />
+                       title="Allow Manual Refresh"
+                       field="allowManualRefresh"
+                       :hideOnScreen="true" />
 
     </Grid>
 
     <GridPreviewModal :modelValue="previewModalData" />
+
+    <ModalAlert v-model="showRefreshError" type="Warning">
+        <div v-html="refreshErrorMessage"></div>
+    </ModalAlert>
 </template>
 
 <script setup lang="ts">
@@ -87,6 +91,7 @@
     import { reactive, ref } from "vue";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import GridPreviewModal from "./PersistedDatasetList/gridPreviewModal.partial.obs";
+    import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
 
     const config = useConfigurationValues<ListBlockBox<PersistedDatasetListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -98,6 +103,8 @@
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const previewModalData = ref<Record<string, any> | null>(null);
+    const showRefreshError = ref<boolean>();
+    const refreshErrorMessage = ref<string>();
 
     // #endregion
 
@@ -172,12 +179,8 @@
     async function onRefreshClick(key: string): Promise<void> {
         const result = await invokeBlockAction("RefreshDataset", { datasetId: key });
         if (!result.isSuccess) {
-            previewModalData.value = {
-                jsonData: null,
-                previewMessage: `Error: ${result.errorMessage}` || "Unknown error occurred while refreshing dataset.",
-                previewMessageType: "danger",
-                isDataTruncated: false
-            };
+            refreshErrorMessage.value = result.errorMessage ?? "Unknown error occurred while refreshing dataset.";
+            showRefreshError.value = true;
         }
         else {
             // Refresh the grid data after successful refresh

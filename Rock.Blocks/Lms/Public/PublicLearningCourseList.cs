@@ -40,7 +40,7 @@ namespace Rock.Blocks.Lms
 
     [CodeEditorField( "Lava Template",
         Key = AttributeKey.LavaTemplate,
-        Description = "The Lava template to use to render the page. Merge fields include: Program, Courses, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
+        Description = "The Lava template to use to render the page. Merge fields include: ProgramInfo, Courses, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
@@ -140,7 +140,7 @@ namespace Rock.Blocks.Lms
 	<div class=""hero-section"">
         <div class=""hero-section-image"" style=""background-image: url('/GetImage.ashx?guid={{ Program.ImageBinaryFile.Guid }}')""></div>
         <div class=""hero-section-content"">
-            <h1 class=""hero-section-title""> {{ Program.Name }} </h1>
+            <h1 class=""hero-section-title""> {{ Program.PublicName }} </h1>
             <p class=""hero-section-description""> {{ Program.Summary }} </p>
         </div>
     </div>
@@ -173,10 +173,10 @@ namespace Rock.Blocks.Lms
                 //- 2 CARD HEADER
 
                     <div class=""card-body d-flex justify-content-between align-items-start pt-0 pb-0"">
-                        <h4 class=""card-title mb-0"">{{ course.Entity.PublicName }}</h4>
+                        <h4 class=""card-title mb-0"">{{ course.PublicName }}</h4>
                         {% if course.Entity.Credits > 0 %}
         			        <div class=""d-flex w-auto"">
-        			            <p class=""credits w-auto text-muted mb-0"">Credits: {{ course.Entity.Credits }}</p>
+        			            <p class=""credits w-auto text-muted mb-0"">Credits: {{ course.Credits }}</p>
         			        </div>
     			        {% endif %}
                     </div>
@@ -184,7 +184,7 @@ namespace Rock.Blocks.Lms
                 //- 3 BODY TEXT
                 <div class=""card-body pt-0 pb-0"">
                     <p class=""line-clamp-3"">
-                        {{ course.Entity.Summary }}    
+                        {{ course.Summary }}    
                     </p>
                 </div>
                 
@@ -280,11 +280,11 @@ namespace Rock.Blocks.Lms
             {
                 // If there are unmet requirements include the link for enrollment to that course.
                 var prerequisiteCourseIdKey = course.UnmetPrerequisites?.FirstOrDefault()?.IdKey ?? string.Empty;
-                course.CourseDetailsLink = courseDetailUrlTemplate.Replace( "((Key))", course.Entity.IdKey );
+                course.CourseDetailsLink = courseDetailUrlTemplate.Replace( "((Key))", course.IdKey );
             }
 
             var mergeFields = this.RequestContext.GetCommonMergeFields();
-            mergeFields.Add( "Program", program );
+            mergeFields.Add( "ProgramInfo", courses.Select( c => c.ProgramInfo ).FirstOrDefault() );
             mergeFields.Add( "Courses", courses );
             mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
 

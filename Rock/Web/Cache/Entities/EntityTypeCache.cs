@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
 using Rock.Cms.ContentCollection;
 using Rock.Cms.ContentCollection.Attributes;
 using Rock.Data;
@@ -55,7 +56,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// The cached type this EntityTypeCache refers to.
         /// </summary>
-        private Type _entityType = null;
+        private Lazy<Type> _entityType;
 
         #endregion
 
@@ -385,6 +386,27 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        #region Constructors
+
+        /// <summary>
+        /// Creates a new instance of <see cref="EntityTypeCache"/>.
+        /// </summary>
+        public EntityTypeCache()
+        {
+            /*
+               2022-06-24 - dsh
+             
+               Constructing a type from the AssemblyName is fast, but still
+               takes 0.0024ms. It can also be called extremely often. On the
+               stock Rock instance this is called 86 times for the person
+               profile extended attributes page. Caching it can save 0.2ms
+               per page load on some pages.
+             */
+            _entityType = new Lazy<Type>( () => !string.IsNullOrWhiteSpace( AssemblyName ) ? Type.GetType( AssemblyName ) : null );
+        }
+
+        #endregion
+
         #region Cache Related Methods
 
         private static Dictionary<string, Type> _cachedEntityTypeByEntityType = null;
@@ -468,21 +490,43 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Type GetEntityType()
         {
-            /*
-             * 2022-06-24 - dsh
-             * 
-             * Constructing a type from the AssemblyName is fast, but still
-             * takes 0.0024ms. It can also be called extremely often. On the
-             * stock Rock instance this is called 86 times for the person
-             * profile extended attributes page. Caching it can save 0.2ms
-             * per page load on some pages.
-             */
-            if ( _entityType == null )
+            return _entityType.Value;
+        }
+
+        /// <summary>
+        /// Gets the names of the properties (and by extension database columns)
+        /// that are allowed to participate in qualifying attributes for this
+        /// entity type.
+        /// </summary>
+        /// <returns>A list of property names.</returns>
+        public List<string> GetAttributeQualifierProperties()
+        {
+            if ( !IsEntity )
             {
-                _entityType = !string.IsNullOrWhiteSpace( AssemblyName ) ? Type.GetType( AssemblyName ) : null;
+                return new List<string>();
+            }    
+
+            var type = GetEntityType();
+
+            if ( type == null )
+            {
+                return new List<string>();
             }
 
-            return _entityType;
+            var qualifiedProperties = type.GetProperties()
+                .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null
+                    && p.DeclaringType == type )
+                .Select( p => p.Name )
+                .ToList();
+
+            var typeQualificationAttribute = type.GetCustomAttribute<EnableAttributeQualificationAttribute>();
+
+            if ( typeQualificationAttribute != null )
+            {
+                qualifiedProperties = qualifiedProperties.Union( typeQualificationAttribute.PropertyNames ).ToList();
+            }
+
+            return qualifiedProperties;
         }
 
         /// <summary>
