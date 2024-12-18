@@ -1221,7 +1221,7 @@ namespace Rock.Blocks.Communication
                         ),
                         IsDeceased = personAlias.Person.IsDeceased,
                         PersonAliasGuid = personAlias.Guid,
-                        SmsNumber = personAlias.MobilePhone.Number,
+                        SmsNumber = personAlias.MobilePhone.NumberFormatted,
                         // Set name using the full Person entity.
                         // Name = person.FullName,
                     },
