@@ -100,7 +100,8 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
 ";
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = TestHelper.GetTemplateOutput( engine, template,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
