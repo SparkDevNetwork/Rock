@@ -503,6 +503,7 @@ namespace Rock.Blocks.Lms
             {
                 [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
                 [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId ),
                 [PageParameterKey.GroupId] = PageParameter( PageParameterKey.LearningClassId ),
             };
 

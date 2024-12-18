@@ -290,37 +290,37 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gOccurrences_Edit( object sender, RowEventArgs e )
         {
-            var qryParams = new Dictionary<string, string> {
-                { "GroupId", _group.Id.ToString() }
-            };
+            var qryParams = PageParameters()?.AsEnumerable()
+                .ToDictionary( ( kv ) => kv.Key, ( kv ) => kv.Value.ToStringSafe() );
+            qryParams.AddOrReplace( "GroupId", _group.Id.ToString() );
 
             int? id = e.RowKeyValues["Id"].ToString().AsIntegerOrNull();
             if ( id.HasValue )
             {
-                qryParams.Add( "OccurrenceId", id.Value.ToString() );
+                qryParams.AddOrReplace( "OccurrenceId", id.Value.ToString() );
             }
 
             if ( !id.HasValue || id.Value == 0 )
             {
                 string occurrenceDate = ( ( DateTime ) e.RowKeyValues["OccurrenceDate"] ).ToString( "yyyy-MM-ddTHH:mm:ss" );
-                qryParams.Add( "Date", occurrenceDate );
+                qryParams.AddOrReplace( "Date", occurrenceDate );
 
                 var locationId = e.RowKeyValues["LocationId"] as int?;
                 if ( locationId.HasValue )
                 {
-                    qryParams.Add( "LocationId", locationId.Value.ToString() );
+                    qryParams.AddOrReplace( "LocationId", locationId.Value.ToString() );
                 }
 
                 var scheduleId = e.RowKeyValues["ScheduleId"] as int?;
                 if ( scheduleId.HasValue )
                 {
-                    qryParams.Add( "ScheduleId", scheduleId.Value.ToString() );
+                    qryParams.AddOrReplace( "ScheduleId", scheduleId.Value.ToString() );
                 }
 
                 var groupTypeIds = PageParameter( "GroupTypeIds" );
                 if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
                 {
-                    qryParams.Add( "GroupTypeIds", groupTypeIds );
+                    qryParams.AddOrReplace( "GroupTypeIds", groupTypeIds );
                 }
             }
 
@@ -335,13 +335,13 @@ namespace RockWeb.Blocks.Groups
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gOccurrences_Add( object sender, EventArgs e )
         {
-            var qryParams = new Dictionary<string, string> {
-                { "GroupId", _group.Id.ToString() }
-            };
+            var qryParams = PageParameters()?.AsEnumerable()
+                .ToDictionary( ( kv ) => kv.Key, ( kv ) => kv.Value.ToStringSafe() );
+            qryParams.AddOrReplace( "GroupId", _group.Id.ToString() );
 
             if ( ddlSchedule.Visible && ddlSchedule.SelectedValue != "0" )
             {
-                qryParams.Add( "ScheduleId", ddlSchedule.SelectedValue );
+                qryParams.AddOrReplace( "ScheduleId", ddlSchedule.SelectedValue );
             }
 
             if ( ddlLocation.Visible )
@@ -349,14 +349,14 @@ namespace RockWeb.Blocks.Groups
                 int? locId = ddlLocation.SelectedValueAsInt();
                 if ( locId.HasValue && locId.Value != 0 )
                 {
-                    qryParams.Add( "LocationId", locId.Value.ToString() );
+                    qryParams.AddOrReplace( "LocationId", locId.Value.ToString() );
                 }
             }
 
             var groupTypeIds = PageParameter( "GroupTypeIds" );
             if ( !string.IsNullOrWhiteSpace( groupTypeIds ) )
             {
-                qryParams.Add( "GroupTypeIds", groupTypeIds );
+                qryParams.AddOrReplace( "GroupTypeIds", groupTypeIds );
             }
 
             NavigateToLinkedPage( AttributeKey.DetailPage, qryParams );
@@ -571,7 +571,7 @@ namespace RockWeb.Blocks.Groups
                 int? campusId = bddlCampus.SelectedValueAsInt();
                 if ( campusId.HasValue )
                 {
-                    // If campus filter is selected, load all the descendent locations for each campus into a dictionary
+                    // If campus filter is selected, load all the descendant locations for each campus into a dictionary
                     var locCampus = new Dictionary<int, int>();
                     foreach ( var campus in CampusCache.All().Where( c => c.LocationId.HasValue ) )
                     {
