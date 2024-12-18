@@ -1615,6 +1615,7 @@
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\230_FixVolGenBuildScript_CampusName.cs" />
     <Compile Include="Plugin\HotFixes\228_SetConnectionTypeLinkUrl.cs" />
     <Compile Include="Plugin\HotFixes\227_AddEnableDefaultAddressStateSelectionSetting.cs" />
     <Compile Include="Plugin\HotFixes\224_MigrationRollupsForV16_8_0.cs" />
