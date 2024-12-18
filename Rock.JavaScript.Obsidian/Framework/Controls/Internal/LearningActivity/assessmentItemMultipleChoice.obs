@@ -18,7 +18,7 @@
                              :disabled="disabled"
                              :inputClasses="'answer-text-box-' + index"
                              :label="index === 0 ? 'Answers' : ''"
-                             rules="required" />
+                             :rules="index === 0 ? 'required' : undefined" />
 
                     <button
                             aria-label="Remove this answer"
@@ -96,7 +96,9 @@
     const response = ref(modelValue.value?.response ?? "");
     const correctAnswer = ref(modelValue.value?.correctAnswer ?? "");
     const isCorrect = computed(() => response.value === correctAnswer.value);
-    const answersAsListItems = computed(() => answers.value.map(a => {
+
+    const answersWithText = computed(() => answers.value.filter(a => !!a));
+    const answersAsListItems = computed(() => answersWithText.value.map(a => {
         return { value: a, text: a } as ListItemBag;
     }));
 
@@ -127,12 +129,12 @@
             `<span class="badge-danger badge">Incorrect</span>`
     );
 
-    watch([question, helpText, answers, correctAnswer], () => {
+    watch([question, helpText, answersWithText, correctAnswer], () => {
         const newModelValue = {
             typeName: props.modelValue?.typeName,
             question: question.value,
             helpText: helpText.value,
-            answers: answers.value,
+            answers: answersWithText.value,
             correctAnswer: correctAnswer.value,
             uniqueId: props.modelValue?.uniqueId
         } as MultipleChoiceItem;

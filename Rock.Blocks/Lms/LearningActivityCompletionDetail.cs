@@ -142,8 +142,9 @@ namespace Rock.Blocks.Lms
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isAuthorizedToEditGrades = entity.IsAuthorized( Authorization.EDIT_GRADES, RequestContext.CurrentPerson );
+            var isViewable = isAuthorizedToEditGrades;
+            box.IsEditable = isAuthorizedToEditGrades;
 
             if ( entity.Id != 0 )
             {
@@ -318,7 +319,7 @@ namespace Rock.Blocks.Lms
                 GradeText = canViewGrades ? entity.GetGradeText( scales ) : string.Empty,
                 GradedByPersonAlias = gradedByPersonAliasBag,
                 IsFacilitatorCompleted = entity.IsFacilitatorCompleted,
-                IsGradePassing = canViewGrades ? entity.GetGrade().IsPassing : false,
+                IsGradePassing = canViewGrades ? entity.GetGrade()?.IsPassing ?? false : false,
                 IsLate = entity.IsLate,
                 IsStudentCompleted = entity.IsStudentCompleted,
                 PointsEarned = canViewGrades ? entity.PointsEarned : 0,

@@ -25,8 +25,6 @@
                     title="Start Date"
                     field="startDate"
                     :filter="dateValueFilter"
-                    filterValue="startDate"
-                    quickFilterValue="startDate"
                     visiblePriority="xs" />
 
         <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
@@ -95,7 +93,6 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
-
             return gridData;
         }
         else {

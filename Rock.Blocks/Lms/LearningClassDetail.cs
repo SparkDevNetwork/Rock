@@ -414,18 +414,22 @@ namespace Rock.Blocks.Lms
 
                 var isOnDemandLearning = program.ConfigurationMode == ConfigurationMode.OnDemandLearning;
                 var defaultLearningSemester = isOnDemandLearning ? learningProgramService.GetDefaultSemester( program.Id ) : null;
-
+                var defaultLearningGradingSystem = program.DefaultLearningGradingSystemId.HasValue ?
+                    new LearningGradingSystemService( RockContext ).Get( (int) program.DefaultLearningGradingSystemId ) :
+                    null;
+                
                 /*
                     12/12/2024 - JC
 
-                    We must load the parent LearningCourse for new records.
-                    When the authorization is checked the LearningCourse (the ParentAuthority)
+                    We must load the parent authorities for new records.
+                    When the authorization is checked the LearningCourse or its parent the LearningProgram
                     might be checked for approving/denying access (see LearningClass.IsAuthorized).
 
-                    Reason: ParentAuthority (LearningCourse) might be checked for authorization.
+                    Reason: ParentAuthorities (LearningCourse, LearningProgram) might be checked for authorization.
                 */
-                var course = new LearningCourseService( RockContext ).Get(
+                var course = new LearningCourseService( RockContext ).GetInclude(
                     PageParameter( PageParameterKey.LearningCourseId ),
+                    c => c.LearningProgram,
                     !this.PageCache.Layout.Site.DisablePredictableIds );
 
                 return new LearningClass
@@ -436,22 +440,25 @@ namespace Rock.Blocks.Lms
                     Guid = Guid.Empty,
                     LearningSemester = defaultLearningSemester,
                     LearningSemesterId = defaultLearningSemester?.Id,
+                    LearningGradingSystem = defaultLearningGradingSystem,
                     LearningGradingSystemId = program?.DefaultLearningGradingSystemId ?? 0
                 };
             }
+            else
+            {
+                var entityService = new LearningClassService( RockContext );
 
-            var entityService = new LearningClassService( RockContext );
-
-            return entityService
-                .Queryable()
-                .Include( c => c.GroupType )
-                .Include( c => c.Campus )
-                .Include( c => c.GroupLocations )
-                .Include( c => c.LearningCourse )
-                .Include( c => c.LearningCourse.LearningProgram )
-                .Include( c => c.LearningCourse.LearningProgram.DefaultLearningGradingSystem )
-                .Include( c => c.LearningGradingSystem )
-                .FirstOrDefault( a => a.Id == entityId );
+                return entityService
+                    .Queryable()
+                    .Include( c => c.GroupType )
+                    .Include( c => c.Campus )
+                    .Include( c => c.GroupLocations )
+                    .Include( c => c.LearningCourse )
+                    .Include( c => c.LearningCourse.LearningProgram )
+                    .Include( c => c.LearningCourse.LearningProgram.DefaultLearningGradingSystem )
+                    .Include( c => c.LearningGradingSystem )
+                    .FirstOrDefault( a => a.Id == entityId );
+            }
         }
 
         private Dictionary<string, string> GetCurrentPageParams( string keyPlaceholder = "" )
@@ -595,7 +602,8 @@ namespace Rock.Blocks.Lms
             {
                 [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
                 [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
-                [PageParameterKey.LearningClassId] = copiedEntity.IdKey
+                [PageParameterKey.LearningClassId] = copiedEntity.IdKey,
+                ["autoEdit"] = "true"
             };
 
             return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( queryParams ) );
@@ -856,6 +864,11 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
             }
 
+            if ( !entity.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return ActionBadRequest( $"Not authorized to view {LearningClass.FriendlyTypeName}." );
+            }
+
             var announcements = new LearningClassAnnouncementService( RockContext )
                 .Queryable()
                 .Where( a => a.LearningClassId == entity.Id )
@@ -885,6 +898,11 @@ namespace Rock.Blocks.Lms
             if ( entity == null )
             {
                 return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} was not found." );
+            }
+
+            if ( !entity.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return ActionBadRequest( $"Not authorized to view {LearningClass.FriendlyTypeName}." );
             }
 
             var contentPages = new LearningClassContentPageService( RockContext )
@@ -942,7 +960,12 @@ namespace Rock.Blocks.Lms
 
             if ( entity == null )
             {
-                return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} was not found." );
+                return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
+            }
+
+            if ( !entity.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return ActionBadRequest( $"Not authorized to view {LearningClass.FriendlyTypeName}." );
             }
 
             var components = LearningActivityContainer.Instance.Components.Values;
@@ -967,14 +990,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.RequiresGrading || c.RequiresFacilitatorCompletion ) )
                 .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.HasStudentComment ) );
 
-            var classId = GetClassId().ToIntSafe();
-
-            if ( classId == 0 )
-            {
-                return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
-            }
-
-            var orderedItems = GetOrderedLearningPlan( RockContext, classId ).AsNoTracking();
+            var orderedItems = GetOrderedLearningPlan( RockContext, entity.Id ).AsNoTracking();
             return ActionOk( gridBuilder.Build( orderedItems ) );
         }
 
@@ -990,6 +1006,11 @@ namespace Rock.Blocks.Lms
             if ( entity == null )
             {
                 return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
+            }
+
+            if ( !entity.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                return ActionBadRequest( $"Not authorized to view {LearningClass.FriendlyTypeName}." );
             }
 
             // Get the "current assignment" for each student.

@@ -3,6 +3,7 @@
     <Grid :data="gridDataSource"
           keyField="idKey"
           title="Students"
+          itemTerm="Student"
           :entityTypeGuid="EntityType.LearningParticipant"
           :expectedRowCount="10"
           :isCountMessageVisible="false"
@@ -15,8 +16,10 @@
         <Column name="name"
                 title="Name"
                 field="name"
-                :filter="textValueFilter"
+                :filter="pickExistingValueFilter"
                 :filterValue="getPersonNameFilterValue"
+                :quickFilterValue="getPersonNameFilterValue"
+                :sortValue="getFormattedName"
                 visiblePriority="xs">
             <template #format="{ row }">
 
@@ -58,9 +61,10 @@
                 title="Current Grade"
                 field="currentGradePercent"
                 :filter="numberValueFilter"
+                :quickFilterValue="getGradeText"
                 visiblePriority="xs">
             <template #format="{ row }">
-                {{ row.currentGrade }} ({{ row.currentGradePercent }}%)
+                {{ getGradeText(row) }}
             </template>
         </Column>
 
@@ -83,7 +87,7 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { SelectColumn, Column, numberValueFilter, TextColumn, textValueFilter, pickExistingValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { SelectColumn, Column, numberValueFilter, TextColumn, pickExistingValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
@@ -145,7 +149,7 @@
     * @param row The row to be filtered.
     */
     function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["individual"] as PersonFieldBag;
+        const person = row["name"] as PersonFieldBag;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 
@@ -177,6 +181,14 @@
         }
 
         return `${value.nickName ?? ""} ${value.lastName ?? ""}`;
+    }
+
+    function getGradeText(row: Record<string, unknown>): string {
+        if (!row.currentGrade) {
+            return "";
+        }
+
+        return `${row.currentGrade} (${row.currentGradePercent}%)`;
     }
 
     // #endregion

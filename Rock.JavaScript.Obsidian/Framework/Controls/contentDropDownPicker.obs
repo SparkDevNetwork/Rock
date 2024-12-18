@@ -420,6 +420,7 @@
             internalShowPopup.value = false;
             return;
         }
+        console.warn("togglepicker", internalShowPopup.value);
         internalShowPopup.value = !internalShowPopup.value;
     }
 

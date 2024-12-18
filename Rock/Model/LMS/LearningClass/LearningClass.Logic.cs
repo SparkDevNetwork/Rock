@@ -96,12 +96,7 @@ namespace Rock.Model
                 }
             }
 
-            // We need to explicitly call to the ParentAuthority's IsAuthorized
-            // method so that the logic for VIEW_GRADES actions can be evaluated;
-            // the base security logic will just recursively call
-            // Rock.Security.Authorization.ItemAuthorized which doesn't
-            // know anything about the special handling of "VIEW_GRADES" and "EDIT_GRADES".
-            return ParentAuthority.IsAuthorized( action, person );
+            return false;
         }
 
         /// <summary>
@@ -115,7 +110,16 @@ namespace Rock.Model
         {
             get
             {
-                return this.LearningCourse != null ? this.LearningCourse : base.ParentAuthority;
+                if ( this.LearningCourse?.Id > 0 )
+                {
+                    return this.LearningCourse;
+                }
+                else
+                {
+                    return this.LearningCourseId > 0 ?
+                        new LearningCourseService( new Data.RockContext() ).Get( this.LearningCourseId ) :
+                        base.ParentAuthority;
+                }
             }
         }
 

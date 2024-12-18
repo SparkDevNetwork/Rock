@@ -277,7 +277,16 @@ namespace Rock.Model
         {
             get
             {
-                return this.LearningClass != null ? this.LearningClass : base.ParentAuthority;
+                if ( this.LearningClass?.Id > 0 )
+                {
+                    return this.LearningClass;
+                }
+                else
+                {
+                    return this.LearningClassId > 0 ?
+                        new LearningClassService( new Data.RockContext() ).Get( this.LearningClassId ) :
+                        base.ParentAuthority;
+                }
             }
         }
 

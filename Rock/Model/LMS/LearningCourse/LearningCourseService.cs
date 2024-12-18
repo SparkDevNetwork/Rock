@@ -65,7 +65,7 @@ namespace Rock.Model
 
             var orderedPersonCompletions =
                 !hasPersonId ?
-                default :
+                new List<LearningParticipant>().AsQueryable().OrderBy( "LearningCompletionStatus" ) :
                 new LearningParticipantService( rockContext )
                 .GetClasses( person.Id )
                 .AsNoTracking()

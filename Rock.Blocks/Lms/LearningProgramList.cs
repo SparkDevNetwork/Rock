@@ -117,7 +117,12 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningProgram> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext );
+            var currentPerson = GetCurrentPerson();
+
+            // Materialize the LearningPrograms so that we can check for View authorization.
+            return new LearningProgramService( rockContext ).Queryable().ToList()
+                .Where( p => p.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                .AsQueryable();
         }
 
         /// <inheritdoc/>

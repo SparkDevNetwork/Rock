@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Blocks.Administration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -152,9 +153,13 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningActivityCompletion> GetListQueryable( RockContext rockContext )
         {
-            var activityId = RequestContext.PageParameterAsId( PageParameterKey.LearningActivityId );
-            return activityId > 0 ?
-                new LearningParticipantService( rockContext ).GetActivityCompletions( activityId ) :
+            var activity = new LearningActivityService( rockContext ).Get(
+                PageParameter( PageParameterKey.LearningActivityId ),
+                !this.PageCache.Layout.Site.DisablePredictableIds );
+
+            // Ensure the current person is authorized to view the class.
+            return activity?.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) == true ?
+                new LearningParticipantService( rockContext ).GetActivityCompletions( activity.Id ) :
                 default;
         }
 

@@ -114,10 +114,11 @@ namespace Rock.Blocks.Lms
         /// <returns>The options that provide additional details to the block.</returns>
         private LearningCourseDetailOptionsBag GetBoxOptions( LearningCourseBag entity )
         {
-            var disablePredictableIds = PageCache.Layout?.Site?.DisablePredictableIds ?? false;
             // Get the ConfigurationMode for the parent Program.
-            var programConfigurationMode = new LearningCourseService( RockContext )
-                .GetSelect( entity.IdKey, c => c.LearningProgram.ConfigurationMode, !disablePredictableIds );
+            var programConfigurationMode = new LearningProgramService( RockContext )
+                .GetSelect( PageParameter( PageParameterKey.LearningProgramId ),
+                c => c.ConfigurationMode,
+                !this.PageCache.Layout.Site.DisablePredictableIds );
 
             return new LearningCourseDetailOptionsBag
             {

@@ -73,6 +73,11 @@
                           :disabled="hasBeenGraded"
                           :showDeleteButton="!hasBeenGraded" />
         </div>
+
+        <div v-if="showStudentComment" class="optional-comments-container">
+            <TextBox v-model="studentComment" label="Optional Comments" textMode="multiline" :rows="4" />
+        </div>
+
         <div class="footer-button-section">
             <RockButton :btnType="BtnType.Primary"
                         :disabled="!binaryFile || completeClicked"
@@ -95,6 +100,7 @@
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
@@ -114,6 +120,8 @@
     const activityBag = computed(() => props.activityBag);
     const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
     const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
+    const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
+    const studentComment = ref(completionBag.value.studentComment ?? "");
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
@@ -140,8 +148,10 @@
     const pointsEarned = ref(completionBag.value.pointsEarned);
     const pointsPossible = computed(() => Number(pointsPossibleAtCompletion?.value ?? activityBag.value.points));
 
+    const originalBinaryFileGuid = binaryFile.value?.value ?? "";
+
     function onCompletedAndClosed(): void {
-        if (isCompleted.value === false) {
+        if (isCompleted.value === false || binaryFileHasChanged.value === true) {
             emits("completed", true);
             completeClicked.value = true;
         }
@@ -149,6 +159,8 @@
         emits("closed");
     }
 
+    const binaryFileHasChanged = computed(() => originalBinaryFileGuid != currentBinaryFileGuid.value);
+    const currentBinaryFileGuid = computed(() => binaryFile.value?.value ?? "");
     const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");
 
     /** Watch for modified component settings. */
@@ -181,13 +193,15 @@
         // Update the binaryFile for the completion activity in addition to the completion JSON.
         updatedCompletionBag.binaryFile = binaryFile.value;
 
+        updatedCompletionBag.studentComment = studentComment.value;
+
         updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
             binaryFile: binaryFile.value,
             pointsPossibleAtCompletion: pointsPossible.value > 0 ? pointsPossible.value : undefined
         }) ?? "{}";
         emits("update:completionBag", updatedCompletionBag);
     });
-    watch([binaryFile, pointsEarned], () => {
+    watch([binaryFile, studentComment, pointsEarned], () => {
         debouncedCompletionBagEmits();
     }, { deep: true });
 </script>

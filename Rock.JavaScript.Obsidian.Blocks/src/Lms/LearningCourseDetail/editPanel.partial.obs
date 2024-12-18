@@ -111,19 +111,23 @@
                     <Panel title="Advanced Settings" :hasCollapse="true" class="mt-4">
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="col-md-6">
-                                    <TextBox v-model="courseCode"
-                                             class="input-width-md"
-                                             label="Course Code"
-                                             :max="12" />
-                                </div>
-                                <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <TextBox v-model="courseCode"
+                                                 class="input-width-md"
+                                                 label="Course Code"
+                                                 :max="12" />
+                                    </div>
+                                    <div class="col-md-6">
 
-                                    <NumberBox
-                                               v-model="credits"
-                                               class="input-width-sm"
-                                               label="Credits" />
+                                        <NumberBox
+                                                   v-if="isAcademicCalendarMode"
+                                                   v-model="credits"
+                                                   class="input-width-sm"
+                                                   :minimumValue="0"
+                                                   label="Credits" />
 
+                                    </div>
                                 </div>
                                 <WorkflowTypePicker
                                                     v-model="completionWorkflowType"
@@ -134,6 +138,7 @@
                                 <NumberBox v-model="maxStudents"
                                            class="input-width-sm"
                                            label="Maximum Students"
+                                           :minimumValue="0"
                                            help="The maximum number of students a class can have." />
 
                                 <div class="row">

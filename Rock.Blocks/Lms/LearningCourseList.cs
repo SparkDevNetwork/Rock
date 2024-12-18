@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -130,12 +131,17 @@ namespace Rock.Blocks.Lms
         protected override IQueryable<LearningCourse> GetListQueryable( RockContext rockContext )
         {
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
+            var currentPerson = GetCurrentPerson();
 
-            var query = programId > 0 ?
-                base.GetListQueryable( rockContext ).Where( c => c.LearningProgramId == programId ) :
-                base.GetListQueryable( rockContext );
+            // Eagerly load the program so it can be checked for Authorization.
+            var courses = programId > 0 ?
+                new LearningCourseService( rockContext ).Queryable()
+                    .Include( c => c.LearningProgram )
+                    .Where( c => c.LearningProgramId == programId )
+                    .ToList():
+                new List<LearningCourse>();
 
-            return query;
+            return courses.Where( c => c.IsAuthorized( Authorization.VIEW, currentPerson ) ).AsQueryable();
         }
 
         /// <inheritdoc/>
