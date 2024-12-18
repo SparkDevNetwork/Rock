@@ -138,10 +138,10 @@ namespace Rock.Blocks.Lms
 <div>
 	
 	<div class=""hero-section"">
-        <div class=""hero-section-image"" style=""background-image: url('/GetImage.ashx?guid={{ Program.ImageBinaryFile.Guid }}')""></div>
+        <div class=""hero-section-image"" style=""background-image: url('/GetImage.ashx?guid={{ ProgramInfo.ImageFileGuid }}')""></div>
         <div class=""hero-section-content"">
-            <h1 class=""hero-section-title""> {{ Program.PublicName }} </h1>
-            <p class=""hero-section-description""> {{ Program.Summary }} </p>
+            <h1 class=""hero-section-title""> {{ ProgramInfo.PublicName }} </h1>
+            <p class=""hero-section-description""> {{ ProgramInfo.Summary }} </p>
         </div>
     </div>
     <div class=""center-block text-center mt-4 mb-4"">
