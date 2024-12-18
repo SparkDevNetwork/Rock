@@ -30,6 +30,14 @@ using Rock.Lava;
 
 namespace Rock.Model
 {
+    /*
+    12/16/2024 - DSH
+
+    The GroupMember model participates in the the TPT (Table-Per-Type) pattern. This
+    can cause some rare unexpected results. See the engineering note above the
+    Group class for details.
+    */
+
     /// <summary>
     /// Represents a member of a group in Rock. A group member is a <see cref="Rock.Model.Person"/> who has a relationship with a <see cref="Rock.Model.Group"/>.
     /// </summary>
@@ -59,6 +67,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int GroupId { get; set; }
 
         /// <summary>
@@ -69,6 +78,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int GroupTypeId { get; set; }
 
         /// <summary>
@@ -89,6 +99,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int GroupRoleId { get; set; }
 
         /// <summary>

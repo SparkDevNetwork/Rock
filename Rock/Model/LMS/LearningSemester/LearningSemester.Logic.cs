@@ -31,17 +31,17 @@ namespace Rock.Model
         {
             get
             {
-                return this.LearningProgram != null ? this.LearningProgram : base.ParentAuthority;
+                if ( this.LearningProgram?.Id > 0 )
+                {
+                    return this.LearningProgram;
+                }
+                else
+                {
+                    return this.LearningProgramId > 0 ?
+                        new LearningProgramService( new Data.RockContext() ).Get( this.LearningProgramId ) :
+                        base.ParentAuthority;
+                }
             }
-        }
-
-        /// <inheritdoc/>
-        public override bool IsAuthorized( string action, Rock.Model.Person person )
-        {
-            // Defer to the parent authority.
-            // We don't add any logic to the authorization process
-            // that's not already included in that logic.
-            return ParentAuthority.IsAuthorized( action, person );
         }
     }
 }

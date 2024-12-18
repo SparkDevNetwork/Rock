@@ -231,7 +231,7 @@
 
                 if (rowItem && itemAttributesGridData.rows && editedAttribute) {
                     // Update GridRowItem so changes are reflected in the UI.
-                    const rowIndex = itemAttributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.key);
+                    const rowIndex = itemAttributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.guid);
                     rowItem = convertToAttributeGridRowItem(editedAttribute, itemAttributesReservedKeyNames);
                     itemAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
                 }
@@ -246,7 +246,6 @@
             }
 
             isItemAttributeModalOpen.value = false;
-            itemAttributesReservedKeyNames.value.push(itemAttribute.value.key ?? "");
         }
     }
 
@@ -286,6 +285,18 @@
             return true;
         }
     }
+
+    watch(isItemAttributeModalOpen, () => {
+        if (isItemAttributeModalOpen.value) {
+            itemAttributesReservedKeyNames.value = itemAttributesReservedKeyNames.value.filter(k => k !== itemAttribute.value?.key);
+        }
+        else {
+            if (itemAttribute.value?.key && !itemAttributesReservedKeyNames.value.some(k => k === itemAttribute.value?.key)) {
+                itemAttributesReservedKeyNames.value.push(itemAttribute.value.key);
+            }
+        }
+    });
+
     // #endregion
 
     // #region Channel Attributes
@@ -340,7 +351,7 @@
 
                 if (rowItem && channelAttributesGridData.rows && editedAttribute) {
                     // Update GridRowItem so changes are reflected in the UI.
-                    const rowIndex = channelAttributesGridData.rows.findIndex(r => r.key === channelAttribute.value?.key);
+                    const rowIndex = channelAttributesGridData.rows.findIndex(r => r.key === channelAttribute.value?.guid);
                     rowItem = convertToAttributeGridRowItem(editedAttribute, channelAttributesReservedKeyNames);
                     channelAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
                 }
@@ -355,7 +366,6 @@
             }
 
             isChannelAttributeModalOpen.value = false;
-            channelAttributesReservedKeyNames.value.push(channelAttribute.value.key ?? "");
         }
     }
 
@@ -391,6 +401,17 @@
             return true;
         }
     }
+
+    watch(isChannelAttributeModalOpen, () => {
+        if (isChannelAttributeModalOpen.value) {
+            channelAttributesReservedKeyNames.value = channelAttributesReservedKeyNames.value.filter(k => k !== channelAttribute.value?.key);
+        }
+        else {
+            if (channelAttribute.value?.key && !channelAttributesReservedKeyNames.value.some(k => k === channelAttribute.value?.key)) {
+                channelAttributesReservedKeyNames.value.push(channelAttribute.value.key);
+            }
+        }
+    });
 
     // #endregion
 

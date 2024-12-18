@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -50,6 +50,7 @@ namespace Rock.Model
         /// This property will be null if the FinancialAccount does not have a parent.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? ParentAccountId { get; set; }
 
         /// <summary>
@@ -61,6 +62,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
+        [EnableAttributeQualification]
         public int? CampusId { get; set; }
 
         /// <summary>

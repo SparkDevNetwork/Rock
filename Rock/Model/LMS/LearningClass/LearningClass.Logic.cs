@@ -19,6 +19,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -26,6 +27,16 @@ namespace Rock.Model
 {
     public partial class LearningClass
     {
+        /// <summary>
+        /// Backing field for <see cref="TypeId"/>.
+        /// </summary>
+        private int? _typeId;
+
+        /// <summary>
+        /// Backing field for <see cref="TypeName"/>.
+        /// </summary>
+        private string _typeName = null;
+
         /// <inheritdoc/>
         public override bool IsAuthorized( string action, Rock.Model.Person person )
         {
@@ -85,12 +96,7 @@ namespace Rock.Model
                 }
             }
 
-            // We need to explicitly call to the ParentAuthority's IsAuthorized
-            // method so that the logic for VIEW_GRADES actions can be evaluated;
-            // the base security logic will just recursively call
-            // Rock.Security.Authorization.ItemAuthorized which doesn't
-            // know anything about the special handling of "VIEW_GRADES" and "EDIT_GRADES".
-            return ParentAuthority.IsAuthorized( action, person );
+            return false;
         }
 
         /// <summary>
@@ -104,7 +110,16 @@ namespace Rock.Model
         {
             get
             {
-                return this.LearningCourse != null ? this.LearningCourse : base.ParentAuthority;
+                if ( this.LearningCourse?.Id > 0 )
+                {
+                    return this.LearningCourse;
+                }
+                else
+                {
+                    return this.LearningCourseId > 0 ?
+                        new LearningCourseService( new Data.RockContext() ).Get( this.LearningCourseId ) :
+                        base.ParentAuthority;
+                }
             }
         }
 
@@ -161,6 +176,42 @@ namespace Rock.Model
             else
             {
                 return "success";
+            }
+        }
+
+        /// <inheritdoc/>
+        [LavaVisible]
+        public override int TypeId
+        {
+            get
+            {
+                if ( _typeId == null )
+                {
+                    // Once this instance is created, there is no need to set the _typeId more than once.
+                    // Also, read should never return null since it will create entity type if it doesn't exist.
+                    _typeId = EntityTypeCache.GetId<LearningClass>();
+                }
+
+                return _typeId.Value;
+
+            }
+        }
+
+        /// <inheritdoc/>
+        [NotMapped]
+        [LavaVisible]
+        public override string TypeName
+        {
+            get
+            {
+                if ( _typeName.IsNullOrWhiteSpace() )
+                {
+                    // Once this instance is created, there is no need to set the _typeName more than once.
+                    // Also, read should never return null since it will create entity type if it doesn't exist.
+                    _typeName = typeof( LearningClass ).FullName;
+                }
+
+                return _typeName;
             }
         }
     }

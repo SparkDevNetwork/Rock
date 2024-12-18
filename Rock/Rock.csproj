@@ -715,6 +715,10 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorSelectorFieldAttribute.cs" />
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
+    <Compile Include="Attribute\ImageFieldAttribute.cs" />
+    <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
+    <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
+    <Compile Include="Data\EnableAttributeQualificationAttribute.cs" />
     <Compile Include="Attribute\GroupMemberRequirementFieldAttribute.cs" />
     <Compile Include="Attribute\IconSvgAttribute.cs" />
     <Compile Include="Attribute\PublicAttributeHelper.cs" />
@@ -1212,6 +1216,7 @@
     <Compile Include="Core\NotificationMessageTypes\NoteMention.cs" />
     <Compile Include="Core\NotificationMessageTypes\SmsConversation.cs" />
     <Compile Include="Data\IHasAdditionalSettings.cs" />
+    <Compile Include="Data\HasQueryableAttributesAttribute.cs" />
     <Compile Include="Data\IHasReadOnlyAdditionalSettings.cs" />
     <Compile Include="Data\IncludeForModelMapAttribute.cs" />
     <Compile Include="Data\EntityContextState.cs" />
@@ -1219,6 +1224,7 @@
     <Compile Include="Data\IEntitySaveEntry.cs" />
     <Compile Include="Data\IEntitySaveHook.cs" />
     <Compile Include="Data\Internal\EntitySaveHookProvider.cs" />
+    <Compile Include="Data\QueryableAttributeValue.cs" />
     <Compile Include="Data\RockContextAnalytics.cs" />
     <Compile Include="Data\RockContextReadOnly.cs" />
     <Compile Include="Drawing\Avatar\AvatarColors.cs" />
@@ -1268,7 +1274,9 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV17AddAndUpdatePeerNetworkIndexes.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdateHistoryTableEntityTypeIdIndexPostMigration.cs" />
     <Compile Include="Jobs\UpdateProgramCompletions.cs" />
+    <Compile Include="Model\Core\AttributeMatrixItem\AttributeMatrixItem.SaveHook.cs" />
     <Compile Include="Model\Core\Note\NoteExtensionMethods.cs" />
+    <Compile Include="Model\Event\Registration\Registration.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncementService.cs" />
     <Compile Include="Model\LMS\LearningCourse\LearningCourse.Logic.cs" />
@@ -1302,6 +1310,7 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateMediaElementDefaultUrls.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateNoteData.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdatePersonPrimaryAliasId.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV168UpdateIndexes.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17InteractionIndexPostMigration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV16UpdateWorkflowIds.cs" />
     <Compile Include="Jobs\PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks.cs" />
@@ -1605,6 +1614,10 @@
     <Compile Include="Plugin\HotFixes\199_MigrationRollupsForV17_0_7.cs" />
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
+    <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\230_FixVolGenBuildScript_CampusName.cs" />
+    <Compile Include="Plugin\HotFixes\228_SetConnectionTypeLinkUrl.cs" />
+    <Compile Include="Plugin\HotFixes\227_AddEnableDefaultAddressStateSelectionSetting.cs" />
     <Compile Include="Plugin\HotFixes\224_MigrationRollupsForV16_8_0.cs" />
     <Compile Include="Plugin\HotFixes\196_MigrationRollupsForV16_5_1.cs" />
     <Compile Include="Plugin\HotFixes\194_MigratoinRollupForV17_0_3.cs" />
@@ -1631,6 +1644,7 @@
     <Compile Include="Plugin\HotFixes\214_UpdateGradingScaleDescriptions.cs" />
     <Compile Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations.cs" />
+    <Compile Include="Plugin\HotFixes\229_PeerNetworkFitNFinish.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

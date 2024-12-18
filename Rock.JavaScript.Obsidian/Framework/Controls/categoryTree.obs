@@ -1,0 +1,245 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="scrollbar-thin picker-body border border-gray-300 rounded overflow-visible overflow-y-auto position-relative z-0" :style="`height: ${height}`">
+        <TreeList v-model="internalValues"
+                  :multiple="multiple"
+                  :provider="itemProvider"
+                  @update:items="onUpdateItems"
+                  @update:modelValue="onSelect"
+                  :disableFolderSelection="disableFolderSelection"
+                  :showChildCount="showChildCount"
+                  :enableDeselect="enableDeselect"
+                  autoExpand />
+    </div>
+</template>
+
+<style scoped>
+.scrollbar-thin {
+    scrollbar-width: thin;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-button {
+    display: none;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: #858585;
+    border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: #6b6b6b;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+</style>
+
+<script setup lang="ts">
+    import { type PropType, ref, watch } from "vue";
+    import TreeList from "./treeList.obs";
+    import { CategoryTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
+    import { forceToArray } from "@Obsidian/Utility/arrayUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
+    import { Guid } from "@Obsidian/Types";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ListItemBag | ListItemBag[] | null | undefined>,
+            required: false
+        },
+
+        rootCategoryGuid: {
+            type: String as PropType<Guid | undefined>
+        },
+
+        entityTypeGuid: {
+            type: String as PropType<Guid | undefined>
+        },
+
+        entityTypeQualifierColumn: {
+            type: String as PropType<string>
+        },
+
+        entityTypeQualifierValue: {
+            type: String as PropType<string>
+        },
+
+        multiple: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        items: {
+            type: Array as PropType<TreeItemBag[]>
+        },
+
+        disableFolderSelection: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Whether to show the number of children a parent node has, if provided
+         */
+        showChildCount: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * CSS length value for defining how tall the box is. 200px by default.
+         */
+        height: {
+            type: String as PropType<string>,
+            default: "200px"
+        },
+
+        /**
+         * If in single selection mode, whether to allow deselection of this item by clicking on it.
+         */
+        enableDeselect: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void,
+        (_e: "valueSelected"): void
+    }>();
+
+    /**
+     * Our internal list of selected values. This must be kept seperate
+     * because we don't actually emit the new values until the user clicks
+     * the select button.
+     */
+    const internalValues = ref(forceToArray(props.modelValue, props.multiple).map(v => v.value ?? ""));
+
+    const securityGrantToken = useSecurityGrantToken();
+
+    // Configure the item provider with our settings.
+    const itemProvider = ref(new CategoryTreeItemProvider());
+    itemProvider.value.rootCategoryGuid = props.rootCategoryGuid;
+    itemProvider.value.entityTypeGuid = props.entityTypeGuid;
+    itemProvider.value.entityTypeQualifierColumn = props.entityTypeQualifierColumn;
+    itemProvider.value.entityTypeQualifierValue = props.entityTypeQualifierValue;
+    itemProvider.value.securityGrantToken = securityGrantToken.value;
+
+    /**
+     * A flat array of items from the tree. This is used to quickly filter
+     * to just the selected items.
+     */
+    const flatItems = ref<TreeItemBag[]>(flatten(props.items ?? [], i => i.children ?? []));
+
+    /** Updates the model value from our internal value. */
+    const updateModelValue = (): void => {
+        // Create a new set of selected items to emit.
+        const newModelValue = forceToArray(props.modelValue, true)
+            .filter(v => internalValues.value.includes(v.value ?? ""));
+
+        // Helpful list of the values already in the new model value.
+        const knownValues = newModelValue.map(v => v.value);
+
+        // Determine which values need to be added from the tree list.
+        const additionalValues = internalValues.value
+            .filter(v => !knownValues.includes(v));
+
+        // Go through each additional value and find it in the tree list
+        // and add it to the new model value.
+        for (const v of additionalValues) {
+            const items = flatItems.value.filter(i => i.value === v);
+
+            if (items.length > 0 && items[0].value && items[0].text) {
+                newModelValue.push({
+                    value: items[0].value,
+                    text: items[0].text
+                });
+            }
+        }
+
+        // Emit the new value and close the popup.
+        if (props.multiple) {
+            emit("update:modelValue", newModelValue);
+        }
+        else {
+            emit("update:modelValue", newModelValue.length > 0 ? newModelValue[0] : null);
+        }
+    };
+
+    /**
+     * Helper function to flatten an array of items that contains child items
+     * of the same type.
+     *
+     * @param source The source array of items to the flattened.
+     * @param childrenSource A callback function that retrieves the child items.
+     *
+     * @returns An array of all items and descendants.
+     */
+    function flatten<T>(source: T[], childrenSource: (value: T) => T[]): T[] {
+        let stack = [...source];
+        const flatArray: T[] = [];
+
+        for (let i = 0; i < stack.length; i++) {
+            const item = stack[i];
+
+            flatArray.push(item);
+
+            stack = stack.concat(childrenSource(item));
+        }
+
+        return flatArray;
+    }
+
+
+    /**
+     * Event handler for when the user clicks the select button. Save the
+     * current selection and close the popup.
+     */
+    const onSelect = (): void => {
+        updateModelValue();
+        emit("valueSelected"); // inform that a value was selected, even if it didn't change
+    };
+
+    /**
+     * Event handler for when the list of items in the tree list has been
+     * updated.
+     *
+     * @param newItems The new root items being used by the tree list.
+     */
+    const onUpdateItems = (newItems: TreeItemBag[]): void => {
+        // Update our flatItems array with the list of new items.
+        flatItems.value = flatten(newItems ?? [], i => i.children ?? []);
+    };
+
+
+    // Keep security token up to date, but don't need refetch data
+    watch(securityGrantToken, () => {
+        itemProvider.value.securityGrantToken = securityGrantToken.value;
+    });
+
+    // When this changes, we need to refetch the data, so reset the whole itemProvider
+    watch(() => [props.entityTypeGuid, props.rootCategoryGuid, props.entityTypeQualifierColumn, props.entityTypeQualifierValue], () => {
+        const newProvider = new CategoryTreeItemProvider();
+
+        // copy old provider's properties
+        newProvider.rootCategoryGuid = props.rootCategoryGuid;
+        newProvider.entityTypeQualifierColumn = props.entityTypeQualifierColumn;
+        newProvider.entityTypeQualifierValue = props.entityTypeQualifierValue;
+        newProvider.securityGrantToken = securityGrantToken.value;
+        // Use new value
+        newProvider.entityTypeGuid = props.entityTypeGuid;
+
+        // Set the provider to the new one
+        itemProvider.value = newProvider;
+    });
+</script>

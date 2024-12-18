@@ -95,6 +95,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int ConnectionTypeId { get; set; }
 
         /// <summary>

@@ -235,7 +235,6 @@
     <Compile Include="Modules\Core\Lava\Engine\TypeConversionTests.cs" />
     <Compile Include="Modules\Core\Lava\Documentation\IfTagExamples.cs" />
     <Compile Include="Modules\Core\Lava\Filters\PersonalizationFilterTests.cs" />
-    <Compile Include="Modules\Core\Lava\Shortcodes\AiCompletionTests.cs" />
     <Compile Include="Modules\Core\Lava\Shortcodes\ScheduledContentTests.cs" />
     <Compile Include="Modules\Core\Lava\Shortcodes\KpiShortcodeTests.cs" />
     <Compile Include="Modules\Core\Lava\Shortcodes\GoogleMapShortcodeTests.cs" />

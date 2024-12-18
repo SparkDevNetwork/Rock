@@ -674,9 +674,10 @@ $('#{0}').tooltip();
                 // Set URL in feed button
                 var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Get();
                 btnCopyToClipboard.Attributes["data-clipboard-text"] = string.Format(
-                    "{0}GetPersonGroupScheduleFeed.ashx?paguid={1}",
+                    "{0}GetPersonGroupScheduleFeed.ashx?paguid={1}&startdate={2}",
                     globalAttributes.GetValue( "PublicApplicationRoot" ),
-                    primaryAlias.Guid );
+                    primaryAlias.Guid,
+                    currentDateTime.ToString( "yyyyMMdd" ) );
             }
 
             btnCopyToClipboard.Disabled = false;

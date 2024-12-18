@@ -345,6 +345,17 @@
         emit("update:modelValue", newValue);
     });
 
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== binaryFileTypeAttribute.value?.key);
+        }
+        else {
+            if (binaryFileTypeAttribute.value?.key && !reservedKeyNames.value.some(k => k === binaryFileTypeAttribute.value?.key)) {
+                reservedKeyNames.value.push(binaryFileTypeAttribute.value.key);
+            }
+        }
+    });
+
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
     watchPropertyChanges(propRefs, emit);

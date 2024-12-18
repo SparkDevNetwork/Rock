@@ -54,21 +54,33 @@
 
     <Modal v-model="showEditAttributeModal" :title="editAttributeModalTitle" saveText="Save" @save="saveEditAttribute">
         <div v-if="showEntityTypeQualifier" class="well">
-            <DropDownList v-model="entityTypeGuidForEditOrEmptyString"
+            <DropDownList :modelValue="entityTypeGuidForEditOrEmptyString"
                           label="Entity Type"
                           grouped
                           enhanceForLongLists
                           :items="entityTypeOptions"
-                          rules="required" />
+                          rules="required"
+                          @update:modelValue="onUpdateEntityTypeGuidForEditOrEmptyString" />
             <div class="row">
                 <div class="col-md-6">
-                    <TextBox v-model="entityTypeQualifierColumn" label="Qualifier Field" />
+                    <DropDownList v-if="isInitialQualifierColumnValid"
+                                  label="Qualifier Field"
+                                  v-model="entityTypeQualifierColumn"
+                                  showBlankItem
+                                  :items="entityTypeQualifierColumnItems" />
+                    <TextBox v-else
+                             v-model="entityTypeQualifierColumn"
+                             label="Qualifier Field" />
                 </div>
 
                 <div class="col-md-6">
                     <TextBox v-model="entityTypeQualifierValue" label="Qualifier Value" />
                 </div>
             </div>
+
+            <NotificationBox v-if="invalidQualificationMessage"
+                             alertType="warning"
+                             v-text="invalidQualificationMessage" />
         </div>
 
         <AttributeEditor v-model="editableAttribute"
@@ -93,14 +105,14 @@
     import Grid, { Column, TextColumn, ReorderColumn, SecurityColumn, DeleteColumn, EditColumn, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockField from "@Obsidian/Controls/rockField.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { getSecurityGrant, provideSecurityGrant, onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
-    import { emptyGuid, normalize as normalizeGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
@@ -114,6 +126,8 @@
     type EditAttribute = {
         entityTypeQualifierColumn?: string | null;
         entityTypeQualifierValue?: string | null;
+        validQualifierColumns?: string[] | null;
+        isLegacyPlugin: boolean;
         entityTypeGuid?: Guid | null;
         attribute: PublicEditableAttributeBag;
     };
@@ -159,9 +173,13 @@
     // #region Attribute Editing
 
     // Fields for editing an attribute
+    const isInitialQualifierColumnValid = ref(false);
+    const isLegacyPlugin = ref(false);
     const entityTypeGuidForEditOrEmptyString = ref<string>("");
     const entityTypeQualifierColumn = ref("");
     const entityTypeQualifierValue = ref("");
+    const entityTypeQualifierColumnItems = ref<ListItemBag[]>([]);
+    const invalidQualificationMessage = ref("");
 
     /** The current attribute in an editable format. */
     const editableAttribute = ref<PublicEditableAttributeBag | null>(null);
@@ -198,6 +216,19 @@
         entityTypeQualifierColumn.value = result.data.entityTypeQualifierColumn ?? "";
         entityTypeQualifierValue.value = result.data.entityTypeQualifierValue ?? "";
         editableAttribute.value = result.data.attribute;
+
+        entityTypeQualifierColumnItems.value = result.data
+            .validQualifierColumns
+            ?.map(c => ({ value: c, text: c }))
+            ?? [];
+
+        isLegacyPlugin.value = result.data.isLegacyPlugin === true;
+        isInitialQualifierColumnValid.value = !result.data?.isLegacyPlugin
+            && (!entityTypeQualifierColumn.value
+                || entityTypeQualifierColumnItems.value.some(q => q.value === entityTypeQualifierColumn.value));
+
+        updateQualifierFieldWarning();
+
         showEditAttributeModal.value = true;
     };
 
@@ -255,27 +286,38 @@
     /**
      * Event handler for when the add attribute button is clicked.
      */
-    const onAddAttribute = (): void => {
-        editableAttribute.value = {
-            isActive: true,
-            fieldTypeGuid: normalizeGuid(FieldType.Text),
-            isPublic: false,
-            isSystem: false,
-            isRequired: false,
-            isShowInGrid: false,
-            isShowOnBulk: false,
-            isAnalytic: false,
-            isAllowSearch: false,
-            isAnalyticHistory: false,
-            isEnableHistory: false,
-            isIndexEnabled: false,
-            isSuppressHistoryLogging: false
+    async function onAddAttribute(): Promise<void> {
+        const request: {
+            entityTypeGuid?: Guid | null;
+        } = {
+            entityTypeGuid: toGuidOrNull(entityTypeGuid.value)
         };
+
+        const result = await invokeBlockAction<EditAttribute>("NewAttribute", request);
+
+        if (!result.isSuccess || !result.data) {
+            return alert(result.errorMessage ?? "Unable to create new attribute.");
+        }
+
+        entityTypeGuidForEditOrEmptyString.value = result.data.entityTypeGuid ?? entityTypeGuid.value;
+        entityTypeQualifierColumn.value = result.data.entityTypeQualifierColumn ?? "";
+        entityTypeQualifierValue.value = result.data.entityTypeQualifierValue ?? "";
+        editableAttribute.value = result.data.attribute;
+
+        entityTypeQualifierColumnItems.value = result.data
+            .validQualifierColumns
+            ?.map(c => ({ value: c, text: c }))
+            ?? [];
+
+        isLegacyPlugin.value = result.data.isLegacyPlugin === true;
+        isInitialQualifierColumnValid.value = !result.data?.isLegacyPlugin
+            && (!entityTypeQualifierColumn.value
+                || entityTypeQualifierColumnItems.value.some(q => q.value === entityTypeQualifierColumn.value));
+
+        updateQualifierFieldWarning();
+
         showEditAttributeModal.value = true;
-        entityTypeGuidForEditOrEmptyString.value = entityTypeGuid.value;
-        entityTypeQualifierColumn.value = "";
-        entityTypeQualifierValue.value = "";
-    };
+    }
 
     /**
      * Event handler for when a delete button on a row is clicked.
@@ -305,6 +347,59 @@
             gridData.rows.splice(index, 1);
         }
     };
+
+    /**
+     * Called when the {@link entityTypeGuidForEditOrEmptyString} value should
+     * be updated to match the UI. Perform additional checking to ensure the
+     * qualifier column is valid for the new entity type.
+     *
+     * @param value The new value.
+     */
+    async function onUpdateEntityTypeGuidForEditOrEmptyString(value: string | string[]): Promise<void> {
+        if (entityTypeGuidForEditOrEmptyString.value === value || Array.isArray(value)) {
+            return;
+        }
+
+        entityTypeGuidForEditOrEmptyString.value = value;
+
+        const request = {
+            entityTypeGuid: toGuidOrNull(value)
+        };
+
+        const result = await invokeBlockAction<EditAttribute>("NewAttribute", request);
+
+        entityTypeQualifierColumnItems.value = result.data
+            ?.validQualifierColumns
+            ?.map(c => ({ value: c, text: c }))
+            ?? [];
+
+        isLegacyPlugin.value = result.data?.isLegacyPlugin === true;
+        isInitialQualifierColumnValid.value = !result.data?.isLegacyPlugin
+            && (!entityTypeQualifierColumn.value
+                || entityTypeQualifierColumnItems.value.some(q => q.value === entityTypeQualifierColumn.value));
+
+        updateQualifierFieldWarning();
+    }
+
+    /**
+     * Sets the qualifier field warning message if the current selection is
+     * not valid.
+     */
+    function updateQualifierFieldWarning(): void {
+        if (isInitialQualifierColumnValid.value || !entityTypeQualifierColumn.value) {
+            invalidQualificationMessage.value = "";
+            return;
+        }
+
+        const isValidColumn = entityTypeQualifierColumnItems.value.some(q => q.value === entityTypeQualifierColumn.value);
+
+        if (!isLegacyPlugin.value && !isValidColumn) {
+            invalidQualificationMessage.value = `The Qualifier Field '${entityTypeQualifierColumn.value}' is not fully supported and will not work correctly in some places in Rock. See the model map for the supported fields.`;
+        }
+        else {
+            invalidQualificationMessage.value = "";
+        }
+    }
 
     // #endregion
 
@@ -465,6 +560,21 @@
 
         await preferences.save();
         gridDataSource.value = loadGridData();
+    });
+
+    watch(showEditAttributeModal, () => {
+        if (showEditAttributeModal.value) {
+            usedKeyNames.value = usedKeyNames.value.filter(k => k !== editableAttribute.value?.key);
+        }
+        else {
+            if (editableAttribute.value?.key && !usedKeyNames.value.some(k => k === editableAttribute.value?.key)) {
+                usedKeyNames.value.push(editableAttribute.value.key);
+            }
+        }
+    });
+
+    watch(entityTypeQualifierColumn, () => {
+        updateQualifierFieldWarning();
     });
 
     // #endregion

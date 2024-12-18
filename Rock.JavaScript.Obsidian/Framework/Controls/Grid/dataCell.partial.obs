@@ -57,8 +57,8 @@
             }
         }
 
-        if (isSelectable.value) {
-            classes += " grid-select-cell";
+        if (props.column.wrapped) {
+            classes += " grid-wrapcell";
         }
 
         return classes.trim();

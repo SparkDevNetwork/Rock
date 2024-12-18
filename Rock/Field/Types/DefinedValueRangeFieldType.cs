@@ -328,6 +328,7 @@ namespace Rock.Field.Types
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Required = true;
             ddl.Label = "Defined Type";
             ddl.Help = "The Defined Type to select values from.";
 

@@ -101,6 +101,16 @@ namespace Rock.Web.Cache
         public int LayoutId { get; private set; }
 
         /// <summary>
+        /// Gets the site identifier of the Page's Layout
+        /// NOTE: This is needed so that Page Attributes qualified by SiteId work
+        /// </summary>
+        /// <value>
+        /// The site identifier.
+        /// </value>
+        [DataMember]
+        public int SiteId { get; private set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [requires encryption].
         /// </summary>
         /// <value>
@@ -449,16 +459,6 @@ namespace Rock.Web.Cache
         public LayoutCache Layout => LayoutCache.Get( LayoutId );
 
         /// <summary>
-        /// Gets the site identifier of the Page's Layout
-        /// NOTE: This is needed so that Page Attributes qualified by SiteId work
-        /// </summary>
-        /// <value>
-        /// The site identifier.
-        /// </value>
-        public virtual int SiteId => Layout?.SiteId ?? 0;
-
-        
-        /// <summary>
         /// Gets the child pages.
         /// </summary>
         public List<PageCache> ChildPages
@@ -802,6 +802,7 @@ namespace Rock.Web.Cache
             BrowserTitle = page.BrowserTitle;
             ParentPageId = page.ParentPageId;
             LayoutId = page.LayoutId;
+            SiteId = page.SiteId;
             IsSystem = page.IsSystem;
             RequiresEncryption = page.RequiresEncryption;
             EnableViewState = page.EnableViewState;

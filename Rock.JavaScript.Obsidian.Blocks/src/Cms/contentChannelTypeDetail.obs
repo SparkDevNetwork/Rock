@@ -124,7 +124,7 @@
     });
 
     const isEditable = computed((): boolean => {
-        return config.isEditable === true && contentChannelTypeEditBag.value?.isSystem !== true;
+        return config.isEditable === true;
     });
 
     const options = computed((): ContentChannelTypeDetailOptionsBag => {

@@ -420,6 +420,7 @@
             internalShowPopup.value = false;
             return;
         }
+
         internalShowPopup.value = !internalShowPopup.value;
     }
 

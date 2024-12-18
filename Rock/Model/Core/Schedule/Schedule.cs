@@ -127,6 +127,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [IncludeForReporting]
+        [EnableAttributeQualification]
         public int? CategoryId { get; set; }
 
         /// <summary>

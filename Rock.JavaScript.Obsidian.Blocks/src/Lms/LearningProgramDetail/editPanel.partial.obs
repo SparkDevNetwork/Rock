@@ -8,6 +8,7 @@
                         <div class="col-md-6">
                             <TextBox
                                      v-model="name"
+                                     :maxLength="100"
                                      label="Name"
                                      rules="required" />
 
@@ -16,14 +17,14 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <CheckBox
-                                            v-model="isActive"
-                                            label="Active" />
+                                              v-model="isActive"
+                                              label="Active" />
                                 </div>
 
                                 <div class="col-md-6">
                                     <CheckBox
-                                            v-model="isPublic"
-                                            label="Public" />
+                                              v-model="isPublic"
+                                              label="Public" />
 
                                 </div>
                             </div>
@@ -31,11 +32,11 @@
                     </div>
 
                     <TextBox
-                            v-model="summary"
-                            label="Public Summary"
-                            help="Short summary of the program to be used on public sites and lists."
-                            textMode="multiline"
-                            :maxLength="500" />
+                             v-model="summary"
+                             label="Public Summary"
+                             help="Short summary of the program to be used on public sites and lists."
+                             textMode="multiline"
+                             :maxLength="500" />
 
                     <div class="row">
                         <div class="col-md-6">
@@ -54,18 +55,19 @@
                         <div class="col-md-6">
 
                             <CategoryPicker
-                                    v-model="category"
-                                    label="Category"
-                                    :entityTypeGuid="EntityType.LearningProgram"
-                                    :multiple="false" />
+                                            v-model="category"
+                                            label="Category"
+                                            :entityTypeGuid="EntityType.LearningProgram"
+                                            :multiple="false" />
 
                             <ColorPicker
-                                        v-model="highlightColor"
-                                        label="Highlight Color"
-                                        help="The color to use to differentiate from other learning programs." />
+                                         v-model="highlightColor"
+                                         label="Highlight Color"
+                                         help="The color to use to differentiate from other learning programs." />
 
                             <TextBox
                                      v-model="iconCssClass"
+                                     :maxLength="100"
                                      class="input-width-xl"
                                      label="Icon CSS Class" />
 
@@ -87,31 +89,31 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <CheckBox
-                                    v-model="isCompletionStatusTracked"
-                                    help="Determines if program start and end dates will be automatically tracked for individuals as they start/complete classes."
-                                    label="Track Program Status" />
+                                          v-model="isCompletionStatusTracked"
+                                          help="Determines if program start and end dates will be automatically tracked for individuals as they start/complete classes."
+                                          label="Track Program Status" />
 
-                                    <DropDownList
-                                        :enhanceForLongLists="true"
-                                        v-model="systemCommunicationValue"
-                                        label="Activity Available Communication Template"
-                                        help="The template to use when sending available activity emails for this program and it's courses."
-                                        rules="required"
-                                        :items="systemCommunications" />
+                                <DropDownList
+                                              :enhanceForLongLists="true"
+                                              v-model="systemCommunicationValue"
+                                              label="Activity Available Communication Template"
+                                              help="The template to use when sending available activity emails for this program and its courses."
+                                              rules="required"
+                                              :items="systemCommunications" />
                             </div>
                             <div class="col-md-6">
                                 <DropDownList
-                                    label="Default Grading System"
-                                    v-model="gradingSystem"
-                                    :grouped="false"
-                                    :items="gradingSystems"
-                                    :multiple="false"
-                                    :showBlankItem="true" />
+                                              label="Default Grading System"
+                                              v-model="gradingSystem"
+                                              :grouped="false"
+                                              :items="gradingSystems"
+                                              :multiple="false"
+                                              :showBlankItem="true" />
 
                                 <WorkflowTypePicker
-                                    v-model="completionWorkflowType"
-                                    label="Completion Workflow Type"
-                                    help="The workflow to launch when an individual completes the requirements for a program." />
+                                                    v-model="completionWorkflowType"
+                                                    label="Completion Workflow Type"
+                                                    help="The workflow to launch when an individual completes the requirements for a program." />
                             </div>
                         </div>
                     </Panel>
@@ -296,7 +298,7 @@
     const queryString = new URLSearchParams(window.location.search.toLowerCase());
 
     const selectedTab = ref(
-            queryString.has("tab") && queryString.get("tab")?.toLowerCase() === "description" ?
+        queryString.has("tab") && queryString.get("tab")?.toLowerCase() === "description" ?
             "Description" :
             "Overview"
     );

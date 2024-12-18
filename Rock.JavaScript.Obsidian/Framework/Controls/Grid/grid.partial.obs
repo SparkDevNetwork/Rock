@@ -111,6 +111,8 @@
     --table-cell-padding-y: 16px;
     color: var(--theme-darkest);
     margin-bottom: var(--spacing-large);
+    /* Allow some of the popups to be positioned relative to the grid */
+    position: relative;
 }
 
 .grid-obsidian.grid-bordered {
@@ -125,18 +127,18 @@
 .grid-heading {
     background: var(--theme-white);
     border-radius: 4px 4px 0 0;
+    z-index: 1;
 }
 
 .grid-obsidian.grid-sticky > .grid-heading {
     position: sticky;
     top: var(--sticky-element-offset);
-    z-index: 10;
 }
 
 .grid-obsidian.grid-sticky .sticky-column-header {
     position: sticky;
-    top: calc(var(--sticky-element-offset) + 57px);
-    z-index: 9;
+    top: calc(var(--sticky-element-offset) + 56px);
+    z-index: 1;
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading {
@@ -189,6 +191,12 @@
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action:hover {
     background-color: var(--theme-light);
+}
+
+.grid-actions-dropdown-menu {
+    position: fixed;
+    display: block;
+    margin-top: 0;
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter {
@@ -299,7 +307,6 @@
     color: var(--theme-medium);
     opacity: 0;
     transition: opacity 250ms, color 250ms;
-    z-index: 10;
 }
 
 .grid-column-heading:hover .btn-grid-column-filter {
@@ -321,11 +328,18 @@
     color: var(--color-info);
 }
 
-.grid-column-header > .grid-filter-popup {
-    position: absolute;
+.grid-filter-popup-container {
+    position: fixed;
+    /* 1050 matches the bootstrap dropdown menu used in other parts of the grid. */
+    z-index: 1050;
+}
+
+.grid-filter-popup-container .grid-filter-popup {
     display: flex;
     flex-direction: column;
-    margin-top: 6px;
+    margin-top: 1px;
+    margin-left: auto;
+    margin-right: auto;
     min-width: 240px;
     max-width: 320px;
     max-height: 400px;
@@ -337,24 +351,20 @@
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
     cursor: initial;
     font-weight: initial;
-    z-index: 20;
-    /* Temporary Fix Until JS */
-    bottom: 0;
-    transform: translateY(100%);
 }
 
-.grid-column-header > .grid-filter-popup > .grid-filter-popup-content {
+.grid-filter-popup-container .grid-filter-popup > .grid-filter-popup-content {
     flex-grow: 1;
     overflow-y: auto;
 }
 
-.grid-column-header > .grid-filter-popup > .grid-filter-popup-content > .grid-filter-popup-body {
+.grid-filter-popup-container .grid-filter-popup > .grid-filter-popup-content > .grid-filter-popup-body {
     margin: 10px;
     padding: 2px;
     overflow-x: clip;
 }
 
-.grid-column-header > .grid-filter-popup > .actions {
+.grid-filter-popup-container .grid-filter-popup > .actions {
     display: flex;
     border-top: 1px solid var(--theme-light);
     background-color: #fcfcfc;
@@ -362,7 +372,7 @@
     gap: 8px;
 }
 
-.grid-column-header > .grid-filter-popup .alert {
+.grid-filter-popup-container .grid-filter-popup .alert {
     border-top: 0;
     box-shadow: none;
     padding: 8px;
@@ -401,6 +411,10 @@
 
 .grid-cell.grid-columnreorder {
     min-width: fit-content;
+}
+
+.grid-cell.grid-wrapcell {
+    flex-wrap: wrap;
 }
 
 .grid-select-field {

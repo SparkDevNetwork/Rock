@@ -103,6 +103,7 @@ namespace Rock.Model
         /// </summary>
         /// <value><c>true</c> if this instance supports SMS; otherwise, <c>false</c>.</value>
         [DataMember]
+        [EnableAttributeQualification]
         public bool IsSmsEnabled { get; set; }
 
         /// <summary>
@@ -111,6 +112,7 @@ namespace Rock.Model
         /// </summary>
         /// <value><c>true</c> if this phohe number will forward incoming messages; otherwise, <c>false</c>.</value>
         [DataMember]
+        [EnableAttributeQualification]
         public bool IsSmsForwardingEnabled { get; set; }
 
         /// <summary>

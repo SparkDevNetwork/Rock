@@ -40,6 +40,16 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox
         public string AdditionalTimeSignUpsButtonText { get; set; }
 
         /// <summary>
+        /// Gets or sets the decline button text.
+        /// </summary>
+        public string DeclineButtonText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the confirmed button text.
+        /// </summary>
+        public string ConfirmedButtonText { get; set; }
+
+        /// <summary>
         /// Gets or sets the additional time sign-ups header HTML.
         /// </summary>
         public string AdditionalTimeSignUpsHeaderHtml { get; set; }

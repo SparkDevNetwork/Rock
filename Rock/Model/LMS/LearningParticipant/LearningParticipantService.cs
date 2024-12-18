@@ -25,12 +25,20 @@ using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
 
 namespace Rock.Model
 {
+    /*
+    12/16/2024 - DSH
+
+    The LearningParticipant model participates in the the TPT (Table-Per-Type) pattern. This
+    can cause some rare unexpected results. See the engineering note above the
+    Group class for details.
+    */
+
     public partial class LearningParticipantService
     {
         private static class ErrorKey
         {
             /// <summary>
-            /// THe error key used when a participant is already enrolled as a student.
+            /// The error key used when a participant is already enrolled as a student.
             /// </summary>
             public const string ALREADY_ENROLLED = "already_enrolled";
 
@@ -63,21 +71,17 @@ namespace Rock.Model
         {
             errorKey = string.Empty;
 
-            if ( learningClass.LearningSemester?.EnrollmentCloseDate != null
-                && learningClass.LearningSemester.EnrollmentCloseDate.Value.IsPast() )
-            {
-                errorKey = ErrorKey.ENROLLMENT_CLOSED;
-                return false;
-            }
+            var participantService = new LearningParticipantService( ( RockContext ) Context );
 
-            var participantService = new LearningParticipantService( (RockContext)Context );
-            var studentCount = participantService.GetStudents( learningClass.Id ).Count();
-            if ( studentCount >= learningClass.LearningCourse.MaxStudents )
-            {
-                errorKey = ErrorKey.CLASS_FULL;
-                return false;
-            }
+            /*
+	            12/12/2024 - JC
 
+	            We should check whether the student is enrolled as the first
+                potential error. The PublicCourseDetail block uses this errorKey
+                to determine if the student is already enrolled.
+
+	            Reason: Enrollment status might check this ErrorKey.
+            */
             // Already enrolled (as a student).
             var alreadyEnrolled = participantService.Queryable().Any( p =>
                 p.PersonId == registrant.Id
@@ -87,6 +91,21 @@ namespace Rock.Model
             if ( alreadyEnrolled )
             {
                 errorKey = ErrorKey.ALREADY_ENROLLED;
+                return false;
+            }
+
+            if ( learningClass.LearningSemester?.EnrollmentCloseDate != null
+                && learningClass.LearningSemester.EnrollmentCloseDate.Value.IsPast() )
+            {
+                errorKey = ErrorKey.ENROLLMENT_CLOSED;
+                return false;
+            }
+
+            var studentCount = participantService.GetStudents( learningClass.Id ).Count();
+            var maxStudentsAllowed = learningClass.GroupCapacity ?? learningClass.LearningCourse.MaxStudents;
+            if ( studentCount >= maxStudentsAllowed )
+            {
+                errorKey = ErrorKey.CLASS_FULL;
                 return false;
             }
 
@@ -101,7 +120,7 @@ namespace Rock.Model
 
         /// <summary>
         /// <para>Gets a list of <see cref="LearningActivity">Activities</see> for the course that the <see cref="LearningParticipant"/>
-        /// is enrolled in.</para>.
+        /// is enrolled in.</para>
         /// This method will return only assignments for the role type (e.g. Student assignments when the Participant role type is not a leader).
         /// </summary>
         /// <param name="participantId">The Id of the <see cref="LearningParticipant"/> for which to get activities.</param>

@@ -195,17 +195,30 @@ namespace Rock.Jobs
         {
             try
             {
-                // remove all the rows in preparation for rebuild
-                AnalyticsSourcePostalCode.ClearTable();
-
                 UpdateLastStatusMessage( "Reading PostalCode census data." );
                 var zipCodeCensusData = AnalyticsSourcePostalCode.GetZipCodeCensusData();
 
                 if ( zipCodeCensusData.Count == 0 )
                 {
-                    this.Result = $"Census data was not found at {System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, AnalyticsSourcePostalCode.CensusDataPath )}.";
-                    throw new RockJobWarningException( this.Result );
+                    using ( var context = new RockContext() )
+                    {
+                        var hasPostalCodes = context.Set<AnalyticsSourcePostalCode>().Any();
+
+                        if ( !hasPostalCodes )
+                        {
+                            this.Result = $"The data file needed to generate analytics postal data was not found at {System.IO.Path.Combine( AppDomain.CurrentDomain.BaseDirectory, AnalyticsSourcePostalCode.CensusDataPath )}.";
+                            throw new RockJobWarningException( this.Result );
+                        }
+                        else
+                        {
+                            UpdateLastStatusMessage( "The analytics source postal data was successfully generated in a previous run of this job. There is no need to run this job again." );
+                            return;
+                        }
+                    }
                 }
+
+                // remove all the rows in preparation for rebuild
+                AnalyticsSourcePostalCode.ClearTable();
 
                 UpdateLastStatusMessage( "Saving AnalyticsSourcePostalCode." );
                 AnalyticsSourcePostalCode.SaveBoundaryAndCensusData( zipCodeCensusData );

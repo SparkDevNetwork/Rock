@@ -9,6 +9,7 @@
                          :multiple="false"
                          rules=""
                          onlyGroupListItems
+                         :isSortedByName="isGroupTypeSortedByName"
                          formGroupClasses="mt-0"
                          :disabled="disabled" />
         <BaseAsyncPicker v-model="internalGroupValue"
@@ -52,7 +53,10 @@
             type: String,
             default: "Group"
         },
-
+        isGroupTypeSortedByName: {
+            type: Boolean,
+            default: false
+        },
         disabled: {
             type: Boolean,
             default: false

@@ -80,6 +80,26 @@
     <Compile Include="Migrations\202412052331428_CodeGenerated_20241205.designer.cs">
       <DependentUpon>202412052331428_CodeGenerated_20241205.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202412111235268_RemoveGroupTypeLocationTypeIndexes.cs" />
+    <Compile Include="Migrations\202412111235268_RemoveGroupTypeLocationTypeIndexes.Designer.cs">
+      <DependentUpon>202412111235268_RemoveGroupTypeLocationTypeIndexes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202412172125380_AddRestViewSupport.cs" />
+    <Compile Include="Migrations\202412172125380_AddRestViewSupport.Designer.cs">
+      <DependentUpon>202412172125380_AddRestViewSupport.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202412172356239_LearningHubImage.cs" />
+    <Compile Include="Migrations\202412172356239_LearningHubImage.Designer.cs">
+      <DependentUpon>202412172356239_LearningHubImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202412181755297_Rollup_20241218.cs" />
+    <Compile Include="Migrations\202412181755297_Rollup_20241218.designer.cs">
+      <DependentUpon>202412181755297_Rollup_20241218.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202412182043229_CodeGenerated_20241218.cs" />
+    <Compile Include="Migrations\202412182043229_CodeGenerated_20241218.designer.cs">
+      <DependentUpon>202412182043229_CodeGenerated_20241218.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2362,6 +2382,21 @@
     <EmbeddedResource Include="Migrations\202412052331428_CodeGenerated_20241205.resx">
       <DependentUpon>202412052331428_CodeGenerated_20241205.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202412111235268_RemoveGroupTypeLocationTypeIndexes.resx">
+      <DependentUpon>202412111235268_RemoveGroupTypeLocationTypeIndexes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202412172125380_AddRestViewSupport.resx">
+      <DependentUpon>202412172125380_AddRestViewSupport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202412172356239_LearningHubImage.resx">
+      <DependentUpon>202412172356239_LearningHubImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202412181755297_Rollup_20241218.resx">
+      <DependentUpon>202412181755297_Rollup_20241218.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202412182043229_CodeGenerated_20241218.resx">
+      <DependentUpon>202412182043229_CodeGenerated_20241218.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
     </EmbeddedResource>
@@ -4281,6 +4316,7 @@
     <Content Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels_NameTag.png" />
     <Content Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels_NoteLabel.png" />
     <Content Include="Migrations\Version 16.0\Version 1.16.7\202411062044462_AddDefaultNextGenCheckInLabels_ParentLabel.png" />
+    <None Include="Resources\lms_header_min.png" />
     <Content Include="SqlServerTypes\readme.htm" />
     <None Include="Migrations\Version 14.0\Version 1.14.1\202211072054502_UpdateValueAsAttributeValueColumns_spCrm_PersonMerge.sql">
       <DependentUpon>202211072054502_UpdateValueAsAttributeValueColumns.cs</DependentUpon>
@@ -4334,9 +4370,7 @@
       <Name>Rock</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>

@@ -28,12 +28,13 @@
                     visiblePriority="xs"
                     width="15%" />
 
-        <TextColumn name="description"
+        <HtmlColumn name="description"
                     title="Description"
                     field="description"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="50%" />
+                    width="50%"
+                    columnType="html" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -48,7 +49,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, SecurityColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, HtmlColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { DefinedTypeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/DefinedTypeList/definedTypeListOptionsBag";
@@ -75,7 +76,7 @@
 
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.category.value;
+        return !!gridSettings.value.category?.value;
     });
 
     /**

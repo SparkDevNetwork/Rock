@@ -126,14 +126,17 @@ namespace Rock.Model
             // limit to notewatches for the same watcher person (or where the watcher person is part of the watcher group)
             if ( this.WatcherPersonAliasId.HasValue )
             {
-                var watcherPerson = this.WatcherPersonAlias?.Person ?? new PersonAliasService( rockContext ).Get( this.WatcherPersonAliasId.Value ).Person;
+                if ( this.WatcherPersonAlias == null )
+                {
+                    this.WatcherPersonAlias = new PersonAliasService( rockContext ).Get( this.WatcherPersonAliasId.Value );
+                }
 
                 // limit to watch that are watched by the same person, or watched by a group that a person is an active member of
                 noteWatchesWithOverrideNotAllowedQuery = noteWatchesWithOverrideNotAllowedQuery
                     .Where( a =>
                         a.WatcherPersonAliasId.HasValue && a.WatcherPersonAlias.PersonId == this.WatcherPersonAlias.PersonId
                         ||
-                        a.WatcherGroup.Members.Any( gm => gm.GroupMemberStatus == GroupMemberStatus.Active && gm.Person.Aliases.Any( x => x.PersonId == watcherPerson.Id ) )
+                        a.WatcherGroup.Members.Any( gm => gm.GroupMemberStatus == GroupMemberStatus.Active && gm.Person.Aliases.Any( x => x.PersonId == this.WatcherPersonAlias.Person.Id ) )
                     );
             }
             else if ( this.WatcherGroupId.HasValue )

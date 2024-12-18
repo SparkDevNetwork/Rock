@@ -36,22 +36,11 @@
             </template>
         </Column>
 
-        <Column name="categories"
-                title="Categories"
-                :filter="textValueFilter"
-                :filterValue="getRowCategoriesFilterValue"
-                :quickFilterValue="getRowCategoriesFilterValue"
-                visiblePriority="lg">
-            <template #format="{ row }">
-                <span class='label label-default margin-l-sm' v-for="category in row.categories">
-                    {{ category }}
-                </span>
-            </template>
-
-            <template #skeleton>
-                <div class="skeleton skeleton-text skeleton-rounded" />
-            </template>
-        </Column>
+        <LabelColumn name="categories"
+                     title="Categories"
+                     field="categories"
+                     :filter="pickExistingValueFilter"
+                     visiblePriority="lg" />
 
         <NumberColumn name="views"
                       title="Views"
@@ -64,6 +53,7 @@
                 </div>
             </template>
         </NumberColumn>
+
         <NumberColumn name="adaptations"
                       title="Adaptations"
                       field="adaptations"
@@ -84,7 +74,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { Column, NumberColumn, ReorderColumn, textValueFilter, DeleteColumn, numberValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { Column, LabelColumn, NumberColumn, ReorderColumn, pickExistingValueFilter, textValueFilter, DeleteColumn, numberValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AdaptiveMessageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageList/AdaptiveMessageListOptionsBag";
@@ -117,21 +107,6 @@
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
-    }
-
-    /**
-     * Gets the filter value text to use for the accounts column.
-     *
-     * @param row The row to be filtered.
-     */
-    function getRowCategoriesFilterValue(row: Record<string, unknown>): string {
-        let filterValue = "";
-
-        for (const category of (row as Row).categories) {
-            filterValue += ` ${category} ?? ""}`;
-        }
-
-        return filterValue;
     }
 
     /**

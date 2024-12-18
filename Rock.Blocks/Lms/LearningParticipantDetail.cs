@@ -189,7 +189,7 @@ namespace Rock.Blocks.Lms
                 IdKey = entity.IdKey,
                 Absences = absences,
                 AbsencesLabelStyle = entity.LearningClass?.AbsencesLabelStyle( absences ?? 0 ),
-                CurrentGradePercent = canViewGrades ? Math.Round( entity.LearningGradePercent, 1) : 0,
+                CurrentGradePercent = canViewGrades ? Math.Round( entity.LearningGradePercent, 1 ) : 0,
                 CurrentGradeText = canViewGrades ? entity.LearningGradingSystemScale?.Name : null,
                 Note = entity.Note,
                 ParticipantRole = entity.GroupRole?.ToListItemBag(),
@@ -288,7 +288,25 @@ namespace Rock.Blocks.Lms
 
             if ( partipicantId == 0 )
             {
-                return new LearningParticipant();
+
+                /*
+                    12/12/2024 - JC
+
+                    We must load the parent LearningClass for new records.
+                    When the authorization is checked the LearningClass (the ParentAuthority)
+                    will be responsible for approving/denying access (see LearningParticipant.IsAuthorized).
+
+                    Reason: ParentAuthority (LearningClass) will be checked for authorization.
+                */
+                var learningClass = new LearningClassService( RockContext ).Get(
+                    PageParameter( PageParameterKey.LearningClassId ),
+                    !this.PageCache.Layout.Site.DisablePredictableIds );
+
+                return new LearningParticipant
+                {
+                    LearningClass = learningClass,
+                    LearningClassId = learningClass.Id
+                };
             }
 
             return new LearningParticipantService( RockContext )
@@ -544,7 +562,7 @@ namespace Rock.Blocks.Lms
             var learningClassId = learningClassService.GetSelect(
                 PageParameter( PageParameterKey.LearningClassId ),
                 c => c.Id,
-                !PageCache.Layout.Site.DisablePredictableIds );   
+                !PageCache.Layout.Site.DisablePredictableIds );
             var personId = participantService.GetSelect( PageParameter( PageParameterKey.LearningParticipantId ), p => p.PersonId );
             var learningPlan = participantService.GetStudentLearningPlan( learningClassId, personId );
 

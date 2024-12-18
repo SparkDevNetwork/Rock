@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -60,6 +60,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Site"/> that this layout is associated with.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int SiteId { get; set; }
 
         /// <summary>

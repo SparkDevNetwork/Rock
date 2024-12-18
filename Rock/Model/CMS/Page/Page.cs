@@ -93,6 +93,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> that represents the Id of the parent Page.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? ParentPageId { get; set; }
 
         /// <summary>
@@ -111,7 +112,19 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Layout"/> that this Page uses.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int LayoutId { get; set; }
+
+        /// <summary>
+        /// Gets the site identifier of the Page's Layout.
+        /// NOTE: This is needed so that Page Attributes qualified by SiteId work.
+        /// </summary>
+        /// <value>
+        /// The site identifier.
+        /// </value>
+        [DataMember]
+        [EnableAttributeQualification]
+        public int SiteId { get; private set; }
 
         /// <summary>
         /// Gets or sets a flag that indicates if the Page requires SSL encryption.
@@ -544,22 +557,6 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual Layout Layout { get; set; }
-
-        /// <summary>
-        /// Gets the site identifier of the Page's Layout.
-        /// NOTE: This is needed so that Page Attributes qualified by SiteId work.
-        /// </summary>
-        /// <value>
-        /// The site identifier.
-        /// </value>
-        public virtual int SiteId
-        {
-            get
-            {
-                var layout = LayoutCache.Get( this.LayoutId );
-                return layout != null ? layout.SiteId : 0;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.Block">Blocks</see> that are used on the page.

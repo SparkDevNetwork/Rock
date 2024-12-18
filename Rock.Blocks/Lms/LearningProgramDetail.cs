@@ -91,10 +91,16 @@ namespace Rock.Blocks.Lms
             public const string ShowKPIs = "ShowKPIs";
         }
 
+        private static class AttributeDisplayMode
+        {
+            public const string All = "All";
+            public const string IsGridColumn = "Is Grid Column";
+        }
+
         private static class DisplayMode
         {
             public const string Summary = "Summary";
-            public const string Full = "Full";
+            public const string Detail = "Detail";
         }
 
         private static class PageParameterKey
@@ -110,6 +116,22 @@ namespace Rock.Blocks.Lms
         }
 
         #endregion Keys
+
+        #region Properties
+
+        /// <summary>
+        /// <c>true</c> if the block is configured to show only <see cref="Attribute"/> records
+        /// where IsShowOnGrid is <c>true</c>; otherwise <c>false</c>.
+        /// </summary>
+        private bool OnlyShowIsGridColumnAttributes =>
+            GetAttributeValue( AttributeKey.AttributeDisplayMode ) == AttributeDisplayMode.IsGridColumn;
+
+        /// <summary>
+        /// <c>true</c> if the block is in Detail Mode; otherwise <c>false</c>.
+        /// </summary>
+        private bool IsDetailMode => GetAttributeValue( AttributeKey.DisplayMode ) == DisplayMode.Detail;
+
+        #endregion
 
         #region Methods
 
@@ -214,8 +236,7 @@ namespace Rock.Blocks.Lms
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
-                    var onlyShowIsGridColumn = GetAttributeValue( AttributeKey.DisplayMode ) == DisplayMode.Summary;
-                    box.Entity = GetEntityBagForView( entity, onlyShowIsGridColumn );
+                    box.Entity = GetEntityBagForView( entity, OnlyShowIsGridColumnAttributes );
                 }
                 else
                 {
@@ -290,8 +311,7 @@ namespace Rock.Blocks.Lms
             if ( onlyShowIsGridColumn )
             {
                 bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson,
-                    attributeFilter: a => a.IsGridColumn
-                    );
+                    attributeFilter: a => a.IsGridColumn );
             }
             else
             {
@@ -511,7 +531,11 @@ namespace Rock.Blocks.Lms
             var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningProgramId ) ?? "";
             var pageParams = pageReference.Parameters.Where( p => p.Key == PageParameterKey.LearningProgramId ).ToDictionary( p => p.Key, p => p.Value );
 
-            var entityName = entityKey.Length > 0 ? new LearningProgramService( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Program";
+            // Intentionally omit !this.PageCache.Layout.Site.DisablePredictableIds
+            // since the cache is not available in GetBreadCrumbs.
+            var entityName = entityKey.Length > 0 ?
+                new LearningProgramService( RockContext ).GetSelect( entityKey, p => p.Name ) :
+                "New Program";
             var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageParams );
             var breadCrumb = new BreadCrumbLink( entityName ?? "New Program", breadCrumbPageRef );
 
@@ -608,19 +632,32 @@ namespace Rock.Blocks.Lms
 
             if ( isNew )
             {
-                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                /*
+	                12/18/2024 - JC
+
+	                Detail mode allows creating a new Course; while the Summary
+                    mode does not. If this is a new Program route to the Detail
+                    mode so that a new Course can be created without having to
+                    click on 'Program Settings' first.
+
+	                Reason: Better User Experience.
+                */
+                var queryParams = new Dictionary<string, string>
                 {
                     [PageParameterKey.LearningProgramId] = entity.IdKey
-                } ) );
+                };
+                var pageUrl = !IsDetailMode && GetAttributeValue( AttributeKey.DetailPage ).IsNotNullOrWhiteSpace() ?
+                    this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams ) :
+                    this.GetCurrentPageUrl( queryParams );
+
+                 return ActionContent( System.Net.HttpStatusCode.Created, pageUrl );
             }
 
             // Ensure navigation properties will work now.
             entity = entityService.Get( entity.Id );
             entity.LoadAttributes( RockContext );
 
-            var onlyShowIsGridColumn = GetAttributeValue( AttributeKey.DisplayMode ) == DisplayMode.Summary;
-
-            var bag = GetEntityBagForView( entity, onlyShowIsGridColumn );
+            var bag = GetEntityBagForView( entity, OnlyShowIsGridColumnAttributes );
 
             return ActionOk( new ValidPropertiesBox<LearningProgramBag>
             {
@@ -755,7 +792,7 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Gets the Learning Smester Queryable for semesters grid.
+        /// Gets the Learning Semester Queryable for semesters grid.
         /// </summary>
         /// <returns>A Queryable of LearningSemester.</returns>
         private IQueryable<LearningSemester> GetSemesterListQueryable()

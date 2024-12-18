@@ -442,7 +442,7 @@
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
         itemAttributes.value = itemAttributes.value.filter(s => s.guid !== key);
-        reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== key);
+        reservedKeyNames.value = itemAttributes.value.map(k => k.key!);
 
         // Update the grid.
         if (attributesGridData.rows) {
@@ -507,6 +507,18 @@
 
         return result.isSuccess;
     }
+
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== itemAttribute.value?.key);
+        }
+        else {
+            if (itemAttribute.value?.key && !reservedKeyNames.value.some(k => k === itemAttribute.value?.key)) {
+                reservedKeyNames.value.push(itemAttribute.value.key);
+            }
+        }
+    });
+
     // # endregion
 
     // #endregion

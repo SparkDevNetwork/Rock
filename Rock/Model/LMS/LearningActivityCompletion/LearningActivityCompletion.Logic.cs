@@ -170,7 +170,16 @@ namespace Rock.Model
         {
             get
             {
-                return this.LearningActivity != null ? this.LearningActivity : base.ParentAuthority;
+                if ( this.LearningActivity?.Id > 0 )
+                {
+                    return this.LearningActivity;
+                }
+                else
+                {
+                    return this.LearningActivityId > 0 ?
+                        new LearningActivityService( new Data.RockContext() ).Get( this.LearningActivityId ) :
+                        base.ParentAuthority;
+                }
             }
         }
 

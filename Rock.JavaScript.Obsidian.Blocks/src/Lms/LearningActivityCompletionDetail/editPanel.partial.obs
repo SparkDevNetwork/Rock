@@ -105,7 +105,17 @@
     const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointsEarned");
     const completionJson = propertyRef(completionBag.value.activityComponentCompletionJson, "ActivityComponentCompletionJson");
     const wasCompletedOnTime = propertyRef(completionBag.value.wasCompletedOnTime ?? true, "WasCompletedOnTime");
-    const screenToShow = ref(completionBag.value.requiresScoring ? ComponentScreen.Scoring : ComponentScreen.Summary);
+
+    const isAssignedToFacilitatorAndUngraded =
+        activityBag.value.assignTo === AssignTo.Facilitator
+        && !completionBag.value.gradedByPersonAlias?.value;
+
+    // Default to the scoring screen when the activity requires scoring
+    // or when assigned to the facilitator and not yet graded.
+    const screenToShow = ref(
+        completionBag.value.requiresScoring || isAssignedToFacilitatorAndUngraded ?
+            ComponentScreen.Scoring :
+            ComponentScreen.Summary);
 
     const buttonsContainer = ref<HTMLDivElement>();
 
@@ -131,6 +141,7 @@
     function switchToScreen(toScreen: ComponentScreen): void {
         screenToShow.value = toScreen;
         nextTick(() => {
+            // Scroll to the clicked button to prevent the screen from jumping.
             if (buttonsContainer.value) {
                 buttonsContainer.value.scrollIntoView({ behavior: "auto", block: "center" });
             }

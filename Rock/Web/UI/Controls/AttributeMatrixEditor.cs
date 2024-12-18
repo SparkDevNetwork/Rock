@@ -406,6 +406,7 @@ namespace Rock.Web.UI.Controls
             {
                 tempAttributeMatrixItem = new AttributeMatrixItem();
                 tempAttributeMatrixItem.AttributeMatrix = new AttributeMatrix { AttributeMatrixTemplateId = this.AttributeMatrixTemplateId.Value };
+                tempAttributeMatrixItem.AttributeMatrixTemplateId = this.AttributeMatrixTemplateId.Value;
                 tempAttributeMatrixItem.LoadAttributes();
 
                 foreach ( var attribute in tempAttributeMatrixItem.Attributes.Select( a => a.Value ) )
@@ -574,6 +575,7 @@ namespace Rock.Web.UI.Controls
                 {
                     attributeMatrixItem = new AttributeMatrixItem();
                     attributeMatrixItem.AttributeMatrix = new AttributeMatrixService( rockContext ).Get( this.AttributeMatrixGuid.Value );
+                    attributeMatrixItem.AttributeMatrixTemplateId = attributeMatrixItem.AttributeMatrix.AttributeMatrixTemplateId;
                 }
 
                 if ( this.AttributeMatrixTemplateId.HasValue && attributeMatrixItem.AttributeMatrix.AttributeMatrixTemplateId != this.AttributeMatrixTemplateId )
@@ -619,6 +621,7 @@ namespace Rock.Web.UI.Controls
             {
                 attributeMatrixItem = new AttributeMatrixItem();
                 attributeMatrixItem.AttributeMatrix = new AttributeMatrixService( rockContext ).Get( this.AttributeMatrixGuid.Value );
+                attributeMatrixItem.AttributeMatrixTemplateId = attributeMatrixItem.AttributeMatrix.AttributeMatrixTemplateId;
                 attributeMatrixItemService.Add( attributeMatrixItem );
             }
 

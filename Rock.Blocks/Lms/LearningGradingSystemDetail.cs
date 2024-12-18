@@ -218,7 +218,10 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningGradingSystem GetInitialEntity()
         {
-            return GetInitialEntity<LearningGradingSystem, LearningGradingSystemService>( RockContext, PageParameterKey.LearningGradingSystemId );
+            var gradingSystemKey = PageParameterKey.LearningGradingSystemId;
+            var entity = new LearningGradingSystemService( RockContext ).Get( gradingSystemKey, !this.PageCache.Layout.Site.DisablePredictableIds );
+
+            return entity ?? new LearningGradingSystem { IsActive = true };
         }
 
         /// <summary>

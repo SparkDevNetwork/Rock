@@ -2828,7 +2828,7 @@ namespace Rock.Utility
                     AttendanceCode attendanceCode = new AttendanceCode()
                     {
                         Code = GenerateRandomCode( _securityCodeLength ),
-                        IssueDateTime = RockDateTime.Now,
+                        IssueDateTime = _args.AttendanceCodeIssuedDateTime ?? RockDateTime.Now,
                     };
 
                     var attendance = attendanceService.AddOrUpdate( member.Person.PrimaryAliasId, checkinDateTime, item.GroupId, item.LocationId, scheduleId, 1, _kioskDeviceId, null, null, null, null );
@@ -3598,6 +3598,11 @@ namespace Rock.Utility
             /// The alias identifier of the person who is deemed the creator of the sample data.
             /// </summary>
             public int? CreatorPersonAliasId { get; set; }
+
+            /// <summary>
+            /// The date and time to use for generated attendance codes.
+            /// </summary>
+            public DateTime? AttendanceCodeIssuedDateTime { get; set; }
         }
 
         /// <summary>

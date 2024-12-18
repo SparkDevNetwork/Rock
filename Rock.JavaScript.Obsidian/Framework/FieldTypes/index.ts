@@ -86,6 +86,9 @@ registerFieldType(FieldTypeGuids.Campus, new CampusFieldType());
 import { CampusesFieldType } from "./campusesField.partial";
 registerFieldType(FieldTypeGuids.Campuses, new CampusesFieldType());
 
+import { CaptchaFieldType } from "./captchaField.partial";
+registerFieldType(FieldTypeGuids.Captcha, new CaptchaFieldType());
+
 import { CategoriesFieldType } from "./categoriesField.partial";
 registerFieldType(FieldTypeGuids.Categories, new CategoriesFieldType());
 

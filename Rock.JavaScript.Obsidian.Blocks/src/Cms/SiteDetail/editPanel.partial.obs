@@ -434,6 +434,17 @@
         submitEditAttribute.value = true;
     };
 
+    watch(isModalOpen, () => {
+        if (isModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== siteAttribute.value?.key);
+        }
+        else {
+            if (siteAttribute.value?.key && !reservedKeyNames.value.some(k => k === siteAttribute.value?.key)) {
+                reservedKeyNames.value.push(siteAttribute.value.key);
+            }
+        }
+    });
+
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.

@@ -70,7 +70,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = TestHelper.GetTemplateOutput( engine, template,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
@@ -134,7 +135,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = TestHelper.GetTemplateOutput( engine, template,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
@@ -150,7 +152,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = TestHelper.GetTemplateOutput( engine, template,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
@@ -253,14 +256,16 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
                 TestHelper.ExecuteForActiveEngines( ( engine ) =>
                 {
                     // Verify output for 1 day range.
-                    var output01 = TestHelper.GetTemplateOutput( engine, templateDays01 );
+                    var output01 = TestHelper.GetTemplateOutput( engine, templateDays01,
+                        new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                     Assert.That.Contains( output01, "<<EventCount = 1>>" );
                     Assert.That.Contains( output01, "<<Test Daily Event|2020-01-01|7:30 PM|Main Campus>>" );
                     Assert.That.DoesNotContain( output01, "<<Test Daily Event|2020-01-02|7:30 PM|Main Campus>>" );
 
                     // Verify output for 10 day range.
-                    var output10 = TestHelper.GetTemplateOutput( engine, templateDays10 );
+                    var output10 = TestHelper.GetTemplateOutput( engine, templateDays10,
+                        new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                     Assert.That.Contains( output10, "<<EventCount = 10>>" );
                     Assert.That.Contains( output10, "<<Test Daily Event|2020-01-01|7:30 PM|Main Campus>>" );
@@ -283,7 +288,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = TestHelper.GetTemplateOutput( engine, template,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
@@ -299,7 +305,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = TestHelper.GetTemplateOutput( engine, template,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
@@ -315,7 +322,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = TestHelper.GetTemplateOutput( engine, template,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
@@ -332,7 +340,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
                 // The default maximum is 100 events.
                 var template1 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:101" );
 
-                var output1 = TestHelper.GetTemplateOutput( engine, template1 );
+                var output1 = TestHelper.GetTemplateOutput( engine, template1,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template1, output1 );
 
@@ -341,7 +350,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
                 // Now ensure that the default limit is applied.
                 var template2 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1'" );
 
-                var output2 = TestHelper.GetTemplateOutput( engine, template2 );
+                var output2 = TestHelper.GetTemplateOutput( engine, template2,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template2, output2 );
 
@@ -357,14 +367,16 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
                 // First, ensure that there are more than the test maximum number of events to return.
                 var template1 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:11" );
 
-                var output1 = TestHelper.GetTemplateOutput( engine, template1 );
+                var output1 = TestHelper.GetTemplateOutput( engine, template1,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 Assert.That.Contains( output1, "<EventCount = 11>" );
 
                 // Now ensure that the maxoccurences limit is applied.
                 var template2 = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' maxoccurrences:10" );
 
-                var output2 = TestHelper.GetTemplateOutput( engine, template2 );
+                var output2 = TestHelper.GetTemplateOutput( engine, template2,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 Assert.That.Contains( output2, "<EventCount = 10>" );
             } );
@@ -377,7 +389,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = TestHelper.GetTemplateOutput( engine, template,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
@@ -409,7 +422,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
 ";
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = TestHelper.GetTemplateOutput( engine, template,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
@@ -456,7 +470,8 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
 ";
             expectedOutput = expectedOutput.Replace( "<offset>", rockTimeOffset );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
+            TestHelper.AssertTemplateOutput( expectedOutput, input,
+                new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
         }
 
         [TestMethod]
@@ -466,7 +481,8 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = TestHelper.GetTemplateOutput( engine, template,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
@@ -483,11 +499,11 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
 
             TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
                 template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "eventscheduledinstance" } );
 
             TestHelper.AssertTemplateOutput( "<Campus: Stepping Stone>",
                 template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "eventscheduledinstance" } );
         }
 
         [TestMethod]
@@ -502,7 +518,7 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
 
             TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
                 template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "eventscheduledinstance" } );
         }
 
         [TestMethod]
@@ -512,7 +528,7 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
 
             TestHelper.AssertTemplateOutput( "<Campus: Main Campus>",
                 template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "eventscheduledinstance" } );
         }
 
         [TestMethod]
@@ -522,7 +538,7 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
 
             TestHelper.AssertTemplateOutput( "Event Occurrences not available. Cannot apply a campus filter for the reference \"no_campus\".",
                 template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "eventscheduledinstance" } );
         }
 
         [TestMethod]
@@ -533,7 +549,7 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
 
             TestHelper.AssertTemplateOutput( "<Campus: All Campuses>",
                 template,
-                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains } );
+                new LavaTestRenderOptions { OutputMatchType = LavaTestOutputMatchTypeSpecifier.Contains, EnabledCommands = "eventscheduledinstance" } );
         }
 
         private static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
@@ -568,7 +584,8 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = TestHelper.GetTemplateOutput( engine, template,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
@@ -607,7 +624,8 @@ Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+                var output = TestHelper.GetTemplateOutput( engine, template,
+                    new LavaTestRenderOptions { EnabledCommands = "eventscheduledinstance" } );
 
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 

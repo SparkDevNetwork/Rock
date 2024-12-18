@@ -54,7 +54,7 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="d-flex row align-items-center">
                 <div class="col-sm-6">
                     <DropDownList v-model="fromNumberGuidOrEmptyString"
                                   :disabled="disabled"
@@ -141,6 +141,12 @@
         </NotificationBox>
     </template>
 </template>
+
+<style>
+.tabbed-content .form-group.rock-switch {
+    margin-bottom: 0 !important;
+}
+</style>
 
 <script setup lang="ts">
     import { PropType, computed, nextTick, onMounted, ref, watch } from "vue";

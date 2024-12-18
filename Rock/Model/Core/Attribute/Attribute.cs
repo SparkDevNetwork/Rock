@@ -22,6 +22,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Lava;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -154,6 +155,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string DefaultValue { get; set; }
+
+        /// <summary>
+        /// Gets the value checksum. This is a hash of <see cref="DefaultValue"/> that
+        /// is automatically calculated by the database.
+        /// </summary>
+        /// <value>The value checksum.</value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaHidden]
+        public int DefaultValueChecksum { get; private set; }
 
         /// <summary>
         /// Gets or sets the default persisted text value.

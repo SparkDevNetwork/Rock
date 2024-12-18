@@ -405,5 +405,10 @@ namespace Rock.SystemKey
         /// Available fields are ParentCategoryId, SelectedCategoryId, PrayerRequest (the Entity).
         /// </remarks>
         public const string PRAYER_REQUEST_AI_COMPLETIONS = "core_PrayerRequestAICompletions";
+
+        /// <summary>
+        /// Whether the Organization's state should be selected by default.
+        /// </summary>
+        public const string ENABLE_DEFAULT_ADDRESS_STATE_SELECTION = "core_EnableDefaultAddressStateSelection";
     }
 }

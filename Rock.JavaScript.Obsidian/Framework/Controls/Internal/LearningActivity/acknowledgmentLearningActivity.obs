@@ -43,6 +43,10 @@
             </div>
         </div>
 
+        <div v-if="showStudentComment" class="optional-comments-container">
+            <TextBox v-model="studentComment" label="Optional Comments" textMode="multiline" :rows="4" />
+        </div>
+
         <div class="footer-button-section">
             <RockButton :btnType="BtnType.Primary" :disabled="(isConfirmationRequired && !isConfirmed || completeClicked)" @click="onCompletedAndClosed" :autoDisable="true">
                 {{ completeButtonText }}
@@ -79,6 +83,8 @@
     const activityBag = computed(() => props.activityBag);
     const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
     const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
+    const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
+    const studentComment = ref(completionBag.value.studentComment ?? "");
 
     const completedDate = ref(props.completionBag?.completedDate ?? "");
 
@@ -101,6 +107,13 @@
         new AcknowledgmentActivityDefaults()
     );
 
+    /** The time elapsed since the specified date in a human-readable format. */
+    const humanizedCompletionDate = computed((): string =>
+        RockDateTime.parseISO(completedDate.value)?.localDateTime.humanizeElapsed() ?? ""
+    );
+
+    const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");
+
     function onCompletedAndClosed(): void {
         if (isCompleted.value === false) {
             emits("completed", true);
@@ -109,13 +122,6 @@
 
         emits("closed");
     }
-
-    /** The time elapsed since the specified date in a human-readable format. */
-    const humanizedCompletionDate = computed((): string =>
-        RockDateTime.parseISO(completedDate.value)?.localDateTime.humanizeElapsed() ?? ""
-    );
-
-    const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
@@ -141,13 +147,15 @@
             ...toValue(completionBag)
         } as LearningActivityCompletionBag;
 
+        updatedCompletionBag.studentComment = studentComment.value;
+
         updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
             isConfirmed: isConfirmed.value,
             pointsPossibleAtCompletion: pointsPossibleAtCompletion?.value ?? activityBag.value.points
         }) ?? "{}";
         emits("update:completionBag", updatedCompletionBag);
     });
-    watch([isConfirmed], () => {
+    watch([isConfirmed, studentComment], () => {
         debouncedCompletionBagEmits();
     }, { deep: true });
 </script>

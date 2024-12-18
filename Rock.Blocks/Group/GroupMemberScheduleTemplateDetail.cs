@@ -38,7 +38,7 @@ namespace Rock.Blocks.Group
     [Category( "Group Scheduling" )]
     [Description( "Displays the details of a group member schedule template." )]
     [IconCssClass( "fa fa-question" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

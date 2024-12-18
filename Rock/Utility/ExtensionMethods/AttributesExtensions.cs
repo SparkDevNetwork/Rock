@@ -57,7 +57,14 @@ namespace Rock
         }
 
         /// <summary>
+        /// <para>
         /// Loads the attributes for all entities.
+        /// </para>
+        /// <para>
+        /// This method can only operate on lists comprised of a single object type.
+        /// Meaning, you can't mix Person and Group objects and expect to get valid
+        /// attributes back.
+        /// </para>
         /// </summary>
         /// <param name="entities">The entities.</param>
         public static void LoadAttributes( this IEnumerable<IHasAttributes> entities )
@@ -66,7 +73,14 @@ namespace Rock
         }
 
         /// <summary>
+        /// <para>
         /// Loads the attributes for all entities.
+        /// </para>
+        /// <para>
+        /// This method can only operate on lists comprised of a single object type.
+        /// Meaning, you can't mix Person and Group objects and expect to get valid
+        /// attributes back.
+        /// </para>
         /// </summary>
         /// <param name="entities">The entities.</param>
         /// <param name="rockContext">The rock context.</param>
@@ -76,7 +90,14 @@ namespace Rock
         }
 
         /// <summary>
-        /// Loads the filtered attributes.
+        /// <para>
+        /// Loads the attributes for all entities.
+        /// </para>
+        /// <para>
+        /// This method can only operate on lists comprised of a single object type.
+        /// Meaning, you can't mix Person and Group objects and expect to get valid
+        /// attributes back.
+        /// </para>
         /// </summary>
         /// <param name="entities">The entities.</param>
         /// <param name="attributeFilter">The attribute filter.</param>
@@ -86,7 +107,14 @@ namespace Rock
         }
 
         /// <summary>
-        /// Loads the filtered attributes.
+        /// <para>
+        /// Loads the attributes for all entities.
+        /// </para>
+        /// <para>
+        /// This method can only operate on lists comprised of a single object type.
+        /// Meaning, you can't mix Person and Group objects and expect to get valid
+        /// attributes back.
+        /// </para>
         /// </summary>
         /// <param name="entities">The entities.</param>
         /// <param name="rockContext">The rock context.</param>

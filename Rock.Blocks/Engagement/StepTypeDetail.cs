@@ -1043,7 +1043,7 @@ namespace Rock.Blocks.Engagement
         private GridBuilder<StepAttributeBag> GetAttributesGridBuilder()
         {
             return new GridBuilder<StepAttributeBag>()
-                .AddTextField( "idKey", a => a.Attribute.Key )
+                .AddTextField( "idKey", a => a.Attribute.Guid.ToString() )
                 .AddTextField( "attributeName", a => a.Attribute.Name )
                 .AddTextField( "fieldType", a => a.FieldType )
                 .AddField( "allowSearch", a => a.Attribute.IsAllowSearch );

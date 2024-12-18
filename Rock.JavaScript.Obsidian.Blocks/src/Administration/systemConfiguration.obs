@@ -86,7 +86,11 @@
                              label="SMS Opt-In Message"
                              help="This text will display next to a checkbox on blocks where a mobile phone number can be entered to enable SMS messaging for that number." />
 
-                    <div class="actions">
+                    <CheckBox v-model="enableDefaultAddressStateSelection"
+                             label="Enable Default Address State Selection"
+                             help="When enabled, the Organization's state will be automatically selected when adding a new address using the Address controls in Rock." />
+
+                  <div class="actions">
                         <RockButton :btnType="BtnType.Primary"
                                     type="submit"
                                     loadingText="Saving..."
@@ -355,6 +359,7 @@
     const captchaSiteKey = ref(config.uiSettingsConfigurationBag?.captchaSiteKey ?? "");
     const captchaSecretKey = ref(config.uiSettingsConfigurationBag?.captchaSecretKey ?? "");
     const smsOptInMessage = ref(config.uiSettingsConfigurationBag?.smsOptInMessage ?? "");
+    const enableDefaultAddressStateSelection = ref(config.uiSettingsConfigurationBag?.enableDefaultAddressStateSelection ?? false);
 
     const isSavingUiSettingsForm = ref(false);
     const uiSettingsNotificationMessage = ref("");
@@ -464,6 +469,7 @@
             const bag: UiSettingsConfigurationBag = {
                 captchaSecretKey: captchaSecretKey.value,
                 captchaSiteKey: captchaSiteKey.value,
+                enableDefaultAddressStateSelection: enableDefaultAddressStateSelection.value,
                 ethnicityLabel: personEthnicityLabel.value,
                 raceLabel: personRaceLabel.value,
                 smsOptInMessage: smsOptInMessage.value

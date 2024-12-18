@@ -47,7 +47,8 @@
 
     defineExpose({
         getToken,
-        refreshToken
+        refreshToken,
+        validateToken
     });
 
     // #region Values
