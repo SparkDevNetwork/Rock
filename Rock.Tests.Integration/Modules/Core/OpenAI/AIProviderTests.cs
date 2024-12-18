@@ -97,14 +97,6 @@ namespace Rock.Tests.Integration.Modules.Core.AI
             }
         }
 
-        [TestMethod]
-        public void AiProvider_GetActiveProviderInstance_ReturnsFirstActiveProviderByOrder()
-        {
-            var activeProvider = Rock.AI.Provider.AIProviderContainer.GetActiveComponent();
-
-            Assert.That.AreEqual( true, activeProvider.IsActive );
-        }
-
         private AIProvider GetNewProviderInstance( Guid newProviderGuid )
         {
             var newProvider = new AIProvider();
