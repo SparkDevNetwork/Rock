@@ -1270,11 +1270,11 @@ namespace Rock.Blocks.Communication
         {
             if ( communication == null || communication.Id == 0 )
             {
-                return "New Communication".FormatAsHtmlTitle();
+                return "New Communication";
             }
             else
             {
-                return ( communication.Name ?? communication.Subject ?? "New Communication" ).FormatAsHtmlTitle();
+                return communication.Name ?? communication.Subject ?? "New Communication";
             }
         }
 
