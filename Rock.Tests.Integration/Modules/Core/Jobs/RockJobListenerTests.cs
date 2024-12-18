@@ -55,12 +55,12 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
         }
 
         [TestMethod]
-        public void RockJobListenerShouldHandleExceptionCorrectly()
+        public async Task RockJobListenerShouldHandleExceptionCorrectly()
         {
             var expectedExceptionMessage = $"{Guid.NewGuid()} Rock Job Listener Exception Message";
             var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage );
 
-            RunJob( jobDataMapDictionary );
+            await RunJob( jobDataMapDictionary );
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
@@ -72,96 +72,96 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
         }
 
         [TestMethod]
-        public void RockJobListenerShouldHandleExceptionNotificationsCorrectly()
+        public async Task RockJobListenerShouldHandleExceptionNotificationsCorrectly()
         {
             var expectedExceptionMessage = $"{Guid.NewGuid()} Rock Job Listener Exception Message";
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ), JobNotificationStatus.All );
+            await RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ), JobNotificationStatus.All );
 
             actualEmails.TryPop( out var message );
             Assert.That.Contains( message, expectedExceptionMessage );
             RemoveTestJob();
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ), JobNotificationStatus.Error );
+            await RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ), JobNotificationStatus.Error );
 
             actualEmails.TryPop( out message );
             Assert.That.Contains( message, expectedExceptionMessage );
             RemoveTestJob();
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ), JobNotificationStatus.Success );
+            await RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ), JobNotificationStatus.Success );
 
             Assert.That.IsFalse( actualEmails.TryPop( out message ) );
             RemoveTestJob();
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ), JobNotificationStatus.None );
+            await RunJob( GetJobDataMapDictionary( TestResultType.Exception, expectedExceptionMessage ), JobNotificationStatus.None );
 
             Assert.That.IsFalse( actualEmails.TryPop( out message ) );
             RemoveTestJob();
         }
 
         [TestMethod]
-        public void RockJobListenerShouldHandleWarningNotificationsCorrectly()
+        public async Task RockJobListenerShouldHandleWarningNotificationsCorrectly()
         {
             var expectedExceptionMessage = $"{Guid.NewGuid()} Rock Job Listener Warning Message";
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedExceptionMessage ), JobNotificationStatus.All );
+            await RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedExceptionMessage ), JobNotificationStatus.All );
 
             actualEmails.TryPop( out var message );
             Assert.That.Contains( message, expectedExceptionMessage );
             RemoveTestJob();
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedExceptionMessage ), JobNotificationStatus.Error );
+            await RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedExceptionMessage ), JobNotificationStatus.Error );
 
             actualEmails.TryPop( out message );
             Assert.That.Contains( message, expectedExceptionMessage );
             RemoveTestJob();
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedExceptionMessage ), JobNotificationStatus.Success );
+            await RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedExceptionMessage ), JobNotificationStatus.Success );
 
             Assert.That.IsFalse( actualEmails.TryPop( out message ) );
             RemoveTestJob();
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedExceptionMessage ), JobNotificationStatus.None );
+            await RunJob( GetJobDataMapDictionary( TestResultType.Warning, expectedExceptionMessage ), JobNotificationStatus.None );
 
             Assert.That.IsFalse( actualEmails.TryPop( out message ) );
             RemoveTestJob();
         }
 
         [TestMethod]
-        public void RockJobListenerShouldHandleSuccessNotificationsCorrectly()
+        public async Task RockJobListenerShouldHandleSuccessNotificationsCorrectly()
         {
             var expectedExceptionMessage = $"{Guid.NewGuid()} Rock Job Listener Success";
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedExceptionMessage ), JobNotificationStatus.All );
+            await RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedExceptionMessage ), JobNotificationStatus.All );
 
             actualEmails.TryPop( out var message );
             Assert.That.Contains( message, expectedExceptionMessage );
             RemoveTestJob();
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedExceptionMessage ), JobNotificationStatus.Error );
+            await RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedExceptionMessage ), JobNotificationStatus.Error );
 
             Assert.That.IsFalse( actualEmails.TryPop( out message ) );
             RemoveTestJob();
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedExceptionMessage ), JobNotificationStatus.Success );
+            await RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedExceptionMessage ), JobNotificationStatus.Success );
 
             actualEmails.TryPop( out message );
             Assert.That.Contains( message, expectedExceptionMessage );
             RemoveTestJob();
 
-            RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedExceptionMessage ), JobNotificationStatus.None );
+            await RunJob( GetJobDataMapDictionary( TestResultType.Success, expectedExceptionMessage ), JobNotificationStatus.None );
 
             Assert.That.IsFalse( actualEmails.TryPop( out message ) );
             RemoveTestJob();
         }
 
         [TestMethod]
-        public void RockJobListenerShouldHandleMultipleAggregateExceptionCorrectly()
+        public async Task RockJobListenerShouldHandleMultipleAggregateExceptionCorrectly()
         {
             var expectedExceptionMessage = $"{Guid.NewGuid()} Rock Job Listener Multiple Aggregate Exception Message";
             var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.MultipleAggregateException, expectedExceptionMessage );
 
-            RunJob( jobDataMapDictionary );
+            await RunJob( jobDataMapDictionary );
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
@@ -173,11 +173,11 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
         }
 
         [TestMethod]
-        public void RockJobListenerShouldHandleSingleAggregateExceptionCorrectly()
+        public async Task RockJobListenerShouldHandleSingleAggregateExceptionCorrectly()
         {
             var expectedExceptionMessage = $"{Guid.NewGuid()} Rock Job Listener Single Aggregate Exception Message";
             var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.SingleAggregateException, expectedExceptionMessage );
-            RunJob( jobDataMapDictionary );
+            await RunJob( jobDataMapDictionary );
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
@@ -189,13 +189,13 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
         }
 
         [TestMethod]
-        public void RockJobListenerShouldHandleWarningExceptionCorrectly()
+        public async Task RockJobListenerShouldHandleWarningExceptionCorrectly()
         {
             var expectedResultMessage = $"{Guid.NewGuid()} Rock Job Listener Completed With Warnings";
             var expectedExceptionsCount = new ExceptionLogService( new RockContext() ).Queryable().Count();
             var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.Warning, expectedResultMessage );
 
-            RunJob( jobDataMapDictionary );
+            await RunJob( jobDataMapDictionary );
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
@@ -207,12 +207,12 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
         }
 
         [TestMethod]
-        public void RockJobListenerShouldHandleWarningWithMultipleAggregateException()
+        public async Task RockJobListenerShouldHandleWarningWithMultipleAggregateException()
         {
             var expectedResultMessage = $"{Guid.NewGuid()} Rock Job Listener Completed With Warnings";
             var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.WarningWithMultipleAggregateException, expectedResultMessage );
 
-            RunJob( jobDataMapDictionary );
+            await RunJob( jobDataMapDictionary );
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
@@ -224,12 +224,12 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
         }
 
         [TestMethod]
-        public void RockJobListenerShouldHandleWarningWithSingleAggregateException()
+        public async Task RockJobListenerShouldHandleWarningWithSingleAggregateException()
         {
             var expectedResultMessage = $"{Guid.NewGuid()} Rock Job Listener Completed With Warnings";
             var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.WarningWithSingleAggregateException, expectedResultMessage );
 
-            RunJob( jobDataMapDictionary );
+            await RunJob( jobDataMapDictionary );
 
             var actualJob = GetAddTestJob( jobDataMapDictionary );
 
@@ -241,13 +241,13 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
         }
 
         [TestMethod]
-        public void RockJobListenerShouldHandleSuccessCorrectly()
+        public async Task RockJobListenerShouldHandleSuccessCorrectly()
         {
             var expectedResultMessage = $"{Guid.NewGuid()} Rock Job Listener Success!";
             var expectedExceptionsCount = new ExceptionLogService( new RockContext() ).Queryable().Count();
             var jobDataMapDictionary = GetJobDataMapDictionary( TestResultType.Success, expectedResultMessage );
 
-            RunJob( jobDataMapDictionary );
+            await RunJob( jobDataMapDictionary );
 
             var actualExceptionsCount = new ExceptionLogService( new RockContext() ).Queryable().Count();
 
@@ -259,7 +259,7 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
             Assert.That.AreEqual( expectedExceptionsCount, actualExceptionsCount );
         }
 
-        public void RunJob( Dictionary<string, string> jobDataMapDictionary, JobNotificationStatus jobNotificationStatus = JobNotificationStatus.None )
+        private async Task RunJob( Dictionary<string, string> jobDataMapDictionary, JobNotificationStatus jobNotificationStatus = JobNotificationStatus.None )
         {
             var job = GetAddTestJob( jobDataMapDictionary, jobNotificationStatus );
 
@@ -311,14 +311,18 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
                     // schedule the job
                     sched.ScheduleJob( jobDetail, jobTrigger );
 
-                    // set up the listener to report back from the job when it completes
-                    sched.ListenerManager.AddJobListener( new RockJobListener(), EverythingMatcher<JobKey>.AllJobs() );
+                    // Use the RunNow listener. It inherits from RockJobListener
+                    // and the things we are testing are not affected by that. This
+                    // allows the jobs to run and finish must faster.
+                    var listener = new RunNowRockJobListener( job.Id );
+                    sched.ListenerManager.AddJobListener( listener, EverythingMatcher<JobKey>.AllJobs() );
 
                     // start the scheduler
                     sched.Start();
 
-                    // Wait 10secs to give job chance to start
-                    System.Threading.Tasks.Task.Delay( new TimeSpan( 0, 0, 10 ) ).Wait();
+                    // Wait up to 10 seconds for the job to complete. If the job
+                    // hasn't completed yet, the Shutdown call below will wait.
+                    await Task.WhenAny( listener.JobCompletedTask, Task.Delay( 10 * 1000 ) );
 
                     // stop the scheduler when done with job
                     sched.Shutdown( true );
