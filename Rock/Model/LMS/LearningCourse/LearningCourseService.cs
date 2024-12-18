@@ -206,7 +206,7 @@ namespace Rock.Model
                             GradingSystem = c.LearningGradingSystem,
                             Id = c.Id,
                             Name = c.Name,
-                            Location = c.GroupLocations.FirstOrDefault(),
+                            GroupLocation = c.GroupLocations.FirstOrDefault(),
                             Order = c.Order,
                             Schedule = c.Schedule
                         } )
@@ -689,7 +689,12 @@ namespace Rock.Model
             /// <summary>
             /// Gets or sets the Location for the LearningClass to meet.
             /// </summary>
-            public GroupLocation Location { get; set; }
+            public GroupLocation GroupLocation { get; set; }
+
+            /// <summary>
+            /// Gets the value of <c>GroupLocation.Location.ToString( preferName: true )</c>; otherwise <c>string.Empty</c>.
+            /// </summary>
+            public string Location => GroupLocation?.Location?.ToString( true ) ?? string.Empty;
 
             /// <summary>
             /// Gets or sets the Name for the LearningClass.
@@ -718,7 +723,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// The <see cref="LearningParticipant">facilitator(s)</see> for displaying on public pages.
+        /// The <see cref="LearningParticipant">facilitator</see> for displaying on public pages.
         /// </summary>
         public class PublicFacilitatorBag : LavaDataObject
         {

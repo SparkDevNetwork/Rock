@@ -54,6 +54,9 @@ export type LearningClassBag = {
     /** Gets or sets the related LearningGradingSystem. */
     gradingSystem?: ListItemBag | null;
 
+    /** Gets or sets the GroupCapacity (maximum allowed students override). */
+    groupCapacity?: number | null;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
