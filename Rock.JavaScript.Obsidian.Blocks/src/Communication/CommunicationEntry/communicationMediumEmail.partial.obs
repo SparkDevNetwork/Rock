@@ -146,7 +146,7 @@
                 </div>
             </VerticalTransitionCollapse>
 
-            <div class="row d-sm-flex">
+            <div class="row d-flex align-items-end">
                 <div class="col-sm-6">
                     <TextBox v-model="internalSubject"
                              :disabled="disabled"
@@ -154,13 +154,13 @@
                              label="Subject"
                              rules="required" />
                 </div>
-                <div class="col-sm-4 align-self-center">
+                <div class="col-sm-4 email-switch-margin">
                     <ScheduleSend v-if="config.mode === Mode.Full"
                                   v-model="internalScheduleSendIsoString"
                                   :disabled="disabled" />
                 </div>
                 <div v-if="mediumOptions.isAttachmentUploaderShown"
-                     class="col-sm-2 align-self-center">
+                     class="col-sm-2 email-switch-margin">
                     <div class="float-right">
                         <RockButton btnType="link"
                                     :disabled="disabled"
@@ -230,6 +230,10 @@
 <style scoped>
 .float-right {
     float: right;
+}
+
+.email-switch-margin {
+    margin-bottom: 14px;
 }
 </style>
 
