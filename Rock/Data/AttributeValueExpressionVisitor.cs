@@ -59,7 +59,7 @@ namespace Rock.Data
                 // Create an expression that compares the specified value against ValueChecksum.
                 var memberExpression = Expression.Property( attributeValueExpression.Expression, "ValueChecksum" );
                 var callExpression = Expression.Call( null, _checksumMethod, node.Right );
-                var checksumExpression = Expression.Equal( memberExpression, callExpression );
+                var checksumExpression = Expression.Equal( memberExpression, Expression.Convert( callExpression, typeof( int ) ) );
 
                 // Return a new expression that says the original check and the
                 // ValueChecksum check must match.
