@@ -25,14 +25,14 @@
                         <span v-html="shortcode.documentation"></span>
                     </template>
                     <template #footer>
-                        <NotificationBox v-if="shortcode.idKey == '' && shortcode.isSystem" alertType="info">
+                        <NotificationBox v-if="isNullOrWhiteSpace(shortcode.idKey) && shortcode.isSystem" alertType="info">
                             This shortcode is defined in code (versus being stored in the database) and therefore can not be modified.
                         </NotificationBox>
                         <div class="d-flex justify-content-end">
-                            <RockButton v-if="canEdit && shortcode.idKey != ''" @click="onEditClick(shortcode)" class="btn btn-xs btn-default">
+                            <RockButton v-if="canEdit && !isNullOrWhiteSpace(shortcode.idKey)" @click="onEditClick(shortcode)" class="btn btn-xs btn-default">
                                 <i class="fa fa-pencil"></i>
                             </RockButton>
-                            <RockButton v-if="canEdit && shortcode.idKey != '' && !shortcode.isSystem" @click="onDeleteClick(shortcode)" class="btn btn-xs btn-default ml-1">
+                            <RockButton v-if="canEdit && !isNullOrWhiteSpace(shortcode.idKey) && !shortcode.isSystem" @click="onDeleteClick(shortcode)" class="btn btn-xs btn-default ml-1">
                                 <i class="fa fa-times"></i>
                             </RockButton>
                         </div>
@@ -61,6 +61,7 @@
     import { computed, ref } from "vue";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { LavaShortcodeBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeDetail/lavaShortcodeBag";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
 
     const box = useConfigurationValues<LavaShortcodeListBox>();
     const invokeBlockAction = useInvokeBlockAction();
