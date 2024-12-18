@@ -964,6 +964,18 @@ namespace Rock.Blocks.Group.Scheduling
 
             rows.AddRange( personScheduleExclusions );
 
+            var includeGroupTypeGuids = GetAttributeValue( AttributeKey.IncludeGroupTypes ).SplitDelimitedValues().AsGuidList();
+            var excludeGroupTypeGuids = GetAttributeValue( AttributeKey.ExcludeGroupTypes ).SplitDelimitedValues().AsGuidList();
+
+            if ( includeGroupTypeGuids.Any() )
+            {
+                rows = rows.Where( gm => includeGroupTypeGuids.Contains( gm.Group.GroupType.Guid ) ).ToList();
+            }
+            else if ( excludeGroupTypeGuids.Any() )
+            {
+                rows = rows.Where( gm => !excludeGroupTypeGuids.Contains( gm.Group.GroupType.Guid ) ).ToList();
+            }
+
             // Sort and project all of the above into a final collection of rows.
             return rows
                 .OrderBy( r => r.OccurrenceStartDate )
