@@ -128,6 +128,7 @@ namespace Rock.Blocks.Event
         {
             var qry = new RegistrationInstanceService( rockContext )
                     .Queryable()
+                    .Include( i => i.Registrations.Select( r => r.Registrants ) )
                     .Where( i =>
                         ( i.StartDateTime <= RockDateTime.Now || !i.StartDateTime.HasValue ) &&
                         ( i.EndDateTime > RockDateTime.Now || !i.EndDateTime.HasValue ) &&
