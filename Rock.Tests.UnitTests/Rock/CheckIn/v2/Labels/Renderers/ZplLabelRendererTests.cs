@@ -2701,6 +2701,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             };
 
             rockContext.SetupDbSet( sampleSearchKey );
+            rockContext.SetupDbSet<Person>();
 
             var request = new PrintLabelRequest
             {
@@ -2760,6 +2761,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             };
 
             rockContext.SetupDbSet( sampleSearchKey );
+            rockContext.SetupDbSet<Person>();
 
             var request = new PrintLabelRequest
             {
@@ -2810,6 +2812,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             };
 
             rockContext.SetupDbSet<PersonSearchKey>();
+            rockContext.SetupDbSet<Person>();
 
             var request = new PrintLabelRequest
             {
