@@ -345,7 +345,7 @@ namespace Rock.Blocks.Lms
                                                             <p>{{classInfo.Campus}}</p>
                                                         </div>
                                                     {% endif %}
-                                                    {% if classInfo.Location %}
+                                                    {% if classInfo.Location and classInfo.Location != '' %}
                                                         <div class=""text-gray-600"">
                                                             <p class=""text-bold mb-0"">Location: 
                                                             <p>{{classInfo.Location}}</p>

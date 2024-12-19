@@ -201,7 +201,8 @@ namespace Rock.Blocks.Lms
         {
             var courseService = new LearningCourseService( RockContext );
 
-            var course = courseService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+            var course = courseService
+                    .GetInclude( key, c => c.LearningCourseRequirements, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( course == null )
             {
@@ -213,7 +214,8 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"Not authorized to delete {LearningCourse.FriendlyTypeName}." );
             }
 
-            var coursesDependingOnThisCourse = new LearningCourseRequirementService( RockContext )
+            var requiredCourseService = new LearningCourseRequirementService( RockContext );
+            var coursesDependingOnThisCourse = requiredCourseService
                 .Queryable()
                 .Where( c => c.RequiredLearningCourseId == course.Id )
                 .Select( c => c.LearningCourse.Name );
@@ -229,26 +231,29 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( errorMessage );
             }
 
-            // Use a new context so that we can delete the classes
-            // before loading the Course and preventing EF tracking errors
-            // like "Collection was modified; enumeration operation may not execute."
-            var deletionContext = new RockContext();
-
-            deletionContext.WrapTransaction( () =>
+            // Delete everything or nothing.
+            RockContext.WrapTransaction( () =>
             {
-                var classService = new LearningClassService( deletionContext );
+                var classService = new LearningClassService( RockContext );
+                // Include related entities that should be deleted along with the class.
                 var classesForCourse = classService.Queryable()
+                    .Include( c => c.LearningActivities )
+                    .Include( c => c.LearningParticipants )
+                    .Include( c => c.ContentPages )
+                    .Include( c => c.Announcements )
                     .Where( c => c.LearningCourseId == course.Id );
 
+                // Remove any classes for this course
                 foreach ( var courseClass in classesForCourse )
                 {
                     classService.Delete( courseClass );
                 }
 
-                var courseServiceInDeletionContext = new LearningCourseService( deletionContext );
-                var courseInDeletionContext = courseServiceInDeletionContext
-                    .Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-                courseServiceInDeletionContext.Delete( courseInDeletionContext );
+                // Remove any course requirements from this course.
+                requiredCourseService.DeleteRange( course.LearningCourseRequirements );
+
+                // Finally remove this course.
+                courseService.Delete( course );
                 RockContext.SaveChanges();
             } );
 

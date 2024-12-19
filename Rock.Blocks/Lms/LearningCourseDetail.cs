@@ -607,7 +607,7 @@ namespace Rock.Blocks.Lms
                 entityService.GetQueryableByKey( key )
                     .Include( c => c.LearningCourseRequirements )
                     .SelectMany( c => c.LearningCourseRequirements.Select( r => r.RequiredLearningCourseId ) )
-                    .ToList() :
+                    .ToList():
                 new List<int>();
 
             var currentId = Rock.Utility.IdHasher.Instance.GetId( key );
@@ -624,6 +624,7 @@ namespace Rock.Blocks.Lms
                 .ToList()
                 // Make sure the current user is authorized to view the course.
                 .Where( c => c.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .OrderBy( c => c.Name )
                 .ToListItemBagList();
 
             return ActionOk( allCourses );
