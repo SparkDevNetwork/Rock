@@ -31,7 +31,7 @@ namespace Rock.Tests.Integration.Modules.Core.AI
     [TestCategory("Core.AI")]
     public class AIProviderTests : DatabaseTestsBase
     {
-        private const string _openAiDefaultProviderGuid = "2AA26B14-94CB-4A30-9E97-C7250BA464BB";
+        private const string _openAiDefaultProviderGuid = "CA71BA8A-A4EB-449F-A94E-53807603D534";
         private const string _openAiCompatibleProviderGuid = "2A15B464-A07C-404C-9C51-6970E46C01FE";
         private const string _openAiProviderEntityTypeGuid = "8D3F25B1-4891-31AA-4FA6-365F5C808563";
 
@@ -85,16 +85,10 @@ namespace Rock.Tests.Integration.Modules.Core.AI
             var service = new AIProviderService( dataContext );
             service.Add( newProvider );
 
-            try
+            Assert.ThrowsException<System.Data.Entity.Infrastructure.DbUpdateException>( () =>
             {
                 dataContext.SaveChanges();
-
-                Assert.Fail( "Validation error expected, but not encountered." );
-            }
-            catch
-            {
-                // Validation exception expected.
-            }
+            } );
         }
 
         private AIProvider GetNewProviderInstance( Guid newProviderGuid )
@@ -117,11 +111,5 @@ namespace Rock.Tests.Integration.Modules.Core.AI
 
             return newProvider;
         }
-
-        private void AddAiProviderTestData()
-        {
-
-        }
-
     }
 }
