@@ -1,0 +1,87 @@
+<template>
+    <TabbedModal v-model="isVisible"
+                 v-model:selectedTab="selectedTab"
+                 :tabs="['Add New Person', 'Link Existing Person']"
+                 :title="`Link Phone Number ${recipientPhoneNumber} to Person`"
+                 cancelText="Cancel"
+                 saveText="Save"
+                 @save="onSave">
+        <template #prepend>
+            <NotificationBox v-if="!isNullOrWhiteSpace(errorMessage)" alertType="danger">
+                {{ errorMessage }}
+            </NotificationBox>
+            <NotificationBox v-else alertType="info" style="font-weight: 600">
+                To prevent data loss and to ensure the highest level of security, a merge request will be created upon pressing Save.
+            </NotificationBox>
+        </template>
+        <template #tabpane="{ item }">
+            <template v-if="item === selectedTab">
+                <template v-if="item === 'Add New Person'">
+                    <PersonBasicEditor v-model="newPerson" />
+
+                </template>
+                <template v-else>
+                    <PersonPicker v-model="existingPerson"
+                                  label="Person"
+                                  rules="required" />
+                </template>
+            </template>
+        </template>
+    </TabbedModal>
+</template>
+
+<script setup lang="ts">
+    import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { PropType, ref, computed } from "vue";
+    import TabbedModal from "@Obsidian/Controls/tabbedModal.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PersonBasicEditor from "@Obsidian/Controls/personBasicEditor.obs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        recipientPhoneNumber: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        errorMessage: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "saveNewPerson", value: PersonBasicEditorBag): void;
+        (e: "linkToPerson", value: ListItemBag | undefined): void;
+        (e: "dismissMessage"): void
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+    const selectedTab = ref();
+    const newPerson = ref<PersonBasicEditorBag>({});
+    const existingPerson = ref<ListItemBag>();
+
+    const errorMessage = computed(() => props.errorMessage);
+    const recipientPhoneNumber = computed(() => props.recipientPhoneNumber);
+
+    function onSave(): void {
+        if (selectedTab.value === "Add New Person") {
+            const bag = newPerson.value;
+            emit("saveNewPerson", bag);
+        }
+        else {
+            const bag = existingPerson.value;
+            emit("linkToPerson", bag);
+        }
+    }
+
+</script>

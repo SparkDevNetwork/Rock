@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockButton type="button" isSquare @click="showModal" title="Add Reminder"><i class="fa fa-bell"></i></RockButton>
+    <RockButton type="button" isSquare @click="showModal" title="Add Reminder" :btnSize="btnSize"><i class="fa fa-bell"></i></RockButton>
 
     <Modal v-model="isModalShown" :title="reminderTitle" :saveText="hasFetchError ? '' : saveText" @save="saveForm" :isSaveButtonDisabled="isSaving">
         <Loading :isLoading="isLoading">
@@ -130,6 +130,7 @@
     import { useStore } from "@Obsidian/PageState";
     import { Page } from "@Obsidian/SystemGuids/page";
     import { createApiCaller } from "@Obsidian/Utility/http";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 
     const props = defineProps({
         contextEntityGuid: {
@@ -150,10 +151,17 @@
         editReminderPage: {
             type: String as PropType<Guid>,
             default: Page.ReminderEdit
-        }
+        },
+
+        btnSize: {
+            type: String as PropType<BtnSize>,
+            default: BtnSize.Default
+        },
     });
 
-    // const emit = defineEmits<{}>();
+    const emit = defineEmits<{
+        (e: "addSuccess"): void;
+    }>();
 
     // #region Modal
 
@@ -362,6 +370,7 @@
         const isSuccessful = await addReminder();
         if (isSuccessful) {
             resetForm();
+            emit("addSuccess");
             isModalShown.value = false;
         }
     }
@@ -400,6 +409,4 @@
 
     // #endregion
 
-
-    console.log(useStore());
 </script>
