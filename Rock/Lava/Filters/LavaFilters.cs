@@ -2620,7 +2620,8 @@ namespace Rock.Lava
             {
                 case "Dictionary":
                     {
-                        var jsonSettings = new JsonSerializerSettings{
+                        var jsonSettings = new JsonSerializerSettings
+                        {
                             Converters = new List<JsonConverter> { new NestedDictionaryConverter() }
                         };
 
@@ -2942,9 +2943,9 @@ namespace Rock.Lava
                 }
 
                 // If the expando didn't have the key, it could be a dictionary
-                return LavaAppendWatchesHelper.AppendMediaForDictionary( xo, startDate, currentPerson, rockContext ) ;
+                return LavaAppendWatchesHelper.AppendMediaForDictionary( xo, startDate, currentPerson, rockContext );
             }
-            
+
 
             return source;
         }
@@ -4106,7 +4107,7 @@ namespace Rock.Lava
                 return RockApp.Current.GetCurrentLavaEngineName();
             }
 
-            return $"Configuration setting \"{ input }\" is not available.";
+            return $"Configuration setting \"{input}\" is not available.";
         }
 
         /// <summary>
@@ -4168,10 +4169,17 @@ namespace Rock.Lava
         /// </para>
         /// </summary>
         /// <param name="content">JSON formatted string produced by the <see cref="StructureContentEditor"/> control.</param>
+        /// <param name="userValuesJson">The JSON formatted string that represents the user values (on the corresponding note) for the structured content.</param>
         /// <returns></returns>
-        public static string RenderStructuredContentAsHtml( string content )
+        public static string RenderStructuredContentAsHtml( string content, string userValuesJson = null )
         {
-            var helper = new StructuredContentHelper( content );
+            Dictionary<string, string> userValues = null;
+            if( userValuesJson.IsNotNullOrWhiteSpace() )
+            {
+                userValues = userValuesJson.FromJsonOrNull<Dictionary<string, string>>();
+            }
+
+            var helper = new StructuredContentHelper( content, userValues );
             return helper.Render();
         }
 
@@ -4226,7 +4234,7 @@ namespace Rock.Lava
             }
 
             if ( input is IList inputList )
-            { 
+            {
                 return inputList.Contains( containValue );
             }
             else if ( input is IEnumerable<object> inputGenericEnumerable )
