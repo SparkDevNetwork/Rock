@@ -3547,6 +3547,7 @@
     <Compile Include="Model\Core\Device\Device.cs" />
     <Compile Include="Model\CRM\Assessment\DiscService.cs" />
     <Compile Include="Model\Core\EntitySet\EntitySet.cs" />
+    <Compile Include="Model\Core\EntitySet\EntitySet.Logic.cs" />
     <Compile Include="Model\Core\EntitySetItem\EntitySetItem.cs" />
     <Compile Include="Model\Core\EntitySetItem\EntitySetItemService.cs" />
     <Compile Include="Model\Core\EntitySet\EntitySetService.cs" />
