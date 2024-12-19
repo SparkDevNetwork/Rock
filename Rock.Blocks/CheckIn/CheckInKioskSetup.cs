@@ -433,7 +433,7 @@ namespace Rock.Blocks.CheckIn
         /// <returns>A collection of <see cref="SavedCheckInConfigurationBag"/> objects.</returns>
         private IReadOnlyCollection<SavedCheckInConfigurationBag> GetSavedConfigurations()
         {
-            var savedConfigurationCache = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS.AsGuid(), RockContext );
+            var savedConfigurationCache = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_KIOSK_TEMPLATES.AsGuid(), RockContext );
 
             if ( savedConfigurationCache == null )
             {
@@ -631,7 +631,7 @@ namespace Rock.Blocks.CheckIn
         [BlockAction]
         public BlockActionResult SaveConfiguration( ValidPropertiesBox<SavedCheckInConfigurationBag> box )
         {
-            var savedConfigurationDefinedTypeId = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS.AsGuid(), RockContext )?.Id;
+            var savedConfigurationDefinedTypeId = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_KIOSK_TEMPLATES.AsGuid(), RockContext )?.Id;
             var definedValueService = new DefinedValueService( RockContext );
             DefinedValue definedValue;
 
