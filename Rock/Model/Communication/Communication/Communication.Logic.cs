@@ -66,6 +66,7 @@ namespace Rock.Model
         }
 
         #endregion Properties
+
         #region ISecured
 
         /// <summary>
@@ -91,7 +92,8 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion ISecured
+
         #region Methods
 
         /// <summary>
@@ -159,7 +161,38 @@ namespace Rock.Model
         /// <returns></returns>
         public bool HasPendingRecipients( RockContext rockContext )
         {
-            return new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id && a.Status == Model.CommunicationRecipientStatus.Pending ).Any();
+            return GetRecipientsQry( rockContext ).Where( a => a.Status == CommunicationRecipientStatus.Pending ).Any();
+        }
+
+        /// <summary>
+        /// Updates CommunicationRecipients who are stuck in the "Sending" status, setting the status to failed if they have been there for 2 days or more, and setting the status back to Pending otherwise.
+        /// </summary>
+        public void UpdateSendingRecipients()
+        {
+            var expirationDate = RockDateTime.Now.AddDays( -2 );
+            using ( var rockContext = new RockContext() )
+            {
+                // If any recipients have been in "Sending" status (or reset to "Pending" status from "Sending") for 2 days, set the status to failed, instead.
+                var expiredSendingRecipients = GetRecipientsQry( rockContext ).Where( a => ( a.Status == CommunicationRecipientStatus.Sending || a.Status == CommunicationRecipientStatus.Pending ) && a.FirstSendAttemptDateTime <= expirationDate ).ToList();
+                foreach ( var expiredSendingRecipient in expiredSendingRecipients )
+                {
+                    expiredSendingRecipient.Status = CommunicationRecipientStatus.Failed;
+                    expiredSendingRecipient.StatusNote = "Recipient locked in Sending status.";
+                }
+
+                // Any recipients stuck in "Sending" for less than two days get set back to "Pending".
+                var sendingRecipients = GetRecipientsQry( rockContext ).Where( a => a.Status == CommunicationRecipientStatus.Sending && ( !a.FirstSendAttemptDateTime.HasValue || a.FirstSendAttemptDateTime > expirationDate ) ).ToList();
+                foreach ( var sendingRecipient in sendingRecipients )
+                {
+                    sendingRecipient.Status = CommunicationRecipientStatus.Pending;
+                    sendingRecipient.StatusNote = "Recipient reverted to Pending status after initial attempt.";
+
+                    // This should already be set when the recipient was set to "Sending", but let's be certain the clock has started.
+                    sendingRecipient.FirstSendAttemptDateTime = sendingRecipient.FirstSendAttemptDateTime ?? RockDateTime.Now;
+                }
+
+                rockContext.SaveChanges();
+            }
         }
 
         /// <summary>
@@ -741,7 +774,7 @@ INNER JOIN @DuplicateRecipients dr
             return this.Name ?? this.Subject ?? base.ToString();
         }
 
-        #endregion
+        #endregion Methods
 
         #region Static Methods
 
@@ -803,8 +836,14 @@ INNER JOIN @DuplicateRecipients dr
             {
                 var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
 
-                // Set the SendDateTime of the Communication
-                dbCommunication.SendDateTime = RockDateTime.Now;
+                dbCommunication.UpdateSendingRecipients();
+
+                if ( !dbCommunication.HasPendingRecipients( rockContext ) )
+                {
+                    // Set the SendDateTime of the Communication
+                    dbCommunication.SendDateTime = RockDateTime.Now;
+                }
+
                 rockContext.SaveChanges();
             }
         }
@@ -894,8 +933,14 @@ INNER JOIN @DuplicateRecipients dr
             {
                 var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
 
-                // Set the SendDateTime of the Communication
-                dbCommunication.SendDateTime = RockDateTime.Now;
+                dbCommunication.UpdateSendingRecipients();
+
+                if ( !dbCommunication.HasPendingRecipients( rockContext ) )
+                {
+                    // Set the SendDateTime of the Communication
+                    dbCommunication.SendDateTime = RockDateTime.Now;
+                }
+
                 rockContext.SaveChanges();
             }
         }
@@ -942,6 +987,7 @@ INNER JOIN @DuplicateRecipients dr
 UPDATE cr
 SET cr.[ModifiedDateTime] = @Now
     , cr.[Status] = @SendingStatus
+    , cr.[FirstSendAttemptDateTime] = @FirstSendAttemptDateTime
 OUTPUT INSERTED.[Id]
 FROM [CommunicationRecipient] cr
 WHERE cr.[Id] IN (
@@ -961,6 +1007,7 @@ WHERE cr.[Id] IN (
                         new SqlParameter( "@MediumEntityTypeId", mediumEntityId ),
                         new SqlParameter( "@PendingStatus", CommunicationRecipientStatus.Pending ),
                         new SqlParameter( "@SendingStatus", CommunicationRecipientStatus.Sending ),
+                        new SqlParameter( "@FirstSendAttemptDateTime", RockDateTime.Now ),
                         new SqlParameter( "@PreviousSendLockExpiredDateTime", previousSendLockExpiredDateTime ),
                         new SqlParameter( "@Now", RockDateTime.Now )
                     ).FirstOrDefault();
@@ -978,6 +1025,6 @@ WHERE cr.[Id] IN (
             return recipient;
         }
 
-        #endregion
+        #endregion Static Methods
     }
 }
