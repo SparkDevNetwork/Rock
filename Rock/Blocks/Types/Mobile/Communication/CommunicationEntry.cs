@@ -504,7 +504,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
             // Structure the communication based on the communication type.
             if ( communicationType == CommunicationType.Email )
             {
-                StructureEmailCommunication( communication, bag.Subject, bag.Message, bag.FromEmail, bag.FromName, bag.ReplyTo, true, bag.FileAttachmentGuid, binaryFileService );
+                StructureEmailCommunication( communication, bag.Subject, bag.Message, bag.FromEmail, bag.FromName, bag.ReplyTo, true, bag.FileAttachmentGuid, bag.AdditionalEmailRecipients, personService, binaryFileService );
             }
             else if ( communicationType == CommunicationType.SMS )
             {
