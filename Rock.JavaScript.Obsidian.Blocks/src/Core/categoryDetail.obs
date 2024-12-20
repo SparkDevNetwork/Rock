@@ -117,6 +117,7 @@
 
     // Todo define this list in one place and provide it where needed.
     const columnComponents = {
+        // The BooleanFieldType.Guid should map to the BooleanColumn component.
         "1edafded-dfe6-4334-b019-6eecba89e05a": BooleanColumn
     };
 
