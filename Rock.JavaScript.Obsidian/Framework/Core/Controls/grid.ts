@@ -608,7 +608,7 @@ export function dateFilterMatches(needle: unknown, haystack: unknown): boolean {
 // #region Entity Sets
 
 /**
- * Gets the entity set bag that can be send to the server to create an entity
+ * Gets the entity set bag that can be sent to the server to create an entity
  * set representing the selected items in the grid.
  *
  * @param grid The grid state that will be used as the source data.
@@ -867,6 +867,9 @@ function getOrAddRowCacheValue<T>(row: Record<string, unknown>, column: ColumnDe
  */
 function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
     const attributes = getVNodeProp<AttributeFieldDefinitionBag[]>(node, "attributes");
+    const columnType = getVNodeProp<string>(node, "columnType");
+    const columnComponents = getVNodeProp<Record<string, Component>>(node, "columnComponents") ?? {};
+    const defaultColumnComponent = getVNodeProp<Component>(node, "defaultColumnComponent");
     const filter = getVNodeProp<ColumnFilter>(node, "filter");
     const skeletonComponent = getVNodeProp<Component>(node, "skeletonComponent");
 
@@ -879,31 +882,24 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
             continue;
         }
 
-        columns.push({
+        const columnComponent = columnComponents?.[attribute.fieldTypeGuid ?? ""] ?? defaultColumnComponent;
+
+        const vNode = createElementVNode(columnComponent, {
             name: attribute.name,
             title: attribute.title ?? undefined,
             field: attribute.name,
-            sortValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            quickFilterValue: (r, c, g) => getOrAddRowCacheValue(r, c, "quickFilterValue", g, () => c.field ? String(r[c.field]) : undefined),
+            columnType: columnType,
             filter,
             filterValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            exportValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            formatComponent: defaultCell,
-            condensedComponent: defaultCell,
             skeletonComponent,
             hideOnScreen: false,
             excludeFromExport: false,
             visiblePriority: "md",
-            width: {
-                value: 10,
-                unitType: "%"
-            },
-            wrapped: false,
-            disableSort: false,
-            props: {},
-            slots: {},
-            data: {}
+            wrapped: false
         });
+
+        const columnDefinition = buildColumn(attribute.name, vNode);
+        columns.push(columnDefinition);
     }
 }
 

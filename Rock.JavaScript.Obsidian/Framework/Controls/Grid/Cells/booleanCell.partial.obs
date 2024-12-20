@@ -11,7 +11,8 @@
 
     const isTrue = computed(() => {
         if (props.column.field) {
-            return props.row[props.column.field] === true;
+            const value = props.row[props.column.field];
+            return value === true || ["Y", "Yes"].includes(value as string);
         }
         else {
             return false;

@@ -21,6 +21,7 @@ import { AttributeFieldDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/attr
 import { ColumnFilter } from "@Obsidian/Types/Controls/grid";
 import { pickExistingFilterMatches } from "@Obsidian/Core/Controls/grid";
 import TextSkeletonCell from "../Cells/textSkeletonCell.partial.obs";
+import { TextColumn } from "@Obsidian/Controls/grid";
 
 /**
  * This is a special placeholder column that informs the grid where to place
@@ -47,7 +48,24 @@ export default defineComponent({
         },
 
         /**
-         * The filter component to used for filtering these attributes.
+         * The list of ColumnTypes supported by Attributes.
+         */
+        columnComponents: {
+            type: Object as PropType<Record<string, Component>>,
+            required: false
+        },
+
+        /**
+         * The default column component to use if an attribute's field type guid specified
+         * column type is not found in the provided `columnComponents`.
+         */
+        defaultColumnComponent: {
+            type: Object as PropType<Component>,
+            default: () => TextColumn
+        },
+
+        /**
+         * The filter component to be used for filtering these attributes.
          */
         filter: {
             type: Object as PropType<ColumnFilter | null>,
