@@ -115,6 +115,7 @@
         validProperties: config.validProperties
     });
 
+    // Todo define this list in one place and provide it where needed.
     const columnComponents = {
         "1edafded-dfe6-4334-b019-6eecba89e05a": BooleanColumn
     };

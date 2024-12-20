@@ -48,7 +48,7 @@ export default defineComponent({
         },
 
         /**
-         * The list of ColumnTypes supported by Attributes.
+         * The list of column components supported by Attributes.
          */
         columnComponents: {
             type: Object as PropType<Record<string, Component>>,
@@ -57,7 +57,7 @@ export default defineComponent({
 
         /**
          * The default column component to use if an attribute's field type guid specified
-         * column type is not found in the provided `columnComponents`.
+         * column type is not found in the provided `columnComponents`. Defaults to TextColumn.
          */
         defaultColumnComponent: {
             type: Object as PropType<Component>,
