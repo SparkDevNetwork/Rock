@@ -188,6 +188,8 @@ namespace Rock.Blocks.Cms
                 Order = entity.Order,
                 ViewSaturationCount = entity.ViewSaturationCount,
                 ViewSaturationInDays = entity.ViewSaturationInDays,
+                StartDate = entity.StartDate,
+                EndDate = entity.EndDate,
                 Segments = entity.AdaptiveMessageAdaptationSegments.Select( a => a.PersonalizationSegment.Guid.ToString() ).ToList()
             };
         }
@@ -255,6 +257,15 @@ namespace Rock.Blocks.Cms
 
             box.IfValidProperty( nameof( box.Entity.ViewSaturationCount ),
                 () => entity.ViewSaturationCount = box.Entity.ViewSaturationCount );
+
+            box.IfValidProperty( nameof( box.Entity.ViewSaturationInDays ),
+                () => entity.ViewSaturationInDays = box.Entity.ViewSaturationInDays );
+
+            box.IfValidProperty( nameof( box.Entity.StartDate ),
+                () => entity.StartDate = box.Entity.StartDate );
+
+            box.IfValidProperty( nameof( box.Entity.EndDate ),
+                () => entity.EndDate = box.Entity.EndDate );
 
             box.IfValidProperty( nameof( box.Entity.ViewSaturationInDays ),
                 () => entity.ViewSaturationInDays = box.Entity.ViewSaturationInDays );

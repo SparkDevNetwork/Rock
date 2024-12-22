@@ -132,11 +132,13 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AdaptiveMessageId = source.AdaptiveMessageId;
             target.Description = source.Description;
+            target.EndDate = source.EndDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.Name = source.Name;
             target.Order = source.Order;
+            target.StartDate = source.StartDate;
             target.ViewSaturationCount = source.ViewSaturationCount;
             target.ViewSaturationInDays = source.ViewSaturationInDays;
             target.CreatedDateTime = source.CreatedDateTime;

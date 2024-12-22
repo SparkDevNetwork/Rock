@@ -30,7 +30,14 @@
                 </NumberBox>
             </div>
         </div>
-
+        <div class="row">
+            <div class="col-md-3">
+                <DatePicker v-model="startDate" label="Start Date" />
+            </div>
+            <div class="col-md-3">
+                <DatePicker v-model="endDate" label="End Date" />
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-6">
                 <DropDownList
@@ -61,6 +68,7 @@
     import { AdaptiveMessageAdaptationBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationBag";
     import { AdaptiveMessageAdaptationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
 
     const props = defineProps({
         modelValue: {
@@ -81,6 +89,8 @@
 
     // #region Values
 
+    const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
+    const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const description = propertyRef(props.modelValue.description ?? "", "Description");
@@ -91,7 +101,7 @@
     const segments = propertyRef(props.modelValue.segments ?? [], "Segments");
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, segments, viewSaturationCount, viewSaturationInDays];
+    const propRefs = [description, isActive, name, segments, viewSaturationCount, viewSaturationInDays, startDate, endDate];
 
     // #endregion
 
@@ -121,6 +131,8 @@
         updateRefValue(viewSaturationCount, props.modelValue.viewSaturationCount ?? null);
         updateRefValue(viewSaturationInDays, props.modelValue.viewSaturationInDays ?? null);
         updateRefValue(segments, props.modelValue.segments ?? []);
+        updateRefValue(startDate, props.modelValue.startDate ?? "");
+        updateRefValue(endDate, props.modelValue.endDate ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -134,7 +146,9 @@
             viewSaturationCount: viewSaturationCount.value,
             isActive: isActive.value,
             name: name.value,
-            segments: segments.value
+            segments: segments.value,
+            startDate: startDate.value,
+            endDate: endDate.value
         };
 
         emit("update:modelValue", newValue);

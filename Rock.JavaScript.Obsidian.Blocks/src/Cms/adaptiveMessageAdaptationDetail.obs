@@ -7,6 +7,7 @@
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
                  :name="panelName"
+                 :title="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
@@ -63,7 +64,9 @@
         "name",
         "viewSaturationCount",
         "viewSaturationInDays",
-        "segments"
+        "segments",
+        "startDate",
+        "endDate"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(adaptiveMessageAdaptationEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -76,6 +79,10 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
+        if (DetailPanelMode.Add == panelMode.value) {
+            return "Add Message Adaptation";
+        }
+
         return adaptiveMessageAdaptationEditBag.value?.name ?? "";
     });
 

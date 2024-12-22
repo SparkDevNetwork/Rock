@@ -144,7 +144,7 @@ namespace Rock.Lava.Blocks
 
                 var rockContext = new RockContext();
                 var adaptiveMessageAdaptationService = new AdaptiveMessageAdaptationService( rockContext );
-                var isTrackViews = _settings.GetBoolean( ParameterTrackviews );
+                var isTrackViews = parms.GetValueOrNull( ParameterTrackviews ).AsBoolean();
                 var person = context.GetMergeField( "Person" ) as Model.Person;
                 if ( person == null )
                 {

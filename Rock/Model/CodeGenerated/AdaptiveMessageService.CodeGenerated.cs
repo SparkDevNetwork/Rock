@@ -131,11 +131,13 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.Description = source.Description;
+            target.EndDate = source.EndDate;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
             target.Key = source.Key;
             target.Name = source.Name;
+            target.StartDate = source.StartDate;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;
