@@ -987,7 +987,11 @@ INNER JOIN @DuplicateRecipients dr
 UPDATE cr
 SET cr.[ModifiedDateTime] = @Now
     , cr.[Status] = @SendingStatus
-    , cr.[FirstSendAttemptDateTime] = @FirstSendAttemptDateTime
+    , cr.[FirstSendAttemptDateTime] = CASE
+        WHEN cr.[FirstSendAttemptDateTime] IS NOT NULL
+            THEN cr.[FirstSendAttemptDateTime]
+            ELSE @FirstSendAttemptDateTime
+        END
 OUTPUT INSERTED.[Id]
 FROM [CommunicationRecipient] cr
 WHERE cr.[Id] IN (
