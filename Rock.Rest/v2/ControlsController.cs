@@ -8486,7 +8486,7 @@ namespace Rock.Rest.v2
                 } );
             }
 
-            return items;
+            return items.OrderBy( a => a.Text ).ToList();
         }
 
         /// <summary>
