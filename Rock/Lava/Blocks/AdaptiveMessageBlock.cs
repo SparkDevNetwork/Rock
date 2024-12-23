@@ -160,27 +160,27 @@ namespace Rock.Lava.Blocks
                 List<AdaptiveMessageCache> adaptiveMessages = new List<AdaptiveMessageCache>();
                 if ( commandMode == CommandMode.Message )
                 {
-                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.Key == messageKey ).ToList();
+                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.Key == messageKey && a.IsActive ).ToList();
                 }
                 else
                 {
                     var categoryService = new CategoryService( rockContext );
                     var categoryGuid = categoryService.GetGuid( categoryId.Value );
 
-                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.CategoryIds.Contains( categoryId.Value ) ).ToList();
+                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.CategoryIds.Contains( categoryId.Value ) && a.IsActive ).ToList();
                     GetAaptiveMessageForChildCategories( rockContext, adaptiveMessages, categoryGuid );
                 }
 
 
                 var adaptationQry = adaptiveMessages
                        .SelectMany( a => a.Adaptations.OrderBy( b => b.Order ).ThenBy( b => b.Name ).Take( adaptationPerMessage.Value ) )
-                       .Where( a => !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) );
+                       .Where( a => a.IsActive && ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) );
 
                 if ( commandMode == CommandMode.Category )
                 {
                     adaptationQry = adaptationQry.Take( maxAdaptations.Value );
                 }
-                       
+
                 AddLavaMergeFieldsToContext( context, adaptationQry.ToList() );
 
                 if ( isTrackViews && adaptationQry.Any() )
