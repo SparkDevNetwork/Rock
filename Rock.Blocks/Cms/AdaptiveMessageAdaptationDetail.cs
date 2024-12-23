@@ -52,6 +52,8 @@ namespace Rock.Blocks.Cms
     [Rock.SystemGuid.BlockTypeGuid( "113c4223-19b9-46f2-aae8-ac646bc5a3c7" )]
     public class AdaptiveMessageAdaptationDetail : RockDetailBlockType
     {
+        private AdaptiveMessageAdaptation SelectedAdaptiveMessageAdaptation { get; set; }
+
         #region Keys
 
         private static class PageParameterKey
@@ -311,6 +313,21 @@ namespace Rock.Blocks.Cms
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
             var adaptiveMessageId = RequestContext.GetPageParameter( PageParameterKey.AdaptiveMessageId );
+            if ( adaptiveMessageId.IsNullOrWhiteSpace() )
+            {
+                var adaptiveMessageAdaptation = GetAdaptiveMessageAdaptation();
+                if ( adaptiveMessageAdaptation != null )
+                {
+                    return new Dictionary<string, string>
+                    {
+                        [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
+                        {
+                            [PageParameterKey.AdaptiveMessageId] = adaptiveMessageAdaptation.AdaptiveMessageId.ToString()
+                        } )
+                    };
+                }
+            }
+
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
@@ -396,6 +413,16 @@ namespace Rock.Blocks.Cms
             }
 
             return true;
+        }
+
+        private AdaptiveMessageAdaptation GetAdaptiveMessageAdaptation()
+        {
+            if ( SelectedAdaptiveMessageAdaptation == null )
+            {
+                SelectedAdaptiveMessageAdaptation = new AdaptiveMessageAdaptationService( new RockContext() ).Get( RequestContext.GetPageParameter( PageParameterKey.AdaptiveMessageAdaptationId ) );
+            }
+
+            return SelectedAdaptiveMessageAdaptation;
         }
 
         #endregion

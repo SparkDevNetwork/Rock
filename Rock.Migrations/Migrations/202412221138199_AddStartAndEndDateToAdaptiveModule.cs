@@ -52,8 +52,10 @@ DELETE FROM [Page] WHERE [Guid] = 'BEC30E90-0434-43C4-B839-09E11775E497'
             RockMigrationHelper.AddBlockAttributeValue( "9912C605-6699-4484-B88B-469171F2F693", "D2596ADF-4455-42A4-848F-6DFD816C2867", @"fas fa-comment-alt" );
             RockMigrationHelper.DeleteAttribute( "8562A1F2-2942-4721-9585-18FC3E385F5B" );
             RockMigrationHelper.AddBlockAttributeValue( "859B5FE9-9068-40EC-B7AD-78598BEDC6AA", "E4F286BC-9338-4E17-ABFF-4578793B7A54", @"fe12a90c-c20f-4f23-a1b1-528e0c5fda83" );
+            RockMigrationHelper.AddOrUpdatePageRoute("73112D38-E051-4452-AEF9-E473EEDD0BCB","admin/cms/adaptive-messages/{CategoryId}","1D7CF736-0163-4701-AA4E-FFDA2E66B2DA");
+            RockMigrationHelper.AddBlockAttributeValue("9912C605-6699-4484-B88B-469171F2F693","AEE521D8-124D-4BB3-8A80-5F368E5CEC15",@"73112d38-e051-4452-aef9-e473eedd0bcb");
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>

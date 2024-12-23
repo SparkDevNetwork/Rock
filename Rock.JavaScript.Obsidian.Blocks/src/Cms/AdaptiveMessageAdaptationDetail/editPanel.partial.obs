@@ -20,10 +20,10 @@
 
         <div class="row">
             <div class="col-md-3">
-                <NumberBox v-model="viewSaturationCount" label="View Saturation Count" help="The number of times a person should view the message before it's deemed to have been saturated." />
+                <NumberBox :minimumValue="0" v-model="viewSaturationCount" label="View Saturation Count" help="The number of times a person should view the message before it's deemed to have been saturated." />
             </div>
             <div class="col-md-3">
-                <NumberBox v-model="viewSaturationInDays" label="View Saturation Date Range" help="Specify the number of days to be taken into consideration for the saturation calculation of views. Views outside this range will not be considered.">
+                <NumberBox :minimumValue="0" v-model="viewSaturationInDays" label="View Saturation Date Range" help="Specify the number of days to be taken into consideration for the saturation calculation of views. Views outside this range will not be considered.">
                     <template #inputGroupAppend>
                         <span class="input-group-addon">days</span>
                     </template>
@@ -45,12 +45,12 @@
                               enhanceForLongLists
                               multiple
                               label="Segments"
-                              help="The segment that an individual need to be in order for this message adaptation to be considered relevant. Leave blank for all individuals to be considered relevant."
+                              help="The segments that an individual needs to be in order for this message adaptation to be considered relevant. Leave blank for all individuals to be considered relevant."
                               :items="segmentOptions" />
             </div>
         </div>
         <SectionHeader class="margin-t-lg" title="Message Content"
-                       description="The items below represent different forms of content that can the associated with the message." />
+                       description="The items below represent different forms of content that can be associated with the message." />
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="1" :showCategoryLabel="false" />
     </fieldset>
 </template>
