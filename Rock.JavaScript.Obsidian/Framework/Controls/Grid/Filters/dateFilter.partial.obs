@@ -16,6 +16,12 @@
     </div>
 </template>
 
+<style>
+.grid-filter-popup .datepicker.datepicker-dropdown.dropdown-menu {
+    min-width: 250px;
+}
+</style>
+
 <script setup lang="ts">
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import { ref, watch, computed } from "vue";
