@@ -218,7 +218,7 @@
                                             <div class="flex-fill">
                                                 <h3 class="m-0"><%# Eval("Name") %></h3>
                                                 <div class="position-relative">
-                                                    <span class="position-absolute pt-2 inset-0 d-inline-flex align-items-center text-muted text-sm group-hover-item"><%# Eval("Description") %></span>
+                                                    <span class="position-absolute d-inline-flex align-items-center text-muted text-sm group-hover-item"><%# Eval("Description") %></span>
                                                 </div>
                                             </div>
                                             <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center" runat="server">
