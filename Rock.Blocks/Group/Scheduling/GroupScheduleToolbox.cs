@@ -789,7 +789,6 @@ namespace Rock.Blocks.Group.Scheduling
             box.SchedulePreferencesButtonText = GetAttributeValue( AttributeKey.UpdateSchedulePreferencesButtonText );
             box.ScheduleUnavailabilityButtonText = GetAttributeValue( AttributeKey.ScheduleUnavailabilityButtonText );
             box.AdditionalTimeSignUpsButtonText = GetAttributeValue( AttributeKey.AdditionalTimeSignUpButtonText );
-            box.AdditionalTimeSignUpsButtonText = GetAttributeValue( AttributeKey.AdditionalTimeSignUpButtonText );
             box.ConfirmedButtonText = GetAttributeValue( AttributeKey.ConfirmedButtonText );
             box.DeclineButtonText = GetAttributeValue( AttributeKey.DeclineButtonText );
         }
