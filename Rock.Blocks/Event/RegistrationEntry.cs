@@ -154,6 +154,7 @@ namespace Rock.Blocks.Event
             public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
             public const string EnableSavedAccount = "EnableSavedAccount";
+            public const string EnableACHForEvents = "Ach";
         }
 
         /// <summary>
@@ -4674,7 +4675,7 @@ namespace Rock.Blocks.Event
         /// <returns>A list of <see cref="DefinedValueCache"/> objects that represent the currency types.</returns>
         private List<DefinedValueCache> GetAllowedCurrencyTypes( GatewayComponent gatewayComponent )
         {
-            var enableACH = true;// this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            var enableACH = gatewayComponent.GetAttributeValue( AttributeKey.EnableACHForEvents ).AsBoolean();
             var enableCreditCard = true;// this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
             var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
             var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );

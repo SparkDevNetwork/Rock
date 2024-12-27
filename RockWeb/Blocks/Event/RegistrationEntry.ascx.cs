@@ -146,6 +146,7 @@ namespace RockWeb.Blocks.Event
             public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
             public const string EnableSavedAccount = "EnableSavedAccount";
+            public const string EnableACHForEvents = "Ach";
         }
 
         #region Fields
@@ -6184,7 +6185,10 @@ namespace RockWeb.Blocks.Event
                         var component = RegistrationTemplate.FinancialGateway.GetGatewayComponent();
                         if ( component != null )
                         {
-                            BindSavedAccounts( component );
+                            if ( RegistrationTemplate.FinancialGateway.GetAttributeValue( AttributeKey.EnableACHForEvents ).AsBoolean() )
+                            {
+                                BindSavedAccounts( component );
+                            }
 
                             if ( rblSavedCC.Items.Count > 0 )
                             {
