@@ -1339,6 +1339,7 @@ namespace Rock.Blocks.Group
 
             var groupLocationSchedulesQuery = groupLocationsQuery
                 .SelectMany( gl => gl.Schedules )
+                .Where( a => a.IsActive )
                 .OrderBy( s => s.Name )
                 .Distinct();
 
