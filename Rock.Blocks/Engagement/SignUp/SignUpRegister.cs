@@ -706,7 +706,7 @@ namespace Rock.Blocks.Engagement.SignUp
             var personGroupRequirementStatuses = group.PersonMeetsGroupRequirements( rockContext, personId, groupRoleId );
             foreach ( var personGroupRequirementStatus in personGroupRequirementStatuses
                                                                 .Where( s => s.GroupRequirement.MustMeetRequirementToAddMember
-                                                                            && s.MeetsGroupRequirement != MeetsGroupRequirement.Meets ) )
+                                                                            && s.MeetsGroupRequirement != MeetsGroupRequirement.Meets && s.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
             {
                 var groupRequirementType = personGroupRequirementStatus.GroupRequirement.GroupRequirementType;
                 if ( groupRequirementType == null )
