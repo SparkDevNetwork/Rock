@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.SystemGuid;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.Attributes;
 using Rock.ViewModels.Utility;
@@ -424,6 +425,36 @@ namespace Rock.Blocks.Core
             return securityGrant.ToToken();
         }
 
+        /// <summary>
+        /// Gets the view model that represents the attribute for editing.
+        /// </summary>
+        /// <param name="attribute">The attribute to be edited.</param>
+        /// <returns>A view model that represents the attribute.</returns>
+        private EditAttributeViewModel GetEditAttributeViewModel( Model.Attribute attribute )
+        {
+            EntityTypeCache entityTypeCache = null;
+            List<string> validQualifierProperties = null;
+
+            if ( attribute.EntityTypeId.HasValue )
+            {
+                entityTypeCache = EntityTypeCache.Get( attribute.EntityTypeId.Value, RockContext );
+
+                validQualifierProperties = entityTypeCache?.GetAttributeQualifierProperties();
+            }
+
+            var isLegacyPlugin = entityTypeCache?.Name.StartsWith( "Rock.Model." ) == false && validQualifierProperties.Count == 0;
+
+            return new EditAttributeViewModel
+            {
+                Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ),
+                EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn,
+                EntityTypeQualifierValue = attribute.EntityTypeQualifierValue,
+                ValidQualifierColumns = validQualifierProperties,
+                IsLegacyPlugin = isLegacyPlugin,
+                EntityTypeGuid = entityTypeCache?.Guid ?? Guid.Empty
+            };
+        }
+
         #endregion
 
         #region Block Actions
@@ -541,14 +572,29 @@ namespace Rock.Blocks.Core
                     return ActionBadRequest();
                 }
 
-                return ActionOk( new EditAttributeViewModel
-                {
-                    Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ),
-                    EntityTypeQualifierColumn = attribute.EntityTypeQualifierColumn,
-                    EntityTypeQualifierValue = attribute.EntityTypeQualifierValue,
-                    EntityTypeGuid = attribute.EntityType?.Guid ?? Guid.Empty
-                } );
+                return ActionOk( GetEditAttributeViewModel( attribute ) );
             }
+        }
+
+        /// <summary>
+        /// Gets the attribute representation for editing a new attribute.
+        /// </summary>
+        /// <param name="entityTypeGuid">The unique identifier of the entity type this attribute will be valid for.</param>
+        /// <returns>A response that includes the editable representation of the attribute.</returns>
+        [BlockAction]
+        public BlockActionResult NewAttribute( Guid? entityTypeGuid )
+        {
+            var attribute = new Model.Attribute
+            {
+                FieldTypeId = FieldTypeCache.Get( SystemGuid.FieldType.TEXT.AsGuid(), RockContext ).Id,
+            };
+
+            if ( entityTypeGuid.HasValue )
+            {
+                attribute.EntityTypeId = EntityTypeCache.Get( entityTypeGuid.Value, RockContext )?.Id;
+            }
+
+            return ActionOk( GetEditAttributeViewModel( attribute ) );
         }
 
         /// <summary>
@@ -687,6 +733,10 @@ namespace Rock.Blocks.Core
         public string EntityTypeQualifierColumn { get; set; }
 
         public string EntityTypeQualifierValue { get; set; }
+
+        public List<string> ValidQualifierColumns { get; set; }
+
+        public bool IsLegacyPlugin { get; set; }
 
         public Guid EntityTypeGuid { get; set; }
 

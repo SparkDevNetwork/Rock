@@ -63,7 +63,7 @@ namespace Rock.Model
         [DataMember]
         [IgnoreCanDelete]
         [EnableAttributeQualification]
-        public int? RegistrationTemplateId { get; private set; }
+        public int? RegistrationTemplateId { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.PersonAlias"/> identifier.

@@ -61,6 +61,28 @@ INNER JOIN [AttributeMatrix] AS [AM] ON [AM].[Id] = [AMI].[AttributeMatrixId]" )
             AlterColumn( "dbo.Page", "SiteId", c => c.Int() );
             AlterColumn( "dbo.Registration", "RegistrationTemplateId", c => c.Int() );
             AlterColumn( "dbo.AttributeMatrixItem", "AttributeMatrixTemplateId", c => c.Int() );
+
+            // This is used by the Attribute Value SQL Views related to Groups
+            // so they can find propert attributes on the nested inheritence.
+            Sql( @"
+CREATE VIEW [dbo].[GroupTypeInheritance]
+AS
+WITH cte AS
+(
+    SELECT
+        [GT].[Id]
+        , [GT].[InheritedGroupTypeId]
+    FROM [GroupType] AS [GT]
+
+    UNION ALL
+    
+    SELECT
+        [cte].[Id]
+        , [GT].[InheritedGroupTypeId]
+    FROM [cte]
+    INNER JOIN [GroupType] AS [GT] ON [GT].[Id] = [cte].[InheritedGroupTypeId]
+)
+SELECT * FROM cte WHERE [InheritedGroupTypeId] IS NOT NULL" );
         }
 
         /// <summary>
@@ -68,6 +90,7 @@ INNER JOIN [AttributeMatrix] AS [AM] ON [AM].[Id] = [AMI].[AttributeMatrixId]" )
         /// </summary>
         public override void Down()
         {
+            Sql( "DROP VIEW [dbo].[GroupTypeInheritance]" );
             DropIndex( "dbo.Attribute", "IX_DefaultValueChecksum" );
             DropColumn( "dbo.AttributeMatrixItem", "AttributeMatrixTemplateId" );
             DropColumn( "dbo.Registration", "RegistrationTemplateId" );

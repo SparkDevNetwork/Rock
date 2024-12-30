@@ -573,7 +573,8 @@ namespace Rock.Blocks.Event
                     // for the various support methods used.
                     context.Registration = new Registration
                     {
-                        RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId
+                        RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId,
+                        RegistrationTemplateId = context.RegistrationSettings.RegistrationTemplateId
                     };
 
                     if ( context.RegistrationSettings.RegistrarOption == RegistrarOption.UseLoggedInPerson && RequestContext.CurrentPerson != null )
@@ -1196,7 +1197,8 @@ namespace Rock.Blocks.Event
                 // This is a new registration
                 context.Registration = new Registration
                 {
-                    RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId
+                    RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId,
+                    RegistrationTemplateId = context.RegistrationSettings.RegistrationTemplateId
                 };
 
                 var registrationService = new RegistrationService( rockContext );
@@ -3178,6 +3180,7 @@ namespace Rock.Blocks.Event
                 {
                     Guid = registrantInfo.Guid,
                     RegistrationId = context.Registration.Id,
+                    RegistrationTemplateId = context.Registration.RegistrationTemplateId.Value,
                     Cost = context.RegistrationSettings.PerRegistrantCost
                 };
                 registrantService.Add( registrant );

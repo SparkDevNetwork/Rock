@@ -847,18 +847,21 @@ namespace Rock.Data
                             [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
                             [IconCssClass],[Guid])
                         VALUES(
-                            ''{2}'',''{2}'',''{2}'',1,@ParentPageId,@LayoutId,@SiteId,
+                            @Name,@Name,@Name,1,@ParentPageId,@LayoutId,@SiteId,
                             0,1,
                             1,1,1,1,
                             0,0,1,0,
                             1,0,
-                            @Order,0,''{3}'',1,
-                            ''{5}'',''{4}'')',
-                            N'@ParentPageId INT, @LayoutId INT, @SiteId INT, @Order INT',
+                            @Order,0,@Description,1,
+                            @IconCssClass,''{4}'')',
+                            N'@ParentPageId INT, @LayoutId INT, @SiteId INT, @Order INT, @Name NVARCHAR(MAX), @Description NVARCHAR(MAX), @IconCssClass NVARCHAR(MAX)',
                             @ParentPageId = @ParentPageId,
                             @LayoutId = @LayoutId,
                             @SiteId = @SiteId,
-                            @Order = @Order
+                            @Order = @Order,
+                            @Name = '{2}',
+                            @Description = '{3}',
+                            @IconCssClass = '{5}'
                 END
                 ELSE
                 BEGIN
