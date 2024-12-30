@@ -34,6 +34,27 @@ namespace Rock.Rest.Filters
     /// </summary>
     public class SecuredAttribute : ActionFilterAttribute
     {
+        private string _securityAction;
+
+        /// <summary>
+        /// Creates a new instance of <see cref="SecuredAttribute"/> that
+        /// automatically detects the security action based on the HTTP verb
+        /// of the request.
+        /// </summary>
+        public SecuredAttribute()
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="SecuredAttribute"/> that
+        /// uses the specified security action when authorizing the request.
+        /// </summary>
+        /// <param name="securityAction">The security action such as VIEW or EDIT.</param>
+        public SecuredAttribute( string securityAction )
+        {
+            _securityAction = securityAction;
+        }
+
         /// <summary>
         /// Occurs before the action method is invoked.
         /// </summary>
@@ -132,8 +153,13 @@ namespace Rock.Rest.Filters
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
             }
 
-            string action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ?
-                Security.Authorization.VIEW : Security.Authorization.EDIT;
+            string action = _securityAction;
+
+            if ( action.IsNullOrWhiteSpace() )
+            {
+                action = actionMethod.Equals( "GET", StringComparison.OrdinalIgnoreCase ) ?
+                    Security.Authorization.VIEW : Security.Authorization.EDIT;
+            }
 
             bool authorized = false;
 

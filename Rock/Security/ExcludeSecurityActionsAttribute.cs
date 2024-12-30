@@ -21,41 +21,30 @@ namespace Rock.Security
     /// <summary>
     /// <para>
     /// An Attribute that can be used by objects that implement ISecured
-    /// to add an additional security action or change the description of an
-    /// action.
+    /// to exclude inherited security actions.
     /// </para>
     /// <para>
     /// This is only supported by a few select object types in Rock.
     /// </para>
     /// </summary>
     [AttributeUsage( AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true )]
-    public class SecurityActionAttribute : System.Attribute
+    public class ExcludeSecurityActionsAttribute : System.Attribute
     {
         /// <summary>
-        /// Gets or sets the action to add or change description for
+        /// Gets or sets the actions to remove.
         /// </summary>
         /// <value>
         /// The Action.
         /// </value>
-        public string Action { get; set; }
+        public string[] Actions { get; set; }
 
         /// <summary>
-        /// Gets or sets the description of the action
+        /// Initializes a new instance of the <see cref="ExcludeSecurityActionsAttribute" /> class.
         /// </summary>
-        /// <value>
-        /// The description.
-        /// </value>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SecurityActionAttribute" /> class.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="description">The description.</param>
-        public SecurityActionAttribute( string action, string description )
+        /// <param name="actions">The action.</param>
+        public ExcludeSecurityActionsAttribute( params string[] actions )
         {
-            this.Action = action;
-            this.Description = description;
+            this.Actions = actions;
         }
     }
 }

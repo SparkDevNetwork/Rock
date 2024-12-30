@@ -169,7 +169,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>The requested item.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
         [Route( ""{{id}}"" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( {modelType.FullName} ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -198,7 +199,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An object that contains the new identifier values.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
         [Route( """" )]
         [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -229,7 +231,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An empty response.</returns>
         [HttpPut]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
         [Route( ""{{id}}"" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -260,7 +263,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An empty response.</returns>
         [HttpPatch]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
         [Route( ""{{id}}"" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -289,7 +293,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An empty response.</returns>
         [HttpDelete]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
         [Route( ""{{id}}"" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -318,7 +323,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An array of objects that represent all the attribute values.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
         [Route( ""{{id}}/attributevalues"" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -349,7 +355,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An empty response.</returns>
         [HttpPatch]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
         [Route( ""{{id}}/attributevalues"" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -359,6 +366,33 @@ namespace Rock.CodeGeneration.FileGenerators
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {{
             return new RestApiHelper<{modelType.FullName}, {modelType.FullName}Service>( this ).PatchAttributeValues( id, values );
+        }}
+";
+        }
+
+        /// <summary>
+        /// Generates the content of the PostSearch action.
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        /// <param name="actionGuid">The unique identifier to use for the action.</param>
+        /// <returns>A string that contains the content for the action.</returns>
+        private static string GeneratePostSearchAction( Type modelType, Guid actionGuid )
+        {
+            return $@"        /// <summary>
+        /// Performs a search of items using the specified user query.
+        /// </summary>
+        /// <param name=""query"">Query options to be applied.</param>
+        /// <returns>An array of objects returned by the query.</returns>
+        [HttpPost]
+        [Authenticate]
+        [Secured( Security.Authorization.VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
+        [Route( ""search"" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
+        [SystemGuid.RestActionGuid( ""{actionGuid}"" )]
+        public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
+        {{
+            return new RestApiHelper<{modelType.FullName}, {modelType.FullName}Service>( this ).Search( query );
         }}
 ";
         }
@@ -378,6 +412,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An array of objects returned by the query.</returns>
         [HttpGet]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_VIEW, Security.Authorization.UNRESTRICTED_EDIT )]
         [Route( ""search/{{searchKey}}"" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -406,6 +441,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_VIEW, Security.Authorization.UNRESTRICTED_EDIT )]
         [Route( ""search/{{searchKey}}"" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -415,32 +451,6 @@ namespace Rock.CodeGeneration.FileGenerators
         public IActionResult PostSearchByKey( [FromBody] EntitySearchQueryBag query, string searchKey )
         {{
             return new RestApiHelper<{modelType.FullName}, {modelType.FullName}Service>( this ).Search( searchKey, query );
-        }}
-";
-        }
-
-        /// <summary>
-        /// Generates the content of the PostSearch action.
-        /// </summary>
-        /// <param name="modelType">Type of the model.</param>
-        /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        /// <returns>A string that contains the content for the action.</returns>
-        private static string GeneratePostSearchAction( Type modelType, Guid actionGuid )
-        {
-            return $@"        /// <summary>
-        /// Performs a search of items using the specified user query.
-        /// </summary>
-        /// <param name=""query"">Query options to be applied.</param>
-        /// <returns>An array of objects returned by the query.</returns>
-        [HttpPost]
-        [Authenticate]
-        [Secured]
-        [Route( ""search"" )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
-        [SystemGuid.RestActionGuid( ""{actionGuid}"" )]
-        public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
-        {{
-            return new RestApiHelper<{modelType.FullName}, {modelType.FullName}Service>( this ).Search( query );
         }}
 ";
         }

@@ -99,21 +99,10 @@ namespace Rock.Model
                             {
                                 actions.TryAdd( sa.Action, sa.Description );
                             }
-                        }
 
-                        // If this is the new API endpoints, automatically remove actions
-                        // that do not apply based on the method.
-                        if ( controller.ClassName.StartsWith( "Rock.Rest.v2." ) )
-                        {
-                            if ( Method.Equals( "GET", System.StringComparison.OrdinalIgnoreCase ) )
+                            foreach ( var action in method.GetCustomAttributes<ExcludeSecurityActionsAttribute>().SelectMany( esa => esa.Actions ) )
                             {
-                                actions.Remove( Authorization.EDIT );
-                                actions.Remove( "UnrestrictedEdit" );
-                            }
-                            else
-                            {
-                                actions.Remove( Authorization.VIEW );
-                                actions.Remove( "UnrestrictedView" );
+                                actions.Remove( action );
                             }
                         }
 

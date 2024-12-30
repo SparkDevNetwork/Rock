@@ -61,7 +61,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>The requested item.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Rock.Model.PhoneNumber ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -80,7 +81,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An object that contains the new identifier values.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
         [Route( "" )]
         [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -101,7 +103,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An empty response.</returns>
         [HttpPut]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -122,7 +125,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An empty response.</returns>
         [HttpPatch]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -141,7 +145,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An empty response.</returns>
         [HttpDelete]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -160,7 +165,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects that represent all the attribute values.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
         [Route( "{id}/attributevalues" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -181,7 +187,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An empty response.</returns>
         [HttpPatch]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
         [Route( "{id}/attributevalues" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -200,7 +207,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
         [Route( "search" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [SystemGuid.RestActionGuid( "82675a0f-4661-44f4-b749-f203ef8eb7a2" )]
@@ -216,6 +224,7 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpGet]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_VIEW, Security.Authorization.UNRESTRICTED_EDIT )]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -234,6 +243,7 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_VIEW, Security.Authorization.UNRESTRICTED_EDIT )]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
