@@ -7018,7 +7018,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "PageNavButtonsGetLinks" )]
         [Rock.SystemGuid.RestActionGuid( "49F4C35C-5528-44F3-9057-DCD3C387C8A5" )]
-        public IHttpActionResult PageNavButtonsGetLinks( [FromBody] PageNavButtonsGetLinksOptionsBag options )
+        public IActionResult PageNavButtonsGetLinks( [FromBody] PageNavButtonsGetLinksOptionsBag options )
         {
             if ( options.RootPageGuid == null || options.RootPageGuid.IsEmpty() )
             {
@@ -8007,7 +8007,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "SearchFieldGetSearchFilters" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "6FF52C9E-985B-46C3-B5A5-E69312D189CB" )]
-        public IHttpActionResult SearchFieldGetSearchFilters()
+        public IActionResult SearchFieldGetSearchFilters()
         {
             var searchExtensions = new Dictionary<string, ListItemBag>();
 
