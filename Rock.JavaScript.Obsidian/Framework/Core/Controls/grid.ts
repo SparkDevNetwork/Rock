@@ -870,29 +870,17 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
     const filter = getVNodeProp<ColumnFilter>(node, "filter");
     const skeletonComponent = getVNodeProp<Component>(node, "skeletonComponent") ?? defaultCell;
     const formatComponent = getVNodeProp<Component>(node, "formatComponent") ?? defaultCell;
-    let exportValue = getVNodeProp<ExportValueFunction>(node, "exportValue");
-    let sortValue = getVNodeProp<SortValueFunction>(node, "sortValue");
-    let quickFilterValue = getVNodeProp<QuickFilterValueFunction>(node, "quickFilterValue");
-    let filterValue = getVNodeProp<FilterValueFunction>(node, "filterValue");
+    const exportValue = getVNodeProp<ExportValueFunction>(node, "exportValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
+    const sortValue = getVNodeProp<SortValueFunction>(node, "sortValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
+    const quickFilterValue = getVNodeProp<QuickFilterValueFunction>(node, "quickFilterValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
+    const filterValue = getVNodeProp<FilterValueFunction>(node, "filterValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
 
     if (!attributes) {
         return;
-    }
-
-    if (!exportValue) {
-        exportValue = (r, c) => c.field ? String(r[c.field]) : undefined;
-    }
-
-    if (!sortValue) {
-        sortValue = (r, c) => c.field ? String(r[c.field]) : undefined;
-    }
-
-    if (!quickFilterValue) {
-        quickFilterValue = (r, c) => c.field ? String(r[c.field]) : undefined;
-    }
-
-    if (!filterValue) {
-        filterValue = (r, c) => c.field ? String(r[c.field]) : undefined;
     }
 
     for (const attribute of attributes) {
