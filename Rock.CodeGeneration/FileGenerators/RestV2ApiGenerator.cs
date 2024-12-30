@@ -133,15 +133,20 @@ namespace Rock.CodeGeneration.FileGenerators
 
             if ( hasSearch )
             {
-                var actionGuid = GetExistingActionGuid( existingContent, "GetSearch" ) ?? Guid.NewGuid();
-
-                content.AppendLine();
-                content.Append( GenerateGetSearchAction( modelType, actionGuid ) );
-
-                actionGuid = GetExistingActionGuid( existingContent, "PostSearch" ) ?? Guid.NewGuid();
+                var actionGuid = GetExistingActionGuid( existingContent, "PostSearch" ) ?? Guid.NewGuid();
 
                 content.AppendLine();
                 content.Append( GeneratePostSearchAction( modelType, actionGuid ) );
+
+                actionGuid = GetExistingActionGuid( existingContent, "GetSearchByKey" ) ?? Guid.NewGuid();
+
+                content.AppendLine();
+                content.Append( GenerateGetSearchByKeyAction( modelType, actionGuid ) );
+
+                actionGuid = GetExistingActionGuid( existingContent, "PostSearchByKey" ) ?? Guid.NewGuid();
+
+                content.AppendLine();
+                content.Append( GeneratePostSearchByKeyAction( modelType, actionGuid ) );
             }
 
             content.AppendLine( "    }" );
@@ -364,7 +369,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="modelType">Type of the model.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
         /// <returns>A string that contains the content for the action.</returns>
-        private static string GenerateGetSearchAction( Type modelType, Guid actionGuid )
+        private static string GenerateGetSearchByKeyAction( Type modelType, Guid actionGuid )
         {
             return $@"        /// <summary>
         /// Performs a search of items using the specified system query.
@@ -373,15 +378,43 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An array of objects returned by the query.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured]
         [Route( ""search/{{searchKey}}"" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( ""{actionGuid}"" )]
-        public IActionResult GetSearch( string searchKey )
+        public IActionResult GetSearchByKey( string searchKey )
         {{
             return new RestApiHelper<{modelType.FullName}, {modelType.FullName}Service>( this ).Search( searchKey, null );
+        }}
+";
+        }
+
+        /// <summary>
+        /// Generates the content of the PostSearch action.
+        /// </summary>
+        /// <param name="modelType">Type of the model.</param>
+        /// <param name="actionGuid">The unique identifier to use for the action.</param>
+        /// <returns>A string that contains the content for the action.</returns>
+        private static string GeneratePostSearchByKeyAction( Type modelType, Guid actionGuid )
+        {
+            return $@"        /// <summary>
+        /// Performs a search of items using the specified system query.
+        /// </summary>
+        /// <param name=""query"">Additional query refinement options to be applied.</param>
+        /// <param name=""searchKey"">The key that identifies the entity search query to execute.</param>
+        /// <returns>An array of objects returned by the query.</returns>
+        [HttpPost]
+        [Authenticate]
+        [Route( ""search/{{searchKey}}"" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [SystemGuid.RestActionGuid( ""{actionGuid}"" )]
+        public IActionResult PostSearchByKey( [FromBody] EntitySearchQueryBag query, string searchKey )
+        {{
+            return new RestApiHelper<{modelType.FullName}, {modelType.FullName}Service>( this ).Search( searchKey, query );
         }}
 ";
         }
@@ -395,23 +428,19 @@ namespace Rock.CodeGeneration.FileGenerators
         private static string GeneratePostSearchAction( Type modelType, Guid actionGuid )
         {
             return $@"        /// <summary>
-        /// Performs a search of items using the specified system query.
+        /// Performs a search of items using the specified user query.
         /// </summary>
-        /// <param name=""query"">Additional query refinement options to be applied.</param>
-        /// <param name=""searchKey"">The key that identifies the entity search query to execute.</param>
+        /// <param name=""query"">Query options to be applied.</param>
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
         [Secured]
-        [Route( ""search/{{searchKey}}"" )]
+        [Route( ""search"" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( ""{actionGuid}"" )]
-        public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query, string searchKey )
+        public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {{
-            return new RestApiHelper<{modelType.FullName}, {modelType.FullName}Service>( this ).Search( searchKey, query );
+            return new RestApiHelper<{modelType.FullName}, {modelType.FullName}Service>( this ).Search( query );
         }}
 ";
         }

@@ -194,19 +194,34 @@ namespace Rock.Rest.v2.Models
         }
 
         /// <summary>
+        /// Performs a search of items using the specified user query.
+        /// </summary>
+        /// <param name="query">Query options to be applied.</param>
+        /// <returns>An array of objects returned by the query.</returns>
+        [HttpPost]
+        [Authenticate]
+        [Secured]
+        [Route( "search" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
+        [SystemGuid.RestActionGuid( "1bb21269-ef54-422d-b2d9-940c0c596f26" )]
+        public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
+        {
+            return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Search( query );
+        }
+
+        /// <summary>
         /// Performs a search of items using the specified system query.
         /// </summary>
         /// <param name="searchKey">The key that identifies the entity search query to execute.</param>
         /// <returns>An array of objects returned by the query.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "3e9ffcea-7976-4c6d-8b7d-ba16b76d2c60" )]
-        public IActionResult GetSearch( string searchKey )
+        public IActionResult GetSearchByKey( string searchKey )
         {
             return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Search( searchKey, null );
         }
@@ -219,14 +234,13 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "23e97f6c-2b7f-4f30-b4a5-e8c8fa8342ae" )]
-        public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query, string searchKey )
+        public IActionResult PostSearchByKey( [FromBody] EntitySearchQueryBag query, string searchKey )
         {
             return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Search( searchKey, query );
         }

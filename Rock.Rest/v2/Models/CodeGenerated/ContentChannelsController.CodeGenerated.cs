@@ -194,19 +194,34 @@ namespace Rock.Rest.v2.Models
         }
 
         /// <summary>
+        /// Performs a search of items using the specified user query.
+        /// </summary>
+        /// <param name="query">Query options to be applied.</param>
+        /// <returns>An array of objects returned by the query.</returns>
+        [HttpPost]
+        [Authenticate]
+        [Secured]
+        [Route( "search" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
+        [SystemGuid.RestActionGuid( "cc5dc79e-21d3-422e-b2dc-44f0eb6fc089" )]
+        public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
+        {
+            return new RestApiHelper<Rock.Model.ContentChannel, Rock.Model.ContentChannelService>( this ).Search( query );
+        }
+
+        /// <summary>
         /// Performs a search of items using the specified system query.
         /// </summary>
         /// <param name="searchKey">The key that identifies the entity search query to execute.</param>
         /// <returns>An array of objects returned by the query.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "f9e78320-b057-4aa4-b4bd-be6f4e8b7014" )]
-        public IActionResult GetSearch( string searchKey )
+        public IActionResult GetSearchByKey( string searchKey )
         {
             return new RestApiHelper<Rock.Model.ContentChannel, Rock.Model.ContentChannelService>( this ).Search( searchKey, null );
         }
@@ -219,14 +234,13 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "1b348af4-643f-4ff3-bc94-c35d4e7722b8" )]
-        public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query, string searchKey )
+        public IActionResult PostSearchByKey( [FromBody] EntitySearchQueryBag query, string searchKey )
         {
             return new RestApiHelper<Rock.Model.ContentChannel, Rock.Model.ContentChannelService>( this ).Search( searchKey, query );
         }

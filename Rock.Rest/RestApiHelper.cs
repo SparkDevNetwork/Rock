@@ -27,6 +27,8 @@ using Rock.Security;
 using Rock.Web.Cache;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
+using Rock.Core.EntitySearch;
+
 
 #if WEBFORMS
 using System.Web.Http;
@@ -549,6 +551,54 @@ namespace Rock.Rest
                 }
             }
             catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+
+                return InternalServerError( ex.Message );
+            }
+        }
+
+        /// <summary>
+        /// GET and POST endpoint. Use this to perform a query via a user supplied
+        /// entity search query. This should be considered an administrative
+        /// level search since no security is checked and no limitations are
+        /// set by the system.
+        /// </summary>
+        /// <param name="query">The custom user query options.</param>
+        /// <returns>The response that should be sent back.</returns>
+        public IActionResult Search( EntitySearchQueryBag query )
+        {
+            try
+            {
+                var entityType = EntityTypeCache.Get<TEntity>();
+                var systemQuery = new EntitySearchSystemQuery
+                {
+                    CurrentPerson = _controller.RockRequestContext.CurrentPerson,
+                    IsRefinementAllowed = true
+                };
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var queryable = ( IQueryable<TEntity> ) Reflection.GetQueryableForEntityType( typeof( TEntity ), rockContext )
+                        ?? throw new Exception( $"Entity type '{typeof( TEntity ).FullName}' does not support entity search." );
+
+                    var results = EntitySearchHelper.GetSearchResults( queryable, systemQuery, query, rockContext );
+
+                    // Because of the way the search results come back, it basically
+                    // looks like dictionaries, so make sure the serializer knows to
+                    // encode those since we wouldn't normally. This should not cause
+                    // a problem for attribute value keys because those are not
+                    // included in these responses.
+                    var formatter = Utility.ApiPickerJsonMediaTypeFormatter.CreateV2Formatter();
+                    if ( formatter.SerializerSettings.ContractResolver is Newtonsoft.Json.Serialization.DefaultContractResolver defaultContractResolver )
+                    {
+                        defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
+                    }
+
+                    return new FormattedContentResult<EntitySearchResultsBag>( HttpStatusCode.OK, results, formatter, null, _controller );
+                }
+            }
+            catch ( System.Exception ex )
             {
                 ExceptionLogService.LogException( ex );
 
