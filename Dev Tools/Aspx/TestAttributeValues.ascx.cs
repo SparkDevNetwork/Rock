@@ -39,8 +39,6 @@ namespace RockWeb.Blocks.Examples
                 {
                     etPicker.EntityTypes = new EntityTypeService( rockContext ).GetEntities().ToList();
                 }
-
-                //ProblemDemo();
             }
 
             base.OnLoad( e );
@@ -55,7 +53,7 @@ namespace RockWeb.Blocks.Examples
                 progress.ReportProgressUpdate( processed, total, $"{entityType.Name}: {processed:N0} of {total:N0}" );
             };
 
-            if ( !CompareEntities<ContentChannelItem>( 502, out var count, out var errorMessage, updateCount, cancellationToken ) )
+            if ( !CompareEntities<Group>( null, out var count, out var errorMessage, updateCount, cancellationToken ) )
             {
                 progress.StopTask( errorMessage, new string[] { errorMessage }, null );
             }
@@ -300,58 +298,6 @@ namespace RockWeb.Blocks.Examples
         private static string QuotedValue( string value )
         {
             return value == null ? "null" : $"'{value}'";
-        }
-
-        private static void ProblemDemo()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var entityId = 257678;
-
-                var expectedToBeGroup = new GroupService( rockContext ).Get( entityId );
-                var expectedToBeGroupType = expectedToBeGroup.GetType().FullName;
-                var expectedToBeGroupBaseType = expectedToBeGroup.GetType().BaseType.FullName;
-                // expectedToBeGroupBaseType = "Rock.Model.LearningClass"
-
-                var groupEntityTypeId = new Group().TypeId;
-                var learningClassEntityTypeId = new LearningClass().TypeId;
-                // groupEntityTypeId = 16
-                // learningClassEntityTypeId = 16
-
-                var groupTypeName = new Group().TypeName;
-                var learningClassTypeName = new LearningClass().TypeName;
-                // groupTypeName = "Rock.Model.Group"
-                // learningClassTypeName = "Rock.Model.Group"
-
-                var learningClassEntityTypeName = EntityTypeCache.Get( new LearningClass().TypeId ).Name;
-                var learningClassEntityTypeNameTwo = EntityTypeCache.Get( new LearningClass().GetType() ).Name;
-                // learningClassEntityTypeName = "Rock.Model.Group"
-                // learningClassEntityTypeNameTwo = "Rock.Model.LearningClass"
-
-                var group = new Group
-                {
-                    Id = expectedToBeGroup.Id,
-                    GroupTypeId = expectedToBeGroup.GroupTypeId
-                };
-
-                group.LoadAttributes( rockContext );
-                expectedToBeGroup.LoadAttributes( rockContext );
-
-                var groupAttributeCount = group.Attributes.Count;
-                var expectedToBeGroupAttributeCount = expectedToBeGroup.Attributes.Count;
-                // groupAttributeCount = 0
-                // expectedToBeGroupAttributeCount = 1
-
-
-                var groups = new GroupService( rockContext ).Queryable().Take( 100 ).ToList();
-                // groups[0-49] = typeof Group
-                // groups[50] = typeof LearningClass
-                // groups[51-99] = typeof Group
-
-                groups.LoadAttributes( rockContext );
-
-                // groups[50] will have wrong attribute values loaded.
-            }
         }
 
         protected void btnRun_Click( object sender, EventArgs e )
