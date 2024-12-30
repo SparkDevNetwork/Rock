@@ -145,7 +145,12 @@ namespace RockWeb.Blocks.Administration
                     {
                         if ( iSecured.SupportedActions.Any() )
                         {
-                            lActionDescription.Text = iSecured.SupportedActions.FirstOrDefault().Value;
+                            if ( !iSecured.SupportedActions.ContainsKey( CurrentAction ) )
+                            {
+                                CurrentAction = iSecured.SupportedActions.FirstOrDefault().Key;
+                            }
+
+                            lActionDescription.Text = iSecured.SupportedActions[CurrentAction];
                         }
 
                         rptActions.DataSource = iSecured.SupportedActions;
