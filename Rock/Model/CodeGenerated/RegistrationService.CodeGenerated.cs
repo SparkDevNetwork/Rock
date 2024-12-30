@@ -151,6 +151,7 @@ namespace Rock.Model
             target.PaymentPlanFinancialScheduledTransactionId = source.PaymentPlanFinancialScheduledTransactionId;
             target.PersonAliasId = source.PersonAliasId;
             target.RegistrationInstanceId = source.RegistrationInstanceId;
+            target.RegistrationTemplateId = source.RegistrationTemplateId;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

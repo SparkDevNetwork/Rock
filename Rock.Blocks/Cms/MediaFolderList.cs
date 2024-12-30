@@ -72,8 +72,13 @@ namespace Rock.Blocks.Cms
             public const string DetailPage = "DetailPage";
         }
 
-        #endregion Keys
+        private static class PageParameterKey
+        {
+            public const string MediaAccountId = "MediaAccountId";
+            public const string MediaFolderId = "MediaFolderId";
+        }
 
+        #endregion Keys
 
         #region Fields
 
@@ -137,9 +142,16 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var mediaAccountId = PageParameter( PageParameterKey.MediaAccountId );
+            var queryParams = new Dictionary<string, string>()
+            {
+                { PageParameterKey.MediaFolderId, "((Key))" },
+                { PageParameterKey.MediaAccountId, mediaAccountId },
+            };
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "MediaFolderId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams )
             };
         }
 
@@ -240,7 +252,7 @@ namespace Rock.Blocks.Cms
         {
             if ( SelectedMediaAccount == null )
             {
-                SelectedMediaAccount = new MediaAccountService( new RockContext() ).Get( RequestContext.GetPageParameter( "MediaAccountId" ) );
+                SelectedMediaAccount = new MediaAccountService( new RockContext() ).Get( RequestContext.GetPageParameter( PageParameterKey.MediaAccountId ) );
             }
 
             return SelectedMediaAccount;

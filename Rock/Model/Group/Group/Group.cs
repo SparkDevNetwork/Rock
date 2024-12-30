@@ -35,6 +35,53 @@ using Rock.Web.Cache;
 
 namespace Rock.Model
 {
+    /*
+    12/16/2024 - DSH
+
+    Group and LearningClass along with GroupMember and LearningParticipant use
+    a TPT (Table-Per-Type) pattern in Entity Framework. This is not a normal
+    pattern and should not be followed for new work without approval from the
+    product owner. There are some minor issues that can crop up with this
+    pattern so it is not one that we want to follow without considering those
+    potential issues. These issues below are described for Group/LearningClass
+    but they hold true for GroupMember/LearningParticipant as well.
+
+    1. All queries to Group will now be joined to LearningClass by Entity
+    Framework.
+
+    2. GroupService.Get() and GroupService.Queryable() will return an instance
+    of LearningClass if the group has an associated LearningClass. This can
+    cause unexpected results when you then call .GetType() expecting a Group
+    but instead see a LearningClass.
+
+    3. Because the service can return a LearningClass this can cause issues
+    when calling LoadAttributes(). Since the instance is actually a LearningClass
+    it will load the attributes of the LearningClass instead of the Group. For
+    the specific use case we have in LMS, that is desired behavior though it may
+    be unexpected.
+
+    4. Because the service can return a LearningClass this can cause issues
+    when calling LoadAttributes() on a collection of "groups". The collection
+    LoadAttributes() method will inspect the first item's GetType() to determine
+    which attributes to load. If the collection of groups happens to have a
+    LearningClass as the first item with the rest being Group instances, then
+    the wrong attributes will be loaded.
+
+    5. TypeId, TypeName and FriendlyTypeName will be wrong for these instances
+    unless you override them.
+
+    There was some discussion about resolving some of these issues:
+
+    1. Try to fix .Get() and .Queryable(). It was decided that this was not
+    a feasible solution since we would have to somehow translate the instance
+    back into a Group instance, but since that requires a C# runtime check it
+    would be next to impossible to achieve this with .Queryable().
+
+    2. A modification to collection LoadAttributes() was decided against as it
+    would reduce the performance as we'd have to call GetType() on each instance
+    of the collection and then process them separately.
+    */
+
     /// <summary>
     /// Represents A collection of <see cref="Rock.Model.Person"/> entities. This can be a family, small group, Bible study, security group,  etc. Groups can be hierarchical.
     /// </summary>

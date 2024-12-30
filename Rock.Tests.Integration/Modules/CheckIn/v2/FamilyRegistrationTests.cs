@@ -2604,7 +2604,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
             var rockContextMock = CreateRockContextWithoutSaveChanges();
 
             // Allow mutation operations on the DbSet.
-            rockContextMock.SetupDbSet<PhoneNumber>();
+            var phoneNumberSetMock = rockContextMock.SetupDbSet( new List<PhoneNumber>() );
 
             var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
             var registration = new FamilyRegistration( rockContextMock.Object, null, templateConfigurationDataMock.Object );
@@ -2687,7 +2687,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
             var rockContextMock = CreateRockContextWithoutSaveChanges();
 
             // Allow mutation operations on the DbSet.
-            rockContextMock.SetupDbSet<PhoneNumber>();
+            rockContextMock.SetupDbSet( new List<PhoneNumber>() );
 
             // ZZZ doesn't like that we mock the db set properties, so until
             // that goes away pre-load from the cache so UpdatePhoneNumber

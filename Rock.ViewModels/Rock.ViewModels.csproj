@@ -123,6 +123,13 @@
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveMetricsReminderRequestBag.cs" />
     <Compile Include="Blocks\Cms\LogSettings\LogSettingsBag.cs" />
     <Compile Include="Blocks\Cms\LogSettings\LogSettingsDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\ConversationBag.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\ResponseListingStatusBag.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\SendMessageBag.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\MessageBag.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\SmsConversationsInitializationBox.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\SmsConversationsSaveNoteBag.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\SnippetBag.cs" />
     <Compile Include="Blocks\Core\PersonSuggestionList\PersonSuggestionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchPageBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchBag.cs" />
@@ -802,6 +809,7 @@
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Rest\Controls\AIProviderPickerGetAIProviderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerExtractFileOptionsBag.cs" />
+    <Compile Include="Rest\Controls\PageNavButtonsGetLinksOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerMoveFolderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerGetListOfAllFoldersOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerRenameFolderOptionsBag.cs" />

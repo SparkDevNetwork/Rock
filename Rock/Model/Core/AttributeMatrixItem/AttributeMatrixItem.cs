@@ -52,7 +52,7 @@ namespace Rock.Model
         /// </value>
         [DataMember( IsRequired = true )]
         [EnableAttributeQualification]
-        public int AttributeMatrixTemplateId { get; private set; }
+        public int AttributeMatrixTemplateId { get; set; }
 
         /// <summary>
         /// Gets or sets the order.

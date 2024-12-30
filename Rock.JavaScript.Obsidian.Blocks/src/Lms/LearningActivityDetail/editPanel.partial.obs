@@ -316,4 +316,5 @@
     watch(activityBag, () => {
         activityComponentSettingsJson.value = activityBag.value?.activityComponentSettingsJson ?? "";
     });
+
 </script>

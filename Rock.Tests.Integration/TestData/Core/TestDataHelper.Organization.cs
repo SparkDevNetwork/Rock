@@ -227,8 +227,6 @@ namespace Rock.Tests.Integration.Organization
 
         #region Test Data
 
-        private static bool _campusTestDataInitialized = false;
-
         private const string MainCampusLocationGuid = "20985A47-580C-40A0-A92D-A33725B83E9F";
         private const string SouthCampusGuid = "25B59587-3369-42E2-877D-BD475AC26DD8";
         private const string SouthCampusLocationGuid = "58A78530-8BE2-42C9-B6B2-A7D8BFDA1369";
@@ -238,13 +236,13 @@ namespace Rock.Tests.Integration.Organization
 
         public void AddCampusTestDataSet()
         {
-            if ( _campusTestDataInitialized )
+            var rockContext = new RockContext();
+
+            // If the online campus exists, then assume we have already initialized the data.
+            if ( new CampusService( rockContext ).Get( OnlineCampusGuid.AsGuid() ) != null )
             {
                 return;
             }
-            _campusTestDataInitialized = true;
-
-            var rockContext = new RockContext();
 
             var locationManager = LocationDataManager.Instance;
             var campusManager = CampusDataManager.Instance;

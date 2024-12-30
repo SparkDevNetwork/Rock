@@ -21,6 +21,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 
 using Rock.Data;
 using Rock.Enums.Communication;
@@ -219,10 +220,20 @@ namespace Rock.Model
                 join pa in personAliasQuery on cr.FromPersonAliasId equals pa.Id
                 select new { cr, pa };
 
-            IQueryable<CommunicationResponse> mostRecentCommunicationResponseQuery = communicationResponseJoinQuery
+            var mostRecentCommunicationResponseQuery = communicationResponseJoinQuery
                 .GroupBy( r => r.pa.PersonId )
-                .Select( a => a.OrderByDescending( x => x.cr.CreatedDateTime ).FirstOrDefault() )
-                .OrderByDescending( a => a.cr.CreatedDateTime ).Select( a => a.cr );
+                .Select( group => new
+                {
+                    MostRecentMessage = group.OrderByDescending( x => x.cr.CreatedDateTime ).FirstOrDefault(),
+                    // Check if any message is unread
+                    HasUnreadMessages = group.Any( x => !x.cr.IsRead )
+                } )
+                .OrderByDescending( x => x.MostRecentMessage.cr.CreatedDateTime )
+                .Select( x => new
+                {
+                    CommunicationResponse = x.MostRecentMessage.cr,
+                    x.HasUnreadMessages
+                } );
 
             // do an explicit LINQ inner join on PersonAlias to avoid performance issue where it would do an outer join instead
             var communicationRecipientJoinQuery = communicationRecipientQuery
@@ -281,28 +292,31 @@ namespace Rock.Model
                         s.SmsFromSystemPhoneNumberId,
                         s.SentMessage,
                         s.RecipientPersonAliasId,
-                        s.RecipientPersonGuid
+                        s.RecipientPersonGuid,
+                        HasUnreadMessages = mostRecentCommunicationResponseQuery.Where( r => r.CommunicationResponse.FromPersonAliasId == s.RecipientPersonAliasId )
+                            .Select( r => r.HasUnreadMessages )
+                            .FirstOrDefault()
                     } ).OrderByDescending( s => s.CreatedDateTime ).FirstOrDefault()
                 ).OrderByDescending( s => s.CreatedDateTime );
 
             var mostRecentCommunicationResponseList = mostRecentCommunicationResponseQuery
                 .Select( r => new
                 {
-                    r.Id,
-                    r.Guid,
-                    r.MessageKey,
-                    r.CreatedDateTime,
-                    r.IsRead,
-                    r.Response,
-                    r.RelatedSmsFromSystemPhoneNumberId,
-                    r.FromPersonAliasId,
-                    FromPersonId = r.FromPersonAlias.PersonId,
-                    FromPersonGuid = r.FromPersonAlias.Person.Guid,
-                    FromPersonRecordTypeValueId = r.FromPersonAlias.Person.RecordTypeValueId,
-                    FromPersonNickName = r.FromPersonAlias.Person.NickName,
-                    FromPersonLastName = r.FromPersonAlias.Person.LastName,
-                    FromPersonSuffixValueId = r.FromPersonAlias.Person.SuffixValueId,
-                    FromPersonPhotoId = r.FromPersonAlias.Person.PhotoId
+                    r.CommunicationResponse.Id,
+                    r.CommunicationResponse.Guid,
+                    r.CommunicationResponse.MessageKey,
+                    r.CommunicationResponse.CreatedDateTime,
+                    r.CommunicationResponse.Response,
+                    r.CommunicationResponse.RelatedSmsFromSystemPhoneNumberId,
+                    r.CommunicationResponse.FromPersonAliasId,
+                    IsRead = !r.HasUnreadMessages,
+                    FromPersonId = r.CommunicationResponse.FromPersonAlias.PersonId,
+                    FromPersonGuid = r.CommunicationResponse.FromPersonAlias.Person.Guid,
+                    FromPersonRecordTypeValueId = r.CommunicationResponse.FromPersonAlias.Person.RecordTypeValueId,
+                    FromPersonNickName = r.CommunicationResponse.FromPersonAlias.Person.NickName,
+                    FromPersonLastName = r.CommunicationResponse.FromPersonAlias.Person.LastName,
+                    FromPersonSuffixValueId = r.CommunicationResponse.FromPersonAlias.Person.SuffixValueId,
+                    FromPersonPhotoId = r.CommunicationResponse.FromPersonAlias.Person.PhotoId
                 } )
                 .Take( maxCount )
                 .ToList();
@@ -361,7 +375,7 @@ namespace Rock.Model
                         mostRecentCommunicationRecipient.PersonRecordTypeValueId ),
                     RecipientPhotoId = mostRecentCommunicationRecipient.PersonPhotoId,
                     IsOutbound = true,
-                    IsRead = true,
+                    IsRead = !mostRecentCommunicationRecipient.HasUnreadMessages,
                     ConversationKey = CommunicationService.GetSmsConversationKey( relatedSmsFromSystemPhoneNumber.Guid, mostRecentCommunicationRecipient.PersonGuid ),
                     MessageKey = $"C:{mostRecentCommunicationRecipient.Guid}",
                     RecipientPersonAliasId = mostRecentCommunicationRecipient.RecipientPersonAliasId,
@@ -657,9 +671,54 @@ namespace Rock.Model
                 var conversationKey = CommunicationService.GetSmsConversationKey( relatedSmsFromPhoneNumber.Guid, personGuid.Value );
 
                 CommunicationService.SendConversationReadSmsRealTimeNotificationsInBackground( conversationKey );
+                CommunicationService.SendConversationReadStatusChangedRealTimeNotificationsInBackground( conversationKey, true );
             }
 
             UpdateResponseNotificationMessagesInBackground( relatedSmsFromPhoneNumber, fromPersonId );
+        }
+
+        /// <summary>
+        /// Marks the IsRead property of SMS Responses sent from the provided
+        /// person to the System Phone Number to false.
+        /// </summary>
+        /// <param name="fromPersonId">From person identifier.</param>
+        /// <param name="relatedSmsFromPhoneNumber">The system phone number side of the conversation to be marked as read.</param>
+        public string MarkResponseAsUnread( int fromPersonId, SystemPhoneNumberCache relatedSmsFromPhoneNumber )
+        {
+            var personAliasIdQuery = new PersonAliasService( this.Context as RockContext )
+                .Queryable()
+                .Where( a => a.PersonId == fromPersonId )
+                .Select( a => a.Id );
+
+            var responseToUpdate = Queryable()
+                .Where( a => a.FromPersonAliasId.HasValue
+                    && personAliasIdQuery.Contains( a.FromPersonAliasId.Value )
+                    && a.RelatedSmsFromSystemPhoneNumberId == relatedSmsFromPhoneNumber.Id
+                    && a.IsRead == true )
+                .OrderByDescending( a => a.CreatedDateTime )
+                .FirstOrDefault();
+
+            if ( responseToUpdate != null )
+            {
+                responseToUpdate.IsRead = false;
+                this.Context.SaveChanges();
+
+                var personGuid = new PersonService( Context as RockContext ).GetGuid( fromPersonId );
+
+                if ( personGuid.HasValue )
+                {
+                    var conversationKey = CommunicationService.GetSmsConversationKey( relatedSmsFromPhoneNumber.Guid, personGuid.Value );
+
+                    CommunicationService.SendConversationReadStatusChangedRealTimeNotificationsInBackground( conversationKey, false );
+                }
+
+                UpdateResponseNotificationMessagesInBackground( relatedSmsFromPhoneNumber, fromPersonId );
+                return string.Empty;
+            }
+            else
+            {
+                return "Read status can’t be updated without a reply from the recipient.";
+            }
         }
 
         /// <summary>
@@ -724,10 +783,16 @@ namespace Rock.Model
                 Attachments = new List<ConversationAttachmentBag>()
             };
 
-            if ( communicationResponse.FromPerson.PhotoId.HasValue )
+            var photoUrl = communicationResponse?.FromPerson != null
+                ? Rock.Model.Person.GetPersonPhotoUrl( communicationResponse.FromPerson, 256, 256 )
+                : "/Assets/Images/person-no-photo-unknown.svg?width=256&height=256";
+
+            if ( !Uri.IsWellFormedUriString( photoUrl, UriKind.Absolute ) )
             {
-                messageBag.PhotoUrl = FileUrlHelper.GetImageUrl( communicationResponse.FromPerson.PhotoId.Value, new GetImageUrlOptions { MaxWidth = 256, MaxHeight = 256 } );
+                photoUrl = VirtualPathUtility.ToAbsolute( photoUrl );
             }
+
+            messageBag.PhotoUrl = publicUrl.IsNotNullOrWhiteSpace() ? publicUrl + photoUrl : photoUrl;
 
             foreach ( var attachment in communicationResponse.Attachments )
             {

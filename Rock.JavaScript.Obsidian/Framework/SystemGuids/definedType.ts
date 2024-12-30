@@ -203,6 +203,11 @@ export const DefinedType = {
      * of saved configuration settings for quickly starting up kiosks.
      */
     SavedCheckinConfigurations: "F986008C-99BB-4C48-8A6E-38C8A121D75B",
+    /**
+     * The "Saved Check-in Configurations" defined type that provides a list
+     * of saved configuration settings for quickly starting up kiosks.
+     */
+    SavedKioskTemplates: "F986008C-99BB-4C48-8A6E-38C8A121D75B",
     /** The schedule type */
     ScheduleType: "831648D4-2E2C-4940-8358-9B426AEDB460",
     /** The school grades defined type, which has values that determine which grade the person is based. The Value of the DefinedValue is the GradeOffset. */

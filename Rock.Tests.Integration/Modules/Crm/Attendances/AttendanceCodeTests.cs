@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Moq;
 
 using Rock;
 using Rock.Data;
@@ -24,53 +25,9 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
     [TestClass]
     public class AttendanceCodeTests : DatabaseTestsBase
     {
-        /// <summary>
-        /// Runs before any tests in this class are executed.
-        /// </summary>
-        [ClassInitialize]
-        public static void ClassInitialize( TestContext testContext )
-        {
-            Cleanup();
-        }
-
         [TestCleanup]
         public void TestCleanup()
         {
-            Cleanup();
-        }
-
-        /// <summary>
-        /// Runs once before any tests are run and then runs after each test in this class is executed.
-        /// Deletes the test data added to the database for each tests.
-        /// </summary>
-        public static void Cleanup()
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var acService = new AttendanceCodeService( rockContext );
-                var attendanceService = new AttendanceService( rockContext );
-
-                DateTime today = RockDateTime.Today;
-                DateTime tomorrow = today.AddDays( 1 );
-                var todaysCodes = acService.Queryable()
-                        .Where( c => c.IssueDateTime >= today && c.IssueDateTime < tomorrow )
-                        .ToList();
-                if ( todaysCodes.Any() )
-                {
-                    var ids = todaysCodes.Select( c => c.Id ).ToList();
-
-                    // get the corresponding attendance records and delete them first.
-                    var todayTestAttendance = attendanceService.Queryable().Where( a => ids.Contains( a.AttendanceCodeId.Value ) );
-                    if ( todayTestAttendance.Any() )
-                    {
-                        attendanceService.DeleteRange( todayTestAttendance );
-                    }
-
-                    acService.DeleteRange( todaysCodes );
-                    rockContext.SaveChanges();
-                }
-            }
-
             AttendanceCodeService.FlushTodaysCodes();
         }
 
@@ -100,10 +57,12 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         public void AlphaNumericCodesShouldSkipBadCodes()
         {
             var codeList = new List<string>();
-            AttendanceCode code = null;
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
+
             for ( int i = 0; i < 6000; i++ )
             {
-                code = AttendanceCodeService.GetNew( 3, 0, 0, false );
+                var code = attendanceCodeService.CreateNewCode( 3, 0, 0, false );
                 codeList.Add( code.Code );
             }
 
@@ -119,10 +78,14 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         [TestMethod]
         public void CheckThreeCharNumericNonRandom002Code()
         {
+            var codeList = new List<string>();
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
+
             AttendanceCode code = null;
             for ( int i = 0; i < 2; i++ )
             {
-                code = AttendanceCodeService.GetNew( 0, 0, 3, false );
+                code = attendanceCodeService.CreateNewCode( 0, 0, 3, false );
             }
 
             Assert.That.Equal( "002", code.Code );
@@ -132,10 +95,12 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         public void NumericCodesShouldSkip911And666()
         {
             var codeList = new List<string>();
-            AttendanceCode code = null;
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
+
             for ( int i = 0; i < 2000; i++ )
             {
-                code = AttendanceCodeService.GetNew( 0, 0, 4, false );
+                var code = attendanceCodeService.CreateNewCode( 0, 0, 4, false );
                 codeList.Add( code.Code );
             }
 
@@ -152,14 +117,16 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         [TestMethod]
         public void NumericCodeWithLengthOf2ShouldNotGoBeyond99()
         {
+            var codeList = new List<string>();
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
+
             int maxTwoDigitCodes = 99; // 01-99
             try
             {
-                var codeList = new List<string>();
-                AttendanceCode code = null;
                 for ( int i = 1; i <= maxTwoDigitCodes; i++ )
                 {
-                    code = AttendanceCodeService.GetNew( 0, 0, 2, false );
+                    var code = attendanceCodeService.CreateNewCode( 0, 0, 2, false );
                     codeList.Add( code.Code );
                 }
 
@@ -181,12 +148,14 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         [TestMethod]
         public void NumericCodesShouldNotRepeat()
         {
-            int maxThreeDigitCodes = 997;
             var codeList = new List<string>();
-            AttendanceCode code = null;
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
+
+            int maxThreeDigitCodes = 997;
             for ( int i = 1; i < maxThreeDigitCodes; i++ )
             {
-                code = AttendanceCodeService.GetNew( 0, 0, 3, false );
+                var code = attendanceCodeService.CreateNewCode( 0, 0, 3, false );
                 codeList.Add( code.Code );
             }
 
@@ -203,12 +172,14 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         [TestMethod]
         public void RandomNumericCodesShouldNotRepeat()
         {
-            int maxThreeDigitCodes = 997;
             var codeList = new List<string>();
-            AttendanceCode code = null;
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
+
+            int maxThreeDigitCodes = 997;
             for ( int i = 1; i < maxThreeDigitCodes; i++ )
             {
-                code = AttendanceCodeService.GetNew( 0, 0, 3, true );
+                var code = attendanceCodeService.CreateNewCode( 0, 0, 3, true );
                 codeList.Add( code.Code );
             }
 
@@ -227,19 +198,20 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         public void RequestingMoreCodesThanPossibleShouldThrowException()
         {
             var codeList = new List<string>();
-            AttendanceCode code = null;
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
 
             // Generate 100 codes (the maximum number of valid codes).
             // 100 because "00" is a valid code.
             for ( int i = 0; i < 100; i++ )
             {
-                code = AttendanceCodeService.GetNew( 0, 0, 2, true );
+                var code = attendanceCodeService.CreateNewCode( 0, 0, 2, true );
                 codeList.Add( code.Code );
             }
 
             Assert.That.ThrowsException<TimeoutException>( () =>
             {
-                code = AttendanceCodeService.GetNew( 0, 0, 2, true );
+                var code = attendanceCodeService.CreateNewCode( 0, 0, 2, true );
                 codeList.Add( code.Code );
             } );
 
@@ -249,10 +221,14 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         [TestMethod]
         public void Increment100SequentialNumericCodes()
         {
+            var codeList = new List<string>();
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
+
             AttendanceCode code = null;
             for ( int i = 0; i < 100; i++ )
             {
-                code = AttendanceCodeService.GetNew( 0, 0, 3, false );
+                code = attendanceCodeService.CreateNewCode( 0, 0, 3, false );
             }
 
             Assert.That.Equal( "100", code.Code );
@@ -273,10 +249,12 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         public void ThreeCharAlphaOnlyCodesShouldSkipBadCodes()
         {
             var codeList = new List<string>();
-            AttendanceCode code = null;
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
+
             for ( int i = 0; i < 4000; i++ )
             {
-                code = AttendanceCodeService.GetNew( 0, 3, 0, true );
+                var code = attendanceCodeService.CreateNewCode( 0, 3, 0, true );
                 codeList.Add( code.Code );
             }
 
@@ -292,13 +270,14 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         public void ThreeCharAlphaOnlyCodesShouldNotRepeat()
         {
             var codeList = new List<string>();
-            AttendanceCode code = null;
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
 
             // 4800 (17*17*17 minus ~80 badcodes) possible combinations of 17 letters
             for ( int i = 0; i < 4800; i++ )
             {
                 //System.Diagnostics.Debug.WriteIf( i > 4700, "code number " + i + " took... " );
-                code = AttendanceCodeService.GetNew( 0, 3, 0, false );
+                var code = attendanceCodeService.CreateNewCode( 0, 3, 0, false );
                 codeList.Add( code.Code );
                 //System.Diagnostics.Debug.WriteLineIf( i > 4700, "" );
             }
@@ -330,6 +309,9 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         [TestMethod]
         public void AlphaNumericWith1NumericCodeShouldGenerateAtLeast5100Codes()
         {
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
+
             int attemptCombination = 0;
             var stopWatch = new System.Diagnostics.Stopwatch();
             var stopWatchSingle = new System.Diagnostics.Stopwatch();
@@ -340,7 +322,6 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
             try
             {
                 var codeList = new List<string>();
-                AttendanceCode code = null;
                 for ( int i = 1; i < 5100; i++ )
                 {
                     attemptCombination = i;
@@ -350,7 +331,7 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
                         stopWatchSingle.Restart();
                         System.Diagnostics.Debug.Write( "code number " + i + " took... " );
                     }
-                    code = AttendanceCodeService.GetNew( 2, 0, 1, true );
+                    var code = attendanceCodeService.CreateNewCode( 2, 0, 1, true );
                     if ( outputDebug )
                     {
                         System.Diagnostics.Debug.WriteLine( stopWatchSingle.ElapsedMilliseconds + " ms" );
@@ -384,7 +365,6 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
             }
         }
 
-
         /// <summary>
         /// Two character alpha numeric codes (AttendanceCodeService.codeCharacters) has possible
         /// 24*24 (576) combinations plus two character numeric codes has a possible 10*10 (100)
@@ -405,6 +385,9 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         [TestMethod]
         public void AlphaNumericWithNumericCodesShouldSkipBadCodes()
         {
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
+
             int attemptCombination = 0;
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
@@ -412,11 +395,10 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
             try
             {
                 var codeList = new List<string>();
-                AttendanceCode code = null;
                 for ( int i = 0; i < 596; i++ )
                 {
                     attemptCombination = i;
-                    code = AttendanceCodeService.GetNew( 2, 0, 3, true );
+                    var code = attendanceCodeService.CreateNewCode( 2, 0, 3, true );
                     codeList.Add( code.Code );
                 }
 
@@ -447,10 +429,12 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         public void ThreeCharAlphaWithFourCharNumericCodesShouldSkipBadCodes()
         {
             var codeList = new List<string>();
-            AttendanceCode code = null;
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
+
             for ( int i = 0; i < 6000; i++ )
             {
-                code = AttendanceCodeService.GetNew( 0, 3, 4, true );
+                var code = attendanceCodeService.CreateNewCode( 0, 3, 4, true );
                 codeList.Add( code.Code );
             }
 
@@ -459,7 +443,6 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
             Assert.That.False( hasMatchIsBad );
         }
 
-
         /// <summary>
         /// This is the configuration that churches like Central Christian Church use for their
         /// Children's check-in.
@@ -467,17 +450,19 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         [TestMethod]
         public void TwoAlphaWithFourRandomNumericCodesShouldSkipBadCodes()
         {
+            var codeList = new List<string>();
+            var rockContextMock = CreateRockContextMock();
+            var attendanceCodeService = new AttendanceCodeService( rockContextMock.Object );
+
             var stopWatch = new System.Diagnostics.Stopwatch();
             stopWatch.Start();
 
             int attemptCombination = 0;
 
-            var codeList = new List<string>();
-            AttendanceCode code = null;
             for ( int i = 0; i < 2500; i++ )
             {
                 attemptCombination = i;
-                code = AttendanceCodeService.GetNew( 0, 2, 4, true );
+                var code = attendanceCodeService.CreateNewCode( 0, 2, 4, true );
                 codeList.Add( code.Code );
             }
 
@@ -491,5 +476,21 @@ namespace Rock.Tests.Integration.Modules.Crm.Attendance
         }
 
         #endregion
+
+        /// <summary>
+        /// Creates a mock <see cref="RockContext"/> that is configured for
+        /// use with attendance codes. The context is created with no
+        /// attendance codes in the database to represent a clean day.
+        /// </summary>
+        /// <returns>A mocking object for <see cref="RockContext"/>.</returns>
+        private Mock<RockContext> CreateRockContextMock()
+        {
+            var rockContextMock = MockDatabaseHelper.GetRockContextMock();
+
+            rockContextMock.SetupDbSet( new List<AttendanceCode>() );
+            rockContextMock.Setup( m => m.SaveChanges() ).Returns( 0 );
+
+            return rockContextMock;
+        }
     }
 }

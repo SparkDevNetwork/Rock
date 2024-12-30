@@ -45,7 +45,7 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="d-flex row align-items-center">
                 <div class="col-sm-6">
                     <DropDownList v-model="mobileApplicationGuidAsString"
                                   blankValue="All Applications"
@@ -66,17 +66,10 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row d-flex align-items-center">
                 <div class="col-sm-6">
                     <RockTextBox v-model="title" label="Title" :maxLength="100" />
 
-                    <SmsMessageEditor v-model="message"
-                                      :disabled="disabled"
-                                      :editorHeight="200"
-                                      :isCountDownShown="mediumOptions.characterLimit > 0"
-                                      :countDownMaxChars="mediumOptions.characterLimit"
-                                      :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
-                                      toolbarLabel="Message" />
                 </div>
 
                 <div class="col-sm-6">
@@ -85,6 +78,18 @@
                                      :horizontal="true"
                                      :items="openActions"
                                      label="Open Action" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <SmsMessageEditor v-model="message"
+                                      :disabled="disabled"
+                                      :editorHeight="200"
+                                      :isCountDownShown="mediumOptions.characterLimit > 0"
+                                      :countDownMaxChars="mediumOptions.characterLimit"
+                                      :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
+                                      toolbarLabel="Message" />
                 </div>
             </div>
 
@@ -144,6 +149,12 @@
         </NotificationBox>
     </template>
 </template>
+
+<style>
+.form-group.rock-radio-button-list {
+    margin-bottom: 0;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";

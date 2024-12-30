@@ -68,6 +68,29 @@
 .ant-select-arrow:has(.fa.fa-plus-square):hover {
     color: var(--color-info-soft);
 }
+
+.ant-select-selector .ant-select-selection-overflow .item-remove .fa.fa-times {
+    color: var(--color-interface-medium);
+}
+
+.ant-select-selector .ant-select-selection-overflow .label-danger .btn-link .fa.fa-times {
+    color: #ac3523;
+}
+
+.recipient-picker .label {
+    gap: 0.5em;
+    padding: 6px 12px;
+}
+
+.recipient-picker .label-danger {
+    background: #f9e5e2;
+    color: #ac3523;
+}
+
+.recipient-picker .ant-select .label-default {
+    color: var(--color-interface-stronger);
+    background: var(--color-interface-softer);
+}
 </style>
 
 <script setup lang="ts">

@@ -29,13 +29,13 @@
                     <ContentTransition>
                         <div v-if="isSavedConfigurationsVisible" class="saved-configurations">
                             <div class="header">
-                                <h4>Saved Configurations</h4>
+                                <h4>Saved Kiosk Templates</h4>
 
                                 <RockButton btnType="default"
                                             btnSize="sm"
                                             class="custom-configuration-button"
-                                            @click="onCustomConfiguration">
-                                    Custom Configuration
+                                            @click="onCustomKioskTemplate">
+                                    Custom Kiosk Template
                                 </RockButton>
                             </div>
 
@@ -56,7 +56,7 @@
                             </div>
 
                             <div v-else>
-                                No saved configurations currently exist.
+                                No saved templates currently exist.
                             </div>
                         </div>
 
@@ -67,14 +67,14 @@
                                 <RockButton btnType="default"
                                             class="save-new-configuration-button"
                                             :disabled="!isCustomConfigurationValid"
-                                            @click="onSaveNewConfigurationClick">
-                                    Save New Configuration
+                                            @click="onSaveNewKioskTemplateClick">
+                                    Save New Kiosk Template
                                 </RockButton>
 
                                 <RockButton btnType="default"
                                             class="saved-configurations-button"
-                                            @click="onSavedConfigurations">
-                                    Saved Configurations
+                                            @click="onSavedKioskTemplates">
+                                    Saved Kiosk Templates
                                 </RockButton>
                             </div>
 
@@ -541,21 +541,21 @@
     /**
      * Event handler for when the Custom Configuration button is clicked.
      */
-    function onCustomConfiguration(): void {
+    function onCustomKioskTemplate(): void {
         isUsingCustomConfiguration.value = true;
     }
 
     /**
      * Event handler for when the Saved Configurations button is clicked.
      */
-    function onSavedConfigurations(): void {
+    function onSavedKioskTemplates(): void {
         isUsingCustomConfiguration.value = false;
     }
 
     /**
      * Event handler for when the Save Configuration button is clicked.
      */
-    function onSaveNewConfigurationClick(): void {
+    function onSaveNewKioskTemplateClick(): void {
         isEditConfigurationVisible.value = true;
         editConfigurationId = "";
         editConfigurationTitle.value = "Save New Configuration";

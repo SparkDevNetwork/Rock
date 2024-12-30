@@ -34,7 +34,6 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of learning grading systems.
     /// </summary>
-
     [DisplayName( "Learning Grading System List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning grading systems." )]
@@ -120,6 +119,11 @@ namespace Rock.Blocks.Lms
             return base.GetListQueryable( rockContext )
                 .Include( a => a.LearningGradingSystemScales )
                 .OrderBy( a => a.Name );
+        }
+
+        protected override IQueryable<LearningGradingSystem> GetOrderedListQueryable( IQueryable<LearningGradingSystem> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( g => g.Name );
         }
 
         /// <inheritdoc/>

@@ -21,7 +21,6 @@ using System.Linq.Expressions;
 #if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Microsoft.ServiceBus.Messaging;
 
 #endif
 
@@ -90,11 +89,6 @@ namespace Rock.Field.Types
             var definedTypeId = privateConfigurationValues.GetValueOrDefault( DEFINED_TYPE_KEY, "" ).AsIntegerOrNull();
             var definedTypeCache = definedTypeId.HasValue ? DefinedTypeCache.Get( definedTypeId.Value ) : null;
 
-            if ( !definedTypeId.HasValue )
-            {
-                definedTypeCache = DefinedTypeCache.All().OrderBy( t => t.Name ).FirstOrDefault();
-            }
-
             if ( definedTypeCache != null && definedTypes.Any( t => t.Value == definedTypeCache.Guid.ToString() ) )
             {
                 // Get the defined values that are available to be selected.
@@ -135,21 +129,11 @@ namespace Rock.Field.Types
                 publicConfigurationValues.Remove( SELECTABLE_VALUES_KEY );
             }
 
-            // Convert the defined type from an integer value to a guid.
-            if ( usage == ConfigurationValueUsage.Edit || usage == ConfigurationValueUsage.Configure )
+            if ( usage == ConfigurationValueUsage.Edit || usage == ConfigurationValueUsage.Configure && definedType != null )
             {
-                if ( definedType == null )
-                {
-                    definedType = DefinedTypeCache.All().OrderBy( t => t.Name ).FirstOrDefault();
-                }
-
                 publicConfigurationValues[DEFINED_TYPE_KEY] = definedType?.Guid.ToString();
-            }
 
-            if ( usage == ConfigurationValueUsage.Configure || usage == ConfigurationValueUsage.Edit )
-            {
-                // If in configure mode, get the selectable value options that
-                // have been set.
+                // If in configure mode, get the selectable value options that have been set.
                 if ( privateConfigurationValues.ContainsKey( SELECTABLE_VALUES_KEY ) )
                 {
                     var selectableValues = ConvertDelimitedIdsToGuids( privateConfigurationValues[SELECTABLE_VALUES_KEY], id => DefinedValueCache.Get( id )?.Guid );
@@ -187,7 +171,9 @@ namespace Rock.Field.Types
             }
             else
             {
+                publicConfigurationValues[DEFINED_TYPE_KEY] = string.Empty;
                 publicConfigurationValues[VALUES_PUBLIC_KEY] = "[]";
+                publicConfigurationValues[SELECTABLE_VALUES_KEY] = string.Empty;
             }
 
             return publicConfigurationValues;

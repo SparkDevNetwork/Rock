@@ -17,10 +17,23 @@
 
 using System.ComponentModel.DataAnnotations.Schema;
 
+using Rock.Lava;
+using Rock.Web.Cache;
+
 namespace Rock.Model
 {
     public partial class LearningParticipant
     {
+        /// <summary>
+        /// Backing field for <see cref="TypeId"/>.
+        /// </summary>
+        private int? _typeId;
+
+        /// <summary>
+        /// Backing field for <see cref="TypeName"/>.
+        /// </summary>
+        private string _typeName = null;
+
         /// <summary>
         /// Gets the parent authority.
         /// </summary>
@@ -32,7 +45,16 @@ namespace Rock.Model
         {
             get
             {
-                return this.LearningClass != null ? this.LearningClass : base.ParentAuthority;
+                if ( this.LearningClass?.Id > 0 )
+                {
+                    return this.LearningClass;
+                }
+                else
+                {
+                    return this.LearningClassId > 0 ?
+                        new LearningClassService( new Data.RockContext() ).Get( this.LearningClassId ) :
+                        base.ParentAuthority;
+                }
             }
         }
 
@@ -43,6 +65,42 @@ namespace Rock.Model
             // We don't add any logic to the authorization process
             // that's not already included in that logic.
             return ParentAuthority.IsAuthorized( action, person );
+        }
+
+        /// <inheritdoc/>
+        [LavaVisible]
+        public override int TypeId
+        {
+            get
+            {
+                if ( _typeId == null )
+                {
+                    // Once this instance is created, there is no need to set the _typeId more than once.
+                    // Also, read should never return null since it will create entity type if it doesn't exist.
+                    _typeId = EntityTypeCache.GetId<LearningParticipant>();
+                }
+
+                return _typeId.Value;
+
+            }
+        }
+
+        /// <inheritdoc/>
+        [NotMapped]
+        [LavaVisible]
+        public override string TypeName
+        {
+            get
+            {
+                if ( _typeName.IsNullOrWhiteSpace() )
+                {
+                    // Once this instance is created, there is no need to set the _typeName more than once.
+                    // Also, read should never return null since it will create entity type if it doesn't exist.
+                    _typeName = typeof( LearningParticipant ).FullName;
+                }
+
+                return _typeName;
+            }
         }
     }
 }

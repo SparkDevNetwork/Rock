@@ -813,6 +813,12 @@ GO
                 string viewName = readerViews["TABLE_NAME"] as string;
                 string script = readerViews["VIEW_DEFINITION"] as string;
 
+                // Skip the dynamically generated views for attribute values.
+                if ( viewName.StartsWith( "AttributeValue_" ) )
+                {
+                    continue;
+                }
+
                 string filePath = Path.Combine( databaseRootFolder, "Views", viewName + ".sql" );
                 Directory.CreateDirectory( Path.GetDirectoryName( filePath ) );
 

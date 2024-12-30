@@ -201,6 +201,7 @@ namespace Rock.Blocks.Core
             }
 
             var bag = GetCommonEntityBag( entity );
+            bag.Description = entity.Description.ConvertMarkdownToHtml();
 
             bag.DefinedTypeAttributes = GetAttributes( entity.Id, RockContext ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );

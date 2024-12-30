@@ -11,12 +11,12 @@
         <Teleport v-if="isPopupOpen"
                   :to="popupTarget"
                   :disabled="!popupTarget">
-            <ul class="dropdown-menu dropdown-menu-right grid-actions-dropdown-menu"
+            <ul ref="dropDownMenuElement" class="dropdown-menu dropdown-menu-right grid-actions-dropdown-menu"
                 :style="popupStyle">
                 <PopupActionButton v-for="action in props.gridActions"
                                    :action="action"
                                    :grid="grid"
-                                   @click="onActionClick" />
+                                   @actionClick="onActionClick" />
             </ul>
         </Teleport>
     </div>
@@ -43,6 +43,7 @@
     });
 
     const btnGroupElement = ref<HTMLElement>();
+    const dropDownMenuElement = ref<HTMLElement>();
     const popupTarget = ref<Element>();
     const isPopupOpen = ref(false);
     const popupStyle = ref({});
@@ -98,6 +99,10 @@
     function onDocumentMouseDown(ev: MouseEvent): void {
         if (ev.target && ev.target instanceof HTMLElement) {
             if (btnGroupElement.value && btnGroupElement.value.contains(ev.target)) {
+                return;
+            }
+
+            if (dropDownMenuElement.value && dropDownMenuElement.value.contains(ev.target)) {
                 return;
             }
         }

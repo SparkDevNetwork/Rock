@@ -15,11 +15,13 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
 using Rock.Enums.Lms;
+using Rock.Lava;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -52,7 +54,7 @@ namespace Rock.Model
                 learningClassService.DeleteRange( classes );
 
                 var program = Queryable()
-                    .Include( p => p.LearningCourses)
+                    .Include( p => p.LearningCourses )
                     .Include( p => p.LearningSemesters )
                     .Include( p => p.LearningProgramCompletions )
                     .FirstOrDefault( p => p.Id == programId );
@@ -85,7 +87,7 @@ namespace Rock.Model
             return learningProgramId > 0 ? Queryable()
                 .Where( p => p.Id == learningProgramId )
                 .Include( p => p.LearningSemesters )
-                .Select( p => p.LearningSemesters.FirstOrDefault( s=> !s.EndDate.HasValue || s.EndDate >= now ) )
+                .Select( p => p.LearningSemesters.FirstOrDefault( s => !s.EndDate.HasValue || s.EndDate >= now ) )
                 .FirstOrDefault() :
                 default;
         }
@@ -137,8 +139,10 @@ namespace Rock.Model
         /// <param name="publicOnly"><c>true</c> to include <see cref="LearningProgram"/> records whose IsPublic property is true; <c>false</c> to include regardless of IsPublic.</param>
         /// <param name="categoryGuids">The optional list of category Guids to filter for.</param>
         /// <returns>An enumerable of PublicLearningProgramBag.</returns>
-        public IQueryable<PublicLearningProgramBag> GetPublicPrograms( int includeCompletionsForPersonId = 0, bool publicOnly = true, params Guid[] categoryGuids )
+        public List<PublicLearningProgramBag> GetPublicPrograms( int includeCompletionsForPersonId = 0, bool publicOnly = true, params Guid[] categoryGuids )
         {
+            var programs = new List<PublicLearningProgramBag>();
+
             var baseQuery = Queryable()
                 .AsNoTracking()
                 .Include( p => p.ImageBinaryFile )
@@ -161,43 +165,51 @@ namespace Rock.Model
                 .Include( c => c.PersonAlias )
                 .Where( c => c.PersonAlias.PersonId == includeCompletionsForPersonId ) ?? default;
 
-                return baseQuery
+                programs = baseQuery
                     .Select( p => new PublicLearningProgramBag
                     {
-                        Entity = p,
+                        Id = p.Id,
+                        PublicName = p.PublicName,
+                        Summary = p.Summary,
                         Category = p.Category.Name,
                         CategoryColor = p.Category.HighlightColor,
                         CompletionStatus = personCompletions
                             .FirstOrDefault( c => c.LearningProgramId == p.Id )
                             .CompletionStatus,
+                        ConfigurationMode = p.ConfigurationMode,
                         ImageFileGuid = p.ImageBinaryFile.Guid
-                    } );
+                    } ).ToList();
             }
             else
             {
                 // If we don't need to include completion status return the program bag queryable.
-                return baseQuery.Select( p => new PublicLearningProgramBag
+                programs = baseQuery.Select( p => new PublicLearningProgramBag
                 {
-                    Entity = p,
+                    Id = p.Id,
+                    PublicName = p.PublicName,
+                    Summary = p.Summary,
                     Category = p.Category.Name,
                     CategoryColor = p.Category.HighlightColor,
+                    ConfigurationMode = p.ConfigurationMode,
                     ImageFileGuid = p.ImageBinaryFile.Guid
-                } );
+                } ).ToList();
             }
+
+            foreach ( var program in programs )
+            {
+                program.IdKey = IdHasher.Instance.GetHash( program.Id );
+            }
+
+            return programs;
         }
 
-        #region Nested Classes
+        #region Nested Lava Classes
 
         /// <summary>
         /// Represents the Lava enabled data sent to the public programs list block.
         /// </summary>
-        public class PublicLearningProgramBag : RockDynamic
+        public class PublicLearningProgramBag : LavaDataObject
         {
-            /// <summary>
-            /// Gets or sets the Learning Program entity for this bag.
-            /// </summary>
-            public LearningProgram Entity { get; set; }
-
             /// <summary>
             /// Gets or sets the category.
             /// </summary>
@@ -214,14 +226,39 @@ namespace Rock.Model
             public CompletionStatus? CompletionStatus { get; set; }
 
             /// <summary>
+            /// Gets or sets the <see cref="ConfigurationMode"/> for the <see cref="LearningProgram"/>.
+            /// </summary>
+            public ConfigurationMode ConfigurationMode { get; set; }
+
+            /// <summary>
             /// Gets or sets the link to the course details.
             /// </summary>
             public string CoursesLink { get; set; }
 
             /// <summary>
+            /// Gets or sets the identifier of the <see cref="LearningProgram"/>.
+            /// </summary>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// Gets or sets the IdKey of the <see cref="LearningProgram"/>.
+            /// </summary>
+            public string IdKey { get; set; }
+
+            /// <summary>
             /// Gets or sets the Guid for the Image file of this Program.
             /// </summary>
             public Guid? ImageFileGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Public Name for the <see cref="LearningProgram"/>.
+            /// </summary>
+            public string PublicName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the Summary for the <see cref="LearningProgram"/>.
+            /// </summary>
+            public string Summary { get; set; }
         }
 
         #endregion

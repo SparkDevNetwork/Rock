@@ -715,6 +715,7 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorSelectorFieldAttribute.cs" />
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
+    <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
     <Compile Include="Core\EntitySearch\CustomExtensionMethodsExpressionVisitor.cs" />
     <Compile Include="Core\EntitySearch\DynamicLinqCustomTypeProvider.cs" />
@@ -1624,6 +1625,9 @@
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\230_FixVolGenBuildScript_CampusName.cs" />
+    <Compile Include="Plugin\HotFixes\228_SetConnectionTypeLinkUrl.cs" />
+    <Compile Include="Plugin\HotFixes\227_AddEnableDefaultAddressStateSelectionSetting.cs" />
     <Compile Include="Plugin\HotFixes\224_MigrationRollupsForV16_8_0.cs" />
     <Compile Include="Plugin\HotFixes\196_MigrationRollupsForV16_5_1.cs" />
     <Compile Include="Plugin\HotFixes\194_MigratoinRollupForV17_0_3.cs" />
@@ -1650,6 +1654,7 @@
     <Compile Include="Plugin\HotFixes\214_UpdateGradingScaleDescriptions.cs" />
     <Compile Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations.cs" />
+    <Compile Include="Plugin\HotFixes\229_PeerNetworkFitNFinish.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -3691,6 +3696,7 @@
     <Compile Include="Model\Core\Device\Device.cs" />
     <Compile Include="Model\CRM\Assessment\DiscService.cs" />
     <Compile Include="Model\Core\EntitySet\EntitySet.cs" />
+    <Compile Include="Model\Core\EntitySet\EntitySet.Logic.cs" />
     <Compile Include="Model\Core\EntitySetItem\EntitySetItem.cs" />
     <Compile Include="Model\Core\EntitySetItem\EntitySetItemService.cs" />
     <Compile Include="Model\Core\EntitySet\EntitySetService.cs" />

@@ -136,26 +136,19 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningSemester> GetListQueryable( RockContext rockContext )
         {
-            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
+            var entity = new LearningProgramService( rockContext ).Get(
+                PageParameter( PageParameterKey.LearningProgramId ),
+                !this.PageCache.Layout.Site.DisablePredictableIds );
 
-            // If the PageParameter has a value then use that
-            // otherwise try to get the Id for filtering from the ContextEntity.
-            if ( entityId > 0 )
+            // Return an empty list if no entity or the current person is not authorized to view the program.
+            if ( entity == null || !entity.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
             {
-                return base.GetListQueryable( rockContext )
-                .Include( a => a.LearningClasses )
-                .Where( a => a.LearningProgramId == entityId );
+                return new List<LearningSemester>().AsQueryable();
             }
 
-            var contextEntity = RequestContext.GetContextEntity<LearningProgram>();
-            if ( contextEntity != null && contextEntity.Id > 0 )
-            {
-                return base.GetListQueryable( rockContext )
+            return base.GetListQueryable( rockContext )
                 .Include( a => a.LearningClasses )
-                .Where( a => a.LearningProgramId == contextEntity.Id );
-            }
-
-            return new List<LearningSemester>().AsQueryable();
+                .Where( a => a.LearningProgramId == entity.Id );
         }
 
         /// <inheritdoc/>

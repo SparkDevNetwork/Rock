@@ -134,6 +134,8 @@ export const ServiceJob = {
     DataMigrations167ChopPledgeEntryBlock: "8E8C177E-DE88-47B2-AD9A-FC6AD5965882",
     /** The Job to run Post v16.7 to populate EntityIntents from AdditionalSettingsJson. */
     DataMigrations167PopulateEntityIntentsFromAdditionalSettingsJson: "155C2051-1513-4BB3-83AD-8D37EBBC3F59",
+    /** The Job to run Post v16.8 to update indexes. */
+    DataMigrations168UpdateIndexes: "E27CF068-B7DA-4AD0-ABC0-380AB68F1778",
     /** The Job to run Post v17.0 to add new and update existing indexes to support the Peer Network feature. */
     DataMigrations170AddAndUpdatePeerNetworkIndexes: "195DDB5A-FF1C-438E-BCA4-37EBC3D0F558",
     /** The Job to run Post v17.0 Data Migrations to chop Block. */

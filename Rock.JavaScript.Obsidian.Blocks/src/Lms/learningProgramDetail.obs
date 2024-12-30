@@ -177,8 +177,8 @@
         if (displayMode.value === "Detail") {
             // In 'Detail' mode provide a link to the 'Summary' mode.
             footerActions.push({
-                iconCssClass: "fa fa-tasks",
-                title: "Program Operations",
+                iconCssClass: "fa fa-chalkboard",
+                title: "Back to Program Overview",
                 type: "default",
                 handler: async () => {
                     await onViewAlternateDetailPage();
@@ -189,7 +189,7 @@
             // In 'Summary' mode provide a link to the 'Detail' mode.
             footerActions.push({
                 iconCssClass: "fa fa-cog",
-                title: "Program Settings",
+                title: "Configure Program",
                 type: "default",
                 handler: async () => {
                     await onViewAlternateDetailPage();

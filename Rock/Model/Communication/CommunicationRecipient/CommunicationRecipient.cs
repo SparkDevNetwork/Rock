@@ -99,6 +99,15 @@ namespace Rock.Model
         public DateTime? SendDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the datetime that communication was first attempted.
+        /// </summary>
+        /// <value>
+        /// The date time that communication was first attempted.
+        /// </value>
+        [DataMember]
+        public DateTime? FirstSendAttemptDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the datetime that communication was opened by recipient.
         /// </summary>
         /// <value>

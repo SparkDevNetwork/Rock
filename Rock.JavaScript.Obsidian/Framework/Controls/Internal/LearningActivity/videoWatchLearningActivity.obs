@@ -52,8 +52,14 @@
             <MediaPlayer v-model:watchedPercentage="watchedPercentage"
                          :mediaElementGuid="video?.value ?? ''" />
         </div>
+
         <div class="footer-section">
             <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
+
+            <div v-if="showStudentComment" class="optional-comments-container">
+                <TextBox v-model="studentComment" label="Optional Comments" textMode="multiline" :rows="4" />
+            </div>
+
         </div>
         <div class="footer-button-section">
             <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold"
@@ -74,6 +80,7 @@
     import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
     import MediaPlayer from "@Obsidian/Controls/mediaPlayer.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
@@ -92,6 +99,8 @@
     const activityBag = computed(() => props.activityBag);
     const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
     const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
+    const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
+    const studentComment = ref(completionBag.value.studentComment ?? "");
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
@@ -166,6 +175,8 @@
                 ...toValue(completionBag)
             } as LearningActivityCompletionBag;
 
+            updatedCompletionBag.studentComment = studentComment.value;
+
             updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
                 watchedPercentage: watchedPercentage.value,
                 pointsPossibleAtCompletion: pointsPossibleAtCompletion?.value ?? activityBag.value.points
@@ -173,7 +184,7 @@
             emits("update:completionBag", updatedCompletionBag);
         }
     });
-    watch(watchedPercentage, () => {
+    watch([watchedPercentage, studentComment], () => {
         debouncedCompletionBagEmits();
     }, { deep: true });
 </script>

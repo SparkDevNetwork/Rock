@@ -100,7 +100,7 @@ namespace Rock.Blocks.Cms
                 {
                     return null;
                 }
-                
+
                 SetBoxInitialEntityState( box, rockContext );
                 if ( box.Entity == null )
                 {
@@ -215,6 +215,8 @@ namespace Rock.Blocks.Cms
                 IsActive = entity.IsActive,
                 Key = entity.Key,
                 Name = entity.Name,
+                StartDate = entity.StartDate,
+                EndDate = entity.EndDate,
                 Categories = entity.AdaptiveMessageCategories.Select( a => a.Category ).ToListItemBagList(),
             };
         }
@@ -272,7 +274,7 @@ namespace Rock.Blocks.Cms
             string saturation;
 
             // If this is a Person, use the Person properties.
-            if ( !adaptation.ViewSaturationInDays.HasValue || adaptation.ViewSaturationInDays == default(int))
+            if ( !adaptation.ViewSaturationInDays.HasValue || adaptation.ViewSaturationInDays == default( int ) )
             {
                 saturation = "None";
             }
@@ -367,6 +369,12 @@ namespace Rock.Blocks.Cms
 
             box.IfValidProperty( nameof( box.Entity.Categories ),
                 () => UpdateCategories( rockContext, entity, box.Entity ) );
+
+            box.IfValidProperty( nameof( box.Entity.StartDate ),
+                () => entity.StartDate = box.Entity.StartDate );
+
+            box.IfValidProperty( nameof( box.Entity.EndDate ),
+                () => entity.EndDate = box.Entity.EndDate );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
@@ -499,7 +507,7 @@ namespace Rock.Blocks.Cms
         private void UpdateCategories( RockContext rockContext, AdaptiveMessage entity, AdaptiveMessageBag bag )
         {
             var categoryService = new CategoryService( rockContext );
-            var adaptiveMessageCategoryService = new AdaptiveMessageCategoryService(rockContext );
+            var adaptiveMessageCategoryService = new AdaptiveMessageCategoryService( rockContext );
             var adaptiveMessageCategories = entity.AdaptiveMessageCategories.ToList();
             foreach ( var adaptiveMessageCategory in adaptiveMessageCategories )
             {

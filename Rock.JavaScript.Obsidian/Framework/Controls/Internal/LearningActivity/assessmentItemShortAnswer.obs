@@ -20,6 +20,7 @@
                     <NumberBox v-model="questionWeight"
                                :key="weightsValidationKey"
                                :disabled="disabled"
+                               :minimumValue="0"
                                label="Question Weight"
                                :rules="allAssessmentWeightsSumTo100"
                                :help="configurationWeightHelpText"
@@ -32,6 +33,7 @@
                 <div class="configuration-field-answer-box-rows">
                     <NumberBox v-model="answerBoxRows"
                                :disabled="disabled"
+                               :minimumValue="1"
                                label="Answer Box Rows"
                                help="Determines the height of the answer box that is shown for this answer." />
 
@@ -39,6 +41,7 @@
                 <div class="configuration-field-max-character-count">
                     <NumberBox v-model="maxCharacterCount"
                                :disabled="disabled"
+                               :minimumValue="0"
                                label="Max Character Count"
                                help="Optionally limits the number of characters that can be provided in the answer." />
                 </div>
@@ -69,6 +72,7 @@
                 <NumberBox v-model="pointsEarned"
                            label="Score"
                            :min="0"
+                           :minimumValue="0"
                            :max="pointsPossible"
                            :rules="'lte:' + pointsPossible"
                            inputGroupClasses="input-width-lg">

@@ -114,10 +114,11 @@ namespace Rock.Blocks.Lms
         /// <returns>The options that provide additional details to the block.</returns>
         private LearningCourseDetailOptionsBag GetBoxOptions( LearningCourseBag entity )
         {
-            var disablePredictableIds = PageCache.Layout?.Site?.DisablePredictableIds ?? false;
             // Get the ConfigurationMode for the parent Program.
-            var programConfigurationMode = new LearningCourseService( RockContext )
-                .GetSelect( entity.IdKey, c => c.LearningProgram.ConfigurationMode, !disablePredictableIds );
+            var programConfigurationMode = new LearningProgramService( RockContext )
+                .GetSelect( PageParameter( PageParameterKey.LearningProgramId ),
+                c => c.ConfigurationMode,
+                !this.PageCache.Layout.Site.DisablePredictableIds );
 
             return new LearningCourseDetailOptionsBag
             {
@@ -357,9 +358,23 @@ namespace Rock.Blocks.Lms
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
             {
+                /*
+                    12/12/2024 - JC
+
+                    We must load the parent LearningProgram for new records.
+                    When the authorization is checked the LearningProgram (the ParentAuthority)
+                    might be checked for approving/denying access (see LearningCourse.IsAuthorized).
+
+                    Reason: ParentAuthority (LearningProgram) might be checked for authorization.
+                */
+                var program = new LearningProgramService( RockContext ).Get(
+                    PageParameter( PageParameterKey.LearningProgramId ),
+                    !this.PageCache.Layout.Site.DisablePredictableIds );
+
                 return new LearningCourse
                 {
-                    LearningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId ),
+                    LearningProgram = program,
+                    LearningProgramId = program.Id,
                     Id = 0,
                     Guid = Guid.Empty,
                     IsActive = true
@@ -592,7 +607,7 @@ namespace Rock.Blocks.Lms
                 entityService.GetQueryableByKey( key )
                     .Include( c => c.LearningCourseRequirements )
                     .SelectMany( c => c.LearningCourseRequirements.Select( r => r.RequiredLearningCourseId ) )
-                    .ToList() :
+                    .ToList():
                 new List<int>();
 
             var currentId = Rock.Utility.IdHasher.Instance.GetId( key );
@@ -609,6 +624,7 @@ namespace Rock.Blocks.Lms
                 .ToList()
                 // Make sure the current user is authorized to view the course.
                 .Where( c => c.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .OrderBy( c => c.Name )
                 .ToListItemBagList();
 
             return ActionOk( allCourses );

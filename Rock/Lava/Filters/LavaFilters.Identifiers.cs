@@ -101,7 +101,7 @@ namespace Rock.Lava
                         // Assume the provided name is the friendly name.
                         var inputNameLower = inputName.RemoveSpaces().ToLower();
                         entityTypeCache = EntityTypeCache.All()
-                            .Where( et => et.IsEntity )
+                            .Where( et => et.IsEntity && et.FriendlyName != null )
                             .FirstOrDefault( et => et.FriendlyName.RemoveSpaces().ToLower() == inputNameLower );
                     }
                 }

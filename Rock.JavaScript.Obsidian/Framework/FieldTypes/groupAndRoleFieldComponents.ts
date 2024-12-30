@@ -46,7 +46,7 @@ export const EditComponent = defineComponent({
         }, { immediate: true });
 
         const groupLabel = computed((): string => {
-            return props.configurationValues[ConfigurationValueKey.GroupRolePickerLabel] || "Group";
+            return props.configurationValues[ConfigurationValueKey.GroupRolePickerLabel] ?? "Group";
         });
 
         watch(() => [group.value, groupType.value, groupRoleValue], () => {
@@ -89,7 +89,7 @@ export const ConfigurationComponent = defineComponent({
     ],
 
     setup(props, { emit }) {
-        const groupAndRolePickerLabel = ref("");
+        const groupAndRolePickerLabel = ref("Group");
 
         /**
          * Update the modelValue property if any value of the dictionary has
@@ -134,7 +134,7 @@ export const ConfigurationComponent = defineComponent({
         // Watch for changes coming in from the parent component and update our
         // data to match the new information.
         watch(() => [props.modelValue, props.configurationProperties], () => {
-            groupAndRolePickerLabel.value = props.modelValue[ConfigurationValueKey.GroupRolePickerLabel] ?? "";
+            groupAndRolePickerLabel.value = props.modelValue[ConfigurationValueKey.GroupRolePickerLabel] ?? "Group";
         }, {
             immediate: true
         });

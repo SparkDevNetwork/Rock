@@ -223,13 +223,13 @@ namespace Rock.Blocks.Finance
             return new GridBuilder<FinancialTransactionDetail>()
                 .WithBlock(this)
                 .AddTextField("idKey", a => a.IdKey)
-                .AddTextField("donorIdKey", a => a.Transaction.AuthorizedPersonAlias.Person.IdKey)
+                .AddTextField("donorIdKey", a => a.Transaction.AuthorizedPersonAlias?.Person?.IdKey)
                 .AddTextField("donor", a => GetDonorText(a))
-                .AddTextField("donorEmail", a => a.Transaction.AuthorizedPersonAlias.Person.Email)
+                .AddTextField("donorEmail", a => a.Transaction.AuthorizedPersonAlias?.Person?.Email)
                 .AddTextField("participant", a => GetParticipantText(a))
                 .AddField("amount", a => a.Amount)
-                .AddTextField("donorAddressHtml", a => a.Transaction.AuthorizedPersonAlias.Person.GetHomeLocation().ToStringSafe().ConvertCrLfToHtmlBr())
-                .AddTextField("donorAddress", a => a.Transaction.AuthorizedPersonAlias.Person.GetHomeLocation().ToStringSafe())
+                .AddTextField("donorAddressHtml", a => a.Transaction.AuthorizedPersonAlias?.Person?.GetHomeLocation().ToStringSafe().ConvertCrLfToHtmlBr())
+                .AddTextField("donorAddress", a => a.Transaction.AuthorizedPersonAlias?.Person?.GetHomeLocation().ToStringSafe())
                 .AddDateTimeField("date", a => a.Transaction.TransactionDateTime);
         }
 
@@ -267,7 +267,7 @@ namespace Rock.Blocks.Finance
             var mergeFields = RequestContext.GetCommonMergeFields(GetCurrentPerson());
 
             mergeFields.AddOrReplace("Group", GetContextEntityGroup());
-            mergeFields.AddOrReplace("Donor", transactionDetail.Transaction.AuthorizedPersonAlias.Person);
+            mergeFields.AddOrReplace("Donor", transactionDetail.Transaction.AuthorizedPersonAlias?.Person);
 
             if (_groupMembers.TryGetValue(transactionDetail.EntityId.Value, out GroupMember groupMember))
             {
