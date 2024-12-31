@@ -304,6 +304,7 @@
         entityTypeQualifierValue.value = result.data.entityTypeQualifierValue ?? "";
         editableAttribute.value = result.data.attribute;
         editableAttribute.value.guid = null;
+        editableAttribute.value.realFieldTypeGuid = null;
 
         entityTypeQualifierColumnItems.value = result.data
             .validQualifierColumns
