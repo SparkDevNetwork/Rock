@@ -295,7 +295,9 @@ namespace RockWeb.Blocks.Finance
 
             _benevolenceTypesWithRequests = new HashSet<int>( benevolenceTypesWithRequestsQry.Distinct().ToList() );
 
-            return allBenevolenceTypes;
+            var authorizedTypes = allBenevolenceTypes.AsEnumerable().Where( bt => bt.IsAuthorized( Authorization.VIEW, CurrentPerson ) );
+
+            return authorizedTypes;
         }
 
         #endregion
