@@ -24,7 +24,6 @@ using Microsoft.AspNetCore.Mvc;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.ViewModels.Rest.Models;
@@ -42,8 +41,6 @@ namespace Rock.Rest.v2.Models
     /// Provides action API endpoints for Followings.
     /// </summary>
     [RoutePrefix( "api/v2/models/followings/actions" )]
-    [SecurityAction( "UnrestrictedView", "Allows viewing entities regardless of per-entity security authorization." )]
-    [SecurityAction( "UnrestrictedEdit", "Allows editing entities regardless of per-entity security authorization." )]
     [Rock.SystemGuid.RestControllerGuid( "27c9a2aa-70a3-4afe-9599-aeda2db80794" )]
     public class FollowingsActionsController : ApiControllerBase
     {
@@ -55,14 +52,14 @@ namespace Rock.Rest.v2.Models
         /// <returns>The action result.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured]
-        [Route( "followed/{entityTypeId}" )]
+        [Secured( Security.Authorization.VIEW )]
+        [Route( "follow/{entityTypeId}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<object> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "802af5c2-c880-42d4-8043-33a43ad27965" )]
-        public IActionResult GetFollowed( string entityTypeId )
+        public IActionResult GetFollow( string entityTypeId )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -85,10 +82,11 @@ namespace Rock.Rest.v2.Models
                     return NotFound( "The entity type was not found." );
                 }
 
-                // If the person isn't logged in, then can't have anything followed.
+                // If the person isn't logged in then they can't have
+                // anything followed.
                 if ( RockRequestContext.CurrentPerson == null )
                 {
-                    return Ok( new List<object>() );
+                    return BadRequest( "Must be logged in." );
                 }
 
                 var followingIdsQry = new FollowingService( rockContext ).Queryable()
@@ -100,43 +98,25 @@ namespace Rock.Rest.v2.Models
                 var entityQry = Reflection.GetQueryableForEntityType( entityType.GetEntityType(), rockContext )
                     .Where(  a => followingIdsQry.Contains( a.Id ) );
 
-                List<ItemIdentifierBag> results;
-
-                // See if we can bypass the per-entity security checks.
-                if ( IsCurrentPersonUnrestrictedView() || !entityType.IsSecured )
-                {
-                    results = entityQry
-                        .Select( a => new
-                        {
-                            a.Id,
-                            a.Guid
-                        } )
-                        .ToList()
-                        .Select( a => new ItemIdentifierBag
-                        {
-                            Id = a.Id,
-                            Guid = a.Guid,
-                            IdKey = IdHasher.Instance.GetHash( a.Id )
-                        } )
-                        .ToList();
-
-                    return Ok( results );
-                }
-                else
-                {
-                    var currentPerson = RockRequestContext.CurrentPerson;
-
-                    results = entityQry
-                        .ToList()
-                        .Where( a => ( ( ISecured ) a ).IsAuthorized( Security.Authorization.VIEW, currentPerson ) )
-                        .Select( a => new ItemIdentifierBag
-                        {
-                            Id = a.Id,
-                            Guid = a.Guid,
-                            IdKey = a.IdKey
-                        } )
-                        .ToList();
-                }
+                // We don't need to check security because it is assumed that if
+                // they were able to create the following then they should be
+                // allowed to see the following. And this only returns identifiers
+                // so if they don't have access to the entity anymore then the
+                // CRUD endpoints for the entity will deny access.
+                var results = entityQry
+                    .Select( a => new
+                    {
+                        a.Id,
+                        a.Guid
+                    } )
+                    .ToList()
+                    .Select( a => new ItemIdentifierBag
+                    {
+                        Id = a.Id,
+                        Guid = a.Guid,
+                        IdKey = IdHasher.Instance.GetHash( a.Id )
+                    } )
+                    .ToList();
 
                 return Ok( results );
             }

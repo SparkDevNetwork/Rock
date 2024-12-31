@@ -43,8 +43,7 @@ namespace Rock.Rest.v2.Models
     /// Provides action API endpoints for DataViews.
     /// </summary>
     [RoutePrefix( "api/v2/models/dataviews/actions" )]
-    [SecurityAction( "UnrestrictedView", "Allows viewing entities regardless of per-entity security authorization." )]
-    [SecurityAction( "UnrestrictedEdit", "Allows editing entities regardless of per-entity security authorization." )]
+    [SecurityAction( Security.Authorization.UNRESTRICTED_VIEW, "Allows viewing data views regardless of per-data view security authorization." )]
     [Rock.SystemGuid.RestControllerGuid( "4a4d3972-248d-4482-bf99-6e0719ab122f" )]
     public class DataViewsActionsController : ApiControllerBase
     {
@@ -56,7 +55,7 @@ namespace Rock.Rest.v2.Models
         /// <returns>The action result.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.VIEW )]
         [Route( "contains/{id}/{entityId}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( bool ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]

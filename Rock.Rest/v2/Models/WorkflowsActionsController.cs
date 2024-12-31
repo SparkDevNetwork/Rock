@@ -41,8 +41,6 @@ namespace Rock.Rest.v2.Models
     /// Provides action API endpoints for Workflows.
     /// </summary>
     [RoutePrefix( "api/v2/models/workflows/actions" )]
-    [SecurityAction( "UnrestrictedView", "Allows viewing entities regardless of per-entity security authorization." )]
-    [SecurityAction( "UnrestrictedEdit", "Allows editing entities regardless of per-entity security authorization." )]
     [Rock.SystemGuid.RestControllerGuid( "cf6d6938-40df-446c-8f91-cb45beef7357" )]
     public class WorkflowsActionsController : ApiControllerBase
     {
@@ -56,7 +54,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>The action result.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EDIT )]
+        [SecurityAction( Security.Authorization.UNRESTRICTED_EDIT, "Allows launching any workflow type regardless of per-workflow type security authorization." )]
         [Route( "launch/{workflowTypeId}" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
