@@ -42,7 +42,7 @@ namespace Rock.Rest.v2.Models
     /// </summary>
     [RoutePrefix( "api/v2/models/workflows/actions" )]
     [Rock.SystemGuid.RestControllerGuid( "cf6d6938-40df-446c-8f91-cb45beef7357" )]
-    public class WorkflowsActionsController : ApiControllerBase
+    public class WorkflowActionsController : ApiControllerBase
     {
         /// <summary>
         /// Launches a new workflow of the specified type. The workflow will be

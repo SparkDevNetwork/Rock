@@ -42,7 +42,7 @@ namespace Rock.Rest.v2.Models
     /// </summary>
     [RoutePrefix( "api/v2/models/followings/actions" )]
     [Rock.SystemGuid.RestControllerGuid( "27c9a2aa-70a3-4afe-9599-aeda2db80794" )]
-    public class FollowingsActionsController : ApiControllerBase
+    public class FollowingActionsController : ApiControllerBase
     {
         /// <summary>
         /// Gets the identifiers of all items being followed by the current
