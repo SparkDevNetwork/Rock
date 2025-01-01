@@ -106,15 +106,16 @@
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { FinancialStatementTemplateBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialStatementTemplateDetail/financialStatementTemplateBag";
     import { FinancialStatementTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialStatementTemplateDetail/financialStatementTemplateDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<FinancialStatementTemplateBag>,
+            type: Object as PropType<ValidPropertiesBox<FinancialStatementTemplateBag>>,
             required: true
         },
 
@@ -125,40 +126,40 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: FinancialStatementTemplateBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<FinancialStatementTemplateBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
     // Transaction Settings
-    const accountOption = ref(props.modelValue.accountSelectionOption ?? "");
-    const selectedAccounts = ref(props.modelValue.selectedAccounts ?? []);
-    const includeChildAccountsCustom = ref(props.modelValue.includeChildAccountsCustom);
-    const currencyTypesForCashGifts = ref(props.modelValue.currencyTypesForCashGifts ?? []);
-    const currencyTypesForNonCashGifts = ref(props.modelValue.currencyTypesForNonCashGifts ?? []);
-    const hideRefundedTransactions = ref(props.modelValue.hideRefundedTransactions);
-    const hideCorrectedTransactionOnSameData = ref(props.modelValue.hideCorrectedTransactionOnSameData);
-    const transactionTypes = ref(props.modelValue.transactionTypes ?? []);
+    const accountOption = ref(props.modelValue?.bag?.accountSelectionOption ?? "");
+    const selectedAccounts = ref(props.modelValue?.bag?.selectedAccounts ?? []);
+    const includeChildAccountsCustom = ref(props.modelValue?.bag?.includeChildAccountsCustom ?? false);
+    const currencyTypesForCashGifts = ref(props.modelValue?.bag?.currencyTypesForCashGifts ?? []);
+    const currencyTypesForNonCashGifts = ref(props.modelValue?.bag?.currencyTypesForNonCashGifts ?? []);
+    const hideRefundedTransactions = ref(props.modelValue?.bag?.hideRefundedTransactions ?? false);
+    const hideCorrectedTransactionOnSameData = ref(props.modelValue?.bag?.hideCorrectedTransactionOnSameData ?? false);
+    const transactionTypes = ref(props.modelValue?.bag?.transactionTypes ?? []);
     // Pledge Settings
-    const pledgeAccounts = ref(props.modelValue.pledgeAccounts ?? []);
-    const includeChildAccountsPledges = ref(props.modelValue.includeChildAccountsPledges);
-    const includeNonCashGiftsPledge = ref(props.modelValue.includeNonCashGiftsPledge);
+    const pledgeAccounts = ref(props.modelValue?.bag?.pledgeAccounts ?? []);
+    const includeChildAccountsPledges = ref(props.modelValue?.bag?.includeChildAccountsPledges ?? false);
+    const includeNonCashGiftsPledge = ref(props.modelValue?.bag?.includeNonCashGiftsPledge ?? false);
     // Report Settings
-    const reportTemplate = ref(props.modelValue.reportTemplate ?? "");
-    const footerTemplateHtmlFragment = ref(props.modelValue.footerTemplateHtmlFragment ?? "");
-    const logoBinaryFile = ref(props.modelValue.logoBinaryFile ?? {});
+    const reportTemplate = ref(props.modelValue?.bag?.reportTemplate ?? "");
+    const footerTemplateHtmlFragment = ref(props.modelValue?.bag?.footerTemplateHtmlFragment ?? "");
+    const logoBinaryFile = ref(props.modelValue?.bag?.logoBinaryFile ?? {});
     // PDF Settings
-    const marginTopMillimeters = ref(props.modelValue.marginTopMillimeters);
-    const marginBottomMillimeters = ref(props.modelValue.marginBottomMillimeters);
-    const marginRightMillimeters = ref(props.modelValue.marginRightMillimeters);
-    const marginLeftMillimeters = ref(props.modelValue.marginLeftMillimeters);
-    const paperSize = ref(props.modelValue.paperSize ?? "");
+    const marginTopMillimeters = ref(props.modelValue?.bag?.marginTopMillimeters);
+    const marginBottomMillimeters = ref(props.modelValue?.bag?.marginBottomMillimeters);
+    const marginRightMillimeters = ref(props.modelValue?.bag?.marginRightMillimeters);
+    const marginLeftMillimeters = ref(props.modelValue?.bag?.marginLeftMillimeters);
+    const paperSize = ref(props.modelValue?.bag?.paperSize ?? "");
     // Options
     const transactionTypeOptions = ref(props.options.transactionTypeOptions ?? []);
     const currencyTypeOptions = ref(props.options.currencyTypeOptions ?? []);
@@ -183,69 +184,70 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
 
-        updateRefValue(accountOption, props.modelValue.accountSelectionOption ?? "");
-        updateRefValue(selectedAccounts, props.modelValue.selectedAccounts ?? []);
-        updateRefValue(includeChildAccountsCustom, props.modelValue.includeChildAccountsCustom);
-        updateRefValue(currencyTypesForCashGifts, props.modelValue.currencyTypesForCashGifts ?? []);
-        updateRefValue(currencyTypesForNonCashGifts, props.modelValue.currencyTypesForNonCashGifts ?? []);
-        updateRefValue(hideRefundedTransactions, props.modelValue.hideRefundedTransactions);
-        updateRefValue(hideCorrectedTransactionOnSameData, props.modelValue.hideCorrectedTransactionOnSameData);
-        updateRefValue(transactionTypes, props.modelValue.transactionTypes ?? []);
+        updateRefValue(accountOption, props.modelValue?.bag?.accountSelectionOption ?? "");
+        updateRefValue(selectedAccounts, props.modelValue?.bag?.selectedAccounts ?? []);
+        updateRefValue(includeChildAccountsCustom, props.modelValue?.bag?.includeChildAccountsCustom ?? false);
+        updateRefValue(currencyTypesForCashGifts, props.modelValue?.bag?.currencyTypesForCashGifts ?? []);
+        updateRefValue(currencyTypesForNonCashGifts, props.modelValue?.bag?.currencyTypesForNonCashGifts ?? []);
+        updateRefValue(hideRefundedTransactions, props.modelValue?.bag?.hideRefundedTransactions ?? false);
+        updateRefValue(hideCorrectedTransactionOnSameData, props.modelValue?.bag?.hideCorrectedTransactionOnSameData ?? false);
+        updateRefValue(transactionTypes, props.modelValue?.bag?.transactionTypes ?? []);
 
-        updateRefValue(pledgeAccounts, props.modelValue.pledgeAccounts ?? []);
-        updateRefValue(includeChildAccountsPledges, props.modelValue.includeChildAccountsPledges);
-        updateRefValue(includeNonCashGiftsPledge, props.modelValue.includeNonCashGiftsPledge);
+        updateRefValue(pledgeAccounts, props.modelValue?.bag?.pledgeAccounts ?? []);
+        updateRefValue(includeChildAccountsPledges, props.modelValue?.bag?.includeChildAccountsPledges ?? false);
+        updateRefValue(includeNonCashGiftsPledge, props.modelValue?.bag?.includeNonCashGiftsPledge ?? false);
 
-        updateRefValue(reportTemplate, props.modelValue.reportTemplate ?? "");
-        updateRefValue(footerTemplateHtmlFragment, props.modelValue.footerTemplateHtmlFragment ?? "");
-        updateRefValue(logoBinaryFile, props.modelValue.logoBinaryFile ?? {});
+        updateRefValue(reportTemplate, props.modelValue?.bag?.reportTemplate ?? "");
+        updateRefValue(footerTemplateHtmlFragment, props.modelValue?.bag?.footerTemplateHtmlFragment ?? "");
+        updateRefValue(logoBinaryFile, props.modelValue?.bag?.logoBinaryFile ?? {});
 
-        updateRefValue(marginTopMillimeters, props.modelValue.marginTopMillimeters);
-        updateRefValue(marginBottomMillimeters, props.modelValue.marginBottomMillimeters);
-        updateRefValue(marginRightMillimeters, props.modelValue.marginRightMillimeters);
-        updateRefValue(marginLeftMillimeters, props.modelValue.marginLeftMillimeters);
-        updateRefValue(paperSize, props.modelValue.paperSize ?? "");
+        updateRefValue(marginTopMillimeters, props.modelValue?.bag?.marginTopMillimeters);
+        updateRefValue(marginBottomMillimeters, props.modelValue?.bag?.marginBottomMillimeters);
+        updateRefValue(marginRightMillimeters, props.modelValue?.bag?.marginRightMillimeters);
+        updateRefValue(marginLeftMillimeters, props.modelValue?.bag?.marginLeftMillimeters);
+        updateRefValue(paperSize, props.modelValue?.bag?.paperSize ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...transactionSettingsRefs, ...pledgeSettingsRefs, ...reportSettingsRefs, ...pdfSettingsRefs, ...propRefs], () => {
-        const newValue: FinancialStatementTemplateBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            isActive: isActive.value,
-            name: name.value,
-
-            accountSelectionOption: accountOption.value,
-            selectedAccounts: selectedAccounts.value,
-            includeChildAccountsCustom: includeChildAccountsCustom.value,
-            currencyTypesForCashGifts: currencyTypesForCashGifts.value,
-            currencyTypesForNonCashGifts: currencyTypesForNonCashGifts.value,
-            hideRefundedTransactions: hideRefundedTransactions.value,
-            hideCorrectedTransactionOnSameData: hideCorrectedTransactionOnSameData.value,
-            transactionTypes: transactionTypes.value,
-
-            pledgeAccounts: pledgeAccounts.value,
-            includeChildAccountsPledges: includeChildAccountsPledges.value,
-            includeNonCashGiftsPledge: includeNonCashGiftsPledge.value,
-
-            reportTemplate: reportTemplate.value,
-            footerTemplateHtmlFragment: footerTemplateHtmlFragment.value,
-            logoBinaryFile: logoBinaryFile.value,
-
-            marginTopMillimeters: marginTopMillimeters.value,
-            marginBottomMillimeters: marginBottomMillimeters.value,
-            marginRightMillimeters: marginRightMillimeters.value,
-            marginLeftMillimeters: marginLeftMillimeters.value,
-            paperSize: paperSize.value,
+        const newValue: ValidPropertiesBox<FinancialStatementTemplateBag> = {
+            bag: { ...props.modelValue.bag } as FinancialStatementTemplateBag,
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+
+        setPropertiesBoxValue(newValue, "accountSelectionOption", accountOption.value);
+        setPropertiesBoxValue(newValue, "selectedAccounts", selectedAccounts.value);
+        setPropertiesBoxValue(newValue, "includeChildAccountsCustom", includeChildAccountsCustom.value);
+        setPropertiesBoxValue(newValue, "currencyTypesForCashGifts", currencyTypesForCashGifts.value);
+        setPropertiesBoxValue(newValue, "currencyTypesForNonCashGifts", currencyTypesForNonCashGifts.value);
+        setPropertiesBoxValue(newValue, "hideRefundedTransactions", hideRefundedTransactions.value);
+        setPropertiesBoxValue(newValue, "hideCorrectedTransactionOnSameData", hideCorrectedTransactionOnSameData.value);
+        setPropertiesBoxValue(newValue, "transactionTypes", transactionTypes.value);
+
+        setPropertiesBoxValue(newValue, "pledgeAccounts", pledgeAccounts.value);
+        setPropertiesBoxValue(newValue, "includeChildAccountsPledges", includeChildAccountsPledges.value);
+        setPropertiesBoxValue(newValue, "includeNonCashGiftsPledge", includeNonCashGiftsPledge.value);
+
+        setPropertiesBoxValue(newValue, "reportTemplate", reportTemplate.value);
+        setPropertiesBoxValue(newValue, "footerTemplateHtmlFragment", footerTemplateHtmlFragment.value);
+        setPropertiesBoxValue(newValue, "logoBinaryFile", logoBinaryFile.value);
+
+        setPropertiesBoxValue(newValue, "marginTopMillimeters", marginTopMillimeters.value);
+        setPropertiesBoxValue(newValue, "marginBottomMillimeters", marginBottomMillimeters.value);
+        setPropertiesBoxValue(newValue, "marginRightMillimeters", marginRightMillimeters.value);
+        setPropertiesBoxValue(newValue, "marginLeftMillimeters", marginLeftMillimeters.value);
+        setPropertiesBoxValue(newValue, "paperSize", paperSize.value);
 
         emit("update:modelValue", newValue);
     });
