@@ -197,7 +197,7 @@ namespace Rock.Rest
                 {
                     var restAction = RestActionCache.Get( restGuid.Value );
 
-                    return restAction?.IsAuthorized( "UnrestrictedView", RockRequestContext.CurrentPerson ) ?? false;
+                    return restAction?.IsAuthorized( Security.Authorization.UNRESTRICTED_VIEW, RockRequestContext.CurrentPerson ) ?? false;
                 }
             }
 
@@ -219,7 +219,7 @@ namespace Rock.Rest
                 {
                     var restAction = RestActionCache.Get( restGuid.Value );
 
-                    return restAction?.IsAuthorized( "UnrestrictedEdit", RockRequestContext.CurrentPerson ) ?? false;
+                    return restAction?.IsAuthorized( Security.Authorization.UNRESTRICTED_EDIT, RockRequestContext.CurrentPerson ) ?? false;
                 }
             }
 

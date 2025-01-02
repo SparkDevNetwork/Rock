@@ -49,8 +49,8 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Connection Statuses.
     /// </summary>
     [RoutePrefix( "api/v2/models/connectionstatuses" )]
-    [SecurityAction( "UnrestrictedView", "Allows viewing entities regardless of per-entity security authorization." )]
-    [SecurityAction( "UnrestrictedEdit", "Allows editing entities regardless of per-entity security authorization." )]
+    [SecurityAction( Security.Authorization.UNRESTRICTED_VIEW, "Allows viewing entities regardless of per-entity security authorization." )]
+    [SecurityAction( Security.Authorization.UNRESTRICTED_EDIT, "Allows editing entities regardless of per-entity security authorization." )]
     [Rock.SystemGuid.RestControllerGuid( "10100640-89a6-4631-a441-7ad26c073b8b" )]
     public partial class ConnectionStatusesController : ApiControllerBase
     {

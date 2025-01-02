@@ -49,8 +49,8 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Person Aliases.
     /// </summary>
     [RoutePrefix( "api/v2/models/personaliases" )]
-    [SecurityAction( "UnrestrictedView", "Allows viewing entities regardless of per-entity security authorization." )]
-    [SecurityAction( "UnrestrictedEdit", "Allows editing entities regardless of per-entity security authorization." )]
+    [SecurityAction( Security.Authorization.UNRESTRICTED_VIEW, "Allows viewing entities regardless of per-entity security authorization." )]
+    [SecurityAction( Security.Authorization.UNRESTRICTED_EDIT, "Allows editing entities regardless of per-entity security authorization." )]
     [Rock.SystemGuid.RestControllerGuid( "75095207-3547-4283-a9d8-d4c80738e56b" )]
     public partial class PersonAliasesController : ApiControllerBase
     {

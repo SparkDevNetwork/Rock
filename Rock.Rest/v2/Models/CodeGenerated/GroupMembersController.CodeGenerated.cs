@@ -49,8 +49,8 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Group Members.
     /// </summary>
     [RoutePrefix( "api/v2/models/groupmembers" )]
-    [SecurityAction( "UnrestrictedView", "Allows viewing entities regardless of per-entity security authorization." )]
-    [SecurityAction( "UnrestrictedEdit", "Allows editing entities regardless of per-entity security authorization." )]
+    [SecurityAction( Security.Authorization.UNRESTRICTED_VIEW, "Allows viewing entities regardless of per-entity security authorization." )]
+    [SecurityAction( Security.Authorization.UNRESTRICTED_EDIT, "Allows editing entities regardless of per-entity security authorization." )]
     [Rock.SystemGuid.RestControllerGuid( "68f3294d-0e62-4110-9843-184411cb6afa" )]
     public partial class GroupMembersController : ApiControllerBase
     {

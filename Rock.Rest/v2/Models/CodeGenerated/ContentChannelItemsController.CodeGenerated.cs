@@ -49,8 +49,8 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Content Channel Items.
     /// </summary>
     [RoutePrefix( "api/v2/models/contentchannelitems" )]
-    [SecurityAction( "UnrestrictedView", "Allows viewing entities regardless of per-entity security authorization." )]
-    [SecurityAction( "UnrestrictedEdit", "Allows editing entities regardless of per-entity security authorization." )]
+    [SecurityAction( Security.Authorization.UNRESTRICTED_VIEW, "Allows viewing entities regardless of per-entity security authorization." )]
+    [SecurityAction( Security.Authorization.UNRESTRICTED_EDIT, "Allows editing entities regardless of per-entity security authorization." )]
     [Rock.SystemGuid.RestControllerGuid( "e1b0a1a9-014d-4e97-88f7-cf52fc00626a" )]
     public partial class ContentChannelItemsController : ApiControllerBase
     {

@@ -49,8 +49,8 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Phone Numbers.
     /// </summary>
     [RoutePrefix( "api/v2/models/phonenumbers" )]
-    [SecurityAction( "UnrestrictedView", "Allows viewing entities regardless of per-entity security authorization." )]
-    [SecurityAction( "UnrestrictedEdit", "Allows editing entities regardless of per-entity security authorization." )]
+    [SecurityAction( Security.Authorization.UNRESTRICTED_VIEW, "Allows viewing entities regardless of per-entity security authorization." )]
+    [SecurityAction( Security.Authorization.UNRESTRICTED_EDIT, "Allows editing entities regardless of per-entity security authorization." )]
     [Rock.SystemGuid.RestControllerGuid( "c4cd6949-c755-4d34-8778-f89632dab3b9" )]
     public partial class PhoneNumbersController : ApiControllerBase
     {

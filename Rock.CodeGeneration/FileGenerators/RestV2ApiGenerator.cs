@@ -67,8 +67,8 @@ namespace Rock.CodeGeneration.FileGenerators
             content.AppendLine( $"    /// Provides data API endpoints for {modelType.Name.Pluralize().SplitCase()}." );
             content.AppendLine( "    /// </summary>" );
             content.AppendLine( $"    [RoutePrefix( \"api/v2/models/{modelType.Name.Pluralize().ToLower()}\" )]" );
-            content.AppendLine( "    [SecurityAction( \"UnrestrictedView\", \"Allows viewing entities regardless of per-entity security authorization.\" )]" );
-            content.AppendLine( "    [SecurityAction( \"UnrestrictedEdit\", \"Allows editing entities regardless of per-entity security authorization.\" )]" );
+            content.AppendLine( "    [SecurityAction( Security.Authorization.UNRESTRICTED_VIEW, \"Allows viewing entities regardless of per-entity security authorization.\" )]" );
+            content.AppendLine( "    [SecurityAction( Security.Authorization.UNRESTRICTED_EDIT, \"Allows editing entities regardless of per-entity security authorization.\" )]" );
             content.AppendLine( $"    [Rock.SystemGuid.RestControllerGuid( \"{controllerGuid}\" )]" );
             content.AppendLine( $"    public partial class {modelType.Name.Pluralize()}Controller : ApiControllerBase" );
 
