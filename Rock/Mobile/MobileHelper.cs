@@ -966,12 +966,14 @@ namespace Rock.Mobile
 
             var sb = new StringBuilder();
 
-            sb.AppendLine( "<StackLayout Spacing=\"0\">" );
+            sb.AppendLine( "<StackLayout Spacing=\"24\">" );
 
             if ( includeHeader )
             {
+                sb.AppendLine( "<StackLayout Spacing=\"0\">" );
                 sb.AppendLine( "<Label Text=\"Attributes\" StyleClass=\"h1\" />" );
                 sb.AppendLine( "<BoxView Color=\"#888\" HeightRequest=\"1\" Margin=\"0 0 12 0\" />" );
+                sb.AppendLine( "</StackLayout>" );
             }
 
             foreach ( var attribute in attributes )
