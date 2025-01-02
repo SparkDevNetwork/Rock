@@ -51,7 +51,7 @@ namespace Rock.Rest.v2.Models
     [RoutePrefix( "api/v2/models/prayerrequests" )]
     [SecurityAction( Security.Authorization.UNRESTRICTED_VIEW, "Allows viewing entities regardless of per-entity security authorization." )]
     [SecurityAction( Security.Authorization.UNRESTRICTED_EDIT, "Allows editing entities regardless of per-entity security authorization." )]
-    [Rock.SystemGuid.RestControllerGuid( "c6074456-ceeb-4cfa-9510-13f42f1a27d7" )]
+    [Rock.SystemGuid.RestControllerGuid( "f9b6f39e-7be0-56e9-b398-c9aebfd489fc" )]
     public partial class PrayerRequestsController : ApiControllerBase
     {
         /// <summary>
@@ -68,7 +68,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "a97449a1-b69a-45c0-83dc-30c49c0df5c1" )]
+        [SystemGuid.RestActionGuid( "25427d43-ee30-56f7-8c20-1b0fe1053bf7" )]
         public IActionResult GetItem( string id )
         {
             return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Get( id );
@@ -88,7 +88,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "1ff05305-0ceb-4fd5-ae5c-7eed25000868" )]
+        [SystemGuid.RestActionGuid( "7ef29382-7125-51a7-b364-607585e67a18" )]
         public IActionResult PostItem( [FromBody] Rock.Model.PrayerRequest value )
         {
             return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Create( value );
@@ -110,7 +110,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "4ee023cd-ca81-4cdb-8ef4-187bdae76763" )]
+        [SystemGuid.RestActionGuid( "5074a78a-1bed-5064-b69f-e807505123a7" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.PrayerRequest value )
         {
             return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Update( id, value );
@@ -132,7 +132,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "00b82436-ecef-417a-9fc5-be27aaa08a00" )]
+        [SystemGuid.RestActionGuid( "175ccbcd-ab9f-5073-ba1a-d52792c8d481" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
             return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Patch( id, values );
@@ -152,7 +152,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "313a2f94-0863-4e2e-b80d-b0d72786b9ea" )]
+        [SystemGuid.RestActionGuid( "ec029e07-b7e2-5690-b438-2f1f41d651d4" )]
         public IActionResult DeleteItem( string id )
         {
             return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Delete( id );
@@ -172,7 +172,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "ac499d84-0186-4bbd-8b9d-765f51b30bd5" )]
+        [SystemGuid.RestActionGuid( "b3008fbe-3d07-5ec4-9ae6-03d5fa686801" )]
         public IActionResult GetAttributeValues( string id )
         {
             return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).GetAttributeValues( id );
@@ -194,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "8102e71d-d62f-43da-abbf-c0324bdd713c" )]
+        [SystemGuid.RestActionGuid( "02b1398a-1291-5ad7-8ce0-7427d13c23c6" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
             return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).PatchAttributeValues( id, values );
@@ -211,7 +211,7 @@ namespace Rock.Rest.v2.Models
         [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
         [Route( "search" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
-        [SystemGuid.RestActionGuid( "1bb21269-ef54-422d-b2d9-940c0c596f26" )]
+        [SystemGuid.RestActionGuid( "937187b1-7b37-5913-81ab-0d9cd4bd05d1" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
             return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Search( query );
@@ -229,7 +229,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "3e9ffcea-7976-4c6d-8b7d-ba16b76d2c60" )]
+        [SystemGuid.RestActionGuid( "23690838-16f0-58a9-9bfc-a1ade311799d" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
             return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Search( searchKey, null );
@@ -249,7 +249,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "23e97f6c-2b7f-4f30-b4a5-e8c8fa8342ae" )]
+        [SystemGuid.RestActionGuid( "d7d58359-2b0a-5328-a1b4-71068d716c2b" )]
         public IActionResult PostSearchByKey( [FromBody] EntitySearchQueryBag query, string searchKey )
         {
             return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Search( searchKey, query );

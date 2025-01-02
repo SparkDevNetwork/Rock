@@ -1537,7 +1537,7 @@ GO
                 var filename = Path.Combine( codeGeneratedDirectory, $"{modelType.Name.Pluralize()}Controller.CodeGenerated.cs" );
                 var originalContent = File.Exists( filename ) ? File.ReadAllText( filename ) : null;
 
-                var content = generator.GenerateStandardFileContent( modelType, codeGenerateRestAttribute.Endpoints, originalContent );
+                var content = generator.GenerateStandardFileContent( modelType.Name, modelType.FullName, codeGenerateRestAttribute.Endpoints );
 
                 WriteFile( new FileInfo( filename ), new StringBuilder( content ) );
                 filesAdded.Add( filename );

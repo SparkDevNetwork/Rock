@@ -51,7 +51,7 @@ namespace Rock.Rest.v2.Models
     [RoutePrefix( "api/v2/models/definedvalues" )]
     [SecurityAction( Security.Authorization.UNRESTRICTED_VIEW, "Allows viewing entities regardless of per-entity security authorization." )]
     [SecurityAction( Security.Authorization.UNRESTRICTED_EDIT, "Allows editing entities regardless of per-entity security authorization." )]
-    [Rock.SystemGuid.RestControllerGuid( "165b6419-4a8b-44f3-b884-782f1c3d300f" )]
+    [Rock.SystemGuid.RestControllerGuid( "e69501a5-21e4-5889-a58b-214821e9abf2" )]
     public partial class DefinedValuesController : ApiControllerBase
     {
         /// <summary>
@@ -68,7 +68,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "206a2eb0-8a34-4ea0-a004-b15ebeb26914" )]
+        [SystemGuid.RestActionGuid( "f0f6ad21-081c-5f18-8fd6-5ac2f942ebc4" )]
         public IActionResult GetItem( string id )
         {
             return new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this ).Get( id );
@@ -88,7 +88,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "bd0d0ddf-dc82-440b-96e3-bfff1841bb10" )]
+        [SystemGuid.RestActionGuid( "e24a9c68-2ed1-5d1e-add1-eacad8c32b30" )]
         public IActionResult PostItem( [FromBody] Rock.Model.DefinedValue value )
         {
             return new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this ).Create( value );
@@ -110,7 +110,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "ac1e2508-aa2a-4efa-a417-c3014120c6e8" )]
+        [SystemGuid.RestActionGuid( "587bef64-bd15-537a-b5df-c7901bf18001" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.DefinedValue value )
         {
             return new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this ).Update( id, value );
@@ -132,7 +132,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "e9c517a1-be89-4ee0-b781-98a2e07f1c81" )]
+        [SystemGuid.RestActionGuid( "e79afc01-d04c-5817-8b80-e504fd8fbb28" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
             return new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this ).Patch( id, values );
@@ -152,7 +152,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "92f33863-b84b-4bdd-87f3-7b35b1d35f85" )]
+        [SystemGuid.RestActionGuid( "d3df9e49-469f-50e3-a252-09940900f424" )]
         public IActionResult DeleteItem( string id )
         {
             return new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this ).Delete( id );
@@ -172,7 +172,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "dd20732c-1100-4b5b-8639-8f6a094307aa" )]
+        [SystemGuid.RestActionGuid( "52b3dbee-eb31-51c2-be67-7a3a53f3724b" )]
         public IActionResult GetAttributeValues( string id )
         {
             return new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this ).GetAttributeValues( id );
@@ -194,7 +194,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "7a6a4f08-17ad-4a4c-a97d-93abf01aa9d1" )]
+        [SystemGuid.RestActionGuid( "ad0b00fc-d7cf-57cc-90df-5c881475f932" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
             return new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this ).PatchAttributeValues( id, values );
@@ -211,7 +211,7 @@ namespace Rock.Rest.v2.Models
         [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
         [Route( "search" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
-        [SystemGuid.RestActionGuid( "3faafa33-7ee1-44c1-91a3-83d8098ba89b" )]
+        [SystemGuid.RestActionGuid( "8db7fcd2-7f7d-5b31-92b9-7763248ba4e9" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
             return new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this ).Search( query );
@@ -229,7 +229,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "cac48b97-59e9-44c0-a4ed-3d69429bad68" )]
+        [SystemGuid.RestActionGuid( "a379f268-0884-5252-bea9-d8d9308eeb99" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
             return new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this ).Search( searchKey, null );
@@ -249,7 +249,7 @@ namespace Rock.Rest.v2.Models
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "b877f918-a0ef-4e97-8427-91604444f982" )]
+        [SystemGuid.RestActionGuid( "378fc605-1402-56e6-9f79-754c5fa2f4f2" )]
         public IActionResult PostSearchByKey( [FromBody] EntitySearchQueryBag query, string searchKey )
         {
             return new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this ).Search( searchKey, query );
