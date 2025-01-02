@@ -34,7 +34,12 @@ namespace Rock.Rest.Filters
     /// </summary>
     public class SecuredAttribute : ActionFilterAttribute
     {
-        private string _securityAction;
+        /// <summary>
+        /// The security action that will be checked when authorizing the request.
+        /// If this is null or an empty string then it will be automatically
+        /// determined by the HTTP verb.
+        /// </summary>
+        public string SecurityAction { get; }
 
         /// <summary>
         /// Creates a new instance of <see cref="SecuredAttribute"/> that
@@ -52,7 +57,7 @@ namespace Rock.Rest.Filters
         /// <param name="securityAction">The security action such as VIEW or EDIT.</param>
         public SecuredAttribute( string securityAction )
         {
-            _securityAction = securityAction;
+            SecurityAction = securityAction;
         }
 
         /// <summary>
@@ -153,7 +158,7 @@ namespace Rock.Rest.Filters
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
             }
 
-            string action = _securityAction;
+            string action = SecurityAction;
 
             if ( action.IsNullOrWhiteSpace() )
             {

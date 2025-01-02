@@ -28,6 +28,8 @@ using Rock.Web.Cache;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
 using Rock.Core.EntitySearch;
+using Rock.Rest.Filters;
+
 
 
 #if WEBFORMS
@@ -88,8 +90,24 @@ namespace Rock.Rest
                 {
                     var restAction = RestActionCache.Get( restGuid.Value );
                     var securityAction = _controller.Request.Method == System.Net.Http.HttpMethod.Get
-                        ? "UnrestrictedView"
-                        : "UnrestrictedEdit";
+                        ? Security.Authorization.UNRESTRICTED_VIEW
+                        : Security.Authorization.UNRESTRICTED_EDIT;
+
+                    var securedAttribute = actionDescriptor.MethodInfo.GetCustomAttribute<SecuredAttribute>();
+
+                    // If the [Secured] attribute specifies either VIEW or EDIT
+                    // as the default security action, then use the associated
+                    // unrestricted security action. In the future we might need
+                    // to allow the constructor to take an additional parameter
+                    // that explicitely specifies this value.
+                    if ( securedAttribute?.SecurityAction == Security.Authorization.VIEW  )
+                    {
+                        securityAction = Security.Authorization.UNRESTRICTED_VIEW;
+                    }
+                    else if ( securedAttribute?.SecurityAction == Security.Authorization.EDIT )
+                    {
+                        securityAction = Security.Authorization.UNRESTRICTED_EDIT;
+                    }
 
                     IsSecurityIgnored = restAction?.IsAuthorized( securityAction, _controller.RockRequestContext.CurrentPerson ) ?? false;
                 }
