@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.BadgeDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Crm
@@ -47,7 +48,7 @@ namespace Rock.Blocks.Crm
 
     [Rock.SystemGuid.EntityTypeGuid( "5b57bd74-416d-4fd0-a36b-c74955f4c691" )]
     [Rock.SystemGuid.BlockTypeGuid( "5bd4cd27-c1c1-4e12-8756-9c93e4edb28e" )]
-    public class BadgeDetail : RockDetailBlockType
+    public class BadgeDetail : RockEntityDetailBlockType<Model.Badge, BadgeBag>
     {
         #region Keys
 
@@ -68,18 +69,14 @@ namespace Rock.Blocks.Crm
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<BadgeBag, BadgeDetailOptionsBag>();
+            var box = new DetailBlockBox<BadgeBag, BadgeDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Model.Badge>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -87,9 +84,8 @@ namespace Rock.Blocks.Crm
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private BadgeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private BadgeDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new BadgeDetailOptionsBag();
 
@@ -101,10 +97,9 @@ namespace Rock.Blocks.Crm
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="badge">The Badge to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the Badge is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateBadge( Model.Badge badge, RockContext rockContext, out string errorMessage )
+        private bool ValidateBadge( Model.Badge badge, out string errorMessage )
         {
             errorMessage = null;
 
@@ -116,10 +111,9 @@ namespace Rock.Blocks.Crm
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<BadgeBag, BadgeDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<BadgeBag, BadgeDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -130,7 +124,7 @@ namespace Rock.Blocks.Crm
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -138,7 +132,6 @@ namespace Rock.Blocks.Crm
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -151,13 +144,14 @@ namespace Rock.Blocks.Crm
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Model.Badge.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -185,12 +179,8 @@ namespace Rock.Blocks.Crm
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="BadgeBag"/> that represents the entity.</returns>
-        private BadgeBag GetEntityBagForView( Model.Badge entity )
+        /// <inheritdoc/>
+        protected override BadgeBag GetEntityBagForView( Model.Badge entity )
         {
             if ( entity == null )
             {
@@ -204,12 +194,8 @@ namespace Rock.Blocks.Crm
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="BadgeBag"/> that represents the entity.</returns>
-        private BadgeBag GetEntityBagForEdit( Model.Badge entity )
+        /// <inheritdoc/>
+        protected override BadgeBag GetEntityBagForEdit( Model.Badge entity )
         {
             if ( entity == null )
             {
@@ -223,61 +209,50 @@ namespace Rock.Blocks.Crm
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( Model.Badge entity, DetailBlockBox<BadgeBag, BadgeDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( Model.Badge entity, ValidPropertiesBox<BadgeBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.BadgeComponentEntityType ),
-                () => entity.BadgeComponentEntityTypeId = box.Entity.BadgeComponentEntityType.GetEntityId<EntityType>( rockContext ) ?? 0 );
+            box.IfValidProperty( nameof( box.Bag.BadgeComponentEntityType ),
+                () => entity.BadgeComponentEntityTypeId = box.Bag.BadgeComponentEntityType.GetEntityId<EntityType>( RockContext ) ?? 0 );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.EntityType ),
-                () => entity.EntityTypeId = box.Entity.EntityType.GetEntityId<EntityType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.EntityType ),
+                () => entity.EntityTypeId = box.Bag.EntityType.GetEntityId<EntityType>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.EntityTypeQualifierColumn ),
-                () => entity.EntityTypeQualifierColumn = box.Entity.EntityTypeQualifierColumn );
+            box.IfValidProperty( nameof( box.Bag.EntityTypeQualifierColumn ),
+                () => entity.EntityTypeQualifierColumn = box.Bag.EntityTypeQualifierColumn );
 
-            box.IfValidProperty( nameof( box.Entity.EntityTypeQualifierValue ),
-                () => entity.EntityTypeQualifierValue = box.Entity.EntityTypeQualifierValue );
+            box.IfValidProperty( nameof( box.Bag.EntityTypeQualifierValue ),
+                () => entity.EntityTypeQualifierValue = box.Bag.EntityTypeQualifierValue );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, true, IsAttributeIncluded );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, true, IsAttributeIncluded );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="Badge"/> to be viewed or edited on the page.</returns>
-        private Model.Badge GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override Model.Badge GetInitialEntity( )
         {
-            return GetInitialEntity<Model.Badge, BadgeService>( rockContext, PageParameterKey.BadgeId );
+            return GetInitialEntity<Model.Badge, BadgeService>( RockContext, PageParameterKey.BadgeId );
         }
 
         /// <summary>
@@ -293,46 +268,9 @@ namespace Rock.Blocks.Crm
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out Model.Badge entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( Model.Badge entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out Model.Badge entity, out BlockActionResult error )
-        {
-            var entityService = new BadgeService( rockContext );
+            var entityService = new BadgeService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -388,22 +326,20 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<BadgeBag, BadgeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<BadgeBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -412,35 +348,35 @@ namespace Rock.Blocks.Crm
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<BadgeBag, BadgeDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<BadgeBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            using ( var RockContext = new RockContext() )
             {
-                var entityService = new BadgeService( rockContext );
+                var entityService = new BadgeService( RockContext );
 
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+                if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
                 {
                     return actionError;
                 }
 
                 // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                if ( !UpdateEntityFromBox( entity, box ) )
                 {
                     return ActionBadRequest( "Invalid data." );
                 }
 
                 // Ensure everything is valid before saving.
-                if ( !ValidateBadge( entity, rockContext, out var validationMessage ) )
+                if ( !ValidateBadge( entity, out var validationMessage ) )
                 {
                     return ActionBadRequest( validationMessage );
                 }
 
                 var isNew = entity.Id == 0;
 
-                rockContext.WrapTransaction( () =>
+                RockContext.WrapTransaction( () =>
                 {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
+                    RockContext.SaveChanges();
+                    entity.SaveAttributeValues( RockContext );
                 } );
 
                 if ( isNew )
@@ -453,9 +389,15 @@ namespace Rock.Blocks.Crm
 
                 // Ensure navigation properties will work now.
                 entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
+                entity.LoadAttributes( RockContext );
 
-                return ActionOk( GetEntityBagForView( entity ) );
+                var bag = GetEntityBagForView( entity );
+
+                return ActionOk( new ValidPropertiesBox<BadgeBag>
+                {
+                    Bag = bag,
+                    ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+                } );
             }
         }
 
@@ -467,79 +409,22 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new BadgeService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new BadgeService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<BadgeBag, BadgeDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<BadgeBag, BadgeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         #endregion
