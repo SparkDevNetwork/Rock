@@ -21,27 +21,6 @@
 // </copyright>
 //
 
-import { GroupMemberScheduleTemplateBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberScheduleTemplateDetail/groupMemberScheduleTemplateBag";
-
-export type GroupMemberScheduleTemplateBox = {
-    /** Gets or sets the entity. */
-    entity?: GroupMemberScheduleTemplateBag | null;
-
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
-
-    /** Gets or sets a value indicating whether this instance is editable. */
-    isEditable: boolean;
-
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
-
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
-
-    /** Gets or sets the valid properties. */
-    validProperties?: string[] | null;
+/** Class GroupMemberScheduleTemplateDetailOptionsBag. */
+export type GroupMemberScheduleTemplateDetailOptionsBag = {
 };
