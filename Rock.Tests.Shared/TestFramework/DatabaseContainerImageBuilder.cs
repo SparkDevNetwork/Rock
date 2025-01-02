@@ -43,8 +43,11 @@ namespace Rock.Tests.Shared.TestFramework
                     All = true
                 } );
 
+                var currentMigrationNumber = long.Parse( GetTargetMigration().Truncate( 15, false ) );
+
                 var latestImage = images.SelectMany( img => img.RepoTags )
                     .Where( t => t.StartsWith( $"{RepositoryName}:" ) )
+                    .Where( t => long.TryParse( t.Substring( 26 ), out var migrationNumber ) && migrationNumber <= currentMigrationNumber )
                     .OrderByDescending( t => t )
                     .FirstOrDefault();
 
