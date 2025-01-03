@@ -471,6 +471,12 @@ $navbar-element-height: 40px;
 
 }
 
+.nav-pills > li > a {
+  color: var(--color-interface-strong);
+  background-color: var(--color-interface-softer);
+  border: 1px solid var(--color-interface-soft);
+}
+
 // Side Nav
 .navbar-static-side {
   --nav-childpages-bg: var(--navbarside-background-color);
@@ -1024,7 +1030,9 @@ $hamburger-spacing: 4px;
 .panel-widget .panel-heading {
   display: flex;
   align-items: center;
-
+  border-top-left-radius: var(--rounded-medium);
+  border-top-right-radius: var(--rounded-medium);
+  
   .pull-left {
     margin-right: auto;
   }

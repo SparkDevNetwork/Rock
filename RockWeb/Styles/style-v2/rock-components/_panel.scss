@@ -214,11 +214,11 @@
       padding:        6px 0;
       margin-bottom:  0;
       font-size:      var(--font-size-small);
-      color:          var(--color-interface-medium);
+      color:          var(--color-interface-strong);
       border:         0;
 
       &:hover {
-        color:        var(--color-link);
+        color:        var(--color-interface-stronger);
       }
 
       &.aspNetDisabled {
@@ -233,10 +233,13 @@
 .panel-section,
 .panel-note {
   > .panel-heading {
-    display:          -ms-flexbox;
-    display:          flex;
-    align-content:    center;
-    align-items:      center;
+    display:                  -ms-flexbox;
+    display:                  flex;
+    align-content:            center;
+    align-items:              center;
+    // Have to add these before the border was overlapping each other.
+    border-top-left-radius:   var(--rounded-medium);
+    border-top-right-radius:  var(--rounded-medium);
 
     .row {
       width:          100%;

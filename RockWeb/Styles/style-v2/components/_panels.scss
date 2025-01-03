@@ -14,7 +14,7 @@
 //  + Panel toolbar
 //  + Panel widget
 //  + Panel persondetails
-//  + Penel block
+//  + Panel block
 //  + Panel waterfall
 //  + Panel columns
 //  + Panel analytics
@@ -30,7 +30,6 @@
   background-color:   var(--color-interface-softest);
   border:             1px solid transparent;
   border-radius:      var(--rounded-medium);
-  overflow:           clip;     // Have to set to clip because the inside content was leaking out of the corner of the border radius.
   box-shadow:         var(--box-shadow);
 
   .panel-title {
@@ -51,6 +50,9 @@
   }
   &:after {
     clear: both;
+  }
+  .actions:last-of-type .footer-secondary-actions > * {
+    margin-left:4px;
   }
 }
 

@@ -42,7 +42,8 @@
       &:hover,
       &:focus {
         text-decoration: none;
-        background-color: var(--color-interface-soft);
+        border-color: var(--color-interface-medium);
+        // background-color: var(--color-interface-soft);
       }
     }
 
@@ -202,6 +203,7 @@
       &:focus {
         color:              var(--color-interface-softest);
         background-color:   var(--color-primary);
+        border-color:       var(--color-primary);
       }
     }
   }
