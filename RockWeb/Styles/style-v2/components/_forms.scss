@@ -177,8 +177,10 @@ output {
     margin-right: var(--spacing-medium);
     align-items:  center;
   }
+  
   > .row,
-  > .form-row {
+  > .form-row,
+  > .form-group {
     width:        100%;
   }
 

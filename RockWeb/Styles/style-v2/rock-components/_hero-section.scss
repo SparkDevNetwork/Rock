@@ -37,6 +37,7 @@
     padding: var(--spacing-tiny) 0;
     font-weight: var(--font-weight-bold);
     margin: 0;
+    text-align: center;
 }
 
 .hero-section-description {
@@ -48,4 +49,10 @@
     text-align: center;
     overflow: hidden;
     padding-bottom: 0;
+}
+
+@media (max-width: 767px) {
+    .hero-section-title {
+        font-size: var(--font-size-h3);
+    }
 }

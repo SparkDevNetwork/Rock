@@ -93,7 +93,8 @@
   padding: .75rem 1.25rem;
   background-color: rgba(0,0,0,.03);
   border-top: 1px solid var(--color-interface-softer);
-
+  background-color: var(--color-interface-softest);
+  
   &:last-child {
     border-radius: 0 0 calc(var(--rounded-small) - 1px) calc(var(--rounded-small) - 1px);
   }
