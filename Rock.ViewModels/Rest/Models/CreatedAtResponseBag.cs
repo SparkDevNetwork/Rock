@@ -21,31 +21,11 @@ namespace Rock.ViewModels.Rest.Models
     /// <summary>
     /// The response to be sent for a newly created item via the REST v2 API.
     /// </summary>
-    public class CreatedAtResponseBag
+    public class CreatedAtResponseBag : ItemIdentifierBag
     {
         /// <summary>
-        /// Gets or sets the integer identifier.
+        /// The location URI that can be used to retrieve the new item from.
         /// </summary>
-        /// <value>The integer identifier.</value>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unique identifier.
-        /// </summary>
-        /// <value>The unique identifier.</value>
-        public Guid Guid { get; set; }
-
-        /// <summary>
-        /// Gets or sets the identifier key.
-        /// </summary>
-        /// <value>The identifier key.</value>
-        public string IdKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the location URI that can be used to retrieve the
-        /// new item from.
-        /// </summary>
-        /// <value>The location URI of the new item.</value>
         public string Location { get; set; }
     }
 }

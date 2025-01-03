@@ -861,7 +861,7 @@
     <Compile Include="Rest\Models\CreatedAtResponseBag.cs" />
     <Compile Include="Rest\Models\ItemIdentifierBag.cs" />
     <Compile Include="Rest\Models\ModelAttributeValueBag.cs" />
-    <Compile Include="Rest\Models\Workflows\LaunchWorkflowBag.cs" />
+    <Compile Include="Rest\Models\Workflows\LaunchWorkflowOptionsBag.cs" />
     <Compile Include="Blocks\Finance\VolunteerGenerosityAnalysis\VolunteerGenerosityAnalysisBag.cs" />
     <Compile Include="Controls\UniversalItemSearchPickerItemBag.cs" />
     <Compile Include="Core\Grid\DynamicFieldDefinitionBag.cs" />
@@ -877,6 +877,7 @@
     <Compile Include="Rest\Controls\ReminderButtonGetRemindersOptionsBag.cs" />
     <Compile Include="Rest\Controls\UniversalItemSearchPickerOptionsBag.cs" />
     <Compile Include="Rest\Controls\UniversalItemTreePickerOptionsBag.cs" />
+    <Compile Include="Rest\Models\Workflows\LaunchWorkflowResponseBag.cs" />
     <Compile Include="Utility\TimeIntervalBag.cs" />
     <Compile Include="Core\Grid\CustomActionBag.cs" />
     <Compile Include="Core\Grid\CustomColumnDefinitionBag.cs" />

@@ -26,11 +26,14 @@ using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.ViewModels.Rest.Models;
+
+
 
 #if WEBFORMS
 using System.Data.Entity;
 
+using FromQueryAttribute = System.Web.Http.FromUriAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
 using RouteAttribute = System.Web.Http.RouteAttribute;
@@ -56,6 +59,7 @@ namespace Rock.Rest.v2.Models
         [HttpGet]
         [Authenticate]
         [Secured( Security.Authorization.VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EDIT )]
         [Route( "contains/{id}/{entityId}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( bool ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -103,17 +107,19 @@ namespace Rock.Rest.v2.Models
         /// Gets the items that are contained in the data view.
         /// </summary>
         /// <param name="id">The data view identifier as either an Id, Guid or IdKey value.</param>
+        /// <param name="fullObjects">If <c>true</c> then the full objects will be returned instead of just identifiers.</param>
         /// <returns>The action result.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EDIT )]
         [Route( "contents/{id}" )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<object> ) )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ItemIdentifierBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "295c3416-34b2-4be7-bb4f-c0ee3c38b86c" )]
-        public IActionResult GetContents( string id )
+        public IActionResult GetContents( string id, [FromQuery] bool fullObjects = false )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -130,33 +136,34 @@ namespace Rock.Rest.v2.Models
                     return Unauthorized( $"You are not authorized to view this data view." );
                 }
 
+                var qry = dataView.GetQuery();
+
+                // If they aren't requesting full objects then just load the
+                // identifiers from the database and return them.
+                if ( !fullObjects )
+                {
+                    var results = qry
+                        .Select( a => new
+                        {
+                            a.Id,
+                            a.Guid
+                        } )
+                        .ToList()
+                        .Select( a => new ItemIdentifierBag
+                        {
+                            Id = a.Id,
+                            Guid = a.Guid,
+                            IdKey = IdHasher.Instance.GetHash( a.Id )
+                        } )
+                        .ToList();
+
+                    return Ok( results );
+                }
+
                 // Get the results from the data view.
-                var items = dataView.GetQuery().AsNoTracking().ToList();
+                var items = qry.AsNoTracking().ToList();
 
-                // Check if the entity supports security.
-                var entityType = dataView.EntityTypeId.HasValue
-                    ? EntityTypeCache.Get( dataView.EntityTypeId.Value )?.GetEntityType()
-                    : null;
-                var hasSecurity = entityType != null && typeof( ISecured ).IsAssignableFrom( entityType );
-
-                // If the current person has unrestricted view access then we
-                // don't need to run security checks on the items.
-                if ( !hasSecurity || IsCurrentPersonUnrestrictedView() )
-                {
-                    return Ok( items );
-                }
-
-                var filteredItems = new List<IEntity>( items.Count );
-
-                foreach ( var item in items )
-                {
-                    if ( ( item as ISecured ).IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
-                    {
-                        filteredItems.Add( item );
-                    }
-                }
-
-                return Ok( filteredItems );
+                return Ok( items );
             }
         }
     }

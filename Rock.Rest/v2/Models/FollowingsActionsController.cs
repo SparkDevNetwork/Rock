@@ -27,6 +27,8 @@ using Rock.Rest.Filters;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.ViewModels.Rest.Models;
+using Rock.Security;
+
 
 #if WEBFORMS
 using IActionResult = System.Web.Http.IHttpActionResult;
@@ -53,13 +55,14 @@ namespace Rock.Rest.v2.Models
         [HttpGet]
         [Authenticate]
         [Secured( Security.Authorization.VIEW )]
-        [Route( "follow/{entityTypeId}" )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<object> ) )]
+        [ExcludeSecurityActions( Security.Authorization.EDIT )]
+        [Route( "followed/{entityTypeId}" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ItemIdentifierBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "802af5c2-c880-42d4-8043-33a43ad27965" )]
-        public IActionResult GetFollow( string entityTypeId )
+        public IActionResult GetFollowed( string entityTypeId )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -98,11 +101,14 @@ namespace Rock.Rest.v2.Models
                 var entityQry = Reflection.GetQueryableForEntityType( entityType.GetEntityType(), rockContext )
                     .Where(  a => followingIdsQry.Contains( a.Id ) );
 
-                // We don't need to check security because it is assumed that if
-                // they were able to create the following then they should be
-                // allowed to see the following. And this only returns identifiers
-                // so if they don't have access to the entity anymore then the
-                // CRUD endpoints for the entity will deny access.
+                // We don't need to check item security because we are only
+                // returning identifiers and not full entity objects. If they
+                // request the full object from the CRUD endpoint it will
+                // handle the security check.
+                //
+                // NOTE: In the future we may add the "ToString()" value to the
+                // returned type so they have the common name to work with as
+                // it was decided that would likely be acceptable risk.
                 var results = entityQry
                     .Select( a => new
                     {

@@ -23,33 +23,28 @@ namespace Rock.ViewModels.Rest.Models
     public class ModelAttributeValueBag
     {
         /// <summary>
-        /// Gets or sets the raw value.
+        /// The raw attribute value.
         /// </summary>
-        /// <value>The raw value.</value>
         public string Value { get; set; }
 
         /// <summary>
-        /// Gets or sets the text value.
+        /// The formatted text value.
         /// </summary>
-        /// <value>The text value.</value>
         public string TextValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the HTML value.
+        /// The formatted HTML value.
         /// </summary>
-        /// <value>The HTML value.</value>
         public string HtmlValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the condensed text value.
+        /// The formatted condensed text value.
         /// </summary>
-        /// <value>The condensed text value.</value>
         public string CondensedTextValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the condensed HTML value.
+        /// The formatted condensed HTML value.
         /// </summary>
-        /// <value>The condensed HTML value.</value>
         public string CondensedHtmlValue { get; set; }
     }
 }

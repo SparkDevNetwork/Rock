@@ -25,21 +25,18 @@ namespace Rock.ViewModels.Rest.Models
     public class ItemIdentifierBag
     {
         /// <summary>
-        /// Gets or sets the integer identifier.
+        /// The integer identifier.
         /// </summary>
-        /// <value>The integer identifier.</value>
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or sets the unique identifier.
+        /// The unique identifier.
         /// </summary>
-        /// <value>The unique identifier.</value>
         public Guid Guid { get; set; }
 
         /// <summary>
-        /// Gets or sets the identifier key.
+        /// The identifier key.
         /// </summary>
-        /// <value>The identifier key.</value>
         public string IdKey { get; set; }
     }
 }
