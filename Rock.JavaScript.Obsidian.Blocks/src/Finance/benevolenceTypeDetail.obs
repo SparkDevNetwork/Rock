@@ -7,7 +7,7 @@
     <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
         <Panel :title="panelTitle" :headerSecondaryActions="secondaryActions">
 
-            <EditPanel v-model="benevolenceTypeEditBag" :options="options" />
+            <EditPanel v-model="benevolenceTypeEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
 
             <Modal v-model="showAuditDetailsModal" title="Audit Details">
                 <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
@@ -17,6 +17,8 @@
                 <RockButton :btnSize="BtnSize.Default"
                             :btnType="BtnType.Primary"
                             :isLoading="isSaving"
+                            autoDisable
+                            autoLoading
                             @click="onStartSubmitForm">
                     Save
                 </RockButton>
@@ -42,7 +44,7 @@
     import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import EditPanel from "./BenevolenceTypeDetail/editPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./BenevolenceTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { BenevolenceTypeBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceTypeDetail/benevolenceTypeBag";
@@ -50,17 +52,20 @@
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
     const blockError = ref("");
     const errorMessage = ref("");
 
-    const benevolenceTypeEditBag = ref<BenevolenceTypeBag>(config.entity ?? {} as BenevolenceTypeBag);
+    const benevolenceTypeEditBag = ref<ValidPropertiesBox<BenevolenceTypeBag>>({
+        bag: config.entity ?? {} as BenevolenceTypeBag,
+        validProperties: config.entity ? Object.keys(config.entity) : null
+    });
 
     const isSaving = ref(false);
     const isNavigating = ref(false);
@@ -69,18 +74,10 @@
     const showAuditDetailsModal = ref(false);
     const entityTypeGuid = EntityType.BenevolenceType;
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "description",
-        "isActive",
-        "name",
-        "requestLavaTemplate",
-        "showFinancialResults",
-        "maximumNumberOfDocuments",
-        "workflows",
-        "attributeValues"
-    ];
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: benevolenceTypeEditBag
+    });
 
     // #endregion
 
@@ -90,14 +87,14 @@
     * The identifier key value for this entity.
     */
     const entityKey = computed((): string => {
-        return benevolenceTypeEditBag.value?.idKey ?? "";
+        return benevolenceTypeEditBag.value?.bag?.idKey ?? "";
     });
 
     /**
     * The panel title
     */
     const panelTitle = computed((): string => {
-        return benevolenceTypeEditBag.value.idKey ? "Edit Benevolence Type" : "Add Benevolence Type";
+        return benevolenceTypeEditBag.value.bag?.idKey ? "Edit Benevolence Type" : "Add Benevolence Type";
     });
 
     const options = computed((): BenevolenceTypeDetailOptionsBag => {
@@ -110,7 +107,7 @@
     const secondaryActions = computed((): PanelAction[] | undefined => {
         const actions: PanelAction[] = [];
 
-        if (benevolenceTypeEditBag?.value?.idKey) {
+        if (benevolenceTypeEditBag?.value?.bag?.idKey) {
             actions.push({
                 type: "default",
                 title: "Audit Details",
@@ -150,15 +147,8 @@
      */
     async function onSave(): Promise<void> {
         errorMessage.value = "";
-
-        const data: DetailBlockBox<BenevolenceTypeBag, BenevolenceTypeDetailOptionsBag> = {
-            entity: benevolenceTypeEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<BenevolenceTypeBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<BenevolenceTypeBag> | string>("Save", {
+            box: benevolenceTypeEditBag.value
         });
 
         if (result.isSuccess && result.data) {
@@ -180,8 +170,6 @@
     };
 
     // #endregion
-
-    provideSecurityGrant(securityGrant);
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
