@@ -436,13 +436,12 @@ namespace RockWeb.Blocks.Prayer
         }
 
         private void AddModerationCategoryLabels( PrayerRequest prayerRequest )
-        {
-            var moderationFlags = ( ModerationFlags ) prayerRequest.ModerationFlags;
+        {            
             var flags = Enum.GetValues( typeof( ModerationFlags ) );
 
             foreach ( ModerationFlags flag in flags )
             {
-                if ( moderationFlags.HasFlag( flag ) && flag != ModerationFlags.None )
+                if ( prayerRequest.ModerationFlags.HasFlag( flag ) && flag != ModerationFlags.None )
                 {
                     var flagText = flag.ToString().SplitCase();
                     pnlHighlightLabels.Controls.Add( new HighlightLabel

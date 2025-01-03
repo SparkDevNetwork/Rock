@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Threading.Tasks;
@@ -80,6 +81,16 @@ namespace Rock.AI.OpenAI.Provider
 
             var response = await openAIApi.GetTextCompletions( new OpenAITextCompletionsRequest( request ) );
 
+            // If there's an error message throw an Exception (to include the StackTrace) in the log.
+            if ( response.ErrorMessage.IsNotNullOrWhiteSpace() || !response.IsSuccessful )
+            {
+                var message =
+                    response.ErrorMessage.IsNotNullOrWhiteSpace() ?
+                    response.ErrorMessage :
+                    "OpenAI Text Completion API call was unsuccessful.";
+                throw new Exception( message );
+            }
+
             if ( response == null )
             {
                 return null;
@@ -100,6 +111,16 @@ namespace Rock.AI.OpenAI.Provider
 
             var response = await openAIApi.GetChatCompletions( new OpenAIChatCompletionsRequest( request ) );
 
+            // If there's an error message throw an Exception (to include the StackTrace) in the log.
+            if ( response.ErrorMessage.IsNotNullOrWhiteSpace() || !response.IsSuccessful )
+            {
+                var message =
+                   response.ErrorMessage.IsNotNullOrWhiteSpace() ?
+                   response.ErrorMessage :
+                   "OpenAI Chat Completion API call was unsuccessful.";
+                throw new Exception( message );
+            }
+
             if ( response == null )
             {
                 return null;
@@ -114,6 +135,16 @@ namespace Rock.AI.OpenAI.Provider
             var openAIApi = GetOpenAIApi( provider );
 
             var response = await openAIApi.GetModerations( new OpenAIModerationsRequest( request ) );
+
+            // If there's an error message throw an Exception (to include the StackTrace) in the log.
+            if ( response.ErrorMessage.IsNotNullOrWhiteSpace() || !response.IsSuccessful )
+            {
+                var message =
+                    response.ErrorMessage.IsNotNullOrWhiteSpace() ?
+                    response.ErrorMessage :
+                    "OpenAI Moderation API call was unsuccessful.";
+                throw new Exception( message );
+            }
 
             if ( response == null )
             {
