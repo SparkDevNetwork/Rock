@@ -42,6 +42,34 @@ namespace Rock.Rest.Swagger
             {
                 swaggerDoc.paths.Remove( item.Key );
             }
+
+            // Convert the XML formatted comments in the <remarks> tags to
+            // a format that is closer to the markdown that Swagger UI expects.
+            foreach ( var path in swaggerDoc.paths )
+            {
+                if ( path.Key.StartsWith( "/api/v2/models/workflows/actions" ) )
+                {
+                    var operations = new Operation[]
+                    {
+                        path.Value.delete,
+                        path.Value.get,
+                        path.Value.head,
+                        path.Value.options,
+                        path.Value.patch,
+                        path.Value.post,
+                        path.Value.put
+                    };
+
+                    foreach ( var operation in operations )
+                    {
+                        if ( operation != null && operation.description != null)
+                        {
+                            operation.description = RockV2XmlCommentsTextHelper.Humanize( operation.description );
+                        }
+                    }
+                }
+            }
         }
+
     }
 }

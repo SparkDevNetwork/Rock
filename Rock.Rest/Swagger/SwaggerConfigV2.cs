@@ -152,6 +152,9 @@ namespace Rock.Rest.Swagger
                 .Where( a => a != null )
                 .ToList();
 
+            restAssemblyNames.Add( "Rock.ViewModels.dll" );
+            restAssemblyNames.Add( "Rock.Enums.dll" );
+
             try
             {
                 return restAssemblyNames
