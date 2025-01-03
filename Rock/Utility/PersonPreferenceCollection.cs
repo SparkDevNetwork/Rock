@@ -327,7 +327,8 @@ namespace Rock.Utility
         /// <returns>A string that represents the prefixed key.</returns>
         private string GetPrefixedKey( string key )
         {
-            return _prefix.Length > 0 ? $"{_prefix}{key}" : key;
+            var prefixKey = _prefix.Length > 0 ? $"{_prefix}{key}" : key;
+            return prefixKey.Length > 250 ? prefixKey.Substring( 0, 250 ) : prefixKey;
         }
 
         /// <summary>
