@@ -5,7 +5,8 @@
             <div class="col-md-6">
                 <TextBox v-model="name"
                          label="Name"
-                         rules="required" />
+                         rules="required"
+                         @blur="populateMessageKey" />
             </div>
 
             <div class="col-md-6">
@@ -23,7 +24,7 @@
                 <TextBox v-model="key"
                          label="Key"
                          help="The unique key that will identify this adaptive message."
-                         rules="required" />
+                         :rules="validityKeyRules" />
             </div>
             <div class="col-md-6">
                 <CategoryPicker v-model="categories"
@@ -91,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch } from "vue";
+    import { computed, PropType, reactive, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -112,6 +113,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
         modelValue: {
@@ -145,6 +147,7 @@
     const isModalOpen = ref<boolean>(false);
     const submitEditAttribute = ref<boolean>(false);
     const reservedKeyNames = ref(props.options.reservedKeyNames ?? []);
+    const messageReservedKeyNames = ref(props.options.messageReservedKeyNames ?? []);
     const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
     const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
 
@@ -164,6 +167,11 @@
         rows: adaptationAttributes.value.map(x => convertToRowItem(x))
     });
 
+    const validityKeyRules = computed<ValidationRule[]>(() => [
+        "required",
+        validateKeyValue
+    ]);
+
     // #endregion
 
     // #region Functions
@@ -175,6 +183,30 @@
             description: attribute.description,
             isRequired: attribute.isRequired
         };
+    }
+
+    function populateMessageKey(): void {
+        // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
+        if (key.value.trim() == "" && name.value.trim() != "") {
+            let keyValue = name.value.trim().replace(/[^a-zA-Z0-9_.-]/g, "");
+            let newKeyValue = keyValue;
+
+            let i = 1;
+
+            while (messageReservedKeyNames.value.some(k => k === newKeyValue)) {
+                newKeyValue = keyValue + i++;
+            }
+
+            key.value = newKeyValue;
+        }
+    }
+
+    function validateKeyValue(value: unknown): string | boolean {
+        if (messageReservedKeyNames.value.some(k => k === key.value)) {
+            return "There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.";
+        }
+
+        return true;
     }
 
     // #endregion

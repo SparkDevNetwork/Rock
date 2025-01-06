@@ -239,6 +239,15 @@ namespace Rock.Lava.Blocks
 
         private void AddLavaMergeFieldsToContext( ILavaRenderContext context, List<AdaptiveMessageAdaptationCache> adaptations )
         {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            foreach ( var adaptation in adaptations )
+            {
+                if ( adaptation.AttributeValues.ContainsKey( "CallToActionText" ) )
+                {
+                    adaptation.AttributeValues["CallToActionText"].Value = adaptation.AttributeValues["CallToActionText"].Value.ResolveMergeFields( mergeFields );
+                }
+            }
+
             context["messageAdaptations"] = adaptations;
             if ( adaptations.Count == 1 )
             {

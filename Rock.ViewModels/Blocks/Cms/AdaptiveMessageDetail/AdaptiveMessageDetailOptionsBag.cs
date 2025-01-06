@@ -31,5 +31,13 @@ namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail
         /// The reserved key names.
         /// </value>
         public List<string> ReservedKeyNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message reserved key names.
+        /// </summary>
+        /// <value>
+        /// The message reserved key names.
+        /// </value>
+        public List<string> MessageReservedKeyNames { get; set; }
     }
 }

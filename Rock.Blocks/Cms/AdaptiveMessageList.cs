@@ -116,7 +116,7 @@ namespace Rock.Blocks.Cms
             var categoryGuid = GetCategoryGuid();
             var options = new AdaptiveMessageListOptionsBag()
             {
-                IsGridVisible = PageParameter( PageParameterKey.AdaptiveMessageId ).IsNullOrWhiteSpace() && categoryGuid.HasValue,
+                IsGridVisible = PageParameter( PageParameterKey.AdaptiveMessageId ).IsNullOrWhiteSpace() && categoryGuid.HasValue && BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson )
             };
 
             return options;

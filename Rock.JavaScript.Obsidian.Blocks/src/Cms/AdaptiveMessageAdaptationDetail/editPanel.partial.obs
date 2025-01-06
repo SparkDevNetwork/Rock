@@ -51,7 +51,7 @@
         </div>
         <SectionHeader class="margin-t-lg" title="Message Content"
                        description="The items below represent different forms of content that can be associated with the message." />
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="1" :showCategoryLabel="false" />
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" :showCategoryLabel="false" />
     </fieldset>
 </template>
 
