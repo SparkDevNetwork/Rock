@@ -49,8 +49,10 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Connection Types.
     /// </summary>
     [RoutePrefix( "api/v2/models/connectiontypes" )]
-    [SecurityAction( Security.Authorization.UNRESTRICTED_VIEW, "Allows viewing entities regardless of per-entity security authorization." )]
-    [SecurityAction( Security.Authorization.UNRESTRICTED_EDIT, "Allows editing entities regardless of per-entity security authorization." )]
+    [SecurityAction( Security.Authorization.EXECUTE_VIEW, "Allows execution of API endpoints in the context of viewing data." )]
+    [SecurityAction( Security.Authorization.EXECUTE_EDIT, "Allows execution of API endpoints in the context of editing data." )]
+    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, "Allows execution of API endpoints in the context of viewing data without performing per-entity security checks." )]
+    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT, "Allows execution of API endpoints in the context of editing data without performing per-entity security checks." )]
     [Rock.SystemGuid.RestControllerGuid( "314c4d8f-ebea-50f7-abf0-20f434e7151b" )]
     public partial class ConnectionTypesController : ApiControllerBase
     {
@@ -61,8 +63,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>The requested item.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured( Security.Authorization.VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Rock.Model.ConnectionType ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -81,8 +83,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An object that contains the new identifier values.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured( Security.Authorization.EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
         [Route( "" )]
         [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -103,8 +105,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An empty response.</returns>
         [HttpPut]
         [Authenticate]
-        [Secured( Security.Authorization.EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -125,8 +127,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An empty response.</returns>
         [HttpPatch]
         [Authenticate]
-        [Secured( Security.Authorization.EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -145,8 +147,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An empty response.</returns>
         [HttpDelete]
         [Authenticate]
-        [Secured( Security.Authorization.EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -165,8 +167,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects that represent all the attribute values.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured( Security.Authorization.VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( "{id}/attributevalues" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -187,8 +189,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An empty response.</returns>
         [HttpPatch]
         [Authenticate]
-        [Secured( Security.Authorization.EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
         [Route( "{id}/attributevalues" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -207,8 +209,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured( Security.Authorization.VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( "search" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [SystemGuid.RestActionGuid( "d17fecc2-8f6a-51a9-9d2d-64a6216abdb2" )]
@@ -224,7 +226,7 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpGet]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_VIEW, Security.Authorization.UNRESTRICTED_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -243,7 +245,7 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_VIEW, Security.Authorization.UNRESTRICTED_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]

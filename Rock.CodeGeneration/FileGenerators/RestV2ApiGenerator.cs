@@ -4,6 +4,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
+using Rock.CodeGeneration.Utility;
 using Rock.Utility;
 
 namespace Rock.CodeGeneration.FileGenerators
@@ -31,8 +32,9 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="modelTypeName">Name of the model C# class.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="endpoints">The endpoints to be generated.</param>
+        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
         /// <returns>A string that contains the file content that should be written to disk.</returns>
-        public string GenerateStandardFileContent( string modelTypeName, string modelTypeFullName, CodeGenerateRestEndpoint endpoints )
+        public string GenerateStandardFileContent( string modelTypeName, string modelTypeFullName, CodeGenerateRestEndpoint endpoints, bool disableEntitySecurity )
         {
             var modelControllerNamespaceGuid = new Guid( "d9b3e947-5c19-4145-a356-712851d544de" );
             var usings = new List<string>();
@@ -81,8 +83,21 @@ namespace Rock.CodeGeneration.FileGenerators
             content.AppendLine( $"    /// Provides data API endpoints for {modelTypeName.Pluralize().SplitCase()}." );
             content.AppendLine( "    /// </summary>" );
             content.AppendLine( $"    [RoutePrefix( \"{routePrefix}\" )]" );
-            content.AppendLine( "    [SecurityAction( Security.Authorization.UNRESTRICTED_VIEW, \"Allows viewing entities regardless of per-entity security authorization.\" )]" );
-            content.AppendLine( "    [SecurityAction( Security.Authorization.UNRESTRICTED_EDIT, \"Allows editing entities regardless of per-entity security authorization.\" )]" );
+
+            if ( !disableEntitySecurity )
+            {
+                content.AppendLine( "    [SecurityAction( Security.Authorization.EXECUTE_VIEW, \"Allows execution of API endpoints in the context of viewing data.\" )]" );
+                content.AppendLine( "    [SecurityAction( Security.Authorization.EXECUTE_EDIT, \"Allows execution of API endpoints in the context of editing data.\" )]" );
+            }
+
+            content.AppendLine( "    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, \"Allows execution of API endpoints in the context of viewing data without performing per-entity security checks.\" )]" );
+            content.AppendLine( "    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT, \"Allows execution of API endpoints in the context of editing data without performing per-entity security checks.\" )]" );
+
+            if ( disableEntitySecurity )
+            {
+                content.AppendLine( "    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]" );
+            }
+
             content.AppendLine( $"    [Rock.SystemGuid.RestControllerGuid( \"{controllerGuid}\" )]" );
             content.AppendLine( $"    public partial class {modelTypeName.Pluralize()}Controller : ApiControllerBase" );
 
@@ -94,7 +109,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 var actionGuid = NewV5Guid( controllerGuid, "GetItem" );
 
                 content.AppendLine();
-                content.Append( GenerateGetItemAction( modelTypeFullName, actionGuid ) );
+                content.Append( GenerateGetItemAction( modelTypeFullName, actionGuid, disableEntitySecurity ) );
             }
 
             if ( hasPostItem )
@@ -173,29 +188,52 @@ namespace Rock.CodeGeneration.FileGenerators
         /// </summary>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
+        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
         /// <returns>A string that contains the content for the action.</returns>
-        private static string GenerateGetItemAction( string modelTypeFullName, Guid actionGuid )
+        private static string GenerateGetItemAction( string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
-            return $@"        /// <summary>
-        /// Gets a single item from the database.
-        /// </summary>
-        /// <param name=""id"">The identifier as either an Id, Guid or IdKey value.</param>
-        /// <returns>The requested item.</returns>
-        [HttpGet]
-        [Authenticate]
-        [Secured( Security.Authorization.VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
-        [Route( ""{{id}}"" )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( {modelTypeFullName} ) )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( ""{actionGuid}"" )]
-        public IActionResult GetItem( string id )
-        {{
-            return new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this ).Get( id );
-        }}
-";
+            var builder = new IndentedStringBuilder( 2 );
+            var securityAction = disableEntitySecurity ? "EXECUTE_UNRESTRICTED_VIEW" : "EXECUTE_VIEW";
+
+            builder.AppendLine( "/// <summary>" );
+            builder.AppendLine( "/// Gets a single item from the database." );
+            builder.AppendLine( "/// </summary>" );
+            builder.AppendLine( "/// <param name=\"id\">The identifier as either an Id, Guid or IdKey value.</param>" );
+            builder.AppendLine( "/// <returns>The requested item.</returns>" );
+            builder.AppendLine( "[HttpGet]" );
+            builder.AppendLine( "[Authenticate]" );
+            builder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
+            builder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]" );
+            builder.AppendLine( "[Route( \"{id}\" )]" );
+            builder.AppendLine( $"[ProducesResponseType( HttpStatusCode.OK, Type = typeof( {modelTypeFullName} ) )]" );
+            builder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
+            builder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
+            builder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
+            builder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
+            builder.AppendLine( "public IActionResult GetItem( string id )" );
+            builder.AppendLine( "{" );
+            builder.Indent( () =>
+            {
+                if ( disableEntitySecurity )
+                {
+                    builder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this )" );
+                    builder.AppendLine( "{" );
+                    builder.Indent( () =>
+                    {
+                        builder.AppendLine( "IsSecurityIgnored = true" );
+                    } );
+                    builder.AppendLine( "};" );
+                    builder.AppendLine();
+                    builder.AppendLine( "return helper.Get( id );" );
+                }
+                else
+                {
+                    builder.AppendLine( $"return new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this ).Get( id );" );
+                }
+            } );
+            builder.AppendLine( "}" );
+
+            return builder.ToString();
         }
 
         /// <summary>
@@ -213,8 +251,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An object that contains the new identifier values.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured( Security.Authorization.EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
         [Route( """" )]
         [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -245,8 +283,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An empty response.</returns>
         [HttpPut]
         [Authenticate]
-        [Secured( Security.Authorization.EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
         [Route( ""{{id}}"" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -277,8 +315,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An empty response.</returns>
         [HttpPatch]
         [Authenticate]
-        [Secured( Security.Authorization.EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
         [Route( ""{{id}}"" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -307,8 +345,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An empty response.</returns>
         [HttpDelete]
         [Authenticate]
-        [Secured( Security.Authorization.EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
         [Route( ""{{id}}"" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -337,8 +375,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An array of objects that represent all the attribute values.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured( Security.Authorization.VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( ""{{id}}/attributevalues"" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -369,8 +407,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An empty response.</returns>
         [HttpPatch]
         [Authenticate]
-        [Secured( Security.Authorization.EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
         [Route( ""{{id}}/attributevalues"" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -399,8 +437,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured( Security.Authorization.VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( ""search"" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [SystemGuid.RestActionGuid( ""{actionGuid}"" )]
@@ -426,7 +464,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An array of objects returned by the query.</returns>
         [HttpGet]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_VIEW, Security.Authorization.UNRESTRICTED_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( ""search/{{searchKey}}"" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -455,7 +493,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT, Security.Authorization.UNRESTRICTED_VIEW, Security.Authorization.UNRESTRICTED_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( ""search/{{searchKey}}"" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]

@@ -90,8 +90,8 @@ namespace Rock.Rest
                 {
                     var restAction = RestActionCache.Get( restGuid.Value );
                     var securityAction = _controller.Request.Method == System.Net.Http.HttpMethod.Get
-                        ? Security.Authorization.UNRESTRICTED_VIEW
-                        : Security.Authorization.UNRESTRICTED_EDIT;
+                        ? Security.Authorization.EXECUTE_UNRESTRICTED_VIEW
+                        : Security.Authorization.EXECUTE_UNRESTRICTED_EDIT;
 
                     var securedAttribute = actionDescriptor.MethodInfo.GetCustomAttribute<SecuredAttribute>();
 
@@ -102,11 +102,11 @@ namespace Rock.Rest
                     // that explicitely specifies this value.
                     if ( securedAttribute?.SecurityAction == Security.Authorization.VIEW  )
                     {
-                        securityAction = Security.Authorization.UNRESTRICTED_VIEW;
+                        securityAction = Security.Authorization.EXECUTE_UNRESTRICTED_VIEW;
                     }
                     else if ( securedAttribute?.SecurityAction == Security.Authorization.EDIT )
                     {
-                        securityAction = Security.Authorization.UNRESTRICTED_EDIT;
+                        securityAction = Security.Authorization.EXECUTE_UNRESTRICTED_EDIT;
                     }
 
                     IsSecurityIgnored = restAction?.IsAuthorized( securityAction, _controller.RockRequestContext.CurrentPerson ) ?? false;

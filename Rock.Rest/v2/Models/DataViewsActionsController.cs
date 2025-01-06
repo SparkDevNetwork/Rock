@@ -46,7 +46,7 @@ namespace Rock.Rest.v2.Models
     /// Provides action API endpoints for DataViews.
     /// </summary>
     [RoutePrefix( "api/v2/models/dataviews/actions" )]
-    [SecurityAction( Security.Authorization.UNRESTRICTED_VIEW, "Allows viewing data views regardless of per-data view security authorization." )]
+    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, "Allows viewing data views regardless of per-data view security authorization." )]
     [Rock.SystemGuid.RestControllerGuid( "4a4d3972-248d-4482-bf99-6e0719ab122f" )]
     public class DataViewsActionsController : ApiControllerBase
     {

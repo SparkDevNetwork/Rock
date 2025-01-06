@@ -77,6 +77,11 @@ namespace Rock.Model
                         {
                             actions.TryAdd( sa.Action, sa.Description );
                         }
+
+                        foreach ( var action in type.GetCustomAttributes<ExcludeSecurityActionsAttribute>().SelectMany( esa => esa.Actions ) )
+                        {
+                            actions.Remove( action );
+                        }
                     }
 
                     _supportedActions = actions;

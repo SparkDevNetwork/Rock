@@ -71,7 +71,7 @@ namespace Rock.Rest.v2.Models
         [HttpPost]
         [Authenticate]
         [Secured( Security.Authorization.EDIT )]
-        [SecurityAction( Security.Authorization.UNRESTRICTED_EDIT, "Allows launching any workflow type regardless of per-workflow type security authorization." )]
+        [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT, "Allows launching any workflow type regardless of per-workflow type security authorization." )]
         [ExcludeSecurityActions( Security.Authorization.VIEW )]
         [Route( "launch/{workflowTypeId}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( LaunchWorkflowResponseBag ), Description = "Returned when the request specifies that the workflow should be awaited." )]

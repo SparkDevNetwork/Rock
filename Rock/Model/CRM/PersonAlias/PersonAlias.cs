@@ -36,7 +36,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "PersonAlias" )]
     [NotAudited]
-    [CodeGenerateRest]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON_ALIAS )]
     public partial class PersonAlias : Entity<PersonAlias>

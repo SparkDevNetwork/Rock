@@ -182,17 +182,35 @@ namespace Rock.Security
         /// </summary>
         public const string EDIT_GRADES = "EditGrades";
 
-        /// <summary>
-        /// Authorization to view entities without checking security on the
-        /// entity itself. This is used by API endpoints.
-        /// </summary>
-        public const string UNRESTRICTED_VIEW = "UnrestrictedView";
+        #region API Security Actions
 
         /// <summary>
-        /// Authorization to edit entities without checking security on the
-        /// entity itself. This is used by API endpoints.
+        /// Authorization to execute API endpoints in the context of viewing data.
+        /// This is used by API endpoints.
         /// </summary>
-        public const string UNRESTRICTED_EDIT = "UnrestrictedEdit";
+        public const string EXECUTE_VIEW = "ExecuteView";
+
+        /// <summary>
+        /// Authorization to execute API endpoints in the context of editing data.
+        /// This is used by API endpoints.
+        /// </summary>
+        public const string EXECUTE_EDIT = "ExecuteEdit";
+
+        /// <summary>
+        /// Authorization to execute API endpoints in the context of viewing data.
+        /// Security on individual entities is not checked. This is used by API
+        /// endpoints.
+        /// </summary>
+        public const string EXECUTE_UNRESTRICTED_VIEW = "ExecuteUnrestrictedView";
+
+        /// <summary>
+        /// Authorization to execute API endpoints in the context of editing data.
+        /// Security on individual entities is not checked. This is used by API
+        /// endpoints.
+        /// </summary>
+        public const string EXECUTE_UNRESTRICTED_EDIT = "ExecuteUnrestrictedEdit";
+
+        #endregion
 
         #endregion
 

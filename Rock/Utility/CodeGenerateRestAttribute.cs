@@ -32,10 +32,16 @@ namespace Rock.Utility
     internal class CodeGenerateRestAttribute : System.Attribute
     {
         /// <summary>
-        /// Gets the endpoints that should be generated.
+        /// The endpoints that should be generated.
         /// </summary>
-        /// <value>The endpoints that should be generated.</value>
         public CodeGenerateRestEndpoint Endpoints { get; }
+
+        /// <summary>
+        /// If <c>true</c> then the generated API endpoints will always ignore
+        /// per-entity security. Speficially, only the UnrestrictedView or
+        /// UnrestrictedEdit security actions will be enabled.
+        /// </summary>
+        public bool DisableEntitySecurity { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CodeGenerateRestAttribute"/> class
