@@ -379,10 +379,7 @@ namespace Rock.Blocks.Crm
 
             if ( isNew )
             {
-                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.BadgeId] = entity.IdKey
-                } ) );
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
             }
 
             // Ensure navigation properties will work now.
