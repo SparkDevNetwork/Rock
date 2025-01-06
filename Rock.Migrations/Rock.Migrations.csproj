@@ -112,6 +112,10 @@
     <Compile Include="Migrations\202501031653023_ModerationFlagsDataType.Designer.cs">
       <DependentUpon>202501031653023_ModerationFlagsDataType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202501061756492_AddMissingConstraintsForRestViewSupport.cs" />
+    <Compile Include="Migrations\202501061756492_AddMissingConstraintsForRestViewSupport.Designer.cs">
+      <DependentUpon>202501061756492_AddMissingConstraintsForRestViewSupport.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2417,6 +2421,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202501031653023_ModerationFlagsDataType.resx">
       <DependentUpon>202501031653023_ModerationFlagsDataType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501061756492_AddMissingConstraintsForRestViewSupport.resx">
+      <DependentUpon>202501061756492_AddMissingConstraintsForRestViewSupport.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
