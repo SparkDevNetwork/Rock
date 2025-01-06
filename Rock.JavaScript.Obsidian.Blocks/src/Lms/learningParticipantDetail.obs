@@ -17,7 +17,7 @@
                  :isDeleteVisible="false"
                  :isEditVisible="false"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  @delete="onDelete"
                  @save="onSave">
         <template #view>
