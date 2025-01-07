@@ -79,7 +79,7 @@
 }
 
 .note-editor.auto-size .noteentry-control :deep(.note-text) {
-    background-color: #f8f9fa;
+    background-color: var(--color-interface-soft);
     transition: background-color 250ms ease;
 }
 

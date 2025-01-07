@@ -169,7 +169,7 @@
 
 // ======================== NOTES ========================
 .panel-note {
-  border-top-color:   var(--color-interface-softer);
+  border: 1px solid var(--color-interface-soft);
 
   & > .panel-heading {
     color:            var(--color-interface-strongest);
@@ -375,7 +375,7 @@
 
 .note {
   + .note {
-    border-top:   1px solid #dee2e6;
+    border-top:   1px solid var(--color-interface-soft);
   }
 
   .flag {
