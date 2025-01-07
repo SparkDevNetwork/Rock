@@ -474,6 +474,9 @@ namespace Rock.Blocks.Workflow
                 return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
             }
 
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
             var bag = GetEntityBagForView( entity );
 
             return ActionOk( new ValidPropertiesBox<WorkflowTriggerBag>
