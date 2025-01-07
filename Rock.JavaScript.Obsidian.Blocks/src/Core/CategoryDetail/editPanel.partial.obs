@@ -30,9 +30,19 @@
                              class="form-control input-md"
                              label="Highlight Color" />
             </div>
+            <div class="col-md-6">
+                <Checkbox
+                          v-model="deleteAttributeValues"
+                          label="Reset Attribute Values"
+                          help="When checked, all attribute values for this category will be deleted." />
+            </div>
         </div>
 
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode />
+        <TransitionVerticalCollapse type="slow">
+            <template v-if="!deleteAttributeValues">
+                <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode />
+            </template>
+        </TransitionVerticalCollapse>
     </fieldset>
 </template>
 
@@ -40,8 +50,10 @@
     import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import Checkbox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { CategoryBag } from "@Obsidian/ViewModels/Blocks/Core/CategoryDetail/categoryBag";
@@ -80,6 +92,8 @@
     const entityTypeQualifierColumn = ref(props.modelValue?.bag?.entityTypeQualifierColumn ?? undefined);
     const entityTypeQualifierValue = ref(props.modelValue?.bag?.entityTypeQualifierValue ?? undefined);
     const rootCategoryGuid = ref<Guid | undefined>(toGuidOrNull(props.modelValue?.bag?.rootCategoryGuid) ?? undefined);
+    const deleteAttributeValues = ref(false);
+
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, name, parentCategory, iconCssClass, highlightColor];
@@ -111,7 +125,7 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, ...propRefs], () => {
+    watch([attributeValues, deleteAttributeValues, ...propRefs], () => {
         const newValue: ValidPropertiesBox<CategoryBag> = {
             bag: { ...props.modelValue.bag } as CategoryBag
         };
@@ -121,6 +135,11 @@
         setPropertiesBoxValue(newValue, "parentCategory", parentCategory.value);
         setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
         setPropertiesBoxValue(newValue, "highlightColor", highlightColor.value);
+
+        console.warn(newValue);
+        if (newValue.bag) {
+            newValue.bag.deleteAttributeValues = deleteAttributeValues.value;
+        }
 
         emit("update:modelValue", newValue);
     });

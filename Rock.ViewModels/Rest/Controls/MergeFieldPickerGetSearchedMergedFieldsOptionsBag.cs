@@ -14,34 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System.Collections.Generic;
-
-namespace Rock.ViewModels.Blocks.Group.GroupMemberScheduleTemplateDetail
+namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// 
+    /// The options that can be passed to the GetSearchedMergeFields API action of the MergePicker control.
     /// </summary>
-    public class GroupMemberScheduleTemplateBox : BlockBox
+    public class MergeFieldPickerGetSearchedMergedFieldsOptionsBag
     {
         /// <summary>
-        /// Gets or sets the entity.
+        /// The query we're using to find merge fields
+        /// </summary>
+        public string SearchTerm { get; set; }
+
+        /// <summary>
+        /// Gets or sets the additional fields.
         /// </summary>
         /// <value>
-        /// The entity.
+        /// The additional fields.
         /// </value>
-        public GroupMemberScheduleTemplateBag Entity { get; set; }
+        public string AdditionalFields { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is editable.
+        /// The security grant token to use when performing authorization checks.
         /// </summary>
-        /// <value><c>true</c> if this instance is editable; otherwise, <c>false</c>.</value>
-        public bool IsEditable { get; set; }
-
-        /// <summary>
-        /// Gets or sets the valid properties.
-        /// </summary>
-        /// <value>The valid properties.</value>
-        public List<string> ValidProperties { get; set; }
+        public string SecurityGrantToken { get; set; }
     }
 }

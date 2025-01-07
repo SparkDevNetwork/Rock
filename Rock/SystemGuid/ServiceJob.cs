@@ -452,5 +452,10 @@ namespace Rock.SystemGuid
         /// The Job to run Post v17.0 to add new and update existing indexes to support the Peer Network feature.
         /// </summary>
         public const string DATA_MIGRATIONS_170_ADD_AND_UPDATE_PEER_NETWORK_INDEXES = "195DDB5A-FF1C-438E-BCA4-37EBC3D0F558";
+
+        /// <summary>
+        /// The Job to run Post v17.0 Update Person PrimaryPersonAliasGuid.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_UPDATE_PERSON_PRIMARY_PERSON_ALIAS_GUID = "11A4E70F-899F-4B1D-BB25-12768E487A24";
     }
 }

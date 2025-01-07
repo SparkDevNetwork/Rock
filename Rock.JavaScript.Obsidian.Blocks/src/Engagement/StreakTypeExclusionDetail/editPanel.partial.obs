@@ -13,15 +13,16 @@
 
 <script setup lang="ts">
     import { PropType, watch } from "vue";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
     import { StreakTypeExclusionBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeExclusionDetail/streakTypeExclusionBag";
     import { StreakTypeExclusionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeExclusionDetail/streakTypeExclusionDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<StreakTypeExclusionBag>,
+            type: Object as PropType<ValidPropertiesBox<StreakTypeExclusionBag>>,
             required: true
         },
 
@@ -32,13 +33,13 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: StreakTypeExclusionBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<StreakTypeExclusionBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const location = propertyRef(props.modelValue.location ?? {}, "LocationId");
+    const location = propertyRef(props.modelValue?.bag?.location ?? {}, "LocationId");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -60,18 +61,18 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(location, props.modelValue.location ?? {});
+        updateRefValue(location, props.modelValue?.bag?.location ?? {});
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([...propRefs], () => {
-        const newValue: StreakTypeExclusionBag = {
-            ...props.modelValue,
-            location: location.value
+        const newValue: ValidPropertiesBox<StreakTypeExclusionBag> = {
+            bag: { ...props.modelValue.bag } as StreakTypeExclusionBag
         };
+        setPropertiesBoxValue(newValue, "location", location.value),
 
-        emit("update:modelValue", newValue);
+            emit("update:modelValue", newValue);
     });
 
     // Watch for any changes to props that represent properties and then

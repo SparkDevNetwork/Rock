@@ -17,7 +17,7 @@
                  :isDeleteVisible="false"
                  :isEditVisible="false"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  @delete="onDelete"
                  @save="onSave">
         <template #view>
@@ -44,6 +44,7 @@
     import { LearningParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantBag";
     import { LearningParticipantDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningParticipantDetail/learningParticipantDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const config = useConfigurationValues<DetailBlockBox<LearningParticipantBag, LearningParticipantDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -106,7 +107,7 @@
     });
 
     const options = computed((): LearningParticipantDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? { configurationMode: ConfigurationMode.AcademicCalendar, canViewGrades: false };
     });
 
     // #endregion
@@ -179,7 +180,7 @@
         blockError.value = "The specified learning participant could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        learningParticipantEditBag.value = { bag: config.entity};
+        learningParticipantEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

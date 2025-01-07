@@ -554,6 +554,10 @@ namespace Rock.Blocks.Finance
             {
                 qryParams["AccountId"] = parentAccountId.ToString();
             }
+            else
+            {
+                qryParams["AccountId"] = "0";
+            }
 
             qryParams["ExpandedIds"] = PageParameter( "ExpandedIds" );
 

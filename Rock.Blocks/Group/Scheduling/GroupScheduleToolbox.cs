@@ -191,7 +191,7 @@ namespace Rock.Blocks.Group.Scheduling
         DefaultValue = "Cancel Confirmation",
         Category = AttributeCategory.CurrentSchedule,
         Order = 5,
-        IsRequired = false )]
+        IsRequired = true )]
 
     [CustomDropdownListField( "Decline Reason Note",
         Key = AttributeKey.DeclineReasonNote,

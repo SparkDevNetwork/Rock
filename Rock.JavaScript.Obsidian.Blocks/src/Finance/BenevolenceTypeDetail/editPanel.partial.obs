@@ -107,6 +107,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { BenevolenceWorkflowBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceTypeDetail/benevolenceWorkflowBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -267,9 +268,7 @@
                 }
             }
             else {
-                // Create new entry and set the size of the current triggers as a pseudo id so
-                // it can be tracked for frontend edits and deletes
-                const currentLength = workflows.value.length + 1;
+                // Create new entry
                 const newWorkflow: BenevolenceWorkflowBag = {
                     trigger: selectedTriggerType?.value,
                     isInherited: false,
@@ -277,7 +276,7 @@
                     workflowTypeName: workflow.value.workflowType?.text,
                     primaryQualifier: primaryQualifier.value,
                     secondaryQualifier: secondaryQualifier.value,
-                    guid: currentLength.toString(),
+                    guid: newGuid(),
                 };
                 workflows.value.push(newWorkflow);
 
@@ -312,7 +311,7 @@
     watch([...propRefs, attributeValues, workflows, maximumNumberOfDocuments], () => {
 
         const newValue: ValidPropertiesBox<BenevolenceTypeBag> = {
-            bag: { ...props.modelValue } as BenevolenceTypeBag
+            bag: { ...props.modelValue.bag } as BenevolenceTypeBag
         };
 
         setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);

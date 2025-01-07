@@ -8,7 +8,8 @@
         <MergeFieldPicker v-model="mergeFieldValue"
                           :additionalFields="mergeFields ? mergeFields.join(',') : ''"
                           :multiple="false"
-                          placeholder="Add Merge Field" />
+                          placeholder="Add Merge Field"
+                          :enhanceForLongLists="true" />
     </Modal>
 </template>
 

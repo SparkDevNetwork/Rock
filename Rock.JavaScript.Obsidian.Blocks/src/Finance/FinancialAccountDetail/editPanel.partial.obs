@@ -260,7 +260,7 @@
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, accountParticipants, ...propRefs], () => {
         const newValue: ValidPropertiesBox<FinancialAccountBag> = {
-            bag: { ...props.modelValue } as FinancialAccountBag
+            bag: { ...props.modelValue.bag } as FinancialAccountBag
         };
 
         setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);

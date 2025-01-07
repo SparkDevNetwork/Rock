@@ -147,12 +147,15 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!adaptiveMessageEditBag.value?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
+        if (adaptiveMessageEditBag.value?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.CurrentPage]) {
+                return config.navigationUrls[NavigationUrlKey.CurrentPage];
             }
-
-            return false;
+        }
+        else {
+            if (config.navigationUrls?.[NavigationUrlKey.CurrentPageWithoutMessageId]) {
+                return config.navigationUrls[NavigationUrlKey.CurrentPageWithoutMessageId];
+            }
         }
 
         return true;

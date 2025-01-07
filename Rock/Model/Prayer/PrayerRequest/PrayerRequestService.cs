@@ -402,7 +402,6 @@ namespace Rock.Model
 
             return new List<ChatCompletionsRequestMessage>
             {
-                new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.System, Content = "You're a helpful and detail-oriented church assistant" },
                 new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.User, Content = template.ResolveMergeFields( mergeObjects ) }
             };
         }
@@ -432,7 +431,6 @@ namespace Rock.Model
 
             return new List<ChatCompletionsRequestMessage>
             {
-                new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.System, Content = "You're a helpful and detail-oriented church assistant" },
                 new ChatCompletionsRequestMessage { Role = Enums.AI.ChatMessageRole.User, Content = template.ResolveMergeFields( mergeObjects ) }
             };
         }

@@ -63,7 +63,8 @@
     const errorMessage = ref("");
 
     const benevolenceTypeEditBag = ref<ValidPropertiesBox<BenevolenceTypeBag>>({
-        bag: config.entity ?? {} as BenevolenceTypeBag
+        bag: config.entity ?? {} as BenevolenceTypeBag,
+        validProperties: config.entity ? Object.keys(config.entity) : null
     });
 
     const isSaving = ref(false);

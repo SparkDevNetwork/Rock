@@ -714,6 +714,21 @@ namespace Rock.Model
 
         private int? _primaryAliasId;
 
+        /// <summary>
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see> identifier.
+        /// </summary>
+        /// <value>
+        /// The primary alias identifier.
+        /// </value>
+        [DataMember]
+        public Guid? PrimaryAliasGuid
+        {
+            get => _primaryAliasGuid ?? PrimaryAlias?.Guid;
+            set => _primaryAliasGuid = value;
+        }
+
+        private Guid? _primaryAliasGuid;
+
         #endregion
 
         #region Constructors

@@ -476,7 +476,7 @@ namespace Rock.Blocks.Finance
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();
-                entity.SaveAttributeValues( base.RockContext );
+                entity.SaveAttributeValues( RockContext );
             } );
 
             return ActionOk( this.GetParentPageUrl() );
