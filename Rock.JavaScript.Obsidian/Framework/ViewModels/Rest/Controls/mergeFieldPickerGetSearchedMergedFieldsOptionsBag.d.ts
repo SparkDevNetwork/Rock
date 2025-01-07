@@ -21,27 +21,14 @@
 // </copyright>
 //
 
-import { GroupMemberScheduleTemplateBag } from "@Obsidian/ViewModels/Blocks/Group/GroupMemberScheduleTemplateDetail/groupMemberScheduleTemplateBag";
+/** The options that can be passed to the GetSearchedMergeFields API action of the MergePicker control. */
+export type MergeFieldPickerGetSearchedMergedFieldsOptionsBag = {
+    /** Gets or sets the additional fields. */
+    additionalFields?: string | null;
 
-export type GroupMemberScheduleTemplateBox = {
-    /** Gets or sets the entity. */
-    entity?: GroupMemberScheduleTemplateBag | null;
+    /** The query we're using to find merge fields */
+    searchTerm?: string | null;
 
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
-
-    /** Gets or sets a value indicating whether this instance is editable. */
-    isEditable: boolean;
-
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
-
-    /** Gets or sets the security grant token. */
+    /** The security grant token to use when performing authorization checks. */
     securityGrantToken?: string | null;
-
-    /** Gets or sets the valid properties. */
-    validProperties?: string[] | null;
 };

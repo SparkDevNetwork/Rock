@@ -1287,6 +1287,7 @@
     <Compile Include="Jobs\CalculatePeerNetwork.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17AddAndUpdatePeerNetworkIndexes.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdateHistoryTableEntityTypeIdIndexPostMigration.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV17UpdatePersonPrimaryAliasGuid.cs" />
     <Compile Include="Jobs\UpdateProgramCompletions.cs" />
     <Compile Include="Model\Core\AttributeMatrixItem\AttributeMatrixItem.SaveHook.cs" />
     <Compile Include="Model\Core\Note\NoteExtensionMethods.cs" />
@@ -1631,6 +1632,7 @@
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\230_FixVolGenBuildScript_CampusName.cs" />
     <Compile Include="Plugin\HotFixes\228_SetConnectionTypeLinkUrl.cs" />
     <Compile Include="Plugin\HotFixes\227_AddEnableDefaultAddressStateSelectionSetting.cs" />
     <Compile Include="Plugin\HotFixes\224_MigrationRollupsForV16_8_0.cs" />
@@ -3710,6 +3712,7 @@
     <Compile Include="Model\Core\Device\Device.cs" />
     <Compile Include="Model\CRM\Assessment\DiscService.cs" />
     <Compile Include="Model\Core\EntitySet\EntitySet.cs" />
+    <Compile Include="Model\Core\EntitySet\EntitySet.Logic.cs" />
     <Compile Include="Model\Core\EntitySetItem\EntitySetItem.cs" />
     <Compile Include="Model\Core\EntitySetItem\EntitySetItemService.cs" />
     <Compile Include="Model\Core\EntitySet\EntitySetService.cs" />

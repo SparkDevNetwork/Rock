@@ -51,7 +51,7 @@ namespace Rock.Blocks.Engagement
 
     [Rock.SystemGuid.EntityTypeGuid( "8b22d387-c8f3-41ff-99ef-ee4f088610a1" )]
     [Rock.SystemGuid.BlockTypeGuid( "eddfcaff-70aa-4791-b051-6567b37518c4" )]
-    public class AchievementTypeDetail : RockDetailBlockType, IBreadCrumbBlock
+    public class AchievementTypeDetail : RockEntityDetailBlockType<AchievementType, AchievementTypeBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -67,27 +67,19 @@ namespace Rock.Blocks.Engagement
 
         #endregion Keys
 
-        private AchievementType _achievementType;
-        private AchievementTypeService _achievementTypeService;
-        private RockContext _rockContext;
-
         #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag>();
+            var box = new DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions();
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<AchievementType>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions();
 
-                return box;
-            }
+            return box;
         }
 
         /// <inheritdoc/>
@@ -191,10 +183,9 @@ namespace Rock.Blocks.Engagement
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -205,7 +196,7 @@ namespace Rock.Blocks.Engagement
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -213,7 +204,6 @@ namespace Rock.Blocks.Engagement
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -226,13 +216,14 @@ namespace Rock.Blocks.Engagement
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( AchievementType.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -281,12 +272,8 @@ namespace Rock.Blocks.Engagement
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="AchievementTypeBag"/> that represents the entity.</returns>
-        private AchievementTypeBag GetEntityBagForView( AchievementType entity )
+        /// <inheritdoc/>
+        protected override AchievementTypeBag GetEntityBagForView( AchievementType entity )
         {
             if ( entity == null )
             {
@@ -315,12 +302,8 @@ namespace Rock.Blocks.Engagement
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="AchievementTypeBag"/> that represents the entity.</returns>
-        private AchievementTypeBag GetEntityBagForEdit( AchievementType entity )
+        /// <inheritdoc/>
+        protected override AchievementTypeBag GetEntityBagForEdit( AchievementType entity )
         {
             if ( entity == null )
             {
@@ -334,100 +317,89 @@ namespace Rock.Blocks.Engagement
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( AchievementType entity, DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( AchievementType entity, ValidPropertiesBox<AchievementTypeBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.AchievementFailureWorkflowType ),
-                () => entity.AchievementFailureWorkflowTypeId = box.Entity.AchievementFailureWorkflowType.GetEntityId<WorkflowType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.AchievementFailureWorkflowType ),
+                () => entity.AchievementFailureWorkflowTypeId = box.Bag.AchievementFailureWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.AchievementIconCssClass ),
-                () => entity.AchievementIconCssClass = box.Entity.AchievementIconCssClass );
+            box.IfValidProperty( nameof( box.Bag.AchievementIconCssClass ),
+                () => entity.AchievementIconCssClass = box.Bag.AchievementIconCssClass );
 
-            box.IfValidProperty( nameof( box.Entity.AchievementStartWorkflowType ),
-                () => entity.AchievementStartWorkflowTypeId = box.Entity.AchievementStartWorkflowType.GetEntityId<WorkflowType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.AchievementStartWorkflowType ),
+                () => entity.AchievementStartWorkflowTypeId = box.Bag.AchievementStartWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.AchievementSuccessWorkflowType ),
-                () => entity.AchievementSuccessWorkflowTypeId = box.Entity.AchievementSuccessWorkflowType.GetEntityId<WorkflowType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.AchievementSuccessWorkflowType ),
+                () => entity.AchievementSuccessWorkflowTypeId = box.Bag.AchievementSuccessWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.AllowOverAchievement ),
-                () => entity.AllowOverAchievement = box.Entity.AllowOverAchievement );
+            box.IfValidProperty( nameof( box.Bag.AllowOverAchievement ),
+                () => entity.AllowOverAchievement = box.Bag.AllowOverAchievement );
 
-            box.IfValidProperty( nameof( box.Entity.BadgeLavaTemplate ),
-                () => entity.BadgeLavaTemplate = box.Entity.BadgeLavaTemplate );
+            box.IfValidProperty( nameof( box.Bag.BadgeLavaTemplate ),
+                () => entity.BadgeLavaTemplate = box.Bag.BadgeLavaTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.Category ),
-                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Category ),
+                () => entity.CategoryId = box.Bag.Category.GetEntityId<Category>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.CustomSummaryLavaTemplate ),
-                () => entity.CustomSummaryLavaTemplate = box.Entity.CustomSummaryLavaTemplate );
+            box.IfValidProperty( nameof( box.Bag.CustomSummaryLavaTemplate ),
+                () => entity.CustomSummaryLavaTemplate = box.Bag.CustomSummaryLavaTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.HighlightColor ),
-                () => entity.HighlightColor = box.Entity.HighlightColor );
+            box.IfValidProperty( nameof( box.Bag.HighlightColor ),
+                () => entity.HighlightColor = box.Bag.HighlightColor );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.IsPublic ),
-                () => entity.IsPublic = box.Entity.IsPublic );
+            box.IfValidProperty( nameof( box.Bag.IsPublic ),
+                () => entity.IsPublic = box.Bag.IsPublic );
 
-            box.IfValidProperty( nameof( box.Entity.MaxAccomplishmentsAllowed ),
-                () => entity.MaxAccomplishmentsAllowed = box.Entity.MaxAccomplishmentsAllowed );
+            box.IfValidProperty( nameof( box.Bag.MaxAccomplishmentsAllowed ),
+                () => entity.MaxAccomplishmentsAllowed = box.Bag.MaxAccomplishmentsAllowed );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.ResultsLavaTemplate ),
-                () => entity.ResultsLavaTemplate = box.Entity.ResultsLavaTemplate );
+            box.IfValidProperty( nameof( box.Bag.ResultsLavaTemplate ),
+                () => entity.ResultsLavaTemplate = box.Bag.ResultsLavaTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.AchievementEntityType ),
-                () => entity.ComponentEntityTypeId = box.Entity.AchievementEntityType.GetEntityId<EntityType>( rockContext ) ?? 0 );
+            box.IfValidProperty( nameof( box.Bag.AchievementEntityType ),
+                () => entity.ComponentEntityTypeId = box.Bag.AchievementEntityType.GetEntityId<EntityType>( RockContext ) ?? 0 );
 
-            box.IfValidProperty( nameof( box.Entity.ImageBinaryFile ),
-                () => SaveImage( box, rockContext, entity ) );
+            box.IfValidProperty( nameof( box.Bag.ImageBinaryFile ),
+                () => SaveImage( box, entity ) );
 
-            box.IfValidProperty( nameof( box.Entity.AlternateImageBinaryFile ),
-                () => SaveAlternateImage( box, rockContext, entity ) );
+            box.IfValidProperty( nameof( box.Bag.AlternateImageBinaryFile ),
+                () => SaveAlternateImage( box, entity ) );
 
-            box.IfValidProperty( nameof( box.Entity.AddStepOnSuccess ),
-                () => SaveStepDetails( box, rockContext, entity ) );
+            box.IfValidProperty( nameof( box.Bag.AddStepOnSuccess ),
+                () => SaveStepDetails( box, entity ) );
 
-            box.IfValidProperty( nameof( box.Entity.Prerequisites ),
-                () => SavePrerequisites( box, rockContext, entity ));
+            box.IfValidProperty( nameof( box.Bag.Prerequisites ),
+                () => SavePrerequisites( box, entity ));
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="AchievementType"/> to be viewed or edited on the page.</returns>
-        private AchievementType GetInitialEntity( RockContext rockContext )
+        // <inheritdoc/>
+        protected override AchievementType GetInitialEntity()
         {
-            return _achievementType = GetInitialEntity<AchievementType, AchievementTypeService>( rockContext, PageParameterKey.AchievementTypeId );
+            return GetInitialEntity<AchievementType, AchievementTypeService>( RockContext, PageParameterKey.AchievementTypeId );
         }
 
         /// <summary>
@@ -442,47 +414,10 @@ namespace Rock.Blocks.Engagement
             };
         }
 
-        /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        // <inheritdoc/>
+        protected override bool TryGetEntityForEditAction( string idKey, out AchievementType entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( AchievementType entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out AchievementType entity, out BlockActionResult error )
-        {
-            var entityService = new AchievementTypeService( rockContext );
+            var entityService = new AchievementTypeService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -490,12 +425,12 @@ namespace Rock.Blocks.Engagement
             {
                 // If editing an existing entity then load it and make sure it
                 // was found and can still be edited.
-                entity = _achievementType = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+                entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
             }
             else
             {
                 // Create a new entity.
-                entity = _achievementType = new AchievementType();
+                entity = new AchievementType();
                 entityService.Add( entity );
             }
 
@@ -521,7 +456,7 @@ namespace Rock.Blocks.Engagement
         {
             var config = GetAchievementConfiguration( componentEntityTypeGuid );
             var achievementTypeCache = GetAchievementTypeCache();
-            var isNew = GetAchievementType()?.Id == 0;
+            var isNew = achievementTypeCache == null || achievementTypeCache.Id == 0;
 
             List<AchievementTypeCache> eligiblePrerequisites;
 
@@ -556,7 +491,7 @@ namespace Rock.Blocks.Engagement
 
             if ( componentEntityTypeGuid == null )
             {
-                var achievementType = GetAchievementType();
+                var achievementType = GetAchievementTypeCache();
                 componentEntityTypeId = achievementType != null ? achievementType.ComponentEntityTypeId : ( int? ) null;
             }
             else
@@ -583,52 +518,6 @@ namespace Rock.Blocks.Engagement
             }
 
             return component.SupportedConfiguration;
-        }
-
-        /// <summary>
-        /// Get the actual achievement type model for deleting or editing
-        /// </summary>
-        /// <returns></returns>
-        private AchievementType GetAchievementType()
-        {
-            if ( _achievementType == null )
-            {
-                var achievementTypeIdParam = PageParameter( PageParameterKey.AchievementTypeId );
-                var achievementTypeId = Rock.Utility.IdHasher.Instance.GetId( achievementTypeIdParam ) ?? achievementTypeIdParam.AsIntegerOrNull();
-
-                if ( achievementTypeId > 0 )
-                {
-                    var achievementTypeService = GetAchievementTypeService();
-                    _achievementType = achievementTypeService.Queryable( "AchievementEntityType, Prerequisites" )
-                        .FirstOrDefault( stat => stat.Id == achievementTypeId.Value );
-                }
-            }
-
-            return _achievementType;
-        }
-
-        /// <summary>
-        /// Get the achievement type service
-        /// </summary>
-        /// <returns></returns>
-        private AchievementTypeService GetAchievementTypeService()
-        {
-            if ( _achievementTypeService == null )
-            {
-                var rockContext = GetRockContext();
-                _achievementTypeService = new AchievementTypeService( rockContext );
-            }
-
-            return _achievementTypeService;
-        }
-
-        /// <summary>
-        /// Gets the rock context.
-        /// </summary>
-        /// <returns></returns>
-        private RockContext GetRockContext()
-        {
-            return _rockContext ?? ( _rockContext = new RockContext() );
         }
 
         /// <summary>
@@ -695,8 +584,8 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private IQueryable<AchievementAttempt> GetChartQuery()
         {
-            var achievementType = GetAchievementType();
-            var attemptService = new AchievementAttemptService( GetRockContext() );
+            var achievementType = GetAchievementTypeCache();
+            var attemptService = new AchievementAttemptService( RockContext );
             var query = attemptService.Queryable().AsNoTracking().Where( saa =>
                 saa.AchievementTypeId == achievementType.Id &&
                 saa.IsSuccessful &&
@@ -768,14 +657,18 @@ namespace Rock.Blocks.Engagement
             return factory;
         }
 
-
-        private void SaveImage( DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box, RockContext rockContext, AchievementType entity )
+        /// <summary>
+        /// Save the attached image file.
+        /// </summary>
+        /// <param name="box">The valid properties box</param>
+        /// <param name="entity">The achievement type entity</param>
+        private void SaveImage( ValidPropertiesBox<AchievementTypeBag> box, AchievementType entity )
         {
-            var binaryFileService = new BinaryFileService( rockContext );
+            var binaryFileService = new BinaryFileService( RockContext );
 
-            if ( box.Entity.ImageBinaryFile != null )
+            if ( box.Bag.ImageBinaryFile != null )
             {
-                var binaryFileId = box.Entity.ImageBinaryFile.GetEntityId<BinaryFile>( rockContext );
+                var binaryFileId = box.Bag.ImageBinaryFile.GetEntityId<BinaryFile>( RockContext );
                 MarkOldImageAsTemporary( entity.ImageBinaryFileId, binaryFileId, binaryFileService );
                 entity.ImageBinaryFileId = binaryFileId;
                 // Ensure that the Image is not set as IsTemporary=True
@@ -783,13 +676,19 @@ namespace Rock.Blocks.Engagement
             }
         }
 
-        private void SaveAlternateImage( DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box, RockContext rockContext, AchievementType entity )
-        {
-            var binaryFileService = new BinaryFileService( rockContext );
 
-            if ( box.Entity.AlternateImageBinaryFile != null )
+        /// <summary>
+        /// Saves the alternate image.
+        /// </summary>
+        /// <param name="box">The box.</param>
+        /// <param name="entity">The entity.</param>
+        private void SaveAlternateImage( ValidPropertiesBox<AchievementTypeBag> box, AchievementType entity )
+        {
+            var binaryFileService = new BinaryFileService( RockContext );
+
+            if ( box.Bag.AlternateImageBinaryFile != null )
             {
-                var binaryFileId = box.Entity.AlternateImageBinaryFile.GetEntityId<BinaryFile>( rockContext );
+                var binaryFileId = box.Bag.AlternateImageBinaryFile.GetEntityId<BinaryFile>( RockContext );
                 MarkOldImageAsTemporary( entity.AlternateImageBinaryFileId, binaryFileId, binaryFileService );
                 entity.AlternateImageBinaryFileId = binaryFileId;
                 // Ensure that the Image is not set as IsTemporary=True
@@ -797,14 +696,19 @@ namespace Rock.Blocks.Engagement
             }
         }
 
-        private void SavePrerequisites( DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box, RockContext rockContext, AchievementType entity )
+        /// <summary>
+        /// Saves the prerequisites.
+        /// </summary>
+        /// <param name="box">The box.</param>
+        /// <param name="entity">The entity.</param>
+        private void SavePrerequisites( ValidPropertiesBox<AchievementTypeBag> box, AchievementType entity )
         {
             // Upsert Prerequisites
-            var prerequisiteService = new AchievementTypePrerequisiteService( rockContext );
+            var prerequisiteService = new AchievementTypePrerequisiteService( RockContext );
 
             // Remove existing prerequisites that are not selected
             var removePrerequisiteAchievementTypes = entity.Prerequisites
-                .Where( statp => !box.Entity.Prerequisites.Contains( statp.PrerequisiteAchievementType.Guid.ToString() ) ).ToList();
+                .Where( statp => !box.Bag.Prerequisites.Contains( statp.PrerequisiteAchievementType.Guid.ToString() ) ).ToList();
 
             foreach ( var prerequisite in removePrerequisiteAchievementTypes )
             {
@@ -813,18 +717,43 @@ namespace Rock.Blocks.Engagement
             }
 
             // Add selected achievement types prerequisites that are not existing
-            var addPrerequisiteAchievementTypeIds = box.Entity.Prerequisites
-                .Where( statGuid => !entity.Prerequisites.Any( statp => statp.PrerequisiteAchievementType.Guid.ToString() == statGuid ) )
-                .Select( statGuid => statGuid.AsGuid() )
+            var addPrerequisiteAchievementTypeIds = entity.Prerequisites
+                .Where( statp => !box.Bag.Prerequisites.Any( statGuid => statGuid == statp.PrerequisiteAchievementType.Guid.ToString() ) )
+                .Select( statp => statp.PrerequisiteAchievementType.Guid )
                 .ToList();
 
-            foreach ( var prerequisiteAchievementType in GetAchievementTypeService().GetByGuids( addPrerequisiteAchievementTypeIds ) )
+            var prerequisiteTypes = new AchievementTypeService( RockContext ).GetByGuids( addPrerequisiteAchievementTypeIds );
+
+            foreach ( var prerequisiteAchievementType in prerequisiteTypes )
             {
                 entity.Prerequisites.Add( new AchievementTypePrerequisite
                 {
                     AchievementTypeId = entity.Id,
                     PrerequisiteAchievementTypeId = prerequisiteAchievementType.Id
                 } );
+            }
+        }
+
+        /// <summary>
+        /// Saves the step details.
+        /// </summary>
+        /// <param name="box">The box.</param>
+        /// <param name="entity">The entity.</param>
+        private void SaveStepDetails( ValidPropertiesBox<AchievementTypeBag> box, AchievementType entity )
+        {
+            // Both step type and status are required together or neither can be set
+            var stepTypeId = box.Bag.AchievementStepType.GetEntityId<StepType>( RockContext );
+            var stepStatusId = box.Bag.AchievementStepStatus.GetEntityId<StepStatus>( RockContext );
+
+            if ( box.Bag.AddStepOnSuccess && stepTypeId.HasValue && stepStatusId.HasValue )
+            {
+                entity.AchievementStepTypeId = stepTypeId;
+                entity.AchievementStepStatusId = stepStatusId;
+            }
+            else
+            {
+                entity.AchievementStepTypeId = null;
+                entity.AchievementStepStatusId = null;
             }
         }
 
@@ -852,24 +781,23 @@ namespace Rock.Blocks.Engagement
                 return ActionNotFound();
             }
 
-            _achievementType = new AchievementType() { Id = 0, ComponentEntityTypeId = entityType.Id, Guid = Guid.Empty };
+            var achievementType = new AchievementType() { Id = 0, ComponentEntityTypeId = entityType.Id, Guid = Guid.Empty };
 
             if ( !string.IsNullOrWhiteSpace( idKey ) )
             {
-                var rockContext = new RockContext();
-                var achievementTypeService = new AchievementTypeService( rockContext );
+                var achievementTypeService = new AchievementTypeService( RockContext );
                 var existingEntity = achievementTypeService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
 
                 if ( existingEntity.ComponentEntityTypeId == entityType.Id )
                 {
-                    _achievementType = existingEntity;
+                    achievementType = existingEntity;
                 }
             }
 
-            _achievementType.LoadAttributes();
+            achievementType.LoadAttributes();
 
-            var bag = GetCommonEntityBag( _achievementType );
-            bag.LoadAttributesAndValuesForPublicEdit( _achievementType, RequestContext.CurrentPerson, attributeFilter: IsAttributeIncluded );
+            var bag = GetCommonEntityBag( achievementType );
+            bag.LoadAttributesAndValuesForPublicEdit( achievementType, RequestContext.CurrentPerson, attributeFilter: IsAttributeIncluded );
             SetPrerequisiteListValues( bag, entityTypeGuid );
 
             var component = AchievementContainer.GetComponent( entityType.Name );
@@ -890,22 +818,20 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<AchievementTypeBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -914,91 +840,87 @@ namespace Rock.Blocks.Engagement
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<AchievementTypeBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new AchievementTypeService( RockContext );
+            AchievementType entity;
+
+            // Determine if we are editing an existing entity or creating a new one.
+            if ( box.Bag.IdKey.IsNotNullOrWhiteSpace() )
             {
-                var entityService = new AchievementTypeService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                var isNew = entity.Id == 0;
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateAchievementType( entity, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                if ( !entity.IsAuthorized( Rock.Security.Authorization.VIEW, GetCurrentPerson() ) )
-                {
-                    entity.AllowPerson( Rock.Security.Authorization.VIEW, GetCurrentPerson(), rockContext );
-                }
-
-                if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, GetCurrentPerson() ) )
-                {
-                    entity.AllowPerson( Rock.Security.Authorization.EDIT, GetCurrentPerson(), rockContext );
-                }
-
-                if ( !entity.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetCurrentPerson() ) )
-                {
-                    entity.AllowPerson( Rock.Security.Authorization.ADMINISTRATE, GetCurrentPerson(), rockContext );
-                }
-
-                // Now that the component attributes are saved, generate the config JSON from the component
-                var updatedCacheItem = AchievementTypeCache.Get( entity.Id );
-                var component = updatedCacheItem.AchievementComponent;
-                var configDictionary = component.GenerateConfigFromAttributeValues( updatedCacheItem );
-                entity.ComponentConfigJson = configDictionary.ToJson();
-                rockContext.SaveChanges();
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.AchievementTypeId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
-            }
-        }
-
-        private static void SaveStepDetails( DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box, RockContext rockContext, AchievementType entity )
-        {
-            // Both step type and status are required together or neither can be set
-            var stepTypeId = box.Entity.AchievementStepType.GetEntityId<StepType>( rockContext );
-            var stepStatusId = box.Entity.AchievementStepStatus.GetEntityId<StepStatus>( rockContext );
-
-            if ( box.Entity.AddStepOnSuccess && stepTypeId.HasValue && stepStatusId.HasValue )
-            {
-                entity.AchievementStepTypeId = stepTypeId;
-                entity.AchievementStepStatusId = stepStatusId;
+                // If editing an existing entity then load it and make sure it
+                // was found and can still be edited.
+                entity = entityService.Get( box.Bag.IdKey, !PageCache.Layout.Site.DisablePredictableIds );
             }
             else
             {
-                entity.AchievementStepTypeId = null;
-                entity.AchievementStepStatusId = null;
+                // Create a new entity.
+                entity = new AchievementType();
+                entityService.Add( entity );
             }
+
+            var isNew = entity.Id == 0;
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateAchievementType( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            if ( !entity.IsAuthorized( Rock.Security.Authorization.VIEW, GetCurrentPerson() ) )
+            {
+                entity.AllowPerson( Rock.Security.Authorization.VIEW, GetCurrentPerson(), RockContext );
+            }
+
+            if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, GetCurrentPerson() ) )
+            {
+                entity.AllowPerson( Rock.Security.Authorization.EDIT, GetCurrentPerson(), RockContext );
+            }
+
+            if ( !entity.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetCurrentPerson() ) )
+            {
+                entity.AllowPerson( Rock.Security.Authorization.ADMINISTRATE, GetCurrentPerson(), RockContext );
+            }
+
+            // Now that the component attributes are saved, generate the config JSON from the component
+            var updatedCacheItem = AchievementTypeCache.Get( entity.Id );
+            var component = updatedCacheItem.AchievementComponent;
+            var configDictionary = component.GenerateConfigFromAttributeValues( updatedCacheItem );
+            entity.ComponentConfigJson = configDictionary.ToJson();
+
+            RockContext.SaveChanges();
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.AchievementTypeId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForView( entity );
+
+            return ActionOk( new ValidPropertiesBox<AchievementTypeBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -1009,79 +931,22 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new AchievementTypeService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new AchievementTypeService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>

@@ -43,8 +43,11 @@ namespace Rock.Tests.Shared.TestFramework
                     All = true
                 } );
 
+                var currentMigrationNumber = long.Parse( GetTargetMigration().Truncate( 15, false ) );
+
                 var latestImage = images.SelectMany( img => img.RepoTags )
                     .Where( t => t.StartsWith( $"{RepositoryName}:" ) )
+                    .Where( t => long.TryParse( t.Substring( 26 ), out var migrationNumber ) && migrationNumber <= currentMigrationNumber )
                     .OrderByDescending( t => t )
                     .FirstOrDefault();
 
@@ -242,7 +245,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 FabricateAttendance = true,
                 EnableGiving = true,
                 Password = "password",
-                RandomizerSeed = 42283823
+                RandomizerSeed = 42283823,
+                AttendanceCodeIssuedDateTime = RockDateTime.Now.AddDays( -1 )
             };
 
             factory.CreateFromXmlDocumentFile( sampleDataUrl, args );

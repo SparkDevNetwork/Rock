@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -77,6 +78,26 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool IsActive { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the optional start date of the <see cref="Rock.Model.AdaptiveMessage"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing start date of the <see cref="Rock.Model.AdaptiveMessage"/>.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end date of the <see cref="Rock.Model.AdaptiveMessage"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing end date of the <see cref="Rock.Model.AdaptiveMessage"/>.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? EndDate { get; set; }
 
         #endregion Entity Properties
 

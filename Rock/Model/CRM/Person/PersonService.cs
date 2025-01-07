@@ -4776,6 +4776,26 @@ WHERE Id = @personId",
         }
 
         /// <summary>
+        /// Sets the PrimaryAliasId and PrimaryAliasGuid for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="primaryAliasId">The PrimaryAlias identifier.</param>
+        /// <param name="primaryAliasGuid">The PrimaryAlias guid identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdatePrimaryAlias( int personId, int primaryAliasId, Guid primaryAliasGuid, RockContext rockContext )
+        {
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE Person
+SET PrimaryAliasId = @primaryAliasId,
+    PrimaryAliasGuid = @primaryAliasGuid
+WHERE Id = @personId",
+        new System.Data.SqlClient.SqlParameter( "@personId", personId ),
+        new System.Data.SqlClient.SqlParameter( "@primaryAliasId", primaryAliasId ),
+        new System.Data.SqlClient.SqlParameter( "@primaryAliasGuid", primaryAliasGuid ) );
+        }
+
+        /// <summary>
         /// Updates the person's group member role (whether Adult/Child) for the specified person.
         /// </summary>
         /// <param name="personId">The person identifier.</param>

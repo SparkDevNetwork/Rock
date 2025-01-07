@@ -137,7 +137,7 @@ namespace Rock.Blocks.Lms
 
             <div class=""col-xs-12 col-sm-12 col-md-8""> //- LEFT CONTAINER
 
-                <div class=""card rounded-lg""> //-COURSE DESCRIPTION
+                <div class=""card rounded-lg""> //- COURSE DESCRIPTION
 
                     <div class=""card-body"">
                         <div class=""card-title"">
@@ -210,8 +210,13 @@ namespace Rock.Blocks.Lms
                         {% if semesterInfo.EnrollmentCloseDate == null or semesterInfo.EnrollmentCloseDate >= today %}
                             {% assign hasClasses = true %}
 						{% endif %}
-						//-CURRENTLY ENROLLED
-						{% if classInfo.IsEnrolled and classInfo.StudentParticipant.LearningCompletionStatus == ""Incomplete"" and today >= semesterInfo.StartDate %} 
+						//- CURRENTLY ENROLLED
+						{% assign isActiveSemester = semesterInfo.StartDate == null 
+						    or today >= semesterInfo.StartDate %}
+						{% if classInfo.IsEnrolled 
+						and classInfo.StudentParticipant.LearningCompletionStatus == ""Incomplete"" 
+						and isActiveSemester %} 
+							
 							<div class=""card rounded-lg mb-4"">
 								<div class=""card-body"">
 									<div class=""card-title d-flex align-items-center"">
@@ -276,7 +281,7 @@ namespace Rock.Blocks.Lms
                     {% endfor %}
                 {% endfor %}
                                 
-                {% if hasClasses == false %} //-NO UPCOMING SEMESTERS OR CLASSES
+                {% if hasClasses == false %} //- NO UPCOMING SEMESTERS OR CLASSES
                     <div class=""card rounded-lg"">
                         <div class=""card-body"">
                             <h4 class=""mt-0"">No Available Upcoming Classes</h4>
@@ -288,7 +293,7 @@ namespace Rock.Blocks.Lms
                         <div class=""card-body"">
                             <h4 class=""card-title mt-0""><i class=""fa fa-chalkboard-teacher mr-2""></i>Classes</h4>
                             
-                            //-SCOPING TO CLASS DETAILS
+                            //- SCOPING TO CLASS DETAILS
                             
                             {% for semesterInfo in CourseInfo.Semesters %}
 
@@ -307,74 +312,77 @@ namespace Rock.Blocks.Lms
                                     </div>
                                 {% endif %}
                                         
-                                        {% for classInfo in semesterInfo.AvailableClasses %}
-                                            {% assign facilitatorsText = classInfo.Facilitators | Select:'Name' | Join:', ' | ReplaceLast:',',' and' | Default:'TBD' %}
-                                           
-                                            <div class=""card rounded-lg bg-gray-100 mb-4"">
-                                                <div class=""card-body pb-0"">
-                                                    <div class=""d-grid grid-flow-row gap-0 mb-3""> //-BEGIN CLASS DETAILS
-                                                        
-                                                        {% if CourseInfo.ProgramInfo.ConfigurationMode == ""AcademicCalendar"" %}
-                                                            <p class=""text-bold"">{{classInfo.Name}}
-                                                            {% if classInfo.IsEnrolled and classInfo.StudentParticipant.LearningCompletionStatus == ""Incomplete"" %}
-                                                                <span class=""text-normal align-top badge bg-info"">Enrolled</span>
-                                                            {% elseif classInfo.IsEnrolled %}
-																<span class=""text-normal align-top badge bg-success"">Recently Completed</span>
-                                                            {% endif %}
-                                                            </p>
-                                                        {% else %}
-                                                        <h4 class=""mt-0"">Class Details</h4>
-                                                        {% endif %}
-                                                        
-                                                        <div class=""d-flex flex-column"">
-                                                            {% if facilitatorsText %}
-                                                                <div class=""text-gray-600"">
-                                                                    <p class=""text-bold mb-0"">Facilitators: 
-                                                                    <p>{{facilitatorsText}}</p>
-                                                                </div>
-                                                            {% endif %}
-                                                            
-                                                            {% if classInfo.Campus %}
-                                                                <div class=""text-gray-600"">
-                                                                    <p class=""text-bold mb-0"">Campus: 
-                                                                    <p>{{classInfo.Campus}}</p>
-                                                                </div>
-                                                            {% endif %}
-                                                            {% if classInfo.Location %}
-                                                                <div class=""text-gray-600"">
-                                                                    <p class=""text-bold mb-0"">Location: 
-                                                                    <p>{{classInfo.Location}}</p>
-                                                                </div>
-                                                            {% endif %}
-                                                            {% if classInfo.Schedule %}
-                                                                <div class=""text-gray-600"">
-                                                                    <p class=""text-bold mb-0"">Schedule: 
-                                                                    <p>{{classInfo.Schedule}}</p>
-                                                                </div>
-                                                            {% endif %}
-                                                            
-                                                            {% if classInfo.IsEnrolled  == false %} //-NEVER ENROLLED?
-                                                                {% if semesterInfo.IsEnrolled == true and classInfo.IsEnrolled == false %}
-                                                                    <p class=""text-danger"">You've already enrolled in this course this semester.</p>
-
-                                                                {% elseif classInfo.CanEnroll == false %}
-                                                                    {% if classInfo.EnrollmentErrorKey == 'class_full' %}
-                                                                        <p class=""text-danger"">Class is full.</p>
-                                                                    {% endif %}
-                                                                
-                                                                {% else %}
-                                                                    {% if CourseInfo.ProgramInfo.ConfigurationMode != ""AcademicCalendar"" or semesterInfo.IsEnrolled  == false %}
-                                                                        <div>
-                                                                            <a class=""btn btn-default"" href=""{{ classInfo.EnrollmentLink }}"">Enroll</a>
-                                                                        </div>
-                                                                    {% endif %}
-                                                                {% endif %}
-                                                            {% endif %}
+                                {% for classInfo in semesterInfo.AvailableClasses %}
+                                    {% assign facilitatorsText = classInfo.Facilitators | Select:'Name' | Join:', ' | ReplaceLast:',',' and' | Default:'TBD' %}
+                                   
+                                    <div class=""card rounded-lg bg-gray-100 mb-4"">
+                                        <div class=""card-body pb-0"">
+                                            <div class=""d-grid grid-flow-row gap-0 mb-3""> //- BEGIN CLASS DETAILS
+                                                
+                                                {% if CourseInfo.ProgramInfo.ConfigurationMode == ""AcademicCalendar"" %}
+                                                    <p class=""text-bold"">{{classInfo.Name}}
+                                                    {% if classInfo.IsEnrolled and classInfo.StudentParticipant.LearningCompletionStatus == ""Incomplete"" %}
+                                                        <span class=""text-normal align-top badge bg-info"">Enrolled</span>
+                                                    {% elseif classInfo.IsEnrolled %}
+														<span class=""text-normal align-top badge bg-success"">Recently Completed</span>
+                                                    {% endif %}
+                                                    </p>
+                                                {% else %}
+                                                <h4 class=""mt-0"">Class Details</h4>
+                                                {% endif %}
+                                                
+                                                <div class=""d-flex flex-column"">
+                                                    {% if facilitatorsText %}
+                                                        <div class=""text-gray-600"">
+                                                            <p class=""text-bold mb-0"">Facilitators: 
+                                                            <p>{{facilitatorsText}}</p>
                                                         </div>
-                                                    </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if classInfo.Campus %}
+                                                        <div class=""text-gray-600"">
+                                                            <p class=""text-bold mb-0"">Campus: 
+                                                            <p>{{classInfo.Campus}}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if classInfo.Location and classInfo.Location != '' %}
+                                                        <div class=""text-gray-600"">
+                                                            <p class=""text-bold mb-0"">Location: 
+                                                            <p>{{classInfo.Location}}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if classInfo.Schedule %}
+                                                        <div class=""text-gray-600"">
+                                                            <p class=""text-bold mb-0"">Schedule: 
+                                                            <p>{{classInfo.Schedule}}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if classInfo.IsEnrolled  == false %} //- NEVER ENROLLED?
+                                                        {% if semesterInfo.IsEnrolled == true and classInfo.IsEnrolled == false %}
+                                                            {% if CourseInfo.ProgramInfo.ConfigurationMode == ""AcademicCalendar"" %}
+                                                                <p class=""text-danger"">You've already enrolled in this course this semester.</p>
+                                                            {% else %}
+                                                                <p class=""text-danger"">You've already enrolled in a version of this course.</p>
+                                                            {% endif %}
+                                                        {% elseif classInfo.CanEnroll == false %}
+                                                            {% if classInfo.EnrollmentErrorKey == 'class_full' %}
+                                                                <p class=""text-danger"">Class is full.</p>
+                                                            {% endif %}
+                                                        
+                                                        {% else %}
+                                                            {% if CourseInfo.ProgramInfo.ConfigurationMode != ""AcademicCalendar"" or semesterInfo.IsEnrolled  == false %}
+                                                                <div>
+                                                                    <a class=""btn btn-default"" href=""{{ classInfo.EnrollmentLink }}"">Enroll</a>
+                                                                </div>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endif %}
                                                 </div>
                                             </div>
-                                        {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
        
                             {% endfor %}
                         

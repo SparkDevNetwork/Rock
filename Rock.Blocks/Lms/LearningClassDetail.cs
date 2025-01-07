@@ -255,6 +255,7 @@ namespace Rock.Blocks.Lms
                 TakesAttendance = entity.GroupType?.TakesAttendance ?? false,
                 DefaultGradingSystem = entity.LearningCourse?.LearningProgram?.DefaultLearningGradingSystem?.ToListItemBag(),
                 Description = entity.Description,
+                GroupCapacity = entity.GroupCapacity,
                 Location = locationItem?.ToListItemBag() ?? new ListItemBag(),
                 IsActive = entity.IsActive,
                 IsPublic = entity.IsPublic,
@@ -332,6 +333,9 @@ namespace Rock.Blocks.Lms
 
             box.IfValidProperty( nameof( box.Bag.Description ),
                 () => entity.Description = box.Bag.Description );
+
+            box.IfValidProperty( nameof( box.Bag.GroupCapacity ),
+                () => entity.GroupCapacity = box.Bag.GroupCapacity );
 
             box.IfValidProperty( nameof( box.Bag.Location ),
                 () =>
@@ -499,6 +503,7 @@ namespace Rock.Blocks.Lms
             {
                 [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
                 [PageParameterKey.LearningCourseId] = PageParameter( PageParameterKey.LearningCourseId ),
+                [PageParameterKey.LearningClassId] = PageParameter( PageParameterKey.LearningClassId ),
                 [PageParameterKey.GroupId] = PageParameter( PageParameterKey.LearningClassId ),
             };
 

@@ -399,7 +399,6 @@ namespace Rock.SystemKey
         public const string ANALYTICS_CALENDAR_DIMENSION_GIVING_MONTH_USE_SUNDAY_DATE = "core_AnalyticsCalendarDimensionGivingMonthUseSundayDate";
 
         /// <summary>
-
         /// The Lava template containing the Prayer Request AI Completions template.
         /// </summary>
         /// <remarks>

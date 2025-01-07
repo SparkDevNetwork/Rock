@@ -30,14 +30,14 @@
         /**
          * The grid state that this action belongs to.
          */
-         grid: {
+        grid: {
             type: Object as PropType<IGridState>,
             required: true
         }
     });
 
     const emit = defineEmits<{
-        (e: "click"): void
+        (e: "actionClick"): void
     }>();
 
     /**
@@ -81,7 +81,7 @@
         }
 
         // Allow the parent component to close the popup.
-        emit("click");
+        emit("actionClick");
 
         isExecuting.value = true;
 

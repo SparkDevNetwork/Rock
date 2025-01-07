@@ -12,79 +12,79 @@
           @selectItem="onSelectItem">
 
         <TextColumn name="name"
-            title="Name"
-            field="name"
-            :filter="textValueFilter"
-            visiblePriority="xs"
-            width="30%" />
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs"
+                    width="30%" />
 
         <TextColumn name="documentType"
-            v-if="showDocumentType"
-            title="Document Type"
-            field="documentType"
-            :filter="pickExistingValueFilter"
-            visiblePriority="md" />
-            
+                    v-if="showDocumentType"
+                    title="Document Type"
+                    field="documentType"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md" />
+
         <DateTimeColumn name="lastInviteDate"
-            title="Last Invite Date"
-            field="lastInviteDate"
-            :filter="dateValueFilter"
-            visiblePriority="md" />
-            
+                        title="Last Invite Date"
+                        field="lastInviteDate"
+                        :filter="dateValueFilter"
+                        visiblePriority="md" />
+
         <DateTimeColumn name="signedDateTime"
-            title="Signed Date"
-            field="signedDateTime"
-            :filter="dateValueFilter"
-            visiblePriority="xs" />
-        
+                        title="Signed Date"
+                        field="signedDateTime"
+                        :filter="dateValueFilter"
+                        visiblePriority="xs" />
+
         <PersonColumn name="appliesToPersonAlias"
-            title="Applies To"
-            field="appliesToPersonAlias"
-            :filter="pickExistingValueFilter"
-            :filterValue="getAppliesToPersonFilterValue"
-            :quickFilterValue="getAppliesToPersonFilterValue"
-            :hideAvatar="true"
-            :showAsLink="true"
-            visiblePriority="xs" >
+                      title="Applies To"
+                      field="appliesToPersonAlias"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getAppliesToPersonFilterValue"
+                      :quickFilterValue="getAppliesToPersonFilterValue"
+                      :hideAvatar="true"
+                      :showAsLink="true"
+                      visiblePriority="xs">
         </PersonColumn>
 
         <PersonColumn name="assignedToPersonAlias"
-            title="Assigned To"
-            field="assignedToPersonAlias"
-            :filter="pickExistingValueFilter"
-            :filterValue="getAssignedToPersonFilterValue"
-            :quickFilterValue="getAssignedToPersonFilterValue"
-            :hideAvatar="true"
-            :showAsLink="true"
-            visiblePriority="md" >
+                      title="Assigned To"
+                      field="assignedToPersonAlias"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getAssignedToPersonFilterValue"
+                      :quickFilterValue="getAssignedToPersonFilterValue"
+                      :hideAvatar="true"
+                      :showAsLink="true"
+                      visiblePriority="md">
         </PersonColumn>
 
         <PersonColumn name="signedByPersonAlias"
-            title="Signed By"
-            field="signedByPersonAlias"
-            :filter="pickExistingValueFilter"
-            :filterValue="getSignedByPersonFilterValue"
-            :quickFilterValue="getSignedByPersonFilterValue"
-            :hideAvatar="true"
-            :showAsLink="true"
-            visiblePriority="xs" >
+                      title="Signed By"
+                      field="signedByPersonAlias"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getSignedByPersonFilterValue"
+                      :quickFilterValue="getSignedByPersonFilterValue"
+                      :hideAvatar="true"
+                      :showAsLink="true"
+                      visiblePriority="xs">
         </PersonColumn>
 
         <TextColumn name="status"
-            title="Status"
-            field="status"
-            :filter="pickExistingValueFilter"
-            visiblePriority="xs"
-            width="7%" />
+                    title="Status"
+                    field="status"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs"
+                    width="7%" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
-        
+
         <Column name="fileText"
-            title="Document"
-            field="fileText"
-            itemClass="grid-columncommand"
-            visiblePriority="md"
-            width="52px" >
+                title="Document"
+                field="fileText"
+                itemClass="grid-columncommand justify-content-center"
+                visiblePriority="md"
+                width="88">
             <template #format="{ row }">
                 <a class="js-signature-document-link btn btn-default" :href="'/GetFile.ashx?guid=' + row.fileGuid">
                     <div v-html="row.fileText" />

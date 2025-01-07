@@ -5,7 +5,8 @@
             <div class="col-md-6">
                 <TextBox v-model="name"
                          label="Name"
-                         rules="required" />
+                         rules="required"
+                         @blur="populateMessageKey" />
             </div>
 
             <div class="col-md-6">
@@ -23,7 +24,7 @@
                 <TextBox v-model="key"
                          label="Key"
                          help="The unique key that will identify this adaptive message."
-                         rules="required" />
+                         :rules="validityKeyRules" />
             </div>
             <div class="col-md-6">
                 <CategoryPicker v-model="categories"
@@ -33,11 +34,19 @@
                                 :entityTypeGuid="EntityType.AdaptiveMessageCategory" />
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-6">
+                <DatePicker v-model="startDate" label="Start Date" />
+            </div>
+            <div class="col-md-6">
+                <DatePicker v-model="endDate" label="End Date" />
+            </div>
+        </div>
 
         <Panel title="Adaptation Attributes" :hasCollapse="false" :isDrawerOpen="true">
             <div class="panel-body">
                 <NotificationBox alertType="info">
-                    These Attributes apply to all adaptations. Each adaptation will have thier own value for these attributes.
+                    These Attributes apply to all adaptations. Each adaptation will have their own value for these attributes.
                 </NotificationBox>
                 <h5>Shared Adaptation Attributes</h5>
                 <div class="grid grid-panel">
@@ -83,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch } from "vue";
+    import { computed, PropType, reactive, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -102,6 +111,9 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
         modelValue: {
@@ -135,10 +147,13 @@
     const isModalOpen = ref<boolean>(false);
     const submitEditAttribute = ref<boolean>(false);
     const reservedKeyNames = ref(props.options.reservedKeyNames ?? []);
+    const messageReservedKeyNames = ref(props.options.messageReservedKeyNames ?? []);
+    const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
+    const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, categories, key];
+    const propRefs = [description, isActive, name, categories, key, startDate, endDate];
 
     // #endregion
 
@@ -151,6 +166,11 @@
     const gridData: GridDataBag = reactive<GridDataBag>({
         rows: adaptationAttributes.value.map(x => convertToRowItem(x))
     });
+
+    const validityKeyRules = computed<ValidationRule[]>(() => [
+        "required",
+        validateKeyValue
+    ]);
 
     // #endregion
 
@@ -165,12 +185,37 @@
         };
     }
 
+    function populateMessageKey(): void {
+        // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
+        if (key.value.trim() == "" && name.value.trim() != "") {
+            let keyValue = name.value.trim().replace(/[^a-zA-Z0-9_.-]/g, "");
+            let newKeyValue = keyValue;
+
+            let i = 1;
+
+            while (messageReservedKeyNames.value.some(k => k === newKeyValue)) {
+                newKeyValue = keyValue + i++;
+            }
+
+            key.value = newKeyValue;
+        }
+    }
+
+    function validateKeyValue(value: unknown): string | boolean {
+        if (messageReservedKeyNames.value.some(k => k === key.value)) {
+            return "There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.";
+        }
+
+        return true;
+    }
+
     // #endregion
 
     // #region Event Handlers
     async function onAddItem(): Promise<void> {
         adaptationAttribute.value = {} as PublicEditableAttributeBag;
         isModalOpen.value = true;
+        adaptationAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
     }
 
     const onEditItem = async (key: string): Promise<void> => {
@@ -250,6 +295,8 @@
         updateRefValue(name, props.modelValue.name ?? "");
         updateRefValue(key, props.modelValue.key ?? "");
         updateRefValue(categories, props.modelValue.categories ?? []);
+        updateRefValue(startDate, props.modelValue.startDate ?? "");
+        updateRefValue(endDate, props.modelValue.endDate ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -264,6 +311,8 @@
             key: key.value,
             categories: categories.value,
             adaptationAttributes: adaptationAttributes.value,
+            startDate: startDate.value,
+            endDate: endDate.value
         };
 
         emit("update:modelValue", newValue);

@@ -191,7 +191,7 @@ namespace Rock.Blocks.Group.Scheduling
         DefaultValue = "Cancel Confirmation",
         Category = AttributeCategory.CurrentSchedule,
         Order = 5,
-        IsRequired = false )]
+        IsRequired = true )]
 
     [CustomDropdownListField( "Decline Reason Note",
         Key = AttributeKey.DeclineReasonNote,
@@ -789,7 +789,6 @@ namespace Rock.Blocks.Group.Scheduling
             box.SchedulePreferencesButtonText = GetAttributeValue( AttributeKey.UpdateSchedulePreferencesButtonText );
             box.ScheduleUnavailabilityButtonText = GetAttributeValue( AttributeKey.ScheduleUnavailabilityButtonText );
             box.AdditionalTimeSignUpsButtonText = GetAttributeValue( AttributeKey.AdditionalTimeSignUpButtonText );
-            box.AdditionalTimeSignUpsButtonText = GetAttributeValue( AttributeKey.AdditionalTimeSignUpButtonText );
             box.ConfirmedButtonText = GetAttributeValue( AttributeKey.ConfirmedButtonText );
             box.DeclineButtonText = GetAttributeValue( AttributeKey.DeclineButtonText );
         }
@@ -963,6 +962,18 @@ namespace Rock.Blocks.Group.Scheduling
                 .ToList();
 
             rows.AddRange( personScheduleExclusions );
+
+            var includeGroupTypeGuids = GetAttributeValue( AttributeKey.IncludeGroupTypes ).SplitDelimitedValues().AsGuidList();
+            var excludeGroupTypeGuids = GetAttributeValue( AttributeKey.ExcludeGroupTypes ).SplitDelimitedValues().AsGuidList();
+
+            if ( includeGroupTypeGuids.Any() )
+            {
+                rows = rows.Where( gm => includeGroupTypeGuids.Contains( gm.Group.GroupType.Guid ) ).ToList();
+            }
+            else if ( excludeGroupTypeGuids.Any() )
+            {
+                rows = rows.Where( gm => !excludeGroupTypeGuids.Contains( gm.Group.GroupType.Guid ) ).ToList();
+            }
 
             // Sort and project all of the above into a final collection of rows.
             return rows

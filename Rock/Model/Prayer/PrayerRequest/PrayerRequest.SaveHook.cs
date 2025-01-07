@@ -123,19 +123,40 @@ namespace Rock.Model
                         // so that any subsequent completions use the updated text rather than the original text.
                         if ( hasTextChangingCompletions )
                         {
-                            isEntityModified = await ProcessTextFormatting( prayerRequest, prayerRequestService, aiConfig );
+                            try
+                            {
+                                isEntityModified = await ProcessTextFormatting( prayerRequest, prayerRequestService, aiConfig );
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( ex );
+                            }
                         }
 
                         // Analysis completions are items like auto-categorization and sentiment classification.
                         if ( hasAnalysisCompletions )
                         {
-                            isEntityModified = await ProcessAnalysis( prayerRequest, prayerRequestService, aiConfig ) || isEntityModified;
+                            try
+                            {
+                                isEntityModified = await ProcessAnalysis( prayerRequest, prayerRequestService, aiConfig ) || isEntityModified;
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( ex );
+                            }
                         }
 
                         // Moderation - looking for harmful or offensive content.
                         if ( aiConfig.EnableAIModeration )
                         {
-                            isEntityModified = await ProcessModeration( prayerRequest, aiConfig ) || isEntityModified;
+                            try
+                            {
+                                isEntityModified = await ProcessModeration( prayerRequest, aiConfig ) || isEntityModified;
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( ex );
+                            }
                         }
 
                         if ( isEntityModified )
@@ -254,10 +275,16 @@ namespace Rock.Model
                     Model = "omni-moderation-latest"
                 } );
 
-                var wasModified = prayerRequest.ModerationFlags != ( long ) moderations.ModerationsResponseCategories.ModerationFlags;
+                // If there are no response categories then something went wrong - don't make any changes.
+                if ( moderations?.ModerationsResponseCategories == null )
+                {
+                    return false;
+                }
+
+                var wasModified = prayerRequest.ModerationFlags != moderations.ModerationsResponseCategories.ModerationFlags;
 
                 // Set the bit mask of detected moderation flags.
-                prayerRequest.ModerationFlags = ( long ) moderations.ModerationsResponseCategories.ModerationFlags;
+                prayerRequest.ModerationFlags = moderations.ModerationsResponseCategories.ModerationFlags;
 
                 // If there were any detected moderation flags and we have a moderation workflow
                 // then launch the workflow and return true to indicate the entity was modified.

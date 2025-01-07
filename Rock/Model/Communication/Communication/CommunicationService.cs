@@ -722,6 +722,43 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Send all real time notifications for a conversation that has had
+        /// a change to its read status on a new background Task.
+        /// </summary>
+        /// <param name="conversationKey">The key that identifies the conversation that was read.</param>
+        /// <param name="readStatus">The read status that the conversation was changed to.</param>
+        internal static void SendConversationReadStatusChangedRealTimeNotificationsInBackground( string conversationKey, bool readStatus )
+        {
+            Task.Run( async () =>
+            {
+                try
+                {
+                    await SendConversationReadStatusChangedRealTimeNotificationsAsync( conversationKey, readStatus );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
+            } );
+        }
+
+        /// <summary>
+        /// Send all real time notifications for a conversation that had a change to its read status.
+        /// </summary>
+        /// <param name="conversationKey">The key that identifies the conversation that was changed.</param>
+        /// <param name="readStatus">The read status that the conversation was changed to.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        internal static async Task SendConversationReadStatusChangedRealTimeNotificationsAsync( string conversationKey, bool readStatus )
+        {
+            var channelName = RealTime.Topics.ConversationParticipantTopic.GetChannelForConversationKey( conversationKey );
+
+            await RealTime.RealTimeHelper.GetTopicContext<RealTime.Topics.IConversationParticipant>()
+                .Clients
+                .Channel( channelName )
+                .ConversationReadStatusChanged( conversationKey, readStatus );
+        }
+
+        /// <summary>
         /// Sends out a push notification to all of the devices that should
         /// receive one about the response that was just submitted. This
         /// operation is performed on a new background Task.

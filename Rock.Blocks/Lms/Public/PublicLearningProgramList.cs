@@ -100,7 +100,7 @@ namespace Rock.Blocks.Lms
         Order = 5 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "59d82730-e4a7-4aaf-bb1e-bec4b7aa8624" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2fc656da-7f5d-41b3-ad18-bfe692cfca57" )]
+    [Rock.SystemGuid.BlockTypeGuid( "DA1460D8-E895-4B23-8A8E-10EBBED3990F" )]
     public class PublicLearningProgramList : RockBlockType
     {
         #region Keys

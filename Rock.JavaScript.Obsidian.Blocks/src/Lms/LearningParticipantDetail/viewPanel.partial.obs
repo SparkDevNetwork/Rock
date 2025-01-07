@@ -86,6 +86,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -113,6 +114,8 @@
         const gradePercentText = currentGradePercent.value ? `(${currentGradePercent.value}%)` : "";
         return currentGradeText.value ? `${currentGradeText.value} ${gradePercentText}` : gradePercentText;
     });
+
+    const isAcademicCalendarMode = computed(() => props.options.configurationMode === ConfigurationMode.AcademicCalendar);
 
     // #endregion
 
@@ -143,7 +146,7 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.absences != null) {
+        if (isAcademicCalendarMode.value === true && props.modelValue.absences != null) {
             valueBuilder.addHtmlValue("Absences", `<div class='label label-${props.modelValue.absencesLabelStyle}'>${props.modelValue.absences}</div>`);
         }
 

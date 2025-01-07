@@ -326,7 +326,11 @@ findme-interactiontest3
             // Process the transaction queue to ensure that the interactions are created.
             var exceptions = new List<Exception>();
             Rock.Transactions.RockQueue.Drain( ( e ) => { exceptions.Add( e ); } );
-            Assert.IsTrue( exceptions.Count == 0, "Interaction transaction processing failed." );
+
+            if ( exceptions.Count > 0 )
+            {
+                throw new AggregateException( exceptions );
+            }
 
             // Verify the interactions are assigned to the correct channel and component.
             Interaction interaction;

@@ -102,7 +102,8 @@ namespace Rock.Model
             }
 
             var studentCount = participantService.GetStudents( learningClass.Id ).Count();
-            if ( studentCount >= learningClass.LearningCourse.MaxStudents )
+            var maxStudentsAllowed = learningClass.GroupCapacity ?? learningClass.LearningCourse.MaxStudents;
+            if ( studentCount >= maxStudentsAllowed )
             {
                 errorKey = ErrorKey.CLASS_FULL;
                 return false;
@@ -119,7 +120,7 @@ namespace Rock.Model
 
         /// <summary>
         /// <para>Gets a list of <see cref="LearningActivity">Activities</see> for the course that the <see cref="LearningParticipant"/>
-        /// is enrolled in.</para>.
+        /// is enrolled in.</para>
         /// This method will return only assignments for the role type (e.g. Student assignments when the Participant role type is not a leader).
         /// </summary>
         /// <param name="participantId">The Id of the <see cref="LearningParticipant"/> for which to get activities.</param>

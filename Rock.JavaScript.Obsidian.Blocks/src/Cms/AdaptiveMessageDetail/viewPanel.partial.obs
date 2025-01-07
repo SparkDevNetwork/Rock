@@ -69,7 +69,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { NavigationUrlKey } from "./types.partial";
-    import Grid, { LabelColumn, TextColumn, DeleteColumn, ReorderColumn, EditColumn } from "@Obsidian/Controls/grid";
+    import Grid, { LabelColumn, TextColumn, DeleteColumn, ReorderColumn, EditColumn, NumberColumn } from "@Obsidian/Controls/grid";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { Guid } from "@Obsidian/Types";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -201,9 +201,8 @@
 
         if (result.isSuccess) {
             if (adaptationsGridDataSource) {
-                const index = adaptationsGridDataSource.value.rows?.findIndex(r => r["idKey"] === key);
-
-                if (index && index !== -1) {
+                const index = adaptationsGridDataSource.value.rows?.findIndex(r => r["idKey"] === key) ?? -1;
+                if (index > -1) {
                     adaptationsGridDataSource.value.rows?.splice(index, 1);
                 }
             }

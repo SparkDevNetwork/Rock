@@ -385,9 +385,9 @@ namespace Rock.Model
 
                 // If the person was just added then the _primaryAliasId will be null ergo the value will be null
                 // in the database so update.
-                if ( !this.Entity._primaryAliasId.HasValue )
+                if ( !this.Entity._primaryAliasId.HasValue || !this.Entity._primaryAliasGuid.HasValue )
                 {
-                    PersonService.UpdatePrimaryAlias( this.Entity.Id, this.Entity.PrimaryAliasId.Value, RockContext );
+                    PersonService.UpdatePrimaryAlias( this.Entity.Id, this.Entity.PrimaryAliasId.Value, this.Entity.PrimaryAliasGuid.Value, RockContext );
                 }
 
                 if ( this.Entity.Age.HasValue && ( this.PreSaveState == EntityContextState.Added || this.Entity.Age != Entry.OriginalValues[nameof( Person.Age )].ToStringSafe().AsIntegerOrNull() ) )

@@ -43,9 +43,22 @@ namespace Rock.Model
                     
                     if ( !Entity.LearningClasses.Any() )
                     {
-                        var defaultSemesterId = programService.GetDefaultSemester( Entity.LearningProgramId )?.Id;
-                        var passFailGradingSystemId = 1;
                         var lmsClassGroupTypeId = new GroupTypeService( RockContext ).GetId( SystemGuid.GroupType.GROUPTYPE_LMS_CLASS.AsGuid() ).ToIntSafe();
+                        var defaultSemesterId = programService.GetDefaultSemester( Entity.LearningProgramId )?.Id;
+
+                        // Use the default grading system specified by the LearningProgram (if any).
+                        var defaultGradingSystemId = programService.GetSelect( Entity.LearningProgramId, p => p.DefaultLearningGradingSystemId ).ToIntSafe();
+                        if ( defaultGradingSystemId == 0 )
+                        {
+                            // If no default grading system was specified by the program
+                            // use the first active system (sorted by name).
+                            defaultGradingSystemId = new LearningGradingSystemService( RockContext )
+                                .Queryable()
+                                .Where( g => g.IsActive )
+                                .OrderBy( g => g.Name )
+                                .Select( g => g.Id )
+                                .FirstOrDefault();
+                        }
 
                         Entity.LearningClasses = new List<LearningClass>
                         {
@@ -55,7 +68,7 @@ namespace Rock.Model
                                 Guid = Guid.NewGuid(),
                                 LearningCourseId = Entity.Id,
                                 LearningSemesterId = defaultSemesterId,
-                                LearningGradingSystemId = passFailGradingSystemId,
+                                LearningGradingSystemId = defaultGradingSystemId,
                                 GroupTypeId = lmsClassGroupTypeId,
                                 IsActive = true,
                             }

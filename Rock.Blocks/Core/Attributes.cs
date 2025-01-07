@@ -601,8 +601,8 @@ namespace Rock.Blocks.Core
         /// Saves the updated information from an editable attribute.
         /// </summary>
         /// <param name="entityTypeGuid">The entity type unique identifier used when creating a new attribute.</param>
-        /// <param name="entityQualifierColumn">The entity qualifier column used when creating a new attribute.</param>
-        /// <param name="entityQualifierValue">The entity qualifier value used when creating a new attribute.</param>
+        /// <param name="entityTypeQualifierColumn">The entity qualifier column used when creating a new attribute.</param>
+        /// <param name="entityTypeQualifierValue">The entity qualifier value used when creating a new attribute.</param>
         /// <param name="attribute">The attribute to be created or updated.</param>
         /// <returns></returns>
         [BlockAction]

@@ -131,6 +131,7 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AttributeMatrixId = source.AttributeMatrixId;
+            target.AttributeMatrixTemplateId = source.AttributeMatrixTemplateId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.Order = source.Order;

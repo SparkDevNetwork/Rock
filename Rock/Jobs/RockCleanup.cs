@@ -964,12 +964,13 @@ namespace Rock.Jobs
                 // Update Person records that have an empty or placeholder PrimaryAlias reference.
                 var people = personService.Queryable( personSearchOptions )
                     .Include( p => p.Aliases )
-                    .Where( p => p.PrimaryAliasId == null || p.PrimaryAliasId == 0 )
+                    .Where( p => p.PrimaryAliasId == null || p.PrimaryAliasId == 0 || p.PrimaryAliasGuid == null )
                     .Take( 300 );
 
                 foreach ( var person in people )
                 {
                     person.PrimaryAliasId = person.PrimaryAlias?.Id;
+                    person.PrimaryAliasGuid = person.PrimaryAlias?.Guid;
                     resultCount++;
                 }
 

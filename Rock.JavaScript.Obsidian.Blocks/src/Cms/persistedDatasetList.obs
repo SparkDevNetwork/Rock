@@ -74,9 +74,15 @@
 
     <GridPreviewModal :modelValue="previewModalData" />
 
-    <ModalAlert v-model="showRefreshError" type="Warning">
+    <Modal v-model="showRefreshError" title="Warning" cancelText="OK" @close="showRefreshError = false">
+        <NotificationBox alertType="warning">
+            Error building Dataset object from the JSON generated from the Build Script
+        </NotificationBox>
+        <NotificationBox v-if="refreshMaxLengthWarning" alertType="info">
+            {{ refreshMaxLengthWarning }}
+        </NotificationBox>
         <div v-html="refreshErrorMessage"></div>
-    </ModalAlert>
+    </Modal>
 </template>
 
 <script setup lang="ts">
@@ -89,9 +95,9 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./PersistedDatasetList/types.partial";
     import { reactive, ref } from "vue";
-    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import GridPreviewModal from "./PersistedDatasetList/gridPreviewModal.partial.obs";
-    import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
     const config = useConfigurationValues<ListBlockBox<PersistedDatasetListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -103,8 +109,9 @@
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const previewModalData = ref<Record<string, any> | null>(null);
-    const showRefreshError = ref<boolean>();
-    const refreshErrorMessage = ref<string>();
+    const showRefreshError = ref<boolean>(false);
+    const refreshMaxLengthWarning = ref<string>("");
+    const refreshErrorMessage = ref<string>("");
 
     // #endregion
 
@@ -179,8 +186,17 @@
     async function onRefreshClick(key: string): Promise<void> {
         const result = await invokeBlockAction("RefreshDataset", { datasetId: key });
         if (!result.isSuccess) {
-            refreshErrorMessage.value = result.errorMessage ?? "Unknown error occurred while refreshing dataset.";
-            showRefreshError.value = true;
+            try {
+                const resultData = JSON.parse(result.errorMessage ?? "{}");
+                refreshErrorMessage.value = resultData.refreshJson ?? result.errorMessage ?? "Unknown error occurred while refreshing dataset.";
+                refreshMaxLengthWarning.value = resultData.refreshMaxLengthWarning;
+            }
+            catch {
+                refreshErrorMessage.value = result.errorMessage ?? "Unknown error occurred while refreshing dataset.";
+            }
+            finally {
+                showRefreshError.value = true;
+            }
         }
         else {
             // Refresh the grid data after successful refresh
@@ -202,7 +218,8 @@
                 jsonData: responseData.previewData,
                 previewMessage: `Time to build Dataset: ${responseData.timeToBuildMS?.toFixed(0)}ms`,
                 previewMessageType: "success",
-                isDataTruncated: responseData.isDataTruncated
+                isDataTruncated: responseData.isDataTruncated,
+                refreshMaxLengthWarning: responseData.refreshMaxLengthWarning
             };
         }
         else {

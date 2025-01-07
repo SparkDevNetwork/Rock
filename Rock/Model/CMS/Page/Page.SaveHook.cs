@@ -46,7 +46,7 @@ namespace Rock.Model
                 {
                     if ( Entity.LayoutId != 0 )
                     {
-                        Entity.SiteId = LayoutCache.Get( Entity.LayoutId, RockContext )?.Id ?? 0;
+                        Entity.SiteId = LayoutCache.Get( Entity.LayoutId, RockContext )?.SiteId ?? 0;
                     }
                 }
                 else if ( State == EntityContextState.Deleted )
@@ -88,7 +88,7 @@ namespace Rock.Model
                     var previousLayoutId = ( int ) Entry.OriginalValues[nameof( Page.LayoutId )];
                     if ( previousLayoutId != Entity.LayoutId && Entity.LayoutId != 0 )
                     {
-                        Entity.SiteId = LayoutCache.Get( Entity.LayoutId, RockContext )?.Id ?? 0;
+                        Entity.SiteId = LayoutCache.Get( Entity.LayoutId, RockContext )?.SiteId ?? 0;
                     }
                 }
 

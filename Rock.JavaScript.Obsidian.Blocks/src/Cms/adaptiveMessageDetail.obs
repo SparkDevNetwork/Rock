@@ -10,7 +10,7 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="AdaptiveMessage"
+                 entityTypeName="Adaptive Message"
                  :isAuditHidden="false"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -71,7 +71,9 @@
         "isActive",
         "key",
         "name",
-        "categories"
+        "categories",
+        "startDate",
+        "endDate"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(adaptiveMessageEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -145,12 +147,15 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!adaptiveMessageEditBag.value?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
+        if (adaptiveMessageEditBag.value?.idKey) {
+            if (config.navigationUrls?.[NavigationUrlKey.CurrentPage]) {
+                return config.navigationUrls[NavigationUrlKey.CurrentPage];
             }
-
-            return false;
+        }
+        else {
+            if (config.navigationUrls?.[NavigationUrlKey.CurrentPageWithoutMessageId]) {
+                return config.navigationUrls[NavigationUrlKey.CurrentPageWithoutMessageId];
+            }
         }
 
         return true;
@@ -193,7 +198,6 @@
         if (result.isSuccess && result.data && result.data.entity) {
             adaptiveMessageEditBag.value = result.data.entity;
             config.options = result.data.options;
-            panelMode.value = DetailPanelMode.Edit;
             return true;
         }
         else {
