@@ -134,25 +134,21 @@ namespace Rock.Blocks.Reporting
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = GetInitializationBox( rockContext );
+            var box = GetInitializationBox();
 
-                box.NavigationUrls = GetBoxNavigationUrls();
+            box.NavigationUrls = GetBoxNavigationUrls();
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
         /// Gets the initialization box.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private InteractionDetailInitializationBox GetInitializationBox( RockContext rockContext )
+        private InteractionDetailInitializationBox GetInitializationBox()
         {
             var interactionId = PageParameter( PageParameterKey.InteractionId ).AsInteger();
-            var interaction = new InteractionService( rockContext ).Get( interactionId );
+            var interaction = new InteractionService( RockContext ).Get( interactionId );
             var box = new InteractionDetailInitializationBox();
 
             if ( interaction != null )
@@ -160,7 +156,7 @@ namespace Rock.Blocks.Reporting
                 IEntity interactionEntity = null;
                 if ( interaction.EntityId.HasValue )
                 {
-                    interactionEntity = GetInteractionEntity( rockContext, interaction );
+                    interactionEntity = GetInteractionEntity( interaction );
                 }
 
                 if ( BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) || interaction.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
@@ -199,16 +195,15 @@ namespace Rock.Blocks.Reporting
         /// <summary>
         /// Gets the Component Entity
         /// </summary>
-        /// <param name="rockContext">The db context.</param>
         /// <param name="interaction">The interaction .</param>
-        private IEntity GetInteractionEntity( RockContext rockContext, Interaction interaction )
+        private IEntity GetInteractionEntity( Interaction interaction )
         {
             IEntity interactionEntity = null;
             var interactionEntityTypeId = interaction.InteractionComponent?.InteractionChannel?.InteractionEntityTypeId;
             if ( interactionEntityTypeId.HasValue )
             {
                 var interactionEntityType = EntityTypeCache.Get( interactionEntityTypeId.Value ).GetEntityType();
-                IService serviceInstance = Reflection.GetServiceForEntityType( interactionEntityType, rockContext );
+                IService serviceInstance = Reflection.GetServiceForEntityType( interactionEntityType, RockContext );
                 if ( serviceInstance != null )
                 {
                     System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
