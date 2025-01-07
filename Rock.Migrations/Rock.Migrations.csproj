@@ -116,6 +116,10 @@
     <Compile Include="Migrations\202501061756492_AddMissingConstraintsForRestViewSupport.Designer.cs">
       <DependentUpon>202501061756492_AddMissingConstraintsForRestViewSupport.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202501070941039_AddPrimaryAliasGuidToPerson.cs" />
+    <Compile Include="Migrations\202501070941039_AddPrimaryAliasGuidToPerson.Designer.cs">
+      <DependentUpon>202501070941039_AddPrimaryAliasGuidToPerson.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2424,6 +2428,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202501061756492_AddMissingConstraintsForRestViewSupport.resx">
       <DependentUpon>202501061756492_AddMissingConstraintsForRestViewSupport.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501070941039_AddPrimaryAliasGuidToPerson.resx">
+      <DependentUpon>202501070941039_AddPrimaryAliasGuidToPerson.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
