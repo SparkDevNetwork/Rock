@@ -49,10 +49,11 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Groups.
     /// </summary>
     [RoutePrefix( "api/v2/models/groups" )]
-    [SecurityAction( Security.Authorization.EXECUTE_VIEW, "Allows execution of API endpoints in the context of viewing data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_EDIT, "Allows execution of API endpoints in the context of editing data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, "Allows execution of API endpoints in the context of viewing data without performing per-entity security checks." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT, "Allows execution of API endpoints in the context of editing data without performing per-entity security checks." )]
+    [SecurityAction( Security.Authorization.EXECUTE_READ, "Allows execution of API endpoints in the context of reading data." )]
+    [SecurityAction( Security.Authorization.EXECUTE_WRITE, "Allows execution of API endpoints in the context of writing data." )]
+    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of reading data without performing per-entity security checks." )]
+    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of writing data without performing per-entity security checks." )]
+    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "17d543a1-3ffa-5a17-8b00-0b3d11efd5c5" )]
     public partial class GroupsController : ApiControllerBase
     {
@@ -63,8 +64,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>The requested item.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Rock.Model.Group ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -75,7 +76,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new RestApiHelper<Rock.Model.Group, Rock.Model.GroupService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.Get( id );
         }
@@ -87,8 +88,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An object that contains the new identifier values.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [Route( "" )]
         [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -99,7 +100,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new RestApiHelper<Rock.Model.Group, Rock.Model.GroupService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
             return helper.Create( value );
         }
@@ -113,8 +114,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An empty response.</returns>
         [HttpPut]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -125,7 +126,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new RestApiHelper<Rock.Model.Group, Rock.Model.GroupService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
             return helper.Update( id, value );
         }
@@ -139,8 +140,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An empty response.</returns>
         [HttpPatch]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -151,7 +152,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new RestApiHelper<Rock.Model.Group, Rock.Model.GroupService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
             return helper.Patch( id, values );
         }
@@ -163,8 +164,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An empty response.</returns>
         [HttpDelete]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -175,7 +176,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new RestApiHelper<Rock.Model.Group, Rock.Model.GroupService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
             return helper.Delete( id );
         }
@@ -187,8 +188,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects that represent all the attribute values.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "{id}/attributevalues" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -199,7 +200,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new RestApiHelper<Rock.Model.Group, Rock.Model.GroupService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.GetAttributeValues( id );
         }
@@ -213,8 +214,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An empty response.</returns>
         [HttpPatch]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_EDIT )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [Route( "{id}/attributevalues" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -225,7 +226,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new RestApiHelper<Rock.Model.Group, Rock.Model.GroupService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
             return helper.PatchAttributeValues( id, values );
         }
@@ -237,8 +238,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "search" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [SystemGuid.RestActionGuid( "4056e85b-a3ef-537a-a8c8-88f866dd7f95" )]
@@ -256,8 +257,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -267,7 +268,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new RestApiHelper<Rock.Model.Group, Rock.Model.GroupService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.Search( searchKey, null );
         }
@@ -280,8 +281,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -292,7 +293,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new RestApiHelper<Rock.Model.Group, Rock.Model.GroupService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.Search( searchKey, query );
         }

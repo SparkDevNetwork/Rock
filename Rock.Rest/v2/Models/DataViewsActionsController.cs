@@ -46,10 +46,10 @@ namespace Rock.Rest.v2.Models
     /// Provides action API endpoints for DataViews.
     /// </summary>
     [RoutePrefix( "api/v2/models/dataviews/actions" )]
-    [SecurityAction( Security.Authorization.EXECUTE_VIEW, "Allows execution of API endpoints in the context of viewing data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_EDIT, "Allows execution of API endpoints in the context of editing data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, "Allows execution of API endpoints in the context of viewing data without performing per-entity security checks." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT, "Allows execution of API endpoints in the context of editing data without performing per-entity security checks." )]
+    [SecurityAction( Security.Authorization.EXECUTE_READ, "Allows execution of API endpoints in the context of viewing data." )]
+    [SecurityAction( Security.Authorization.EXECUTE_WRITE, "Allows execution of API endpoints in the context of editing data." )]
+    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of viewing data without performing per-entity security checks." )]
+    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of editing data without performing per-entity security checks." )]
     [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "4a4d3972-248d-4482-bf99-6e0719ab122f" )]
     public class DataViewsActionsController : ApiControllerBase
@@ -63,8 +63,8 @@ namespace Rock.Rest.v2.Models
         [Route( "contains/{id}/{entityId}" )]
         [HttpGet]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT,  Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE,  Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( bool ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -82,7 +82,7 @@ namespace Rock.Rest.v2.Models
                     return NotFound( "The data view was not found." );
                 }
 
-                var isAuthorized = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )
+                var isAuthorized = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ )
                     || dataView.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson );
 
                 if ( !isAuthorized )
@@ -119,8 +119,8 @@ namespace Rock.Rest.v2.Models
         [Route( "contents/{id}" )]
         [HttpGet]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ItemIdentifierBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -138,7 +138,7 @@ namespace Rock.Rest.v2.Models
                     return NotFound( "The data view was not found." );
                 }
 
-                var isAuthorized = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )
+                var isAuthorized = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ )
                     || dataView.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson );
 
                 if ( !isAuthorized )

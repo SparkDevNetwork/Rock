@@ -185,30 +185,30 @@ namespace Rock.Security
         #region API Security Actions
 
         /// <summary>
-        /// Authorization to execute API endpoints in the context of viewing data.
+        /// Authorization to execute API endpoints in the context of reading data.
         /// This is used by API endpoints.
         /// </summary>
-        public const string EXECUTE_VIEW = "ExecuteView";
+        public const string EXECUTE_READ = "ExecuteRead";
 
         /// <summary>
-        /// Authorization to execute API endpoints in the context of editing data.
+        /// Authorization to execute API endpoints in the context of writing data.
         /// This is used by API endpoints.
         /// </summary>
-        public const string EXECUTE_EDIT = "ExecuteEdit";
+        public const string EXECUTE_WRITE = "ExecuteWrite";
 
         /// <summary>
-        /// Authorization to execute API endpoints in the context of viewing data.
+        /// Authorization to execute API endpoints in the context of reading data.
         /// Security on individual entities is not checked. This is used by API
         /// endpoints.
         /// </summary>
-        public const string EXECUTE_UNRESTRICTED_VIEW = "ExecuteUnrestrictedView";
+        public const string EXECUTE_UNRESTRICTED_READ = "ExecuteUnrestrictedRead";
 
         /// <summary>
-        /// Authorization to execute API endpoints in the context of editing data.
+        /// Authorization to execute API endpoints in the context of writing data.
         /// Security on individual entities is not checked. This is used by API
         /// endpoints.
         /// </summary>
-        public const string EXECUTE_UNRESTRICTED_EDIT = "ExecuteUnrestrictedEdit";
+        public const string EXECUTE_UNRESTRICTED_WRITE = "ExecuteUnrestrictedWrite";
 
         #endregion
 

@@ -87,17 +87,13 @@ namespace Rock.CodeGeneration.FileGenerators
 
             if ( !disableEntitySecurity )
             {
-                codeBuilder.AppendLine( "[SecurityAction( Security.Authorization.EXECUTE_VIEW, \"Allows execution of API endpoints in the context of viewing data.\" )]" );
-                codeBuilder.AppendLine( "[SecurityAction( Security.Authorization.EXECUTE_EDIT, \"Allows execution of API endpoints in the context of editing data.\" )]" );
+                codeBuilder.AppendLine( "[SecurityAction( Security.Authorization.EXECUTE_READ, \"Allows execution of API endpoints in the context of reading data.\" )]" );
+                codeBuilder.AppendLine( "[SecurityAction( Security.Authorization.EXECUTE_WRITE, \"Allows execution of API endpoints in the context of writing data.\" )]" );
             }
 
-            codeBuilder.AppendLine( "[SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, \"Allows execution of API endpoints in the context of viewing data without performing per-entity security checks.\" )]" );
-            codeBuilder.AppendLine( "[SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT, \"Allows execution of API endpoints in the context of editing data without performing per-entity security checks.\" )]" );
-
-            if ( disableEntitySecurity )
-            {
-                codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]" );
-            }
+            codeBuilder.AppendLine( "[SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, \"Allows execution of API endpoints in the context of reading data without performing per-entity security checks.\" )]" );
+            codeBuilder.AppendLine( "[SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, \"Allows execution of API endpoints in the context of writing data without performing per-entity security checks.\" )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]" );
 
             codeBuilder.AppendLine( $"[Rock.SystemGuid.RestControllerGuid( \"{controllerGuid}\" )]" );
             codeBuilder.AppendLine( $"public partial class {modelTypeName.Pluralize()}Controller : ApiControllerBase" );
@@ -205,7 +201,7 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
         private static void GenerateGetItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
-            var securityAction = disableEntitySecurity ? "EXECUTE_UNRESTRICTED_VIEW" : "EXECUTE_VIEW";
+            var securityAction = disableEntitySecurity ? "EXECUTE_UNRESTRICTED_READ" : "EXECUTE_READ";
 
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Gets a single item from the database." );
@@ -215,7 +211,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[HttpGet]" );
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[Route( \"{id}\" )]" );
             codeBuilder.AppendLine( $"[ProducesResponseType( HttpStatusCode.OK, Type = typeof( {modelTypeFullName} ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
@@ -235,7 +231,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 }
                 else
                 {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );" );
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );" );
                 }
 
                 codeBuilder.AppendLine();
@@ -260,8 +256,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <returns>An object that contains the new identifier values.</returns>" );
             codeBuilder.AppendLine( "[HttpPost]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_EDIT )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_WRITE )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[Route( \"\" )]");
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
@@ -281,7 +277,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 }
                 else
                 {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );" );
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );" );
                 }
 
                 codeBuilder.AppendLine();
@@ -308,8 +304,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <returns>An empty response.</returns>" );
             codeBuilder.AppendLine( "[HttpPut]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_EDIT )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_WRITE )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[Route( \"{id}\" )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NoContent )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
@@ -329,7 +325,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 }
                 else
                 {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );" );
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );" );
                 }
 
                 codeBuilder.AppendLine();
@@ -356,8 +352,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <returns>An empty response.</returns>" );
             codeBuilder.AppendLine( "[HttpPatch]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_EDIT )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_WRITE )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[Route( \"{id}\" )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NoContent )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
@@ -377,7 +373,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 }
                 else
                 {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );" );
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );" );
                 }
 
                 codeBuilder.AppendLine();
@@ -402,8 +398,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <returns>An empty response.</returns>" );
             codeBuilder.AppendLine( "[HttpDelete]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_EDIT )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_WRITE )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[Route( \"{id}\" )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NoContent )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
@@ -423,7 +419,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 }
                 else
                 {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );" );
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );" );
                 }
 
                 codeBuilder.AppendLine();
@@ -448,8 +444,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <returns>An array of objects that represent all the attribute values.</returns>" );
             codeBuilder.AppendLine( "[HttpGet]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_VIEW )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_READ )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[Route( \"{id}/attributevalues\" )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
@@ -469,7 +465,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 }
                 else
                 {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );" );
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );" );
                 }
 
                 codeBuilder.AppendLine();
@@ -496,8 +492,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <returns>An empty response.</returns>" );
             codeBuilder.AppendLine( "[HttpPatch]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_EDIT )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_WRITE )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[Route( \"{id}/attributevalues\" )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NoContent )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
@@ -517,7 +513,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 }
                 else
                 {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );" );
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );" );
                 }
 
                 codeBuilder.AppendLine();
@@ -542,8 +538,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <returns>An array of objects returned by the query.</returns>" );
             codeBuilder.AppendLine( "[HttpPost]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[Route( \"search\" )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
@@ -574,8 +570,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <returns>An array of objects returned by the query.</returns>" );
             codeBuilder.AppendLine( "[HttpGet]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_VIEW )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_READ )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[Route( \"search/{searchKey}\" )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
@@ -594,7 +590,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 }
                 else
                 {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );" );
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );" );
                 }
 
                 codeBuilder.AppendLine();
@@ -620,8 +616,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <returns>An array of objects returned by the query.</returns>" );
             codeBuilder.AppendLine( "[HttpPost]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_VIEW )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_READ )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[Route( \"search/{searchKey}\" )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
@@ -641,7 +637,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 }
                 else
                 {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );" );
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );" );
                 }
 
                 codeBuilder.AppendLine();
