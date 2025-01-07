@@ -8,6 +8,7 @@
           :expectedRowCount="10"
           :isCountMessageVisible="false"
           stickyHeader
+          :markInactiveRows="true"
           liveUpdates
           :onSelectItem="onRowClicked"
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
