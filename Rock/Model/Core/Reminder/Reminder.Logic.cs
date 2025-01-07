@@ -169,7 +169,14 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return $"Reminder: {this.ReminderType.Name}";
+            if ( this.ReminderType != null )
+            {
+                return $"Reminder: {this.ReminderType.Name}";
+            }
+            else
+            {
+                return base.ToString();
+            }
         }
 
         #endregion Public Methods

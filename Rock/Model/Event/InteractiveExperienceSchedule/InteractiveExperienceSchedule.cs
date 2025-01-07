@@ -170,7 +170,14 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return $"{InteractiveExperience.Name} ({Schedule.ToFriendlyScheduleText( true )})";
+            if ( InteractiveExperience != null && Schedule != null )
+            {
+                return $"{InteractiveExperience.Name} ({Schedule.ToFriendlyScheduleText( true )})";
+            }
+            else
+            {
+                return base.ToString();
+            }
         }
 
         #endregion
