@@ -745,6 +745,7 @@
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormFieldShowHide.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerBag.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerDetailBox.cs" />
+    <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerDetailOptionsBag.cs" />
     <Compile Include="CheckIn\AbilityLevelOpportunityBag.cs" />
     <Compile Include="CheckIn\AchievementBag.cs" />
     <Compile Include="CheckIn\AttendanceRequestBag.cs" />
