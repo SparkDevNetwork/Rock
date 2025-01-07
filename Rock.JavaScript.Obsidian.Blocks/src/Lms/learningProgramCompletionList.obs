@@ -14,7 +14,6 @@
           stickyHeader
           liveUpdates
           @selectItem="onSelectItem">
-        <SelectColumn />
 
         <PersonColumn
                       name="individual"
@@ -82,7 +81,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { textValueFilter, dateValueFilter, pickExistingValueFilter, Column, TextColumn, DateColumn, PersonColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { textValueFilter, dateValueFilter, pickExistingValueFilter, Column, TextColumn, DateColumn, PersonColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningProgramCompletionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramCompletionList/learningProgramCompletionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";

@@ -93,7 +93,8 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningProgramCompletionListOptionsBag();
 
-            var configurationMode = new LearningProgramService( RockContext ).GetSelect( PageParameter( PageParameterKey.LearningProgramId ), p => p.ConfigurationMode );
+            var configurationMode = new LearningProgramService( RockContext )
+                .GetSelect( PageParameter( PageParameterKey.LearningProgramId ), p => p.ConfigurationMode );
 
             options.ShowSemesterColumn = configurationMode == ConfigurationMode.AcademicCalendar;
 
@@ -120,19 +121,19 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningProgramCompletion> GetListQueryable( RockContext rockContext )
         {
+            var programId = new LearningProgramService( rockContext )
+                .GetSelect(
+                    PageParameter( PageParameterKey.LearningProgramId ),
+                    p => p.Id,
+                    !this.PageCache.Layout.Site.DisablePredictableIds );
+
             var queryable = base.GetListQueryable( rockContext )
                 .Include( a => a.PersonAlias )
                 .Include( a => a.PersonAlias.Person )
-                .Include( a => a.LearningProgram );
+                .Include( a => a.LearningProgram )
+                .Where( a => a.LearningProgramId == programId );
 
-            var contextProgram = RequestContext.GetContextEntity<LearningProgram>();
-
-            if ( contextProgram?.Id > 0 )
-            {
-                queryable = queryable.Where( a => a.LearningProgramId == contextProgram.Id );
-            }
-
-            return queryable.OrderBy( a => a.PersonAlias.Person.NickName ).ThenBy( a => a.PersonAlias.Person.LastName );
+            return queryable;
         }
 
         /// <inheritdoc/>
@@ -147,7 +148,13 @@ namespace Rock.Blocks.Lms
                 .AddDateTimeField( "endDate", a => a.EndDate )
                 .AddField( "status", a => a.CompletionStatus );
 
-            if ( RequestContext.GetContextEntity<LearningProgram>()?.ConfigurationMode == ConfigurationMode.AcademicCalendar )
+            var configurationMode = new LearningProgramService( RockContext )
+                .GetSelect(
+                    PageParameter( PageParameterKey.LearningProgramId ),
+                    p => p.ConfigurationMode,
+                    !this.PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( configurationMode == ConfigurationMode.AcademicCalendar )
             {
                 grid.AddTextField( "semester", a => a.LearningProgram.LearningSemesters?
                     .FirstOrDefault( s =>
