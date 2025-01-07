@@ -39,7 +39,10 @@ export const FamilySearchMode = {
     /** Search for family based on a barcode, proximity card, etc. */
     ScannedId: 3,
 
-    /** Search for family based on a Family Id. */
+    /**
+     * Search for family based on a Family Id. This must currently be
+     * the encrypted IdKey value.
+     */
     FamilyId: 4
 } as const;
 

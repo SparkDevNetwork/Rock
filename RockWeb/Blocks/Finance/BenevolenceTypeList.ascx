@@ -6,17 +6,12 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title"><i class="fa fa-plug"></i>Benevolence Types</h1>
-
-                <div class="panel-labels">
-                    <asp:LinkButton ID="lbAddBenevolenceType" runat="server" CssClass="btn btn-action btn-xs btn-square" OnClick="lbAddBenevolenceType_Click" CausesValidation="false" Title="Add Benevolence Type"><i class="fa fa-plus"></i></asp:LinkButton>
-                </div>
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">
                     <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-                    <Rock:Grid ID="gBenevolenceType" runat="server" RowItemText="Benevolence Type" OnRowSelected="gBenevolenceType_Edit" TooltipField="Id" >
+                    <Rock:Grid ID="gBenevolenceType" runat="server" RowItemText="Benevolence Type" OnRowSelected="gBenevolenceType_Edit" TooltipField="Id" CssClass="js-grid-benevolence-type-list">
                         <Columns>
-                            <Rock:ReorderField />
                             <Rock:RockBoundField DataField="Id" HeaderText="Id" SortExpression="Id" Visible="false" />
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name"  />
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />

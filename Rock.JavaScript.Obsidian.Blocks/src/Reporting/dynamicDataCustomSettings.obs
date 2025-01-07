@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Modal v-model="isModalOpen" title="Configuration" :saveText="saveButtonText" @save="onSave">
+    <Modal v-model="isModalOpen" title="Dynamic Data Settings" :saveText="saveButtonText" @save="onSave">
 
         <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
             {{ errorMessage }}
@@ -373,10 +373,6 @@
 
     const saveButtonText = computed((): string => {
         return errorMessage.value || (!isLoading.value && !isDisabled.value) ? "Save" : "";
-    });
-
-    const securityGrantToken = computed((): string | null => {
-        return securityGrant.token.value;
     });
 
     // #endregion Computed Values

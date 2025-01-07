@@ -5,20 +5,27 @@
                    name="colorpicker">
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
+                <slot name="prepend" :isInputGroupSupported="true" />
+
                 <div ref="colorPicker" class="input-group input-width-lg">
+                    <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
+
                     <input v-model="internalValue" :id="uniqueId" type="text" class="form-control" v-bind="field" :placeholder="placeholder" />
                     <span class="input-group-addon">
                         <i></i>
                     </span>
+
+                    <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                 </div>
+
+                <slot name="append" :isInputGroupSupported="true" />
             </div>
         </template>
     </RockFormField>
 </template>
 
 <script setup lang="ts">
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { onMounted, PropType, ref } from "vue";
+    import { onMounted, PropType, ref, watch } from "vue";
     import RockFormField from "./rockFormField.obs";
 
     // TODO: This should be replaced with a version that does not require jQuery.
@@ -38,19 +45,49 @@
         (e: "update:modelValue", value: string): void;
     }>();
 
-    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    // The color picker wants things in lower case.
+    const internalValue = ref(props.modelValue.toLowerCase());
     const colorPicker = ref<HTMLElement>();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let $colorPicker: any;
+
+    watch(() => props.modelValue, () => {
+        if (props.modelValue) {
+            if (props.modelValue !== internalValue.value) {
+                $colorPicker?.colorpicker("setValue", props.modelValue);
+            }
+        }
+        else if ($colorPicker) {
+            // When we try to call setValue with an emptys tring it freaks out
+            // and puts "#aN" in the text box.
+            const c = $colorPicker?.data("colorpicker").createColor("");
+            $colorPicker.data("colorpicker").color = c;
+            $colorPicker?.data("colorpicker").updateComponent("transparent");
+        }
+
+        internalValue.value = props.modelValue;
+    });
+
+    watch(internalValue, () => {
+        if (props.modelValue !== internalValue.value) {
+            emit("update:modelValue", internalValue.value);
+        }
+    });
 
     onMounted(() => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const $colorPicker = (<any>window[<any>"$"])(colorPicker.value);
+        $colorPicker = (<any>window[<any>"$"])(colorPicker.value);
 
         $colorPicker.colorpicker();
 
         // Vue will not detect the change if it happens from jQuery, so we need
         // to detect the change and make sure Vue knows.
-        $colorPicker.find("> input").on("change", () => {
-            internalValue.value = <string>$colorPicker.find("> input").val();
+        $colorPicker.on("changeColor", () => {
+            const newValue = <string>$colorPicker.find("> input").val();
+            if (internalValue.value !== newValue) {
+                internalValue.value = newValue;
+            }
         });
     });
 </script>

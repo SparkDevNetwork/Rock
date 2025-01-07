@@ -1,24 +1,30 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="group-select-screen">
-        <MainPanel :title="title">
-            <div v-for="attendance in attendances">
-                {{ attendance.person?.fullName }} was checked out of
-                {{ attendance.group?.name }} in
-                {{ attendance.location?.name }} at
-                {{ attendance.schedule?.name }}.
+        <MainPanel :title="title"
+                   :subtitle="subtitle"
+                   :configuration="configuration">
+            <div class="attendance-cards">
+                <AttendanceCard v-for="attendance in aggregateAttendance"
+                                term="Checked Out"
+                                :attendance="attendance"
+                                :hidePhoto="!!session.configuration.template?.isPhotoHidden" />
+            </div>
+
+            <div class="messages">
+                <div class="message" v-for="msg in session.messages" v-text="msg"></div>
             </div>
         </MainPanel>
     </div>
 </template>
 
 <script setup lang="ts">
+    import AttendanceCard from "./attendanceCard.partial.obs";
     import MainPanel from "./mainPanel.partial.obs";
     import { computed, PropType } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { CheckInSession } from "./checkInSession.partial";
-    import { KioskButton } from "./types.partial";
-    import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
+    import { AggregateAttendance, KioskButton } from "./types.partial";
 
     const props = defineProps({
         configuration: {
@@ -44,11 +50,38 @@
     // #region Computed Values
 
     const title = computed((): string => {
-        return "Checked Out";
+        return "Checkout Complete";
     });
 
-    const attendances = computed((): AttendanceBag[] => {
-        return props.session.checkedOutAttendances;
+    const subtitle = computed((): string => {
+        return "Below are the details of your checkout";
+    });
+
+    const aggregateAttendance = computed((): AggregateAttendance[] => {
+        const items: AggregateAttendance[] = [];
+
+        for (const attendance of props.session.checkedOutAttendances) {
+            if (!attendance.person) {
+                continue;
+            }
+
+            let item = items.find(i => i.person.id === attendance.person?.id);
+
+            if (!item) {
+                item = {
+                    person: attendance.person,
+                    attendances: [],
+                    inProgressAchievements: [],
+                    justCompletedAchievements: []
+                };
+
+                items.push(item);
+            }
+
+            item.attendances.push(attendance);
+        }
+
+        return items;
     });
 
     // #endregion

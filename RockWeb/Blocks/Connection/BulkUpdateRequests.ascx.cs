@@ -182,8 +182,6 @@ namespace RockWeb.Blocks.Connection
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 GetDetails();
@@ -201,6 +199,8 @@ namespace RockWeb.Blocks.Connection
             }
 
             SetControlSelection();
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -695,12 +695,11 @@ namespace RockWeb.Blocks.Connection
         private Dictionary<int, Person> GetConnectors( ConnectionOpportunity connectionOpportunity, RockContext rockContext, List<string> selectedCampuses )
         {
             var selectedCampusIds = selectedCampuses.AsIntegerList();
-            var includeNoCampus = selectedCampuses.Exists( v => v.IsNullOrWhiteSpace() );
 
             var connectors = new Dictionary<int, Person>();
             var connectionOpportunityConnectorPersonList = new ConnectionOpportunityConnectorGroupService( rockContext ).Queryable()
                         .Where( a => a.ConnectionOpportunityId == connectionOpportunity.Id
-                            && ( ( includeNoCampus && !a.CampusId.HasValue ) || selectedCampusIds.Contains( a.CampusId.Value ) ) )
+                            && ( !a.CampusId.HasValue || selectedCampusIds.Contains( a.CampusId.Value ) ) )
                         .SelectMany( a => a.ConnectorGroup.Members )
                         .Where( a => a.GroupMemberStatus == GroupMemberStatus.Active )
                         .Select( a => a.Person )

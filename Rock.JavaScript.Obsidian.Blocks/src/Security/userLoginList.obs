@@ -3,28 +3,26 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           :entityTypeGuid="EntityType.UserLogin"
-          :gridSettingsActive="hasSettingsFilters"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           keyField="idKey"
           title="User Account List"
           itemTerm="Login"
           stickyHeader
           liveUpdates
-          gridSettings
-          @gridSettingsClick="isGridSettingsVisible = true"
           @selectItem="onSelectItem">
 
         <TextColumn name="userName"
                     title="User Name"
                     field="userName"
                     :filter="textValueFilter"
-                    width="25%"
+                    :width="columnWidth"
                     visiblePriority="xs" />
 
-        <PersonColumn name="person"
+        <PersonColumn v-if="!hasPersonContextEntity"
+                      name="person"
                       title="Person"
                       field="person"
-                      width="18%"
+                      width="12%"
                       :hideAvatar="true"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
@@ -35,17 +33,18 @@
         <TextColumn name="provider"
                     title="Provider"
                     field="provider"
-                    width="15%"
+                    :width="columnWidth"
                     :filter="pickExistingValueFilter"
-                    visiblePriority="md"/>
+                    visiblePriority="md" />
 
         <DateColumn name="dateCreated"
                     title="Created"
                     field="dateCreated"
                     :filter="dateValueFilter"
                     visiblePriority="md"
-                    width="150"
-                    itemClass="grid-item-pull-left" />
+                    :width="columnWidth"
+                    headerClass="title-right"
+                    itemClass="justify-content-end text-right" />
 
 
         <DateColumn name="lastLogin"
@@ -53,37 +52,36 @@
                     field="lastLogin"
                     :filter="dateValueFilter"
                     visiblePriority="md"
-                    width="150"
-                    itemClass="grid-item-pull-left" />
+                    :width="columnWidth"
+                    headerClass="title-right"
+                    itemClass="justify-content-end text-right" />
 
         <BooleanColumn name="isConfirmed"
                        title="Confirmed"
                        field="isConfirmed"
                        visiblePriority="md"
                        :filter="booleanValueFilter"
-                       width="120" />
+                       :width="columnWidth" />
 
         <BooleanColumn name="isLockedOut"
                        title="Locked Out"
                        field="isLockedOut"
                        visiblePriority="md"
                        :filter="booleanValueFilter"
-                       width="120" />
+                       :width="columnWidth"/>
 
         <BooleanColumn name="isPasswordChangeRequired"
                        title="Password Change Required"
                        field="isPasswordChangeRequired"
                        :filter="booleanValueFilter"
-                       visiblePriority="md" />
+                       visiblePriority="md"
+                       width="250"/>
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
-
     <Modal v-model="isCreateEditModalOpen" title="Login" saveText="Save" @save="onSaveUserLogin">
-        <div v-if="isPersonPickerVisible" class="row">
+        <div v-if="isPersonPickerVisible || !hasPersonContextEntity" class="row">
             <div class="col-md-6">
                 <PersonPicker v-model="person"
                               label="Person"
@@ -100,18 +98,15 @@
 
                 <CheckBox v-model="isConfirmed"
                           label="Confirmed"
-                          text="Yes"
                           help="Has the user confirmed this login?" />
 
                 <CheckBox v-model="isLockedOut"
                           label="Locked Out"
-                          text="Yes"
                           help="Has the user been locked out of using this login?" />
 
                 <CheckBox v-if="isChangePasswordVisible"
                           v-model="isPasswordChangeRequired"
                           label="Require Password Change"
-                          text="Yes"
                           help="Require the user to change the password on next log in." />
             </div>
             <div class="col-md-6">
@@ -137,14 +132,13 @@
 </template>
 
 <style>
-.grid-item-pull-left {
-    flex-direction: column;
-    align-items: end;
+.title-right .grid-column-title {
+    text-align: right;
 }
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, PersonColumn, DateColumn, dateValueFilter, pickExistingValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
@@ -159,15 +153,12 @@
     import { UserLoginBag } from "@Obsidian/ViewModels/Blocks/Security/UserLoginList/userLoginBag";
     import { AuthenticationComponentBag } from "@Obsidian/ViewModels/Blocks/Security/UserLoginList/authenticationComponentBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PreferenceKey, GridSettingsOptions } from "./UserLoginList/types.partial";
-    import GridSettingsModal from "./UserLoginList/gridSettingsModal.partial.obs";
     import { reactive, ref, computed, watch } from "vue";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<UserLoginListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
@@ -191,40 +182,24 @@
     const isPasswordControlsVisible = ref(false);
     const isPasswordRequired = ref(true);
 
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        username: preferences.getValue(PreferenceKey.FilterUsername),
-        authenticationProvider: JSON.parse(preferences.getValue(PreferenceKey.FilterAuthenticationProvider) || "{}"),
-        dateCreatedLowerValue: preferences.getValue(PreferenceKey.FilterDateCreatedLowerValue),
-        dateCreatedUpperValue: preferences.getValue(PreferenceKey.FilterDateCreatedUpperValue),
-        lastLoginDateLowerValue: preferences.getValue(PreferenceKey.FilterLastLoginDateLowerValue),
-        lastLoginDateUpperValue: preferences.getValue(PreferenceKey.FilterLastLoginDateUpperValue),
-        isConfirmed: preferences.getValue(PreferenceKey.FilterIsConfirmed),
-        isLockedOut: preferences.getValue(PreferenceKey.FilterIsLockedOut),
-    });
-
     // #endregion
 
     // #region Computed Values
 
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.username
-            || !!gridSettings.value.authenticationProvider?.value
-            || !!gridSettings.value.dateCreatedLowerValue
-            || !!gridSettings.value.dateCreatedUpperValue
-            || !!gridSettings.value.lastLoginDateLowerValue
-            || !!gridSettings.value.lastLoginDateUpperValue
-            || !!gridSettings.value.isConfirmed
-            || !!gridSettings.value.isLockedOut;
-    });
-
-    const passwordRules = computed((): string => {
+    const passwordRules = computed<string>(() => {
         return isPasswordRequired.value ? "required" : "";
     });
 
     const confirmPasswordRules = computed<string>(() => {
         return isPasswordRequired.value ? `required|equalsfield:must match Password,${password.value}` : `equalsfield:must match Password,${password.value}`;
+    });
+
+    const hasPersonContextEntity = computed<boolean>(() => {
+        return config.options?.hasPersonContextEntity === true;
+    });
+
+    const columnWidth = computed<string>(() => {
+        return config.options?.hasPersonContextEntity === true ? "5%" : "8%";
     });
 
     // #endregion
@@ -376,21 +351,6 @@
     }
 
     // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterUsername, gridSettings.value.username ?? "");
-        preferences.setValue(PreferenceKey.FilterAuthenticationProvider, JSON.stringify(gridSettings.value.authenticationProvider));
-        preferences.setValue(PreferenceKey.FilterDateCreatedLowerValue, gridSettings.value.dateCreatedLowerValue ?? "");
-        preferences.setValue(PreferenceKey.FilterDateCreatedUpperValue, gridSettings.value.dateCreatedUpperValue ?? "");
-        preferences.setValue(PreferenceKey.FilterLastLoginDateLowerValue, gridSettings.value.lastLoginDateLowerValue ?? "");
-        preferences.setValue(PreferenceKey.FilterLastLoginDateUpperValue, gridSettings.value.lastLoginDateUpperValue ?? "");
-        preferences.setValue(PreferenceKey.FilterIsConfirmed, gridSettings.value.isConfirmed ?? "");
-        preferences.setValue(PreferenceKey.FilterIsLockedOut, gridSettings.value.isLockedOut ?? "");
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     watch(isCreateEditModalOpen, () => {
         if (!isCreateEditModalOpen.value) {

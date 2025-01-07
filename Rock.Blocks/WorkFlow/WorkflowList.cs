@@ -83,12 +83,6 @@ namespace Rock.Blocks.Workflow
 
         private static class PreferenceKey
         {
-            public const string FilterName = "filter-name";
-
-            public const string FilterInitiator = "filter-initiator";
-
-            public const string FilterStatus = "filter-status";
-
             public const string FilterActivatedDateRangeUpperValue = "filter-activated-date-range-upper-value";
 
             public const string FilterActivatedDateRangeLowerValue = "filter-activated-date-range-lower-value";
@@ -96,8 +90,6 @@ namespace Rock.Blocks.Workflow
             public const string FilterCompletedDateRangeUpperValue = "filter-completed-date-range-upper-value";
 
             public const string FilterCompletedDateRangeLowerValue = "filter-completed-date-range-lower-value";
-
-            public const string FilterState = "filter-state";
         }
 
         #endregion Keys
@@ -109,16 +101,6 @@ namespace Rock.Blocks.Workflow
         #endregion
 
         #region Properties
-
-        protected string FilterName => GetBlockPersonPreferences()
-            .GetValue( MakeKeyUniqueToWorkflowType( PreferenceKey.FilterName ) );
-
-        protected Guid? FilterInitiator => GetBlockPersonPreferences()
-            .GetValue( MakeKeyUniqueToWorkflowType( PreferenceKey.FilterInitiator ) )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
-
-        protected string FilterStatus => GetBlockPersonPreferences()
-            .GetValue( MakeKeyUniqueToWorkflowType( PreferenceKey.FilterStatus ) );
 
         protected DateTime? FilterActivatedDateRangeUpperValue => GetBlockPersonPreferences()
             .GetValue( MakeKeyUniqueToWorkflowType( PreferenceKey.FilterActivatedDateRangeUpperValue ) )
@@ -135,10 +117,6 @@ namespace Rock.Blocks.Workflow
         protected DateTime? FilterCompletedDateRangeLowerValue => GetBlockPersonPreferences()
             .GetValue( MakeKeyUniqueToWorkflowType( PreferenceKey.FilterCompletedDateRangeLowerValue ) )
             .AsDateTime();
-
-        protected List<string> FilterState => GetBlockPersonPreferences()
-            .GetValue( MakeKeyUniqueToWorkflowType( PreferenceKey.FilterState ) )
-            .FromJsonOrNull<List<string>>() ?? new List<string>();
 
         #endregion
 
@@ -236,19 +214,6 @@ namespace Rock.Blocks.Workflow
                     workflows = workflows.Where( w => w.ActivatedDateTime.Value < upperDate );
                 }
 
-                // State Filter
-                if ( FilterState.Count == 1 )    // Don't filter if none or both options are selected
-                {
-                    if ( FilterState[0] == "Active" )
-                    {
-                        workflows = workflows.Where( w => !w.CompletedDateTime.HasValue );
-                    }
-                    else
-                    {
-                        workflows = workflows.Where( w => w.CompletedDateTime.HasValue );
-                    }
-                }
-
                 // Completed Date Range Filter
                 if ( FilterCompletedDateRangeLowerValue.HasValue )
                 {
@@ -258,24 +223,6 @@ namespace Rock.Blocks.Workflow
                 {
                     DateTime upperDate = FilterCompletedDateRangeUpperValue.Value.Date.AddDays( 1 );
                     workflows = workflows.Where( w => w.CompletedDateTime.HasValue && w.CompletedDateTime.Value < upperDate );
-                }
-
-                // Name Filter
-                if ( !string.IsNullOrWhiteSpace( FilterName ) )
-                {
-                    workflows = workflows.Where( w => w.Name.StartsWith( FilterName ) );
-                }
-
-                // Initiator Filter
-                if ( FilterInitiator.HasValue )
-                {
-                    workflows = workflows.Where( w => w.InitiatorPersonAlias.Guid == FilterInitiator.Value );
-                }
-
-                // Status Filter
-                if ( !string.IsNullOrWhiteSpace( FilterStatus ) )
-                {
-                    workflows = workflows.Where( w => w.Status.StartsWith( FilterStatus ) );
                 }
             }
 

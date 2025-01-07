@@ -137,10 +137,10 @@
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
 
     // Advanced Settings
-    const showAdvanced = ref(false);
     const entityQualifierColumn = propertyRef(props.modelValue.entityTypeQualifierColumn ?? "", "EntityTypeQualifierColumn");
     const entityQualifierValue = propertyRef(props.modelValue.entityTypeQualifierValue ?? "", "EntityTypeQualifierValue");
     const defaultDocumentNameTemplate = propertyRef(props.modelValue.defaultDocumentNameTemplate ?? "", "DefaultDocumentNameTemplate");
+    const showAdvanced = ref(entityQualifierColumn.value !== "" || entityQualifierValue.value  !== "" || defaultDocumentNameTemplate.value !== "");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().

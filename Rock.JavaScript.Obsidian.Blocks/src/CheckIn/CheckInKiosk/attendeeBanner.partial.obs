@@ -1,10 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="attendee-banner">
-        <div class="avatar" :style="styleForAttendee"></div>
+        <div v-if="!hidePhoto"
+             class="avatar"
+             :style="styleForAttendee"></div>
 
         <div class="title">
-            <h1 class="name">{{ person?.fullName }}</h1>
+            <h3 class="name">{{ person?.fullName }}</h3>
         </div>
     </div>
 </template>
@@ -16,6 +18,11 @@
     const props = defineProps({
         person: {
             type: Object as PropType<PersonBag>,
+            required: true
+        },
+
+        hidePhoto: {
+            type: Boolean as PropType<boolean>,
             required: true
         }
     });

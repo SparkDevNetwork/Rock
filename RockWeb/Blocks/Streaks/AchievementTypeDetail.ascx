@@ -67,10 +67,10 @@
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="Name" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Checked="true" Text="Yes" />
+                            <Rock:RockCheckBox ID="cbActive" runat="server" Label="Active" Checked="true" />
                         </div>
                         <div class="col-md-3">
-                            <Rock:RockCheckBox ID="cbIsPublic" runat="server" Label="Public" Checked="true" Text="Yes" />
+                            <Rock:RockCheckBox ID="cbIsPublic" runat="server" Label="Public" Checked="true" />
                         </div>
                     </div>
 
@@ -81,7 +81,7 @@
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" EntityTypeName="Rock.Model.AchievementType" />
                         </div>
                         <div class="col-md-3 col-sm-6">
-                            <Rock:RockCheckBox ID="cbAllowOverachievement" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="AllowOverAchievement" Label="Allow Overachievement" Checked="false" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbAllowOverachievement_CheckedChanged" Help="When enabled, achievement beyond the defined goal will be tracked so it is possible for progress to be greater than 100%. Only one achievement is allowed when this is enabled." />
+                            <Rock:RockCheckBox ID="cbAllowOverachievement" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="AllowOverAchievement" Label="Allow Overachievement" Checked="false" AutoPostBack="true" OnCheckedChanged="cbAllowOverachievement_CheckedChanged" Help="When enabled, achievement beyond the defined goal will be tracked so it is possible for progress to be greater than 100%. Only one achievement is allowed when this is enabled." />
                         </div>
                         <div class="col-md-3 col-sm-6">
                             <Rock:NumberBox ID="nbMaxAccomplishments" runat="server" SourceTypeName="Rock.Model.AchievementType, Rock" PropertyName="MaxAccomplishmentsAllowed" Label="Max Accomplishments Allowed" MinimumValue="1" Help="How many times are people allowed to earn this achievement. This must be 1 in order to track overachievement." />

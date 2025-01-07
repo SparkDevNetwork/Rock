@@ -14,14 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Rock.Data;
 using Rock.Model;
-using Rock.RealTime;
-using Rock.RealTime.Topics;
 
 namespace Rock.Transactions
 {
@@ -29,60 +27,38 @@ namespace Rock.Transactions
     /// Sends any real-time notifications for attendance records that have
     /// been recently created, modified or deleted.
     /// </summary>
-    internal class SendAttendanceRealTimeNotificationsTransaction : AggregateAsyncTransaction<(Guid Guid, bool IsDeleted)>
+    internal class SendAttendanceRealTimeNotificationsTransaction : AggregateAsyncTransaction<AttendanceService.AttendanceUpdatedState>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SendAttendanceRealTimeNotificationsTransaction"/> class.
         /// </summary>
-        /// <param name="attendanceGuid">The attendance unique identifier.</param>
-        /// <param name="isDeleted">if set to <c>true</c> then the attendance record was deleted.</param>
-        public SendAttendanceRealTimeNotificationsTransaction( Guid attendanceGuid, bool isDeleted )
-            : base( (attendanceGuid, isDeleted) )
+        /// <param name="state">The state object that represents the entity when it was saved.</param>
+        public SendAttendanceRealTimeNotificationsTransaction( AttendanceService.AttendanceUpdatedState state )
+            : base( state )
         {
         }
 
         /// <inheritdoc/>
-        protected override async Task ExecuteAsync( IList<(Guid Guid, bool IsDeleted)> items )
+        protected override async Task ExecuteAsync( IList<AttendanceService.AttendanceUpdatedState> items )
         {
-            // Get the distinct set of items that were deleted.
-            var deletedItemGuids = items
-                .Where( i => i.IsDeleted )
-                .Select( i => i.Guid )
-                .Distinct()
-                .ToList();
-
-            // Get the distinct set of items that were added/modified.
-            var itemGuids = items
-                .Where( i => !i.IsDeleted && !deletedItemGuids.Contains( i.Guid ) )
-                .Select( i => i.Guid )
-                .Distinct()
-                .ToList();
-
-            var topicContext = RealTimeHelper.GetTopicContext<IEntityUpdated>();
-
-            // Start a task to notify about all the deleted attendance records.
-            var deletedNotificationTask = Task.Run( async () =>
+            var deletedNotificationTask = Task.Run( () =>
             {
-                var deletedChannelName = EntityUpdatedTopic.GetAttendanceDeletedChannel();
-                var deletedChannel = topicContext.Clients.Channel( deletedChannelName );
+                // Get the set of items that were deleted.
+                var deletedItems = items
+                    .Where( i => i.State == EntityContextState.Deleted )
+                    .ToList();
 
-                foreach ( var deletedGuid in deletedItemGuids )
-                {
-                    try
-                    {
-                        await deletedChannel.AttendanceDeleted( deletedGuid );
-                    }
-                    catch
-                    {
-                        // Intentionally ignore any error if we failed to send
-                        // a message about a single attendance record.
-                    }
-                }
+                return AttendanceService.SendAttendanceDeletedRealTimeNotificationsAsync( deletedItems );
             } );
 
-            var modifiedNotificationTask = Task.Run( async () =>
+            var modifiedNotificationTask = Task.Run( () =>
             {
-                await AttendanceService.SendAttendanceUpdatedRealTimeNotificationsAsync( itemGuids );
+                // Get the set of items that were deleted.
+                var updatedItems = items
+                    .Where( i => i.State != EntityContextState.Deleted )
+                    .ToList();
+
+                return AttendanceService.SendAttendanceUpdatedRealTimeNotificationsAsync( updatedItems );
             } );
 
             await Task.WhenAll( deletedNotificationTask, modifiedNotificationTask );

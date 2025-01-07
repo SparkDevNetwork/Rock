@@ -211,7 +211,6 @@ namespace Rock.Field.Types
             cbIncludeInactive.AutoPostBack = true;
             cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
             cbIncludeInactive.Label = "Include Inactive";
-            cbIncludeInactive.Text = "Yes";
             cbIncludeInactive.Help = "When set, inactive campuses will be included in the list.";
 
             var controls = base.ConfigurationControls();
@@ -321,17 +320,20 @@ namespace Rock.Field.Types
             var editControl = control as ListControl;
             if ( editControl != null )
             {
-                var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
-                if ( !includeInactive )
+                if ( configurationValues != null )
                 {
-                    var listItem = editControl.Items.FindByValue( value );
-                    if ( listItem == null )
+                    var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+                    if ( !includeInactive )
                     {
-                        var valueGuid = value.AsGuid();
-                        var template = new CommunicationTemplateService( new RockContext() ).Queryable().Where( v => v.Guid == valueGuid ).FirstOrDefault();
-                        if ( template != null )
+                        var listItem = editControl.Items.FindByValue( value );
+                        if ( listItem == null )
                         {
-                            editControl.Items.Add( new ListItem( template.Name, template.Guid.ToString() ) );
+                            var valueGuid = value.AsGuid();
+                            var template = new CommunicationTemplateService( new RockContext() ).Queryable().Where( v => v.Guid == valueGuid ).FirstOrDefault();
+                            if ( template != null )
+                            {
+                                editControl.Items.Add( new ListItem( template.Name, template.Guid.ToString() ) );
+                            }
                         }
                     }
                 }

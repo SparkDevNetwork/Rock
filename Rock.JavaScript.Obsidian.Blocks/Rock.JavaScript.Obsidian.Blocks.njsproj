@@ -56,6 +56,7 @@
     <Content Include="src\Communication\systemCommunicationList.obs" />
     <Content Include="src\Security\authScopeList.obs" />
     <Content Include="src\Security\authClientList.obs" />
+    <Content Include="src\Security\securityChangeAuditList.obs" />
     <Content Include="src\Core\binaryFileDetail.obs" />
     <Content Include="src\Core\BinaryFileDetail\editPanel.partial.obs" />
     <Content Include="src\Core\BinaryFileDetail\viewPanel.partial.obs" />
@@ -335,8 +336,10 @@
     <Folder Include="src\Communication\SystemPhoneNumberDetail\" />
     <Folder Include="src\Core\" />
     <Folder Include="src\Core\AssetStorageProviderDetail\" />
+    <Folder Include="src\Core\TaggedItemList\" />
     <Folder Include="src\Security\AuthScopeList\" />
     <Folder Include="src\Security\AuthClientList\" />
+    <Folder Include="src\Security\SecurityChangeAuditList\" />
     <Folder Include="src\Core\BinaryFileDetail\" />
     <Folder Include="src\Core\CampusDetail\" />
     <Folder Include="src\Core\CategoryDetail\" />
@@ -428,6 +431,7 @@
     <Folder Include="src\Utility\SmsTestTransport\" />
     <Folder Include="src\WebFarm\" />
     <Folder Include="src\WebFarm\WebFarmNodeDetail\" />
+    <Folder Include="src\WebFarm\WebFarmNodeLogList\" />
     <Folder Include="src\WebFarm\WebFarmSettings\" />
     <Folder Include="src\WorkFlow\" />
     <Folder Include="src\WorkFlow\FormBuilder\" />
@@ -503,8 +507,10 @@
     <TypeScriptCompile Include="src\Communication\SnippetTypeDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Communication\SystemPhoneNumberDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\attributes.ts" />
+    <TypeScriptCompile Include="src\Core\TaggedItemList\types.partial.ts" />
     <TypeScriptCompile Include="src\Security\AuthScopeList\types.partial.ts" />
     <TypeScriptCompile Include="src\Security\AuthClientList\types.partial.ts" />
+    <TypeScriptCompile Include="src\Security\SecurityChangeAuditList\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\BinaryFileDetail\types.partial.ts" />
     <TypeScriptCompile Include="src\Core\campusDetail.ts" />
     <TypeScriptCompile Include="src\Core\CampusDetail\editPanel.partial.ts" />
@@ -607,6 +613,7 @@
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\Utility\starkDetail.ts" />
     <TypeScriptCompile Include="src\WebFarm\WebFarmNodeDetail\types.partial.ts" />
+    <TypeScriptCompile Include="src\WebFarm\WebFarmNodeLogList\types.partial.ts" />
     <TypeScriptCompile Include="src\WebFarm\WebFarmSettings\types.partial.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\formBuilderDetail.ts" />
     <TypeScriptCompile Include="src\WorkFlow\FormBuilder\FormBuilderDetail\communicationsTab.partial.ts" />
@@ -640,6 +647,8 @@
     <Compile Include="src\Cms\adaptiveMessageDetail.obs" />
     <Compile Include="src\Cms\AdaptiveMessageDetail\editPanel.partial.obs" />
     <Compile Include="src\Cms\AdaptiveMessageDetail\viewPanel.partial.obs" />
+    <Compile Include="src\WebFarm\webFarmNodeLogList.obs" />
+    <Compile Include="src\Core\taggedItemList.obs" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <Target Name="InstallNodePackages" AfterTargets="BeforeCompile;BeforeClean" Inputs="package.json" Outputs="node_modules/.install-stamp">

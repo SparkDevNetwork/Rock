@@ -11,7 +11,7 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { AssessmentListBag } from "@Obsidian/ViewModels/Blocks/Crm/AssessmentList/assessmentListBag";
 
 
@@ -32,16 +32,11 @@
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
-
-    // #region Event Handlers
-
-    // #endregion
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
     }
+
+    onConfigurationValuesChanged(useReloadBlock());
 </script>

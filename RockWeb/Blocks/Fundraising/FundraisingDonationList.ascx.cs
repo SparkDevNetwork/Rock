@@ -71,12 +71,12 @@ namespace RockWeb.Blocks.Fundraising
         /// <param name="e">Arguments that describe this event.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetails();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

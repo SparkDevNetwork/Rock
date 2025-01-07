@@ -18,9 +18,16 @@
 namespace Rock.ViewModels.Blocks.Core.BinaryFileDetail
 {
     /// <summary>
-    /// 
+    /// Additional Configuration details for the Binary File Detail Block.
     /// </summary>
     public class BinaryFileDetailOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is block visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is block visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsBlockVisible { get; set; }
     }
 }

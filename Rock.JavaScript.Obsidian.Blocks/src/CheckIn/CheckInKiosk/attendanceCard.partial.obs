@@ -2,13 +2,15 @@
 <template>
     <div class="attendance-card">
         <div class="header">
-            <div class="avatar" :style="avatarStyle"></div>
+            <div v-if="!hidePhoto"
+                 class="avatar"
+                 :style="avatarStyle"></div>
 
             <div class="title">{{ attendance.person.fullName }}</div>
         </div>
 
         <div class="attendance-list">
-            <label>Checked Into</label>
+            <label>{{ term }}</label>
 
             <div v-for="item in attendance.attendances"
                  class="attendance-detail">
@@ -17,7 +19,7 @@
             </div>
         </div>
 
-        <div v-if="attendance.inProgressAchievements"
+        <div v-if="attendance.inProgressAchievements && attendance.inProgressAchievements.length > 0"
              class="achievement-list">
             <label>Current Achievement Status</label>
 
@@ -25,7 +27,11 @@
                  class="achievement">
                 <div class="header">
                     <div class="title">{{ achievement.name }}</div>
-                    <div class="subtitle">{{ getProgressText(achievement) }}</div>
+                    <!--
+                    This is intentionally hidden for now pending decision
+                    from PO on how to display this.
+                    -->
+                    <div v-if="false" class="subtitle">{{ getProgressText(achievement) }}</div>
                 </div>
                 <div v-if="achievement.targetCount"
                      class="completion-progress">
@@ -45,6 +51,16 @@
     const props = defineProps({
         attendance: {
             type: Object as PropType<AggregateAttendance>,
+            required: true
+        },
+
+        term: {
+            type: String as PropType<string>,
+            default: "Checked Into"
+        },
+
+        hidePhoto: {
+            type: Boolean as PropType<boolean>,
             required: true
         }
     });

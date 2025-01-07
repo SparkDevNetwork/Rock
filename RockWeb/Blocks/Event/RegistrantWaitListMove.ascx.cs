@@ -115,8 +115,6 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 if ( _registrants != null )
@@ -158,6 +156,8 @@ namespace RockWeb.Blocks.Event
                     nbUpdate.Text = "Could not find an entity set in the query string.";
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

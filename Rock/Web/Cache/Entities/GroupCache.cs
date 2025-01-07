@@ -135,8 +135,18 @@ namespace Rock.Web.Cache
         public AttendanceRecordRequiredForCheckIn AttendanceRecordRequiredForCheckIn { get; private set; }
 
         /// <inheritdoc cref="Rock.Model.Group.ScheduleCancellationPersonAliasId" />
+        [Obsolete( "Use ScheduleCoordinatorPersonAliasId instead." )]
+        [RockObsolete( "1.16" )]
         [DataMember]
-        public int? ScheduleCancellationPersonAliasId { get; private set; }
+        public int? ScheduleCancellationPersonAliasId => this.ScheduleCoordinatorPersonAliasId;
+
+        /// <inheritdoc cref="Rock.Model.Group.ScheduleCoordinatorPersonAliasId" />
+        [DataMember]
+        public int? ScheduleCoordinatorPersonAliasId { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.Group.ScheduleCoordinatorNotificationTypes" />
+        [DataMember]
+        public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; private set; }
 
         /// <inheritdoc cref="Rock.Model.Group.GroupAdministratorPersonAliasId" />
         [DataMember]
@@ -193,6 +203,10 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="Rock.Model.Group.ScheduleConfirmationLogic" />
         [DataMember]
         public ScheduleConfirmationLogic? ScheduleConfirmationLogic { get; private set; }
+
+        /// <inheritdoc cref="Rock.Model.Group.IsSpecialNeeds" />
+        [DataMember]
+        public bool IsSpecialNeeds { get; private set; }
 
         #endregion
 
@@ -293,7 +307,8 @@ namespace Rock.Web.Cache
             StatusValueId = group.StatusValueId;
             SchedulingMustMeetRequirements = group.SchedulingMustMeetRequirements;
             AttendanceRecordRequiredForCheckIn = group.AttendanceRecordRequiredForCheckIn;
-            ScheduleCancellationPersonAliasId = group.ScheduleCancellationPersonAliasId;
+            ScheduleCoordinatorPersonAliasId = group.ScheduleCoordinatorPersonAliasId;
+            ScheduleCoordinatorNotificationTypes = group.ScheduleCoordinatorNotificationTypes;
             GroupAdministratorPersonAliasId = group.GroupAdministratorPersonAliasId;
             InactiveReasonValueId = group.InactiveReasonValueId;
             InactiveReasonNote = group.InactiveReasonNote;
@@ -308,6 +323,7 @@ namespace Rock.Web.Cache
             ReminderOffsetDays = group.ReminderOffsetDays;
             ReminderAdditionalDetails = group.ReminderAdditionalDetails;
             ScheduleConfirmationLogic = group.ScheduleConfirmationLogic;
+            IsSpecialNeeds = group.IsSpecialNeeds;
         }
 
         /// <inheritdoc/>

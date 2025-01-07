@@ -15,6 +15,7 @@
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
                  :isSecurityHidden="true"
+                 :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"

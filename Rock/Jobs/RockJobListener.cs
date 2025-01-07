@@ -133,7 +133,7 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         /// <returns>Task.</returns>
         /// <seealso cref="M:Quartz.IJobListener.JobToBeExecuted(Quartz.IJobExecutionContext,System.Threading.CancellationToken)" />
-        public void JobExecutionVetoed( IJobExecutionContext context )
+        public virtual void JobExecutionVetoed( IJobExecutionContext context )
         {
             RockLogger.Log.Debug( RockLogDomains.Jobs, "Job ID: {jobId}, Job Key: {jobKey}, Job was vetoed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
         }
@@ -146,7 +146,7 @@ namespace Rock.Jobs
         /// <param name="context">The context.</param>
         /// <param name="jobException">The job exception.</param>
         /// <returns>Task.</returns>
-        public void JobWasExecuted( IJobExecutionContext context, JobExecutionException jobException )
+        public virtual void JobWasExecuted( IJobExecutionContext context, JobExecutionException jobException )
         {
             // get job id
 #pragma warning disable CS0612 // Type or member is obsolete

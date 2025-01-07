@@ -48,6 +48,12 @@ namespace Rock.ViewModels.CheckIn
         public bool IsMultipleSelectionsAvailable { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this attendee is in the
+        /// primary family matched during the search operation.
+        /// </summary>
+        public bool IsInPrimaryFamily { get; set; }
+
+        /// <summary>
         /// Gets or sets the message describing why this attendee is not available.
         /// </summary>
         /// <value>The unavailable reason message.</value>

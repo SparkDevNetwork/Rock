@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Net;
 using System.Web;
+
 using RestSharp;
 
 using Rock.Attribute;
@@ -38,15 +39,79 @@ namespace Rock.Security.Authentication.Auth0
     [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Auth0" )]
 
-    [TextField( "Client Domain", "The Auth0 Domain", order: 0 )]
-    [TextField( "Client ID", "The Auth0 Client ID", order: 1 )]
-    [TextField( "Client Secret", "The Auth0 Client Secret", order: 2 )]
+    [TextField( "Tenant Domain",
+        Description = "The tenant domain of your Auth0 application.",
+        Key = AttributeKey.ClientDomain,
+        Order = 0 )]
 
-    [TextField( "Login Button Text", "The text shown on the log in button.", defaultValue: "Auth0 Login", required: false, order: 3 )]
-    [TextField( "Login Button CSS Class", "The CSS class applied to the log in button.", required: false, order: 4 )]
-    [Rock.SystemGuid.EntityTypeGuid( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F")]
+    [TextField( "Custom Domain",
+        Description = "If utilizing a custom domain in your Auth0 application, set that here.",
+        Key = AttributeKey.CustomDomain,
+        IsRequired = false,
+        Order = 1 )]
+
+    [TextField( "Client ID",
+        Description = "The Auth0 Client ID.",
+        Key = AttributeKey.ClientID,
+        Order = 2 )]
+
+    [TextField( "Client Secret",
+        Description = "The Auth0 Client Secret.",
+        Key = AttributeKey.ClientSecret,
+        Order = 3 )]
+
+    [TextField( "Login Button Text",
+        Description = "The text shown on the log in button.",
+        Key = AttributeKey.LoginButtonText,
+        DefaultValue = "Auth0 Login",
+        IsRequired = false,
+        Order = 4 )]
+
+    [TextField( "Login Button CSS Class",
+        Description = "The CSS class applied to the log in button.",
+        Key = AttributeKey.LoginButtonCSSClass,
+        IsRequired = false,
+        Order = 5 )]
+
+    [DefinedValueField( "Connection Status",
+        Key = AttributeKey.ConnectionStatus,
+        Description = "The connection status that should be used when adding new people.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        IsRequired = false,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR,
+        Order = 6 )]
+
+
+    [DefinedValueField( "Record Status",
+        Key = AttributeKey.RecordStatus,
+        Description = "The record status that should be used when adding new people.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
+        IsRequired = false,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
+        Order = 7 )]
+
+
+    [Rock.SystemGuid.EntityTypeGuid( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F" )]
     public class Auth0Authentication : AuthenticationComponent, IExternalRedirectAuthentication
     {
+        #region Keys
+
+        private static class AttributeKey
+        {
+            public const string ClientDomain = "ClientDomain";
+            public const string CustomDomain = "CustomDomain";
+            public const string ClientID = "ClientID";
+            public const string ClientSecret = "ClientSecret";
+            public const string LoginButtonText = "LoginButtonText";
+            public const string LoginButtonCSSClass = "LoginButtonCSSClass";
+            public const string ConnectionStatus = "ConnectionStatus";
+            public const string RecordStatus = "RecordStatus";
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the type of the service.
         /// </summary>
@@ -112,8 +177,10 @@ namespace Rock.Security.Authentication.Auth0
         /// Creates or Finds a Person and UserLogin record, and returns the userLogin.UserName
         /// </summary>
         /// <param name="auth0UserInfo">The auth0 user information.</param>
+        /// <param name="personConnectionStatusValueId">The person connection status identifier to use when creating a new person.</param>
+        /// <param name="personRecordStatusValueId">The person record status identifier to use when creating a new person.</param>
         /// <returns></returns>
-        public static string GetAuth0UserName( Auth0UserInfo auth0UserInfo )
+        public static string GetAuth0UserName( Auth0UserInfo auth0UserInfo, int? personConnectionStatusValueId = null, int? personRecordStatusValueId = null )
         {
             string username = string.Empty;
 
@@ -145,8 +212,17 @@ namespace Rock.Security.Authentication.Auth0
                     }
 
                     var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
-                    var personStatusPending = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
 
+                    if( !personRecordStatusValueId.HasValue )
+                    {
+                        personRecordStatusValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
+                    }
+
+                    if( !personConnectionStatusValueId.HasValue )
+                    {
+                        personConnectionStatusValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id;
+                    }
+                    
                     rockContext.WrapTransaction( () =>
                     {
                         if ( person == null )
@@ -154,13 +230,13 @@ namespace Rock.Security.Authentication.Auth0
                             person = new Person();
                             person.IsSystem = false;
                             person.RecordTypeValueId = personRecordTypeId;
-                            person.RecordStatusValueId = personStatusPending;
+                            person.RecordStatusValueId = personRecordStatusValueId;
+                            person.ConnectionStatusValueId = personConnectionStatusValueId;
                             person.FirstName = firstName;
                             person.LastName = lastName;
                             person.Email = email;
                             person.IsEmailActive = true;
                             person.EmailPreference = EmailPreference.EmailAllowed;
-
                             if ( auth0UserInfo.gender == "male" )
                             {
                                 person.Gender = Gender.Male;
@@ -245,7 +321,7 @@ namespace Rock.Security.Authentication.Auth0
         /// <value>
         /// The log in button CSS class.
         /// </value>
-        public override string LoginButtonCssClass => this.GetAttributeValue( "LoginButtonCSSClass" );
+        public override string LoginButtonCssClass => this.GetAttributeValue( AttributeKey.LoginButtonCSSClass ); 
 
         /// <summary>
         /// Gets the log in button text.
@@ -253,7 +329,7 @@ namespace Rock.Security.Authentication.Auth0
         /// <value>
         /// The log in button text.
         /// </value>
-        public override string LoginButtonText => this.GetAttributeValue( "LoginButtonText" );
+        public override string LoginButtonText => this.GetAttributeValue( AttributeKey.LoginButtonText );
 
         /// <summary>
         /// Gets the redirect URL.
@@ -340,9 +416,11 @@ namespace Rock.Security.Authentication.Auth0
         /// <inheritdoc/>
         public ExternalRedirectAuthenticationResult Authenticate( ExternalRedirectAuthenticationOptions options )
         {
-            var authDomain = this.GetAttributeValue( "ClientDomain" );
-            var clientId = this.GetAttributeValue( "ClientID" );
-            var clientSecret = this.GetAttributeValue( "ClientSecret" );
+            var authDomain = this.GetAttributeValue( AttributeKey.ClientDomain );
+            var customDomain = this.GetAttributeValue( AttributeKey.CustomDomain );
+
+            var clientId = this.GetAttributeValue( AttributeKey.ClientID );
+            var clientSecret = this.GetAttributeValue( AttributeKey.ClientSecret );
 
             var result = new ExternalRedirectAuthenticationResult
             {
@@ -350,8 +428,12 @@ namespace Rock.Security.Authentication.Auth0
                 ReturnUrl = options.Parameters.GetValueOrNull( "state" )
             };
 
+            // If there is a custom domain set, use that instead of the
+            // tenant domain.
+            string requestDomain = customDomain.IsNullOrWhiteSpace() ? authDomain : customDomain;
+
             // see: https://auth0.com/docs/api/authentication#support
-            var restClient = new RestClient( $"https://{authDomain}" );
+            var restClient = new RestClient( $"https://{requestDomain}" );
             var authTokenRequest = new RestRequest( "oauth/token", Method.POST );
             var authTokenRequestBody = new
             {
@@ -383,6 +465,8 @@ namespace Rock.Security.Authentication.Auth0
                             grant_type = "client_credentials",
                             client_id = clientId,
                             client_secret = clientSecret,
+
+                            // The audience value should always use the tenant domain, not the custom domain.
                             audience = $"https://{authDomain}/api/v2/"
                         };
 
@@ -419,7 +503,23 @@ namespace Rock.Security.Authentication.Auth0
                             }
                         }
 
-                        result.UserName = GetAuth0UserName( auth0UserInfo );
+                        var personConnectionStatusValueGuid = this.GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuidOrNull();
+                        var personRecordStatusValueGuid = this.GetAttributeValue( AttributeKey.RecordStatus ).AsGuidOrNull();
+
+                        int? personConnectionStatusValueId = null;
+                        int? personRecordStatusValueId = null;
+
+                        if( personConnectionStatusValueGuid.HasValue )
+                        {
+                            personConnectionStatusValueId = DefinedValueCache.Get( personConnectionStatusValueGuid.Value ).Id;
+                        }
+
+                        if( personRecordStatusValueGuid.HasValue )
+                        {
+                            personRecordStatusValueId = DefinedValueCache.Get( personRecordStatusValueGuid.Value ).Id;
+                        }
+
+                        result.UserName = GetAuth0UserName( auth0UserInfo, personConnectionStatusValueId, personRecordStatusValueId );
                         result.IsAuthenticated = true;
                     }
                 }
@@ -433,12 +533,18 @@ namespace Rock.Security.Authentication.Auth0
         {
             // see: https://auth0.com/docs/api/authentication#support
             successfulAuthenticationRedirectUrl = successfulAuthenticationRedirectUrl ?? System.Web.Security.FormsAuthentication.DefaultUrl;
-            var authDomain = this.GetAttributeValue( "ClientDomain" );
+            var authDomain = this.GetAttributeValue( AttributeKey.ClientDomain );
+            var customDomain = this.GetAttributeValue( AttributeKey.CustomDomain );
+
+            // If there is a custom domain set, use that instead of the
+            // tenant domain.
+            string requestDomain = customDomain.IsNullOrWhiteSpace() ? authDomain : customDomain;
+
             var scope = HttpUtility.UrlEncode( "openid profile email phone_number birthdate" );
             var audience = $"https://{authDomain}/userinfo";
-            var clientId = this.GetAttributeValue( "ClientID" );
+            var clientId = this.GetAttributeValue( AttributeKey.ClientID );
 
-            var authorizeUrl = $"https://{authDomain}/authorize?response_type=code&scope={scope}&audience={audience}&client_id={clientId}&redirect_uri={externalProviderReturnUrl}&state={successfulAuthenticationRedirectUrl}";
+            var authorizeUrl = $"https://{requestDomain}/authorize?response_type=code&scope={scope}&audience={audience}&client_id={clientId}&redirect_uri={externalProviderReturnUrl}&state={successfulAuthenticationRedirectUrl}";
 
             return new Uri( authorizeUrl );
         }

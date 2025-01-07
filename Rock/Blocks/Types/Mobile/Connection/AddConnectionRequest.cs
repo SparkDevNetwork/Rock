@@ -33,6 +33,7 @@ using Rock.Web.Cache;
 using Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
 using System.Data.Entity;
+using Rock.Utility;
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {
@@ -69,6 +70,13 @@ namespace Rock.Blocks.Types.Mobile.Connection
         Key = AttributeKey.PostCancelAction,
         Order = 2 )]
 
+    [CodeEditorField( "Opportunity Pre-Select Template",
+        Description = "The Lava template to use when pre-selecting an opportunity. The types and their nested opportunities are stored in an 'Items' merge field.",
+        Key = AttributeKey.OpportunityPreSelectTemplate,
+        EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
+        IsRequired = false,
+        Order = 3 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CONNECTION_ADD_CONNECTION_REQUEST )]
@@ -86,6 +94,16 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// The requester id key key.
             /// </summary>
             public const string RequesterIdKey = "RequesterIdKey";
+
+            /// <summary>
+            /// The linked note guid page parameter key.
+            /// </summary>
+            public const string LinkedNoteGuid = "LinkedNoteGuid";
+
+            /// <summary>
+            /// The linked note type guid page parameter key.
+            /// </summary>
+            public const string LinkedNoteTypeGuid = "LinkedNoteTypeGuid";
         }
 
         /// <summary>
@@ -107,6 +125,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// The post cancel action key.
             /// </summary>
             public const string PostCancelAction = "PostCancelAction";
+
+            /// <summary>
+            /// The opportunity pre-select template key.
+            /// </summary>
+            public const string OpportunityPreSelectTemplate = "OpportunityPreSelectTemplate";
         }
 
         #endregion
@@ -138,7 +161,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
             return new
             {
                 PostSaveAction = PostSaveAction,
-                PostCancelAction = PostCancelAction
+                PostCancelAction = PostCancelAction,
+                HasOpportunityPreSelectTemplate = GetAttributeValue( AttributeKey.OpportunityPreSelectTemplate ).IsNotNullOrWhiteSpace()
             };
         }
 
@@ -168,7 +192,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// </summary>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        private List<ConnectionTypeListItemBag> GetConnectionTypes( RockContext rockContext )
+        private IList<ConnectionType> GetConnectionTypes( RockContext rockContext )
         {
             var connectionTypeService = new ConnectionTypeService( rockContext );
             var filterOptions = new ConnectionTypeQueryOptions
@@ -187,21 +211,16 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 types = types.Where( ct => ConnectionTypes.Contains( ct.Guid ) ).ToList();
             }
 
-            return types.Select( ct => new ConnectionTypeListItemBag
-            {
-                Text = ct.Name,
-                Value = ct.IdKey,
-                EnableFutureFollowup = ct.EnableFutureFollowup,
-            } ).ToList();
+            return types;
         }
 
         /// <summary>
         /// Gets the connection opportunities for the specified connection type.
         /// </summary>
-        /// <param name="connectionType"></param>
+        /// <param name="connectionTypes">The connection types to get the opportunities for.</param>
         /// <param name="rockContext"></param>
         /// <returns></returns>
-        private List<ListItemViewModel> GetConnectionOpportunities( ConnectionType connectionType, RockContext rockContext )
+        private IList<ConnectionOpportunity> GetConnectionOpportunities( List<Guid> connectionTypes, RockContext rockContext )
         {
             var opportunityService = new ConnectionOpportunityService( rockContext );
             var opportunityClientService = new ConnectionOpportunityClientService( rockContext, RequestContext.CurrentPerson );
@@ -209,19 +228,15 @@ namespace Rock.Blocks.Types.Mobile.Connection
             var filterOptions = new ConnectionOpportunityQueryOptions
             {
                 IncludeInactive = false,
-                ConnectionTypeGuids = new List<Guid> { connectionType.Guid }
+                ConnectionTypeGuids = connectionTypes
             };
 
             // Put all the opportunities in memory so we can check security.
             var qry = opportunityService.GetConnectionOpportunitiesQuery( filterOptions );
             var opportunities = qry.ToList()
-                .Where( o => o.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) );
+                .Where( o => o.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ).ToList();
 
-            return opportunities.ToList().Select( o => new ListItemViewModel
-            {
-                Text = o.Name,
-                Value = o.IdKey
-            } ).ToList();
+            return opportunities;
         }
 
         /// <summary>
@@ -343,7 +358,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
             var personService = new PersonService( rockContext );
 
-            foreach( var campus in CampusCache.All() )
+            foreach ( var campus in CampusCache.All() )
             {
                 var defaultConnector = opportunity.GetDefaultConnectorPersonId( campus.Id );
 
@@ -389,7 +404,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 {
                     if ( attributes.ContainsKey( kvp.Key ) )
                     {
-                        attributes[ kvp.Key ].Value = kvp.Value;
+                        attributes[kvp.Key].Value = kvp.Value;
                     }
                 } );
 
@@ -636,6 +651,30 @@ namespace Rock.Blocks.Types.Mobile.Connection
             };
         }
 
+        /// <summary>
+        /// Links a connection to a note.
+        /// </summary>
+        /// <param name="linkedNoteGuid">The GUID of the note to link the connection to.</param>
+        /// <param name="linkedNoteTypeGuid">The Note Type to update the note to.</param>
+        /// <param name="connectionId">The connection request identifier.</param>
+        /// <param name="rockContext">The Rock Context.</param>
+        private void LinkConnectionToNote( Guid linkedNoteGuid, Guid linkedNoteTypeGuid, int connectionId, RockContext rockContext )
+        {
+            var noteService = new NoteService( rockContext );
+            var note = noteService.Get( linkedNoteGuid );
+            var noteType = NoteTypeCache.Get( linkedNoteTypeGuid );
+
+            if ( note == null || noteType == null )
+            {
+                return;
+            }
+
+            note.EntityId = connectionId;
+            note.NoteTypeId = noteType.Id;
+
+            rockContext.SaveChanges();
+        }
+
         #endregion
 
         #region Block Actions
@@ -654,9 +693,16 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // Get the connection types and grab the name and guid.
                 var connectionTypes = GetConnectionTypes( rockContext );
 
+                var connectionTypeBags = connectionTypes.Select( ct => new ConnectionTypeListItemBag
+                {
+                    Text = ct.Name,
+                    Value = ct.IdKey,
+                    EnableFutureFollowup = ct.EnableFutureFollowup,
+                } ).ToList();
+
                 return ActionOk( new GetConnectionTypesResponseBag
                 {
-                    ConnectionTypes = connectionTypes.ToList(),
+                    ConnectionTypes = connectionTypeBags,
                     Requester = GetRequester( requestBag.RequesterId, rockContext ),
                 } );
             }
@@ -684,9 +730,16 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     return ActionNotFound( "The connection type for that Id Key was not found." );
                 }
 
+                var connectionOpporunities = GetConnectionOpportunities( new List<Guid> { connectionType.Guid }, rockContext );
+                var connectionOpportunityBags = connectionOpporunities.Select( o => new ListItemViewModel
+                {
+                    Text = o.Name,
+                    Value = o.IdKey
+                } ).ToList();
+
                 return ActionOk( new GetConnectionOpportunitiesResponseBag
                 {
-                    ConnectionOpportunities = GetConnectionOpportunities( connectionType, rockContext ),
+                    ConnectionOpportunities = connectionOpportunityBags,
                     ConnectionType = new ConnectionTypeListItemBag
                     {
                         Text = connectionType.Name,
@@ -777,11 +830,54 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     return ActionBadRequest( "There was an error creating the connection request." );
                 }
 
+                var linkedNoteGuid = RequestContext.GetPageParameter( PageParameterKey.LinkedNoteGuid ).AsGuidOrNull();
+                var linkedNoteTypeGuid = RequestContext.GetPageParameter( PageParameterKey.LinkedNoteTypeGuid ).AsGuidOrNull();
+
+                if ( linkedNoteGuid.HasValue && linkedNoteTypeGuid.HasValue )
+                {
+                    LinkConnectionToNote( linkedNoteGuid.Value, linkedNoteTypeGuid.Value, IdHasher.Instance.GetId( saveResult ).Value, rockContext );
+                }
+
                 return ActionOk( new SaveConnectionRequestResponseBag
                 {
                     Id = saveResult
                 } );
             }
+        }
+
+        /// <summary>
+        /// Gets the XAML template for the opportunity pre-select template.
+        /// </summary>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult GetOpportunitiesTemplate()
+        {
+            var connectionTypes = GetConnectionTypes( RockContext );
+            var connectionOpportunities = GetConnectionOpportunities( connectionTypes.Select( ct => ct.Guid ).ToList(), RockContext ).ToList();
+
+            // We want to select each type and nest the opportunities that belong to that type.
+            // For instance:
+            // Next Steps (Connection Type)
+            //  - Baptism (Connection Opportunity)
+            //  - Membership (Connection Opportunity)
+            var groupedList = connectionTypes
+                .Select( ct => new
+                {
+                    ConnectionType = ct, // Include the entire ConnectionType object
+                    Opportunities = connectionOpportunities.Where( co => co.ConnectionTypeId == ct.Id ).ToList()
+                } )
+                .ToList();
+
+            var lavaTemplate = GetAttributeValue( AttributeKey.OpportunityPreSelectTemplate );
+
+            var mergeFields = RequestContext.GetCommonMergeFields();
+            mergeFields.Add( "Items", groupedList );
+            lavaTemplate = lavaTemplate.ResolveMergeFields( mergeFields );
+
+            return ActionOk( new GetOpportunityTemplateResponseBag
+            {
+                Template = lavaTemplate
+            } );
         }
 
         #endregion

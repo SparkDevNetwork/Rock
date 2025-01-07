@@ -208,6 +208,7 @@ namespace Rock.Blocks.Crm
                         item.LastRequestObject.CompletedDate.Value.AddDays( item.MinDaysToRetake ) <= RockDateTime.Now &&
                         !item.RequiresRequest )
                     {
+                        item.AssessmentRetakePath = item.AssessmentPath + "?AssessmentId=0";
                         item.AssessmentRetakeLinkButton = string.Format( "<a href='{0}?AssessmentId=0'>Retake Assessment</a>", item.AssessmentPath );
                     }
                 }
@@ -274,6 +275,7 @@ namespace Rock.Blocks.Crm
             public string Description { get; set; }
             public string AssessmentPath { get; set; }
             public string AssessmentResultsPath { get; set; }
+            public string AssessmentRetakePath { get; set; } = string.Empty;
             public string AssessmentRetakeLinkButton { get; set; }
             public bool RequiresRequest { get; set; }
             public int MinDaysToRetake { get; set; }

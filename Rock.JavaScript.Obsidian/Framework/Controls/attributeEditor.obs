@@ -12,8 +12,7 @@
             <div class="col-md-6">
                 <CheckBox v-model="isActive"
                           label="Active"
-                          help="Set to Inactive to exclude this attribute from Edit and Display UIs."
-                          text="Yes" />
+                          help="Set to Inactive to exclude this attribute from Edit and Display UIs." />
             </div>
         </div>
 
@@ -26,8 +25,7 @@
             <div class="col-md-6">
                 <CheckBox v-model="isPublic"
                           label="Public"
-                          help="Set to public if you want this attribute to be displayed in public contexts."
-                          text="Yes" />
+                          help="Set to public if you want this attribute to be displayed in public contexts." />
             </div>
         </div>
 
@@ -37,7 +35,8 @@
 
         <div class="row">
             <div class="col-md-6">
-                <CategoryPicker v-model="categories"
+                <CategoryPicker v-if="isCategoriesVisible"
+                                v-model="categories"
                                 label="Categories"
                                 :entityTypeGuid="EntityType.Attribute"
                                 entityTypeQualifierColumn="EntityTypeId"
@@ -49,25 +48,23 @@
 
                 <div class="row">
                     <div class="col-sm-6">
-                        <CheckBox v-model="isRequired"
-                                  label="Required"
-                                  text="Yes" />
+                        <CheckBox v-if="isIsRequiredVisible"
+                                  v-model="isRequired"
+                                  label="Required" />
                     </div>
 
                     <div class="col-sm-6">
                         <CheckBox v-if="isShowOnBulkVisible"
                                   v-model="isShowOnBulk"
                                   label="Show on Bulk"
-                                  help="If selected, this attribute will be shown with bulk update attributes."
-                                  text="Yes" />
+                                  help="If selected, this attribute will be shown with bulk update attributes." />
                     </div>
 
                     <div class="col-sm-6">
                         <CheckBox v-if="isShowInGridVisible"
                                   v-model="isShowInGrid"
                                   label="Show in Grid"
-                                  help="If selected, this attribute will be included in a grid."
-                                  text="Yes" />
+                                  help="If selected, this attribute will be included in a grid." />
                     </div>
                 </div>
             </div>
@@ -80,36 +77,32 @@
         <Panel title="Advanced Settings" hasCollapse>
             <div class="row">
                 <div class="col-md-6">
-                    <CheckBox label="Enable History"
+                    <CheckBox v-if="isHistoryEnabledVisible"
+                              label="Enable History"
                               v-model="isHistoryEnabled"
-                              help="If selected, changes to the value of this attribute will be stored in attribute value history."
-                              text="Yes" />
+                              help="If selected, changes to the value of this attribute will be stored in attribute value history." />
 
                     <CheckBox v-if="isAllowSearchVisible"
                               label="Allow Search"
                               v-model="isAllowSearch"
-                              help="If selected, this attribute can be searched on."
-                              text="Yes" />
+                              help="If selected, this attribute can be searched on." />
 
                     <CheckBox v-if="isIndexingEnabledVisible"
                               label="Indexing Enabled"
                               v-model="isIndexingEnabled"
-                              help="If selected, this attribute can be used when indexing for universal search."
-                              text="Yes" />
+                              help="If selected, this attribute can be used when indexing for universal search." />
                 </div>
 
                 <div class="col-md-6">
                     <CheckBox v-if="isAnalyticsVisible"
                               label="Analytics Enabled"
                               v-model="isAnalyticsEnabled"
-                              help="If selected, this attribute will be made available as an Analytic."
-                              text="Yes" />
+                              help="If selected, this attribute will be made available as an Analytic." />
 
                     <CheckBox v-if="isAnalyticsVisible"
                               label="Analytics History Enabled"
                               v-model="isAnalyticsHistoryEnabled"
-                              help="If selected, changes to the value of this attribute will cause Analytics to create a history record. Note that this requires that 'Analytics Enabled' is also enabled."
-                              text="Yes" />
+                              help="If selected, changes to the value of this attribute will cause Analytics to create a history record. Note that this requires that 'Analytics Enabled' is also enabled." />
                 </div>
             </div>
 
@@ -150,6 +143,16 @@
             type: String as PropType<Guid | undefined>
         },
 
+        isCategoriesVisible: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        isIsRequiredVisible: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
         isAnalyticsVisible: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -161,6 +164,11 @@
         },
 
         isShowOnBulkVisible: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        isHistoryEnabledVisible: {
             type: Boolean as PropType<boolean>,
             default: true
         },

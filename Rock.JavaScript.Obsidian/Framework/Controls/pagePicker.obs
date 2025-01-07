@@ -49,6 +49,7 @@
     import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
     import * as Dialogs from "@Obsidian/Utility/dialogs";
 
     const props = defineProps({
@@ -84,6 +85,14 @@
         promptForPageRoute: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * Limit the results to the given site type
+         */
+        siteType: {
+            type: Number as PropType<SiteType>,
+            default: null
         },
 
         /**
@@ -172,6 +181,8 @@
         // If cached, don't re-fetch
         if (currentPage) {
             updatePage(props.multiple ? [currentPage] : currentPage);
+            // Wait until internalPageValue is updated before retrieving the tree again.
+            await nextTick();
             refreshProvider();
             return;
         }
@@ -212,6 +223,7 @@
         const prov = new PageTreeItemProvider();
         prov.securityGrantToken = props.securityGrantToken;
         prov.hidePageGuids = props.hidePageGuids;
+        prov.siteType = props.siteType;
 
         if (internalPageValue.value) {
             if (Array.isArray(internalPageValue.value)) {

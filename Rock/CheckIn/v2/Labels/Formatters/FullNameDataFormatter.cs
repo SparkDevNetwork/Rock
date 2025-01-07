@@ -82,6 +82,11 @@ namespace Rock.CheckIn.v2.Labels.Formatters
         /// <inheritdoc/>
         protected override string GetFormattedValue( Person value, string optionValue, LabelField field, PrintLabelRequest printRequest )
         {
+            if ( value == null )
+            {
+                return string.Empty;
+            }
+
             if ( optionValue == "Nick Last" )
             {
                 return $"{value.NickName} {value.LastName}";

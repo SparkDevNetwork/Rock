@@ -81,7 +81,6 @@ import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
 import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
-import DatePartsPicker from "@Obsidian/Controls/datePartsPicker.obs";
 import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
 import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
@@ -94,7 +93,6 @@ import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
 import Rating from "@Obsidian/Controls/rating.obs";
 import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
-import PersonPicker from "@Obsidian/Controls/personPicker.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
 import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
@@ -237,21 +235,11 @@ import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGaller
 import CampusAccountAmountPickerGallery from "./ControlGallery/campusAccountAmountPickerGallery.partial.obs";
 import PersonPickerGallery from "./ControlGallery/personPickerGallery.partial.obs";
 import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
-import HighlightLabelGallery from "./ControlGallery/highlightLabelGallery.partial.obs";
 import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
 import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
-import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
-import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
-import EntityPickerGallery from "./ControlGallery/entityPickerGallery.partial.obs";
-import PersonBasicEditorGallery from "./ControlGallery/personBasicEditorGallery.partial.obs";
-import AttributeMatrixEditorGallery from "./ControlGallery/attributeMatrixEditorGallery.partial.obs";
-import BadgeControlGallery from "./ControlGallery/badgeControlGallery.partial.obs";
-import BadgeGallery from "./ControlGallery/badgeGallery.partial.obs";
-import WarningBlockGallery from "./ControlGallery/warningBlockGallery.partial.obs";
-import KeyValueListGallery from "./ControlGallery/keyValueListGallery.partial.obs";
-import YearPickerGallery from "./ControlGallery/yearPickerGallery.partial.obs";
 import CurrencyBoxGallery from "./ControlGallery/currencyBoxGallery.partial.obs";
+import DatePartsPickerGallery from "./ControlGallery/datePartsPickerGallery.partial.obs";
 import { Guid } from "@Obsidian/Types";
 
 
@@ -1241,43 +1229,6 @@ const dateTimePickerGallery = defineComponent({
                 <InlineCheckBox v-model="disabled" label="Is Disabled" />
             </div>
         </div>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates date part pickers */
-const datePartsPickerGallery = defineComponent({
-    name: "DatePartsPickerGallery",
-    components: {
-        GalleryAndResult,
-        Toggle,
-        DatePartsPicker
-    },
-    setup() {
-        return {
-            showYear: ref(true),
-            datePartsModel: ref<DatePartsPickerValue>({
-                month: 1,
-                day: 1,
-                year: 2020
-            }),
-            importCode: getControlImportPath("datePartsPicker"),
-            exampleCode: `<DatePartsPicker label="Date" v-model="date" :requireYear="true" :showYear="true" :allowFutureDates="true" :futureYearCount="50" :startYear="1900" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="datePartsModel"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <DatePartsPicker label="Date" v-model="datePartsModel" :showYear="showYear" />
-
-    <template #settings>
-        <Toggle label="Show Year" v-model="showYear" />
-        <p class="mt-4 mb-4">The <a href="#BirthdayPickerGallery">Birthday Picker</a> simply wraps this control and sets <code>allowFutureDates</code> and <code>requireYear</code> to <code>false</code>.</p>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
         <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
     </template>
 </GalleryAndResult>`
@@ -8099,7 +8050,7 @@ const controlGalleryComponents: Record<string, Component> = [
     datePickerGallery,
     dateRangePickerGallery,
     dateTimePickerGallery,
-    datePartsPickerGallery,
+    DatePartsPickerGallery,
     radioButtonListGallery,
     dialogGallery,
     checkBoxGallery,
@@ -8250,10 +8201,10 @@ const controlGalleryComponents: Record<string, Component> = [
     ImageEditorGallery,
 ]
     // Sort list by component name
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
     // Convert list to an object where the key is the component name and the value is the component
     .reduce((newList, comp) => {
-        newList[comp.name] = comp;
+        newList[comp.name ?? ""] = comp;
         return newList;
     }, {});
 
@@ -8485,9 +8436,9 @@ const detailBlockGallery = defineComponent({
 const templateGalleryComponents = [
     detailBlockGallery
 ]
-    .sort((a, b) => a.name.localeCompare(b.name))
+    .sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))
     .reduce((newList, comp) => {
-        newList[comp.name] = comp;
+        newList[comp.name ?? ""] = comp;
         return newList;
     }, {});
 

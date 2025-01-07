@@ -94,87 +94,184 @@
                             <asp:Panel ID="pnlStyles" runat="server">
                                 <asp:HiddenField ID="hfShowAdvancedStylesFields" runat="server" />
 
-                                <Rock:RockControlWrapper ID="rcwInterfaceColors" runat="server" Label="Interface Colors">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpEditBarBackgroundColor" runat="server" Label="Bar Background Color" Help="Override the default title bar background color provided by the mobile OS." />
+                                <asp:Panel runat="server" ID="pnlMauiStyles">
+                                    <div class="d-flex flex-column" style="gap: 24px;">
+
+                                        <!-- Interface Colors -->
+                                        <div>
+                                            <div class="rock-header">
+                                                <h3 class="title">Interface Colors</h3>
+                                                <p class="body mb-2 text-gray-700">Design your main interface with these colors. The colors you provide will be available as custom CSS variables and utility classes.</p>
+                                                <hr class="section-header-hr" />
+                                            </div>
+
+                                            <div class="d-flex flex-wrap justify-content-start" style="gap: 8px;">
+                                                <Rock:ColorPicker ID="cpInterfaceStrongest" runat="server" Label="Interface-Strongest" />
+                                                <Rock:ColorPicker ID="cpInterfaceStronger" runat="server" Label="Interface-Stronger" />
+                                                <Rock:ColorPicker ID="cpInterfaceStrong" runat="server" Label="Interface-Strong" />
+                                                <Rock:ColorPicker ID="cpInterfaceMedium" runat="server" Label="Interface-Medium" />
+                                                <Rock:ColorPicker ID="cpInterfaceSoft" runat="server" Label="Interface-Soft" />
+                                                <Rock:ColorPicker ID="cpInterfaceSofter" runat="server" Label="Interface-Softer" />
+                                                <Rock:ColorPicker ID="cpInterfaceSoftest" runat="server" Label="Interface-Softest" />
+                                            </div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpEditMenuButtonColor" runat="server" Label="Menu Button Color" Help="The color of the menu button in the title bar." />
+
+
+                                        <!-- Accent Colors -->
+                                        <div>
+                                            <div class="rock-header">
+                                                <h3 class="title">Accent Colors</h3>
+                                                <p class="body mb-2 text-gray-700">Choose accent colors for enhancing your interface's look. The colors you provide will be available as custom CSS variables and utility classes.</p>
+                                                <hr class="section-header-hr" />
+                                            </div>
+
+                                            <div class="d-flex flex-wrap justify-content-start" style="gap: 8px;">
+                                                <Rock:ColorPicker ID="cpPrimaryStrong" runat="server" Label="Primary-Strong" />
+                                                <Rock:ColorPicker ID="cpPrimarySoft" runat="server" Label="Primary-Soft" />
+                                            </div>
+
+
+                                            <div class="d-flex flex-wrap justify-content-start" style="gap: 8px;">
+                                                <Rock:ColorPicker ID="cpSecondaryStrong" runat="server" Label="Secondary-Strong" />
+                                                <Rock:ColorPicker ID="cpSecondarySoft" runat="server" Label="Secondary-Soft" />
+                                            </div>
+
+
+                                            <div class="d-flex flex-wrap justify-content-start" style="gap: 8px;">
+                                                <Rock:ColorPicker ID="cpBrandStrong" runat="server" Label="Brand-Strong" />
+                                                <Rock:ColorPicker ID="cpBrandSoft" runat="server" Label="Brand-Soft" />
+                                            </div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpEditActivityIndicatorColor" runat="server" Label="Activity Indicator Color" Help="Defines the color that will be used when displaying an activity indicator, these alert the user that something is happening in the background." />
-                                        </div>
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpTextColor" runat="server" Label="Text Color" Help="The default color to use for text in the application." />
-                                        </div>
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpHeadingColor" runat="server" Label="Heading Color" Help="The default color to use for headings in the application." />
-                                        </div>
-                                        <div class="col-md-4">
-                                            <Rock:ColorPicker ID="cpBackgroundColor" runat="server" Label="Background Color" Help="The background color for the application." />
+
+                                        <!-- Functional Colors -->
+                                        <div>
+                                            <div class="rock-header">
+                                                <h3 class="title">Functional Colors</h3>
+                                                <p class="body mb-2 text-gray-700">Customize status colors in your application. The colors you provide will be available as custom CSS variables and utility classes.</p>
+                                                <hr class="section-header-hr" />
+                                            </div>
+
+                                            <div class="d-flex flex-wrap justify-content-start" style="gap: 8px;">
+                                                <Rock:ColorPicker ID="cpSuccessStrong" runat="server" Label="Success-Strong" />
+                                                <Rock:ColorPicker ID="cpSuccessSoft" runat="server" Label="Success-Soft" />
+                                            </div>
+
+                                            <div class="d-flex flex-wrap justify-content-start" style="gap: 8px;">
+                                                <Rock:ColorPicker ID="cpInfoStrong" runat="server" Label="Info-Strong" />
+                                                <Rock:ColorPicker ID="cpInfoSoft" runat="server" Label="Info-Soft" />
+                                            </div>
+
+                                            <div class="d-flex flex-wrap justify-content-start" style="gap: 8px;">
+                                                <Rock:ColorPicker ID="cpDangerStrong" runat="server" Label="Danger-Strong" />
+                                                <Rock:ColorPicker ID="cpDangerSoft" runat="server" Label="Danger-Soft" />
+                                            </div>
+
+                                            <div class="d-flex flex-wrap justify-content-start" style="gap: 8px;">
+                                                <Rock:ColorPicker ID="cpWarningStrong" runat="server" Label="Warning-Strong" />
+                                                <Rock:ColorPicker ID="cpWarningSoft" runat="server" Label="Warning-Soft" />
+                                            </div>
                                         </div>
                                     </div>
-                                </Rock:RockControlWrapper>
+                                </asp:Panel>
 
 
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <Rock:RockCheckBox ID="cbNavbarTransclucent" runat="server" AutoPostBack="true" OnCheckedChanged="CbNavbarTransclucent_CheckedChanged" Label="Enable Navigation Bar Transparency" Help="Please note, your bar background color must have an opacity less than 100% for this to work. Enable to view different blurring options. (iOS Only)" />
-                                        <Rock:RockDropDownList ID="ddlNavbarBlurStyle" runat="server" Label="Navigation Bar Blur Style" Help="Select between the different blur styles of the navigation bar. (iOS Only)" />
+                                <!-- User Interface Settings -->
+                                <div>
+                                    <div class="rock-header">
+                                        <h3 class="title" style="margin-top: 24px;">User Interface Settings</h3>
+                                        <p class="body mb-2 text-gray-700">Customize settings for different sections of the application's interface.</p>
+                                        <hr class="section-header-hr" />
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <Rock:ColorPicker ID="cpBarBackgroundColor" runat="server" Label="Navigation Bar Background Color" Help="The background color of the navigation bar." />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <Rock:RockCheckBox ID="cbNavbarTransclucent" runat="server" AutoPostBack="true" OnCheckedChanged="CbNavbarTransclucent_CheckedChanged" Label="Enable Navigation Bar Transparency" Help="Please note, your bar background color must have an opacity less than 100% for this to work. Enable to view different blurring options. (iOS Only)" />
+                                            <Rock:RockDropDownList ID="ddlNavbarBlurStyle" runat="server" Label="Navigation Bar Blur Style" Help="Select between the different blur styles of the navigation bar. (iOS Only)" />
+                                        </div>
+                                        <div class="col-md-4">
+                                            <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Navigation Bar Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
+                                        </div>
                                     </div>
                                 </div>
 
-                                <hr />
+                                <asp:Panel runat="server" ID="pnlLegacyStyles">
+                                    <div class="rock-header">
+                                        <h3 class="title">Legacy (Xamarin Forms) Settings</h3>
+                                        <p class="body mb-2 text-gray-700">Use these settings to help maintain backward compatibility with your shell. This only applies to applications published on V5 and earlier. See <a href="https://mobiledocs.rockrms.com/essentials/tips-and-tricks-1/migrating-to-.net-maui-v6">Migrating to .NET MAUI</a> for more information.</p>
+                                        <hr class="section-header-hr" />
+                                    </div>
 
-                                <Rock:RockControlWrapper ID="rcwAdditionalColors" runat="server" Label="Application Colors">
+                                    <Rock:RockControlWrapper ID="rcwInterfaceColors" runat="server" Label="Interface Colors">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <Rock:ColorPicker ID="cpEditMenuButtonColor" runat="server" Label="Menu Button Color" Help="The color of the menu button in the title bar." />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <Rock:ColorPicker ID="cpEditActivityIndicatorColor" runat="server" Label="Activity Indicator Color" Help="Defines the color that will be used when displaying an activity indicator, these alert the user that something is happening in the background." />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <Rock:ColorPicker ID="cpTextColor" runat="server" Label="Text Color" Help="The default color to use for text in the application." />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <Rock:ColorPicker ID="cpHeadingColor" runat="server" Label="Heading Color" Help="The default color to use for headings in the application." />
+                                            </div>
+                                            <div class="col-md-4">
+                                                <Rock:ColorPicker ID="cpBackgroundColor" runat="server" Label="Background Color" Help="The background color for the application." />
+                                            </div>
+                                        </div>
+                                    </Rock:RockControlWrapper>
+
+                                    <hr />
+
+                                    <Rock:RockControlWrapper ID="rcwAdditionalColors" runat="server" Label="Application Colors">
+                                        <div class="row">
+                                            <div class="col-md-4 col-sm-6">
+                                                <Rock:ColorPicker ID="cpPrimary" runat="server" Label="Primary" Help="The primary color to use for buttons and other controls." />
+                                            </div>
+
+                                            <div class="col-md-4 col-sm-6">
+                                                <Rock:ColorPicker ID="cpSecondary" runat="server" Label="Secondary" Help="Secondary color to use for various controls." />
+                                            </div>
+
+                                            <div class="col-md-4 col-sm-6">
+                                                <Rock:ColorPicker ID="cpSuccess" runat="server" Label="Success" Help="Color to use for various controls to show that something was successful." />
+                                            </div>
+
+                                            <div class="col-md-4 col-sm-6">
+                                                <Rock:ColorPicker ID="cpInfo" runat="server" Label="Info" Help="Color to use for various controls to show informational messages." />
+                                            </div>
+
+                                            <div class="col-md-4 col-sm-6">
+                                                <Rock:ColorPicker ID="cpDanger" runat="server" Label="Danger" Help="Color to use for various controls to show that an action is dangerous." />
+                                            </div>
+
+                                            <div class="col-md-4 col-sm-6">
+                                                <Rock:ColorPicker ID="cpWarning" runat="server" Label="Warning" Help="Color to use for various controls to show that caution is needed." />
+                                            </div>
+
+                                            <div class="col-md-4 col-sm-6">
+                                                <Rock:ColorPicker ID="cpLight" runat="server" Label="Light" Help="A color to use for controls that need to be light." />
+                                            </div>
+
+                                            <div class="col-md-4 col-sm-6">
+                                                <Rock:ColorPicker ID="cpDark" runat="server" Label="Dark" Help="A color to use for controls that need to be dark." />
+                                            </div>
+
+                                            <div class="col-md-4 col-sm-6">
+                                                <Rock:ColorPicker ID="cpBrand" runat="server" Label="Brand" Help="Color to use for branding controls like the navigation header." />
+                                            </div>
+                                        </div>
+                                    </Rock:RockControlWrapper>
+
                                     <div class="row">
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpPrimary" runat="server" Label="Primary" Help="The primary color to use for buttons and other controls." />
-                                        </div>
-
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpSecondary" runat="server" Label="Secondary" Help="Secondary color to use for various controls." />
-                                        </div>
-
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpSuccess" runat="server" Label="Success" Help="Color to use for various controls to show that something was successful." />
-                                        </div>
-
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpInfo" runat="server" Label="Info" Help="Color to use for various controls to show informational messages." />
-                                        </div>
-
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpDanger" runat="server" Label="Danger" Help="Color to use for various controls to show that an action is dangerous." />
-                                        </div>
-
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpWarning" runat="server" Label="Warning" Help="Color to use for various controls to show that caution is needed." />
-                                        </div>
-
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpLight" runat="server" Label="Light" Help="A color to use for controls that need to be light." />
-                                        </div>
-
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpDark" runat="server" Label="Dark" Help="A color to use for controls that need to be dark." />
-                                        </div>
-
-                                        <div class="col-md-4 col-sm-6">
-                                            <Rock:ColorPicker ID="cpBrand" runat="server" Label="Brand" Help="Color to use for branding controls like the navigation header." />
+                                        <div class="col-md-4">
+                                            <Rock:NumberBox ID="nbRadiusBase" runat="server" NumberType="Integer" Label="Radius Base" Help=""></Rock:NumberBox>
                                         </div>
                                     </div>
-                                </Rock:RockControlWrapper>
-
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <Rock:NumberBox ID="nbRadiusBase" runat="server" NumberType="Integer" Label="Radius Base" Help=""></Rock:NumberBox>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Navigation Bar Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
-                                    </div>
-                                </div>
+                                </asp:Panel>
 
                                 <div class="clearfix">
                                     <div class="pull-right">
@@ -184,7 +281,12 @@
 
                                 <asp:Panel ID="pnlStylesAdvancedFields" runat="server" CssClass="js-advanced-style-fields" Style="display: none">
                                     <div class="row">
+                                        <div class="col-md-4">
+                                            <Rock:RockDropDownList ID="ddlCssFramework" runat="server" AutoPostBack="true" OnSelectedIndexChanged="StyleFramework_SelectedIndexChanged" Label="Style Framework" Help="Used to maintain backward compatibility with Xamarin Forms (Shell V5 and under) applications. New applications should use 'Default' for this value.<br /><br />Legacy (XF): Provides the legacy 'Styles' configuration.<br />Blended: Provides both the legacy (XF) and the new (MAUI) 'Styles' Configuration. Useful for migration.<br />Default: Provides the latest 'Styles' configuration." />
+                                        </div>
+                                    </div>
 
+                                    <div class="row">
                                         <div class="col-md-4">
                                             <Rock:NumberBox ID="nbFontSizeDefault" runat="server" NumberType="Integer" Label="Font Size Default" Help="The default font size."></Rock:NumberBox>
                                         </div>
@@ -200,7 +302,6 @@
                                         CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>"
                                         CompletedDuration="5"></Rock:BootstrapButton>
                                 </div>
-
                             </asp:Panel>
 
                             <asp:Panel ID="pnlLayouts" runat="server">
@@ -354,9 +455,6 @@
                             <div class="col-md-6">
                                 <Rock:NumberBox ID="nbPageViewRetentionPeriodDays" runat="server" Label="Page View Retention Period" Help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
                             </div>
-                            <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbEnablePageViewGeoTracking" runat="server" Label="Enable Page View Geo Tracking" Help="Enabling this feature will allow the PopulateInteractionSessionData job to begin performing geolocation lookup on the IP addresses in the Interaction Session data. This also requires setting up a IP Address Location Service found under System Settings." />
-                            </div>
                         </div>
 
                     </Rock:PanelWidget>
@@ -371,6 +469,13 @@
 
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbAuth0ClientDomain" runat="server" Label="Auth0 Domain" Help="Set this to reflect the value in your configured Auth0 application to add support for Auth0 based login in your mobile application." />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:DefinedValuePicker ID="dvpAuth0ConnectionStatus" runat="server" Label="Connection Status" Help="When an Auth0 login creates a person, this connection status will be used." />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <Rock:DefinedValuePicker ID="dvpAuth0RecordStatus" runat="server" Label="Record Status" Help="When an Auth0 login creates a person, this record status will be used.." />
                                 </div>
                             </div>
                             <hr class="section-header-hr" />

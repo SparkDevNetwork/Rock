@@ -228,7 +228,6 @@ namespace RockWeb.Blocks.Utility
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             nbErrorMessage.Visible = false;
 
             if ( !this.IsPostBack )
@@ -239,6 +238,7 @@ namespace RockWeb.Blocks.Utility
                     string fileSelectedResult = getSelectedFileResult( this.Request.Form["selectedFileId"] );
 
                     Response.Write( fileSelectedResult );
+                    base.OnLoad( e );
                     Response.End();
                 }
 
@@ -283,6 +283,8 @@ namespace RockWeb.Blocks.Utility
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

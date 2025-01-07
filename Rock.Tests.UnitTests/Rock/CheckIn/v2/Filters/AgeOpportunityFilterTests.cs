@@ -6,6 +6,7 @@ using Moq;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Filters;
+using Rock.Enums.CheckIn;
 using Rock.ViewModels.CheckIn;
 
 namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
@@ -367,6 +368,21 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
             Assert.IsTrue( isIncluded );
         }
 
+        [TestMethod]
+        public void AgeFilter_WithBehaviorOtherThanGradeAndAgeMustMatch_SkipsFilter()
+        {
+            // This test would normally fail, so we use this along with the
+            // behavior to verify that it doesn't actually filter anything.
+            var minAge = 3;
+
+            var filter = CreateAgeFilter( null, true, GradeAndAgeMatchingMode.PrioritizeGradeOverAge );
+            var groupOpportunity = CreateGroupOpportunity( minAge, null, null, null );
+
+            var isIncluded = filter.IsGroupValid( groupOpportunity );
+
+            Assert.IsTrue( isIncluded );
+        }
+
         #endregion
 
         #region Support Methods
@@ -377,13 +393,15 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
         /// </summary>
         /// <param name="personBirthdate">The birthdate to give the person if not <c>null</c>.</param>
         /// <param name="isAgeRequired"><c>true</c> if the configuration specifies that age is required; otherwise <c>false</c>.</param>
+        /// <param name="gradeAndAgeMatchingBehavior">The configuration value to use for the template.</param>
         /// <returns>An instance of <see cref="AgeOpportunityFilter"/>.</returns>
-        private AgeOpportunityFilter CreateAgeFilter( DateTime? personBirthdate, bool isAgeRequired)
+        private AgeOpportunityFilter CreateAgeFilter( DateTime? personBirthdate, bool isAgeRequired, GradeAndAgeMatchingMode gradeAndAgeMatchingBehavior = GradeAndAgeMatchingMode.GradeAndAgeMustMatch )
         {
             // Create the template configuration.
             var templateConfigurationMock = new Mock<TemplateConfigurationData>( MockBehavior.Strict );
 
             templateConfigurationMock.Setup( m => m.IsAgeRequired ).Returns( isAgeRequired );
+            templateConfigurationMock.Setup( m => m.GradeAndAgeMatchingBehavior ).Returns( gradeAndAgeMatchingBehavior );
 
             var filter = new AgeOpportunityFilter
             {

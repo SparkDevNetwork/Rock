@@ -164,8 +164,6 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbPeople.Visible = false;
             nbError.Visible = false;
 
@@ -182,6 +180,8 @@ namespace RockWeb.Blocks.Crm
             {
                 LoadViewDetails();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

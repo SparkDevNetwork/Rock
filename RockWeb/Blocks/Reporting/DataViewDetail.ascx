@@ -23,7 +23,7 @@
                     <fieldset>
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" AutoPostBack="true" OnTextChanged="tbName_TextChanged" CssClass="" />
+                                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" AutoPostBack="false" OnTextChanged="tbName_TextChanged" CssClass="" />
                                 <Rock:RockCheckBox ID="cbDisableUseOfReadOnlyContext" runat="server" Visible="false" Label="Disable Use Of Read Only Context" Help="Enabling this option will cause the data view to run with a normal database context instead of using a read-only context. This may be needed if the results of the data view will be used for updating data, or for specific plugin filters that update data during the query process." />
                             </div>
                             <div class="col-md-6">

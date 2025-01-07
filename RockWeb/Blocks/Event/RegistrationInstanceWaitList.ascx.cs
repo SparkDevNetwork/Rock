@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -29,6 +30,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Reporting;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -196,12 +198,12 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -1183,39 +1185,6 @@ namespace RockWeb.Blocks.Event
 
                             qry = qry.Where( r => personQry.Any( p => p.Id == r.PersonAlias.PersonId ) );
                         }
-
-                        // Get all the group member attributes selected to be on grid
-                        groupMemberAttributes = RegistrantFields
-                            .Where( f =>
-                                f.Attribute != null &&
-                                f.FieldSource == RegistrationFieldSource.GroupMemberAttribute )
-                            .Select( f => f.Attribute )
-                            .ToList();
-                        groupMemberAttributesIds = groupMemberAttributes.Select( a => a.Id ).Distinct().ToList();
-
-                        // Filter query by any configured person attribute filters
-                        if ( groupMemberAttributes != null && groupMemberAttributes.Any() )
-                        {
-                            bool isFilterModeApplied = false;
-                            var groupMemberService = new GroupMemberService( rockContext );
-                            var groupMemberQry = groupMemberService.Queryable().AsNoTracking();
-
-                            foreach ( var attribute in groupMemberAttributes )
-                            {
-                                var filterControl = phWaitListFormFieldFilters.FindControl( FILTER_ATTRIBUTE_PREFIX + attribute.Id.ToString() );
-                                var filterValues = attribute.FieldType.Field.GetFilterValues( filterControl, attribute.QualifierValues, Rock.Reporting.FilterMode.SimpleFilter );
-                                if ( filterValues.Any() && filterValues.Last().IsNotNullOrWhiteSpace() )
-                                {
-                                    isFilterModeApplied = true;
-                                    groupMemberQry = attribute.FieldType.Field.ApplyAttributeQueryFilter( groupMemberQry, filterControl, attribute, groupMemberService, Rock.Reporting.FilterMode.SimpleFilter );
-                                }
-                            }
-
-                            if ( isFilterModeApplied )
-                            {
-                                qry = qry.Where( r => groupMemberQry.Any( g => g.Id == r.GroupMemberId ) );
-                            }
-                        }
                     }
 
                     // Sort the query
@@ -1391,7 +1360,8 @@ namespace RockWeb.Blocks.Event
         /// <param name="setValues"></param>
         private void AddDynamicControls( bool setValues )
         {
-            AddRegistrationTemplateFieldsToGrid( this.RegistrantFields, phWaitListFormFieldFilters, gWaitList, fWaitList, setValues, false );
+            // Filter out the group member Attributes from Regisrant field
+            AddRegistrationTemplateFieldsToGrid( this.RegistrantFields.Where( a => a.FieldSource != RegistrationFieldSource.GroupMemberAttribute ).ToArray(), phWaitListFormFieldFilters, gWaitList, fWaitList, setValues, false );
         }
 
         #endregion

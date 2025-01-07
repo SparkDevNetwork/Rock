@@ -159,6 +159,12 @@ export type FamilyPreRegistrationInitializationBox = {
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
+    /**
+     * Moves the Child panel above the Adult Information panel and starts
+     * with one child to be filled in.
+     */
+    prioritizeChildEntry: boolean;
+
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
 

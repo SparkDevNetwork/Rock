@@ -391,10 +391,19 @@ namespace Rock.Financial
                     using ( var childActivity = ObservabilityHelper.StartActivity( $"ACT: Generate Statement > Configure Transaction Query" ) )
                     {
                         financialTransactionQry = financialTransactionQry.Include( a => a.FinancialPaymentDetail )
-                        .Include( a => a.FinancialPaymentDetail.CurrencyTypeValue )
-                        .Include( a => a.TransactionDetails )
-                        .Include( a => a.TransactionDetails.Select( x => x.Account ) )
-                        .OrderBy( a => a.TransactionDateTime );
+                            .Include( a => a.FinancialPaymentDetail.CurrencyTypeValue )
+                            .Include( a => a.TransactionDetails )
+                            .Include( a => a.TransactionDetails.Select( x => x.Account ) );
+
+                        if ( transactionSettings.HideRefundedTransactions )
+                        {
+                            // Eager-load refunds so we can filter against them below.
+                            financialTransactionQry = financialTransactionQry
+                                .Include( a => a.RefundDetails )
+                                .Include( a => a.Refunds );
+                        }
+
+                        financialTransactionQry = financialTransactionQry.OrderBy( a => a.TransactionDateTime );
                     }
 
                     List<FinancialTransaction> financialTransactionsList;
@@ -552,32 +561,100 @@ namespace Rock.Financial
 
                     var transactionDetailListAll = financialTransactionsList.SelectMany( a => a.TransactionDetails ).ToList();
 
-                    if ( transactionSettings.HideRefundedTransactions && transactionDetailListAll.Any( a => a.Amount < 0 ) )
+                    if ( transactionSettings.HideRefundedTransactions )
                     {
-                        var allRefunds = transactionDetailListAll.SelectMany( a => a.Transaction.Refunds ).ToList();
+                        var allRefunds = transactionDetailListAll
+                            // Refunds can be represented as top-level transactions within the list
+                            // (if a given transaction's RefundDetails property is populated).
+                            .Where( a => a.Transaction.RefundDetails != null )
+                            .Select( a => a.Transaction.RefundDetails )
+                            // Refunds can also be represented as children of transactions within the list
+                            // (if a given transaction's Refunds collection is populated).
+                            .Union( transactionDetailListAll.SelectMany( a => a.Transaction.Refunds ) )
+                            .ToList();
+
+                        // It's possible a refund was queried as both a top-level transaction AND as a
+                        // child of another transaction. Keep track of those we've already processed.
+                        var processedRefundIds = new List<int>();
+
                         foreach ( var refund in allRefunds )
                         {
-                            foreach ( var refundedOriginalTransactionDetail in refund.OriginalTransaction.TransactionDetails )
+                            if ( processedRefundIds.Contains( refund.Id ) )
                             {
-                                // remove the refund's original TransactionDetails from the results
-                                if ( transactionDetailListAll.Contains( refundedOriginalTransactionDetail ) )
+                                continue;
+                            }
+
+                            /*
+                                7/9/2024 - JPH
+
+                                ------------------------------------------------------
+                                 For each of a refund's original transaction details:
+                                ------------------------------------------------------
+
+                                    1. If the original transaction detail is in the current list of transaction details
+                                       AND the refund has any [new] transaction details whose account IDs match that of the original:
+
+                                        a. Reduce the original transaction detail's amount by the sum of matching refunds.
+                                        b. If the original transaction detail's amount is now zero (or less), remove it from the current list.
+
+                                ---------------------------------------------------
+                                 For each of a refund's [new] transaction details:
+                                ---------------------------------------------------
+
+                                    2. If the [new] transaction detail is in the current list of transaction details:
+
+                                        a. Remove it from the current list.
+
+                                Reason:Contribution Statement Generator Block Not Hiding Refunds for Transactions in Differing Years
+                                https://github.com/SparkDevNetwork/Rock/issues/5712
+                             */
+
+                            var originalTransactionDetails = refund.OriginalTransaction?.TransactionDetails ?? new List<FinancialTransactionDetail>();
+                            var refundTransactionDetails = refund.FinancialTransaction?.TransactionDetails ?? new List<FinancialTransactionDetail>();
+
+                            foreach ( var originalTransactionDetail in originalTransactionDetails )
+                            {
+                                var currentTransactionDetail = transactionDetailListAll.FirstOrDefault( a => a.Id == originalTransactionDetail.Id );
+                                if ( currentTransactionDetail == null )
                                 {
-                                    foreach ( var refundDetailId in refund.FinancialTransaction.TransactionDetails.Select( a => a.Id ) )
-                                    {
-                                        var refundDetail = transactionDetailListAll.FirstOrDefault( a => a.Id == refundDetailId );
-                                        if ( refundDetail != null )
-                                        {
-                                            // If this is full refund, remove it from the list of transactions.
-                                            // If this is a partial refund, we'll need to keep it otherwise the totals won't match.
-                                            if ( ( refundDetail.AccountId == refundedOriginalTransactionDetail.AccountId ) && ( refundDetail.Amount + refundedOriginalTransactionDetail.Amount == 0 ) )
-                                            {
-                                                transactionDetailListAll.Remove( refundDetail );
-                                                transactionDetailListAll.Remove( refundedOriginalTransactionDetail );
-                                            }
-                                        }
-                                    }
+                                    // The refund's original transaction detail is not in the current list.
+                                    continue;
+                                }
+
+                                // Sum the amounts of all refund transaction details whose account IDs match that of the current transaction detail.
+                                var refundAmount = refundTransactionDetails
+                                    .Where( a => a.AccountId == currentTransactionDetail.AccountId )
+                                    .Sum( a => a.Amount );
+
+                                if ( refundAmount == 0 )
+                                {
+                                    continue;
+                                }
+
+                                // Reduce the current transaction detail's amount by that of the matching refund
+                                // (note that refund amounts should always be negative, so we'll add amounts here).
+                                currentTransactionDetail.Amount += refundAmount;
+
+                                // If the current transaction amount is now zero (or less), remove it from the list.
+                                if ( currentTransactionDetail.Amount <= 0 )
+                                {
+                                    transactionDetailListAll.Remove( currentTransactionDetail );
                                 }
                             }
+
+                            foreach ( var refundTransactionDetail in refundTransactionDetails )
+                            {
+                                var currentTransactionDetail = transactionDetailListAll.FirstOrDefault( a => a.Id == refundTransactionDetail.Id );
+                                if ( currentTransactionDetail == null )
+                                {
+                                    // The refund's [new] transaction detail is not in the current list.
+                                    continue;
+                                }
+
+                                transactionDetailListAll.Remove( refundTransactionDetail );
+                            }
+
+                            processedRefundIds.Add( refund.Id );
                         }
                     }
 

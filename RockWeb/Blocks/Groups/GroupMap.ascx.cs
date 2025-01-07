@@ -621,8 +621,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             lMessages.Text = string.Empty;
             pnlMap.Visible = true;
 
@@ -664,6 +662,8 @@ namespace RockWeb.Blocks.Groups
 
                 Map();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

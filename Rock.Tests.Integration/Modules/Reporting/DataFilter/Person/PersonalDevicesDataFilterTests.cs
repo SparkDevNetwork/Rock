@@ -33,10 +33,10 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
     /// Test DataFilter: Person/PersonalDevices.
     /// </summary>
     [TestClass]
+    [TestCategory( "Crm.Personalization" )]
+    [TestCategory( "Reporting.DataFilters" )]
     public class PersonalDevicesDataFilterTests : DataFilterTestBase
     {
-        private const string _TestCategory = "Rock.Crm.Personalization.Reporting.PersonalDevicesDataFilter.Tests";
-
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
@@ -138,7 +138,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
         #endregion
 
         [TestMethod]
-        [TestCategory( _TestCategory )]
         public void PersonalDevicesFilter_FilterBySite_ReturnsMatchedSitesOnly()
         {
             // Filter for Site=Internal
@@ -158,7 +157,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
         }
 
         [TestMethod]
-        [TestCategory( _TestCategory )]
         public void PersonalDevicesFilter_FilterByDeviceType_ShouldReturnMatchingDeviceTypes()
         {
             // Filter for DeviceType=Mobile.
@@ -177,7 +175,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
         }
 
         [TestMethod]
-        [TestCategory( _TestCategory )]
         public void PersonalDevicesFilter_FilterByDevicePlatform_ShouldReturnMatchingDevicePlatforms()
         {
             // Filter for DevicePlatform=Mobile.
@@ -196,7 +193,6 @@ namespace Rock.Tests.Integration.Modules.Reporting.DataFilter.Person
         }
 
         [TestMethod]
-        [TestCategory( _TestCategory )]
         public void PersonalDevicesFilter_FilterByNotificationStatus_ShouldReturnMatchingNotificationStatus()
         {
             // Filter for DevicePlatform=Mobile.

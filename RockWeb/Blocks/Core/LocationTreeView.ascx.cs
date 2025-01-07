@@ -84,8 +84,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
 
             if ( !Page.IsPostBack )
@@ -156,6 +154,8 @@ namespace RockWeb.Blocks.Core
             {
                 lbAddLocationChild.Enabled = false;
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

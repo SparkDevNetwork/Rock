@@ -16,13 +16,13 @@
                                      autocomplete="given-name"
                                      :disabled="isSaving || isNavigating"
                                      label="First Name"
-                                     rules="required" />
+                                     :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
 
                             <TextBox v-model="lastName"
                                      autocomplete="family-name"
                                      :disabled="isSaving || isNavigating"
                                      label="Last Name"
-                                     :rules="config.isLastNameRequired ? 'required' : ''" />
+                                     :rules="config.isLastNameRequired ? ['required', 'nospecialcharacters', 'noemojisorspecialfonts'] : ['nospecialcharacters', 'noemojisorspecialfonts']" />
 
                             <EmailBox v-model="email"
                                       autocomplete="email"
@@ -41,6 +41,8 @@
                                           :disabled="isSaving || isNavigating"
                                           :includeInactive="false"
                                           label="Campus"
+                                          :campusStatusFilter="campusStatusFilter"
+                                          :campusTypeFilter="campusTypeFilter"
                                           :rules="config.isCampusRequired ? 'required' : ''" />
                         </div>
 
@@ -73,22 +75,19 @@
                                   v-model="internalIsUrgent"
                                   :disabled="isSaving || isNavigating"
                                   help="If 'Yes' is checked, the request will be flagged as urgent in need of attention quickly."
-                                  label="Urgent?"
-                                  text="Yes" />
+                                  label="Urgent?" />
 
                         <CheckBox v-if="config.isAllowCommentsShown"
                                   v-model="internalAllowComments"
                                   :disabled="isSaving || isNavigating"
                                   help="If 'Yes' is checked, the prayer team can offer encouraging comments on the request."
-                                  label="Allow Encouraging Comments?"
-                                  text="Yes" />
+                                  label="Allow Encouraging Comments?" />
 
                         <CheckBox v-if="config.isIsPublicShown"
                                   v-model="internalIsPublic"
                                   :disabled="isSaving || isNavigating"
                                   help="If 'Yes' is checked, you give permission to show the request on the public website."
-                                  label="Allow Publication?"
-                                  text="Yes" />
+                                  label="Allow Publication?" />
                     </fieldset>
 
                     <RockButton shortcutKey="s"
@@ -157,6 +156,8 @@
     const isNavigating = ref<boolean>(false);
     const attributes = ref<Record<string, PublicAttributeBag> | null>(config.attributes || null);
     const attributeValues = ref<Record<string, string>>({});
+    const campusTypeFilter = ref<string[] | undefined>(config.campusTypeFilter ?? undefined);
+    const campusStatusFilter = ref<string[] | undefined>(config.campusStatusFilter ?? undefined);
 
     //#endregion
 

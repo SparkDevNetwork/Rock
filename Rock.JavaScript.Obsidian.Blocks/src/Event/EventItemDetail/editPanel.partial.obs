@@ -30,42 +30,20 @@
 
         <div class="row">
             <div class="col-md-6">
-                <div>
+                <h5>Audiences</h5>
+                <Grid light
+                      liveUpdates
+                      keyField="key"
+                      itemTerm="Audience"
+                      :data="audienceGridData"
+                      @addItem="onAddAudience">
 
-                    <div class="table-responsive">
-                        <table class="grid-table table table-striped table-hover">
-                            <thead>
-                                <tr align="left">
-                                    <th data-priority="1" scope="col">Audiences</th>
-                                    <th class="grid-columncommand" data-priority="1" scope="col">&nbsp;</th>
-                                </tr>
-                            </thead>
+                    <TextColumn name="audience"
+                                field="audience"
+                                visiblePriority="xs" />
 
-                            <tbody>
-                                <tr v-if="audiences.length > 0" v-for="audience in audiences" align="left">
-                                    <td data-priority="1">{{ audience.text }}</td>
-                                    <td class="grid-columncommand" data-priority="1" align="center">
-                                        <RockButton class="btn-add btn-sm"
-                                                    title="Delete"
-                                                    btnType="link"
-                                                    @click.prevent.stop="onDeleteAudience(audience)">
-                                            <i class="fa fa-times fa-fw"></i>
-                                        </RockButton>
-                                    </td>
-                                </tr>
-
-                                <div v-else>
-                                    <hr />
-                                    No Audiences Found
-                                    <hr />
-                                </div>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="grid-actions border-panel">
-                        <RockButton class="btn-add btn-grid-action" btnType="link" @click.prevent.stop="onAddAudience"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
-                    </div>
-                </div>
+                    <DeleteColumn :onClick="onDeleteAudience" disableConfirmation />
+                </Grid>
 
                 <CheckBoxList label="Calendars"
                               v-model="calendars"
@@ -100,70 +78,50 @@
             </div>
         </Panel>
 
-        <Panel title="Event Attributes" hasCollapse>
-            <div class="table-responsive">
-                <table class="grid-table table table-striped table-hover">
-                    <thead>
-                        <tr align="left">
-                            <th data-priority="1" scope="col">Attribute</th>
-                            <th data-priority="1" scope="col">Description</th>
-                            <th data-priority="1" scope="col">Field Type</th>
-                            <th data-priority="1" scope="col">Required</th>
-                            <th data-priority="1" scope="col">Show in Grid</th>
-                            <th data-priority="1" scope="col">Allow Search</th>
-                            <th class="grid-columncommand" data-priority="1" scope="col">&nbsp;</th>
-                        </tr>
-                    </thead>
+        <Panel title="Event Occurrence Attributes" hasCollapse>
+            <Grid :data="occurenceAttributesGridData" keyField="key" itemTerm="Event Occurrence Attributes" liveUpdates light @addItem="onAddAttribute">
+                <TextColumn name="name"
+                            field="name"
+                            title="Attribute" />
 
-                    <tbody>
-                        <tr v-if="eventOccurenceAttributes.length > 0" v-for="eventAttribute in eventOccurenceAttributes" align="left">
-                            <td data-priority="1">{{ eventAttribute.attribute?.name }}</td>
-                            <td data-priority="1">{{ eventAttribute.attribute?.description }}</td>
-                            <td data-priority="1">{{ eventAttribute.fieldType }}</td>
-                            <td data-priority="1" v-html="getCheckMark(eventAttribute.attribute?.isRequired)"></td>
-                            <td data-priority="1" v-html="getCheckMark(eventAttribute.attribute?.isShowInGrid)"></td>
-                            <td data-priority="1" v-html="getCheckMark(eventAttribute.attribute?.isAllowSearch)"></td>
-                            <td class="grid-columncommand" data-priority="1" align="center">
-                                <RockButton class="btn-add btn-sm"
-                                            title="Edit"
-                                            btnType="link"
-                                            @click.prevent.stop="onAddEditAttribute(eventAttribute.attribute)">
-                                    <i class="fa fa-pencil fa-fw"></i>
-                                </RockButton>
-                            </td>
-                            <td class="grid-columncommand" data-priority="1" align="center">
-                                <RockButton class="btn-add btn-sm"
-                                            title="Delete"
-                                            btnType="link"
-                                            @click.prevent.stop="onDeleteAttribute(eventAttribute)">
-                                    <i class="fa fa-times fa-fw"></i>
-                                </RockButton>
-                            </td>
-                        </tr>
+                <TextColumn name="description"
+                            field="description"
+                            title="Description" />
 
-                        <div v-else>
-                            <hr />
-                            No Attributes Found
-                            <hr />
-                        </div>
-                    </tbody>
-                </table>
-            </div>
-            <div class="grid-actions border-panel">
-                <RockButton class="btn-add btn-grid-action" btnType="link" @click.prevent.stop="onAddEditAttribute(null)"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
-            </div>
+                <TextColumn name="fieldType"
+                            field="fieldType"
+                            title="Field Type" />
 
-            <Modal v-model="isAttributeModalOpen" title="Event Occurrence Attribute">
+                <BooleanColumn name="isRequired"
+                               field="isRequired"
+                               title="Required" />
 
-                <RockForm v-model:submit="submitEditAttribute" @submit="onSaveEditAttribute">
-                    <AttributeEditor v-model="eventAttribute" :reservedKeyNames="reservedKeyNames" />
+                <BooleanColumn name="showInGrid"
+                               field="showInGrid"
+                               title="Show in Grid" />
+
+                <BooleanColumn name="allowSearch"
+                               field="allowSearch"
+                               title="Allow Search" />
+
+                <EditColumn @click="onEditAttribute" />
+
+                <DeleteColumn @click="onDeleteAttribute" disableConfirmation />
+            </Grid>
+
+            <Modal v-model="isAttributeModalOpen" title="Event Occurrence Attribute" saveText="Save" :onSave="onStartSaveAttribute">
+
+                <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
+                    <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
+                        Please correct the following:
+                        <ul>
+                            <li v-for="error of attributeErrors">
+                                {{ error }}
+                            </li>
+                        </ul>
+                    </NotificationBox>
+                    <AttributeEditor v-model="occurrenceAttribute" :reservedKeyNames="reservedKeyNames" :isAllowSearchVisible="true" />
                 </RockForm>
-
-                <template #customButtons>
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Primary"
-                                @click="onStartSaveEditAttribute">Save</RockButton>
-                </template>
 
             </Modal>
         </Panel>
@@ -174,11 +132,12 @@
                saveText="Save">
 
             <div>
-                <DefinedValuePicker label="Defined Value"
-                                    v-model="audience"
-                                    :definedTypeGuid="DefinedType.MarketingCampaignAudienceType"
-                                    :multiple="false"
-                                    :enhanceForLongLists="false" />
+                <DropDownList label="Defined Value"
+                              v-model="audience"
+                              :items="computedAudiences"
+                              :multiple="false"
+                              :enhanceForLongLists="false"
+                              :showBlankItem="false" />
             </div>
 
         </Modal>
@@ -186,30 +145,29 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { computed, PropType, reactive, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
-    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
-    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { EventItemBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemBag";
     import { EventItemDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemDetailOptionsBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { EventItemOccurenceAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventItemDetail/eventItemOccurenceAttributeBag";
-    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
-    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
-    import { Guid } from "@Obsidian/Types";
+    import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn } from "@Obsidian/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -240,19 +198,24 @@
     const isApproved = propertyRef(props.modelValue.isApproved ?? false, "IsApproved");
     const photo = propertyRef(props.modelValue.photo ?? {}, "PhotoId");
     const eventOccurenceAttributes = ref(props.modelValue.eventOccurenceAttributes ?? []);
+    const calendars = ref(props.modelValue.calendars ?? []);
+
+    const availableCalendars = ref(props.modelValue.availableCalendars ?? []);
+    const availableAudiences = ref(props.options.audiences ?? []);
+
     const isAttributeModalOpen = ref(false);
     const submitEditAttribute = ref(false);
-    const eventAttribute = ref<PublicEditableAttributeBag | null>(null);
-    const reservedKeyNames = ref<[]>([]);
+    const occurrenceAttribute = ref<PublicEditableAttributeBag | null>(null);
+    const reservedKeyNames = ref<string[]>([]);
+    const attributeErrors = ref<string[]>([]);
+
+    const audience = ref<string>("");
     const isAudienceModalOpen = ref(false);
     const audiences = ref(props.modelValue.audiences ?? []);
-    const audience = ref({} as ListItemBag);
-    const availableCalendars = ref(props.modelValue.availableCalendars ?? []);
-    const calendars = ref(props.modelValue.calendars ?? []);
-    const eventItemAttributes = ref(props.modelValue.eventCalendarItemAttributes ?? []);
-    const approvalText = ref(props.modelValue.approvalText ?? "");
 
-    const invokeBlockAction = useInvokeBlockAction();
+    const eventItemAttributes = ref(props.modelValue.eventCalendarItemAttributes ?? []);
+
+    const approvalText = ref(props.modelValue.approvalText ?? "");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -262,93 +225,173 @@
 
     // #region Computed Values
 
+    const audienceGridData: GridDataBag = reactive<GridDataBag>({
+        rows: audiences.value.map((searchKey: ListItemBag) => toAudienceRowItem(searchKey))
+    });
+
+    const occurenceAttributesGridData: GridDataBag = reactive<GridDataBag>({
+        rows: eventOccurenceAttributes.value.map(x => toAttributeGridRowItem(x))
+    });
+
+    const computedAudiences = computed((): ListItemBag[] => {
+        const selectedAudiences = audiences.value.map(a => a.value);
+        return availableAudiences.value.filter(x => !selectedAudiences.some(sa => sa == x.value)) || [];
+    });
+
     // #endregion
 
     // #region Functions
-    const getCheckMark = (booleanValue: boolean | undefined): string => {
-        return booleanValue ? "<i class='fa fa-check'></i>" : "";
-    };
+
+    function toAudienceRowItem(audience: ListItemBag): Record<string, unknown> {
+        return {
+            key: audience.value,
+            audience: audience.text
+        };
+    }
+
+    function toAttributeGridRowItem(bag: EventItemOccurenceAttributeBag): Record<string, unknown> {
+
+        if (bag.attribute?.key && !reservedKeyNames.value.includes(bag.attribute?.key)) {
+            reservedKeyNames.value.push(bag.attribute.key);
+        }
+
+        return {
+            key: bag.attribute?.guid,
+            name: bag.attribute?.name,
+            fieldType: bag.fieldType,
+            description: bag.attribute?.description,
+            isRequired: bag.attribute?.isRequired,
+            showInGrid: bag.attribute?.isShowInGrid,
+            allowSearch: bag.attribute?.isAllowSearch
+        };
+    }
+
     // #endregion
 
     // #region Event Handlers
+
     const onSaveAudience = (): void => {
         isAudienceModalOpen.value = false;
 
-        const audienceValue = audience.value?.value;
+        const audienceValue = audience.value;
         if (audienceValue && !audiences.value.some(x => x.value == audienceValue)) {
-            audiences.value.push(audience.value);
+            const audience = availableAudiences.value.find(x => x.value == audienceValue);
+            if (audience) {
+                audiences.value.push(audience);
+                const rowItem = toAudienceRowItem(audience);
+                audienceGridData.rows?.push(rowItem);
+            }
         }
 
-        audience.value = {};
+        audience.value = "";
     };
 
     const onAddAudience = (): void => {
         isAudienceModalOpen.value = true;
     };
 
-    const onDeleteAudience = async (audience: ListItemBag): Promise<void> => {
+    const onDeleteAudience = async (key: string): Promise<void> => {
         isAudienceModalOpen.value = false;
-        audiences.value = audiences.value.filter(s => s.value !== audience.value);
-    };
+        audiences.value = audiences.value.filter(s => s.value !== key);
 
-    const onAddEditAttribute = async (attribute: PublicEditableAttributeBag | null | undefined): Promise<void> => {
-        const attributeGuid = toGuidOrNull(attribute?.guid);
+        // Update the grid.
+        if (audienceGridData.rows) {
+            const index = audienceGridData.rows.findIndex(r => r.key === key);
 
-        if (attribute && (!attributeGuid || areEqual(attributeGuid, emptyGuid))) {
-            eventAttribute.value = attribute;
-            isAttributeModalOpen.value = true;
-        }
-        else {
-            const request: {
-                attributeGuid: Guid | null;
-            } = {
-                attributeGuid
-            };
-
-            const response = await invokeBlockAction<{ editableAttribute: PublicEditableAttributeBag, reservedKeyNames: [], modalTitle: string }>("GetAttribute", request);
-
-            if (response.isSuccess && response.data) {
-                eventAttribute.value = response.data.editableAttribute;
-                isAttributeModalOpen.value = true;
-                reservedKeyNames.value = response.data.reservedKeyNames;
+            if (index !== -1) {
+                audienceGridData.rows?.splice(index, 1);
             }
         }
     };
 
-    const onDeleteAttribute = async (eventAttribute: EventItemOccurenceAttributeBag): Promise<void> => {
-        isAttributeModalOpen.value = false;
-        eventOccurenceAttributes.value = eventOccurenceAttributes.value.filter(s => s.attribute?.guid !== eventAttribute.attribute?.guid
-            || s.attribute?.key !== eventAttribute.attribute?.key);
+    const onAddAttribute = (): void => {
+        occurrenceAttribute.value = {} as PublicEditableAttributeBag;
+        occurrenceAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
+        isAttributeModalOpen.value = true;
+        attributeErrors.value = [];
     };
 
-    const onSaveEditAttribute = (): void => {
+    const onEditAttribute = (key: string): void => {
+        attributeErrors.value = [];
+        const selectedAttribute = eventOccurenceAttributes.value.find(x => x.attribute?.guid === key);
+        // If attribute exists set it as current attribute for editing.
+        if (selectedAttribute?.attribute) {
+            occurrenceAttribute.value = selectedAttribute.attribute;
+            isAttributeModalOpen.value = true;
+            reservedKeyNames.value = reservedKeyNames.value.filter(x => x !== selectedAttribute.attribute?.key);
+        }
+        else {
+            onAddAttribute();
+        }
+    };
 
-        if (eventAttribute.value && eventOccurenceAttributes.value) {
-            const index = eventOccurenceAttributes.value.findIndex(a => a.attribute?.guid === eventAttribute.value?.guid && a.attribute?.key === eventAttribute.value?.key);
+    const onDeleteAttribute = async (key: string): Promise<void> => {
+        isAttributeModalOpen.value = false;
+        const deletedAttribute = eventOccurenceAttributes.value.find(s => s.attribute?.guid === key);
+        eventOccurenceAttributes.value = eventOccurenceAttributes.value.filter(s => s.attribute?.guid !== key);
+
+        if (deletedAttribute?.attribute) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== deletedAttribute.attribute?.key);
+        }
+
+        // Update the grid.
+        if (occurenceAttributesGridData.rows) {
+            const index = occurenceAttributesGridData.rows.findIndex(r => r.key === key);
 
             if (index !== -1) {
-                let editedAttribute = eventOccurenceAttributes.value.find(a => a.attribute?.guid == eventAttribute.value?.guid);
-                if (editedAttribute) {
-                    editedAttribute.attribute = eventAttribute.value;
+                occurenceAttributesGridData.rows?.splice(index, 1);
+            }
+        }
+    };
+
+    const onSaveAttribute = (): void => {
+
+        if (occurrenceAttribute.value && eventOccurenceAttributes.value) {
+            const index = eventOccurenceAttributes.value.findIndex(a => a.attribute?.guid === occurrenceAttribute.value?.guid);
+
+            if (index !== -1) {
+                let editedAttribute = eventOccurenceAttributes.value.find(a => a.attribute?.guid == occurrenceAttribute.value?.guid);
+                let rowItem = occurenceAttributesGridData.rows?.find(x => x.key == occurrenceAttribute.value?.key);
+
+                if (editedAttribute?.attribute) {
+                    editedAttribute.attribute = occurrenceAttribute.value;
                     eventOccurenceAttributes.value.splice(index, 1, editedAttribute);
+                }
+
+                if (rowItem && occurenceAttributesGridData.rows && editedAttribute?.attribute) {
+                    // Update GridRowItem so changes are reflected in the UI.
+                    const rowIndex = occurenceAttributesGridData.rows.findIndex(r => r.key === occurrenceAttribute.value?.key);
+                    rowItem = toAttributeGridRowItem(editedAttribute);
+                    occurenceAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
                 }
             }
             else {
                 const newEventAttribute = {
-                    attribute: eventAttribute.value,
+                    attribute: occurrenceAttribute.value,
                     fieldType: ""
                 };
+                newEventAttribute.attribute.guid = newGuid();
                 eventOccurenceAttributes.value.push(newEventAttribute);
+
+                // Add new RowItem to the grid to represent the newly added attribute.
+                const newRowItem = toAttributeGridRowItem(newEventAttribute);
+                occurenceAttributesGridData.rows?.push(newRowItem);
             }
 
-            eventAttribute.value = null;
+            occurrenceAttribute.value = null;
             isAttributeModalOpen.value = false;
         }
     };
 
-    const onStartSaveEditAttribute = (): void => {
-        submitEditAttribute.value = true;
+    const onStartSaveAttribute = (): void => {
+        attributeErrors.value = [];
+        const isExistingKey = reservedKeyNames.value.includes(occurrenceAttribute.value?.key ?? "") && !occurrenceAttribute.value?.guid;
+        submitEditAttribute.value = !isExistingKey;
+        if (isExistingKey) {
+            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
+        }
     };
+
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.

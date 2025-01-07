@@ -207,7 +207,6 @@ namespace Rock.Field.Types
             cbIncludeInactive.AutoPostBack = true;
             cbIncludeInactive.CheckedChanged += OnQualifierUpdated;
             cbIncludeInactive.Label = "Include Inactive";
-            cbIncludeInactive.Text = "Yes";
             cbIncludeInactive.Help = HELP_TEXT_INCLUDE_INACTIVE;
 
             // Add ConnectionType Filter drop-down list.
@@ -376,20 +375,23 @@ namespace Rock.Field.Types
             var editControl = control as ListControl;
             if ( editControl != null )
             {
-                var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
-                if ( !includeInactive )
+                if ( configurationValues != null )
                 {
-                    var listItem = editControl.Items.FindByValue( value );
-                    if ( listItem == null )
+                    var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
+                    if ( !includeInactive )
                     {
-                        var valueGuid = value.AsGuid();
-                        var activityType = new ConnectionActivityTypeService( new RockContext() )
-                           .Queryable().AsNoTracking()
-                           .Where( o => o.Guid == valueGuid )
-                           .FirstOrDefault();
-                        if ( activityType != null )
+                        var listItem = editControl.Items.FindByValue( value );
+                        if ( listItem == null )
                         {
-                            editControl.Items.Add( new ListItem( activityType.Name, activityType.Guid.ToString().ToUpper() ) );
+                            var valueGuid = value.AsGuid();
+                            var activityType = new ConnectionActivityTypeService( new RockContext() )
+                               .Queryable().AsNoTracking()
+                               .Where( o => o.Guid == valueGuid )
+                               .FirstOrDefault();
+                            if ( activityType != null )
+                            {
+                                editControl.Items.Add( new ListItem( activityType.Name, activityType.Guid.ToString().ToUpper() ) );
+                            }
                         }
                     }
                 }

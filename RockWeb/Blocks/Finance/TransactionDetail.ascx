@@ -88,7 +88,7 @@
                             <Rock:DynamicPlaceholder ID="phAttributeEdits" runat="server" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:RockCheckBox ID="cbIsRefund" runat="server" Label="This is a Refund" Text="Yes" AutoPostBack="true" OnCheckedChanged="cbIsRefund_CheckedChanged" />
+                            <Rock:RockCheckBox ID="cbIsRefund" runat="server" Label="This is a Refund" AutoPostBack="true" OnCheckedChanged="cbIsRefund_CheckedChanged" />
                             <Rock:DefinedValuePicker ID="dvpRefundReasonEdit" runat="server" Label="Refund Reason" Visible="false" />
                             <Rock:RockTextBox ID="tbRefundSummaryEdit" runat="server" Label="Refund Reason Summary" TextMode="MultiLine" Rows="3" Visible="false" />
                             <h4>Images</h4>

@@ -71,9 +71,9 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbUserNameEdit" runat="server" SourceTypeName="Rock.Model.UserLogin, Rock" PropertyName="UserName" ValidationGroup="Login" />
-                        <Rock:RockCheckBox ID="cbIsConfirmed" runat="server" Label="Confirmed" Text="Yes" Help="Has the user confirmed this login?" />
-                        <Rock:RockCheckBox ID="cbIsLockedOut" runat="server" Label="Locked Out" Text="Yes" Help="Has the user been locked out of using this login?" />
-                        <Rock:RockCheckBox ID="cbIsRequirePasswordChange" runat="server" Label="Require Password Change" Text="Yes" Help="Require the user to change the password on next log in." Visible="false" />
+                        <Rock:RockCheckBox ID="cbIsConfirmed" runat="server" Label="Confirmed" Help="Has the user confirmed this login?" />
+                        <Rock:RockCheckBox ID="cbIsLockedOut" runat="server" Label="Locked Out" Help="Has the user been locked out of using this login?" />
+                        <Rock:RockCheckBox ID="cbIsRequirePasswordChange" runat="server" Label="Require Password Change" Help="Require the user to change the password on next log in." Visible="false" />
                     </div>
                     <div class="col-md-6">
                         <Rock:ComponentPicker ID="compProvider" runat="server" Label="Authentication Provider" ContainerType="Rock.Security.AuthenticationContainer, Rock" Required="true" AutoPostBack="true" ValidationGroup="Login" />

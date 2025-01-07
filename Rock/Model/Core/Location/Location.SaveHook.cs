@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.CheckIn.v2;
 using Rock.Data;
 
 namespace Rock.Model
@@ -42,6 +43,24 @@ namespace Rock.Model
                 }
 
                 base.PreSave();
+            }
+
+            /// <inheritdoc/>
+            protected override void PostSave()
+            {
+                if ( Entity.Name.IsNotNullOrWhiteSpace() && PreSaveState == EntityContextState.Modified )
+                {
+                    // Changes to the hierarchy of a named location can cause
+                    // an invalidation of kiosk configuration.
+                    var oldParentLocationId = OriginalValues[nameof( Entity.ParentLocationId )] as int?;
+
+                    if ( oldParentLocationId != Entity.ParentLocationId )
+                    {
+                        CheckInDirector.SendRefreshKioskConfiguration();
+                    }
+                }
+
+                base.PostSave();
             }
         }
     }

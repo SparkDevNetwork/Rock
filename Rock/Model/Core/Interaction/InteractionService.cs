@@ -18,6 +18,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -478,11 +479,13 @@ namespace Rock.Model
             // Create the interaction transaction.
             var interactionTransactionInfo = new InteractionTransactionInfo
             {
+                InteractionGuid = interactionInfo.InteractionGuid,
                 GetValuesFromHttpRequest = false,
                 PersonAliasId = personAliasId,
                 InteractionData = interactionInfo.PageRequestUrl,
                 InteractionTimeToServe = interactionInfo.PageRequestTimeToServe,
                 InteractionChannelCustomIndexed1 = interactionInfo.UrlReferrerHostAddress,
+                InteractionChannelCustom1 = interactionInfo.TraceId,
                 InteractionChannelCustom2 = interactionInfo.UrlReferrerSearchTerms,
                 InteractionSummary = title,
                 UserAgent = interactionInfo.UserAgent,
@@ -511,8 +514,7 @@ namespace Rock.Model
                 pageViewTransaction.Enqueue();
             }
 
-            var intentSettings = page.GetAdditionalSettings<PageService.IntentSettings>();
-            RegisterIntentInteractions( intentSettings.InteractionIntentValueIds, immediate: immediate );
+            RegisterIntentInteractions( page.InteractionIntentValueIds, immediate: immediate );
         }
 
         /// <summary>
@@ -849,6 +851,12 @@ namespace Rock.Model
     /// </summary>
     public class PageInteractionInfo
     {
+        /// <inheritdoc cref="IEntity.Guid"/>
+        /// <remarks>
+        /// If this is not specified then a new Guid will be created.
+        /// </remarks>
+        public Guid? Guid { get; set; }
+
         /// <summary>
         /// The unique identifier of the page.
         /// </summary>
@@ -919,6 +927,7 @@ namespace Rock.Model
         {
             var actionInfo = new RegisterPageInteractionActionInfo()
             {
+                InteractionGuid = interactionInfo.Guid,
                 PageId = interactionInfo.PageId,
                 UserIdKey = interactionInfo.UserIdKey,
                 PageRequestUrl = interactionInfo.PageRequestUrl,
@@ -927,11 +936,18 @@ namespace Rock.Model
                 UrlReferrerSearchTerms = interactionInfo.UrlReferrerSearchTerms,
                 UserAgent = interactionInfo.UserAgent,
                 UserHostAddress = interactionInfo.UserHostAddress,
-                BrowserSessionGuid = interactionInfo.BrowserSessionGuid
+                BrowserSessionGuid = interactionInfo.BrowserSessionGuid,
+                TraceId = Activity.Current?.TraceId.ToString()
             };
 
             return actionInfo;
         }
+
+        /// <inheritdoc cref="IEntity.Guid"/>
+        /// <remarks>
+        /// If this is not specified then a new Guid will be created.
+        /// </remarks>
+        public Guid? InteractionGuid { get; set; }
 
         /// <summary>
         /// The unique identifier of the page.
@@ -982,6 +998,12 @@ namespace Rock.Model
         /// Gets the query search terms of the client's previous request that linked to the current URL.
         /// </summary>
         public string UrlReferrerSearchTerms { get; set; }
+
+        /// <summary>
+        /// The trace identifier from Observability. This allows correlation
+        /// between page interactions and observability trace logs.
+        /// </summary>
+        public string TraceId { get; set; }
 
         /// <summary>
         /// The unique identifier of the user initiating this interaction.

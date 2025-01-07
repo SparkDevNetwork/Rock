@@ -1,71 +1,56 @@
-﻿/* These are default styles to be moved to the theme or something. */
+﻿
+
+/* These are default styles to be moved to the theme or something. */
 .check-in-page {
-    position: absolute;
-    left: 0;
-    top: 0;
     width: 100vw;
     height: 100vh;
-    background-color: var(--tones-lightest);
+    background-color: var(--color-interface-softer);
     display: flex;
     flex-direction: column;
-    gap: var(--item-spacing);
-    padding: var(--unit-md) var(--unit-lg);
-    font-size: var(--font-size-body);
-    font-weight: 400;
-
-    --item-spacing: var(--unit-lg);
-
-    --tones-darkest: #425466;
-    --tones-dark: #77889a;
-    --tones-medium: #d8ddec;
-    --tones-light: #edf0f6;
-    --tones-lightest: #f5f7fc;
-
-    --unit-xs: calc(var(--unit-md) * 0.25);
-    --unit-sm: calc(var(--unit-md) * 0.5);
-    --unit-md: 8px;
-    --unit-lg: calc(var(--unit-md) * 2);
-    --unit-xl: calc(var(--unit-md) * 3);
-
-    --font-size-h1: calc(var(--font-size-body) * 1.75);
-    --font-size-h2: calc(var(--font-size-body) * 1.25);
-    --font-size-body: 14px;
-    --font-size-small: calc(var(--font-size-body) * 0.85);
-    --font-size-btn-primary: calc(var(--font-size-body) * 1.6);
-    --font-size-btn-secondary: var(--font-size-body);
-    --font-size-btn-small: var(--font-size-body);
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-xsmall) var(--spacing-medium);
+    font-size: var(--font-size-regular);
+    font-weight: var(--font-weight-regular);
 }
 
 .check-in-page .check-in-panel {
-    background-color: #fff;
-    border-radius: var(--unit-lg) var(--unit-lg) var(--unit-lg) var(--unit-lg);
-    padding: var(--unit-md) var(--unit-lg);
+    background-color: var(--color-interface-softest);
+    border-radius: var(--spacing-medium) var(--spacing-medium) var(--spacing-medium) var(--spacing-medium);
+    padding: var(--spacing-xsmall) var(--spacing-medium);
     display: flex;
     flex-direction: column;
 }
 
-.check-in-page .btn-default {
-    background-color: var(--tones-lightest);
-    color: var(--tones-dark);
+.check-in-page .btn {
     border: 0;
+}
+
+.check-in-page .btn-default {
+    background-color: var(--color-interface-softer);
+    color: var(--color-interface-strong);
+}
+
+.check-in-page  .btn.btn-default.check-in-button {
+    font-size: var(--font-size-regular);
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
+}
+
+.check-in-page .btn.btn-dimmed {
+    opacity: 0.33;
 }
 
 .check-in-page .button-list {
     display: flex;
     flex-direction: column;
-    gap: var(--item-spacing);
+    gap: var(--spacing-xsmall);
 }
 
 .check-in-page .button-list .btn {
     display: flex;
-    padding: var(--unit-xl);
-    gap: var(--item-spacing);
+    padding: var(--spacing-medium) var(--spacing-large);
+    gap: var(--spacing-medium);
     align-items: center;
-}
-
-.check-in-page .button-list .subtitle {
-    font-size: var(--font-size-btn-secondary);
-    font-weight: 400;
 }
 
 .check-in-page .page-body .notice {
@@ -76,32 +61,59 @@
 }
 
 .check-in-page .avatar {
-    width: 50px;
-    height: 50px;
-    border: 3px solid #fff;
+    width: 48px;
+    height: 48px;
+    border: var(--rounded-tiny) solid var(--color-interface-softest);
     border-radius: 50%;
     background-size: cover;
 }
 
 .check-in-page .attendee-banner {
-    background-color: var(--tones-light);
-    border-radius: var(--unit-sm);
+    background-color: var(--color-interface-soft);
+    border-radius: var(--spacing-tiny);
     display: flex;
     flex-direction: column;
-    gap: calc(var(--item-spacing) * 0.5);
-    padding: var(--unit-md);
+    gap: var(--spacing-tiny);
+    padding: var(--spacing-xsmall);
     align-items: center;
 }
+
+.check-in-page .number-pad {
+    display: grid;
+    /*margin: auto;*/
+    grid-template-columns: 150px 150px 150px;
+    grid-template-rows: 60px 60px 60px 60px ;
+    gap: var(--spacing-xsmall);
+}
+
+.check-in-page .number-pad .btn {
+    color: var(--color-interface-strong);
+    background-color: var(--color-interface-soft);
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-bold);
+}
+
+.check-in-page .form-control {
+    color: var(--color-interface-strong);
+    font-weight: var(--font-weight-semibold);
+}
+
+.check-in-page .body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+}
+
 
 /*
  * Styles for the page header.
  */
 .check-in-page .page-header {
-    border-radius: var(--unit-lg) var(--unit-lg) 0 0;
+    border-radius: var(--spacing-medium) var(--spacing-medium) 0 0;
     align-items: center;
     flex-direction: row;
     flex-shrink: 0;
-    gap: var(--item-spacing);
+    gap: var(--spacing-xsmall);
     min-height: 56px;
 
     /* Overrides from bootstrap. */
@@ -109,40 +121,58 @@
     border: 0;
 }
 
-.check-in-page .page-header .title {
+.check-in-page .page-header .logo {
+    background-image: var(--logo-image);
+    background-repeat: no-repeat;
+    background-size: contain;
+    height: 100%;
     flex-grow: 1;
 }
 
 .check-in-page .page-header .back-button {
     background-color: transparent;
-    border: 1px solid var(--tones-medium);
+    border: var(--rounded-tiny) solid var(--color-interface-soft);
 }
 
 /*
  * Styles for the page body.
  */
+.check-in-page .messages {
+    align-self: center;
+    margin-top: var(--spacing-huge);
+    width: fit-content;
+    color: var(--color-warning-strong);
+    background: var(--color-warning-soft);
+    padding: var(--spacing-xlarge);
+    border-radius: var(--rounded-small);
+}
+
+.check-in-page .messages:empty {
+    padding:0;
+}
+
 .check-in-page .page-body {
     flex-grow: 1;
     overflow: auto;
 }
 
 .check-in-page .page-body .check-in-panel {
-    padding: var(--unit-xl);
-    gap: var(--unit-lg);
-}
-
-.check-in-page h1 {
-    color: var(--tones-darkest);
-    font-size: var(--font-size-h1);
-    font-weight: 600;
-    margin: 0 0 var(--unit-sm) 0;
+    padding: var(--spacing-large);
+    gap: var(--spacing-medium);
 }
 
 .check-in-page h2 {
-    color: var(--tones-dark);
-    font-size: var(--font-size-h2);
-    font-weight: 600;
-    margin: 0 0 var(--unit-sm) 0;
+    color: var(--color-interface-stronger);
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--spacing-tiny) 0;
+}
+
+.check-in-page h3 {
+    color: var(--color-interface-strong);
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-bold);
+    margin: 0 0 var(--spacing-tiny) 0;
 }
 
 .check-in-page .panel-header .title {
@@ -151,47 +181,146 @@
 
 .check-in-page .panel-header .subtitle {
     text-align: center;
+    color: var(--color-interface-strong);
+}
+
+.check-in-page .illustrated-button .btn.btn-info {
+    background: color-mix(in srgb, var(--color-primary) 100%, #000000 10%);
+    color: var(--color-interface-softest);
+    border-left: 1px solid color-mix(in srgb, var(--color-primary-tint) 100%, transparent 80%);
+}
+
+.check-in-page .illustrated-button .btn.btn-info:hover {
+    background: color-mix(in srgb, var(--color-primary) 100%, #000000 19%);
+}
+
+.check-in-page .illustrated-button .remove-attendee-button {
+    background-color: color-mix(in srgb, var(--color-primary) 100%, #000000 10%);
+    border-left: 1px solid color-mix(in srgb, var(--color-primary-tint) 100%, transparent 80%);
+}
+
+.check-in-page .illustrated-button .remove-attendee-button:hover {
+    background: color-mix(in srgb, var(--color-primary) 100%, #000000 19%);
+}
+
+.check-in-page .btn .title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
+}
+
+.check-in-page .btn .subtitle {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: var(--font-size-regular);
+    font-weight: var(--font-weight-regular);
 }
 
 .check-in-page .btn-primary {
-    font-size: var(--font-size-btn-primary);
-    font-weight: 600;
+    padding: var(--spacing-xsmall) var(--spacing-medium);
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
 }
 
 .check-in-page .btn-default {
-    font-size: var(--font-size-btn-secondary);
-    font-weight: 400;
+    padding: var(--spacing-xsmall) var(--spacing-medium);
+    font-size: var(--font-size-regular);
+    font-weight: var(--font-weight-regular);
 }
 
-.check-in-page .btn-default.btn-sm {
-    font-size: var(--font-size-btn-small);
-    font-weight: 600;
+.check-in-page .btn.btn-sm {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
 }
+
+.check-in-page .btn.btn-lg {
+    font-size: var(--font-size-h5);
+    font-weight: var(--font-weight-semibold);
+}
+
+.check-in-page .btn-toggle .btn {
+    font-size: var(--font-size-regular);
+    font-weight: var(--font-weight-semibold);
+}
+
+.check-in-page .button-list .illustrated-button {
+    padding: 0;
+    min-height: 82px;
+    overflow: hidden;
+    gap: 0;
+}
+
+.check-in-panel .body .button-list .btn.btn-primary.ability-level-button {
+    padding: 0 var(--spacing-large);
+    height: 82px;
+}
+
+.check-in-page .illustrated-button > * {
+    margin: var(--spacing-medium) var(--spacing-medium) var(--spacing-medium) 0;
+}
+
+.check-in-page .illustrated-button > *:first-child {
+    margin-left: var(--spacing-large);
+}
+
+.check-in-page .illustrated-button > *:last-child {
+    margin-right: var(--spacing-large);
+}
+
+.check-in-page .illustrated-button .selection {
+    font-size: var(--font-size-h1);
+    line-height: var(--line-height-compact);
+}
+
+.check-in-page .btn.btn-primary .selection {
+    font-size: var(--font-size-h1);
+}
+
+.check-in-page .illustrated-button .btn {
+    margin: 0;
+    border-radius: 0;
+    align-self: stretch;
+    margin-right: 0;
+}
+
 
 /*
  * Styles for the pager footer.
  */
 .check-in-page .page-footer {
-    border-radius: 0 0 var(--unit-lg) var(--unit-lg);
+    border-radius: 0 0 var(--spacing-medium) var(--spacing-medium);
     align-items: center;
     flex-direction: row;
     flex-shrink: 0;
-    gap: var(--item-spacing);
+    gap: var(--spacing-medium);
     min-height: 64px;
-    color: var(--tones-dark);
+    color: var(--color-interface-strong);
 }
 
 .check-in-page .page-footer .actions {
     flex-grow: 1;
     display: flex;
     justify-content: end;
-    gap: var(--item-spacing);
+    gap: var(--spacing-xsmall);
 }
 
 .check-in-page .page-footer .configure-button {
-    padding: var(--unit-xs) var(--unit-md);
-    font-size: 28px;
-    color: var(--tones-medium);
+    padding: 0;
+    font-size: var(--font-size-h3);
+    color: var(--color-interface-soft);
+}
+
+.check-in-page .actions .btn.btn-primary.next-button {
+    font-size: var(--font-size-regular);
+    padding: var(--spacing-xsmall) var(--spacing-xlarge);
+}
+
+.check-in-page .actions .btn.btn-primary {
+    font-size: var(--font-size-h3);
+    padding: var(--spacing-xsmall) var(--spacing-large);
 }
 
 /*
@@ -206,18 +335,18 @@
 .check-in-page .configuration-screen .saved-configurations {
     display: flex;
     flex-direction: column;
-    gap: var(--item-spacing);
+    gap: var(--spacing-xsmall);
 }
 
 .check-in-page .configuration-screen .saved-configurations .header,
 .check-in-page .configuration-screen .custom-configuration .header {
     display: flex;
     align-items: center;
-    gap: var(--item-spacing);
+    gap: var(--spacing-xsmall);
 }
 
-.check-in-page .configuration-screen .saved-configurations .header h2,
-.check-in-page .configuration-screen .custom-configuration .header h2 {
+.check-in-page .configuration-screen .saved-configurations .header h4,
+.check-in-page .configuration-screen .custom-configuration .header h4 {
     flex-grow: 1;
 }
 
@@ -228,6 +357,11 @@
     justify-content: end;
 }
 
+.check-in-page .saved-configuration-button .subtitle {
+    flex-grow: 1;
+    text-align: left;
+}
+
 /*
  * Welcome Screen
  */
@@ -236,15 +370,16 @@
     height: 100%;
     grid-template-rows: 1fr 1fr;
     grid-template-columns: 2fr 1fr;
-    gap: var(--item-spacing);
+    gap: var(--spacing-xsmall);
 }
 
 .check-in-page .welcome-screen .promotions {
-    background: #e5dcd1;
+    background: var(--color-interface-soft);
     grid-row: 1/3;
     grid-column: 1/2;
-    border-radius: var(--unit-lg);
+    border-radius: var(--spacing-medium);
     position: relative;
+    overflow: hidden;
 }
 
 .check-in-page .welcome-screen .promotion {
@@ -270,32 +405,33 @@
 .check-in-page .welcome-screen .start-button {
     grid-row: 1/2;
     grid-column: 2/3;
-}
-
-.check-in-page .welcome-screen .start-button {
     width: 100%;
     height: 100%;
-    font-size: 64px;
-    font-weight: 600;
+    font-size: 110px;
+    font-weight: var(--font-weight-bold);
+    border-radius: var(--spacing-medium);
 }
 
 .check-in-page .welcome-screen .scan-barcode-button {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
     grid-row: 2/3;
     grid-column: 2/3;
-}
-
-.check-in-page .welcome-screen .scan-barcode-button {
     width: 100%;
     height: 100%;
-    background-color: var(--tones-light);
+    background-color: var(--color-interface-soft);
     padding: 0;
+    border-radius: var(--spacing-medium);
 }
 
 .check-in-page .welcome-screen .scan-barcode-button .title {
     font-size: 64px;
+}
+
+.check-in-page .welcome-screen .scan-barcode-button .subtitle {
+    font-size: var(--font-size-h4);
 }
 
 .check-in-page .welcome-screen.kiosk-closed,
@@ -321,32 +457,11 @@
     align-items: center;
 }
 
-.check-in-page .search-screen .body {
-    display: flex;
-    flex-direction: column;
-    gap: var(--item-spacing);
-}
-
 .check-in-page .search-screen input.search-term {
     height: 64px;
-    font-size: 36px;
+    font-size: var(--font-size-h2);
     width: 0;
     min-width: 100%;
-}
-
-.check-in-page .search-screen .number-pad {
-    display: grid;
-    margin: auto;
-    grid-template-columns: 130px 130px 130px;
-    grid-template-rows: 56px 56px 56px 56px;
-    gap: var(--item-spacing);
-}
-
-.check-in-page .search-screen .number-pad .btn {
-    color: var(--tones-darkest);
-    background-color: var(--tones-light);
-    font-size: var(--font-size-btn-primary);
-    font-weight: 600;
 }
 
 .check-in-page .search-screen .search-button {
@@ -354,6 +469,10 @@
     min-width: 400px;
 }
 
+.check-in-page .input-group .btn.btn-default {
+    padding: 7px var(--spacing-small);
+    font-size: var(--font-size-regular);
+}
 /**
  * Family Select Screen.
  */
@@ -365,30 +484,6 @@
 /**
  * Person Select Screen.
  */
-.check-in-page .attendee-button.btn {
-    justify-content: initial;
-    padding: 0;
-    border: 0;
-}
-
-.check-in-page .attendee-button .selection {
-    font-size: 50px;
-    line-height: 1;
-    margin: var(--unit-lg) 0 var(--unit-xl) var(--unit-lg);
-}
-
-.check-in-page .attendee-button > * {
-    margin: var(--unit-lg) 0;
-}
-
-.check-in-page .attendee-button > *:first-child {
-    margin-left: var(--unit-xl);
-}
-
-.check-in-page .attendee-button > *:last-child {
-    margin-right: var(--unit-xl);
-}
-
 .check-in-page .attendee-button .title {
     display: flex;
     flex-direction: column;
@@ -398,24 +493,16 @@
 
 .check-in-page .attendee-button .opportunity {
     display: flex;
-    gap: calc(var(--item-spacing) * 0.5);
-    font-size: var(--font-size-btn-secondary);
+    gap: var(--spacing-tiny);
+    font-size: var(--font-size-regular);
 }
 
 .check-in-page .attendee-button .opportunity + .opportunity {
-    margin-top: calc(var(--item-spacing) * 0.25);
+    margin-top: var(--spacing-tiny);
 }
 
 .check-in-page .attendee-button .message {
-    font-size: var(--font-size-btn-secondary);
-}
-
-.check-in-page .attendee-button .change-selection-button {
-    margin: 0;
-    align-self: stretch;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    padding: 0 var(--unit-xl);
+    font-size: var(--font-size-regular);
 }
 
 
@@ -427,24 +514,10 @@
     justify-content: center;
 }
 
-.check-in-page .schedule-select-screen .schedule-button {
-    background-color: var(--tones-lightest);
-    border-color: var(--tones-medium);
-    color: var(--tones-dark);
-}
 
-.check-in-page .schedule-select-screen .schedule-button.checked {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--theme-white);
-}
-
-.check-in-page .schedule-select-screen .schedule-button .selection {
-    font-size: 50px;
-    line-height: 1;
-    margin-top: calc(var(--unit-md) * -1);
-    margin-bottom: calc(var(--unit-md) * -1);
-}
+/**
+ * Ability Level Select Screen
+*/
 
 
 /**
@@ -454,27 +527,33 @@
     justify-content: center;
     display: flex;
     flex-wrap: wrap;
-    padding-bottom: var(--unit-md);
+    padding-bottom: var(--spacing-xsmall);
 }
 
 .check-in-page .achievement-card {
-    border-radius: var(--unit-sm);
+    border-radius: var(--spacing-tiny);
     background-color: white;
-    border: 1px solid var(--tones-light);
-    padding: var(--unit-md) var(--unit-lg);
+    border: var(--rounded-tiny) solid var(--color-interface-soft);
+    padding: var(--spacing-xsmall) var(--spacing-medium);
     display: grid;
     line-height: 1.3em;
 }
 
+.label-info {
+    background-color: rgba(255,255,255,.2);
+    color: var(--color-interface-softest);
+    font-weight: var(--font-weight-regular);
+}
+
 .check-in-page .achievement-card svg {
     grid-row: 1 / span 2;
-    margin-right: var(--unit-lg);
+    margin-right: var(--spacing-medium);
 }
 
 .check-in-page .achievement-card .title {
     grid-column: 2;
     align-content: end;
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .check-in-page .achievement-card .subtitle {
@@ -485,25 +564,31 @@
 
 .check-in-page .attendance-cards {
     display: flex;
-    gap: var(--item-spacing);
+    gap: var(--spacing-xsmall);
     justify-content: center;
     flex-wrap: wrap;
 }
 
+.check-in-page .attendance-card .header .title {
+    font-size: var(--font-size-h3);
+    color: var(--color-interface-strong);
+    font-weight: var(--font-weight-bold);
+}
+
 .check-in-page .attendance-card {
-    width: calc(33.33% - calc(var(--item-spacing) * 2 / 3));
+    width: calc(33.33% - calc(var(--spacing-xsmall) * 2 / 3));
     display: flex;
     flex-direction: column;
-    gap: var(--unit-md);
-    border-radius: var(--unit-sm);
-    background-color: var(--tones-light);
-    border: var(--tones-medium);
-    padding: var(--unit-lg) var(--unit-lg);
+    gap: var(--spacing-xsmall);
+    border-radius: var(--spacing-tiny);
+    background-color: var(--color-interface-softer);
+    border: var(--color-interface-medium);
+    padding: var(--spacing-medium) var(--spacing-medium);
 }
 
 .check-in-page .attendance-card .header {
     display: flex;
-    gap: var(--item-spacing);
+    gap: var(--spacing-medium);
     justify-content: center;
     align-items: center;
 }
@@ -511,40 +596,45 @@
 .check-in-page .attendance-card .attendance-list {
     display: flex;
     flex-direction: column;
-    gap: var(--unit-sm);
+    gap: var(--spacing-tiny);
 }
 
 .check-in-page .attendance-card label {
     margin-bottom: 0;
+    color: var(--color-interface-medium)
 }
 
 .check-in-page .attendance-card .attendance-detail {
-    border-radius: var(--unit-md);
+    border-radius: var(--spacing-xsmall);
     background-color: var(--color-primary);
-    color: var(--theme-white);
-    padding: var(--unit-sm) var(--unit-md);
+    color: var(--color-interface-softest);
+    padding: var(--spacing-tiny) var(--spacing-xsmall);
     display: flex;
     justify-content: space-between;
 }
 
 .check-in-page .attendance-card .attendance-detail .title {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .check-in-page .attendance-card .achievement-list {
     flex-grow: 1;
     align-content: end;
-    padding-top: var(--unit-lg);
+    padding-top: var(--spacing-medium);
     display: flex;
     flex-direction: column;
-    gap: var(--unit-lg);
+    gap: var(--spacing-medium);
     justify-content: end;
 }
 
 .check-in-page .attendance-card .achievement {
     display: flex;
     flex-direction: column;
-    gap: var(--unit-sm);
+    gap: var(--spacing-tiny);
+}
+
+.achievement .header .subtitle {
+    min-width: 50px;
 }
 
 .check-in-page .attendance-card .achievement .header {
@@ -553,12 +643,12 @@
 }
 
 .check-in-page .attendance-card .achievement .title {
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
 }
 
 .check-in-page .attendance-card .achievement .completion-progress {
     display: flex;
-    gap: var(--unit-sm);
+    gap: var(--spacing-tiny);
     flex-wrap: wrap;
 }
 
@@ -568,14 +658,185 @@
 }
 
 .check-in-page .attendance-card .achievement .completion-item-empty {
-    color: var(--tones-dark);
+    color: var(--color-interface-strong);
 }
 
 .check-in-page .attendance-card .achievement:first-of-type {
-    margin-top: calc(var(--unit-md) * -1);
+    margin-top: calc(var(--spacing-xsmall) * -1);
 }
 
 .check-in-page .attendance-card .achievement + .achievement {
-    padding-top: var(--unit-md);
-    border-top: 1px solid var(--tones-medium);
+    padding-top: var(--spacing-xsmall);
+    border-top: var(--rounded-tiny) solid var(--color-interface-medium);
+}
+
+
+/**
+ * Supervisor Login Screen
+*/
+.supervisor-login-screen {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--spacing-xsmall);
+    align-items: start;
+}
+
+.supervisor-login-screen input.pin-code {
+    height: 64px;
+    font-size: 36px;
+    width: 0;
+    min-width: 100%;
+}
+
+.supervisor-login-screen .current-counts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: var(--spacing-huge);
+    font-size: var(--font-size-regular)
+}
+
+.supervisor-login-screen .current-counts .count-row {
+    display: flex;
+    gap: var(--spacing-xsmall);
+}
+
+.supervisor-login-screen .current-counts .title {
+    flex-grow: 1;
+    color: var(--color-interface-medium);
+}
+
+.supervisor-login-screen .current-counts-column h4.count-row > .title{
+    font-size: var(--font-size-h5);
+    margin-left: var(--spacing-medium);
+    color: var(--color-interface-medium);
+}
+
+ul li::marker {
+    color: var(--color-interface-medium);
+}
+
+.current-counts-column ul {
+    margin-left: var(--spacing-medium);
+}
+
+
+/**
+ * Supervisor Action Screen
+*/
+.supervisor-action-screen {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    column-gap: var(--spacing-xsmall);
+    align-items: start;
+}
+
+.supervisor-action-screen .location-button .subtitle {
+    margin-left: auto;
+}
+
+
+/**
+ * Supervisor Reprint Screen
+*/
+.supervisor-reprint-screen .button-list {
+    margin-top: var(--spacing-medium);
+}
+
+.supervisor-reprint-screen .attendance-button .btn {
+    justify-content: initial;
+    border: 0;
+}
+
+.supervisor-reprint-screen .attendance-button .title {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+}
+
+.supervisor-reprint-screen .attendance-button .details {
+    display: flex;
+    gap: var(--spacing-tiny);
+    margin-left: auto;
+    font-size: var(--font-size-h5);
+}
+
+.supervisor-reprint-screen input.search-term {
+    height: 48px;
+    font-size: 28px;
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.supervisor-reprint-screen input.search-term::placeholder {
+    color: var(--color-interface-medium);
+}
+
+/**
+ * Supervisor Schedule Locations Screen
+*/
+.supervisor-schedule-locations-screen .schedule-grid {
+    display: grid;
+    row-gap: var(--spacing-xsmall);
+    grid-template-columns: 1fr 1fr repeat(var(--schedule-count, 0), minmax(90px, max-content));
+}
+
+.supervisor-schedule-locations-screen .schedule-grid > * {
+    border-bottom: var(--rounded-tiny) solid var(--color-interface-soft);
+    padding-bottom: var(--spacing-xsmall);
+}
+
+.supervisor-schedule-locations-screen .schedule-grid > .header {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-h6);
+    border-bottom: var(--rounded-tiny) solid var(--color-interface-medium);
+    padding-bottom: var(--spacing-tiny);
+    align-self: end;
+}
+
+.supervisor-schedule-locations-screen .schedule-grid .title {
+    font-weight: var(--font-weight-semibold);
+}
+
+.supervisor-schedule-locations-screen .schedule-grid .subtitle {
+    color: var(--color-interface-medium);
+}
+
+.supervisor-schedule-locations-screen .schedule-grid .checkbox .label-text::before,
+.supervisor-schedule-locations-screen .schedule-grid .checkbox .label-text::after {
+    width: 30px;
+    height: 30px;
+}
+
+.grid-obsidian .grid-body .grid-row .btn.btn-default {
+    padding: var(--spacing-xsmall) 0px;
+}
+
+
+.check-in-page .check-in-panel.page-footer .title {
+    display: none;
+}
+
+@media screen and (min-width: 576px) {
+    .check-in-page .actions .btn.btn-primary.next-button {
+        font-size: var(--font-size-regular);
+    }
+
+    .check-in-page .btn-default {
+        font-size: var(--font-size-regular);
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .check-in-page .actions .btn.btn-primary.next-button {
+        font-size: var(--font-size-h4);
+    }
+
+    .check-in-page .btn-default {
+        font-size: var(--font-size-h4);
+    }
+
+    .check-in-page .check-in-panel.page-footer .title {
+        display: block;
+    }
 }

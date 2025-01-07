@@ -1,0 +1,96 @@
+{
+    "$schema": "https://community.rockrms.com/schema/2024-10-01/theme.schema.json",
+    "name": "NextGenCheckin",
+    "description": "The default theme for the next generation check-in system.",
+    "purpose": "checkin",
+    "availableIconSets": ["fontawesome"],
+    "fields": [
+        {
+            "type": "color",
+            "name": "Primary Color",
+            "variable": "color-primary",
+            "description": "The primary color used to highlight screen elements, such as the main button.",
+            "default": "#ee7725"
+        },
+        {
+            "type": "image",
+            "name": "Checkin Logo",
+            "variable": "logo-image",
+            "description": "The logo that wll be displayed throughout the Checkin.",
+            "default": "~/Assets/Images/rock-logo-gray.svg"
+        },
+        {
+            "type": "spacer"
+        },
+        {
+            "type": "panel",
+            "title": "Advance Setting",
+            "expanded": false,
+            "fields": [
+                {
+                    "type": "color",
+                    "name": "Interface Color Strongest",
+                    "variable": "color-interface-strongest",
+                    "description": "The strongest color used throughout the UI",
+                    "default": "#000000"
+                },
+                {
+                    "type": "color",
+                    "name": "Interface Color Stronger",
+                    "variable": "color-interface-stronger",
+                    "description": "A stronger color used throughout the UI",
+                    "default": "#1C1C1E"
+                },
+                {
+                    "type": "color",
+                    "name": "Interface Color Strong",
+                    "variable": "color-interface-strong",
+                    "description": "A strong color used throughout the UI",
+                    "default": "#5D5D6F"
+                },
+                {
+                    "type": "color",
+                    "name": "Interface Color Medium",
+                    "variable": "color-interface-medium",
+                    "description": "A medium color used throughout the UI",
+                    "default": "#8B8BA7"
+                },
+                {
+                    "type": "color",
+                    "name": "Interface Color Soft",
+                    "variable": "color-interface-soft",
+                    "description": "A soft color used throughout the UI",
+                    "default": "#D9D9E3"
+                },
+                {
+                    "type": "color",
+                    "name": "Interface Color Softer",
+                    "variable": "color-interface-softer",
+                    "description": "A softer color used throughout the UI",
+                    "default": "#E7E9EF"
+                },
+                {
+                    "type": "color",
+                    "name": "Interface Color Softest",
+                    "variable": "color-interface-softest",
+                    "description": "The softest color used throughout the UI",
+                    "default": "#FFFFFF"
+                },
+                {
+                    "type": "color",
+                    "name": "Soft Success Color",
+                    "variable": "color-success-soft",
+                    "description": "The soft success color.",
+                    "default": "#D7F4DE"
+                },
+                {
+                    "type": "color",
+                    "name": "Strong Success Color",
+                    "variable": "color-success-strong",
+                    "description": "The strong success color.",
+                    "default": "#248A3D"
+                }
+            ]
+        }
+    ]
+}

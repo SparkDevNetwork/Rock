@@ -333,7 +333,7 @@ namespace Rock.Model
         public RegistrationTemplateDiscount RegistrationTemplateDiscount { get; set; }
 
         /// <summary>
-        /// Gets or sets the remaining number of Registrations that can use the discount. This corrasponds to the value in RegistrationTemplateDiscount.MaxUsage - [Number of Registrations Using Discount]
+        /// Gets or sets the remaining number of Registrations that can use the discount. This corresponds to the value in RegistrationTemplateDiscount.MaxUsage - [Number of Registrations Using Discount]
         /// </summary>
         /// <value>
         /// The usages remaining.

@@ -1,0 +1,135 @@
+<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.RockMasterPage" %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head runat="server">
+    <meta charset="utf-8">
+    <title></title>
+
+    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest" )%>"></script>
+    <script src="<%# ResolveRockUrl("~/Scripts/howler.min.js", true) %>" ></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.3/dist/confetti.browser.min.js"></script>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+    <!-- Included CSS Files -->
+    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>"/>
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+</head>
+<body runat="server" id="body">
+    <form id="form1" runat="server">
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+    </form>
+
+    <script>
+        (function () {
+            let tapSound;
+            let successSound;
+            let confettiSound;
+            let celebrateSound;
+
+            /**
+             * Handles click events that happen on a check-in page. This will
+             * ensure it is a real button click and then play the tap sound.
+             *
+             * @param event {MouseEvent}
+             */
+            function onClick(event) {
+                const inputControl = event.target.closest("button")
+                    || event.target.closest(".btn")
+                    || event.target.closest(".control-wrapper")
+                    || event.target.closest(".ant-select-dropdown");
+
+                // Only make the sound if the event happened inside an input control.
+                if (!inputControl) {
+                    return;
+                }
+
+                // Only fire for left clicks
+                if (event.which === 1 && tapSound) {
+                    tapSound.play();
+                }
+            }
+
+            /**
+             * Handles message from the Rock browser bus.
+             *
+             * @param event {Event}
+             */
+            function onRockMessage(event) {
+                var message = event.detail;
+
+                if (message.name === "block.checkInSuccess") {
+                    if (successSound) {
+                        successSound.play();
+                    }
+
+                    // Check if we have any achievements that happened with
+                    // this check-in.
+                    if (message.data.achievements && message.data.achievements.length > 0) {
+                        setTimeout(() => {
+                            if (celebrateSound) {
+                                celebrateSound.play();
+                            }
+
+                            showConfetti();
+                        }, 500);
+
+                        setTimeout(() => {
+                            if (confettiSound) {
+                                confettiSound.play();
+                            }
+                        }, 800);
+                    }
+                }
+            }
+
+            /**
+             * Show confetti on screen with some safe default settings that
+             * will provide a quick splash.
+             */
+            function showConfetti() {
+                confetti({
+                    origin: { y: -0.2 },
+                    angle: -90,
+                    spread: 150,
+                    startVelocity: 30,
+                    particleCount: 200,
+                    decay: 0.95
+                });
+            }
+
+            /**
+             * Load the sound audo files for later use.
+             */
+            function loadSounds() {
+                tapSound = new Howl({
+                    src: ['<%= ResolveRockUrl("~~/Assets/Sounds/tap.mp3") %>'],
+                    volume: 0.4
+                });
+
+                successSound = new Howl({
+                    src: ['<%= ResolveRockUrl("~~/Assets/Sounds/success.mp3") %>'],
+                    volume: 0.8
+                });
+
+                confettiSound = new Howl({
+                    src: ['<%= ResolveRockUrl("~~/Assets/Sounds/confetti_gun.mp3") %>'],
+                    volume: 1
+                });
+
+                celebrateSound = new Howl({
+                    src: ['<%= ResolveRockUrl("~~/Assets/Sounds/fanfare_trumpets.mp3") %>'],
+                    volume: 0.8
+                });
+            }
+
+            loadSounds();
+
+            document.body.addEventListener("mousedown", onClick);
+            document.addEventListener("rockMessage", onRockMessage);
+        })();
+    </script>
+</body>
+</html>

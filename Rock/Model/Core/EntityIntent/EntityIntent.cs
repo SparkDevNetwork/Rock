@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -22,6 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -32,7 +32,7 @@ namespace Rock.Model
     [Table( "EntityIntent" )]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ENTITY_INTENT )]
-    public partial class EntityIntent : Model<EntityIntent>
+    public partial class EntityIntent : Model<EntityIntent>, ICacheable
     {
         #region Entity Properties
 
@@ -90,23 +90,38 @@ namespace Rock.Model
 
         #endregion Navigation Properties
 
-        #region Entity Configuration
+        #region Public Methods
 
         /// <summary>
-        /// EntityIntent Configuration class.
+        /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
-        public partial class EntityIntentConfiguration : EntityTypeConfiguration<EntityIntent>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
         {
-            /// <summary>
-            /// Initializes a enw instance of the <see cref="EntityIntentConfiguration"/> class.
-            /// </summary>
-            public EntityIntentConfiguration()
-            {
-                this.HasRequired( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( true );
-                this.HasRequired( a => a.IntentValue ).WithMany().HasForeignKey( a => a.IntentValueId ).WillCascadeOnDelete( true );
-            }
+            return this.IntentValue?.ToString();
         }
 
-        #endregion Entity Configuration
+        #endregion Public Methods
     }
+
+    #region Entity Configuration
+
+    /// <summary>
+    /// EntityIntent Configuration class.
+    /// </summary>
+    public partial class EntityIntentConfiguration : EntityTypeConfiguration<EntityIntent>
+    {
+        /// <summary>
+        /// Initializes a enw instance of the <see cref="EntityIntentConfiguration"/> class.
+        /// </summary>
+        public EntityIntentConfiguration()
+        {
+            this.HasRequired( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.IntentValue ).WithMany().HasForeignKey( a => a.IntentValueId ).WillCascadeOnDelete( true );
+        }
+    }
+
+    #endregion Entity Configuration
 }

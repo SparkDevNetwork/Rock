@@ -50,8 +50,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // assign attributes grid actions
             gBlockTypeAttributes.DataKeyNames = new string[] { "Guid" };
             gBlockTypeAttributes.Actions.ShowAdd = true;
@@ -63,6 +61,8 @@ namespace RockWeb.Blocks.Core
             {
                 ShowDetail( PageParameter( "BlockTypeId" ).AsInteger() );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

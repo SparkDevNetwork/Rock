@@ -212,8 +212,6 @@ namespace RockWeb.Blocks.Crm
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             var sm = ScriptManager.GetCurrent( Page );
             sm.Navigate += Sm_Navigate;
 
@@ -268,6 +266,7 @@ namespace RockWeb.Blocks.Crm
                 nbMain.Visible = true;
             }
 
+            base.OnLoad( e );
         }
 
         protected override object SaveViewState()

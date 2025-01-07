@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,6 +13,17 @@ namespace Rock.Tests.Shared.TestFramework
     /// </summary>
     public abstract class DatabaseTestsBase
     {
+        /// <summary>
+        /// Initialize the test database container.
+        /// </summary>
+        /// <param name="container"></param>
+        public static void InitializeContainer( ITestDatabaseContainer container )
+        {
+            _container = container;
+
+            IsContainersEnabled = ( _container != null );
+        }
+
         /// <summary>
         /// <c>true</c> if running the database in a docker container
         /// is enabled; otherwise the RockContext connection string
@@ -28,7 +40,7 @@ namespace Rock.Tests.Shared.TestFramework
         /// <summary>
         /// The current container providing the database.
         /// </summary>
-        private static TestDatabaseContainer _container;
+        private static ITestDatabaseContainer _container;
 
         /// <summary>
         /// <c>true</c> if the container has been used by a test already.
@@ -54,23 +66,28 @@ namespace Rock.Tests.Shared.TestFramework
                 return;
             }
 
-            if ( _container != null )
+            await DisposeDatabaseInstanceAsync();
+
+            // Initialize a new database instance in the container.
+            LogHelper.Log( $"Starting Database Instance... [Container={_container.GetType().Name}]" );
+
+            try
             {
-                try
+                await _container.StartAsync();
+
+                if ( !_container.HasCurrentInstance )
                 {
-                    await _container.DisposeAsync();
-                }
-                finally
-                {
-                    _container = null;
+                    throw new Exception( "The container failed to provide a valid database instance." );
                 }
             }
+            catch ( Exception ex )
+            {
+                LogHelper.LogError( ex, "The database instance failed to start." );
+                throw ex;
+            }
 
-            var container = new TestDatabaseContainer();
+            LogHelper.Log( $"Starting Database Instance: completed." );
 
-            await container.StartAsync();
-
-            _container = container;
             _containerIsDirty = false;
         }
 
@@ -94,17 +111,7 @@ namespace Rock.Tests.Shared.TestFramework
         {
             // Make sure we shut down the container at the end of all tests
             // in this class.
-            if ( _container != null )
-            {
-                try
-                {
-                    await _container.DisposeAsync();
-                }
-                finally
-                {
-                    _container = null;
-                }
-            }
+            await DisposeDatabaseInstanceAsync();
         }
 
         /// <summary>
@@ -127,7 +134,7 @@ namespace Rock.Tests.Shared.TestFramework
             _testWantsIsolatedDatabase = method.GetCustomAttribute<IsolatedTestDatabaseAttribute>() != null
                 || GetType().GetCustomAttribute<IsolatedTestDatabaseAttribute>() != null;
 
-            if ( _container == null || ( _testWantsIsolatedDatabase && _containerIsDirty ) )
+            if ( !_container.HasCurrentInstance || ( _testWantsIsolatedDatabase && _containerIsDirty ) )
             {
                 await StartNewContainer();
             }
@@ -144,16 +151,23 @@ namespace Rock.Tests.Shared.TestFramework
 
             // If the test indicated that it needed an isolated database
             // then shut it down so the next test gets a fresh one.
-            if ( _testWantsIsolatedDatabase && _container != null )
+            if ( _testWantsIsolatedDatabase )
             {
-                try
-                {
-                    await _container.DisposeAsync();
-                }
-                finally
-                {
-                    _container = null;
-                }
+                await DisposeDatabaseInstanceAsync();
+            }
+        }
+
+        private static async Task DisposeDatabaseInstanceAsync()
+        {
+            if ( _container == null )
+            {
+                return;
+            }
+
+            if ( _container.HasCurrentInstance )
+            {
+                // Dispose the current database instance held in the container.
+                await _container.DisposeAsync();
             }
         }
 

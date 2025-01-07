@@ -102,8 +102,6 @@ namespace RockWeb.Blocks.Store
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // get package id
             if ( !string.IsNullOrWhiteSpace( PageParameter( "PackageId" ) ) )
             {
@@ -114,6 +112,8 @@ namespace RockWeb.Blocks.Store
             {
                 DisplayPackageInfo();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods

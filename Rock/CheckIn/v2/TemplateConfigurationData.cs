@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Rock.Data;
 using Rock.Enums.CheckIn;
@@ -51,6 +52,29 @@ namespace Rock.CheckIn.v2
         public virtual IReadOnlyCollection<Guid> AchievementTypeGuids { get; }
 
         /// <summary>
+        /// Defines the age restriction for this check-in configuration. This applies
+        /// a filter when considering which people can be listed on the family
+        /// member selection screen. Using one of the Hide modes will hide those
+        /// people from the screen even if there is a valid opportunity for them to
+        /// check into.
+        /// </summary>
+        public virtual AgeRestrictionMode AgeRestriction { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether groups not marked as special needs
+        /// should be removed from a person's opportunity list if the person
+        /// <strong>is</strong> marked as special needs.
+        /// </summary>
+        public virtual bool AreNonSpecialNeedsGroupsRemoved { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether groups marked as special needs
+        /// should be removed from a person's opportunity list if the person
+        /// is <strong>not</strong> marked as special needs.
+        /// </summary>
+        public virtual bool AreSpecialNeedsGroupsRemoved { get; }
+
+        /// <summary>
         /// Gets the number of days back the AutoSelect feature will use to
         /// determine automatic selections. A value of <c>0</c> will disable.
         /// </summary>
@@ -77,6 +101,12 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <value>The type of the family search.</value>
         public virtual FamilySearchMode FamilySearchType { get; }
+
+        /// <summary>
+        /// The matching behavior that will be used when matching on Grade
+        /// and Age (Age Range and Birthdate Range) for groups.
+        /// </summary>
+        public virtual GradeAndAgeMatchingMode GradeAndAgeMatchingBehavior { get; }
 
         /// <summary>
         /// Gets a value indicating whether age is required for check-in.
@@ -161,6 +191,14 @@ namespace Rock.CheckIn.v2
         public virtual bool IsPresenceEnabled { get; }
 
         /// <summary>
+        /// Gets a value indicating whether removing people with a "can check-in"
+        /// relationship from the family is allowed. This does not allow
+        /// full family members to be removed.
+        /// </summary>
+        /// <value><c>true</c> if can check-in relationship can be removed; otherwise, <c>false</c>.</value>
+        public virtual bool IsRemoveFromFamilyAtKioskAllowed { get; }
+
+        /// <summary>
         /// Gets a value indicating whether the same security code should be
         /// re-used for all people checked in during a single family check-in
         /// session.
@@ -210,6 +248,12 @@ namespace Rock.CheckIn.v2
         public virtual PhoneSearchMode PhoneSearchType { get; }
 
         /// <summary>
+        /// The unique identifier of the content channel that will provide
+        /// the promotions displayed on the welcome screen.
+        /// </summary>
+        public virtual Guid? PromotionContentChannelGuid { get; }
+
+        /// <summary>
         /// Gets the kiosk refresh interval. This is used by some kiosks to
         /// determine how often, in seconds, they will check with the server
         /// to see if any configuration data has changed.
@@ -222,7 +266,15 @@ namespace Rock.CheckIn.v2
         /// search term before a phone number search is performed.
         /// </summary>
         /// <value>The regular expression filter.</value>
-        public virtual string RegularExpressionFilter { get; }
+        public virtual string PhoneNumberPattern { get; }
+
+        /// <summary>
+        /// Gets the regular expression that will be run against the search
+        /// term before a phone number search is performed. If it matches then
+        /// the phone number will be replaced with the first match group.
+        /// </summary>
+        /// <value>The regular expression for phone number searches.</value>
+        public Regex PhoneNumberRegex { get; }
 
         /// <summary>
         /// Gets the length of the alpha character sequence for the security
@@ -558,10 +610,14 @@ namespace Rock.CheckIn.v2
         {
             AbilityLevelDetermination = ( AbilityLevelDeterminationMode ) groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION ).AsInteger();
             AchievementTypeGuids = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES ).SplitDelimitedValues().AsGuidList();
+            AgeRestriction = ( AgeRestrictionMode ) groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_AGE_RESTRICTION ).AsInteger();
+            AreNonSpecialNeedsGroupsRemoved = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS ).AsBoolean();
+            AreSpecialNeedsGroupsRemoved = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS ).AsBoolean();
             AutoSelectDaysBack = groupTypeCache.GetAttributeValue( "core_checkin_AutoSelectDaysBack" ).AsInteger();
             AutoSelect = ( AutoSelectMode ) groupTypeCache.GetAttributeValue( "core_checkin_AutoSelectOptions" ).AsInteger();
             KioskCheckInType = groupTypeCache.GetAttributeValue( "core_checkin_CheckInType" ) == "1" ? KioskCheckInMode.Family : KioskCheckInMode.Individual;
             FamilySearchType = GetFamilySearchType( groupTypeCache.GetAttributeValue( "core_checkin_SearchType" ).AsGuid() );
+            GradeAndAgeMatchingBehavior = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_GRADE_AND_AGE_MATCHING_BEHAVIOR ).ConvertToEnum<GradeAndAgeMatchingMode>( GradeAndAgeMatchingMode.GradeAndAgeMustMatch );
             IsAgeRequired = groupTypeCache.GetAttributeValue( "core_checkin_AgeRequired" ).AsBoolean( true );
             IsCheckoutAtKioskAllowed = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK ).AsBoolean();
             IsCheckoutInManagerAllowed = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER ).AsBoolean();
@@ -573,6 +629,7 @@ namespace Rock.CheckIn.v2
             IsOverrideAvailable = groupTypeCache.GetAttributeValue( "core_checkin_EnableOverride" ).AsBoolean( true );
             IsPhotoHidden = groupTypeCache.GetAttributeValue( "core_checkin_HidePhotos" ).AsBoolean( true );
             IsPresenceEnabled = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean();
+            IsRemoveFromFamilyAtKioskAllowed = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK ).AsBoolean();
             IsSameCodeUsedForFamily = groupTypeCache.GetAttributeValue( "core_checkin_ReuseSameCode" ).AsBoolean( false );
             IsSameOptionUsed = groupTypeCache.GetAttributeValue( "core_checkin_UseSameOptions" ).AsBoolean( false );
             IsSupervisorEnabled = groupTypeCache.GetAttributeValue( "core_checkin_EnableManagerOption" ).AsBoolean( true );
@@ -580,8 +637,10 @@ namespace Rock.CheckIn.v2
             MaximumPhoneNumberLength = groupTypeCache.GetAttributeValue( "core_checkin_MaximumPhoneSearchLength" ).AsIntegerOrNull();
             MinimumPhoneNumberLength = groupTypeCache.GetAttributeValue( "core_checkin_MinimumPhoneSearchLength" ).AsIntegerOrNull();
             PhoneSearchType = ( PhoneSearchMode ) groupTypeCache.GetAttributeValue( "core_checkin_PhoneSearchType" ).AsInteger();
+            PromotionContentChannelGuid = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_PROMOTIONS_CONTENT_CHANNEL ).AsGuidOrNull();
             RefreshInterval = groupTypeCache.GetAttributeValue( "core_checkin_RefreshInterval" ).AsInteger();
-            RegularExpressionFilter = groupTypeCache.GetAttributeValue( "core_checkin_RegularExpressionFilter" ) ?? string.Empty;
+            PhoneNumberPattern = groupTypeCache.GetAttributeValue( "core_checkin_RegularExpressionFilter" ) ?? string.Empty;
+            PhoneNumberRegex = GetRegexOrNull( PhoneNumberPattern );
             SecurityCodeAlphaLength = groupTypeCache.GetAttributeValue( "core_checkin_SecurityCodeAlphaLength" ).AsInteger();
             SecurityCodeAlphaNumericLength = groupTypeCache.GetAttributeValue( "core_checkin_SecurityCodeLength" ).AsInteger();
             SecurityCodeNumericLength = groupTypeCache.GetAttributeValue( "core_checkin_SecurityCodeNumericLength" ).AsInteger();
@@ -714,12 +773,39 @@ namespace Rock.CheckIn.v2
                 results.Add( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CHILD.AsGuid() );
             }
 
-            foreach ( var role in knownRelationShipRoles.Where( a => roleIds.Contains( a.Id ) ).ToList() )
+            foreach ( var role in knownRelationShipRoles.Where( a => roleIds.Contains( a.Id ) ) )
             {
                 results.Add( role.Guid, true );
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Gets a compiled regular expression for the pattern. This catches
+        /// any exceptions and returns <c>null</c> instead.
+        /// </summary>
+        /// <param name="pattern">The pattern of the regular expression.</param>
+        /// <returns>An <see cref="Regex"/> instance of <c>null</c> if <paramref name="pattern"/> was not valid.</returns>
+        private static Regex GetRegexOrNull( string pattern )
+        {
+            if ( pattern.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            try
+            {
+                // A compiled expression will take about 0.2ms to compile to
+                // native code for the expected complexity. It then executes
+                // 3x faster. Since this is likely to be called hundreds if
+                // not thousands of times per service, that is a good tradeoff.
+                return new Regex( pattern, RegexOptions.Compiled );
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         #endregion

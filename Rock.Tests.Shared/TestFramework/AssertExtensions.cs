@@ -242,6 +242,12 @@ namespace Rock.Tests.Shared
         {
             Assert.IsInstanceOfType( value, expectedType );
         }
+        public static void IsInstanceOfType<T>( this Assert assert, object value, out T targetValue )
+        {
+            assert.IsInstanceOfType( value, typeof( T ) );
+
+            targetValue = ( T ) value;
+        }
         public static void IsInstanceOfType( this Assert assert, System.Object value, System.Type expectedType, System.String message, params System.Object[] parameters )
         {
             Assert.IsInstanceOfType( value, expectedType, message, parameters );
@@ -272,7 +278,7 @@ namespace Rock.Tests.Shared
         }
         public static void IsTrue( this Assert assert, System.Boolean condition, System.String message, params System.Object[] parameters )
         {
-            Assert.IsTrue( condition, message, parameters );
+             Assert.IsTrue( condition, message, parameters );
         }
         public static void IsTrue( this Assert assert, System.Boolean condition )
         {
@@ -332,7 +338,7 @@ namespace Rock.Tests.Shared
                 return ex;
             }
 
-            Assert.Fail( $"A ${typeof( T )} exception was expected but was not thrown." );
+            Assert.Fail( $"A {typeof( T )} exception was expected but was not thrown." );
 
             // Doesn't actually do anything, but makes the compiler happy.
             return ( T ) null;

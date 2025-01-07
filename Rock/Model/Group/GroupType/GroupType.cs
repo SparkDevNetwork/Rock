@@ -22,7 +22,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Data;
+using Rock.Enums.CheckIn;
 using Rock.Enums.Group;
 using Rock.Lava;
 using Rock.Security;
@@ -210,6 +212,25 @@ namespace Rock.Model
         /// </example>
         [DataMember]
         public AttendanceRule AttendanceRule { get; set; }
+
+        /// <summary>
+        /// <para>
+        /// When <see cref="AttendanceRule"/> is set to <see cref="AttendanceRule.AlreadyEnrolledInGroup"/>
+        /// then this specifies the group matching logic used.
+        /// </para>
+        /// <para>
+        /// <see cref="AlreadyEnrolledMatchingLogic.MustBeEnrolled"/> simply
+        /// that the person be a member of the group and no additional filtering
+        /// is performed.
+        /// </para>
+        /// <para>
+        /// <see cref="AlreadyEnrolledMatchingLogic.PreferEnrolledGroups"/> will
+        /// additionally then filter out any non-preferred groups if the person
+        /// is a member of any preferred groups.
+        /// </para>
+        /// </summary>
+        [DataMember]
+        public AlreadyEnrolledMatchingLogic AlreadyEnrolledMatchingLogic { get; set; }
 
         /// <summary>
         /// Gets or sets the group capacity rule.
@@ -686,7 +707,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>The attendance reminder followup days.</value>
         [DataMember]
-        [MaxLength(100)]
+        [MaxLength( 100 )]
         public string AttendanceReminderFollowupDays { get; set; }
 
         //AttendanceReminderLastSentDateTime
@@ -757,6 +778,13 @@ namespace Rock.Model
         [DataMember]
         [DecimalPrecision( 8, 2 )]
         public decimal NonLeaderToLeaderRelationshipMultiplier { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that groups in this area should not be available
+        /// when a person already has a check-in for the same schedule.
+        /// </summary>
+        [DataMember]
+        public bool IsConcurrentCheckInPrevented { get; set; }
 
         #endregion Entity Properties
 
@@ -884,6 +912,15 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool ShowAdministrator { get; set; }
+
+        /// <summary>
+        /// Gets or sets the types of notifications the coordinator receives about scheduled individuals.
+        /// </summary>
+        /// <value>
+        /// The schedule coordinator notification types.
+        /// </value>
+        [DataMember]
+        public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; set; }
 
         #endregion
 

@@ -2,11 +2,17 @@
 <template>
     <div ref="screenElement" class="search-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
-
-            <TextBox v-model="searchTerm"
-                     class="search-term"
-                     @keypress.enter="onSearchClick" />
+                   :subtitle="subtitle"
+                   :configuration="configuration">
+            <!--
+                The form is here to prevent iOS from causing the Return key
+                to become a Go key and triggering a WebForms postback.
+            -->
+            <RockForm>
+                <TextBox v-model="searchTerm"
+                         class="search-term"
+                         @keypress.enter="onSearchClick" />
+            </RockForm>
 
             <NumberPad v-if="hasNumberPad"
                        v-model="searchTerm"
@@ -29,12 +35,17 @@
     import NumberPad from "./numberPad.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
+    import { showDialog } from "@Obsidian/Utility/dialogs";
     import { CheckInSession } from "./checkInSession.partial";
-    import { UnexpectedErrorMessage } from "./utils.partial";
+    import { alert, UnexpectedErrorMessage } from "./utils.partial";
+    import { RegistrationScreenData } from "./types.partial";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EditFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/editFamilyResponseBag";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
 
     const props = defineProps({
         configuration: {
@@ -50,11 +61,15 @@
 
     const emit = defineEmits<{
         (event: "next", session: CheckInSession): void;
+        (event: "editFamily", data: RegistrationScreenData): void;
     }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
     const screenElement = ref<HTMLElement>();
+    const cancellationTokenSource = new CancellationTokenSource();
 
     const title = ref("");
     const subtitle = ref("");
@@ -126,11 +141,44 @@
     }
 
     /**
+     * Start the process of adding a new family to the system.
+     */
+    async function addNewFamily(): Promise<void> {
+        const data = {
+            familyId: null,
+            kioskId: props.configuration.kiosk?.id,
+            templateId: props.session.configuration?.template?.id
+        };
+
+        const response = await invokeBlockAction<EditFamilyResponseBag>("EditFamily", data);
+
+        if (response.isSuccess && response.data) {
+            const registrationData: RegistrationScreenData = {
+                ...response.data,
+                family: {
+                    bag: {},
+                    validProperties: ["id"]
+                },
+                people: []
+            };
+
+            emit("editFamily", registrationData);
+        }
+        else {
+            await alert(response.errorMessage || UnexpectedErrorMessage, cancellationTokenSource.token);
+        }
+    }
+
+    /**
      * Handles the click even for the search button. This starts a search for
      * the term by calling the API endpoint.
      */
     async function onSearchClick(): Promise<void> {
-        isSearching.value = true;
+        // The enter key triggers a search, so we need to verify that search
+        // is okay to execute in that case.
+        if (isSearchDisabled.value) {
+            return;
+        }
 
         let searchValue = searchTerm.value;
         const isAlpha = /[^0-9()+ -]/.test(searchValue);
@@ -141,20 +189,48 @@
         }
 
         try {
+            isSearching.value = true;
+
             const newSession = await props.session.withFamilySearch(searchValue, props.configuration.template?.familySearchType ?? FamilySearchMode.NameAndPhone);
 
             if (!newSession.families || newSession.families.length === 0) {
-                await alert("There were not any families that match the search criteria.");
+                if (newSession.configuration.kiosk?.isRegistrationModeEnabled) {
+                    const button = await showDialog({
+                        message: "There were not any families that match the search criteria.",
+                        buttons: [
+                            {
+                                key: "add",
+                                label: "Add a New Family",
+                                className: "btn btn-default"
+                            },
+                            {
+                                key: "ok",
+                                label: "OK",
+                                className: "btn btn-primary"
+                            }
+                        ],
+                        cancellationToken: cancellationTokenSource.token
+                    });
+
+                    if (button === "add") {
+                        addNewFamily();
+                    }
+                }
+                else {
+                    await alert("There were not any families that match the search criteria.", cancellationTokenSource.token);
+                }
+
                 return;
             }
 
             emit("next", await newSession.withNextScreen());
         }
         catch (error) {
-            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);
         }
-
-        isSearching.value = false;
+        finally {
+            isSearching.value = false;
+        }
     }
 
     // #endregion
@@ -164,6 +240,8 @@
             (screenElement.value?.querySelector("input.search-term") as HTMLElement)?.focus();
         }
     });
+
+    onBeforeUnmount(() => cancellationTokenSource.cancel());
 
     watch(() => props.configuration, updateText);
 

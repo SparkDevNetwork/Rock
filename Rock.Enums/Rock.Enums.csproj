@@ -48,6 +48,10 @@
     </Compile>
     <Compile Include="AI\ModerationFlags.cs" />
     <Compile Include="AI\ChatMessageRole.cs" />
+    <Compile Include="CheckIn\AgeRestrictionMode.cs" />
+    <Compile Include="CheckIn\GradeAndAgeMatchingMode.cs" />
+    <Compile Include="CheckIn\LocationSelectionStrategy.cs" />
+    <Compile Include="Cms\ThemeFieldType.cs" />
     <Compile Include="Blocks\Crm\FamilyPreRegistration\CommunicationPreference.cs" />
     <Compile Include="Blocks\Group\Scheduling\ToolboxActionType.cs" />
     <Compile Include="Blocks\Group\Scheduling\ToolboxScheduleRowActionType.cs" />
@@ -63,6 +67,7 @@
     <Compile Include="Blocks\Security\Login\LoginMethod.cs" />
     <Compile Include="Blocks\Security\Login\PasswordlessLoginStep.cs" />
     <Compile Include="CheckIn\AbilityLevelDeterminationMode.cs" />
+    <Compile Include="CheckIn\AlreadyEnrolledMatchingLogic.cs" />
     <Compile Include="CheckIn\AutoSelectMode.cs" />
     <Compile Include="CheckIn\KioskCheckInMode.cs" />
     <Compile Include="CheckIn\FamilySearchMode.cs" />
@@ -92,6 +97,8 @@
     <Compile Include="Cms\SiteTypeFlags.cs" />
     <Compile Include="Cms\SiteType.cs" />
     <Compile Include="Cms\TagType.cs" />
+    <Compile Include="Cms\ThemeFontAwesomeWeight.cs" />
+    <Compile Include="Cms\ThemeIconSet.cs" />
     <Compile Include="Communication\CommunicationMessageFilter.cs" />
     <Compile Include="Communication\CommunicationRecipientStatus.cs" />
     <Compile Include="Communication\CommunicationStatus.cs" />
@@ -190,14 +197,16 @@
     <Compile Include="Group\RelationshipTrend.cs" />
     <Compile Include="Group\RequirementCheckType.cs" />
     <Compile Include="Group\ScheduleConfirmationLogic.cs" />
+    <Compile Include="Group\ScheduleCoordinatorNotificationType.cs" />
     <Compile Include="Lms\CommunicationMode.cs" />
     <Compile Include="Lms\ConfigurationMode.cs" />
     <Compile Include="Lms\AssignTo.cs" />
-    <Compile Include="Lms\AvailableDateCalculationMethod.cs" />
+    <Compile Include="Lms\AvailabilityCriteria.cs" />
     <Compile Include="Lms\CompletionStatus.cs" />
-    <Compile Include="Lms\DueDateCalculationMethod.cs" />
+    <Compile Include="Lms\DueDateCriteria.cs" />
     <Compile Include="Lms\LearningCompletionStatus.cs" />
     <Compile Include="Lms\RequirementType.cs" />
+    <Compile Include="Mobile\MobileNavigationActionType.cs" />
     <Compile Include="Net\CookieSameSiteMode.cs" />
     <Compile Include="Net\ResponseElementLocation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -209,6 +218,8 @@
     <Compile Include="Reporting\ReportFieldType.cs" />
     <Compile Include="Reporting\UnitType.cs" />
     <Compile Include="Blocks\Security\ConfirmAccount\ConfirmAccountViewType.cs" />
+    <Compile Include="WebFarm\LogSeverity.cs" />
+    <Compile Include="WebFarm\LogType.cs" />
     <Compile Include="Workflow\WorkflowActionFormShowHideOption.cs" />
     <Compile Include="Workflow\WorkflowActionFormPersonEntryOption.cs" />
     <Compile Include="Workflow\WorkflowLoggingLevel.cs" />

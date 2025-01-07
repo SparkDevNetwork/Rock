@@ -101,12 +101,12 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( "InteractionId" ).AsInteger() );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.Reporting
                 var interaction = new InteractionService( rockContext ).Get( interactionId );
 
                 IEntity interactionEntity = null;
-                if ( interaction.EntityId.HasValue )
+                if ( interaction?.EntityId.HasValue == true )
                 {
                     interactionEntity = GetInteractionEntity( rockContext, interaction );
                 }
@@ -179,12 +179,17 @@ namespace RockWeb.Blocks.Reporting
         private IEntity GetInteractionEntity( RockContext rockContext, Interaction interaction )
         {
             IEntity interactionEntity = null;
-            var interactionEntityType = EntityTypeCache.Get( interaction.InteractionComponent.InteractionChannel.InteractionEntityTypeId.Value ).GetEntityType();
-            IService serviceInstance = Reflection.GetServiceForEntityType( interactionEntityType, rockContext );
-            if ( serviceInstance != null )
+            var interactionEntityTypeId = interaction.InteractionComponent?.InteractionChannel?.InteractionEntityTypeId;
+
+            if ( interactionEntityTypeId.HasValue )
             {
-                System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
-                interactionEntity = getMethod.Invoke( serviceInstance, new object[] { interaction.EntityId.Value } ) as Rock.Data.IEntity;
+                var interactionEntityType = EntityTypeCache.Get( interactionEntityTypeId.Value ).GetEntityType();
+                IService serviceInstance = Reflection.GetServiceForEntityType( interactionEntityType, rockContext );
+                if ( serviceInstance != null )
+                {
+                    System.Reflection.MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+                    interactionEntity = getMethod.Invoke( serviceInstance, new object[] { interaction.EntityId.Value } ) as Rock.Data.IEntity;
+                }
             }
 
             return interactionEntity;

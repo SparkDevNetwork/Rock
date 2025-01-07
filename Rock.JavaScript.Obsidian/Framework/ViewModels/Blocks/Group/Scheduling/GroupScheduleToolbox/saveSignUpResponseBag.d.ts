@@ -21,8 +21,6 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-import { SignUpOccurrenceBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpOccurrenceBag";
 import { SignUpsBag } from "@Obsidian/ViewModels/Blocks/Group/Scheduling/GroupScheduleToolbox/signUpsBag";
 
 /** A bag that contains information about the outcome of a "save sign-up" request for the group schedule toolbox block. */
@@ -30,12 +28,6 @@ export type SaveSignUpResponseBag = {
     /** Gets or sets a friendly error message to describe any problems encountered while saving. */
     saveError?: string | null;
 
-    /** Gets or sets the selected location unique identifier; will only be provided if the save succeeded. */
-    selectedLocationGuid: Guid;
-
-    /** Gets or sets the updated sign-up occurrence; will only be provided if the save succeeded. */
-    signUpOccurrence?: SignUpOccurrenceBag | null;
-
-    /** Gets or sets the current sign-ups; will only be provided if the save failed. */
+    /** Gets or sets the updated sign-ups after the save attempt. */
     signUps?: SignUpsBag | null;
 };

@@ -22,6 +22,7 @@ import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { getDay, getMonth, getYear } from "@Obsidian/Utility/dateKey";
 import { emptyGuid } from "@Obsidian/Utility/guid";
 import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+import { getEmojiPattern, getSpecialCharacterPattern, getSpecialFontPattern } from "@Obsidian/Utility/regexPatterns";
 import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
 import { FamilyPreRegistrationPersonBag } from "@Obsidian/ViewModels/Blocks/Crm/FamilyPreRegistration/familyPreRegistrationPersonBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -548,6 +549,34 @@ export function required(value: unknown, params?: unknown[]): ValidationResult {
 
     if (!value) {
         return "is required";
+    }
+
+    return true;
+}
+
+/**
+ * Validates whether a name can include special characters.
+ */
+export function noSpecialCharacters (value: unknown): ValidationResult {
+    if (typeof value === "string") {
+        // Checks if a string contains special characters
+        if (getSpecialCharacterPattern().test(value)) {
+            return "cannot contain special characters such as quotes, parentheses, etc.";
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Validates whether a name can emojis or special fonts.
+ */
+export function noEmojisOrSpecialFonts (value: unknown): ValidationResult {
+    if (typeof value === "string") {
+        // Checks if a string contains emojis or special fonts.
+        if (getEmojiPattern().test(value) || getSpecialFontPattern().test(value)) {
+            return "cannot contain emojis or special fonts.";
+        }
     }
 
     return true;

@@ -49,6 +49,42 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="FirstNameTextBox" /> will allow special characters. This property is meant to be used when dealing with Person names.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if special characters are not allowed; otherwise, <c>false</c>.
+        /// </value>
+        public override bool NoSpecialCharacters
+        {
+            get
+            {
+                return base.NoSpecialCharacters;
+            }
+            set
+            {
+                base.NoSpecialCharacters = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="FirstNameTextBox" /> will allow emojis or special fonts. This property is meant to be used when dealing with Person names.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if emojis or special fonts are not allowed; otherwise, <c>false</c>.
+        /// </value>
+        public override bool NoEmojisOrSpecialFonts
+        {
+            get
+            {
+                return base.NoEmojisOrSpecialFonts;
+            }
+            set
+            {
+                base.NoEmojisOrSpecialFonts = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets representing characters or strings, delimited by <see cref="Delimiter"/> that are not valid or allowed
         /// </summary>
         public string NotAllowed
@@ -64,6 +100,18 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["Delimiter"] as string ?? _defaultDelimiter; }
             set { ViewState["Delimiter"] = value; }
+        }
+
+        /// <summary>
+        /// Should an inline validation error be diplayed if validation fails.
+        /// </summary>
+        /// <value>
+        /// The display inline validation error.
+        /// </value>
+        public bool DisplayInlineValidationError
+        {
+            get { return ViewState["DisplayInlineValidationError"] as bool? ?? false; }
+            set { ViewState["DisplayInlineValidationError"] = value; }
         }
 
         /// <summary>
@@ -96,7 +144,6 @@ namespace Rock.Web.UI.Controls
             _customValidator.Display = ValidatorDisplay.Dynamic;
             _customValidator.CssClass = "validation-error help-inline";
             _customValidator.ClientValidationFunction = "Rock.controls.firstNameTextBox.clientValidate";
-            _customValidator.ValidationGroup = this.ValidationGroup;
             _customValidator.ServerValidate += ServerValidation;
 
             this.Attributes["data-item-label"] = this.Label.IsNotNullOrWhiteSpace() ? this.Label : "FirstName";
@@ -110,6 +157,12 @@ namespace Rock.Web.UI.Controls
             base.RenderControl( writer );
 
             RegisterJavaScript();
+        }
+
+        /// <inheritdoc/>
+        protected override void RenderDataValidator( HtmlTextWriter writer )
+        {
+            base.RenderDataValidator( writer );
 
             _customValidator.RenderControl( writer );
         }
@@ -122,7 +175,8 @@ namespace Rock.Web.UI.Controls
             var script = $@"Rock.controls.firstNameTextBox.initialize(
                 {{
                     id: '{this.ClientID}',
-                    notAllowedStrings: {GetNotAllowedStrings().ToJson()}
+                    notAllowedStrings: {GetNotAllowedStrings().ToJson()},
+                    displayInlineValidationError: {DisplayInlineValidationError.ToJavaScriptValue()}
                 }});";
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "first_name_textbox-" + this.ClientID, script, true );

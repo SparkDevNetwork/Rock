@@ -4,7 +4,7 @@
 
         <h1>{{ businessName }}</h1>
 
-        <EntityTagList :entityTypeGuid="EntityType.Person" :entityKey="entityKey" :categoryGuid="tagCategoryGuid ?? undefined" />
+        <EntityTagList v-if="options.displayTags" :entityTypeGuid="EntityType.Person" :entityKey="entityKey" :categoryGuid="tagCategoryGuid ?? undefined" />
 
         <div class="row">
             <div class="col-md-6">
@@ -81,24 +81,16 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.phoneNumber) {
-            valueBuilder.addTextValue("Phone Number", props.modelValue.phoneNumber);
+        if (props.modelValue.displayPhoneNumber) {
+            valueBuilder.addTextValue("Phone Number", props.modelValue.displayPhoneNumber);
         }
 
-        if (props.modelValue.emailAddress) {
-            valueBuilder.addTextValue("Email Address", props.modelValue.emailAddress);
+        if (props.modelValue.emailTag) {
+            valueBuilder.addHtmlValue("Email Address", props.modelValue.emailTag);
         }
 
         return valueBuilder.build();
     });
 
-        // #endregion
-
-        // #region Functions
-
-        // #endregion
-
-        // #region Event Handlers
-
-        // #endregion
+    // #endregion
 </script>

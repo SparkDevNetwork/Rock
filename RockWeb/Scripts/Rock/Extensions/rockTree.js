@@ -826,7 +826,7 @@
                     // Reset the list of selected nodes
                     self.selectedNodes = newSelectedNodes;
 
-                    self.$el.trigger('rockTree:childrenSelected');
+                    self.$el.trigger('rockTree:selected');
 
                     // Rerender the tree
                     self.render();

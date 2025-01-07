@@ -15,7 +15,8 @@
 
         <div class="panel-flex-fill-body">
             <div style="display: flex; flex-grow: 1; overflow: hidden">
-                <Menu :labelManager="labelManager" />
+                <Menu :labelManager="labelManager"
+                      :systemLabel="config.isSystem" />
 
                 <Editor ref="editor"
                         :labelManager="labelManager" />
@@ -24,6 +25,7 @@
             <div class="actions">
                 <RockButton btnType="primary"
                             autoDisable
+                            :disabled="config.isSystem"
                             @click="onSave">Save</RockButton>
 
                 <RockButton btnType="link"
@@ -37,26 +39,9 @@
         </div>
     </Panel>
 
-    <Modal v-model="isPreviewOpen"
-           title="Preview"
-           cancelText="Close">
-        <TextBox label="Attendance Id"
-                 v-model="previewAttendanceId"
-                 help="To generate a preview of what this label looks like with an actual attendance record you can enter an identifier here." />
-
-        <RockButton btnType="default"
-                    autoDisable
-                    @click="onPreviewRefreshClick">
-            Refresh
-        </RockButton>
-
-        <div class="text-right mb-2">
-            <span class="label label-info">{{ previewDuration }}ms</span>
-        </div>
-
-        <img class="preview-image"
-             :src="previewSource" />
-    </Modal>
+    <LabelPreviewModal v-model="isPreviewOpen"
+                       previewAttendanceId=""
+                       :refreshCallback="refreshPreviewCallback" />
 </template>
 
 <style scoped>
@@ -88,24 +73,15 @@
     border: 1px solid black;
     background-color: white;
 }
-
-.preview-image {
-    border-radius: 12px;
-    border: 1px solid var(--theme-light);
-    box-shadow: 2px 2px 6px rgba(0, 0, 0, .1);
-    display: block;
-    margin: auto;
-}
 </style>
 
 <script setup lang="ts">
     import Editor from "./LabelDesigner/editor.partial.obs";
     import LabelDimensionsButton from "./LabelDesigner/labelDimensionsButton.partial.obs";
+    import LabelPreviewModal from "./LabelDesigner/labelPreviewModal.partial.obs";
     import Menu from "./LabelDesigner/menu.partial.obs";
-    import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { computed, ref, watch } from "vue";
     import { LabelDetail, PreviewResultBag, Size } from "./LabelDesigner/types.partial";
@@ -122,9 +98,6 @@
 
     const editor = ref<InstanceType<typeof Editor>>();
     const isPreviewOpen = ref(false);
-    const previewSource = ref<string | undefined>();
-    const previewDuration = ref(0);
-    const previewAttendanceId = ref("");
 
     const labelSize = computed<Size>({
         get() {
@@ -180,43 +153,25 @@
     /**
      * Updates the preview data from selections made in the preview modal.
      */
-    async function updatePreview(): Promise<boolean> {
+    async function refreshPreviewCallback(id: string): Promise<{ data: PreviewResultBag, size: string } | undefined> {
         const result = await invokeBlockAction<PreviewResultBag>("Preview", {
             key: config.idKey,
-            attendanceId: previewAttendanceId.value,
+            attendanceId: id,
             label: labelManager.current.value
         });
 
         if (!result.isSuccess || !result.data?.content) {
             await alert(result.errorMessage ?? "Unknown error while trying to preview check-in label.");
 
-            return false;
+            return undefined;
         }
 
         const labelSize = `${labelManager.current.value.labelData.width}x${labelManager.current.value.labelData.height}`;
-        // Can't use our normal http post function because it does something
-        // weird to the response data that corrupts the binary data.
-        const labelaryResult = await fetch(`https://api.labelary.com/v1/printers/8dpmm/labels/${labelSize}/0`, {
-            method: "POST",
-            body: result.data.content,
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded"
-            }
-        });
 
-        if (!labelaryResult.ok) {
-            await alert("Unknown error while trying to render preview image.");
-
-            return false;
-        }
-
-        const blob = await labelaryResult.blob();
-        const image64 = await blobToBase64(blob);
-
-        previewSource.value = `data:image/png;base64,${image64}`;
-        previewDuration.value = result.data.duration;
-
-        return true;
+        return {
+            data: result.data,
+            size: labelSize
+        };
     }
 
     /**
@@ -265,21 +220,7 @@
      * the server and then call Labelary to render a preview image.
      */
     async function onPreviewClick(): Promise<void> {
-        if (await updatePreview()) {
-            isPreviewOpen.value = true;
-        }
-        else {
-            // Just in case this is the problem.
-            previewAttendanceId.value = "";
-        }
-    }
-
-    /**
-     * Event handler for the refresh button being clicked. Update the rendered
-     * preview.
-     */
-    async function onPreviewRefreshClick(): Promise<void> {
-        await updatePreview();
+        isPreviewOpen.value = true;
     }
 
     /**

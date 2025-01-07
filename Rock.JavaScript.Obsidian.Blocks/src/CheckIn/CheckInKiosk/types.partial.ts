@@ -24,6 +24,12 @@ import { SavedCheckInConfigurationBag } from "@Obsidian/ViewModels/CheckIn/saved
 import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
 import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
 import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
+import { GetCurrentAttendanceResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/getCurrentAttendanceResponseBag";
+import { RegistrationFamilyBag } from "@Obsidian/ViewModels/CheckIn/registrationFamilyBag";
+import { RegistrationPersonBag } from "@Obsidian/ViewModels/CheckIn/registrationPersonBag";
+import { EditFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/editFamilyResponseBag";
+import { Guid } from "@Obsidian/Types";
+import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
 // #region Temporary Types
 
@@ -33,6 +39,8 @@ export type CampusBag = CheckInItemBag & {
 
 export type CheckInKioskOptionsBag = {
     kioskConfiguration?: KioskConfigurationBag | null;
+
+    isEditAllowed: boolean;
 
     isManualSetupAllowed: boolean;
 
@@ -57,7 +65,7 @@ export type CheckInKioskOptionsBag = {
 
 /**
  * Identifies each and every screen that can possibly be displayed in the
- * check-in kiosk. This does not include the administration screens.
+ * check-in kiosk. This does not include the supervisor screens.
  */
 export enum Screen {
     /**
@@ -153,15 +161,50 @@ export enum Screen {
 }
 
 /**
- * Identifies each of the administration screens that can be displayed in the
+ * Identifies each of the supervisor screens that can be displayed in the
  * check-in kiosk. This does not include the screens that are part of a normal
  * check-in flow.
  */
-export enum AdminScreen {
+export enum SupervisorScreen {
     /**
-     * The screen that will be displayed when an administrator wants to login.
+     * The screen that will be displayed when a supervisor wants to login.
      */
     Login = 100,
+
+    /**
+     * The screen that displays the list of available actions to the supervisor.
+     */
+    Actions,
+
+    /**
+     * The screen that allows a reprint of existing check-in labels.
+     */
+    Reprint,
+
+    /**
+     * The screen that allows configuring which locations are scheduled to
+     * be open.
+     */
+    ScheduleLocations,
+}
+
+/**
+ * Identifies each of the registration screens that are available when the
+ * kiosk has registration mode enabled.
+ */
+export enum RegistrationScreen {
+    /**
+     * The edit family screen displays a list of individuals in the family
+     * and allows editing family information as well as removing existing
+     * family members.
+     */
+    EditFamily = 200,
+
+    /**
+     * The edit individual screen allows for both adding and editing family
+     * members.
+     */
+    EditIndividual = 201
 }
 
 /**
@@ -211,17 +254,102 @@ export type AggregateAttendance = {
  */
 export interface IRockCheckInNative {
     /**
-     * Sets the kiosk identifier for the native application.
+     * Prints the legacy labels from check-in v1.
      *
-     * @param kioskId The kiosk integer identifier.
+     * @param tagJson The JSON data that contains the label details.
      */
-    SetKioskId?(kioskId: number): void;
+    PrintLabels?(tagJson: string): Promise<void>;
+
+    /**
+     * Prints the labels from check-in v2.
+     *
+     * @param tagJson The JSON data that contains the label details.
+     */
+    PrintV2Labels?(tagJson: string): Promise<string[]>;
 
     /**
      * Starts the native camera scanning feature of the application.
      *
      * @param isPassive True if the camera should be in passive mode.
      */
-    StartCamera?(isPassive: boolean): void;
+    StartCamera?(isPassive: boolean): Promise<void>;
+
+    /**
+     * Stops the native camera scanning feature of the application.
+     */
+    StopCamera?(): Promise<void>;
+
+    /**
+     * Sets the kiosk identifier for the native application.
+     *
+     * @param kioskId The kiosk integer identifier.
+     */
+    SetKioskId?(kioskId: number): Promise<void>;
 }
 /* eslint-enable @typescript-eslint/naming-convention */
+
+/**
+ * Makes all properties on the type not nullable and not undefined.
+ */
+type NoNullishField<T> = { [P in keyof T]-?: NonNullable<T[P]> };
+
+export type SupervisorScreenData = {
+    pinCode: string;
+
+    counts?: GetCurrentAttendanceResponseBag;
+};
+
+export type RegistrationScreenData = Omit<Omit<EditFamilyResponseBag, "people">, "family"> & {
+    editPersonGuid?: string | null;
+
+    family: NoNullishField<ValidPropertiesBox<RegistrationFamilyBag>>;
+
+    people: NoNullishField<ValidPropertiesBox<AugmentedRegistrationPersonBag>>[];
+};
+
+export type AugmentedRegistrationPersonBag = RegistrationPersonBag & {
+    guid: Guid;
+};
+
+export type AttendanceCountGroup = {
+    id: string;
+
+    name: string;
+
+    count: number;
+
+    children: AttendanceCountGroup[];
+};
+
+/**
+ * Contains count adjustments for locations. These are tracking during a
+ * check-in session only.
+ */
+export type LocationCountAdjustment = {
+    /** The encrypted identifier of the attendance record. */
+    id?: string | null;
+
+    /** The timestamp that this adjustment was received. */
+    timestamp: number;
+
+    /** The encrypted identifier of the location. */
+    locationId: string;
+
+    /** The adjustment value, may be negative. */
+    count: number;
+};
+
+export type KioskConfiguration = KioskConfigurationBag & {
+    /** This maps location Guid values to IdKey values. */
+    locationIdMap: Record<string, string>;
+
+    /** This maps group Guid values to IdKey values. */
+    groupIdMap: Record<string, string>;
+
+    /**
+     * This contains any location count adjustments that will be used during
+     * the check-in process. It is reset whenever we navigate away from the
+     * welcome screen.
+     */
+    locationCountAdjustments: LocationCountAdjustment[];
+};

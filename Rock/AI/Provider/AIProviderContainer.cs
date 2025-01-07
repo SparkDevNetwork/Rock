@@ -21,7 +21,6 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DDay.iCal;
 using Mono.CSharp;
 using Rock.Address;
 using Rock.Extension;

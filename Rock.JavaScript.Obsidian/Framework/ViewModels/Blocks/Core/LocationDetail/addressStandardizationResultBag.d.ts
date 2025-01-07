@@ -31,6 +31,9 @@ export type AddressStandardizationResultBag = {
     /** Gets or sets the geocode attempted result. */
     geocodeAttemptedResult?: string | null;
 
+    /** Gets or sets the geo point well known text. */
+    geoPointWellKnownText?: string | null;
+
     /** Gets or sets the standardize attempted result. */
     standardizeAttemptedResult?: string | null;
 };

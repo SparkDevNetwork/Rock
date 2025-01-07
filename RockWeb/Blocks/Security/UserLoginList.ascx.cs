@@ -577,6 +577,15 @@ namespace RockWeb.Blocks.Security
                         cbIsRequirePasswordChange.Checked = false;
                     }
 
+                    if ( component is Rock.Security.Authentication.PINAuthentication )
+                    {
+                        tbUserNameEdit.Label = "PIN";
+                    }
+                    else
+                    {
+                        tbUserNameEdit.Label = "User Name";
+                    }
+
                     rcwPassword.Visible = component.PromptForPassword;
                     tbUserNameEdit.Visible = true;
 

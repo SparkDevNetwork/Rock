@@ -1,0 +1,241 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+            <div class="col-sm-6">
+                <CheckBox v-model="isActive"
+                          label="Active" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="d-flex align-items-end">
+                    <div class="flex-fill mr-2">
+                        <TextBox v-model="clientId"
+                                 label="Client Id"
+                                 help="The OIDC ClientId. This the public identifier that the client apps will need to use."
+                                 rules="required" />
+                    </div>
+                    <div class="form-group">
+                        <RockButton :btnSize="BtnSize.Default"
+                                    :btnType="BtnType.Primary"
+                                    @click="onGenerateClientIdClick">
+                            Generate Id
+                        </RockButton>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex align-items-end">
+                    <div class="flex-fill mr-2">
+                        <TextBox v-model="clientSecret"
+                                 label="Client Secret"
+                                 help="For security purposes, we don't allow the secret to be displayed once created. Note that you only get one chance to see the Client Secret when you first generate it, so if you lose track of it you’ll need to generate a new one."
+                                 rules="required" />
+                    </div>
+                    <div class="form-group">
+                        <RockButton :btnSize="BtnSize.Default"
+                                    :btnType="BtnType.Primary"
+                                    :isLoading="isGeneratingSecret"
+                                    @click="onGenerateClientSecretClick">
+                            Generate Secret
+                        </RockButton>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="redirectUri"
+                         label="Redirect Uri"
+                         help="After the person has provided their credentials, they will be redirected back to the client via the path indicated here. This URI is provided by the client system."
+                         rules="required" />
+            </div>
+            <div class="col-md-6">
+                <TextBox v-model="postLogoutRedirectUri"
+                         label="Logout Redirect Uri"
+                         help="When the person logs out of the client system, they will be redirected to this URI. This is usually a URI on the client system."
+                         rules="required" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <NumberBox v-model="scopeApprovalExpiration"
+                           label="Scope Approval Expiration"
+                           help="The number of days that an individual's scope approval will be valid. After this expiration the individual will be asked to re-approve the scopes."
+                           rules="required"
+                           :minimumValue="0"
+                           :maximumValue="2147483647" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <Panel title="Allowed Scopes and Claims" :hasCollapse="true" :isDrawerOpen="true">
+
+                    <template #helpContent>
+                        <div class="p-3 bg-white">
+                            These are the claims that are allowed to be returned if requested by the client.
+                        </div>
+                    </template>
+
+                    <div v-for="scope of scopes">
+                        <label>{{ scope }}</label>
+
+                        <div v-for="item in scopeClaims[scope]" class="checkbox">
+                            <label :for="item.guid">
+                                <input :id="item.guid" :name="getCheckboxLabel(item)" type="checkbox" :value="item.claimName" v-model="item.isSelected" />
+                                <span class="label-text">{{ getCheckboxLabel(item) }}</span>
+                            </label>
+                        </div>
+                    </div>
+                </Panel>
+            </div>
+        </div>
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { AuthClientBag } from "@Obsidian/ViewModels/Blocks/Core/AuthClientDetail/authClientBag";
+    import { AuthClientScopeBag } from "@Obsidian/ViewModels/Blocks/Core/AuthClientDetail/authClientScopeBag";
+    import { AuthClientDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AuthClientDetail/authClientDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<AuthClientBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<AuthClientDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<AuthClientBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const clientId = propertyRef(props.modelValue.bag?.clientId ?? "", "ClientId");
+    const clientSecret = propertyRef(props.modelValue.bag?.clientSecret ?? "", "ClientSecret");
+    const redirectUri = propertyRef(props.modelValue.bag?.redirectUri ?? "", "RedirectUri");
+    const postLogoutRedirectUri = propertyRef(props.modelValue.bag?.postLogoutRedirectUri ?? "", "PostLogoutRedirectUri");
+    const scopeApprovalExpiration = propertyRef(props.modelValue.bag?.scopeApprovalExpiration, "ScopeApprovalExpiration");
+    const scopeClaims = ref(props.modelValue.bag?.scopeClaims ?? {});
+    const isGeneratingSecret = ref(false);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [isActive, name, clientId, clientSecret, redirectUri, postLogoutRedirectUri, scopeApprovalExpiration];
+
+    // #endregion
+
+    // #region Computed Values
+
+    const scopes = computed(() => Object.keys(scopeClaims.value) as Array<string>);
+
+    // #endregion
+
+    // #region Functions
+
+    function getCheckboxLabel(claim: AuthClientScopeBag): string {
+        return `${claim.publicClaimName} (${claim.claimName})`;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Generates a new Client Id value.
+     */
+    function onGenerateClientIdClick(): void {
+        clientId.value = newGuid();
+    }
+
+    /**
+    * Updates the preview data from selections made in the preview modal.
+    */
+    async function onGenerateClientSecretClick(): Promise<void> {
+
+        try {
+            isGeneratingSecret.value = true;
+            const result = await invokeBlockAction<string>("GenerateClientSecret");
+
+            if (!result.isSuccess || !result.data) {
+                await alert(result.errorMessage ?? "Unknown error while trying to generate client secret.");
+            }
+
+            clientSecret.value = result.data ?? "";
+        }
+        finally {
+            isGeneratingSecret.value = false;
+        }
+    }
+
+    // #endregion
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(clientId, props.modelValue.bag?.clientId ?? "");
+        updateRefValue(clientSecret, props.modelValue.bag?.clientSecret ?? "");
+        updateRefValue(redirectUri, props.modelValue.bag?.redirectUri ?? "");
+        updateRefValue(postLogoutRedirectUri, props.modelValue.bag?.postLogoutRedirectUri ?? "");
+        updateRefValue(scopeApprovalExpiration, props.modelValue.bag?.scopeApprovalExpiration);
+        updateRefValue(scopeClaims, props.modelValue.bag?.scopeClaims ?? {});
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, scopeClaims, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<AuthClientBag> = {
+            bag: { ...props.modelValue.bag } as AuthClientBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "clientId", clientId.value);
+        setPropertiesBoxValue(newValue, "clientSecret", clientSecret.value);
+        setPropertiesBoxValue(newValue, "redirectUri", redirectUri.value);
+        setPropertiesBoxValue(newValue, "postLogoutRedirectUri", postLogoutRedirectUri.value);
+        setPropertiesBoxValue(newValue, "scopeApprovalExpiration", toNumber(scopeApprovalExpiration.value));
+        setPropertiesBoxValue(newValue, "scopeClaims", scopeClaims.value);
+
+        emit("update:modelValue", newValue);
+    }, { deep: true });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

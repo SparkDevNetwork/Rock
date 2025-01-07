@@ -29,6 +29,8 @@ export const SystemCommunication = {
     AttendanceNotification: "CA794BD8-25C5-46D9-B7C2-AD8190AC27E6",
     /** Gets the template guid for the communication approval email */
     CommunicationApprovalEmail: "11D325F4-DAF3-4579-A9D8-6347CCC02341",
+    /** Gets the template guid for the Email Metrics Reminder system communication  */
+    CommunicationEmailMetricsReminder: "EAE6A169-C01C-4570-92A5-E465B566CFEF",
     /** Gets the template guid for  */
     CommunicationQueue: "2FC7D3E3-D85B-4265-8983-970345215DEA",
     /** Gets the template guid for the Exception Notification communication */
@@ -70,6 +72,8 @@ export const SystemCommunication = {
     GroupSyncWelcome: "F66D7DAE-89C1-E8BC-48F8-A0D6B849615F",
     /** Gets the template guid for  */
     KioskInfoUpdate: "BC490DD4-ABBB-7DBA-4A9E-74F07F4B5881",
+    /** Gets the template guid for a Login Confirmation Alert. */
+    LoginConfirmationAlert: "90D986D4-F3B5-4B28-B731-5A3F35172BA9",
     /** Gets the template guid for a note approval notification */
     NoteApprovalNotification: "B2E3D75F-681E-430F-82C9-D0D681040FAF",
     /** Gets the template guid for a notewatch notification */

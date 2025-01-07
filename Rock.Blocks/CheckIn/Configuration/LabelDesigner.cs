@@ -45,7 +45,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     [Category( "Check-in > Configuration" )]
     [Description( "Designs a check-in label with a nice drag and drop experience." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -55,6 +55,8 @@ namespace Rock.Blocks.CheckIn.Configuration
     [Rock.SystemGuid.BlockTypeGuid( "8c4ad18f-9f81-4145-8ad0-ab90e451d0d6" )]
     public class LabelDesigner : RockBlockType
     {
+        #region Keys
+
         /// <summary>
         /// The list of page parameters we expect.
         /// </summary>
@@ -62,6 +64,10 @@ namespace Rock.Blocks.CheckIn.Configuration
         {
             public const string CheckInLabelId = "CheckInLabelId";
         }
+
+        #endregion
+
+        #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
@@ -95,6 +101,7 @@ namespace Rock.Blocks.CheckIn.Configuration
             return new LabelDesignerOptionsBag
             {
                 IdKey = label.IdKey,
+                IsSystem = label.IsSystem,
                 Label = GetLabelDetailBag( label ),
                 LabelName = label.Name,
                 LabelType = label.LabelType,
@@ -172,6 +179,81 @@ namespace Rock.Blocks.CheckIn.Configuration
         }
 
         /// <summary>
+        /// Gets a fake label data object that can be used to perform basic
+        /// previewing of labels.
+        /// </summary>
+        /// <param name="labelType">The type of label to be previewed.</param>
+        /// <param name="currentPerson">The person to that is currently logged in.</param>
+        /// <param name="rockContext">The context to access the database with.</param>
+        /// <returns>A label data object or <c>null</c>.</returns>
+        internal static object GetPreviewLabelData( LabelType labelType, Person currentPerson, RockContext rockContext )
+        {
+            if ( currentPerson.Attributes == null )
+            {
+                currentPerson.LoadAttributes( rockContext );
+            }
+
+            if ( labelType == LabelType.Family )
+            {
+                return new FamilyLabelData( currentPerson.PrimaryFamily,
+                    new List<LabelAttendanceDetail>(),
+                    rockContext );
+            }
+            else if ( labelType == LabelType.Person )
+            {
+                return new PersonLabelData( currentPerson,
+                    currentPerson.PrimaryFamily,
+                    new List<LabelAttendanceDetail>(),
+                    rockContext );
+            }
+            else if ( labelType == LabelType.Attendance )
+            {
+                var attendance = new LabelAttendanceDetail
+                {
+                    Person = currentPerson
+                };
+
+                return new AttendanceLabelData( attendance,
+                    currentPerson.PrimaryFamily,
+                    new List<LabelAttendanceDetail>(),
+                    rockContext );
+            }
+            else if ( labelType == LabelType.Checkout )
+            {
+                var attendance = new LabelAttendanceDetail
+                {
+                    Person = currentPerson
+                };
+
+                return new CheckoutLabelData( attendance,
+                    currentPerson.PrimaryFamily,
+                    rockContext );
+            }
+            else if ( labelType == LabelType.PersonLocation )
+            {
+                var locationId = new LocationService( rockContext )
+                    .Queryable()
+                    .Where( l => !string.IsNullOrEmpty( l.Name ) && l.IsActive )
+                    .OrderBy( l => l.Id )
+                    .Select( l => l.Id )
+                    .FirstOrDefault();
+
+                return new PersonLocationLabelData( currentPerson,
+                    NamedLocationCache.Get( locationId ),
+                    new List<LabelAttendanceDetail>(),
+                    rockContext );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        #endregion
+
+        #region Block Actions
+
+        /// <summary>
         /// Saves a <see cref="CheckInLabel"/> from changes made in the
         /// designer interface.
         /// </summary>
@@ -193,6 +275,11 @@ namespace Rock.Blocks.CheckIn.Configuration
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to edit ${CheckInLabel.FriendlyTypeName}." );
+            }
+
+            if ( checkInLabel.IsSystem )
+            {
+                return ActionBadRequest( "Not allowed to edit system labels." );
             }
 
             if ( label == null || label.LabelData == null )
@@ -295,10 +382,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                         Capabilities = new PrinterCapabilities(),
                         DataSources = FieldSourceHelper.GetCachedDataSources( checkInLabel.LabelType ),
                         Label = label.LabelData,
-                        LabelData = new PersonLabelData( RequestContext.CurrentPerson,
-                            RequestContext.CurrentPerson.PrimaryFamily,
-                            new List<AttendanceLabel>(),
-                            RockContext )
+                        LabelData = GetPreviewLabelData( checkInLabel.LabelType, RequestContext.CurrentPerson, RockContext )
                     };
 
                     var renderer = new ZplLabelRenderer();
@@ -335,13 +419,23 @@ namespace Rock.Blocks.CheckIn.Configuration
                     return ActionBadRequest( "Attendance record was not found." );
                 }
 
-                var attendanceLabel = new AttendanceLabel( attendance, RockContext );
+                var isValidAttendance = attendance.PersonAliasId.HasValue
+                    && attendance.Occurrence?.ScheduleId.HasValue == true
+                    && attendance.Occurrence?.LocationId.HasValue == true
+                    && attendance.Occurrence?.GroupId.HasValue == true;
+
+                if ( !isValidAttendance )
+                {
+                    return ActionBadRequest( "Attendance record is not a valid check-in attendance." );
+                }
+
+                var attendanceLabel = new LabelAttendanceDetail( attendance, RockContext );
                 var director = new CheckInDirector( RockContext );
 
                 var sw = System.Diagnostics.Stopwatch.StartNew();
-                var data = director.LabelProvider.RenderLabel( checkInLabel,
+                var data = director.LabelProvider.RenderLabelUnconditionally( checkInLabel,
                     attendanceLabel,
-                    new List<AttendanceLabel> { attendanceLabel },
+                    new List<LabelAttendanceDetail> { attendanceLabel },
                     attendance.SearchResultGroup,
                     null );
                 sw.Stop();
@@ -355,5 +449,7 @@ namespace Rock.Blocks.CheckIn.Configuration
                 } );
             }
         }
+
+        #endregion
     }
 }

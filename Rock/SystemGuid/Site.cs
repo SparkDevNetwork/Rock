@@ -35,5 +35,10 @@ namespace Rock.SystemGuid
         /// The check in manager site guid
         /// </summary>
         public const string CHECK_IN_MANAGER = "A5FA7C3C-A238-4E0B-95DE-B540144321EC";
+
+        /// <summary>
+        /// The next generation check-in site guid.
+        /// </summary>
+        public const string NEXT_GEN_CHECK_IN = "BFBB35BD-D0B0-459E-9329-B082CE4F253E";
     }
 }

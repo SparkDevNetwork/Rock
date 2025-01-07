@@ -60,9 +60,9 @@ namespace Rock.Net
         private readonly ConcurrentDictionary<string, PersonPreferenceCollection> _personPreferenceCollections = new ConcurrentDictionary<string, PersonPreferenceCollection>();
 
         /// <summary>
-        /// Whether this object represents a legacy, `System.Web` request.
+        /// Whether the cookie values for this request have already been URL decoded.
         /// </summary>
-        private readonly bool _isLegacyRequest;
+        private readonly bool _cookieValuesAreUrlDecoded;
 
         #endregion
 
@@ -141,7 +141,7 @@ namespace Rock.Net
         /// <value>
         /// The context entities.
         /// </value>
-        internal protected IDictionary<Type, Lazy<IEntity>> ContextEntities { get; set; }
+        private protected IDictionary<Type, Lazy<IEntity>> ContextEntities { get; set; }
 
         /// <summary>
         /// Gets the personalization segment identifiers. Will be empty if this
@@ -149,7 +149,7 @@ namespace Rock.Net
         /// personalization enabled.
         /// </summary>
         /// <value>The personalization segment identifiers.</value>
-        internal IEnumerable<int> PersonalizationSegmentIds { get; private set; }
+        internal IEnumerable<int> PersonalizationSegmentIds { get; private set; } = Array.Empty<int>();
 
         /// <summary>
         /// Gets the personalization request filter identifiers. Will be empty if this
@@ -157,7 +157,7 @@ namespace Rock.Net
         /// personalization enabled.
         /// </summary>
         /// <value>The personalization request filter identifiers.</value>
-        internal IEnumerable<int> PersonalizationRequestFilterIds { get; private set; }
+        internal IEnumerable<int> PersonalizationRequestFilterIds { get; private set; } = Array.Empty<int>();
 
         /// <summary>
         /// Gets the query string from the request.
@@ -223,6 +223,19 @@ namespace Rock.Net
         /// </summary>
         internal PageCache Page => _pageCache;
 
+        /// <summary>
+        /// <para>
+        /// The unique identifier of the interaction related to the original
+        /// page request. For block actions, this will be the interaction of
+        /// the initial page load.
+        /// </para>
+        /// <para>
+        /// This is a best effort value and may not match the actual value in
+        /// all edge cases.
+        /// </para>
+        /// </summary>
+        internal Guid RelatedInteractionGuid { get; set; } = Guid.NewGuid();
+
         #endregion
 
         #region Constructors
@@ -250,8 +263,6 @@ namespace Rock.Net
         /// <param name="currentUser">The currently logged in user.</param>
         internal RockRequestContext( HttpRequest request, IRockResponseContext response, UserLogin currentUser )
         {
-            _isLegacyRequest = true;
-
             Response = response;
 
             CurrentUser = currentUser;
@@ -312,7 +323,7 @@ namespace Rock.Net
 
             RequestUri = request.RequestUri != null ? request.UrlProxySafe() : null;
             RootUrlPath = GetRootUrlPath( RequestUri );
-            
+
             HttpMethod = request.Method?.ToUpper();
 
             /*
@@ -350,6 +361,8 @@ namespace Rock.Net
             {
                 Cookies.AddOrReplace( cookieName, request.Cookies[cookieName] );
             }
+
+            _cookieValuesAreUrlDecoded = request.CookiesValuesAreUrlDecoded;
 
             // Initialize any context entities found.
             ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
@@ -445,7 +458,26 @@ namespace Rock.Net
                     continue;
                 }
 
-                AddOrReplaceEncryptedContextEntity( encryptedItem );
+                /*
+                    12/1/2023 - JPH
+
+                    This `RockRequestContext` class has multiple constructors, which can lead to different ways of retrieving
+                    cookie values (https://stackoverflow.com/a/55077150).
+
+                        1. If cookies were retrieved using the `System.Web` lib, we need to manually URL decode context entity cookie values.
+                        2. If cookies were retrieved using the `System.Net` lib, the values will have already been decoded for us.
+
+                    Reason: Context cookie compatibility between Web Forms and Obsidian.
+                    https://github.com/SparkDevNetwork/Rock/issues/5634
+                */
+
+                var decodedItem = encryptedItem;
+                if ( !_cookieValuesAreUrlDecoded )
+                {
+                    decodedItem = HttpUtility.UrlDecode( encryptedItem );
+                }
+
+                AddOrReplaceEncryptedContextEntity( decodedItem );
             }
         }
 
@@ -471,35 +503,16 @@ namespace Rock.Net
         /// Decrypts the value and adds or replaces the specified context entity.
         /// </summary>
         /// <param name="encryptedItem">The encrypted item containing the context entity to add or replace.</param>
-        /// <param name="bypassDecoding">Whether to explicitly bypass decoding (if the caller knows the item
-        /// has already been decoded).</param>
-        private void AddOrReplaceEncryptedContextEntity( string encryptedItem, bool bypassDecoding = false )
+        private void AddOrReplaceEncryptedContextEntity( string encryptedItem )
         {
             try
             {
-                /*
-                    12/1/2023 - JPH
-
-                    This `RockRequestContext` class has multiple constructors, which leads to multiple
-                    ways of retrieving this context cookie (https://stackoverflow.com/a/55077150).
-
-                        1. If this cookie was retrieved using the `System.Web` lib (by way of the
-                           constructor that takes an `HttpRequest` object, we need to manually URL
-                           decode this value before attempting to decrypt it.
-                        2. If this cookie was retrieved using the `System.Net` lib (by way of the
-                           constructor that take an `IRequest` object, the value will have already
-                           been decoded for us.
-
-                    Reason: Context cookie compatibility between Web Forms and Obsidian.
-                    https://github.com/SparkDevNetwork/Rock/issues/5634
-                 */
-                var decodedItem = encryptedItem;
-                if ( _isLegacyRequest && !bypassDecoding )
+                var contextItem = Rock.Security.Encryption.DecryptString( encryptedItem );
+                if ( contextItem.IsNullOrWhiteSpace() )
                 {
-                    decodedItem = HttpUtility.UrlDecode( encryptedItem );
+                    return;
                 }
 
-                var contextItem = Rock.Security.Encryption.DecryptString( decodedItem );
                 var parts = contextItem.Split( '|' );
                 if ( parts.Length != 2 )
                 {
@@ -518,7 +531,7 @@ namespace Rock.Net
         /// Adds or replaces a context entity for the specified entity type name and key.
         /// </summary>
         /// <param name="entityTypeName">The entity type name.</param>
-        /// <param name="entityKey">The entity key.</param>
+        /// <param name="entityKey">The entity key. This may either be a Guid, integer Id or IdKey value.</param>
         private void AddOrReplaceContextEntity( string entityTypeName, string entityKey )
         {
             // If entity type name or entity key are not defined then skip.
@@ -538,6 +551,22 @@ namespace Rock.Net
 
             // If we got an unknown type then skip.
             if ( type == null )
+            {
+                return;
+            }
+
+            AddOrReplaceContextEntity( type, entityKey );
+        }
+
+        /// <summary>
+        /// Adds or replaces a context entity for the specified entity type and key.
+        /// </summary>
+        /// <param name="type">The entity type.</param>
+        /// <param name="entityKey">The entity key. This may either be a Guid, integer Id or IdKey value.</param>
+        private void AddOrReplaceContextEntity( Type type, string entityKey )
+        {
+            // If entity type or entity key are not defined then skip.
+            if ( type == null || entityKey.IsNullOrWhiteSpace() )
             {
                 return;
             }
@@ -672,9 +701,7 @@ namespace Rock.Net
             var separator = new char[1] { ',' };
             foreach ( var param in GetPageParameter( "context" ).Split( separator, StringSplitOptions.RemoveEmptyEntries ) )
             {
-                // Query string parameters will have already been decoded, so instruct
-                // the decryption method to always bypass this part of the process.
-                AddOrReplaceEncryptedContextEntity( param, true );
+                AddOrReplaceEncryptedContextEntity( param );
             }
         }
 
@@ -758,7 +785,9 @@ namespace Rock.Net
                     contextObjects.Add( ctx.Key.Name, () => ctx.Value.Value );
                 }
 
-                if ( contextObjects.Any() )
+                // Use Count instead of Any() so we don't materialize the lazy
+                // values in the dictionary.
+                if ( contextObjects.Count > 0 )
                 {
                     mergeFields.Add( "Context", contextObjects );
                 }

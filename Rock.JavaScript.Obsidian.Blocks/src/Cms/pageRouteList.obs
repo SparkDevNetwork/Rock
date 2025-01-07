@@ -7,9 +7,6 @@
           :entityTypeGuid="EntityType.PageRoute"
           stickyHeader
           liveUpdates
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          :onGridSettingsClick="onGridSettingsClick"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
 
@@ -23,7 +20,7 @@
         <TextColumn name="siteName"
                     title="Site"
                     field="siteName"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     width="7%"
                     visiblePriority="md" />
 
@@ -38,19 +35,21 @@
                     title="Page Id"
                     field="pageId"
                     :filter="textValueFilter"
-                    width="5%"
+                    width="8%"
                     visiblePriority="md" />
 
         <BooleanColumn name="isGlobal"
                        title="Global Route"
                        field="isGlobal"
                        width="5%"
+                       :filter="booleanValueFilter"
                        visiblePriority="md" />
 
         <BooleanColumn name="isSystem"
                        title="System"
                        field="isSystem"
                        width="5%"
+                       :filter="booleanValueFilter"
                        visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
@@ -58,48 +57,28 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible"
-                       :siteItems="siteItems" />
 </template>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, pickExistingValueFilter, booleanValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PageRouteListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageRouteList/pageRouteListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { GridSettingsOptions, NavigationUrlKey, PreferenceKey } from "./PageRouteList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
-    import GridSettingsModal from "./PageRouteList/gridSettingsModal.partial.obs";
+    import { NavigationUrlKey } from "./PageRouteList/types.partial";
+    import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<PageRouteListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-    const isGridSettingsVisible = ref(false);
-    const siteItems = ref(config.options?.siteItems ?? []);
-    const gridSettings = ref<GridSettingsOptions>({
-        site: preferences.getValue(PreferenceKey.FilterSite),
-    });
-
     // #endregion
-
-    //# region Computed Values
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.site;
-    });
-
-    //# endregion
 
     // #region Functions
 
@@ -121,14 +100,6 @@
     // #endregion
 
     // #region Event Handlers
-
-    /**
-    * Called when the grid setting icon is clicked, displays the block filters.
-    *
-    */
-    function onGridSettingsClick(): void {
-        isGridSettingsVisible.value = true;
-    }
 
     /**
      * Called when a row has been selected by the individual.
@@ -174,17 +145,6 @@
     }
 
     // #endregion
-
-    /**
-    * Watch for changes to the grid settings and update the preferences as needed.
-    */
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterSite, gridSettings.value.site ?? "");
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>

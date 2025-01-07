@@ -21,10 +21,14 @@
 // </copyright>
 //
 
+import { CameraBarcodeConfiguration } from "@Obsidian/Enums/Core/cameraBarcodeConfiguration";
 import { KioskType } from "@Obsidian/Enums/Core/kioskType";
 
 /** Details about a single web-based kiosk device. */
 export type WebKioskBag = {
+    /** Determines how the camera should operate on this kiosk device. */
+    cameraMode: CameraBarcodeConfiguration;
+
     /** Gets or sets the identifier of this item. */
     id?: string | null;
 

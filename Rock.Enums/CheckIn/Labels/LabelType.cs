@@ -41,5 +41,11 @@ namespace Rock.Enums.CheckIn.Labels
         /// The label is printed once for each person during check-out.
         /// </summary>
         Checkout = 3,
+
+        /// <summary>
+        /// The label is printed once for each combination of person and
+        /// location.
+        /// </summary>
+        PersonLocation = 4,
     }
 }

@@ -1,9 +1,20 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="check-in-page">
-        <PageHeader title="Rock Solid"
-                    :hasBack="hasBackButton"
+    <div v-if="loginRequiredUrl" class="p-4">
+        <NotificationBox alertType="warning">
+            <div>
+                Check-in is not configured for anonymous access and you are not logged in.
+                Please update block settings or login.
+            </div>
+
+            <a :href="loginRequiredUrl" class="btn btn-primary mt-3">Login</a>
+        </NotificationBox>
+    </div>
+
+    <div v-else class="check-in-page">
+        <PageHeader :hasBack="hasBackButton"
                     :hideNavigation="!hasNavigation"
+                    :isOverrideMode="isOverrideMode"
                     @back="onBack"
                     @home="onHome" />
 
@@ -20,12 +31,14 @@
                               :configuration="configuration"
                               :session="currentSession"
                               @next="onNextScreen"
+                              @editFamily="onEditFamily"
                               @updateActions="onUpdateActions($event, Screen.Search)" />
 
                 <FamilySelectScreen v-if="currentScreen === Screen.FamilySelect"
                                     :configuration="configuration"
                                     :session="currentSession"
                                     @next="onNextScreen"
+                                    @editFamily="onEditFamily"
                                     @updateActions="onUpdateActions($event, Screen.FamilySelect)" />
 
                 <ActionSelectScreen v-if="currentScreen === Screen.ActionSelect"
@@ -44,6 +57,8 @@
                                     :configuration="configuration"
                                     :session="currentSession"
                                     @next="onNextScreen"
+                                    @replaceSession="onReplaceSession"
+                                    @editFamily="onEditFamily"
                                     @updateActions="onUpdateActions($event, Screen.PersonSelect)" />
 
                 <AutoModeOpportunitySelectScreen v-if="currentScreen === Screen.AutoModeOpportunitySelect"
@@ -85,17 +100,42 @@
                 <SuccessScreen v-if="currentScreen === Screen.Success"
                                :configuration="configuration"
                                :session="currentSession"
-                               @updateActions="onUpdateActions($event, Screen.Success)" />
+                               @updateActions="onUpdateActions($event, Screen.Success)"
+                               @checkInFamily="onRegistrationCheckInFamily" />
 
                 <CheckoutSuccessScreen v-if="currentScreen === Screen.CheckoutSuccess"
                                        :configuration="configuration"
                                        :session="currentSession"
                                        @updateActions="onUpdateActions($event, Screen.CheckoutSuccess)" />
+
+                <template v-for="supervisorScreen in supervisorScreens">
+                    <component v-if="supervisorScreen.screen === currentScreen"
+                               :key="supervisorScreen.screen"
+                               :is="supervisorScreen.component"
+                               :configuration="configuration"
+                               :supervisorData="supervisorData"
+                               @updateActions="onUpdateActions($event, supervisorScreen.screen)"
+                               @enableOverride="onEnableOverride($event)"
+                               @supervisorScreen="onSupervisorScreen"
+                               @closeSupervisor="onCloseSupervisor" />
+                </template>
+
+                <template v-for="registrationScreen in registrationScreens">
+                    <component v-if="registrationScreen.screen === currentScreen"
+                               :key="registrationScreen.screen"
+                               :is="registrationScreen.component"
+                               :configuration="configuration"
+                               :registrationData="registrationData"
+                               @updateActions="onUpdateActions($event, registrationScreen.screen)"
+                               @enableOverride="onEnableOverride($event)"
+                               @registrationScreen="onRegistrationScreen"
+                               @checkInFamily="onRegistrationCheckInFamily"
+                               @closeRegistration="onCloseRegistration" />
+                </template>
             </ContentTransition>
         </section>
 
-        <PageFooter :title="footerStatusText"
-                    :actions="currentScreenActions" />
+        <PageFooter :title="footerStatusText" :hideConfigure="isConfigureHidden" :actions="currentScreenActions" @configure="onConfigureClick" />
     </div>
 </template>
 
@@ -108,23 +148,35 @@
     import FamilySelectScreen from "./CheckInKiosk/familySelectScreen.partial.obs";
     import GroupSelectScreen from "./CheckInKiosk/groupSelectScreen.partial.obs";
     import LocationSelectScreen from "./CheckInKiosk/locationSelectScreen.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AutoModeOpportunitySelectScreen from "./CheckInKiosk/autoModeOpportunitySelectScreen.partial.obs";
     import PageFooter from "./CheckInKiosk/pageFooter.partial.obs";
     import PageHeader from "./CheckInKiosk/pageHeader.partial.obs";
     import PersonSelectScreen from "./CheckInKiosk/personSelectScreen.partial.obs";
+    import RegistrationEditFamilyScreen from "./CheckInKiosk/registrationEditFamilyScreen.partial.obs";
+    import RegistrationEditIndividualScreen from "./CheckInKiosk/registrationEditIndividualScreen.partial.obs";
     import ScheduleSelectScreen from "./CheckInKiosk/scheduleSelectScreen.partial.obs";
     import SearchScreen from "./CheckInKiosk/searchScreen.partial.obs";
     import SuccessScreen from "./CheckInKiosk/successScreen.partial.obs";
+    import SupervisorActionsScreen from "./CheckInKiosk/supervisorActionsScreen.partial.obs";
+    import SupervisorLoginScreen from "./CheckInKiosk/supervisorLoginScreen.partial.obs";
+    import SupervisorReprintScreen from "./CheckInKiosk/supervisorReprintScreen.partial.obs";
+    import SupervisorScheduleLocationsScreen from "./CheckInKiosk/supervisorScheduleLocationsScreen.partial.obs";
     import WelcomeScreen from "./CheckInKiosk/welcomeScreen.partial.obs";
     import ContentTransition from "./CheckInKiosk/contentTransition.partial.obs";
-    import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from "vue";
+    import { Component as VueComponent, computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getTopic } from "@Obsidian/Utility/realTime";
     import { provideKioskState } from "./CheckInKiosk/utils.partial";
-    import { AdminScreen, KioskButton, Screen } from "./CheckInKiosk/types.partial";
+    import { SupervisorScreen, SupervisorScreenData, KioskButton, Screen, RegistrationScreen, RegistrationScreenData, KioskConfiguration } from "./CheckInKiosk/types.partial";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
     import { CheckInSession } from "./CheckInKiosk/checkInSession.partial";
     import { useHttp } from "@Obsidian/Utility/http";
     import { SavedKioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/savedKioskConfigurationBag";
+    import { SubscribeToRealTimeResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/subscribeToRealTimeResponseBag";
+    import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
+    import { AttendanceUpdatedMessageBag } from "@Obsidian/ViewModels/Event/attendanceUpdatedMessageBag";
+    import { Guid } from "@Obsidian/Types";
 
     const blockConfiguration = useConfigurationValues<Record<string, unknown>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -134,21 +186,68 @@
 
     provideKioskState(kioskState);
 
-    const configuration = ref<KioskConfigurationBag>({});
-    const currentScreen = ref<Screen | AdminScreen>(Screen.None);
+    // #region Values
+
+    const configuration = ref<KioskConfiguration>({
+        locationIdMap: {},
+        groupIdMap: {},
+        locationCountAdjustments: []
+    });
+    const currentScreen = ref<Screen | SupervisorScreen | RegistrationScreen>(Screen.None);
     const currentScreenActions = ref<KioskButton[]>([]);
-    const currentSession = shallowRef<CheckInSession>(new CheckInSession(configuration.value, http));
+    const currentSession = shallowRef<CheckInSession>(createNewSession());
     const previousScreens = shallowRef<CheckInSession[]>([]);
+    let currentAttendeeId: string | undefined | null;
     let lastActivity: number = Date.now();
     let idleTimer: number | undefined;
+    let isRealTimeDisconnected = false;
+    let isKioskRefreshNeeded = false;
     const activityEvents = ["mousemove", "mousedown", "touchmove", "touchstart", "keydown"];
 
+    const supervisorData = ref<SupervisorScreenData>({ pinCode: "" });
+    const supervisorScreens = ref<{ screen: SupervisorScreen, component: VueComponent }[]>([
+        {
+            screen: SupervisorScreen.Login,
+            component: SupervisorLoginScreen
+        },
+        {
+            screen: SupervisorScreen.Actions,
+            component: SupervisorActionsScreen
+        },
+        {
+            screen: SupervisorScreen.Reprint,
+            component: SupervisorReprintScreen
+        },
+        {
+            screen: SupervisorScreen.ScheduleLocations,
+            component: SupervisorScheduleLocationsScreen
+        }
+    ]);
+
+    const registrationData = ref<RegistrationScreenData>({} as RegistrationScreenData);
+    const registrationScreens = ref<{ screen: RegistrationScreen, component: VueComponent }[]>([
+        {
+            screen: RegistrationScreen.EditFamily,
+            component: RegistrationEditFamilyScreen
+        },
+        {
+            screen: RegistrationScreen.EditIndividual,
+            component: RegistrationEditIndividualScreen
+        }
+    ]);
+
+    const loginRequiredUrl = blockConfiguration.loginRequiredUrl as string;
+
+    // #endregion
+
+    // #region Computed Values
+
     const hasNavigation = computed((): boolean => {
-        return currentScreen.value !== Screen.Welcome;
+        return currentScreen.value !== Screen.Welcome
+            && currentScreen.value !== Screen.None;
     });
 
     const hasBackButton = computed((): boolean => {
-
         return currentScreen.value !== Screen.Welcome
             && currentScreen.value !== Screen.Success
             && currentScreen.value !== Screen.CheckoutSuccess
@@ -162,6 +261,33 @@
 
         return `${configuration.value.kiosk.name} · ${configuration.value.template.name}`;
     });
+
+    /** Kiosk is current in override mode which bypasses some filtering logic. */
+    const isOverrideMode = computed((): boolean => {
+        return currentSession.value.overridePinCode !== undefined
+            && currentSession.value.overridePinCode !== "";
+    });
+
+    /**
+     * The configure button should be hidden if we are in the configure
+     * screens already.
+     */
+    const isConfigureHidden = computed((): boolean => {
+        return currentScreen.value >= SupervisorScreen.Login;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Performs all startup tasks associated with the block being presented
+     * on screen for the first time.
+     */
+    async function startup(): Promise<void> {
+        await readConfigurationFromLocalStorage();
+        await setupRealTime();
+    }
 
     /**
      * Reads configuration from local storage. This is set by the setup block
@@ -184,7 +310,13 @@
             const result = await invokeBlockAction<KioskConfigurationBag>("GetKioskConfiguration", data);
 
             if (result.isSuccess && result.data) {
-                configuration.value = result.data;
+                configuration.value = {
+                    ...result.data,
+                    locationIdMap: configuration.value.locationIdMap,
+                    groupIdMap: configuration.value.groupIdMap,
+                    locationCountAdjustments: configuration.value.locationCountAdjustments
+                };
+
                 navigateToScreen(Screen.Welcome);
             }
             else {
@@ -204,20 +336,76 @@
         window.location.href = blockConfiguration.setupPageRoute as string;
     }
 
-    function navigateToScreen(screen: Screen, preserveSession: boolean = false): void {
+    function createNewSession(): CheckInSession {
+        let session = new CheckInSession(configuration.value, http, {
+            areAllSchedulesSelectedAutomatically: blockConfiguration.areAllSchedulesSelectedAutomatically as boolean
+        });
+
+        if (blockConfiguration.apiKey) {
+            session = session.withApiKey(blockConfiguration.apiKey as string);
+        }
+
+        return session;
+    }
+
+    function navigateToScreen(screen: Screen): void {
         currentScreenActions.value = [];
         currentScreen.value = screen;
 
-        if (!preserveSession && screen === Screen.Welcome) {
-            currentSession.value = new CheckInSession(configuration.value, http);
+        if (screen === Screen.Welcome) {
+            // Delete any pending attendance records created. This is async, but we
+            // don't need to wait for it to complete.
+            currentSession.value.cancelSession();
+
+            currentSession.value = createNewSession();
             previousScreens.value = [];
-        }
-        else if (screen === Screen.Success) {
-            // TODO: Do stuff here?
         }
     }
 
-    function onUpdateActions(actions: KioskButton[], source: Screen | AdminScreen): void {
+    /**
+     * Initialize the real-time engine and start monitoring for updates to the
+     * proxy connection status messages.
+     */
+    async function setupRealTime(): Promise<void> {
+        const entityUpdatedTopic = await getTopic("Rock.RealTime.Topics.EntityUpdatedTopic");
+        const checkInTopic = await getTopic("Rock.RealTime.Topics.CheckInTopic");
+
+        const request = {
+            connectionId: entityUpdatedTopic.connectionId,
+            kioskId: configuration.value.kiosk?.id,
+            areaIds: configuration.value.areas?.map(a => a.id)
+        };
+
+        entityUpdatedTopic.on("attendanceUpdated", onAttendanceUpdated);
+        entityUpdatedTopic.on("attendanceDeleted", onAttendanceDeleted);
+        entityUpdatedTopic.onDisconnected(() => isRealTimeDisconnected = true);
+        checkInTopic.on("refreshKioskConfiguration", onRefreshKioskConfiguration);
+
+        const result = await invokeBlockAction<SubscribeToRealTimeResponseBag>("SubscribeToRealTime", request);
+
+        if (result.isSuccess) {
+            if (result.data?.locationMap) {
+                for (const loc of result.data.locationMap) {
+                    if (loc.guid && loc.idKey) {
+                        configuration.value.locationIdMap[loc.guid] = loc.idKey;
+                    }
+                }
+            }
+            if (result.data?.groupMap) {
+                for (const loc of result.data.groupMap) {
+                    if (loc.guid && loc.idKey) {
+                        configuration.value.groupIdMap[loc.guid] = loc.idKey;
+                    }
+                }
+            }
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onUpdateActions(actions: KioskButton[], source: Screen | SupervisorScreen | RegistrationScreen): void {
         if (currentScreen.value === source) {
             currentScreenActions.value = actions;
         }
@@ -226,6 +414,13 @@
     function onNextScreen(session: CheckInSession): void {
         previousScreens.value = [...previousScreens.value, currentSession.value];
 
+        // Prevent moving back to a previous attendee if we have any attendance
+        // records created.
+        if (session.attendances.length > 0 && currentAttendeeId !== session.getCurrentAttendee()?.person?.id) {
+            previousScreens.value = [];
+        }
+
+        currentAttendeeId = session.getCurrentAttendee()?.person?.id;
         currentSession.value = session;
 
         navigateToScreen(session.currentScreen);
@@ -247,6 +442,16 @@
     }
 
     /**
+     * Replaces the current session with a new session without changing the
+     * navigation stack or the current screen.
+     *
+     * @param session The new session to replace the current session with.
+     */
+    function onReplaceSession(session: CheckInSession): void {
+        currentSession.value = session;
+    }
+
+    /**
      * Called when one of the activity producing events happens in the UI.
      * This will reset the last activity to now, which resets the idle timeout.
      */
@@ -260,16 +465,234 @@
      */
     function onIdleTimerCheck(): void {
         if (currentScreen.value === Screen.Welcome) {
+            const tenMinutes = 10 * 60 * 1000;
+
+            // If on the welcome screen with no activity for 10 minutes then
+            // force a reload to reconnect.
+            if (isRealTimeDisconnected && Date.now() - lastActivity > tenMinutes) {
+                if (idleTimer !== undefined) {
+                    window.clearInterval(idleTimer);
+                    idleTimer = undefined;
+                }
+
+                // Redirect back to ourselves to try and reconnect.
+                const url = window.location.href;
+                window.location.href = url;
+            }
+
             return;
         }
 
-        if (Date.now() - lastActivity > 10000) {
+        if (currentScreen.value >= SupervisorScreen.Login) {
+            return;
+        }
+
+        let timeout = (blockConfiguration.idleTimeout as number) * 1000;
+
+        if (timeout <= 0) {
+            timeout = 20000;
+        }
+
+        if (Date.now() - lastActivity > timeout) {
             navigateToScreen(Screen.Welcome);
         }
     }
 
-    // Read our check-in configuration and then start up.
-    readConfigurationFromLocalStorage();
+    /**
+     * Called when we receive a RealTime message that an attendance record
+     * has been created or updated.
+     *
+     * @param attendance The details about the attendance record.
+     */
+    function onAttendanceUpdated(attendance: AttendanceUpdatedMessageBag): void {
+        const locationId = configuration.value.locationIdMap[attendance.locationGuid ?? ""];
+        const groupId = configuration.value.groupIdMap[attendance.groupGuid ?? ""];
+
+        if (attendance.isNew && locationId) {
+            if (supervisorData.value?.counts && groupId) {
+                // Add the attendance to the supervisor data.
+                supervisorData.value.counts.attendance?.push({
+                    id: attendance.attendanceIdKey,
+                    locationId: locationId,
+                    groupId: groupId,
+                    status: attendance.checkInStatus
+                });
+            }
+
+            if (currentScreen.value !== Screen.Welcome) {
+                configuration.value.locationCountAdjustments.push({
+                    id: attendance.attendanceIdKey,
+                    timestamp: Date.now(),
+                    locationId: locationId,
+                    count: 1
+                });
+            }
+        }
+    }
+
+    /**
+     * Called when we receive a RealTime message that an attendance record has
+     * been deleted from the system.
+     *
+     * @param attendanceGuid The unique identifier of the attendance record.
+     * @param attendance The details about the attendance record.
+     */
+    function onAttendanceDeleted(_attendanceGuid: Guid, attendance?: AttendanceUpdatedMessageBag | null): void {
+        const locationId = configuration.value.locationIdMap[attendance?.locationGuid ?? ""];
+
+        if (supervisorData.value?.counts?.attendance) {
+            // Remove the attendance record from the supervisor data.
+            const index = supervisorData.value.counts.attendance.findIndex(a => a.id === attendance?.attendanceIdKey);
+
+            if (index >= 0) {
+                supervisorData.value.counts.attendance.splice(index, 1);
+            }
+        }
+
+        if (locationId) {
+            configuration.value.locationCountAdjustments.push({
+                timestamp: Date.now(),
+                locationId: locationId,
+                count: -1
+            });
+        }
+    }
+
+    /**
+     * Called when we receive a RealTime message that the kiosk configuration
+     * may have changed.
+     */
+    function onRefreshKioskConfiguration(): void {
+        if (currentScreen.value === Screen.Welcome) {
+            isKioskRefreshNeeded = false;
+
+            currentScreen.value = Screen.None;
+            readConfigurationFromLocalStorage();
+        }
+        else {
+            isKioskRefreshNeeded = true;
+        }
+    }
+
+    // #endregion
+
+    // #region Supervisor Functions
+
+    /**
+     * Called when the configure button is clicked. Show the supervisor login
+     * screen to allow to kiosk administration.
+     */
+    function onConfigureClick(): void {
+        previousScreens.value = [];
+        currentScreen.value = SupervisorScreen.Login;
+    }
+
+    /**
+     * Called when the supervisor screen wants to enter override mode. Configure
+     * a new session in override mode.
+     *
+     * @param pinCode The PIN code to use when authorizing override mode to the REST APIs.
+     */
+    async function onEnableOverride(pinCode: string): Promise<void> {
+        // This is async, but we don't need to wait for it to complete.
+        currentSession.value.cancelSession();
+
+        currentSession.value = createNewSession().withStartOverride(pinCode);
+        previousScreens.value = [];
+
+        navigateToScreen(currentSession.value.currentScreen);
+    }
+
+    function onSupervisorScreen(screen: SupervisorScreen): void {
+        currentScreen.value = screen;
+    }
+
+    /**
+     * Called when the supervisor screen should be closed. This will return to
+     * the welcome screen.
+     */
+    function onCloseSupervisor(): void {
+        navigateToScreen(Screen.Welcome);
+    }
+
+    // #endregion
+
+    // #region Registration Functions
+
+    /**
+     * Called when the supervisor wants to edit the current family.
+     */
+    function onEditFamily(data: RegistrationScreenData): void {
+        previousScreens.value = [];
+        registrationData.value = data;
+        currentScreen.value = RegistrationScreen.EditFamily;
+    }
+
+    function onRegistrationScreen(screen: RegistrationScreen): void {
+        currentScreen.value = screen;
+    }
+
+    async function onRegistrationCheckInFamily(familyId: string): Promise<void> {
+        const blankSession = createNewSession();
+
+        let session = await blankSession.withFamilySearch(familyId, FamilySearchMode.FamilyId);
+
+        if (!session.families || session.families.length === 0) {
+            return onNextScreen(createNewSession());
+        }
+
+        session = await session.withFamily(familyId);
+        session = await session.withNextScreen();
+
+        // If we are on the action select screen, skip it and go straight to
+        // family member screen.
+        if (session.currentScreen === Screen.ActionSelect) {
+            session = await session.withNextScreen();
+        }
+
+        // Make the back button go back to the welcome screen.
+        currentSession.value = blankSession;
+
+        onNextScreen(session);
+    }
+
+    /**
+     * Called when the registration screen should be closed. This will return
+     * to the welcome screen.
+     */
+    function onCloseRegistration(): void {
+        navigateToScreen(Screen.Welcome);
+    }
+
+    // #endregion
+
+    // Perform asynchronoush startup tasks.
+    startup();
+
+    watch(currentScreen, () => {
+        if (currentScreen.value !== Screen.Welcome) {
+            return;
+        }
+
+        // Reset the location count adjustments every time we navigate
+        // to the welcome screen.
+        configuration.value.locationCountAdjustments = [];
+
+        if (isRealTimeDisconnected) {
+            // If we lost real-time connection, force a reconnect when coming
+            // back to the welcome screen.
+            if (idleTimer !== undefined) {
+                window.clearInterval(idleTimer);
+                idleTimer = undefined;
+            }
+
+            const url = window.location.href;
+            window.location.href = url;
+        }
+        else if (isKioskRefreshNeeded) {
+            onRefreshKioskConfiguration();
+        }
+    });
 
     onMounted(() => {
         activityEvents.forEach(ev => {

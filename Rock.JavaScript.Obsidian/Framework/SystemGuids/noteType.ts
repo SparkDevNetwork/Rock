@@ -41,6 +41,8 @@ export const NoteType = {
     PersonTimelineNote: "66A1B9D7-7EFA-40F3-9415-E54437977D60",
     /** Generic prayer comment note type */
     PrayerComment: "0EBABD75-0890-4756-A9EE-62626282BB5D",
+    /** The note to use for quick notes, which often have no associated entity. */
+    QuickNote: "A3F5982F-C4D0-4345-8021-EB38C4C9AA18",
     /** Generic scheduled transaction note type */
     ScheduledTransactionNote: "360CFFE2-7FE3-4B0B-85A7-BFDACC9AF588",
     /** The workflow change log note */

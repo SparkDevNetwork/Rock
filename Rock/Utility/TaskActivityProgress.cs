@@ -29,7 +29,7 @@ namespace Rock.Utility
     /// <summary>
     /// Provides task activity progress updates to clients.
     /// </summary>
-    public class TaskActivityProgress
+    public class TaskActivityProgress : IDisposable
     {
         #region Fields
 
@@ -137,10 +137,27 @@ namespace Rock.Utility
         /// <param name="target">The target that will receive the progress updates.</param>
         /// <param name="taskName">The user friendly name of the task being performed.</param>
         public TaskActivityProgress( ITaskActivityProgress target, string taskName )
+            : this( target, taskName, null )
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TaskActivityProgress"/> class.
+        /// </summary>
+        /// <param name="target">The target that will receive the progress updates.</param>
+        /// <param name="taskName">The user friendly name of the task being performed.</param>
+        /// <param name="taskId">If not <c>null</c> or empty then this value will be used as the task identifier.</param>
+        public TaskActivityProgress( ITaskActivityProgress target, string taskName, string taskId )
         {
             _target = target;
-            TaskId = Guid.NewGuid().ToString();
+            TaskId = taskId.IsNotNullOrWhiteSpace() ? taskId : Guid.NewGuid().ToString();
             TaskName = taskName ?? "Task";
+        }
+
+        /// <inheritdoc/>
+        public void Dispose()
+        {
+            DestroyTimer();
         }
 
         #endregion
@@ -267,8 +284,7 @@ namespace Rock.Utility
         /// Processes the queued messages for sending.
         /// </summary>
         /// <param name="forceProcessing">if set to <c>true</c> then processing will happen even if it isn't time yet.</param>
-        /// <param name="flushAllItems">if set to <c>true</c> all items will be processed, otherwise a single item will be processed.</param>
-        private void ProcessQueuedMessages( bool forceProcessing = false, bool flushAllItems = false )
+        private void ProcessQueuedMessages( bool forceProcessing = false )
         {
             bool hasLock = false;
 
@@ -298,18 +314,11 @@ namespace Rock.Utility
             {
                 // Send all of the queued messages.
                 var messages = new List<ITaskActivityProgressMessage>( 10 );
-                int itemCount = 0;
 
-                // Retrieve items to process, up to a maximum of 100 items.
-                while ( itemCount < 100 && _messageQueue.TryDequeue( out var message ) )
+                // Retrieve all queued items so we can process them.
+                while ( _messageQueue.TryDequeue( out var message ) )
                 {
                     messages.Add( message );
-                    itemCount++;
-
-                    if ( !flushAllItems )
-                    {
-                        break;
-                    }
                 }
 
                 for ( int i = 0; i < messages.Count; i++ )
@@ -416,7 +425,7 @@ namespace Rock.Utility
             EnqueueMessage( taskInfo );
 
             // Flush the message queue.
-            ProcessQueuedMessages( forceProcessing: true, flushAllItems: true );
+            ProcessQueuedMessages( forceProcessing: true );
         }
 
         /// <summary>

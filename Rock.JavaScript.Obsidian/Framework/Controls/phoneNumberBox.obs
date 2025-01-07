@@ -1,6 +1,6 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <RockFormField v-model="internalValue"
+    <RockFormField :modelValue="internalValue"
                    v-bind="formFieldProps"
                    @change="onChange"
                    formGroupClasses="rock-phonenumber-box"
@@ -57,10 +57,9 @@
         (e: "update:countryCode", value: string): void
     }>();
 
-
     // #region Values
 
-    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const internalValue = ref(props.modelValue);
     const countryCode = useVModelPassthrough(props, "countryCode", emit);
     const formFieldProps = useStandardRockFormFieldProps(props);
     const configuration = ref<PhoneNumberBoxGetConfigurationResultsBag | null>(null);
@@ -69,14 +68,12 @@
 
     // #region Computed Values
 
-    const strippedValue = computed((): string => {
-        return stripPhoneNumber(internalValue.value);
+    /** The rules for the specified country code */
+    const configuredRules = computed<PhoneNumberCountryCodeRulesConfigurationBag[]>(() => {
+        return configuration.value?.rules?.[countryCode.value] ?? [];
     });
 
-    const formattedValue = computed((): string => {
-        return formatPhoneNumber(strippedValue.value, getConfiguredRules());
-    });
-
+    /** Validation Rules */
     const rules = computed(() => {
         const rules = normalizeRules(props.rules);
         rules.push(validatePhoneNumber);
@@ -84,7 +81,7 @@
     });
 
     const availableCountryCodes = computed<string[]>(() => {
-        return Object.keys(configuration.value?.rules ?? {});
+        return configuration.value?.countryCodes ?? [];
     });
 
     const availableCountryCodeOptions = computed<ListItemBag[]>(() => {
@@ -101,11 +98,13 @@
 
     /** Uses the configuration we received from the server to determine whether the entered number is valid */
     function validatePhoneNumber(value: unknown): string | boolean {
-        const rules = getConfiguredRules();
+        const rules = configuredRules.value;
 
         if (!value) {
             return true;
         }
+
+        const val = stripPhoneNumber(value as string);
 
         if (rules.length == 0) {
             return true;
@@ -114,7 +113,7 @@
         for (let rule of rules) {
             const regex = new RegExp(rule.match ?? "");
 
-            if (regex.test(strippedValue.value)) {
+            if (regex.test(val)) {
                 return true;
             }
         }
@@ -129,6 +128,7 @@
 
             if (result) {
                 configuration.value = result;
+                countryCode.value ||= result.defaultCountryCode ?? "";
             }
             else {
                 console.error("Unknown error while loading phone number configuration.");
@@ -139,36 +139,41 @@
         }
     }
 
-    /** Get the rules for the selected countryCode */
-    function getConfiguredRules(): PhoneNumberCountryCodeRulesConfigurationBag[] {
-        return configuration.value?.rules?.[countryCode.value] ?? [];
-    }
-
     // #endregion
 
     // #region Event Handlers
 
     function onChange(): void {
-        internalValue.value = formattedValue.value;
+        internalValue.value = formatPhoneNumber(stripPhoneNumber(internalValue.value), configuredRules.value);
     }
 
     // #endregion
 
     // #region Watchers
 
-    watch(formattedValue, (): void => {
-        // The value that should be stored for phone number attribute values is the formatted version.
-        // This seems backwards, but actually keeps parity with the web forms functionality.
-        emit("update:modelValue", formattedValue.value);
-    }, { immediate: true });
-
-    watch(() => props.modelValue, (): void => {
-        internalValue.value = formattedValue.value;
-    }, {
-        immediate: true
+    watch(countryCode, () => {
+        emit("update:countryCode", countryCode.value);
     });
 
-    watch([configuration, availableCountryCodes], (): void => {
+    watch(() => props.countryCode, () => {
+        countryCode.value = props.countryCode;
+    });
+
+    watch(internalValue, () => {
+        // The value that should be stored for phone number attribute values is the formatted version.
+        // This seems backwards, but actually keeps parity with the web forms functionality.
+        emit("update:modelValue", formatPhoneNumber(stripPhoneNumber(internalValue.value), configuredRules.value));
+    }, { immediate: true });
+
+    watch(() => props.modelValue, () => {
+        internalValue.value = formatPhoneNumber(stripPhoneNumber(props.modelValue), configuredRules.value);
+    }, { immediate: true });
+
+    watch(configuredRules, () => {
+        internalValue.value = formatPhoneNumber(stripPhoneNumber(internalValue.value), configuredRules.value);
+    });
+
+    watch([configuration, availableCountryCodes], () => {
         // If we don't have any country codes from the server, ignore
         if (configuration.value == null || availableCountryCodes.value.length == 0) return;
 

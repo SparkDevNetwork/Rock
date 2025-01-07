@@ -2,11 +2,13 @@
 <template>
     <div class="family-select-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <div class="button-list">
                 <RockButton v-for="family in props.session.families"
                             btnType="primary"
                             class="family-button"
+                            :disabled="isProcessing"
                             @click="onFamilyClick(family)">
                     <span class="title">{{ family.name }}</span>
                     <span class="subtitle">{{ getFamilyMemberNames(family) }}</span>
@@ -19,14 +21,16 @@
 <script setup lang="ts">
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { PropType, ref } from "vue";
+    import { onBeforeUnmount, PropType, ref } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
     import { CheckInSession } from "./checkInSession.partial";
-    import { UnexpectedErrorMessage } from "./utils.partial";
-    import { KioskButton } from "./types.partial";
+    import { alert, UnexpectedErrorMessage } from "./utils.partial";
+    import { KioskButton, RegistrationScreenData } from "./types.partial";
     import { FamilyBag } from "@Obsidian/ViewModels/CheckIn/familyBag";
     import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EditFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/editFamilyResponseBag";
 
     const props = defineProps({
         configuration: {
@@ -43,13 +47,17 @@
     const emit = defineEmits<{
         (event: "next", session: CheckInSession): void;
         (event: "updateActions", actions: KioskButton[]): void;
+        (event: "editFamily", data: RegistrationScreenData): void;
     }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
     const title = ref("Family Selection");
     const subtitle = ref("Select your family from the list below");
-    let isSelectingFamily = false;
+    const isProcessing = ref(false);
+    const cancellationTokenSource = new CancellationTokenSource();
 
     // #endregion
 
@@ -71,7 +79,8 @@
                 title: "Add Family",
                 key: "add-family",
                 class: "add-family-button",
-                disabled: false
+                disabled: false,
+                handler: onNewFamilyClick
             });
         }
 
@@ -103,32 +112,62 @@
      * @param family The family that was selected.
      */
     async function onFamilyClick(family: FamilyBag): Promise<void> {
-        // Prevent tapping two different family buttons.
-        if (isSelectingFamily || !family.id) {
+        if (!family.id) {
             return;
         }
 
         try {
-            isSelectingFamily = true;
+            isProcessing.value = true;
 
             const newSession = await props.session.withFamily(family.id);
 
             if (!newSession.attendees || newSession.attendees.length === 0) {
-                await alert("There were not any family members in this family.");
+                await alert("There were not any family members in this family.", cancellationTokenSource.token);
                 return;
             }
 
             emit("next", await newSession.withNextScreen());
         }
         catch (error) {
-            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);
         }
         finally {
-            isSelectingFamily = false;
+            isProcessing.value = false;
+        }
+    }
+
+    /**
+     * Event handler to start the process of adding a new family to the system.
+     */
+    async function onNewFamilyClick(): Promise<void> {
+        const data = {
+            familyId: null,
+            kioskId: props.configuration.kiosk?.id,
+            templateId: props.session.configuration?.template?.id
+        };
+
+        const response = await invokeBlockAction<EditFamilyResponseBag>("EditFamily", data);
+
+        if (response.isSuccess && response.data) {
+            const registrationData: RegistrationScreenData = {
+                ...response.data,
+                family: {
+                    bag: {},
+                    validProperties: ["id"]
+                },
+                people: []
+            };
+
+            emit("editFamily", registrationData);
+        }
+        else {
+            await alert(response.errorMessage || UnexpectedErrorMessage, cancellationTokenSource.token);
         }
     }
 
     // #endregion
+
+    onBeforeUnmount(() => cancellationTokenSource.cancel());
 
     updateActions();
 </script>

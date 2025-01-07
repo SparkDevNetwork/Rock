@@ -23,7 +23,10 @@
 
 /** The type of filter that should be applied to group members when sourcing scheduler resources. */
 export const SchedulerResourceGroupMemberFilterType = {
-    /** Show group members whose scheduling preferences match the schedule and location. */
+    /**
+     * Show group members whose scheduling preferences (every week, every
+     * other week, Etc.) lands during the sunday week being scheduled.
+     */
     ShowMatchingPreference: 0,
 
     /** Show all group members. */

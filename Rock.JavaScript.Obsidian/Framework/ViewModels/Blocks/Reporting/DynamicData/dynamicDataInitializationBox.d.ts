@@ -21,9 +21,6 @@
 // </copyright>
 //
 
-import { GridResultsBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/gridResultsBag";
-import { LavaTemplateResultsBag } from "@Obsidian/ViewModels/Blocks/Reporting/DynamicData/lavaTemplateResultsBag";
-
 /** The box that contains all the initialization information for the dynamic data block. */
 export type DynamicDataInitializationBox = {
     /**
@@ -32,20 +29,11 @@ export type DynamicDataInitializationBox = {
      */
     errorMessage?: string | null;
 
-    /** Gets or sets the grid results. */
-    gridResults?: GridResultsBag | null;
-
     /** Gets or sets whether the results should be displayed using a lava template. */
     isLavaTemplateDisplayMode: boolean;
 
-    /** Gets or sets the lava template results. */
-    lavaTemplateResults?: LavaTemplateResultsBag | null;
-
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
-
-    /** Gets or sets the quick return page title. */
-    quickReturnPageTitle?: string | null;
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;

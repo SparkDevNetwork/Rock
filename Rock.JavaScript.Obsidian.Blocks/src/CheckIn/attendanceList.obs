@@ -6,10 +6,7 @@
           itemTerm="Attendance"
           :entityTypeGuid="EntityType.Attendance"
           stickyHeader
-          liveUpdates
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="onGridSettingsClick">
+          liveUpdates>
 
         <TextColumn name="name"
                     title="Name"
@@ -21,6 +18,8 @@
                        title="Attended"
                        field="didAttend"
                        :filter="booleanValueFilter"
+                       itemClass="justify-content-center text-center"
+                       width="120"
                        visiblePriority="xs" />
 
         <TextColumn name="note"
@@ -32,57 +31,44 @@
         <TextColumn name="createdByPersonName"
                     title="Entered By"
                     field="createdByPersonName"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <DateTimeColumn name="createdDateTime"
                         title="Entered On"
                         field="createdDateTime"
                         :filter="dateValueFilter"
-                        visiblePriority="xs" />
+                        visiblePriority="xs"
+                        headerClass="title-right"
+                        itemClass="justify-content-end text-right" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
-
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
 </template>
 
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
+
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, DateTimeColumn, dateValueFilter, booleanValueFilter, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, DateTimeColumn, dateValueFilter, booleanValueFilter, TextColumn, textValueFilter, pickExistingValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AttendanceListOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/AttendanceList/attendanceListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { GridSettingsOptions, PreferenceKey } from "./AttendanceList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
-    import GridSettingsModal from "./AttendanceList/gridSettingsModal.partial.obs";
+    import { reactive, ref } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<AttendanceListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        attended: preferences.getValue(PreferenceKey.FilterDidAttend),
-        enteredBy: JSON.parse(preferences.getValue(PreferenceKey.FilterEnteredBy) || "{}"),
-    });
-
-    // #endregion
-
-    // #region Computed Values
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.attended || !!gridSettings.value.enteredBy?.value;
-    });
 
     // #endregion
 
@@ -130,24 +116,7 @@
         }
     }
 
-    /**
-    * Called when the grid setting icon is clicked, displays the block filters.
-    *
-    */
-    function onGridSettingsClick(): void {
-        isGridSettingsVisible.value = true;
-    }
-
     // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterDidAttend, gridSettings.value.attended ?? "");
-        preferences.setValue(PreferenceKey.FilterEnteredBy, JSON.stringify(gridSettings.value.enteredBy));
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>

@@ -1,0 +1,163 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="expander-panel-list-wrapper" :class="wrapperClass">
+        <div class="expander-panel-item panel panel-widget" :class="panelClasses" >
+            <div class="panel-heading cursor-pointer flex-column flex-sm-row align-items-start align-items-sm-center" @click="onPanelClick">
+                <div class="expander-panel-title-wrapper">
+                    <h1 v-if="panelTitle" class="expander-panel-title panel-title mb-1">{{ panelTitle }}</h1>
+                    <p v-if="panelSubtext" class="expander-panel-title-subtext text-sm text-muted w-auto">{{ panelSubtext }}</p>
+                </div>
+                <div class="expander-panel-actions-wrapper ml-sm-auto">
+                    <div class="example-toggle text-nowrap text-right d-none d-sm-block">
+                        <i v-if="isCollapsed" class="fa fa-circle-o"></i>
+                        <i v-else class="fa fa-circle"></i>
+                        <span class="ml-1">Show Details</span>
+                    </div>
+
+                    <div class="mb-2 mb-sm-0 mt-sm-2 text-right">
+                        <div v-if="hasLabels" class="label-group">
+                            <span v-for="label in labels" :class="getClassForLabelAction(label)" @click="onActionClick(label, $event)">
+                                <template v-if="label.title">{{ label.title }}</template>
+                                <i v-else :class="label.iconCssClass"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <TransitionVerticalCollapse>
+                <div v-if="!isCollapsed" :class="[panelBodyClass, 'panel-body expander-panel-body']">
+                    <slot />
+
+                    <div class="expander-panel-footer">
+                        <slot name="footer" />
+                    </div>
+                </div>
+            </TransitionVerticalCollapse>
+
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.expander-panel-body{
+    overflow: hidden;
+    transition: height 400ms ease-out
+}
+.expander-panel-body.collapsed  {
+    height: 0 !important;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    const props = defineProps({
+        /** whether the panel is currently collapsed. Defaults to true. */
+        isCollapsed: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        /** Custom labels to display that will provide additional context information. */
+         labels: {
+            type: Array as PropType<PanelAction[]>,
+            required: false
+        },
+
+        /** CSS class(es) to apply to the panel. */
+        panelClass: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /** The subtext of the panel. */
+        panelSubtext: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /** The title of the panel. */
+        panelTitle: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /** CSS class(es) to apply to the wrapper element. */
+        wrapperClass: {
+            type: String,
+            default: ""
+        }
+    });
+
+    // #region Values
+
+    /** Whether the panel is collapsed. */
+    const isCollapsed = ref(props.isCollapsed);
+
+    /** The title of the panel. */
+    const panelTitle = ref(props.panelTitle ?? "");
+
+    // #endregion
+
+    //#region Computed Values
+
+    /** Whether the panel has labels. */
+    const hasLabels = computed(() => props.labels);
+
+    /** The collapsed/expanded CSS class to apply to the panel body. */
+    const panelBodyClass = computed(() => isCollapsed.value ? "collapsed" : "expanded");
+
+    /** The CSS class(es) to apply to the panel. */
+    const panelClasses = computed(() => props.panelClass ?? "");
+
+    //#endregion
+
+    // #region Functions
+
+    /**
+     * Gets the CSS class to use for an action when it is displayed
+     * as a label.
+     *
+     * @param action The action to be displayed.
+     *
+     * @returns A string that contains the CSS classes to apply to the DOM element.
+     */
+    const getClassForLabelAction = (action: PanelAction): string => {
+        let cssClass = action.handler ? "label clickable ml-1" : "label ml-1";
+
+        if (action.type === "link") {
+            cssClass += " label-default";
+        }
+        else {
+            cssClass += ` label-${action.type}`;
+        }
+
+        return cssClass;
+    };
+
+    /** Event handler for when the panel is clicked. */
+    function onPanelClick(): void {
+        isCollapsed.value = !isCollapsed.value;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when any of the panel actions have been clicked. If there is
+     * an event handler attached then trigger the handler.
+     *
+     * @param action The action that was clicked.
+     * @param event The DOM event that triggered the click.
+     */
+    const onActionClick = (action: PanelAction, event: Event): void => {
+        if (action.handler && !action.disabled) {
+            action.handler(event);
+        }
+    };
+
+    // #endregion
+
+</script>

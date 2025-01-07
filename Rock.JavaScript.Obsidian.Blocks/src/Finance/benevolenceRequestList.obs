@@ -19,17 +19,21 @@
                     title="Date"
                     field="date"
                     :filter="dateValueFilter"
+                    headerClass="title-right"
+                    itemClass="justify-content-end text-right"
                     visiblePriority="xs" />
 
-        <TextColumn name="campus"
+        <TextColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.Campus)"
+                    name="campus"
                     title="Campus"
                     field="campus"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
         <Column name="requestedBy"
                 title="Name"
-                :filter="textValueFilter"
+                field="requestedBy"
+                :filter="pickExistingValueFilter"
                 :filterValue="getPersonNameFilterValue"
                 visiblePriority="xs">
             <template #format="{ row }">
@@ -45,7 +49,7 @@
         <TextColumn name="connectionStatus"
                     title="Connection Status"
                     field="connectionStatus"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
         <TextColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.GovernmentId)"
@@ -66,6 +70,7 @@
                       title="Assigned To"
                       field="caseWorker"
                       :hideAvatar="true"
+                      :showAsLink="true"
                       :filter="pickExistingValueFilter"
                       :filterValue="getAssignedToFilterValue"
                       visiblePriority="md" />
@@ -98,7 +103,8 @@
 
         <Column name="requestStatus"
                 title="Status"
-                :filter="textValueFilter"
+                field="requestStatus"
+                :filter="pickExistingValueFilter"
                 :filterValue="getRequestStatusFilterValue"
                 visiblePriority="md">
             <template #format="{ row }">
@@ -117,6 +123,8 @@
                         title="Total Amount"
                         field="totalAmount"
                         :filter="numberValueFilter"
+                        headerClass="title-right"
+                        itemClass="justify-content-end text-right"
                         visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
@@ -125,10 +133,9 @@
 
         <template v-if="!config.options?.columnsToHide?.includes(ColumnKey.TotalResults)" #gridFooterAppend>
             <div class="d-flex" style="background-color: #faf7f5; padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
-                <div class="flex-grow-1"></div>
-                <div>
-                    <SectionHeader title="Total Results">
-                    </SectionHeader>
+                <div style="flex-grow: 4;"></div>
+                <div style="flex-grow: 1;">
+                    <SectionHeader title="Total Results" />
                     <div v-for="[key, value] of Object.entries(resultTotals)">
                         <div class="row">
                             <div class="col-xs-8">{{ key }}: </div>
@@ -150,6 +157,12 @@
                        :caseWorkerItems="config.options?.caseWorkers ?? []" />
 </template>
 
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
+
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -168,6 +181,7 @@
     import GridSettingsModal from "./BenevolenceRequestList/gridSettingsModal.partial.obs";
 
     const config = useConfigurationValues<ListBlockBox<BenevolenceRequestListOptionsBag>>();
+    console.log("🚀 ~ config:", config.options?.columnsToHide);
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
 
@@ -181,16 +195,10 @@
 
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
-        startDateLowerValue: preferences.getValue(PreferenceKey.FilterStartDateLowerValue),
-        startDateUpperValue: preferences.getValue(PreferenceKey.FilterStartDateUpperValue),
         firstName: preferences.getValue(PreferenceKey.FilterFirstName),
         lastName: preferences.getValue(PreferenceKey.FilterLastName),
-        governmentId: preferences.getValue(PreferenceKey.FilterGovernmentId),
-        caseWorker: preferences.getValue(PreferenceKey.FilterCaseWorker),
         result: JSON.parse(preferences.getValue(PreferenceKey.FilterResult) || "{}"),
-        requestStatus: JSON.parse(preferences.getValue(PreferenceKey.FilterRequestStatus) || "{}"),
         benevolenceTypes: JSON.parse(preferences.getValue(PreferenceKey.FilterBenevolenceTypes) || "[]"),
-        campus: JSON.parse(preferences.getValue(PreferenceKey.FilterCampus) || "{}"),
     });
 
     // #endregion
@@ -200,15 +208,9 @@
 
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.startDateLowerValue
-            || !!gridSettings.value.startDateUpperValue
-            || !!gridSettings.value.firstName
+        return !!gridSettings.value.firstName
             || !!gridSettings.value.lastName
-            || !!gridSettings.value.governmentId
-            || !!gridSettings.value.caseWorker
             || !!gridSettings.value.result?.value
-            || !!gridSettings.value.requestStatus?.value
-            || !!gridSettings.value.campus?.value
             || gridSettings.value.benevolenceTypes?.length > 0;
     });
 
@@ -274,8 +276,7 @@
     * @param row The row to be filtered.
     */
     function getRequestStatusFilterValue(row: Record<string, unknown>): string {
-        return row.status as string;
-
+        return row.requestStatus as string;
     }
 
     /**
@@ -331,7 +332,7 @@
 
         for (const row of rows) {
             for (const result of row.resultSpecifics as BenevolenceResultBag[]) {
-                if (result.result) {
+                if (result.result && !isNullOrUndefined(result.amount)) {
                     if (result.result in resultTotals) {
                         resultTotals.value[result.result] += result.amount ?? 0;
                     }
@@ -343,6 +344,10 @@
                 }
             }
         }
+    }
+
+    function isNullOrUndefined(value: number | null | undefined): boolean {
+        return value === null || value === undefined;
     }
 
     // #endregion
@@ -416,16 +421,10 @@
     // #endregion
 
     watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterStartDateLowerValue, gridSettings.value?.startDateLowerValue ?? "");
-        preferences.setValue(PreferenceKey.FilterStartDateUpperValue, gridSettings.value?.startDateUpperValue ?? "");
         preferences.setValue(PreferenceKey.FilterFirstName, gridSettings.value.firstName ?? "");
         preferences.setValue(PreferenceKey.FilterLastName, gridSettings.value.lastName ?? "");
-        preferences.setValue(PreferenceKey.FilterGovernmentId, gridSettings.value.governmentId ?? "");
-        preferences.setValue(PreferenceKey.FilterCaseWorker, gridSettings.value.caseWorker ?? "");
         preferences.setValue(PreferenceKey.FilterResult, JSON.stringify(gridSettings.value.result));
-        preferences.setValue(PreferenceKey.FilterRequestStatus, JSON.stringify(gridSettings.value.requestStatus));
         preferences.setValue(PreferenceKey.FilterBenevolenceTypes, JSON.stringify(gridSettings.value.benevolenceTypes));
-        preferences.setValue(PreferenceKey.FilterCampus, JSON.stringify(gridSettings.value.campus));
 
         await preferences.save();
 

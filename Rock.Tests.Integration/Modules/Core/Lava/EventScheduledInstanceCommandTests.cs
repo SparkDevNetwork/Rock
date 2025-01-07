@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -37,6 +38,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
     /// These tests require the standard Rock sample data set to be present in the target database.
     /// </remarks>
     [TestClass]
+    [TestCategory( "Core.Events.CalendarFeed" )]
     public class EventScheduledInstanceCommandTests : LavaIntegrationTestBase
     {
         private static string StaffMeetingEventGuidString = "93104654-DAFA-489B-A175-5F2AB3A846F1";
@@ -57,14 +59,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         [ClassInitialize]
         public static void Initialize( TestContext context )
         {
+            EventsDataManager.Instance.UpdateSampleDataEventDates();
             EventsDataManager.Instance.AddDataForRockSolidFinancesClass();
-        }
-
-        private string GetTestTemplate( string parameters )
-        {
-            var template = LavaTemplateEventOccurrences;
-
-            return template.Replace( "{parameters}", parameters );
         }
 
         [TestMethod]
@@ -85,66 +81,56 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         [TestMethod]
         public void EventScheduledInstanceCommand_WithEventAsName_RetrievesOccurrencesInCorrectEvent()
         {
-            var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
+            // Get Event "Staff Meeting".
+            var rockContext = new RockContext();
+            var eventItemService = new EventItemService( rockContext );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+            var testEvent = eventItemService.Get( StaffMeetingEventGuidString.AsGuid() );
+            Assert.That.IsNotNull( testEvent, "Expected test data not found." );
 
-                TestHelper.DebugWriteRenderResult( engine, template, output );
+            var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
+            var template = GetTestTemplate( $"eventid:'{testEvent.Name}' startdate:'{effectiveDate:yyyy-MM-dd}' daterange:'12m' maxoccurrences:2" );
 
-                Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-                Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
-
-            } );
+            AssertEventOccurrencesForTemplate( template, effectiveDate: null, "12m", maxOccurrences: 2 );
         }
 
         [TestMethod]
         public void EventScheduledInstanceCommand_WithEventAsId_RetrievesOccurrencesInCorrectEvent()
         {
-            // Get Event Item Id for "Warrior Youth Event".
+            // Get Event Item Id for "Staff Meeting".
             var rockContext = new RockContext();
-
             var eventItemService = new EventItemService( rockContext );
-            var eventId = eventItemService.GetId( StaffMeetingEventGuidString.AsGuid() );
 
+            var eventId = eventItemService.GetId( StaffMeetingEventGuidString.AsGuid() );
             Assert.That.IsNotNull( eventId, "Expected test data not found." );
 
-            var template = GetTestTemplate( $"eventid:{eventId} startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
+            var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
+            var template = GetTestTemplate( $"eventid:{eventId} startdate:'{effectiveDate:yyyy-MM-dd}' daterange:'12m' maxoccurrences:2" );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                var output = TestHelper.GetTemplateOutput( engine, template );
-
-                TestHelper.DebugWriteRenderResult( engine, template, output );
-
-                Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-                Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
-
-            } );
-
+            AssertEventOccurrencesForTemplate( template, effectiveDate: null, "12m", maxOccurrences: 2 );
         }
 
         [TestMethod]
         public void EventScheduledInstanceCommand_WithEventAsGuid_RetrievesOccurrencesInCorrectEvent()
         {
-            var template = GetTestTemplate( $"eventid:'{StaffMeetingEventGuidString}' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
+            // Get Event "Staff Meeting".
+            var rockContext = new RockContext();
+            var eventItemService = new EventItemService( rockContext );
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+            var testEvent = eventItemService.Get( StaffMeetingEventGuidString.AsGuid() );
+            Assert.That.IsNotNull( testEvent, "Expected test data not found." );
 
-                TestHelper.DebugWriteRenderResult( engine, template, output );
+            var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
+            var template = GetTestTemplate( $"eventid:'{StaffMeetingEventGuidString}' startdate:'{effectiveDate:yyyy-MM-dd}' daterange:'12m' maxoccurrences:2" );
 
-                Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-                Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
-            } );
+            AssertEventOccurrencesForTemplate( template, effectiveDate: null, "12m", maxOccurrences: 2 );
         }
 
         [TestMethod]
         public void EventScheduledInstanceCommand_WithEventNotSpecified_RendersErrorMessage()
         {
-            var template = GetTestTemplate( "startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
+            var asAtDate = RockDateTime.Now.Date;
+            var template = GetTestTemplate( $"startdate:'{asAtDate:yyyy-MM-dd}' daterange:'12m' maxoccurrences:2" );
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
@@ -159,7 +145,8 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         [TestMethod]
         public void EventScheduledInstanceCommand_WithEventInvalidValue_RendersErrorMessage()
         {
-            var template = GetTestTemplate( "eventid:'no_event' startdate:'2020-1-1' daterange:'12m' maxoccurrences:2" );
+            var asAtDate = RockDateTime.Now.Date;
+            var template = GetTestTemplate( $"eventid:'no_event' startdate:'{asAtDate:yyyy-MM-dd}' daterange:'12m' maxoccurrences:2" );
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
@@ -174,41 +161,35 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         [TestMethod]
         public void EventScheduledInstanceCommand_WithDateRangeInMonths_ReturnsExpectedEvents()
         {
-            var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'3m'" );
+            var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+            // Get the first Wednesday of the month, then the next two Wednesdays 4 weeks apart.
+            var date1 = effectiveDate.GetNextWeekday( DayOfWeek.Wednesday );
 
-                TestHelper.DebugWriteRenderResult( engine, template, output );
+            var date2 = date1.AddDays( 12 * 7 );
 
-                Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-                Assert.That.Contains( output, "<<Staff Meeting|2020-02-26|12:00 AM|All Campuses>>" );
-                Assert.That.Contains( output, "<<Staff Meeting|2020-03-25|12:00 AM|All Campuses>>" );
+            // Staff Meeting recurs every 2 weeks, so our date range of 3 months should not include the first meeting in month 4.
+            var dateInvalid = RockDateTime.New( date1.Year, date1.Month, 1 ).Value.AddMonths( 3 ).GetNextWeekday( DayOfWeek.Wednesday );
 
-                // Staff Meeting recurs every 2 weeks, so our date range of 3 months weeks should not include the meeting in month 4.
-                Assert.That.DoesNotContain( output, "<<Staff Meeting|2020-04-08|12:00 AM|All Campuses>>" );
-            } );
+            AssertTestEventOccurrences( effectiveDate: null,
+                "3m",
+                validDateList: new List<DateTime> { date1, date2 },
+                invalidDateList: new List<DateTime> { dateInvalid } );
         }
 
         [TestMethod]
         public void EventScheduledInstanceCommand_WithDateRangeInWeeks_ReturnsExpectedEvents()
         {
-            var template = GetTestTemplate( "eventid:'Staff Meeting' startdate:'2020-1-1' daterange:'4w'" );
+            var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
 
-            TestHelper.ExecuteForActiveEngines( ( engine ) =>
-            {
-                var output = TestHelper.GetTemplateOutput( engine, template );
+            var date1 = effectiveDate.GetNextWeekday( DayOfWeek.Wednesday );
+            var date2 = date1.AddDays( 14 );
+            var date3 = date1.AddDays( 21 );
 
-                TestHelper.DebugWriteRenderResult( engine, template, output );
-
-                // Staff Meeting recurs every 2 weeks, so our date range of 4 weeks should only include 2 occurrences.
-                Assert.That.Contains( output, "<<EventCount = 2>>" );
-                Assert.That.Contains( output, "<<Staff Meeting|2020-01-01|12:00 AM|All Campuses>>" );
-                Assert.That.Contains( output, "<<Staff Meeting|2020-01-15|12:00 AM|All Campuses>>" );
-
-                Assert.That.DoesNotContain( output, "<<Staff Meeting|2020-01-29|12:00 AM|All Campuses>>" );
-            } );
+            AssertTestEventOccurrences( effectiveDate: null,
+                "4w",
+                validDateList: new List<DateTime> { date1, date2 },
+                invalidDateList: new List<DateTime> { date3 } );
         }
 
         [TestMethod]
@@ -339,7 +320,7 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
                 TestHelper.DebugWriteRenderResult( engine, template, output );
 
                 Assert.That.Contains( output, "Event Occurrences not available. The specified Date Range is invalid." );
-            } );            
+            } );
         }
 
         [TestMethod]
@@ -446,8 +427,17 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
         [TestMethod]
         public void EventScheduledInstanceCommand_ForSampleDataKnownEvents_ReturnsExpectedEventData()
         {
+            var effectiveDate = EventsDataManager.Instance.GetDefaultEffectiveDate();
+
+            var rockContext = new RockContext();
+            var eventItemService = new EventItemService( rockContext );
+
+            var testEvent = eventItemService.GetByIdentifierOrThrow( "Warrior Youth Event" );
+            var occurrence = testEvent.EventItemOccurrences.FirstOrDefault();
+            var expectedDate = occurrence.Schedule.GetNextStartDateTime( effectiveDate );
+
             var input = @"
-{% eventscheduledinstance eventid:'Customs & Classics Car Show' startdate:'2018-4-1' maxoccurrences:1 %}
+{% eventscheduledinstance eventid:'<eventName>' startdate:'<effectiveDate>' maxoccurrences:1 %}
     {% for item in EventScheduledInstances %}
         Name={{ item.Name }}<br>
         Date={{item.Date | Date:'yyyy-MM-dd' }}<br>
@@ -456,11 +446,13 @@ namespace Rock.Tests.Integration.Modules.Core.Lava
     {% endfor %}
 {% endeventscheduledinstance %}
 ";
+            input = input.Replace( "<eventName>", testEvent.Name )
+                .Replace( "<effectiveDate>", effectiveDate.ToString( "yyyy-MM-dd" ) );
 
             var rockTimeOffset = LavaDateTime.ConvertToRockDateTime( new DateTime( 2021, 9, 1, 0, 0, 0, DateTimeKind.Unspecified ) ).ToString( "zzz" );
 
             var expectedOutput = $@"
-Name=Customs & Classics Car Show<br>Date=2018-04-16<br>Time=9:24 AM<br>DateTime=2018-04-16T09:24:13<offset>
+Name={testEvent.Name}<br>Date={expectedDate:yyyy-MM-dd}<br>Time={expectedDate:h:mm tt}<br>DateTime={expectedDate:yyyy-MM-ddTHH:mm:ss}<offset>
 ";
             expectedOutput = expectedOutput.Replace( "<offset>", rockTimeOffset );
 
@@ -484,6 +476,7 @@ Name=Customs & Classics Car Show<br>Date=2018-04-16<br>Time=9:24 AM<br>DateTime=
             } );
         }
 
+        [TestMethod]
         public void EventScheduledInstanceCommand_WithCampusAsMultipleValues_RetrievesEventsWithAnyMatchingCampus()
         {
             var template = GetTestTemplate( "eventid:'Rock Solid Finances Class' campusids:'Main Campus,Stepping Stone' startdate:'2020-1-1' daterange:'12m' maxoccurrences:99" );
@@ -544,5 +537,95 @@ Name=Customs & Classics Car Show<br>Date=2018-04-16<br>Time=9:24 AM<br>DateTime=
         }
 
         private static string MainCampusGuidString = "76882AE3-1CE8-42A6-A2B6-8C0B29CF8CF8";
+
+        private string GetTestTemplate( string parameters )
+        {
+            var template = LavaTemplateEventOccurrences;
+
+            return template.Replace( "{parameters}", parameters );
+        }
+
+        private void AssertTestEventOccurrences( DateTime? effectiveDate, string dateRange, int? maxOccurrences = 12, List<DateTime> validDateList = null, List<DateTime> invalidDateList = null )
+        {
+            var meetingName = "Staff Meeting";
+
+            effectiveDate = effectiveDate ?? EventsDataManager.Instance.GetDefaultEffectiveDate();
+
+            var template = GetTestTemplate( $"eventid:'{meetingName}' startdate:'{effectiveDate:yyyy-MM-dd}' daterange:'{dateRange}' maxoccurrences:{maxOccurrences}" );
+
+            // Get the first occurrence of the schedule, the first Wednesday after the effective date.
+            var firstScheduleDate = effectiveDate.Value.GetNextWeekday( DayOfWeek.Wednesday );
+
+            if ( validDateList == null )
+            {
+                // Create a list of valid dates for the specified number of occurrences
+                validDateList = new List<DateTime>();
+                for ( int i = 0; i < maxOccurrences; i++ )
+                {
+                    validDateList.Add( firstScheduleDate.AddDays( i * 7 * 2 ) );
+                }
+            }
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
+
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                foreach ( var validDate in validDateList )
+                {
+                    Assert.That.Contains( output, $"<<{meetingName}|{validDate:yyyy-MM-dd}|10:30 AM|All Campuses>>" );
+                }
+
+                if ( invalidDateList != null )
+                {
+                    foreach ( var invalidDate in invalidDateList )
+                    {
+                        Assert.That.DoesNotContain( output, $"<<Staff Meeting|{invalidDate:yyyy-MM-dd}|10:30 AM|All Campuses>>" );
+                    }
+                }
+
+            } );
+        }
+
+        private void AssertEventOccurrencesForTemplate( string template, DateTime? effectiveDate, string dateRange, int? maxOccurrences = 12, List<DateTime> validDateList = null, List<DateTime> invalidDateList = null )
+        {
+            effectiveDate = effectiveDate ?? EventsDataManager.Instance.GetDefaultEffectiveDate();
+
+            // Get the first occurrence of the schedule, the first Wednesday after the effective date.
+            var firstScheduleDate = effectiveDate.Value.GetNextWeekday( DayOfWeek.Wednesday );
+
+            if ( validDateList == null )
+            {
+                // Create a list of valid dates for the specified number of occurrences
+                validDateList = new List<DateTime>();
+                for ( int i = 0; i < maxOccurrences; i++ )
+                {
+                    validDateList.Add( firstScheduleDate.AddDays( i * 7 * 2 ) );
+                }
+            }
+
+            TestHelper.ExecuteForActiveEngines( ( engine ) =>
+            {
+                var output = TestHelper.GetTemplateOutput( engine, template );
+
+                TestHelper.DebugWriteRenderResult( engine, template, output );
+
+                foreach ( var validDate in validDateList )
+                {
+                    Assert.That.Contains( output, $"<<Staff Meeting|{validDate:yyyy-MM-dd}|10:30 AM|All Campuses>>" );
+                }
+
+                if ( invalidDateList != null )
+                {
+                    foreach ( var invalidDate in invalidDateList )
+                    {
+                        Assert.That.DoesNotContain( output, $"<<Staff Meeting|{invalidDate:yyyy-MM-dd}|10:30 AM|All Campuses>>" );
+                    }
+                }
+
+            } );
+        }
+
     }
 }

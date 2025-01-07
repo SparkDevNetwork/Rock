@@ -48,6 +48,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public int ContentCollectionId { get; private set; }
 
+        /// <inheritdoc cref="ContentCollectionSource.Order"/>
+        [DataMember]
+        public int Order { get; private set; }
+
         /// <inheritdoc cref="ContentCollectionSource.AdditionalSettings"/>
         [DataMember]
         public string AdditionalSettings { get; private set; }
@@ -89,6 +93,7 @@ namespace Rock.Web.Cache
             EntityId = contentCollectionSource.EntityId;
             OccurrencesToShow = contentCollectionSource.OccurrencesToShow;
             ContentCollectionId = contentCollectionSource.ContentCollectionId;
+            Order = contentCollectionSource.Order;
             AdditionalSettings = contentCollectionSource.AdditionalSettings;
         }
 

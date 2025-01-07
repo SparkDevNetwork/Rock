@@ -49,57 +49,6 @@ namespace Rock.Blocks.Security
     [CustomizedGrid]
     public class UserLoginList : RockEntityListBlockType<UserLogin>
     {
-        #region Keys
-
-        private static class PreferenceKey
-        {
-            public const string FilterUsername = "filter-username";
-            public const string FilterAuthenticationProvider = "filter-authentication-provider";
-            public const string FilterDateCreatedUpperValue = "filter-date-created-upper-value";
-            public const string FilterDateCreatedLowerValue = "filter-date-created-lower-value";
-            public const string FilterLastLoginDateUpperValue = "filter-last-login-date-upper-value";
-            public const string FilterLastLoginDateLowerValue = "filter-last-login-date-lower-value";
-            public const string FilterIsConfirmed = "filter-is-confirmed";
-            public const string FilterIsLockedOut = "filter-is-locked-out";
-        }
-
-        #endregion Keys
-
-        #region Properties
-
-        protected string FilterUsername => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterUsername );
-
-        protected Guid? FilterAuthenticationProvider => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterAuthenticationProvider )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
-
-        protected DateTime? FilterDateCreatedUpperValue => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterDateCreatedUpperValue )
-            .AsDateTime();
-
-        protected DateTime? FilterDateCreatedLowerValue => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterDateCreatedLowerValue )
-            .AsDateTime();
-
-        protected DateTime? FilterLastLoginDateUpperValue => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterLastLoginDateUpperValue )
-            .AsDateTime();
-
-        protected DateTime? FilterLastLoginDateLowerValue => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterLastLoginDateLowerValue )
-            .AsDateTime();
-
-        protected bool? FilterIsConfirmed => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterIsConfirmed )
-            .AsBooleanOrNull();
-
-        protected bool? FilterIsLockedOut => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterIsLockedOut )
-            .AsBooleanOrNull();
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>
@@ -124,8 +73,10 @@ namespace Rock.Blocks.Security
         /// <returns>The options that provide additional details to the block.</returns>
         private UserLoginListOptionsBag GetBoxOptions()
         {
-            var options = new UserLoginListOptionsBag();
-
+            var options = new UserLoginListOptionsBag()
+            {
+                HasPersonContextEntity = RequestContext.GetContextEntity<Person>() != null
+            };
             return options;
         }
 
@@ -150,54 +101,6 @@ namespace Rock.Blocks.Security
             var personId = RequestContext.GetContextEntity<Person>()?.Id;
             var queryable = new UserLoginService( rockContext ).Queryable()
                 .Where( l => !personId.HasValue || l.PersonId == personId.Value );
-
-            // username filter
-            if ( !string.IsNullOrWhiteSpace( FilterUsername ) )
-            {
-                queryable = queryable.Where( l => l.UserName.StartsWith( FilterUsername ) );
-            }
-
-            // provider filter
-            if ( FilterAuthenticationProvider.HasValue )
-            {
-                queryable = queryable.Where( l => l.EntityType.Guid.Equals( FilterAuthenticationProvider.Value ) );
-            }
-
-            // created filter
-            if ( FilterDateCreatedLowerValue.HasValue )
-            {
-                queryable = queryable.Where( l => l.CreatedDateTime.HasValue && DbFunctions.TruncateTime( l.CreatedDateTime ).Value >= DbFunctions.TruncateTime( FilterDateCreatedLowerValue.Value ) );
-            }
-
-            if ( FilterDateCreatedUpperValue.HasValue )
-            {
-                var upperDate = FilterDateCreatedUpperValue.Value.Date.AddDays( 1 );
-                queryable = queryable.Where( l => l.CreatedDateTime.HasValue && DbFunctions.TruncateTime( l.CreatedDateTime ) < upperDate );
-            }
-
-            // last login filter
-            if ( FilterLastLoginDateLowerValue.HasValue )
-            {
-                queryable = queryable.Where( l => DbFunctions.TruncateTime( l.LastLoginDateTime ) >= DbFunctions.TruncateTime( FilterLastLoginDateLowerValue.Value ) );
-            }
-
-            if ( FilterLastLoginDateUpperValue.HasValue )
-            {
-                var upperDate = FilterLastLoginDateUpperValue.Value.Date.AddDays( 1 );
-                queryable = queryable.Where( l => DbFunctions.TruncateTime( l.LastLoginDateTime ) < upperDate );
-            }
-
-            // is Confirmed filter
-            if ( FilterIsConfirmed.HasValue )
-            {
-                queryable = queryable.Where( l => l.IsConfirmed == FilterIsConfirmed.Value || ( !FilterIsConfirmed.Value && l.IsConfirmed == null ) );
-            }
-
-            // is locked out filter
-            if ( FilterIsLockedOut.HasValue )
-            {
-                queryable = queryable.Where( l => l.IsLockedOut == FilterIsLockedOut.Value || ( !FilterIsLockedOut.Value && l.IsLockedOut == null ) );
-            }
 
             return queryable;
         }

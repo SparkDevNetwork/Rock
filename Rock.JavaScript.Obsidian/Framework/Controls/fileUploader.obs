@@ -17,7 +17,7 @@
                         <span v-else :class="thumbnailClass"></span>
 
                         <div v-if="isDeleteVisible" class="fileupload-remove">
-                            <a v-if="fileGuid" href="#" class="remove-file" title="Remove File" @click.prevent.stop="onRemoveFileClick">
+                            <a href="#" class="remove-file" title="Remove File" @click.prevent.stop="onRemoveFileClick">
                                 <i class="fa fa-times"></i>
                             </a>
                         </div>
@@ -49,7 +49,15 @@
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
-        modelValue: {
+        /**
+         * The current file value. The {@link ListItemBag.value} property should
+         * contain either a BinaryFile GUID value or an absolute path (starting
+         * with a forward slash) on the server to the static file.
+         *
+         * The {@link ListItemBag.text} property should contain the name of the
+         * file.
+         */
+         modelValue: {
             type: Object as PropType<ListItemBag | null>,
             required: false
         },
@@ -79,8 +87,7 @@
         (e: "update:modelValue", value: ListItemBag | undefined): void;
     }>();
 
-    const fileGuid = ref<Guid | null>(toGuidOrNull(props.modelValue?.value));
-    const fileName = ref(props.modelValue?.text ?? "");
+    const internalValue = ref(props.modelValue);
 
     // Variables related to the progress of uploading a new file.
     const isUploading = ref(false);
@@ -91,10 +98,21 @@
     const fileInputElement = ref<HTMLInputElement | null>(null);
     const dropZoneElement = ref<HTMLElement | null>(null);
 
+    const fileGuid = computed<Guid | null>(() => {
+        return toGuidOrNull(internalValue.value?.value);
+    });
+
+    const fileName = computed<string>(() => {
+        return internalValue.value?.text ?? "";
+    });
+
     /** The URL used to download the file. */
     const fileUrl = computed((): string | null => {
         if (fileGuid.value) {
             return `/GetFile.ashx?guid=${fileGuid.value}`;
+        }
+        else if (internalValue.value?.value && internalValue.value.value.startsWith("/")) {
+            return internalValue.value.value;
         }
 
         return null;
@@ -107,7 +125,8 @@
 
     /** True if the delete button should be visible. */
     const isDeleteVisible = computed((): boolean => {
-        return props.showDeleteButton && !!fileGuid.value;
+        return props.showDeleteButton
+            && (!!fileGuid.value || internalValue.value?.value?.startsWith("/") === true);
     });
 
     /**
@@ -130,8 +149,7 @@
                 }
             });
 
-            fileGuid.value = toGuidOrNull(result.value);
-            fileName.value = result.text ?? "";
+            internalValue.value = result;
         }
         catch (e) {
             // Show any error message we got.
@@ -162,8 +180,7 @@
             fileInputElement.value.value = "";
         }
 
-        fileGuid.value = null;
-        fileName.value = "";
+        internalValue.value = null;
     };
 
     /**
@@ -190,8 +207,7 @@
             return;
         }
 
-        fileGuid.value = null;
-        fileName.value = "";
+        internalValue.value = null;
     };
 
     // Watch for the drop zone element to become available. Once we have it
@@ -230,21 +246,11 @@
 
     // Watch for changes to the model value and update our internal values.
     watch(() => props.modelValue, () => {
-        fileGuid.value = toGuidOrNull(props.modelValue?.value);
-        fileName.value = props.modelValue?.text ?? "";
+        internalValue.value = props.modelValue;
     });
 
     // Watch for changes to our internal values and update the model value.
-    watch([fileGuid, fileName], () => {
-        let newValue: ListItemBag | undefined = undefined;
-
-        if (fileGuid.value) {
-            newValue = {
-                value: fileGuid.value,
-                text: fileName.value
-            };
-        }
-
-        emit("update:modelValue", newValue);
+    watch(internalValue, () => {
+        emit("update:modelValue", internalValue.value ?? undefined);
     });
 </script>

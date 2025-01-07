@@ -131,8 +131,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
 
             if ( _pageId.HasValue )
@@ -245,6 +243,8 @@ namespace RockWeb.Blocks.Cms
             {
                 lbAddPageChild.Enabled = false;
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods

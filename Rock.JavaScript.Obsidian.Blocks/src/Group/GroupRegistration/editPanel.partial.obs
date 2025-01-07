@@ -9,8 +9,8 @@
             <div class="row">
                 <div class="col-md-6">
 
-                    <TextBox v-model="firstName" label="First Name" rules="required" />
-                    <TextBox v-model="lastName" label="Last Name" rules="required" />
+                    <TextBox v-model="firstName" label="First Name" :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
+                    <TextBox v-model="lastName" label="Last Name" :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
                     <PhoneNumberBox :label="mobilePhoneLabel" v-model="mobilePhone" :rules="mobilePhoneValidationRule" />
                     <CheckBox v-if="options.smsIsShowFirstAdult" label="" v-model="isMessagingEnabled" :text="options.smsOptInDisplayText ?? ''" />
                     <EmailBox label="Email" v-model="email" :rules="emailValidationRule" />
@@ -21,8 +21,8 @@
 
                 <div class=col-md-6>
 
-                    <TextBox v-model="spouseFirstName" :disabled="isAtNearCapacity" label="Spouse First Name" />
-                    <TextBox v-model="spouseLastName" :disabled="isAtNearCapacity" label="Spouse Last Name" />
+                    <TextBox v-model="spouseFirstName" :disabled="isAtNearCapacity" label="Spouse First Name" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
+                    <TextBox v-model="spouseLastName" :disabled="isAtNearCapacity" label="Spouse Last Name" :rules="['nospecialcharacters', 'noemojisorspecialfonts']" />
                     <PhoneNumberBox :label="spouseMobilePhoneLabel" :disabled="isAtNearCapacity" v-model="spouseMobilePhone" />
                     <CheckBox v-if="options.smsIsShowAllAdults" label="" :disabled="isAtNearCapacity" v-model="spouseIsMessagingEnabled" :text="options.smsOptInDisplayText ?? ''" />
                     <EmailBox label="Spouse Email" :disabled="isAtNearCapacity" v-model="spouseEmail" />
@@ -33,8 +33,8 @@
 
         <div v-else>
 
-            <TextBox v-model="firstName" label="First Name" rules="required" />
-            <TextBox v-model="lastName" label="Last Name" rules="required" />
+            <TextBox v-model="firstName" label="First Name" :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
+            <TextBox v-model="lastName" label="Last Name" :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
 
             <PhoneNumberBox v-if="isFullMode" :label="mobilePhoneLabel" v-model="mobilePhone" :rules="mobilePhoneValidationRule" />
             <CheckBox v-if="isFullMode && !options.smsIsHidden" label="" v-model="isMessagingEnabled" :text="options.smsOptInDisplayText ?? ''" />

@@ -150,7 +150,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetDisplayName( Type type )
         {
-            return type.GetCustomAttribute<DisplayNameAttribute>( true )?.DisplayName;
+            return type?.GetCustomAttribute<DisplayNameAttribute>( true )?.DisplayName;
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetCategory( Type type )
         {
-            return type.GetCustomAttribute<CategoryAttribute>( true )?.Category;
+            return type?.GetCustomAttribute<CategoryAttribute>( true )?.Category;
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ namespace Rock
         /// <returns></returns>
         public static string GetDescription( Type type )
         {
-            return type.GetCustomAttribute<DescriptionAttribute>( true )?.Description;
+            return type?.GetCustomAttribute<DescriptionAttribute>( true )?.Description;
         }
 
         /// <summary>
@@ -354,6 +354,28 @@ namespace Rock
             var getMethod = serviceInstance?.GetType().GetMethod( "Get", new Type[] { typeof( Guid ) } );
             var entity = getMethod?.Invoke( serviceInstance, new object[] { entityGuid } ) as IEntity;
             return entity;
+        }
+
+        /// <summary>
+        /// Gets the specified entity.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="entityId">The entity identifier.</param>
+        /// <param name="dbContext">The database context.</param>
+        /// <returns></returns>
+        public static IEntity GetIEntityForEntityType( int entityTypeId, int entityId, Data.DbContext dbContext = null )
+        {
+            var type = EntityTypeCache.Get( entityTypeId )?.GetEntityType();
+
+            if ( type == null )
+            {
+                return null;
+            }
+
+            var serviceInstance = GetServiceForEntityType( type, dbContext ?? new RockContext() );
+            var getMethod = serviceInstance?.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
+
+            return getMethod?.Invoke( serviceInstance, new object[] { entityId } ) as IEntity;
         }
 
         /// <summary>

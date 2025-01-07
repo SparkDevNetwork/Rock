@@ -103,23 +103,11 @@ namespace Rock.Blocks.Finance
 
         private static class PreferenceKey
         {
-            public const string FilterStartDateUpperValue = "filter-start-date-upper-value";
-
-            public const string FilterStartDateLowerValue = "filter-start-date-lower-value";
-
-            public const string FilterCampus = "filter-campus";
-
             public const string FilterFirstName = "filter-first-name";
 
             public const string FilterLastName = "filter-last-name";
 
-            public const string FilterGovernmentId = "filter-government-id";
-
-            public const string FilterCaseWorker = "filter-case-worker";
-
             public const string FilterResult = "filter-result";
-
-            public const string FilterRequestStatus = "filter-request-status";
 
             public const string FilterBenevolenceTypes = "filter-benevolence-types";
         }
@@ -135,37 +123,14 @@ namespace Rock.Blocks.Finance
 
         #region Properties
 
-        protected DateTime? FilterStartDateLowerValue => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterStartDateLowerValue )
-            .AsDateTime();
-
-        protected DateTime? FilterStartDateUpperValue => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterStartDateUpperValue )
-            .AsDateTime();
-
-        protected Guid? FilterCampus => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterCampus )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
-
         protected string FilterFirstName => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterFirstName );
 
         protected string FilterLastName => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterLastName );
 
-        protected string FilterGovernmentId => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterGovernmentId );
-
-        protected Guid? FilterCaseWorker => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterCaseWorker )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
-
         protected Guid? FilterResult => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterResult )
-            .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
-
-        protected Guid? FilterRequestStatus => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterRequestStatus )
             .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
 
         protected List<Guid> FilterBenevolenceTypes => GetBlockPersonPreferences()
@@ -200,6 +165,14 @@ namespace Rock.Blocks.Finance
         {
             var options = new BenevolenceRequestListOptionsBag();
 
+            var columnsToHide = GetAttributeValue( AttributeKey.HideColumnsAttributeKey ).Split( ',' ).ToList();
+
+            // If we are working with a single campus hide campus column.
+            if ( CampusCache.All().Count == 1 )
+            {
+                columnsToHide.Add( "Campus" );
+            }
+
             var currencyInfo = new RockCurrencyCodeInfo();
             options.CurrencyInfo = new ViewModels.Utility.CurrencyInfoBag
             {
@@ -209,7 +182,7 @@ namespace Rock.Blocks.Finance
             };
             options.BenevolenceTypes = GetBenevolenceTypes();
             options.CaseWorkers = GetCaseWorkers();
-            options.ColumnsToHide = GetAttributeValue( AttributeKey.HideColumnsAttributeKey ).Split( ',' ).ToList();
+            options.ColumnsToHide = columnsToHide;
             options.CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() );
 
             return options;
@@ -283,24 +256,6 @@ namespace Rock.Blocks.Finance
 
             var targetPerson = RequestContext.GetContextEntity<Person>();
 
-            // Filter by Start Date
-            if ( FilterStartDateLowerValue != null )
-            {
-                benevolenceRequests = benevolenceRequests.Where( b => b.RequestDateTime >= FilterStartDateLowerValue );
-            }
-
-            // Filter by End Date
-            if ( FilterStartDateUpperValue != null )
-            {
-                benevolenceRequests = benevolenceRequests.Where( b => b.RequestDateTime <= FilterStartDateUpperValue );
-            }
-
-            // Filter by Campus
-            if ( FilterCampus.HasValue )
-            {
-                benevolenceRequests = benevolenceRequests.Where( b => b.Campus.Guid == FilterCampus.Value );
-            }
-
             if ( targetPerson != null )
             {
                 // show benevolence request for the target person and also for their family members
@@ -322,28 +277,10 @@ namespace Rock.Blocks.Finance
                 }
             }
 
-            // Filter by Government Id
-            if ( !string.IsNullOrWhiteSpace( FilterGovernmentId ) )
-            {
-                benevolenceRequests = benevolenceRequests.Where( b => b.GovernmentId.StartsWith( FilterGovernmentId ) );
-            }
-
-            // Filter by Case Worker
-            if ( FilterCaseWorker.HasValue )
-            {
-                benevolenceRequests = benevolenceRequests.Where( b => b.CaseWorkerPersonAlias.Guid == FilterCaseWorker.Value );
-            }
-
             // Filter by Result
             if ( FilterResult.HasValue )
             {
                 benevolenceRequests = benevolenceRequests.Where( b => b.BenevolenceResults.Any( r => r.ResultTypeValue.Guid == FilterResult.Value ) );
-            }
-
-            // Filter by Request Status
-            if ( FilterRequestStatus.HasValue )
-            {
-                benevolenceRequests = benevolenceRequests.Where( b => b.RequestStatusValue.Guid == FilterRequestStatus.Value );
             }
 
             // Filter by Benevolence Types
@@ -352,7 +289,7 @@ namespace Rock.Blocks.Finance
                 benevolenceRequests = benevolenceRequests.Where( b => FilterBenevolenceTypes.Contains( b.BenevolenceType.Guid ) );
             }
 
-            if ( benevolenceTypeFilter?.Count() > 0 )
+            if ( benevolenceTypeFilter?.Any() == true )
             {
                 benevolenceRequests = benevolenceRequests.Where( b => benevolenceTypeFilter.Contains( b.BenevolenceType.Guid ) );
             }

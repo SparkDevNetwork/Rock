@@ -1,0 +1,214 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          v-if="!isBlockHidden"
+          :data="gridDataSource"
+          :exportTitle="tagName"
+          keyField="entityId"
+          liveUpdates
+          itemTerm="Tag"
+          :title="title"
+          showLaunchWorkflow
+          :showCommunicate="isPersonTag"
+          :showBulkUpdate="isPersonTag"
+          :showPersonMerge="isPersonTag"
+          :personKeyField="personKeyField"
+          :entityTypeGuid="entityTypeGuid"
+          stickyHeader
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+        <SelectColumn v-if="isPersonTag" />
+
+        <TextColumn name="entityName"
+            :title="entityTypeName"
+            field="entityName"
+            visiblePriority="xs"
+            width="50%" />
+
+        <DateColumn name="dateTagged"
+            title="Date Tagged"
+            field="dateTagged"
+            headerClass="'text-right'"
+            itemClass="'justify-content-end text-end'"
+            visiblePriority="xs"
+            width="50%" />
+
+       <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+
+    <Modal v-model="isPersonModalShown"
+            title="Add Person"
+            saveText="Save"
+            saveThenAddText="Save Then Add"
+            @save="onSave"
+            @saveThenAdd="onSaveThenAdd">
+            <NotificationBox v-if="errorMessage" :alertType="AlertType.Danger">
+                {{ errorMessage }}
+            </NotificationBox>
+                <PersonPicker v-model="person"
+                    label="Person"
+                    v-model:isSearchModeOpen="isSearchModeOpen"
+                    :key="addNextPersonCount" />
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import Grid, { DeleteColumn, SelectColumn, DateColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { TaggedItemListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/TaggedItemList/taggedItemListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, reactive, watch } from "vue";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+
+    const config = useConfigurationValues<ListBlockBox<TaggedItemListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const isPersonModalShown = ref<boolean>(false);
+    const person = ref<ListItemBag | undefined>(undefined);
+    const errorMessage = ref("");
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    const addNextPersonCount = ref<number> (0); // key to refresh the personpicker so that it opens up in full screen for the next input.
+    let gridData: GridDataBag | undefined;
+    const tagName = config.options?.tagName ?? "";
+    const title = config.options?.title ?? "";
+    const entityTypeName = config.options?.entityTypeName ?? "";
+    const entityTypeGuid = config.options?.entityTypeGuid ?? "";
+    const isBlockHidden = config.options?.isBlockHidden ?? false;
+    const isPersonTag = config.options?.isPersonTag ?? false;
+    const personKeyField = isPersonTag ? "entityId" : undefined;
+    const tagId = config.options?.tagId ?? 0;
+    const isSearchModeOpen = ref(true);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+    * Called when the grid is requesting the row data be loaded.
+    */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (!result.isSuccess || !result.data) {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+
+        gridData = reactive(result.data);
+        return gridData;
+    }
+
+    /**
+     * Called when a new person tag needs to be added.
+     */
+    async function addPerson(): Promise<void> {
+        if(!person.value) {
+            errorMessage.value = "Person is required.";
+            return;
+        }
+        const result = await invokeBlockAction<GridDataBag>("AddPerson", { personAlias: person.value });
+        if (!result || !result.isSuccess || !result.data) {
+            errorMessage.value = result.errorMessage ?? "Unable to add Tag to Person";
+            return;
+        }
+        gridData?.rows?.push(result.data);
+        person.value = undefined;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onSelectItem(key: string): Promise<void> {
+        const selectedItem = gridData?.rows?.find(r => r["entityId"] === key);
+        const entityGuid = selectedItem && selectedItem["entityGuid"];
+        if(!entityGuid) {
+            return;
+        }
+        const result = await invokeBlockAction<string>("SelectRow", { entityGuid, tagId });
+
+        if (!result.isSuccess || !result.data) {
+            return;
+        }
+        var rowSelectionUrl = result.data;
+        if (rowSelectionUrl.startsWith("~")) {
+            rowSelectionUrl = `${window.location.origin}${rowSelectionUrl.substring(1)}`;
+        }
+        window.location.href = rowSelectionUrl;
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        if(!gridData || !gridData.rows) {
+            return;
+        }
+        const index = gridData.rows.findIndex(r => r["entityId"] === key);
+        if(index == -1) {
+            return;
+        }
+        const entityGuid = gridData.rows[index]["entityGuid"];
+        const result = await invokeBlockAction<string>("Delete", {
+            entityGuid, tagId
+        });
+
+        if (result.isSuccess) {
+            gridData.rows?.splice(index, 1);
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete tagged item.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        errorMessage.value = "";
+        isPersonModalShown.value = true;
+        isSearchModeOpen.value = true;
+    }
+
+    async function onSaveThenAdd(): Promise<void> {
+        await addPerson();
+        if(errorMessage.value) {
+            return;
+        }
+        isSearchModeOpen.value = true;
+        addNextPersonCount.value++;
+    }
+
+    async function onSave(): Promise<void> {
+        await addPerson();
+        if(errorMessage.value) {
+            return;
+        }
+        isPersonModalShown.value = false;
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(person, () => {
+        errorMessage.value = "";
+    });
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

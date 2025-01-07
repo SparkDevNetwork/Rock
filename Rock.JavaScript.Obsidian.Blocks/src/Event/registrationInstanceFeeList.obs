@@ -4,13 +4,12 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Fee"
+          title="Fees"
           :entityTypeGuid="EntityType.RegistrationRegistrantFee"
           stickyHeader
           liveUpdates
-          gridSettings
-          :exportTitle="config.options?.exportTitleName ?? ''"
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="isGridSettingsVisible = true">
+          :showLaunchWorkflow="false"
+          :exportTitle="config.options?.exportTitleName ?? ''">
 
         <TextColumn name="registrationId"
                     title="Registration Id"
@@ -22,19 +21,21 @@
         <DateColumn name="registrationDate"
                     title="Registration Date"
                     field="registrationDate"
+                    headerClass="title-right"
+                    itemClass="justify-content-end text-right"
                     :filter="dateValueFilter"
                     visiblePriority="md" />
 
         <TextColumn name="registeredBy"
                     title="Registered By"
                     field="registeredBy"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
         <TextColumn name="registrant"
                     title="Registrant"
                     field="registrant"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="registrantId"
@@ -53,7 +54,7 @@
         <TextColumn name="feeItemName"
                     title="Option"
                     field="feeItemName"
-                    :filter="textValueFilter"
+                    :filter="pickExistingValueFilter"
                     visiblePriority="md" />
 
         <NumberColumn name="quantity"
@@ -65,61 +66,49 @@
         <CurrencyColumn name="cost"
                         title="Cost"
                         field="cost"
+                        :quickFilterValue="getCostQuickFilterValue"
                         :filter="numberValueFilter"
+                        headerClass="title-right"
+                        itemClass="justify-content-end text-right"
                         visiblePriority="md" />
 
         <CurrencyColumn name="feeTotal"
                         title="Fee Total"
                         field="feeTotal"
+                        :quickFilterValue="getFeesQuickFilterValue"
                         :filter="numberValueFilter"
+                        headerClass="title-right"
+                        itemClass="justify-content-end text-right"
                         visiblePriority="xs" />
     </Grid>
-
-    <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible"
-                       :feeNameItems="config.options?.feeNameItems ?? []"
-                       :feeOptionsItems="config.options?.feeOptionsItems ?? []"/>
 </template>
 
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
+
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { NumberColumn, numberValueFilter, dateValueFilter, textValueFilter, DateColumn, TextColumn, CurrencyColumn } from "@Obsidian/Controls/grid";
+    import Grid, { NumberColumn, numberValueFilter, dateValueFilter, textValueFilter, pickExistingValueFilter, DateColumn, TextColumn, CurrencyColumn } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { RegistrationInstanceFeeListOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationInstanceFeeList/registrationInstanceFeeListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { PreferenceKey, GridSettingsOptions } from "./RegistrationInstanceFeeList/types.partial";
-    import GridSettingsModal from "./RegistrationInstanceFeeList/gridSettingsModal.partial.obs";
-    import { computed, reactive, ref, watch } from "vue";
+    import { reactive, ref } from "vue";
+    import { asFormattedString, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const config = useConfigurationValues<ListBlockBox<RegistrationInstanceFeeListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-    const isGridSettingsVisible = ref(false);
-    const gridSettings = ref<GridSettingsOptions>({
-        dateRange: preferences.getValue(PreferenceKey.FilterDateRange),
-        feeOptions: JSON.parse(preferences.getValue(PreferenceKey.FilterFeeOptions) || "[]"),
-        feeName: preferences.getValue(PreferenceKey.FilterFeeName),
-    });
-
     // #endregion
 
-    //#region Computed Values
-
-    /** `true` if the grid settings is performing any filtering. */
-    const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.dateRange
-            || !!gridSettings.value.feeName
-            || gridSettings.value.feeOptions.length > 0;
-    });
-
-    //#endregion
 
     // #region Functions
 
@@ -138,17 +127,39 @@
         }
     }
 
+    /**
+     * Formats the amount as a decimal value for the grid's quick search
+     * @param row the targeted row
+     */
+    function getCostQuickFilterValue(row: Record<string, unknown>): string {
+        return getCurrencyAsDecimal(row.cost as string);
+    }
+
+
+    /**
+     * Formats the amount as a decimal value for the grid's quick search
+     * @param row the targeted row.
+     */
+    function getFeesQuickFilterValue(row: Record<string, unknown>): string {
+        return getCurrencyAsDecimal(row.feeTotal as string);
+    }
+
+    /**
+     * Formats the amount as a decimal value for the grid's quick search since raw value might
+     * not include decimal places with will be added by the Currency Column when formatting as currency.
+     * @param value the amount as string
+     */
+    function getCurrencyAsDecimal(value: string | null): string {
+        let numberValue = toNumberOrNull(value);
+
+        if (numberValue) {
+            return asFormattedString(numberValue, 2);
+        }
+
+        return "";
+    }
+
     // #endregion
-
-    watch(gridSettings, async () => {
-        preferences.setValue(PreferenceKey.FilterDateRange, gridSettings.value.dateRange ?? "");
-        preferences.setValue(PreferenceKey.FilterFeeName, gridSettings.value.feeName ?? "");
-        preferences.setValue(PreferenceKey.FilterFeeOptions, JSON.stringify(gridSettings.value.feeOptions));
-
-        await preferences.save();
-
-        gridDataSource.value = loadGridData();
-    });
 
     gridDataSource.value = loadGridData();
 </script>

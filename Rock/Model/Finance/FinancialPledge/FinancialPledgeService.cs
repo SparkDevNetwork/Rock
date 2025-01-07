@@ -30,6 +30,78 @@ namespace Rock.Model
         /// <summary>
         /// Gets the pledge analytics.
         /// </summary>
+        /// <param name="accountIds">The account identifier array.</param>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="minAmountPledged">The minimum amount pledged.</param>
+        /// <param name="maxAmountPledged">The maximum amount pledged.</param>
+        /// <param name="minComplete">The minimum complete.</param>
+        /// <param name="maxComplete">The maximum complete.</param>
+        /// <param name="minAmountGiven">The minimum amount given.</param>
+        /// <param name="maxAmountGiven">The maximum amount given.</param>
+        /// <param name="includePledges">if set to <c>true</c> [include pledges].</param>
+        /// <param name="includeGifts">if set to <c>true</c> [include gifts].</param>
+        /// <returns></returns>
+        public DataSet GetPledgeAnalyticsDataSet( int[] accountIds, DateTime? start, DateTime? end,
+            decimal? minAmountPledged, decimal? maxAmountPledged, decimal? minComplete, decimal? maxComplete, decimal? minAmountGiven, decimal? maxAmountGiven,
+            bool includePledges, bool includeGifts )
+        {
+            Dictionary<string, object> parameters = new Dictionary<string, object>();
+
+            string accountIdsString = string.Join( ",", accountIds );
+            parameters.Add( "AccountIds", accountIdsString );
+
+            if ( start.HasValue )
+            {
+                parameters.Add( "StartDate", start.Value );
+            }
+
+            if ( end.HasValue )
+            {
+                parameters.Add( "EndDate", end.Value );
+            }
+
+            if ( minAmountPledged.HasValue )
+            {
+                parameters.Add( "MinAmountPledged", minAmountPledged.Value );
+            }
+
+            if ( maxAmountPledged.HasValue )
+            {
+                parameters.Add( "MaxAmountPledged", maxAmountPledged.Value );
+            }
+
+            if ( minComplete.HasValue )
+            {
+                parameters.Add( "MinComplete", minComplete.Value / 100 );
+            }
+
+            if ( maxComplete.HasValue )
+            {
+                parameters.Add( "MaxComplete", maxComplete.Value / 100 );
+            }
+
+            if ( minAmountGiven.HasValue )
+            {
+                parameters.Add( "MinAmountGiven", minAmountGiven.Value );
+            }
+
+            if ( maxAmountGiven.HasValue )
+            {
+                parameters.Add( "MaxAmountGiven", maxAmountGiven.Value );
+            }
+
+            parameters.Add( "IncludePledges", includePledges );
+            parameters.Add( "IncludeGifts", includeGifts );
+
+            var result = new DbService( this.Context ).GetDataSetFromSqlCommand( "spFinance_PledgeAnalyticsQueryWithMultipleAccountIds", System.Data.CommandType.StoredProcedure, parameters );
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the pledge analytics.
+        /// </summary>
         /// <param name="accountId">The account identifier.</param>
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
@@ -42,6 +114,7 @@ namespace Rock.Model
         /// <param name="includePledges">if set to <c>true</c> [include pledges].</param>
         /// <param name="includeGifts">if set to <c>true</c> [include gifts].</param>
         /// <returns></returns>
+        [RockObsolete( "1.16.7" )]
         public DataSet GetPledgeAnalyticsDataSet( int accountId, DateTime? start, DateTime? end,
             decimal? minAmountPledged, decimal? maxAmountPledged, decimal? minComplete, decimal? maxComplete, decimal? minAmountGiven, decimal? maxAmountGiven,
             bool includePledges, bool includeGifts )

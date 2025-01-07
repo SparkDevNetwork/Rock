@@ -8,10 +8,10 @@
                               @update:modelValue="updatePersonName($event)" />
                 <TextBox v-model="firstName"
                          label="First Name"
-                         rules="required" />
+                         :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
                 <TextBox v-model="lastName"
                          label="Last Name"
-                         :rules="isLastNameRequired" />
+                         :rules="[isLastNameRequired, 'nospecialcharacters', 'noemojisorspecialfonts']" />
                 <EmailBox v-model="email"
                           label="Email" />
                 <DatePicker v-model="expirationDate"
@@ -36,12 +36,12 @@
             </div>
 
             <div class="col-md-3">
-                <Toggle v-model="isApproved"
-                        trueText="Approved"
-                        falseText="Pending"
+                <Toggle v-model="isPending"
+                        trueText="Pending"
+                        falseText="Approved"
                         btnSize="xs"
-                        onButtonActiveCssClass="btn-success"
-                        offButtonActiveCssClass="btn-warning"
+                        onButtonActiveCssClass="btn-warning"
+                        offButtonActiveCssClass="btn-success"
                         label="Status" />
             </div>
         </div>
@@ -113,7 +113,7 @@
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const isActive = propertyRef(props.modelValue.isActive ?? true, "IsActive");
     const requestedByPersonAlias = propertyRef(props.modelValue.requestedByPersonAlias ?? undefined, "RequestedByPersonAliasId");
-    const isApproved = propertyRef(props.modelValue.isApproved ?? false, "IsApproved");
+    const isPending = propertyRef(!(props.modelValue.isApproved ?? false), "IsApproved");
     const firstName = propertyRef(props.modelValue.firstName ?? "", "FirstName");
     const lastName = propertyRef(props.modelValue.lastName ?? "", "LastName");
     const email = propertyRef(props.modelValue.email ?? "", "Email");
@@ -136,7 +136,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [isActive, requestedByPersonAlias, isApproved, firstName, lastName, email, expirationDate, campus, category, request, answer, isPublic, isUrgent, allowComments];
+    const propRefs = [isActive, requestedByPersonAlias, isPending, firstName, lastName, email, expirationDate, campus, category, request, answer, isPublic, isUrgent, allowComments];
     const invokeBlockAction = useInvokeBlockAction();
 
     // #endregion
@@ -202,7 +202,7 @@
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(isActive, props.modelValue.isActive ?? false);
         updateRefValue(requestedByPersonAlias, props.modelValue.requestedByPersonAlias ?? undefined);
-        updateRefValue(isApproved, props.modelValue.isApproved ?? false);
+        updateRefValue(isPending, !(props.modelValue.isApproved ?? false));
         updateRefValue(firstName, props.modelValue.firstName ?? "");
         updateRefValue(lastName, props.modelValue.lastName ?? "");
         updateRefValue(email, props.modelValue.email ?? "");
@@ -224,11 +224,12 @@
             attributeValues: attributeValues.value,
             isActive: isActive.value,
             requestedByPersonAlias: requestedByPersonAlias.value,
-            isApproved: isApproved.value,
+            isApproved: !isPending.value,
             firstName: firstName.value,
             lastName: lastName.value,
             email: email.value,
             expirationDate: expirationDate.value,
+            campus: campus.value,
             category: category.value,
             text: request.value,
             answer: answer.value,

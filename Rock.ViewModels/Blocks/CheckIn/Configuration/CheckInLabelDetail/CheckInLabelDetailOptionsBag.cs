@@ -45,5 +45,10 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInLabelDetail
         /// The filter sources available when editing a checkout label.
         /// </summary>
         public List<FieldFilterSourceBag> CheckoutLabelFilterSources { get; set; }
+
+        /// <summary>
+        /// The filter sources available when editing a person location label.
+        /// </summary>
+        public List<FieldFilterSourceBag> PersonLocationLabelFilterSources { get; set; }
     }
 }

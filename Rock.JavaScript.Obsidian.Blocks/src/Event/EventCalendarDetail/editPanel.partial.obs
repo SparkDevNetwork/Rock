@@ -23,112 +23,69 @@
                 <TextBox v-model="iconCssClass"
                          label="Calendar CSS Class" />
             </div>
+            <div v-if="indexingEnabled" class="col-md-6">
+                <CheckBox v-model="isIndexEnabled" label="Indexing Enabled" />
+            </div>
         </div>
 
         <Panel title="Event Attributes" hasCollapse>
-            <div class="table-responsive">
-                <table class="grid-table table table-striped table-hover">
-                    <thead>
-                        <tr align="left">
-                            <th data-priority="1" scope="col">Attribute</th>
-                            <th data-priority="1" scope="col">Description</th>
-                            <th data-priority="1" scope="col">Field Type</th>
-                            <th data-priority="1" scope="col">Required</th>
-                            <th data-priority="1" scope="col">Show in Grid</th>
-                            <th data-priority="1" scope="col">Allow Search</th>
-                            <th class="grid-columncommand" data-priority="1" scope="col">&nbsp;</th>
-                        </tr>
-                    </thead>
 
-                    <tbody>
-                        <tr v-if="eventAttributes.length > 0" v-for="eventAttribute in eventAttributes" align="left">
-                            <td data-priority="1">{{ eventAttribute.attribute?.name }}</td>
-                            <td data-priority="1">{{ eventAttribute.attribute?.description }}</td>
-                            <td data-priority="1">{{ eventAttribute.fieldType }}</td>
-                            <td data-priority="1" v-html="getCheckMark(eventAttribute.attribute?.isRequired)"></td>
-                            <td data-priority="1" v-html="getCheckMark(eventAttribute.attribute?.isShowInGrid)"></td>
-                            <td data-priority="1" v-html="getCheckMark(eventAttribute.attribute?.isAllowSearch)"></td>
-                            <td class="grid-columncommand" data-priority="1" align="center">
-                                <RockButton title="Edit"
-                                            class="btn-grid-action"
-                                            btnType="link"
-                                            @click.prevent.stop="onAddEditAttribute(eventAttribute.attribute)">
-                                    <i class="fa fa-pencil"></i>
-                                </RockButton>
-                            </td>
-                            <td class="grid-columncommand" data-priority="1" align="center">
-                                <RockButton title="Delete"
-                                            class="btn-grid-action"
-                                            btnType="link"
-                                            @click.prevent.stop="onDeleteAttribute(eventAttribute)">
-                                    <i class="fa fa-times"></i>
-                                </RockButton>
-                            </td>
-                        </tr>
+            <Grid :data="eventAttributesGridData" keyField="key" itemTerm="Event Occurrence Attributes" liveUpdates light @addItem="onAddAttribute">
+                <ReorderColumn :onOrderChanged="onOrderChanged" />
 
-                        <div v-else>
-                            <hr />
-                            No Attributes Found
-                            <hr />
-                        </div>
-                    </tbody>
-                </table>
-            </div>
-            <div class="grid-actions border-panel">
-                <RockButton class="btn-add btn-grid-action" btnType="link" @click.prevent.stop="onAddEditAttribute(null)"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
-            </div>
+                <TextColumn name="name"
+                            field="name"
+                            title="Attribute" />
 
-            <Modal v-model="isAttributeModalOpen" title="Calendar Event Attribute">
+                <TextColumn name="description"
+                            field="description"
+                            title="Description" />
 
+                <TextColumn name="fieldType"
+                            field="fieldType"
+                            title="Field Type" />
+
+                <BooleanColumn name="isRequired"
+                               field="isRequired"
+                               title="Required" />
+
+                <BooleanColumn name="showInGrid"
+                               field="showInGrid"
+                               title="Show in Grid" />
+
+                <BooleanColumn name="allowSearch"
+                               field="allowSearch"
+                               title="Allow Search" />
+
+                <EditColumn @click="onEditAttribute" />
+
+                <DeleteColumn @click="onDeleteAttribute" disableConfirmation />
+            </Grid>
+
+            <Modal v-model="isAttributeModalOpen" title="Calendar Event Attribute" saveText="Save" :onSave="onStartSaveAttribute">
                 <hr />
-
-                <RockForm v-model:submit="submitEditAttribute" @submit="onSaveEditAttribute">
+                <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
+                    <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
+                        Please correct the following:
+                        <ul>
+                            <li v-for="error of attributeErrors">
+                                {{ error }}
+                            </li>
+                        </ul>
+                    </NotificationBox>
                     <AttributeEditor v-model="eventAttribute" :reservedKeyNames="reservedKeyNames" />
                 </RockForm>
-
-                <template #customButtons>
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Primary"
-                                @click="onStartSaveEditAttribute">Save</RockButton>
-                </template>
-
             </Modal>
         </Panel>
 
         <Panel title="Content Channels" hasCollapse>
-            <div class="table-responsive">
-                <table class="grid-table table table-striped table-hover">
-                    <thead>
-                        <tr align="left">
-                            <th data-priority="1" scope="col">Channels</th>
-                            <th class="grid-columncommand" data-priority="1" scope="col">&nbsp;</th>
-                        </tr>
-                    </thead>
+            <Grid :data="contentChannelsGridData" keyField="key" itemTerm="Content Channel" liveUpdates light @addItem="onAddContentChannel">
+                <TextColumn name="name"
+                            field="name"
+                            title="Channels" />
 
-                    <tbody>
-                        <tr v-if="savedContentChannels.length > 0" v-for="contentChannel in savedContentChannels" align="left">
-                            <td data-priority="1">{{ contentChannel.text }}</td>
-                            <td class="grid-columncommand" data-priority="1" align="center">
-                                <RockButton title="Delete"
-                                            class="btn-add btn-grid-action"
-                                            btnType="link"
-                                            @click.prevent.stop="onDeleteContentChannel(contentChannel)">
-                                    <i class="fa fa-times"></i>
-                                </RockButton>
-                            </td>
-                        </tr>
-
-                        <div v-else>
-                            <hr />
-                            No Content Channels Found
-                            <hr />
-                        </div>
-                    </tbody>
-                </table>
-            </div>
-            <div class="grid-actions border-panel">
-                <RockButton class="btn-add btn-grid-action" btnType="link" @click.prevent.stop="onAddContentChannel"><i class="fa fa-plus-circle fa-fw"></i></RockButton>
-            </div>
+                <DeleteColumn @click="onDeleteContentChannel" disableConfirmation />
+            </Grid>
         </Panel>
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
@@ -151,11 +108,11 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, reactive, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { EventCalendarBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarBag";
     import { EventCalendarDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarDetailOptionsBag";
@@ -166,12 +123,14 @@
     import { EventAttributeBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventAttributeBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
-    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import Grid, { TextColumn, DeleteColumn, BooleanColumn, EditColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { Guid } from "@Obsidian/Types";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
 
     const props = defineProps({
         modelValue: {
@@ -196,6 +155,7 @@
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
+    const isIndexEnabled = propertyRef(props.modelValue.isIndexEnabled ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
     const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "iconCssClass");
     const isContentChannelModalOpen = ref(false);
@@ -206,27 +166,60 @@
     const isAttributeModalOpen = ref(false);
     const submitEditAttribute = ref(false);
     const eventAttribute = ref<PublicEditableAttributeBag | null>(null);
-    const reservedKeyNames = ref<[]>([]);
-
+    const reservedKeyNames = ref<string[]>([]);
+    const attributeErrors = ref<string[]>([]);
+    const indexingEnabled = ref(props.options.indexingEnabled);
     const invokeBlockAction = useInvokeBlockAction();
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, iconCssClass];
+    const propRefs = [description, isActive, name, iconCssClass, isIndexEnabled];
 
     // #endregion
 
     // #region Computed Values
-    const getCheckMark = (booleanValue: boolean | undefined): string => {
-        return booleanValue ? "<i class='fa fa-check'></i>" : "";
-    };
+
+    const eventAttributesGridData: GridDataBag = reactive<GridDataBag>({
+        rows: eventAttributes.value.map(x => toAttributeGridRowItem(x))
+    });
+
+    const contentChannelsGridData: GridDataBag = reactive<GridDataBag>({
+        rows: savedContentChannels.value.map(x => tocontentChannelsGridRowItem(x))
+    });
+
     // #endregion
 
     // #region Functions
 
+    function toAttributeGridRowItem(bag: EventAttributeBag): Record<string, unknown> {
+
+        if (bag.attribute?.key && !reservedKeyNames.value.includes(bag.attribute?.key)) {
+            reservedKeyNames.value.push(bag.attribute.key);
+        }
+
+        return {
+            key: bag.attribute?.guid,
+            name: bag.attribute?.name,
+            fieldType: bag.fieldType,
+            description: bag.attribute?.description,
+            isRequired: bag.attribute?.isRequired,
+            showInGrid: bag.attribute?.isShowInGrid,
+            allowSearch: bag.attribute?.isAllowSearch
+        };
+    }
+
+    function tocontentChannelsGridRowItem(bag: ListItemBag): Record<string, unknown> {
+
+        return {
+            key: bag.value,
+            name: bag.text
+        };
+    }
+
     // #endregion
 
     // #region Event Handlers
+
     const onSaveContentChannel = (): void => {
         isContentChannelModalOpen.value = false;
 
@@ -234,6 +227,10 @@
             const selectedContentChannel = contentChannelsList.value.find(x => x.value == contentChannel.value);
             if (selectedContentChannel) {
                 savedContentChannels.value.push(selectedContentChannel);
+
+                // Add new RowItem to the grid to represent the newly added content channel.
+                const newRowItem = tocontentChannelsGridRowItem(selectedContentChannel);
+                contentChannelsGridData.rows?.push(newRowItem);
             }
         }
 
@@ -241,76 +238,148 @@
     };
 
     const onAddContentChannel = (): void => {
+        contentChannel.value = "";
         isContentChannelModalOpen.value = true;
     };
 
-    const onDeleteContentChannel = async (contentChannel: ListItemBag): Promise<void> => {
+    const onDeleteContentChannel = (key: string): void => {
         isContentChannelModalOpen.value = false;
-        savedContentChannels.value = savedContentChannels.value.filter(s => s.value !== contentChannel.value);
-    };
+        savedContentChannels.value = savedContentChannels.value.filter(s => s.value !== key);
 
-    const onAddEditAttribute = async (attribute: PublicEditableAttributeBag | null | undefined): Promise<void> => {
-        const attributeGuid = toGuidOrNull(attribute?.guid);
+        // Update the grid.
+        if (contentChannelsGridData.rows) {
+            const index = contentChannelsGridData.rows.findIndex(r => r.key === key);
 
-        // If attribute exists but has no Guid then it's newly added to we edit in-memory version.
-        if (attribute && (!attributeGuid || areEqual(attributeGuid, emptyGuid))) {
-            eventAttribute.value = attribute;
-            isAttributeModalOpen.value = true;
-        }
-        else {
-            const request: {
-                attributeGuid: Guid | null;
-            } = {
-                attributeGuid
-            };
-
-            const response = await invokeBlockAction<{ editableAttribute: PublicEditableAttributeBag, reservedKeyNames: [], modalTitle: string }>("GetAttribute", request);
-
-            if (response.isSuccess && response.data) {
-                eventAttribute.value = response.data.editableAttribute;
-                isAttributeModalOpen.value = true;
-                reservedKeyNames.value = response.data.reservedKeyNames;
+            if (index !== -1) {
+                contentChannelsGridData.rows?.splice(index, 1);
             }
         }
     };
 
-    const onDeleteAttribute = async (eventAttribute: EventAttributeBag): Promise<void> => {
-        isAttributeModalOpen.value = false;
-        eventAttributes.value = eventAttributes.value.filter(s => s.attribute?.guid !== eventAttribute.attribute?.guid
-            || s.attribute?.key !== eventAttribute.attribute?.key);
-
-        props.options.eventAttributes = eventAttributes.value;
+    const onAddAttribute = (): void => {
+        eventAttribute.value = {} as PublicEditableAttributeBag;
+        eventAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
+        isAttributeModalOpen.value = true;
+        attributeErrors.value = [];
     };
 
-    const onSaveEditAttribute = (): void => {
+    const onEditAttribute = async (key: string): Promise<void> => {
+        attributeErrors.value = [];
+        const selectedAttribute = eventAttributes.value.find(x => x.attribute?.guid === key);
+        // If attribute exists set it as current attribute for editing.
+        if (selectedAttribute?.attribute) {
+            eventAttribute.value = selectedAttribute.attribute;
+            isAttributeModalOpen.value = true;
+            reservedKeyNames.value = reservedKeyNames.value.filter(x => x !== selectedAttribute.attribute?.key);
+        }
+        else {
+            onAddAttribute();
+        }
+    };
+
+    const onDeleteAttribute = async (key: string): Promise<void> => {
+        isAttributeModalOpen.value = false;
+        const deletedAttribute = eventAttributes.value.find(s => s.attribute?.guid === key);
+        eventAttributes.value = eventAttributes.value.filter(s => s.attribute?.guid !== key);
+
+        if (deletedAttribute?.attribute) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== deletedAttribute.attribute?.key);
+        }
+
+        // Update the grid.
+        if (eventAttributesGridData.rows) {
+            const index = eventAttributesGridData.rows.findIndex(r => r.key === key);
+
+            if (index !== -1) {
+                eventAttributesGridData.rows?.splice(index, 1);
+            }
+        }
+    };
+
+    const onSaveAttribute = (): void => {
 
         if (eventAttribute.value && eventAttributes.value) {
-            const index = eventAttributes.value.findIndex(a => a.attribute?.guid === eventAttribute.value?.guid && a.attribute?.key === eventAttribute.value?.key);
+            const index = eventAttributes.value.findIndex(a => a.attribute?.guid === eventAttribute.value?.guid);
 
             if (index !== -1) {
                 let editedAttribute = eventAttributes.value.find(a => a.attribute?.guid == eventAttribute.value?.guid);
-                if (editedAttribute) {
+                let rowItem = eventAttributesGridData.rows?.find(x => x.key == eventAttribute.value?.key);
+
+                if (editedAttribute?.attribute) {
                     editedAttribute.attribute = eventAttribute.value;
                     eventAttributes.value.splice(index, 1, editedAttribute);
                 }
+
+                if (rowItem && eventAttributesGridData.rows && editedAttribute?.attribute) {
+                    // Update GridRowItem so changes are reflected in the UI.
+                    const rowIndex = eventAttributesGridData.rows.findIndex(r => r.key === eventAttribute.value?.key);
+                    rowItem = toAttributeGridRowItem(editedAttribute);
+                    eventAttributesGridData.rows?.splice(rowIndex, 1, rowItem);
+                }
             }
             else {
+                eventAttribute.value.guid = newGuid();
                 const newEventAttribute = {
                     attribute: eventAttribute.value,
                     fieldType: ""
                 };
                 eventAttributes.value.push(newEventAttribute);
+
+                // Add new RowItem to the grid to represent the newly added attribute.
+                const newRowItem = toAttributeGridRowItem(newEventAttribute);
+                eventAttributesGridData.rows?.push(newRowItem);
             }
 
-            props.options.eventAttributes = eventAttributes.value;
             eventAttribute.value = null;
             isAttributeModalOpen.value = false;
         }
     };
 
-    const onStartSaveEditAttribute = (): void => {
-        submitEditAttribute.value = true;
+    const onStartSaveAttribute = (): void => {
+        attributeErrors.value = [];
+        const isExistingKey = reservedKeyNames.value.includes(eventAttribute.value?.key ?? "");
+        submitEditAttribute.value = !isExistingKey;
+        if (isExistingKey) {
+            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
+        }
     };
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+        let isSuccess = false;
+
+        if (props.modelValue?.idKey) {
+            const data: {
+                idKey: string | null | undefined;
+                guid: Guid;
+                beforeGuid: Guid | null | undefined;
+            } = {
+                idKey: props.modelValue?.idKey,
+                guid: toGuidOrNull(item?.key as string) ?? emptyGuid,
+                beforeGuid: toGuidOrNull(beforeItem?.key as string)
+            };
+
+            const result = await invokeBlockAction<string>("ReorderAttributes", data);
+
+            isSuccess = result.isSuccess;
+        }
+
+        if (eventAttributesGridData.rows) {
+            const itemIndex = eventAttributes.value.findIndex(x => x.attribute?.guid === item.guid);
+            const beforeItemIndex = eventAttributes.value.findIndex(x => x.attribute?.guid === beforeItem?.guid);
+
+            if (itemIndex !== -1 && beforeItemIndex !== -1) {
+                [eventAttributes.value[itemIndex], eventAttributes.value[beforeItemIndex]] = [eventAttributes.value[beforeItemIndex], eventAttributes.value[itemIndex]];
+            }
+        }
+
+        return isSuccess;
+    }
+
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
@@ -319,6 +388,7 @@
         updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(isActive, props.modelValue.isActive ?? false);
+        updateRefValue(isIndexEnabled, props.modelValue.isIndexEnabled ?? false);
         updateRefValue(name, props.modelValue.name ?? "");
         updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
         updateRefValue(eventAttributes, props.modelValue.eventAttributes ?? []);
@@ -335,7 +405,8 @@
             name: name.value,
             iconCssClass: iconCssClass.value,
             savedContentChannels: savedContentChannels.value,
-            eventAttributes: eventAttributes.value
+            eventAttributes: eventAttributes.value,
+            isIndexEnabled: isIndexEnabled.value
         };
 
         emit("update:modelValue", newValue);

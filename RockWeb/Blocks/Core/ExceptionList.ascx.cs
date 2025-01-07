@@ -299,16 +299,18 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             nbMessage.Visible = false;
 
             if ( !_blockContextIsValid )
             {
+                base.OnLoad( e );
                 return;
             }
 
             // Perform operations that are specific to this block implementation.
             OnLoadBlock( this.IsPostBack );
+
+            base.OnLoad( e );
         }
 
         #endregion

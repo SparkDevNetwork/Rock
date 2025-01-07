@@ -22,6 +22,7 @@
 //
 
 import { AttendanceStatus } from "@Obsidian/Enums/Event/attendanceStatus";
+import { CheckInStatus } from "@Obsidian/Enums/Event/checkInStatus";
 import { RSVP } from "@Obsidian/Enums/Event/rsvp";
 import { Guid } from "@Obsidian/Types";
 
@@ -33,6 +34,12 @@ export type AttendanceUpdatedMessageBag = {
     /** Gets or sets the attendance unique identifier. */
     attendanceGuid: Guid;
 
+    /** Gets or sets the attendance encrypted identifier. */
+    attendanceIdKey?: string | null;
+
+    /** Gets or sets the check in status of the attendance record. */
+    checkInStatus: CheckInStatus;
+
     /** Gets or sets the unique identifier of the group the person attended. */
     groupGuid?: Guid | null;
 
@@ -41,6 +48,12 @@ export type AttendanceUpdatedMessageBag = {
      * person attended.
      */
     groupTypeGuid?: Guid | null;
+
+    /**
+     * Gets or sets a value indicating if the attendance record was added
+     * or if this is an update to an existing record.
+     */
+    isNew: boolean;
 
     /** Gets or sets the unique identifier of the location that was attended. */
     locationGuid?: Guid | null;

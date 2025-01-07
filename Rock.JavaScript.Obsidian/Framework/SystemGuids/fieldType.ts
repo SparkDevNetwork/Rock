@@ -219,6 +219,8 @@ export const FieldType = {
     MetricEntity: "3A7FB32E-1CCD-4F79-B085-BDBADEB56CCF",
     /** Metrics field type */
     Metrics: "3AF9AD35-9F3E-4497-BFDE-60C6C1827653",
+    /** Mobile Navigation Action field type */
+    MobileNavigationAction: "8AF3E49F-4FF1-47D8-BCD2-150201B7F1B8",
     /** Month Day field type */
     MonthDay: "8BED8DD8-8167-4052-B807-A1E72C133611",
     /** Multi-Select field type */

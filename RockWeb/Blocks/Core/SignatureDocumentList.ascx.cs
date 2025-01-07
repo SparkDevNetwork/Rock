@@ -85,12 +85,17 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
-                BindGrid();
+                // Only bind the grid if we are not setting the page up to create a new template.
+                int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
+                if ( TargetPerson != null || ( documentTypeId.HasValue && documentTypeId != 0 ) )
+                {
+                    BindGrid( documentTypeId );
+                }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -185,7 +190,8 @@ namespace RockWeb.Blocks.Core
         /// <summary>
         /// Binds the signature documents grid.
         /// </summary>
-        protected void BindGrid()
+        /// <param name="documentTypeId">The SignatureDocumentTemplateId page parameter.</param>
+        protected void BindGrid( int? documentTypeId = null )
         {
             var rockContext = new RockContext();
             var qry = new SignatureDocumentService( rockContext )
@@ -200,7 +206,7 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
-                int? documentTypeId = PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
+                documentTypeId = documentTypeId ?? PageParameter( "SignatureDocumentTemplateId" ).AsIntegerOrNull();
                 if ( documentTypeId.HasValue && documentTypeId.Value != 0 )
                 {
                     var signatureDocumentTemplateService = new SignatureDocumentTemplateService( new RockContext() );

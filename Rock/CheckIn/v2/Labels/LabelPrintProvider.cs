@@ -23,6 +23,8 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Rock.Bus.Message;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2.Labels
@@ -77,8 +79,10 @@ namespace Rock.CheckIn.v2.Labels
         /// <returns>A list of error messages generated during printing.</returns>
         public virtual async Task<List<string>> PrintLabelsAsync( IEnumerable<RenderedLabel> labels, CancellationToken cancellationToken )
         {
-            var labelsByDevice = labels.GroupBy( l => l.PrintTo.Id ).ToList();
             var errors = new List<string>();
+            var labelsByDevice = labels.Where( l => l.PrintTo != null )
+                .GroupBy( l => l.PrintTo.Id )
+                .ToList();
 
             foreach ( var deviceLabels in labelsByDevice )
             {
@@ -119,7 +123,7 @@ namespace Rock.CheckIn.v2.Labels
 
                     if ( printerDevice.ProxyDeviceId.HasValue )
                     {
-                        var proxy = PrinterProxySocket.GetBestProxyForDevice( printerDevice.ProxyDeviceId.Value );
+                        var proxy = CloudPrintSocket.GetBestProxyForDevice( printerDevice.ProxyDeviceId.Value );
 
                         if ( proxy != null )
                         {
@@ -132,8 +136,12 @@ namespace Rock.CheckIn.v2.Labels
                         }
                         else
                         {
-                            // TODO: Print over bus.
-                            messages.Add( "Unable to print label without proxy." );
+                            var response = await CloudPrintLabelMessage.RequestAsync( printerDevice.ProxyDeviceId.Value, printerDevice.Id, labelContent, cancellationToken );
+
+                            if ( response.Message.IsNotNullOrWhiteSpace() )
+                            {
+                                messages.Add( response.Message );
+                            }
                         }
                     }
                     else
@@ -147,9 +155,14 @@ namespace Rock.CheckIn.v2.Labels
                         }
                     }
                 }
-                catch
+                catch ( TaskCanceledException )
                 {
-                    return new List<string> { "Unable to print label" };
+                    return new List<string> { "Timed out waiting for labels to print." };
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                    return new List<string> { $"Unable to print label: {ex.Message}" };
                 }
             }
 
@@ -168,7 +181,7 @@ namespace Rock.CheckIn.v2.Labels
             var index = Array.LastIndexOf( labelContent, ( byte ) '^' );
 
             // Ensure we have the expected last command.
-            if ( index == -1 || index >= labelContent.Length - 3 || labelContent[index + 1] != 'X' || labelContent[index + 2] != 'Z' )
+            if ( index == -1 || index > labelContent.Length - 3 || labelContent[index + 1] != 'X' || labelContent[index + 2] != 'Z' )
             {
                 return labelContent;
             }
@@ -233,6 +246,12 @@ namespace Rock.CheckIn.v2.Labels
                 catch ( NullReferenceException ) when ( cancellationToken.IsCancellationRequested )
                 {
                     // NRE is thrown in .NET Framework when the socket is closed
+                    // while still connecting.
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
+                catch ( ObjectDisposedException ) when ( cancellationToken.IsCancellationRequested )
+                {
+                    // OBE is sometimes thrown in .NET Framework when the socket is closed
                     // while still connecting.
                     cancellationToken.ThrowIfCancellationRequested();
                 }

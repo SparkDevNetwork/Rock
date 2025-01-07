@@ -2,18 +2,22 @@
 <template>
     <div class="group-select-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <div class="button-list">
                 <RockButton v-for="attendance in attendances"
                             btnType="primary"
                             class="attendee-button"
+                            :disabled="isProcessing"
                             @click="onAttendanceClick(attendance)">
                     <span class="selection">
                         <i v-if="isAttendanceSelected(attendance)" class="fa fa-check-square"></i>
                         <i v-else class="fa fa-square-o"></i>
                     </span>
 
-                    <span class="avatar" :style="getStyleForAttendance(attendance)"></span>
+                    <span v-if="!props.session.configuration.template?.isPhotoHidden"
+                          class="avatar"
+                          :style="getStyleForAttendance(attendance)"></span>
 
                     <span class="title">
                         <span class="name">{{ attendance.person?.fullName }}</span>
@@ -33,11 +37,11 @@
 <script setup lang="ts">
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { computed, CSSProperties, PropType, ref, watch } from "vue";
+    import { computed, CSSProperties, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
     import { CheckInSession } from "./checkInSession.partial";
-    import { UnexpectedErrorMessage } from "./utils.partial";
+    import { alert, UnexpectedErrorMessage } from "./utils.partial";
     import { KioskButton } from "./types.partial";
     import { AttendanceBag } from "@Obsidian/ViewModels/CheckIn/attendanceBag";
 
@@ -61,6 +65,8 @@
     // #region Values
 
     const selections = ref<string[]>(props.session.currentlyCheckedIn?.map(a => a.id as string) ?? []);
+    const isProcessing = ref(false);
+    const cancellationTokenSource = new CancellationTokenSource();
 
     // #endregion
 
@@ -119,7 +125,7 @@
      *
      * @returns A collection of CSS property values.
      */
-     function getStyleForAttendance(attendance: AttendanceBag): CSSProperties {
+    function getStyleForAttendance(attendance: AttendanceBag): CSSProperties {
         const properties: CSSProperties = {
             backgroundImage: `url("${attendance.person?.photoUrl}")`
         };
@@ -132,7 +138,7 @@
      *
      * @param family The family that was selected.
      */
-     async function onAttendanceClick(attendance: AttendanceBag): Promise<void> {
+    async function onAttendanceClick(attendance: AttendanceBag): Promise<void> {
         if (isAttendanceSelected(attendance)) {
             selections.value = selections.value.filter(s => s !== attendance.id);
         }
@@ -146,16 +152,23 @@
      */
     async function onNextClick(): Promise<void> {
         try {
+            isProcessing.value = true;
+
             let newSession = await props.session.withCheckoutAttendances(selections.value);
 
             emit("next", await newSession.withNextScreen());
         }
         catch (error) {
-            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);
+        }
+        finally {
+            isProcessing.value = false;
         }
     }
 
     // #endregion
+
+    onBeforeUnmount(() => cancellationTokenSource.cancel());
 
     watch([selections], () => {
         updateActions();

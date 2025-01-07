@@ -1,0 +1,350 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Security Change"
+          title="Security Change Audit"
+          :entityTypeGuid="EntityType.AuthAuditLog"
+          stickyHeader
+          liveUpdates>
+
+        <DateColumn name="changeDateTime"
+                    title="Date"
+                    field="changeDateTime"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs"
+                    headerClass="title-right"
+                    itemClass="justify-content-end text-right" />
+
+        <TextColumn name="entityType"
+                    title="Entity Type"
+                    field="entityType"
+                    :filter="pickExistingValueFilter"
+                    width="15%"
+                    visiblePriority="xs" />
+
+        <NumberColumn name="entityId"
+                      title="EntityId"
+                      field="entityId"
+                      :filter="numberValueFilter"
+                      visiblePriority="md"
+                      width="5%"
+                      headerClass="title-right"
+                      itemClass="justify-content-end text-right" />
+
+        <PersonColumn name="changeBy"
+                      title="Changed By"
+                      field="changeBy"
+                      :hideAvatar="true"
+                      :filterValue="getChangedByValueFilter"
+                      :quickFilterValue="getChangedByValueFilter"
+                      :filter="pickExistingValueFilter"
+                      visiblePriority="xs" />
+
+        <TextColumn name="action"
+                    title="Action"
+                    field="action"
+                    width="8%"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md"
+                    itemClass="justify-content-start" />
+
+        <Column name="access"
+                title="Access"
+                field="access"
+                :excludeFromExport="true"
+                :filter="pickExistingValueFilter"
+                :filterValue="getAccessRowFilterValue"
+                :quickFilterValue="getAccessRowFilterValue"
+                :sortValue="getAccessRowSortValue"
+                width="8%"
+                visiblePriority="md"
+                itemClass="justify-content-center">
+
+            <template #format="{ row }">
+                <span v-html="getAccessText(row.preAllowOrDeny, row.postAllowOrDeny)"></span>
+            </template>
+
+        </Column>
+
+        <Column name="exportAccess"
+                title="Access"
+                field="access"
+                :hideOnScreen="true"
+                :filter="pickExistingValueFilter"
+                :filterValue="getAccessRowFilterValue"
+                :quickFilterValue="getAccessRowFilterValue"
+                :sortValue="getAccessRowSortValue"
+                width="8%"
+                visiblePriority="md"
+                itemClass="justify-content-center">
+
+            <template #format="{ row }">
+                <span v-html="getAccessTextForExport(row.preAllowOrDeny, row.postAllowOrDeny)"></span>
+            </template>
+
+        </Column>
+
+        <TextColumn name="group"
+                    title="Group"
+                    field="group"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md" />
+
+        <TextColumn name="individual"
+                    title="Individual"
+                    field="individual"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs" />
+
+
+        <TextColumn name="specialRole"
+                    title="Special Role"
+                    field="specialRole"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="md" />
+
+        <Column name="order"
+                title="Order"
+                field="order"
+                :excludeFromExport="true"
+                :filter="pickExistingValueFilter"
+                :filterValue="getOrderRowFilterValue"
+                :quickFilterValue="getOrderRowFilterValue"
+                :sortValue="getOrderRowSortValue"
+                visiblePriority="md"
+                width="100">
+            <template #format="{ row }">
+                <span v-html="getOrderText(row.preOrder, row.postOrder, rightArrowIndicator)"></span>
+            </template>
+
+        </Column>
+
+        <Column name="exportOrder"
+                title="Order"
+                field="order"
+                :hideOnScreen="true"
+                :filter="pickExistingValueFilter"
+                :filterValue="getOrderRowFilterValue"
+                :quickFilterValue="getOrderRowFilterValue"
+                :sortValue="getOrderRowSortValue"
+                visiblePriority="md"
+                width="100">
+
+            <template #format="{ row }">
+                <span v-html="getOrderTextForExport(row.preOrder, row.postOrder)"></span>
+            </template>
+
+        </Column>
+
+        <LabelColumn name="change"
+                     title="Change"
+                     field="change"
+                     :filter="pickExistingValueFilter"
+                     :textSource="ChangeTypeDescription"
+                     :classSource="batchLabelColors"
+                     visiblePriority="sm"
+                     width="100" />
+    </Grid>
+</template>
+
+<style>
+.title-right .grid-column-title {
+    text-align: right;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { PersonColumn, TextColumn, DateColumn, LabelColumn, NumberColumn, Column, pickExistingValueFilter, dateValueFilter, numberValueFilter } from "@Obsidian/Controls/grid";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { SecurityChangeAuditListOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/SecurityChangeAuditList/securityChangeAuditListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { reactive, ref } from "vue";
+    import { ChangeType, ChangeTypeDescription } from "@Obsidian/Enums/Core/changeType";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const config = useConfigurationValues<ListBlockBox<SecurityChangeAuditListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+    const batchLabelColors: Record<string, string> = {
+        [ChangeTypeDescription[ChangeType.Add]]: "success",
+        [ChangeTypeDescription[ChangeType.Modify]]: "info",
+        [ChangeTypeDescription[ChangeType.Delete]]: "danger"
+    };
+    const rightArrowIndicator: string = " &rarr; ";
+    const allow = "Allow";
+    const deny = "Deny";
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+    * Gets the filter value to use for the access column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getAccessRowFilterValue(row: Record<string, unknown>): string {
+        return `${getAccessString(row.preAllowOrDeny as string)} ${getAccessString(row.postAllowOrDeny as string)}`;
+    }
+
+    /**
+    * Gets the filter value to use for the order column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getOrderRowFilterValue(row: Record<string, unknown>): string {
+        const preOrder =  toNumberOrNull(row.preOrder as number);
+        const postOrder = toNumberOrNull(row.postOrder as number);
+        return getOrderText(preOrder, postOrder, rightArrowIndicator);
+    }
+
+    /**
+    * Gets the filter value to use for the changed by column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getChangedByValueFilter(row: Record<string, unknown>): string {
+        const person = row.changeBy as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Gets the sort value to use for the access column.
+    *
+    * @param row The row to be sorted.
+    */
+    function getAccessRowSortValue(row: Record<string, unknown>): string {
+        return `${getAccessString(row.preAllowOrDeny as string)} ${getAccessString(row.postAllowOrDeny as string)}`;
+    }
+
+    /**
+    * Gets the sort value to use for the order column.
+    *
+    * @param row The row to be sorted.
+    */
+    function getOrderRowSortValue(row: Record<string, unknown>): string {
+        const preOrder =  toNumberOrNull(row.preOrder as number);
+        const postOrder = toNumberOrNull(row.postOrder as number);
+        return getOrderText(preOrder, postOrder, " ");
+    }
+
+    /**
+     * Gets the order text.
+     * @param preOrder The pre order or priority of the Auth entity.
+     * @param postOrder The post order or priority of the Auth entity.
+     */
+    function getOrderText(preOrder: number | null, postOrder: number | null, separator: string): string {
+        let orderString = "";
+
+        if (preOrder != postOrder) {
+            orderString = preOrder != null ? preOrder.toString() : "";
+            orderString += separator;
+            orderString += postOrder != null ? postOrder.toString() : "";
+        }
+
+        return orderString;
+    }
+
+    /**
+     * Gets the access text.
+     * @param preAllowOrDeny A flag indicating if the Auth entity was pre allowed or denied this action for the role.
+     * @param postAllowOrDeny A flag indicating if the Auth entity was post allowed or denied this action for the role.
+     */
+    function getAccessText(preAllowOrDeny: string | null, postAllowOrDeny: string | null): string {
+        let accessString = "";
+
+        if (preAllowOrDeny != postAllowOrDeny) {
+            accessString = getAccessString(preAllowOrDeny);
+            accessString += rightArrowIndicator;
+            accessString += getAccessString(postAllowOrDeny);
+        }
+
+        return accessString;
+    }
+
+    /**
+    * Gets the order text.
+    * @param preOrder The pre order or priority of the Auth entity.
+    * @param postOrder The post order or priority of the Auth entity.
+    */
+    function getOrderTextForExport(preOrder: number | null, postOrder: number | null): string {
+        let orderString = "";
+
+        if (preOrder != postOrder) {
+
+            if (preOrder !== null) {
+                orderString = preOrder != null ? preOrder.toString() : "";
+                orderString += " to ";
+            }
+
+            orderString += postOrder != null ? postOrder.toString() : "";
+        }
+
+        return orderString;
+    }
+
+    /**
+     * Gets the access text.
+     * @param preAllowOrDeny A flag indicating if the Auth entity was pre allowed or denied this action for the role.
+     * @param postAllowOrDeny A flag indicating if the Auth entity was post allowed or denied this action for the role.
+     */
+    function getAccessTextForExport(preAllowOrDeny: string | null, postAllowOrDeny: string | null): string {
+        let accessString = "";
+
+        if (preAllowOrDeny != postAllowOrDeny) {
+
+            if (preAllowOrDeny != null) {
+                accessString = getAccessString(preAllowOrDeny);
+                accessString += " to ";
+            }
+
+            accessString += getAccessString(postAllowOrDeny);
+        }
+
+        return accessString;
+    }
+
+    /**
+     * Get the access string
+     * @param allowOrDeny The allow or deny action.
+     */
+    function getAccessString(allowOrDeny: string | null): string {
+        let accessStr: string;
+        if (!allowOrDeny) {
+            accessStr = "";
+        }
+        else {
+            accessStr = allowOrDeny == "A" ? allow : deny;
+        }
+
+        return accessStr;
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

@@ -3,12 +3,13 @@
     <div class="location-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="session.getCurrentAttendee()?.person">
+                   :person="session.getCurrentAttendee()?.person"
+                   :configuration="configuration">
             <div class="button-list">
                 <RockButton v-for="opportunity in opportunities"
                             btnType="primary"
                             class="location-button"
-                            :disabled="isConflictingOpportunitySelected(opportunity)"
+                            :disabled="isConflictingOpportunitySelected(opportunity) || isProcessing"
                             @click="onOpportunityClick(opportunity)">
                     <span class="selection">
                         <i v-if="isOpportunitySelected(opportunity)" class="fa fa-check-square"></i>
@@ -27,13 +28,13 @@
 <script setup lang="ts">
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { computed, PropType, ref } from "vue";
+    import { computed, onBeforeUnmount, PropType, ref } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
     import { CheckInSession } from "./checkInSession.partial";
     import { KioskButton } from "./types.partial";
     import { OpportunitySelectionBag } from "@Obsidian/ViewModels/CheckIn/opportunitySelectionBag";
-    import { UnexpectedErrorMessage } from "./utils.partial";
+    import { alert, UnexpectedErrorMessage } from "./utils.partial";
 
     const props = defineProps({
         configuration: {
@@ -55,6 +56,8 @@
     // #region Values
 
     const selectedOpportunities = ref(props.session.currentAttendeeId ? props.session.getAttendeeSelections(props.session.currentAttendeeId) : []);
+    const isProcessing = ref(false);
+    const cancellationTokenSource = new CancellationTokenSource();
 
     // #endregion
 
@@ -94,20 +97,12 @@
         for (const schedule of props.session.attendeeOpportunities.schedules) {
             for (const area of props.session.attendeeOpportunities.areas) {
                 for (const group of props.session.attendeeOpportunities.groups) {
-                    if (group.areaId !== area.id || !group.locationIds) {
+                    if (group.areaId !== area.id || !group.locations) {
                         continue;
                     }
 
                     for (const location of props.session.attendeeOpportunities.locations) {
-                        if (!group.locationIds.some(l => l === location.id)) {
-                            continue;
-                        }
-
-                        if (!location.scheduleIds) {
-                            continue;
-                        }
-
-                        if (!location.scheduleIds.some(s => s === schedule.id)) {
+                        if (!group.locations.some(l => l.locationId === location.id && l.scheduleId === schedule.id)) {
                             continue;
                         }
 
@@ -210,18 +205,25 @@
      */
     async function onNextClick(): Promise<void> {
         try {
-            let newSession = props.session.withStashedCurrentAttendeeSelections(selectedOpportunities.value);
+            isProcessing.value = true;
+
+            let newSession = props.session.withStashedCurrentAttendeeSelections(selectedOpportunities.value, true);
 
             newSession = await newSession.withAttendee(null);
 
             emit("next", await newSession.withNextScreen());
         }
         catch (error) {
-            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);
+        }
+        finally {
+            isProcessing.value = false;
         }
     }
 
     // #endregion
+
+    onBeforeUnmount(() => cancellationTokenSource.cancel());
 
     updateActions();
 </script>

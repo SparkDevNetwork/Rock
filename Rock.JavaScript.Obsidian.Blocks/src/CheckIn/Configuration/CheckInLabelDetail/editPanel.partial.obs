@@ -38,7 +38,30 @@
             </div>
         </div>
 
-        <div class="form-group">
+        <div v-if="isZpl"
+             class="row">
+            <div class="col-md-6">
+                <CodeEditor v-model="zplContent"
+                            label="Content"
+                            :editorHeight="300" />
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <RockLabel>Conditional Print Criteria</RockLabel>
+
+                    <div class="control-wrapper">
+                        <FieldFilterEditor v-model="conditionalPrintCriteria"
+                                           :sources="filterSources"
+                                           title="label"
+                                           groupSources
+                                           enhanceForLongSourceLists />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div v-else class="form-group">
             <RockLabel>Conditional Print Criteria</RockLabel>
 
             <div class="control-wrapper">
@@ -50,7 +73,12 @@
             </div>
         </div>
 
+
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+
+        <LabelPreviewModal v-model="isPreviewOpen"
+                           showCustomSize
+                           :refreshCallback="refreshPreviewCallback" />
     </fieldset>
 </template>
 
@@ -58,11 +86,13 @@
     import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
+    import LabelPreviewModal from "../LabelDesigner/labelPreviewModal.partial.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { CheckInLabelBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelDetail/checkInLabelBag";
     import { CheckInLabelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Configuration/CheckInLabelDetail/checkInLabelDetailOptionsBag";
@@ -73,8 +103,10 @@
     import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
     import { LabelType, LabelTypeDescription } from "@Obsidian/Enums/CheckIn/Labels/labelType";
     import { LabelFormat, LabelFormatDescription } from "@Obsidian/Enums/CheckIn/Labels/labelFormat";
+    import { alert } from "@Obsidian/Utility/dialogs";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { PreviewResultBag } from "../LabelDesigner/types.partial";
 
     const props = defineProps({
         modelValue: {
@@ -93,6 +125,12 @@
         (e: "propertyChanged", value: string): void
     }>();
 
+    defineExpose({
+        showPreview
+    });
+
+    const invokeBlockAction = useInvokeBlockAction();
+
     // #region Values
 
     const attributes = ref(props.modelValue.bag?.attributes ?? {});
@@ -103,6 +141,8 @@
     const labelType = propertyRef(props.modelValue.bag?.labelType.toString() ?? LabelType.Family.toString(), "LabelType");
     const labelFormat = propertyRef(props.modelValue.bag?.labelFormat.toString() ?? LabelFormat.Designed.toString(), "LabelFormat");
     const conditionalPrintCriteria = ref<FieldFilterGroupBag>(props.modelValue.bag?.conditionalPrintCriteria ?? createEmptyFilter());
+    const zplContent = ref(props.modelValue.bag?.labelContent ?? "");
+    const isPreviewOpen = ref(false);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -128,9 +168,16 @@
         else if (labelType.value === LabelType.Checkout.toString()) {
             return props.options.checkoutLabelFilterSources ?? [];
         }
+        else if (labelType.value === LabelType.PersonLocation.toString()) {
+            return props.options.personLocationLabelFilterSources ?? [];
+        }
         else {
             return [];
         }
+    });
+
+    const isZpl = computed((): boolean => {
+        return toNumber(labelFormat.value) as LabelFormat === LabelFormat.Zpl;
     });
 
     // #endregion
@@ -143,6 +190,32 @@
             expressionType: FilterExpressionType.GroupAll,
             rules: []
         };
+    }
+
+    /**
+     * Updates the preview data from selections made in the preview modal.
+     */
+    async function refreshPreviewCallback(id: string): Promise<{ data: PreviewResultBag, size: string } | undefined> {
+        const result = await invokeBlockAction<PreviewResultBag>("PreviewZpl", {
+            key: props.modelValue.bag?.idKey,
+            content: zplContent.value,
+            attendanceId: id
+        });
+
+        if (!result.isSuccess || !result.data?.content) {
+            await alert(result.errorMessage ?? "Unknown error while trying to preview check-in label.");
+
+            return undefined;
+        }
+
+        return {
+            data: result.data,
+            size: ""
+        };
+    }
+
+    function showPreview(): void {
+        isPreviewOpen.value = true;
     }
 
     // #endregion
@@ -166,11 +239,12 @@
         updateRefValue(labelType, props.modelValue.bag?.labelType.toString() ?? LabelType.Family.toString());
         updateRefValue(labelFormat, props.modelValue.bag?.labelFormat.toString() ?? LabelFormat.Designed.toString());
         updateRefValue(conditionalPrintCriteria, props.modelValue.bag?.conditionalPrintCriteria ?? createEmptyFilter());
+        updateRefValue(zplContent, props.modelValue.bag?.labelContent ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, conditionalPrintCriteria, ...propRefs], () => {
+    watch([attributeValues, conditionalPrintCriteria, zplContent, ...propRefs], () => {
         const newValue: ValidPropertiesBox<CheckInLabelBag> = {
             bag: { ...props.modelValue.bag } as CheckInLabelBag
         };
@@ -182,6 +256,7 @@
         setPropertiesBoxValue(newValue, "labelType", toNumber(labelType.value) as LabelType);
         setPropertiesBoxValue(newValue, "labelFormat", toNumber(labelFormat.value) as LabelFormat);
         setPropertiesBoxValue(newValue, "conditionalPrintCriteria", conditionalPrintCriteria.value);
+        setPropertiesBoxValue(newValue, "labelContent", zplContent.value);
 
         emit("update:modelValue", newValue);
     });

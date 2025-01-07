@@ -310,8 +310,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             pnlEdit.Visible = true;
             var configurationCorrect = SetupEnvironment();
 
@@ -325,11 +323,14 @@ namespace RockWeb.Blocks.Core
                 {
                     nbMessages.Text = "The configuration of this block is not correct.";
                     pnlEdit.Visible = false;
+                    base.OnLoad( e );
                     return;
                 }
 
                 ShowEdit();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

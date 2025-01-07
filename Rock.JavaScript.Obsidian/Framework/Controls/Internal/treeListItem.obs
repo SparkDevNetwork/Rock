@@ -205,11 +205,8 @@
             }
         }
         else {
-            if (props.item.value && !props.modelValue.includes(props.item.value)) {
+            if (props.item.value) {
                 emit("update:modelValue", [props.item.value]);
-            }
-            else if (props.item.value && props.modelValue.includes(props.item.value)) {
-                emit("update:modelValue", []);
             }
         }
     }

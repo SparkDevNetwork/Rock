@@ -65,27 +65,7 @@ namespace Rock.Blocks.Security
             public const string ScopeDetailId = "ScopeId";
         }
 
-        public static class PreferenceKey
-        {
-            public const string FilterName = "filter-name";
-            public const string FilterPublicName = "filter-public-name";
-            public const string FilterActiveStatus = "filter-active-status";
-        }
-
         #endregion Keys
-
-        #region Properties
-
-        protected string FilterName => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterName );
-
-        protected string FilterPublicName => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterPublicName );
-
-        protected string FilterActiveStatus => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterActiveStatus );
-
-        #endregion
 
         #region Methods
 
@@ -143,30 +123,6 @@ namespace Rock.Blocks.Security
         {
             var authClientService = new AuthScopeService( rockContext );
             var authScopeQuery = authClientService.Queryable().AsNoTracking();
-
-            if ( FilterName.IsNotNullOrWhiteSpace() )
-            {
-                authScopeQuery = authScopeQuery.Where( s => s.Name.Contains( FilterName ) );
-            }
-
-            if ( FilterPublicName.IsNotNullOrWhiteSpace() )
-            {
-                authScopeQuery = authScopeQuery.Where( s => s.PublicName.Contains( FilterPublicName ) );
-            }
-
-            if ( FilterActiveStatus.IsNotNullOrWhiteSpace() )
-            {
-                switch ( FilterActiveStatus )
-                {
-                    case "active":
-                        authScopeQuery = authScopeQuery.Where( s => s.IsActive );
-                        break;
-                    case "inactive":
-                        authScopeQuery = authScopeQuery.Where( s => !s.IsActive );
-                        break;
-                }
-            }
-
             return authScopeQuery;
         }
 

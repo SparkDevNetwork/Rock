@@ -71,6 +71,26 @@ namespace Rock.Model
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 
+        /// <summary>
+        /// Gets a flag that determines if this short link has schedules enabled.
+        /// When <c>true</c>, the schedule details will be contained in the
+        /// additional settings.
+        /// </summary>
+        [DataMember]
+        public bool IsScheduled
+        {
+            get => HasSchedules();
+            private set { /* Make EF happy */ }
+        }
+
+        /// <summary>
+        /// Gets or sets the identifier of the category this short link is for.
+        /// Categories are used for reporting purposes only. They do not affect
+        /// the ability to use a short link.
+        /// </summary>
+        [DataMember]
+        public int? CategoryId { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -83,6 +103,14 @@ namespace Rock.Model
         /// </value>
         [LavaVisible]
         public virtual Site Site { get; set; }
+
+        /// <summary>
+        /// Gets or sets the category this short link is for. Categories are used
+        /// for reporting purposes only. They do not affect the ability to use a
+        /// short link.
+        /// </summary>
+        [LavaVisible]
+        public virtual Category Category { get; set; }
 
         /// <summary>
         /// Gets the short link URL.
@@ -116,50 +144,6 @@ namespace Rock.Model
         }
 
         #endregion Methods
-
-        #region IHasAdditionalSettings Models
-
-        /// <summary>
-        /// ShortLink UTM (Urchin Tracking Module) settings.
-        /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
-        [RockInternal( "1.16.6" )]
-        public class UtmSettings
-        {
-            /// <summary>
-            /// Identifies a UtmSource Defined Value describing the origin of traffic to this link, such as a search engine, newsletter, or specific website.
-            /// </summary>
-            public int? UtmSourceValueId { get; set; }
-
-            /// <summary>
-            /// Identifies a UtmMedium Defined Value describing the marketing or advertising medium that directed a user to your site.
-            /// </summary>
-            public int? UtmMediumValueId { get; set; }
-
-            /// <summary>
-            /// Identifies a UtmCampaign Defined Value that tags traffic with a specific campaign name.
-            /// </summary>
-            public int? UtmCampaignValueId { get; set; }
-
-            /// <summary>
-            /// The search keywords or terms that are associated with this link.
-            /// </summary>
-            public string UtmTerm { get; set; }
-
-            /// <summary>
-            /// Differentiates between links that point to the same URL within the same ad or campaign, such as text or images.
-            /// </summary>
-            public string UtmContent { get; set; }
-        }
-
-        #endregion IHasAdditionalSettings Models
     }
 
     #region Entity Configuration
@@ -175,6 +159,7 @@ namespace Rock.Model
         public PageShortLinkConfiguration()
         {
             this.HasRequired( p => p.Site ).WithMany().HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Category ).WithMany().HasForeignKey( p => p.CategoryId ).WillCascadeOnDelete( false );
         }
     }
 

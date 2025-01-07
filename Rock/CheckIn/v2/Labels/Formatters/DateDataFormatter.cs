@@ -16,7 +16,7 @@
 //
 
 using System;
-
+using System.Globalization;
 using Rock.ViewModels.CheckIn.Labels;
 
 namespace Rock.CheckIn.v2.Labels.Formatters
@@ -37,18 +37,42 @@ namespace Rock.CheckIn.v2.Labels.Formatters
         /// </summary>
         private DateDataFormatter()
         {
+            DateTime exampleDateTime = new DateTime( 2024, 04, 21, 17, 30, 0, 0 );
+            DateTimeFormatInfo dtf = System.Globalization.CultureInfo.InstalledUICulture.DateTimeFormat;
+
+            Options.Add( new DataFormatterOptionBag
+            {
+                Key = "652864F9-57EC-492E-B548-5FC8ECD372D6",
+                Name = exampleDateTime.ToString( "M", dtf ),
+                Value = dtf.MonthDayPattern
+            } );
+
+            Options.Add( new DataFormatterOptionBag
+            {
+                Key = "280B1804-C055-4133-AE37-5534D40A5748",
+                Name = exampleDateTime.ToString( "Y", dtf ),
+                Value = dtf.YearMonthPattern
+            } );
+
             Options.Add( new DataFormatterOptionBag
             {
                 Key = "6828eeb1-edf9-4d28-95ca-427f02e1b522",
-                Name = "Sun 4/21",
-                Value = "ddd M/d"
+                Name = $"Sun {exampleDateTime.ToString( "M", dtf )}",
+                Value = $"ddd {dtf.MonthDayPattern}"
             } );
 
             Options.Add( new DataFormatterOptionBag
             {
                 Key = "ef1f2a8e-11e4-4c4d-a512-5da503a48fe4",
-                Name = "4/7/2024",
-                Value = "M/d/yyyy"
+                Name = exampleDateTime.ToString( "d", dtf ),
+                Value = dtf.ShortDatePattern
+            } );
+
+            Options.Add( new DataFormatterOptionBag
+            {
+                Key = "FB24EDC6-BA92-4045-ADAF-B21A12BAC653",
+                Name = exampleDateTime.ToString( "D", dtf ),
+                Value = dtf.LongDatePattern
             } );
         }
 

@@ -35,11 +35,6 @@ namespace Rock.Net
         #region Fields
 
         /// <summary>
-        /// The platform response object that we will update.
-        /// </summary>
-        private readonly HttpResponse _response;
-
-        /// <summary>
         /// The page that is associated with this request, may be null.
         /// </summary>
         private readonly RockPage _page;
@@ -57,18 +52,8 @@ namespace Rock.Net
         /// <summary>
         /// Creates a new instance of <see cref="RockResponseContext"/>.
         /// </summary>
-        /// <param name="response">The native response object.</param>
-        internal RockResponseContext( HttpResponse response )
-        {
-            _response = response;
-        }
-
-        /// <summary>
-        /// Creates a new instance of <see cref="RockResponseContext"/>.
-        /// </summary>
         /// <param name="page">The page this response is for.</param>
         internal RockResponseContext( RockPage page )
-            : this( page.Response )
         {
             _page = page;
         }
@@ -127,7 +112,7 @@ namespace Rock.Net
                     break;
             }
 
-            _response.SetCookie( webFormsCookie );
+            _page.Response.SetCookie( webFormsCookie );
         }
 
         /// <inheritdoc/>
@@ -238,18 +223,18 @@ namespace Rock.Net
         {
             if ( permanent )
             {
-                _response.RedirectPermanent( url );
+                _page.Response.RedirectPermanent( url );
             }
             else
             {
-                _response.Redirect( url );
+                _page.Response.Redirect( url );
             }
         }
 
         /// <inheritdoc/>
         public void SetHttpHeader( string name, string value )
         {
-            _response.Headers.Set( name, value );
+            _page.Response.Headers.Set( name, value );
         }
 
         /// <inheritdoc/>

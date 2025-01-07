@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.CheckIn.v2.Filters;
+using Rock.Enums.CheckIn;
 
 namespace Rock.CheckIn.v2
 {
@@ -38,9 +39,14 @@ namespace Rock.CheckIn.v2
             typeof( AgeOpportunityFilter ),
             typeof( BirthMonthOpportunityFilter ),
             typeof( GradeOpportunityFilter ),
+            typeof( GradeAndAgeOpportunityFilter ),
             typeof( GenderOpportunityFilter ),
+            typeof( AbilityLevelOpportunityFilter ),
+            typeof( SpecialNeedsOpportunityFilter ),
+            typeof( DuplicateCheckInOpportunityFilter ),
             typeof( MembershipOpportunityFilter ),
-            typeof( DataViewOpportunityFilter )
+            typeof( DataViewOpportunityFilter ),
+            typeof( PreferredGroupsOpportunityFilter )
         };
 
         /// <summary>
@@ -49,7 +55,8 @@ namespace Rock.CheckIn.v2
         private static readonly List<Type> _defaultLocationFilterTypes = new List<Type>
         {
             typeof( LocationClosedOpportunityFilter ),
-            typeof( ThresholdOpportunityFilter )
+            typeof( ThresholdOpportunityFilter ),
+            typeof( LocationOverflowOpportunityFilter )
         };
 
         /// <summary>
@@ -112,11 +119,16 @@ namespace Rock.CheckIn.v2
             if ( !person.IsUnavailable && person.Opportunities.Groups.Count == 0 )
             {
                 person.IsUnavailable = true;
-                person.UnavailableMessage = "No Matching Groups Found";
+                person.UnavailableMessage = "No Eligible Options Found";
             }
 
             // Remove any locations that have no group referencing them.
-            var allReferencedLocationIds = new HashSet<string>( person.Opportunities.Groups.SelectMany( g => g.LocationIds ) );
+            var allReferencedLocationIds = new HashSet<string>(
+                person.Opportunities
+                    .Groups
+                    .SelectMany( g => g.Locations.Select( l => l.LocationId ) )
+                    .Union( person.Opportunities.Groups.SelectMany( g => g.OverflowLocations.Select( l => l.LocationId ) ) )
+            );
             person.Opportunities.Locations.RemoveAll( l => !allReferencedLocationIds.Contains( l.Id ) );
 
             // Run location filters.
@@ -131,11 +143,18 @@ namespace Rock.CheckIn.v2
             }
 
             // Remove any schedules that have no group referencing them.
-            var allReferencedScheduleIds = new HashSet<string>( person.Opportunities.Locations.SelectMany( l => l.ScheduleIds ) );
+            var allReferencedScheduleIds = new HashSet<string>(
+                person.Opportunities
+                    .Groups
+                    .SelectMany( g => g.Locations.Select( l => l.ScheduleId ) )
+                    .Union( person.Opportunities.Groups.SelectMany( g => g.OverflowLocations.Select( l => l.ScheduleId ) ) )
+            );
             person.Opportunities.Schedules.RemoveAll( s => !allReferencedScheduleIds.Contains( s.Id ) );
 
             // Run schedule filters.
             scheduleFilters.ForEach( f => f.FilterSchedules( person.Opportunities ) );
+
+            UpdateAbilityLevels( person );
         }
 
         /// <summary>
@@ -147,6 +166,55 @@ namespace Rock.CheckIn.v2
         public virtual void RemoveEmptyOpportunities( Attendee person )
         {
             person.Opportunities.RemoveEmptyOpportunities();
+        }
+
+        /// <summary>
+        /// Updates the ability levels for the attendee. This handles checking
+        /// if the ability levels should be skipped entirely as well as if just
+        /// a few should be skipped.
+        /// </summary>
+        /// <param name="attendee">The attendee whose ability levels should be updated.</param>
+        protected virtual void UpdateAbilityLevels( Attendee attendee )
+        {
+            // Skip the ability level selection if:
+            // The configuration tells us to never ask.
+            // If we only ask if they have no ability level but they already do
+            // If we only ask if they have an ability level but they don't have one
+            // If no groups require ability level for check-in.
+            var skipAbilityLevels =
+                Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAsk
+                || ( Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAskIfThereIsNoAbilityLevel && attendee.Person.AbilityLevel == null )
+                || ( Session.TemplateConfiguration.AbilityLevelDetermination == AbilityLevelDeterminationMode.DoNotAskIfThereIsAnAbilityLevel && attendee.Person.AbilityLevel != null )
+                || !attendee.Opportunities.Groups.Any( g => g.AbilityLevelId.IsNotNullOrWhiteSpace() );
+
+            if ( skipAbilityLevels )
+            {
+                var personAbilityLevelId = attendee.Person.AbilityLevel?.Id;
+
+                // Mark each ability level that is not the current value as
+                // disabled so we don't end up asking for ability level.
+                foreach ( var abilityLevel in attendee.Opportunities.AbilityLevels )
+                {
+                    if ( abilityLevel.Id != personAbilityLevelId )
+                    {
+                        abilityLevel.IsDisabled = true;
+                    }
+                }
+            }
+            else if ( attendee.Person.AbilityLevel != null )
+            {
+                // Mark any ability level that is lower than the current level
+                // as deprioritized so it will be displayed differently.
+                foreach ( var abilityLevel in attendee.Opportunities.AbilityLevels )
+                {
+                    if ( abilityLevel.Id == attendee.Person.AbilityLevel.Id )
+                    {
+                        break;
+                    }
+
+                    abilityLevel.IsDeprioritized = true;
+                }
+            }
         }
 
         /// <summary>

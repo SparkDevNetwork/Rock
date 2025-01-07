@@ -39,7 +39,7 @@ namespace Rock.RealTime.AspNet
     ///     </para>
     /// </remarks>
     [HubName( "realTime" )]
-    [RockInternal( "1.14.1" )]
+    [RockInternal( "1.14.1", true )]
     public sealed class RealTimeHub : Hub<IRockHubClientProxy>
     {
         /// <summary>

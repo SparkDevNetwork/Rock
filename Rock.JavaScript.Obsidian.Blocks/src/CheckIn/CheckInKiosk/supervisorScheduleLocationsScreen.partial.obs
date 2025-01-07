@@ -1,0 +1,206 @@
+<template>
+    <div class="supervisor-schedule-locations-screen">
+        <MainPanel title="Schedule Locations"
+                   subtitle="Turn on or off any schedules for the corresponding rooms to enable to disable that room for the schedule."
+                   :configuration="configuration">
+            <div ref="scheduleGridElement" class="schedule-grid">
+                <div class="header">Group</div>
+                <div class="header">Location</div>
+                <div class="header" v-for="schedule in schedules" v-html="getScheduleHtml(schedule)"></div>
+
+                <template v-for="scheduledLocation in scheduledLocations">
+                    <div>
+                        <div class="title">{{ scheduledLocation.groupPath }}</div>
+                        <div class="subtitle">{{ scheduledLocation.areaPath }}</div>
+                    </div>
+
+                    <div>
+                        <div class="title">{{ scheduledLocation.locationName }}</div>
+                        <div class="subtitle">{{ scheduledLocation.locationPath }}</div>
+                    </div>
+
+                    <div v-for="schedule in schedules">
+                        <InlineCheckBox label=""
+                                        :modelValue="isScheduleEnabled(scheduledLocation, schedule)"
+                                        @update:modelValue="onScheduleClick(scheduledLocation, schedule)" />
+                    </div>
+                </template>
+            </div>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import InlineCheckBox from "@Obsidian/Controls/checkBox.obs";
+    import MainPanel from "./mainPanel.partial.obs";
+    import { PropType, ref } from "vue";
+    import { SupervisorScreen, SupervisorScreenData, KioskButton } from "./types.partial";
+    import { GetScheduledLocationsResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/getScheduledLocationsResponseBag";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { ScheduledLocationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/scheduledLocationBag";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { CheckInItemBag } from "@Obsidian/ViewModels/CheckIn/checkInItemBag";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { alert } from "@Obsidian/Utility/dialogs";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        supervisorData: {
+            type: Object as PropType<SupervisorScreenData>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "updateActions", actions: KioskButton[]): void;
+        (event: "supervisorScreen", screen: SupervisorScreen): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const schedules = ref<CheckInItemBag[]>([]);
+    const scheduledLocations = ref<ScheduledLocationBag[]>([]);
+    const scheduleGridElement = ref<HTMLElement>();
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the HTML string to display that represents the name of the schedule.
+     *
+     * @param schedule The schedule whose name will be displayed.
+     */
+    function getScheduleHtml(schedule: CheckInItemBag): string {
+        // Replace spaces with <br> to save horizontal space.
+        return escapeHtml(schedule.name ?? "").replace(" ", "<br>");
+    }
+
+    /**
+     * Determines if the scheduled location is currently enabled for the
+     * specified schedule. This provides the state of the checkbox for a cell.
+     *
+     * @param scheduledLocation The scheduled location.
+     * @param schedule The schedule.
+     *
+     * @returns `true` if the cell checkbox should be checked.
+     */
+    function isScheduleEnabled(scheduledLocation: ScheduledLocationBag, schedule: CheckInItemBag): boolean {
+        if (!scheduledLocation.scheduleIds || !schedule.id) {
+            return false;
+        }
+
+        return scheduledLocation.scheduleIds.includes(schedule.id);
+    }
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        actions.push({
+            title: "Cancel",
+            key: "Cancel",
+            type: "default",
+            disabled: false,
+            handler: onCancelClick
+        });
+
+        actions.push({
+            title: "Save",
+            key: "Save",
+            type: "primary",
+            disabled: false,
+            handler: onSaveClick
+        });
+
+        emit("updateActions", actions);
+    }
+
+    /**
+     * Loads the currently scheduled location data from the server. This is
+     * used to populate the grid with the data required to make changes to the
+     * scheduled locations.
+     */
+    async function loadScheduledLocations(): Promise<void> {
+        var data = {
+            pinCode: props.supervisorData.pinCode,
+            kioskId: props.configuration.kiosk?.id,
+            areaIds: props.configuration.areas?.map(a => a.id) ?? []
+        };
+
+        const response = await invokeBlockAction<GetScheduledLocationsResponseBag>("GetScheduledLocations", data);
+
+        if (response.isSuccess && response.data) {
+            schedules.value = response.data.schedules ?? [];
+            scheduledLocations.value = response.data.scheduledLocations ?? [];
+
+            if (scheduleGridElement.value) {
+                scheduleGridElement.value.style.setProperty("--schedule-count", schedules.value.length.toString());
+            }
+            console.log(schedules.value, scheduledLocations.value);
+        }
+    }
+
+    /**
+     * Toggles the enabled state of a schedule for a location.
+     *
+     * @param scheduledLocation The scheduled location row.
+     * @param schedule The schedule column.
+     */
+    function onScheduleClick(scheduledLocation: ScheduledLocationBag, schedule: CheckInItemBag): void {
+        if (!scheduledLocation.scheduleIds || !schedule.id) {
+            return;
+        }
+
+        if (scheduledLocation.scheduleIds.includes(schedule.id)) {
+            scheduledLocation.scheduleIds = scheduledLocation.scheduleIds.filter(id => id !== schedule.id);
+        }
+        else {
+            scheduledLocation.scheduleIds = [...scheduledLocation.scheduleIds, schedule.id];
+        }
+    }
+
+    /**
+     * Cancel and go back to the actions screen without saving changes.
+     */
+    function onCancelClick(): void {
+        emit("supervisorScreen", SupervisorScreen.Actions);
+    }
+
+    /**
+     * Saves changes to the scheduled locations and then returns to the
+     * actions screen.
+     */
+    async function onSaveClick(): Promise<void> {
+        const data = {
+            pinCode: props.supervisorData.pinCode,
+            scheduledLocations: scheduledLocations.value
+        };
+
+        const response = await invokeBlockAction("SaveScheduledLocations", data);
+
+        if (!response.isSuccess) {
+            await alert(response.errorMessage || "Unknown error while saving schedule information.");
+            return;
+        }
+
+        emit("supervisorScreen", SupervisorScreen.Actions);
+    }
+
+    // #endregion
+
+    updateActions();
+    loadScheduledLocations();
+</script>

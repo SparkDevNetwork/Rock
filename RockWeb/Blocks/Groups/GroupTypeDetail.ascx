@@ -94,10 +94,10 @@
                                     </div>
                                 </div>
 
-                                <Rock:RockCheckBox ID="cbGroupsRequireCampus" runat="server" Label="Groups Require a Campus" Text="Yes"
+                                <Rock:RockCheckBox ID="cbGroupsRequireCampus" runat="server" Label="Groups Require a Campus"
                                     Help="This setting will require that all groups of this type have a campus when adding and editing." />
                                 <Rock:RockDropDownList ID="ddlGroupStatusDefinedType" runat="server" Label="Group Status Defined Type" Help="Select the defined type to use when setting the group's status. Leave this blank if you don't want groups to prompt for group status." EnhanceForLongLists="true" />
-                                <Rock:RockCheckBox ID="cbShowAdministrator" runat="server" Label="Show Administrator" Text="Yes"
+                                <Rock:RockCheckBox ID="cbShowAdministrator" runat="server" Label="Show Administrator"
                                     Help="This setting determines if groups of this type support assigning an administrator for each group." />
                             </div>
                             <div class="col-md-6">
@@ -107,9 +107,9 @@
                                             Help="The location selection modes to allow when adding locations to groups of this type." />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations" Text="Allow"
+                                        <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Multiple Locations"
                                             Help="Check this option if more than one location should be allowed for groups of this type." />
-                                        <Rock:RockCheckBox ID="cbEnableLocationSchedules" runat="server" Label="Enable Location Schedules" Text="Yes"
+                                        <Rock:RockCheckBox ID="cbEnableLocationSchedules" runat="server" Label="Enable Location Schedules"
                                             Help="Check this option if group locations should be associated with one or more pre-defined schedules." />
                                     </div>
                                 </div>
@@ -166,7 +166,7 @@
                             <ContentTemplate>
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <Rock:RockCheckBox ID="cbGroupRSVPEnabled" runat="server" Label="Group RSVP Enabled" AutoPostBack="true" OnCheckedChanged="cbRsvp_CheckedChanged" Text="Yes"
+                                        <Rock:RockCheckBox ID="cbGroupRSVPEnabled" runat="server" Label="Group RSVP Enabled" AutoPostBack="true" OnCheckedChanged="cbRsvp_CheckedChanged"
                                                            Help="This option will allow group RSVP." />
                                     </div>
                                 </div>
@@ -191,9 +191,9 @@
                             <div class="col-md-6">
                                 <div class="row">
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" Text="Yes"
+                                        <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance"
                                             Help="Check this option if groups of this type should support taking and tracking attendance." />
-                                        <Rock:RockCheckBox ID="cbWeekendService" runat="server" Label="Weekend Service" Text="Yes"
+                                        <Rock:RockCheckBox ID="cbWeekendService" runat="server" Label="Weekend Service"
                                             Help="Check this option if attendance in groups of this type should be counted towards attending a weekend service." />
                                     </div>
                                     <div class="col-xs-6">
@@ -203,11 +203,11 @@
 
                                 <div class="row">
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbGroupAttendanceRequiresLocation" runat="server" Label="Group Attendance Requires Location" Text="Yes"
+                                        <Rock:RockCheckBox ID="cbGroupAttendanceRequiresLocation" runat="server" Label="Group Attendance Requires Location"
                                             Help="This option will require that all attendance occurrences have a location." />
                                     </div>
                                     <div class="col-xs-6">
-                                        <Rock:RockCheckBox ID="cbGroupAttendanceRequiresSchedule" runat="server" Label="Group Attendance Requires Schedule" Text="Yes"
+                                        <Rock:RockCheckBox ID="cbGroupAttendanceRequiresSchedule" runat="server" Label="Group Attendance Requires Schedule"
                                             Help="This option will require that all attendance occurrences have a schedule." />
                                     </div>
                                 </div>
@@ -242,7 +242,7 @@
                             </div>
 
                             <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbSendAttendanceReminder" runat="server" Label="Send Attendance Reminder" Text="Yes"
+                                <Rock:RockCheckBox ID="cbSendAttendanceReminder" runat="server" Label="Send Attendance Reminder"
                                     AutoPostBack="true" OnCheckedChanged="cbSendAttendanceReminder_CheckedChanged"
                                     Help="Will enable the sending of automatic attendance reminders for all groups of this type." />
 
@@ -289,6 +289,12 @@
 
                                 <Rock:RockDropDownList ID="ddlScheduleReminderSystemCommunication" runat="server" Label="Schedule Reminder Communication" Help="The system communication to use when sending a schedule reminder." />
                                 <Rock:NumberBox ID="nbScheduleReminderOffsetDays" runat="server" NumberType="Integer" Label="Schedule Reminder Offset Days" Help="The default number of days prior to the schedule to send a reminder notification." />
+
+                                <Rock:RockCheckBoxList ID="cblScheduleCoordinatorNotificationTypes" runat="server" Label="Schedule Coordinator Notification Options" RepeatDirection="Horizontal" Help='Specifies the types of notifications the coordinator receives regarding scheduled individuals. For example, selecting "Self-Schedule" notifies the coordinator when someone signs up for additional times via the Group Schedule Toolbox.'>
+                                    <asp:ListItem Value="1" Text="Accept" />
+                                    <asp:ListItem Value="2" Text="Decline" />
+                                    <asp:ListItem Value="4" Text="Self-Schedule" />
+                                </Rock:RockCheckBoxList>
                             </div>
                         </div>
                     </Rock:PanelWidget>
@@ -468,13 +474,13 @@
                                     Help="The color used to visually distinguish groups on lists." />
                             </div>
                             <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbShowInGroupList" runat="server" Label="Show in Group Lists" Text="Yes"
+                                <Rock:RockCheckBox ID="cbShowInGroupList" runat="server" Label="Show in Group Lists"
                                     Help="Check this option to include groups of this type in the GroupList block's list of groups." />
-                                <Rock:RockCheckBox ID="cbShowInNavigation" runat="server" Label="Show in Navigation" Text="Yes"
+                                <Rock:RockCheckBox ID="cbShowInNavigation" runat="server" Label="Show in Navigation"
                                     Help="Check this option to include groups of this type in the GroupTreeView block's navigation control." />
-                                <Rock:RockCheckBox ID="cbShowConnectionStatus" runat="server" Label="Show Connection Status" Text="Yes"
+                                <Rock:RockCheckBox ID="cbShowConnectionStatus" runat="server" Label="Show Connection Status"
                                     Help="Check this option to show the person's connection status as a column in the group member list." />
-                                <Rock:RockCheckBox ID="cbShowMaritalStatus" runat="server" Label="Show Marital Status" Text="Yes"
+                                <Rock:RockCheckBox ID="cbShowMaritalStatus" runat="server" Label="Show Marital Status"
                                     Help="Check this option to show the person's marital status as a column in the group member list." />
                             </div>
                         </div>
@@ -517,11 +523,12 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbIsLeader" runat="server" Label="Is Leader" Text="Yes" Help="Are people with this role in group considered a 'Leader' of the group?" />
-                        <Rock:RockCheckBox ID="cbReceiveRequirementsNotifications" runat="server" Label="Receive Requirements Notifications" Text="Yes" Help="Should this role receive notifications of group members who do not meet their requirements? In order for these notifications to be sent you will need to setup a 'Process Group Requirements Notification Job'." />
-                        <Rock:RockCheckBox ID="cbCanView" runat="server" Label="Can View" Text="Yes" Help="Should users with this role be able to view this group regardless of the security settings on the group?" />
-                        <Rock:RockCheckBox ID="cbCanEdit" runat="server" Label="Can Edit" Text="Yes" Help="Should users with this role be able to edit the details and members of this group regardless of the security settings on the group?" />
-                        <Rock:RockCheckBox ID="cbCanManageMembers" runat="server" Label="Can Manage Members" Text="Yes" Help="Should users with this role be able to manage the members of this group regardless of the security settings on the group?" />
+                        <Rock:RockCheckBox ID="cbIsLeader" runat="server" Label="Is Leader" Help="Are people with this role in group considered a 'Leader' of the group?" />
+                        <Rock:RockCheckBox ID="cbReceiveRequirementsNotifications" runat="server" Label="Receive Requirements Notifications" Help="Should this role receive notifications of group members who do not meet their requirements? In order for these notifications to be sent you will need to setup a 'Process Group Requirements Notification Job'." />
+                        <Rock:RockCheckBox ID="cbCanView" runat="server" Label="Can View" Help="Should users with this role be able to view this group regardless of the security settings on the group?" />
+                        <Rock:RockCheckBox ID="cbCanEdit" runat="server" Label="Can Edit" Help="Should users with this role be able to edit the details and members of this group regardless of the security settings on the group?" />
+                        <Rock:RockCheckBox ID="cbCanManageMembers" runat="server" Label="Can Manage Members" Help="Should users with this role be able to manage the members of this group regardless of the security settings on the group?" />
+                        <Rock:RockCheckBox ID="cbIsCheckInAllowed" runat="server" Label="Is Check-in Allowed" Help="Used with the &quot;already belongs&quot; check-in filter to only allow certain roles to check into a group." />
                     </div>
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" Help="The minimum number of people with this role that group should allow." />
@@ -626,11 +633,11 @@
                         <Rock:RockDropDownList ID="ddlTriggerToStatus" runat="server" Label="To Status of" ValidationGroup="Trigger" />
                         <Rock:RockDropDownList ID="ddlTriggerFromRole" runat="server" Label="From Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
                         <Rock:RockDropDownList ID="ddlTriggerToRole" runat="server" Label="To Role of" ValidationGroup="Trigger" DataTextField="Name" DataValueField="Guid" />
-                        <Rock:RockCheckBox ID="cbTriggerFirstTime" runat="server" Label="First Time" Text="Yes" ValidationGroup="Trigger"
+                        <Rock:RockCheckBox ID="cbTriggerFirstTime" runat="server" Label="First Time" ValidationGroup="Trigger"
                             Help="Select this option if workflow should only be started when a person attends a group of this type for the first time. Leave this option unselected if the workflow should be started whenever a person attends a group of this type." />
-                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereShowNote" runat="server" Label="Show Note" Text="Yes" ValidationGroup="Trigger"
+                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereShowNote" runat="server" Label="Show Note" ValidationGroup="Trigger"
                             Help="Select this option if workflow should show UI for entering a note when the member is placed." />
-                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereRequireNote" runat="server" Label="Require Note" Text="Yes" ValidationGroup="Trigger"
+                        <Rock:RockCheckBox ID="cbTriggerPlacedElsewhereRequireNote" runat="server" Label="Require Note" ValidationGroup="Trigger"
                             Help="Select this option if workflow should show UI for entering a note and make it required when the member is placed." />
                     </div>
                 </div>

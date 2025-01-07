@@ -27,6 +27,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -180,12 +181,12 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -383,7 +384,7 @@ namespace RockWeb.Blocks.Event
                 var lBalance = e.Row.FindControl( "lBalance" ) as Literal;
                 if ( lBalance != null )
                 {
-                    var balanceDue = registration.DiscountedCost - totalPaid;
+                    var balanceDue = ( registration.DiscountedCost - totalPaid ).AsCurrency();
                     lBalance.Visible = _instanceHasCost || discountedCost > 0.0M;
 
                     var isPaymentPlanActive = registration.IsPaymentPlanActive;

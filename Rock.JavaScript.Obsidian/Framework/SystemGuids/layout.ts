@@ -31,6 +31,8 @@ export const Layout = {
     FullWidthInternalSite: "D65F783D-87A9-4CC9-8110-E83466A0EADB",
     /** Gets the Left Sidebar layout (Internal Site) */
     LeftSidebar: "325B7BFD-8B80-44FD-A951-4E4763DA6C0D",
+    /** Gets the Checkin layout (Next-gen Check-in Site). */
+    NextGenCheckInCheckin: "BC067A3C-1257-4D19-BAD7-505FD28F916B",
     /** Gets the Person Detail layout (Internal Site) */
     PersonDetail: "F66758C6-3E3D-4598-AF4C-B317047B5987",
     /** The Person Profile Detail layout GUID (Internal Site) */

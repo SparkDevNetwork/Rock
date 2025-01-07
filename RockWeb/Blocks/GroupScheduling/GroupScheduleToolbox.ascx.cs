@@ -240,8 +240,6 @@ $('#{0}').tooltip();
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 BindTabs();
@@ -267,6 +265,8 @@ $('#{0}').tooltip();
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -511,8 +511,50 @@ $('#{0}').tooltip();
             if ( attendanceId.HasValue )
             {
                 var rockContext = new RockContext();
-                new AttendanceService( rockContext ).ScheduledPersonConfirm( attendanceId.Value );
+                var attendanceService = new AttendanceService( rockContext );
+                attendanceService.ScheduledPersonConfirm( attendanceId.Value );
                 rockContext.SaveChanges();
+
+                // Get all the supporting data we'll need to send the email.
+                var attendance = attendanceService
+                    .GetWithScheduledPersonResponseData()
+                    .FirstOrDefault( a => a.Id == attendanceId.Value );
+
+                if ( attendance == null )
+                {
+                    return;
+                }
+
+                try
+                {
+                    var schedulingResponseEmailGuid = GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid();
+
+                    // Send "accept" emails to scheduled-by person (defined on the attendance record).
+                    var scheduledByPerson = attendance.ScheduledByPersonAlias?.Person;
+                    var shouldSendScheduledByPersonEmail = scheduledByPerson != null
+                        && GetAttributeValue( AttributeKey.SchedulerReceiveConfirmationEmails ).AsBoolean();
+
+                    if ( shouldSendScheduledByPersonEmail )
+                    {
+                        AttendanceService.SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, scheduledByPerson );
+                    }
+
+                    // Send emails to group schedule coordinator person based on group/group type configuration.
+                    var groupScheduleCoordinatorPerson = attendance.Occurrence?.Group?.ScheduleCoordinatorPersonAlias?.Person;
+                    var shouldSendCoordinatorPersonEmail = groupScheduleCoordinatorPerson != null
+                        && ( !shouldSendScheduledByPersonEmail || scheduledByPerson.Id != groupScheduleCoordinatorPerson.Id ) // Prevent duplicate email.
+                        && attendance.Occurrence.Group.ShouldSendScheduleCoordinatorNotificationType( ScheduleCoordinatorNotificationType.Accept );
+
+                    if ( shouldSendCoordinatorPersonEmail )
+                    {
+                        AttendanceService.SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, groupScheduleCoordinatorPerson );
+                    }
+                }
+                catch ( SystemException ex )
+                {
+                    // intentionally ignore exception
+                    ExceptionLogService.LogException( ex, Context, RockPage.PageId, RockPage.Site.Id, CurrentPersonAlias );
+                }
             }
 
             UpdateMySchedulesTab();
@@ -548,17 +590,41 @@ $('#{0}').tooltip();
                 {
                     attendanceService.ScheduledPersonDecline( attendanceId.Value, null );
                     rockContext.SaveChanges();
+
+                    // Get all the supporting data we'll need to send the email.
+                    var attendance = attendanceService
+                        .GetWithScheduledPersonResponseData()
+                        .FirstOrDefault( a => a.Id == attendanceId.Value );
+
+                    if ( attendance == null )
+                    {
+                        return;
+                    }
+
                     try
                     {
                         var schedulingResponseEmailGuid = GetAttributeValue( AttributeKey.SchedulingResponseEmail ).AsGuid();
 
-                        // The scheduler receives email add as a recipient for both Confirmation and Decline
-                        if ( GetAttributeValue( AttributeKey.SchedulerReceiveConfirmationEmails ).AsBoolean() )
+                        // Send "decline" emails to scheduled-by person (defined on the attendance record).
+                        var scheduledByPerson = attendance.ScheduledByPersonAlias?.Person;
+                        var shouldSendScheduledByPersonEmail = scheduledByPerson != null
+                            && GetAttributeValue( AttributeKey.SchedulerReceiveConfirmationEmails ).AsBoolean();
+
+                        if ( shouldSendScheduledByPersonEmail )
                         {
-                            attendanceService.SendScheduledPersonResponseEmailToScheduler( attendanceId.Value, schedulingResponseEmailGuid );
+                            AttendanceService.SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, scheduledByPerson );
                         }
 
-                        attendanceService.SendScheduledPersonDeclineEmail( attendanceId.Value, schedulingResponseEmailGuid );
+                        // Send emails to group schedule coordinator person based on group/group type configuration.
+                        var groupScheduleCoordinatorPerson = attendance.Occurrence?.Group?.ScheduleCoordinatorPersonAlias?.Person;
+                        var shouldSendCoordinatorPersonEmail = groupScheduleCoordinatorPerson != null
+                            && ( !shouldSendScheduledByPersonEmail || scheduledByPerson.Id != groupScheduleCoordinatorPerson.Id ) // Prevent duplicate email.
+                            && attendance.Occurrence.Group.ShouldSendScheduleCoordinatorNotificationType( ScheduleCoordinatorNotificationType.Decline );
+
+                        if ( shouldSendCoordinatorPersonEmail )
+                        {
+                            AttendanceService.SendScheduledPersonResponseEmail( attendance, schedulingResponseEmailGuid, groupScheduleCoordinatorPerson );
+                        }
                     }
                     catch ( SystemException ex )
                     {

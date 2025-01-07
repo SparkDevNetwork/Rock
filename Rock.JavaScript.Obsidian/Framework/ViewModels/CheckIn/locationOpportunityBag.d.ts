@@ -34,10 +34,4 @@ export type LocationOpportunityBag = {
 
     /** Gets or sets the display name of this item. */
     name?: string | null;
-
-    /**
-     * Gets or sets the schedule identifiers that this location is valid
-     * for.
-     */
-    scheduleIds?: string[] | null;
 };

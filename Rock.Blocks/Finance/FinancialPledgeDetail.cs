@@ -104,7 +104,7 @@ namespace Rock.Blocks.Finance
             var options = new FinancialPledgeDetailOptionsBag
             {
                 SelectGroupTypeGuid = selectedGroupTypeGuid,
-                Groups = LoadGroups( bag.PersonAlias?.Value?.AsGuidOrNull(), rockContext ),
+                Groups = LoadGroups( bag?.PersonAlias?.Value?.AsGuidOrNull(), rockContext ),
                 GroupType = GroupTypeCache.Get( selectedGroupTypeGuid ?? Guid.Empty )?.Name
             };
             return options;
@@ -147,8 +147,8 @@ namespace Rock.Blocks.Finance
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( rockContext );
 
@@ -395,7 +395,7 @@ namespace Rock.Blocks.Finance
                 return false;
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit ${FinancialPledge.FriendlyTypeName}." );
                 return false;

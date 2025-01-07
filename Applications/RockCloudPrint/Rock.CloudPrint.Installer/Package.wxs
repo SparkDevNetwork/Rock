@@ -1,0 +1,86 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Define the variables in "$(var.*) expressions" -->
+<?define Name = "Rock Cloud Print" ?>
+<?define Manufacturer = "Spark Development Network" ?>
+<?define Version = "1.0.0.0" ?>
+<?define UpgradeCode = "59C0137E-4764-4196-988E-2555479FCC28" ?>
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <!-- Define the directory structure -->
+    <Package Name="$(Name)"
+             Manufacturer="$(Manufacturer)"
+             Version="$(Version)"
+             UpgradeCode="$(var.UpgradeCode)"
+             Compressed="true">
+
+        <MediaTemplate EmbedCab="yes" />
+        <Icon Id="AppIcon" SourceFile="..\Rock.CloudPrint.Desktop\cloud-print.ico" />
+        <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+
+        <!-- Allow upgrades and prevent downgrades -->
+        <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit." />
+
+        <StandardDirectory Id="ProgramFiles6432Folder">
+            <Directory Id="InstallFolder" Name="!(bind.Property.Manufacturer)\!(bind.Property.ProductName)">
+            </Directory>
+
+            <Directory Id="ServiceFolder" Name="!(bind.Property.Manufacturer)\!(bind.Property.ProductName)\Service">
+            </Directory>
+        </StandardDirectory>
+
+        <StandardDirectory Id="ProgramMenuFolder">
+            <Directory Id="ApplicationProgramsFolder" Name="Spark Development Network"/>
+        </StandardDirectory>
+
+        <!-- Tell WiX to install the files -->
+        <Feature Id="Service" Title="Rock Cloud Print Service" Level="1">
+            <Files Include="$(var.Rock.CloudPrint.Service.TargetDir)publish\**" Directory="ServiceFolder">
+                <Exclude Files="$(var.Rock.CloudPrint.Service.TargetDir)publish\Rock.CloudPrint.Service.exe" />
+            </Files>
+
+            <Component Id="ServiceExecutable" Bitness="always64" Guid="a8337d5e-6b3f-471f-86e4-f97498fbb42a" Directory="ServiceFolder">
+
+                <!-- Copies the Rock.CloudPrint.Service.exe file using the
+                     project reference preprocessor variables -->
+                <File Id="Rock.CloudPrint.Service.exe"
+                      Source="$(var.Rock.CloudPrint.Service.TargetDir)publish\Rock.CloudPrint.Service.exe"
+                      KeyPath="true" />
+
+                <!-- Tell WiX to install the Service -->
+                <ServiceInstall Id="ServiceInstaller"
+                                Type="ownProcess"
+                                Name="Rock.CloudPrint.Service"
+                                DisplayName="$(Name)"
+                                Description="Handles proxied print requests from a Rock server."
+                                Start="auto"
+                                ErrorControl="normal" />
+
+                <!-- Tell WiX to start the Service -->
+                <ServiceControl Id="StartService"
+                                Start="install"
+                                Stop="both"
+                                Remove="uninstall"
+                                Name="Rock.CloudPrint.Service"
+                                Wait="true" />
+            </Component>
+        </Feature>
+
+        <Feature Id="RockCloudPrintDesktop" Title="Rock Cloud Print" Level="1">
+            <Files Include="$(var.Rock.CloudPrint.Desktop.TargetDir)publish\**" Directory="InstallFolder">
+                <Exclude Files="$(var.Rock.CloudPrint.Desktop.TargetDir)publish\Rock.CloudPrint.Desktop.exe" />
+            </Files>
+
+            <File Id="Rock.CloudPrint.Desktop.exe" Directory="InstallFolder" Source="$(var.Rock.CloudPrint.Desktop.TargetDir)publish\Rock.CloudPrint.Desktop.exe" />
+
+            <Component Id="ApplicationShortcut" Guid="52cebad6-c64c-409e-9310-f9ec881a7f5b" Directory="ApplicationProgramsFolder">
+                <Shortcut Id="ApplicationStartMenuShortcut"
+                            Name="Rock Cloud Print"
+                            Target="[!Rock.CloudPrint.Desktop.exe]"
+                            WorkingDirectory="InstallFolder"/>
+                <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+                <RegistryValue Root="HKCU" Key="Software\Spark Development Network\Rock Cloud Print" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+            </Component>
+        </Feature>
+    </Package>
+</Wix>

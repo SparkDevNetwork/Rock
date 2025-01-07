@@ -8,10 +8,16 @@
         </div>
 
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <div class="attendance-cards">
                 <AttendanceCard v-for="attendance in aggregateAttendance"
-                                :attendance="attendance" />
+                                :attendance="attendance"
+                                :hidePhoto="!!session.configuration.template?.isPhotoHidden" />
+            </div>
+
+            <div class="messages">
+                <div class="message" v-for="msg in session.messages" v-text="msg"></div>
             </div>
         </MainPanel>
     </div>
@@ -27,6 +33,8 @@
     import { AggregateAttendance, KioskButton } from "./types.partial";
     import { AchievementBag } from "@Obsidian/ViewModels/CheckIn/achievementBag";
     import { PersonBag } from "@Obsidian/ViewModels/CheckIn/personBag";
+    import { useBlockBrowserBus } from "@Obsidian/Utility/block";
+    import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
 
     const props = defineProps({
         configuration: {
@@ -42,7 +50,10 @@
 
     const emit = defineEmits<{
         (event: "updateActions", actions: KioskButton[]): void;
+        (event: "checkInFamily", familyId: string): void;
     }>();
+
+    const browserBus = useBlockBrowserBus();
 
     // #region Values
 
@@ -127,10 +138,35 @@
     function updateActions(): void {
         const actions: KioskButton[] = [];
 
+        if (props.configuration.template?.kioskCheckInType === KioskCheckInMode.Individual) {
+            actions.push({
+                title: "Check In Another",
+                key: "checkInAnother",
+                disabled: false,
+                type: "primary",
+                handler: onCheckInAnother
+            });
+        }
+
         emit("updateActions", actions);
     }
 
     // #endregion
 
+    // #region Event Handlers
+
+    async function onCheckInAnother(): Promise<void> {
+        if (props.session.currentFamilyId) {
+            emit("checkInFamily", props.session.currentFamilyId);
+        }
+    }
+
+    // #endregion
+
     updateActions();
+
+    browserBus.publish("block.checkInSuccess", {
+        attendances: aggregateAttendance,
+        achievements: completedAchievements.value
+    });
 </script>

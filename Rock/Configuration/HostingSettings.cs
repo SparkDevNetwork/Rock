@@ -19,8 +19,6 @@ using System.Collections.Generic;
 
 using Microsoft.Win32;
 
-using Rock.Web.Utilities;
-
 namespace Rock.Configuration
 {
     /// <inheritdoc cref="IHostingSettings" path="/summary"/>
@@ -41,7 +39,10 @@ namespace Rock.Configuration
         /// <inheritdoc/>
         public string MachineName { get; }
 
-        public HostingSettings()
+        /// <inheritdoc/>
+        public string NodeName { get; }
+
+        public HostingSettings( IInitializationSettings initializationSettings )
         {
             ApplicationStartDateTime = RockDateTime.Now;
             MachineName = Environment.MachineName;
@@ -51,6 +52,18 @@ namespace Rock.Configuration
 
             VirtualRootPath = System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath?.EnsureTrailingForwardslash()
                 ?? "/";
+
+            NodeName = initializationSettings.NodeName;
+
+            if ( NodeName.IsNullOrWhiteSpace() )
+            {
+                NodeName = MachineName;
+            }
+
+            if ( NodeName.IsNullOrWhiteSpace() )
+            {
+                NodeName = Guid.NewGuid().ToString();
+            }
         }
 
         #region Methods

@@ -47,7 +47,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
     [BlockTemplateField( "Members Template",
         Description = "The template to use when rendering the members. Provided with a merge field containing a list of groups and a value depicting whether the user is authorized to edit the group (for cases where there are multiple).",
         TemplateBlockValueGuid = Rock.SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_GROUP_MEMBERS,
-        DefaultValue = "13470DDB-5F8C-4EA2-93FD-B738F37C9AFC",
+        DefaultValue = "493F4ED9-11B9-4E9B-90FE-AD2BF207367B",
         IsRequired = true,
         Key = AttributeKey.MembersTemplate,
         Order = 0 )]

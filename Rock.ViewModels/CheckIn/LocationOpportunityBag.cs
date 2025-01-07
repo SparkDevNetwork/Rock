@@ -34,12 +34,5 @@ namespace Rock.ViewModels.CheckIn
         /// </summary>
         /// <value>The number of spots filled.</value>
         public int CurrentCount { get; set; }
-
-        /// <summary>
-        /// Gets or sets the schedule identifiers that this location is valid
-        /// for.
-        /// </summary>
-        /// <value>The schedule identifiers.</value>
-        public List<string> ScheduleIds { get; set; }
     }
 }

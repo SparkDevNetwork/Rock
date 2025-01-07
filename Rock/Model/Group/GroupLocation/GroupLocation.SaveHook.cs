@@ -18,6 +18,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -141,6 +142,15 @@ namespace Rock.Model
                     var currentDateTime = RockDateTime.Now;
                     var qryPersonsToUpdate = new GroupMemberService( rockContext ).Queryable().Where( a => a.GroupId == Entity.GroupId ).Select( a => a.Person );
                     rockContext.BulkUpdate( qryPersonsToUpdate, p => new Person { ModifiedDateTime = currentDateTime, ModifiedByPersonAliasId = Entity.ModifiedByPersonAliasId } );
+                }
+
+                // If this is attached to a named location then it might cause
+                // kiosk configuration to be invalidated.
+                var locationCache = NamedLocationCache.Get( Entity.LocationId, RockContext );
+
+                if ( locationCache.Name.IsNotNullOrWhiteSpace() )
+                {
+                    CheckInDirector.SendRefreshKioskConfiguration();
                 }
 
                 base.PostSave();

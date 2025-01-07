@@ -95,8 +95,6 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbDeleteWarning.Visible = false;
             nbInvalid.Visible = false;
             nbSaveSuccess.Visible = false;
@@ -149,6 +147,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         protected override object SaveViewState()
@@ -485,6 +485,7 @@ namespace RockWeb.Blocks.CheckIn.Config
 
         protected void checkinGroup_AddLocationClick( object sender, EventArgs e )
         {
+            hfLocationPickerOverflow.Value = "false";
             locationPicker.SetValue( ( int? ) null );
             mdLocationPicker.Show();
         }
@@ -503,14 +504,18 @@ namespace RockWeb.Blocks.CheckIn.Config
             var location = new LocationService( new RockContext() ).Get( locationPicker.SelectedValue.AsInteger() );
             if ( location != null )
             {
-                if ( !checkinGroup.Locations.Any( a => a.LocationId == location.Id ) )
+                var isOverflow = hfLocationPickerOverflow.Value.AsBoolean();
+
+                if ( !checkinGroup.Locations.Any( a => a.LocationId == location.Id ) && !checkinGroup.OverflowLocations.Any( a => a.LocationId == location.Id ) )
                 {
                     var gridItem = new CheckinGroup.LocationGridItem();
                     gridItem.LocationId = location.Id;
                     gridItem.Name = location.Name;
                     gridItem.FullNamePath = location.Name;
                     gridItem.ParentLocationId = location.ParentLocationId;
-                    var max = checkinGroup.Locations.Max( l => l.Order );
+                    var max = !isOverflow
+                        ? checkinGroup.Locations.Max( l => l.Order )
+                        : checkinGroup.OverflowLocations.Max( l => l.Order );
                     gridItem.Order = ( max == null ) ? 0 : max + 1;
 
                     var parentLocation = location.ParentLocation;
@@ -520,7 +525,14 @@ namespace RockWeb.Blocks.CheckIn.Config
                         parentLocation = parentLocation.ParentLocation;
                     }
 
-                    checkinGroup.Locations.Add( gridItem );
+                    if ( !isOverflow )
+                    {
+                        checkinGroup.Locations.Add( gridItem );
+                    }
+                    else
+                    {
+                        checkinGroup.OverflowLocations.Add( gridItem );
+                    }
 
                     hfIsDirty.Value = "true";
                 }
@@ -554,6 +566,56 @@ namespace RockWeb.Blocks.CheckIn.Config
                 {
                     // Moved Down
                     foreach ( var otherItem in checkinGroup.Locations.Where( a => a.Order > e.OldIndex && a.Order <= e.NewIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order - 1;
+                    }
+                }
+
+                movedItem.Order = e.NewIndex;
+                hfIsDirty.Value = "true";
+            }
+        }
+
+        protected void checkinGroup_AddOverflowLocationClick( object sender, EventArgs e )
+        {
+            hfLocationPickerOverflow.Value = "true";
+            locationPicker.SetValue( ( int? ) null );
+            mdLocationPicker.Show();
+        }
+
+        protected void checkinGroup_DeleteOverflowLocationClick( object sender, RowEventArgs e )
+        {
+            var location = checkinGroup.OverflowLocations.FirstOrDefault( a => a.LocationId == e.RowKeyId );
+            checkinGroup.OverflowLocations.Remove( location );
+
+            hfIsDirty.Value = "true";
+        }
+
+        protected void checkinGroup_ReorderOverflowLocationClick( object sender, CheckinGroupEventArg e )
+        {
+            // First set the order (indexing from 0)... since initially all overflow locations will have an
+            // order of 0, we'll also order by their 'full name path'
+            int order = 0;
+            foreach ( var location in checkinGroup.OverflowLocations.OrderBy( l => l.Order ).ThenBy( l => l.FullNamePath ) )
+            {
+                location.Order = order++;
+            }
+
+            var movedItem = checkinGroup.OverflowLocations.FirstOrDefault( a => a.LocationId == e.LocationId );
+            if ( movedItem != null )
+            {
+                if ( e.NewIndex < e.OldIndex )
+                {
+                    // Moved up
+                    foreach ( var otherItem in checkinGroup.OverflowLocations.Where( a => a.Order < e.OldIndex && a.Order >= e.NewIndex ) )
+                    {
+                        otherItem.Order = otherItem.Order + 1;
+                    }
+                }
+                else
+                {
+                    // Moved Down
+                    foreach ( var otherItem in checkinGroup.OverflowLocations.Where( a => a.Order > e.OldIndex && a.Order <= e.NewIndex ) )
                     {
                         otherItem.Order = otherItem.Order - 1;
                     }
@@ -652,6 +714,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                         group.LoadAttributes( rockContext );
                         checkinGroup.GetGroupValues( group );
 
+                        // Update the list of normal locations.
                         var nonOverflowGroupLocations = group.GroupLocations.Where( gl => !gl.IsOverflowLocation ).ToList();
 
                         // populate groupLocations with whatever is currently in the grid, with just enough info to repopulate it and save it later
@@ -678,6 +741,44 @@ namespace RockWeb.Blocks.CheckIn.Config
                             var groupLocation = group.GroupLocations.FirstOrDefault( gl => gl.LocationId == item.LocationId );
                             groupLocation.Order = item.Order ?? 0;
                             groupLocation.IsOverflowLocation = false;
+                        }
+
+                        // Set the new order and make sure they are all marked as non-overflow.
+                        foreach ( var item in checkinGroup.Locations.OrderBy( l => l.Order ).ToList() )
+                        {
+                            var groupLocation = group.GroupLocations.FirstOrDefault( gl => gl.LocationId == item.LocationId );
+                            groupLocation.Order = item.Order ?? 0;
+                            groupLocation.IsOverflowLocation = false;
+                        }
+
+                        // Update the list of overflow locations.
+                        var overflowGroupLocations = group.GroupLocations.Where( gl => gl.IsOverflowLocation ).ToList();
+
+                        // Remove existing overflow locations that are no longer in the grid.
+                        newLocationIds = checkinGroup.OverflowLocations.Select( l => l.LocationId ).ToList();
+                        foreach ( var groupLocation in overflowGroupLocations.Where( l => !newLocationIds.Contains( l.LocationId ) ).ToList() )
+                        {
+                            groupLocation.GroupLocationScheduleConfigs.Clear();
+
+                            groupLocationService.Delete( groupLocation );
+                            group.GroupLocations.Remove( groupLocation );
+                        }
+
+                        // Add new overflow locations that are in the grid but not the database.
+                        existingLocationIds = overflowGroupLocations.Select( g => g.LocationId ).ToList();
+                        foreach ( var item in checkinGroup.OverflowLocations.Where( l => !existingLocationIds.Contains( l.LocationId ) ).ToList() )
+                        {
+                            var groupLocation = new GroupLocation();
+                            groupLocation.LocationId = item.LocationId;
+                            group.GroupLocations.Add( groupLocation );
+                        }
+
+                        // Set the new order and make sure they are all marked as overflow.
+                        foreach ( var item in checkinGroup.OverflowLocations.OrderBy( l => l.Order ).ToList() )
+                        {
+                            var groupLocation = group.GroupLocations.FirstOrDefault( gl => gl.LocationId == item.LocationId );
+                            groupLocation.Order = item.Order ?? 0;
+                            groupLocation.IsOverflowLocation = true;
                         }
 
                         if ( group.IsValid )
@@ -1121,7 +1222,8 @@ namespace RockWeb.Blocks.CheckIn.Config
                 .Queryable()
                 .Where( a => a.SourceEntityTypeId == groupTypeEntityTypeId
                     && a.TargetEntityTypeId == checkInLabelEntityTypeId
-                    && a.SourceEntityId == areaId );
+                    && a.SourceEntityId == areaId
+                    && a.PurposeKey == RelatedEntityPurposeKey.AreaCheckInLabel );
 
             checkinArea.NextGenCheckInLabels = new CheckInLabelService( rockContext )
                 .Queryable()
@@ -1183,6 +1285,7 @@ namespace RockWeb.Blocks.CheckIn.Config
                     TargetEntityTypeId = checkInLabelEntityTypeId,
                     SourceEntityId = areaId,
                     TargetEntityId = labelId,
+                    PurposeKey = RelatedEntityPurposeKey.AreaCheckInLabel,
                     Order = labelIndex
                 } );
             }
@@ -1211,6 +1314,8 @@ namespace RockWeb.Blocks.CheckIn.Config
 
                         var locationService = new LocationService( rockContext );
                         var locationQry = locationService.Queryable().Select( a => new { a.Id, a.ParentLocationId, a.Name } );
+
+                        // Set all the normal locations.
                         var orderedGroupLocations = group.GroupLocations
                             .Where( gl => !gl.IsOverflowLocation )
                             .OrderBy( gl => gl.Order )
@@ -1236,6 +1341,34 @@ namespace RockWeb.Blocks.CheckIn.Config
                             }
 
                             checkinGroup.Locations.Add( gridItem );
+                        }
+
+                        // Set all the overflow locations.
+                        var orderedGroupOverflowLocations = group.GroupLocations
+                            .Where( gl => gl.IsOverflowLocation )
+                            .OrderBy( gl => gl.Order )
+                            .ThenBy( gl => gl.Location.Name );
+
+                        checkinGroup.OverflowLocations = new List<CheckinGroup.LocationGridItem>();
+                        foreach ( var groupLocation in orderedGroupOverflowLocations )
+                        {
+                            var location = groupLocation.Location;
+                            var gridItem = new CheckinGroup.LocationGridItem();
+                            gridItem.LocationId = location.Id;
+                            gridItem.Name = location.Name;
+                            gridItem.FullNamePath = location.Name;
+                            gridItem.ParentLocationId = location.ParentLocationId;
+                            gridItem.Order = groupLocation.Order;
+
+                            var parentLocationId = location.ParentLocationId;
+                            while ( parentLocationId != null )
+                            {
+                                var parentLocation = locationQry.FirstOrDefault( a => a.Id == parentLocationId );
+                                gridItem.FullNamePath = parentLocation.Name + " > " + gridItem.FullNamePath;
+                                parentLocationId = parentLocation.ParentLocationId;
+                            }
+
+                            checkinGroup.OverflowLocations.Add( gridItem );
                         }
 
                         checkinGroup.Visible = true;

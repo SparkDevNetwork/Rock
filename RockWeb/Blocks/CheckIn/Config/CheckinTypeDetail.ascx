@@ -55,23 +55,30 @@
 
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <Rock:RockCheckBox ID="cbAllowCheckoutAtKiosk" runat="server" Label="Enable Check-out at Kiosk" Text="Yes"
-                                        Help="Allows individuals to check-out using the kiosks." />
+                                            <Rock:RockCheckBox ID="cbAllowCheckoutAtKiosk" runat="server" Label="Enable Check-out at Kiosk"
+                                                Help="Allows individuals to check-out using the kiosks." />
+
+                                            <Rock:RockCheckBox ID="cbEnablePresence" runat="server" Label="Enable Presence"
+                                                Help="When enabled, the attendance record will not be marked as being 'present' until the individual is set to 'Present' by the assistant using the Check-in Manager application." />
+
+                                            <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option"
+                                                Help="Should an option be displayed on the check-in welcome screen that allows an individual to view the management screen (after entering a passcode)?" />
                                         </div>
                                         <div class="col-md-6">
-                                             <Rock:RockCheckBox ID="cbAllowCheckoutInManager" runat="server" Label="Enable Check-out in Manager" Text="Yes"
-                                        Help="Allows check-out to be enabled in the Check-in Manager." />
+                                            <Rock:RockCheckBox ID="cbAllowCheckoutInManager" runat="server" Label="Enable Check-out in Manager"
+                                                Help="Allows check-out to be enabled in the Check-in Manager." />
+
+                                            <Rock:RockCheckBox ID="cbAllowRemoveFromFamilyAtKiosk" runat="server" Label="Enable Remove From Family at Kiosk"
+                                                Help="Only supported in next-gen check-in. Allows can check-in relationships to be removed at the kiosk without requiring a supervisor login. This action removes all known relationships marked as &quot;Can Check-in&quot;." />
+
+                                            <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override"
+                                                Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
                                         </div>
                                     </div>
-                                    <Rock:RockCheckBox ID="cbEnablePresence" runat="server" Label="Enable Presence" Text="Yes"
-                                        Help="When enabled, the attendance record will not be marked as being 'present' until the individual is set to 'Present' by the assistant using the Check-in Manager application." />
-                                    <Rock:RockCheckBox ID="cbEnableManager" runat="server" Label="Enable Manager Option" Text="Yes"
-                                        Help="Should an option be displayed on the check-in welcome screen that allows an individual to view the management screen (after entering a passcode)?" />
-                                    <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override" Text="Yes"
-                                        Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
 
                                     <Rock:RockListBox ID="listboxAchievementTypes" runat="server" Label="Achievement Types" Help="Select achievement types that will used for checkin celebrations." />
 
+                                    <Rock:RockDropDownList ID="ddlPromotionsContentChannel" runat="server" Label="Promotions Content Channel" Help="The content channel to use for displaying promotions on the kiosk welcome screen. Only supported by next-gen check-in." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:NumberBox ID="nbAutoSelectDaysBack" runat="server" Label="Auto Select Days Back" MinimumValue="0" NumberType="Integer"
@@ -81,12 +88,12 @@
                                         <asp:ListItem Text="People Only" Value="0" />
                                         <asp:ListItem Text="People and Their Area/Group/Location" Value="1" />
                                     </Rock:RockDropDownList>
-                                    <Rock:RockCheckBox ID="cbUseSameOptions" runat="server" Label="Use Same Service Options" Text="Yes"
+                                    <Rock:RockCheckBox ID="cbUseSameOptions" runat="server" Label="Use Same Service Options"
                                         Help="If family member(s) is checking into more than one service, should the same options for additional services be automatically selected that were selected for first service?" />
 
-                                    <Rock:RockCheckBox ID="cbPreventInactivePeople" runat="server" Label="Prevent Inactive People" Text="Yes"
+                                    <Rock:RockCheckBox ID="cbPreventInactivePeople" runat="server" Label="Prevent Inactive People"
                                         Help="Should people who are inactive be excluded from being able to check-in?" />
-                                    <Rock:RockCheckBox ID="cbPreventDuplicateCheckin" runat="server" Label="Prevent Duplicate Check-in" Text="Yes"
+                                    <Rock:RockCheckBox ID="cbPreventDuplicateCheckin" runat="server" Label="Prevent Duplicate Check-in"
                                         Help="Should people be prevented from checking into a specifice service time (schedule) more than once?" />
                                 </div>
                             </div>
@@ -122,7 +129,7 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbReuseCode" runat="server" Label="Use Same Code for Family" Text="Yes" Help="Should the same security code be used for each person from the same family that is checking in at the same time?" />
+                                    <Rock:RockCheckBox ID="cbReuseCode" runat="server" Label="Use Same Code for Family" Help="Should the same security code be used for each person from the same family that is checking in at the same time?" />
                                 </div>
                             </div>
                         </Rock:PanelWidget>
@@ -163,7 +170,7 @@
                         <Rock:PanelWidget ID="wpDisplaySettings" runat="server" Title="Display Settings">
                             <div class="row">
                                 <div class="col-md-12">
-                                    <Rock:RockCheckBox ID="cbHidePhotos" runat="server" Label="Hide Photos" Text="Yes" Help="Select this option if person photos should not be displayed when selecting the people from the selected family that are checking in." />
+                                    <Rock:RockCheckBox ID="cbHidePhotos" runat="server" Label="Hide Photos" Help="Select this option if person photos should not be displayed when selecting the people from the selected family that are checking in." />
                                     <Rock:CodeEditor runat="server" ID="ceStartTemplate" Label="Start Template" Help="The lava template to use when rendering the Start button on the Welcome Block" EditorMode="Lava" />
                                     <Rock:CodeEditor runat="server" ID="ceFamilySelectTemplate" Label="Family Select Template" Help="The lava template to use when rendering each family button on the Family Select" EditorMode="Lava" />
                                     <Rock:CodeEditor runat="server" ID="cePersonSelectTemplate" Label="Person Select Template" Help="The lava template used to append additional information to each person button on the Person Select & Multi-Person Select Check-in blocks." EditorMode="Lava" />
@@ -215,24 +222,49 @@
                                         Help="An optional regular expression that will be run against any search input before the search is performed. This is useful for removing any special characters." />
                                     <Rock:NumberBox ID="nbRefreshInterval" runat="server" Label="Refresh Interval" NumberType="Integer"
                                         Help="How often (seconds) should the welcome page automatically refresh and check for updated configuration information." />
+
+                                    <Rock:RockCheckBoxList ID="cblSpecialNeeds"
+                                        runat="server"
+                                        Label="Special Needs"
+                                        Help="This feature is only supported on next-gen check-in. When Remove Special Needs Groups is selected, then a group will not be available unless the person is also marked as special needs. When Remove Non-Special Needs Groups is selected, then a group will not be available unless the person is not marked as special needs.">
+                                        <asp:ListItem Value="special-needs" Text="Remove Special Needs Groups" />
+                                        <asp:ListItem Value="non-special-needs" Text="Remove Non-Special Needs Groups" />
+                                    </Rock:RockCheckBoxList>
+
+                                    <Rock:RockDropDownList ID="ddlGradeAndAgeMatchingBehavior"
+                                        runat="server"
+                                        Label="Grade and Age Matching Behavior"
+                                        Required="true"
+                                        Help="Only supported in next-gen check-in. Defines how the Grade Range and Age Range/Birthdate Range values are used (blank ranges are still allowed in all cases). See documentation for edge cases not described here.
+                                            &quot;Grade And Age Must Match&quot; means Grade Range and one of Age Range or Birthdate Range must match.
+                                            &quot;Age Match Not Required&quot; means that if a Grade Range is specified on the group and the person has a matching Grade then that will be considered sufficient and neither Age Range nor Birthdate Range will be checked even if they are specified.
+                                            &quot;Prioritize Grade Over Age&quot; will use the same filtering logic as Age Match Not Required. After that, if any groups were matched by grade then all groups that were not matched by grade will be excluded." />
+
+                                    <Rock:RockDropDownList ID="ddlAgeRestriction"
+                                        runat="server"
+                                        Label="Age Restriction"
+                                        Required="true"
+                                        Help="Limits the ages of people that will be considered for check-in when using this configuration. This also limits who will be displayed on the person select screen. Only applies to next-gen check-in." />
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required" Text="Yes"
+                                    <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required"
                                         Help="If an area and/or group has an age requirement, check this option to prevent people without an age from checking in to that area/group." />
-                                    <Rock:RockCheckBox ID="cbGradeRequired" runat="server" Label="Grade is Required" Text="Yes"
+                                    <Rock:RockCheckBox ID="cbGradeRequired" runat="server" Label="Grade is Required"
                                         Help="If an area and/or group has a grade requirement, check this option to prevent people without a grade from checking in to that area/group." />
 
                                     <Rock:RockRadioButtonList ID="rblAbilityLevelDetermination" runat="server" Label="Ability Level Determination"
                                         Help="Determines how check-in should gather the individual's current ability level.
                                             &quot;Ask&quot; means that the individual will be asked as a part of each check-in.
                                             &quot;Don't Ask&quot; will trust that there is another process in place to gather ability level information and the individual will not be asked for their level during check-in.
-                                            &quot;Don't Ask if...&quot; will only ask if they already have an ability level. This will allow a person's ability level to be updated during the check-in process.">
+                                            &quot;Don't Ask If There Is No...&quot; will only ask if they already have an ability level. This will allow a person's ability level to be updated during the check-in process.
+                                            &quot;Don't Ask If There Is an...&quot; will only ask if they don't already have an ability level (this is only supported in next-gen check-in).">
                                         <asp:ListItem Text="Ask" Value="0" />
                                         <asp:ListItem Text="Don't Ask" Value="1" />
                                         <asp:ListItem Text="Don't Ask If There Is No Ability Level" Value="2" />
+                                        <asp:ListItem Text="Don't Ask If There Is an Ability Level" Value="3" />
                                     </Rock:RockRadioButtonList>
 
-                                    <Rock:RockCheckBox ID="cbDisplayLocCount" runat="server" Label="Display Location Count" Text="Yes"
+                                    <Rock:RockCheckBox ID="cbDisplayLocCount" runat="server" Label="Display Location Count"
                                         Help="Should the room locations options include a count of how many people are currently checked into that location?" />
                                 </div>
                             </div>

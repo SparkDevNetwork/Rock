@@ -178,8 +178,6 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             mdCategoryTreeConfig.Visible = false;
 
             bool canEditBlock = IsUserAuthorized( Authorization.EDIT );
@@ -410,6 +408,8 @@ namespace RockWeb.Blocks.Core
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         protected void tglHideInactiveItems_CheckedChanged( object sender, EventArgs e )

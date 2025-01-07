@@ -200,11 +200,11 @@
             valueBuilder.addTextValue("Max Polling Limit", `${props.modelValue.upperPollingLimit} seconds`);
         }
 
-        if (props.modelValue.minimumPollingDifference) {
+        if (typeof props.modelValue.minimumPollingDifference !== "undefined" && props.modelValue.minimumPollingDifference !== null) {
             valueBuilder.addTextValue("Min Polling Difference", `${props.modelValue.minimumPollingDifference} seconds`);
         }
 
-        if (props.modelValue.maxPollingWaitSeconds) {
+        if (typeof props.modelValue.maxPollingWaitSeconds !== "undefined" && props.modelValue.maxPollingWaitSeconds !== null) {
             valueBuilder.addTextValue("Max Polling Wait", `${props.modelValue.maxPollingWaitSeconds} seconds`);
         }
 

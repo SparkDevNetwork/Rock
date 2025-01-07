@@ -753,10 +753,6 @@ namespace Rockweb.Blocks.Crm
             {
                 lPrintTip.Visible = true;
             }
-            else
-            {
-                pnlAdditionalInformation.Visible = true;
-            }
 
             lHeading.Text = string.Format( "<div class='disc-heading'><h1>{0}</h1><h4>Personality Type: {1}</h4></div>", _targetPerson.FullName, savedScores.PersonalityType );
 

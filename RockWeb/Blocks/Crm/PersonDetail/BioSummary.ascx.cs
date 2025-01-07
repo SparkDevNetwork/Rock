@@ -76,6 +76,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         #endregion Attribute Keys
 
+        #region Security Actions
+
+        /// <summary>
+        /// Keys to use for Block Attributes
+        /// </summary>
+        private static class SecurityActionKey
+        {
+            public const string ViewProtectionProfile = "ViewProtectionProfile";
+        }
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -139,20 +151,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 // dont' show if there isn't a person, or if it is a 'Nameless" person record type
                 if ( Person == null || Person.Id == 0 || Person.RecordTypeValueId == DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ) )
                 {
                     pnlContent.Visible = false;
+                    base.OnLoad( e );
                     return;
                 }
 
                 ShowPersonImage();
                 ShowPersonName();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -173,7 +186,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void ShowProtectionLevel()
         {
-            if ( Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low )
+            if ( Person.AccountProtectionProfile > Rock.Utility.Enums.AccountProtectionProfile.Low && IsUserAuthorized( SecurityActionKey.ViewProtectionProfile ) )
             {
                 string acctProtectionLevel = $@"
                     <div class=""protection-profile"">

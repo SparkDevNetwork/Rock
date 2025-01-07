@@ -103,13 +103,13 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             var accountId = PageParameter( "AccountId" ).AsInteger();
             if ( !Page.IsPostBack )
             {
                 ShowDetail( accountId );
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

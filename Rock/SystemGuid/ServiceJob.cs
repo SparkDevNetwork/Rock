@@ -238,9 +238,9 @@ namespace Rock.SystemGuid
         /// The Job to run Post v16.6 Data Migrations to an index to the CreatedDateTime column on the Interaction table.
         /// </summary>
         public const string DATA_MIGRATIONS_166_ADD_INTERACTION_CREATED_DATE_TIME_INDEX = "2B2E2C6F-0184-4797-9D39-E8FC700D9887";
-        
+
         /// <summary>
-        /// The Job to run Post v16.6 Add CommunicationRecipient Index.
+        /// The Job to run Post v16.6 to add a new index to the CommunicationRecipient table.
         /// </summary>
         public const string DATA_MIGRATIONS_166_ADD_COMMUNICATION_RECIPIENT_INDEX = "48070B65-FC20-401F-B25F-8F4D13BA5F36";
 
@@ -382,5 +382,20 @@ namespace Rock.SystemGuid
         /// The <see cref="Rock.Jobs.UpdatePersistedDatasets" /> job.
         /// </summary>
         public const string UPDATE_PERSISTED_DATASETS = "B6D3B48A-039A-4A1C-87BE-3FC0152AB5DA";
+
+        /// <summary>
+        /// The Job to run Post v16.7 to populate EntityIntents from AdditionalSettingsJson.
+        /// </summary>
+        public const string DATA_MIGRATIONS_167_POPULATE_ENTITY_INTENTS_FROM_ADDITIONAL_SETTINGS_JSON = "155C2051-1513-4BB3-83AD-8D37EBBC3F59";
+
+        /// <summary>
+        /// The Job to run Post v16.7 Data Migrations to chop AccountEdit Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_167_CHOP_ACCOUNT_EDIT_BLOCK = "E581688C-E60D-4841-B3C3-C535CAD0002D";
+
+        /// <summary>
+        /// The Job to run Post v16.7 Data Migrations to chop PledgeEntry Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_167_CHOP_PLEDGE_ENTRY_BLOCK = "8E8C177E-DE88-47B2-AD9A-FC6AD5965882";
     }
 }

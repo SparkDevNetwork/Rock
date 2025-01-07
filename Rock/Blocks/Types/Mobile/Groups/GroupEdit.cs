@@ -163,7 +163,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_GROUPS_GROUP_EDIT_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( "FEC66374-E38F-4651-BAA6-AC658409D9BD")]
+    [Rock.SystemGuid.BlockTypeGuid( "FEC66374-E38F-4651-BAA6-AC658409D9BD" )]
     public class GroupEdit : RockBlockType
     {
         /// <summary>
@@ -416,18 +416,19 @@ namespace Rock.Blocks.Types.Mobile.Groups
         private string BuildContent()
         {
             string content = @"
-<StackLayout>
+<StackLayout Spacing=""8"">
     ##HEADER##
 
-    ##FIELDS##
-    
+    <StackLayout StyleClass=""spacing-24"">
+        ##FIELDS##
+    </StackLayout>
     <Rock:Validator x:Name=""vForm"">
         ##VALIDATORS##
     </Rock:Validator>
     
     <Rock:NotificationBox x:Name=""nbError"" NotificationType=""Error"" />
     
-    <Button StyleClass=""btn,btn-primary"" Text=""Save"" Margin=""24 0 0 0"" Command=""{Binding Callback}"">
+    <Button StyleClass=""btn, btn-primary"" Text=""Save"" Margin=""16 0 0 0"" Command=""{Binding Callback}"">
         <Button.CommandParameter>
             <Rock:CallbackParameters Name=""Save"" Validator=""{x:Reference vForm}"" Notification=""{x:Reference nbError}"">
                 ##PARAMETERS##
@@ -476,8 +477,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
             if ( ShowHeader )
             {
-                content = content.Replace( "##HEADER##", @"<Label StyleClass=""h2"" Text=""Group Details"" />
-<Rock:Divider />" );
+                content = content.Replace( "##HEADER##", @"<Label StyleClass=""h2, title1, text-interface-strongest, bold"" Text=""Group Details"" />" );
             }
             else
             {

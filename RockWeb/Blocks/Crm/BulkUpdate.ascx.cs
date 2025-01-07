@@ -386,8 +386,6 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             var rockContext = new RockContext();
 
             if ( !Page.IsPostBack )
@@ -431,6 +429,7 @@ namespace RockWeb.Blocks.Crm
                 BuildGroupAttributes( rockContext );
             }
 
+            base.OnLoad( e );
         }
 
         /// <summary>

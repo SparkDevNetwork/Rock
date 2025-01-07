@@ -17,6 +17,7 @@
                  :isEditVisible="canAdministrate"
                  :isFollowVisible="false"
                  :isSecurityHidden="!canAdministrate"
+                 :isFullScreenVisible="false"
                  :headerActions="headerActions"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
@@ -33,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, onMounted, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -47,10 +48,12 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { EventCalendarBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarBag";
     import { EventCalendarDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarDetailOptionsBag";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<DetailBlockBox<EventCalendarBag, EventCalendarDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
+    const store = useStore();
 
     // #region Values
 
@@ -72,7 +75,8 @@
         "iconCssClass",
         "isActive",
         "isIndexEnabled",
-        "name"
+        "name",
+        "isIndexEnabled"
     ];
 
     const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(eventCalendarEditBag, validProperties, invokeBlockAction), undefined, true);
@@ -145,7 +149,7 @@
     });
 
     const options = computed((): EventCalendarDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {} as EventCalendarDetailOptionsBag;
     });
 
     // #endregion
@@ -181,7 +185,7 @@
 
             return false;
         }
-
+        store.setAreSecondaryBlocksShown(true);
         return true;
     }
 
@@ -221,7 +225,7 @@
 
         if (result.isSuccess && result.data && result.data.entity) {
             eventCalendarEditBag.value = result.data.entity;
-
+            store.setAreSecondaryBlocksShown(false);
             return true;
         }
         else {
@@ -296,4 +300,13 @@
         eventCalendarEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
+
+    onMounted(() => {
+        if (config.entity?.idKey) {
+            store.setAreSecondaryBlocksShown(true);
+        }
+        else {
+            store.setAreSecondaryBlocksShown(false);
+        }
+    });
 </script>

@@ -105,11 +105,11 @@ namespace RockWeb.Blocks.Reporting.Dashboard
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( System.EventArgs e )
         {
-            base.OnLoad( e );
             pnlDashboardTitle.Visible = !string.IsNullOrEmpty( this.Title );
             pnlDashboardSubtitle.Visible = !string.IsNullOrEmpty( this.Subtitle );
             lDashboardTitle.Text = this.Title;
             lDashboardSubtitle.Text = this.Subtitle;
+            base.OnLoad( e );
         }
     }
 }

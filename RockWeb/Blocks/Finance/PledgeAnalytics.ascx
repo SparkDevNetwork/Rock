@@ -21,7 +21,7 @@
                     <div class="row row-eq-height-md">
 
                         <div class="col-md-3 filter-options">
-                            <Rock:AccountPicker ID="apAccount" runat="server" Label="Account" Required="true" />
+                            <Rock:AccountPicker ID="apAccounts" runat="server" Label="Account" Required="true" AllowMultiSelect="true" />
 
                             <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"/>
 
@@ -72,7 +72,19 @@
                                 </Rock:Grid>
 
                             </asp:Panel>
-
+                            <div class="row">
+                                <div class="col-md-6 col-md-offset-6 margin-t-md">
+                                    <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block" Visible="false">
+                                        <div class="panel-heading">
+                                            <h1 class="panel-title">Total Results</h1>
+                                        </div>
+                                        <div class="panel-body">
+                                            <div class='row'><div class='col-xs-8'>Total Amount Pledged: </div><div class='col-xs-4 text-right'><asp:Literal ID="lPledgeTotal" runat="server" /></div></div>
+                                            <div class='row'><div class='col-xs-8'>Total Amount Given: </div><div class='col-xs-4 text-right'><asp:Literal ID="lTotalGivingAmount" runat="server" /></div></div>
+                                        </div>
+                                    </asp:Panel>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

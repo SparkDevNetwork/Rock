@@ -139,7 +139,6 @@ namespace Rock.Field.Types
             cb.AutoPostBack = true;
             cb.CheckedChanged += OnQualifierUpdated;
             cb.Label = "Include Inactive";
-            cb.Text = "Yes";
             cb.Help = "When set, inactive assessments will be included in the list.";
 
             return controls;

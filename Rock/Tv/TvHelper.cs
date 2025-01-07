@@ -15,13 +15,19 @@
 // </copyright>
 //
 
+using System.IO.Compression;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net;
 using System.Web;
 using Rock.Common.Tv;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tv.Classes;
 using Rock.Web.Cache;
+using System;
+using System.Collections.Generic;
 
 namespace Rock.Tv
 {
@@ -196,5 +202,143 @@ namespace Rock.Tv
 
             return System.Web.Security.FormsAuthentication.Encrypt( ticket );
         }
+
+        #region Roku
+
+        /// <summary>
+        /// Gets the Roku page component.
+        /// </summary>
+        /// <param name="pageGuid"></param>
+        /// <param name="sceneGraph"></param>
+        /// <param name="rockComponents"></param>
+        /// <returns></returns>
+        public static ByteArrayContent GetPageAsRokuComponentLibrary( Guid pageGuid, string sceneGraph, string rockComponents )
+        {
+            var manifestText = $@"title=RockPage
+subtitle=SceneGraph Component For Rock Page
+major_version=1
+minor_version=1
+build_version=00001
+sg_component_libs_provided=RockPage";
+
+            sceneGraph = WrapSceneGraphInRockComponent( sceneGraph, pageGuid.ToString() );
+
+            using ( MemoryStream memoryStream = new MemoryStream() )
+            {
+                using ( ZipArchive zip = new ZipArchive( memoryStream, ZipArchiveMode.Create, true ) )
+                {
+                    var sceneGraphEntry = zip.CreateEntry( $"components/{pageGuid}.xml" );
+
+                    using ( var writer = new StreamWriter( sceneGraphEntry.Open() ) )
+                    {
+                        writer.Write( sceneGraph );
+                    }
+
+                    var manifestEntry = zip.CreateEntry( "manifest" );
+                    using ( var writer = new StreamWriter( manifestEntry.Open() ) )
+                    {
+                        writer.Write( manifestText );
+                    }
+
+                    foreach ( var rockComponent in GetRockPageComponents( rockComponents ) )
+                    {
+                        var rockComponentEntry = zip.CreateEntry( $"components/{rockComponent.Key}.xml" );
+
+                        using ( var writer = new StreamWriter( rockComponentEntry.Open() ) )
+                        {
+                            writer.Write( rockComponent.Value );
+                        }
+                    }
+                }
+                memoryStream.Seek( 0, SeekOrigin.Begin );
+
+                var memoryStreamContent = new ByteArrayContent( memoryStream.ToArray() );
+                return memoryStreamContent;
+            }
+        }
+
+        /// <summary>
+        /// Gets each individual Rock component from the Rock components string.
+        /// These components are uniquely split by the ###COMPONENT>NAME tag.
+        /// </summary>
+        /// <param name="rockComponents"></param>
+        /// <returns></returns>
+        /// <remarks>This method is pretty much useless for anything besides Roku.</remarks>
+        private static Dictionary<string, string> GetRockPageComponents( string rockComponents )
+        {
+            var rockPageComponents = new Dictionary<string, string>();
+
+            // We split these components by the ###COMPONENT>NAME tag.
+            // This means that we need to split by '###COMPONENT' and then
+            // get a substring of the name from the preceding '>' character.
+            // Then we need to trim the string up to the trailing "###" characters.
+
+            foreach ( var rockComponent in rockComponents.Split( new string[] { "###COMPONENT" }, StringSplitOptions.None ) )
+            {
+                // Split the string by the trailing '###" characters.
+                var rockComponentNameAndContent = rockComponent.Split( new string[] { "###" }, StringSplitOptions.None );
+
+                // Invalid component, skip it.
+                if ( rockComponentNameAndContent.Length < 2 || !rockComponentNameAndContent[0].StartsWith( ">" ) )
+                {
+                    continue;
+                }
+
+                // Remove the '>' character from the beginning of the string.
+                var rockComponentName = rockComponentNameAndContent[0].Substring( 1 ).Trim();
+                var rockComponentContent = rockComponentNameAndContent[1].Trim();
+
+                rockComponentContent = $@"<?xml version=""1.0"" encoding=""UTF-8""?>
+{rockComponentContent}";
+
+                rockPageComponents.Add( rockComponentName, rockComponentContent );
+            }
+
+            return rockPageComponents;
+        }
+
+        /// <summary>
+        /// Wraps the scene graph in a Rock component tag with information
+        /// about the page.
+        /// </summary>
+        /// <param name="sceneGraph"></param>
+        /// <param name="pageGuid"></param>
+        /// <returns></returns>
+        public static string WrapSceneGraphInRockComponent( string sceneGraph, string pageGuid )
+        {
+            sceneGraph = sceneGraph.Trim();
+
+            sceneGraph = $@"<component name=""{pageGuid}"" extends=""Group"">
+<children>
+{sceneGraph}
+</children>
+</component>
+";
+
+            sceneGraph = PrependXmlDeclaration( sceneGraph );
+
+            return sceneGraph;
+        }
+
+        /// <summary>
+        /// Adds an XML declaration to the beginning of the XML string if it does not already exist.
+        /// </summary>
+        /// <param name="xml"></param>
+        /// <returns></returns>
+        public static string PrependXmlDeclaration( string xml )
+        {
+            var xmlDeclaration = @"<?xml version=""1.0"" encoding=""UTF-8""?>";
+            var needsXmlDeclaration = !xml.Contains( "<?xml" );
+
+            if ( needsXmlDeclaration )
+            {
+                xml = $@"{xmlDeclaration}
+{xml}";
+            }
+
+            return xml;
+        }
+
+        #endregion
     }
 }

@@ -116,11 +116,19 @@ namespace Rock.Store
             string encodedOrganizationKey = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( organizationKey ) ) );
             string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
             string encodedPassword = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( password ) ) );
-            string requestUrl = string.Format( $"api/Store/SetOrganizationSize/{encodedUserName}/{encodedPassword}/{encodedOrganizationKey}" );
+            string requestUrl = string.Format( $"api/Store/DefineOrganizationSize" );
+
+            var body = new
+            {
+                organizationKey = encodedOrganizationKey,
+                username = encodedUserName,
+                password = encodedPassword,
+                averageWeeklyAttendance
+            };
 
             var request = new RestRequest( requestUrl, Method.POST );
             request.RequestFormat = DataFormat.Json;
-            request.AddJsonBody( averageWeeklyAttendance );
+            request.AddJsonBody( body );
 
             // deserialize to list of packages
             var response = client.Execute<Organization>( request );

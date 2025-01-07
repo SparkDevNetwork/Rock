@@ -174,8 +174,6 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 List<ListItem> exampleListItems = new List<ListItem>();
@@ -222,6 +220,8 @@ namespace RockWeb.Blocks.Examples
                 TagLiteral4.Text = "TagLiteral4: This text is set via code.";
                 BindGrid();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

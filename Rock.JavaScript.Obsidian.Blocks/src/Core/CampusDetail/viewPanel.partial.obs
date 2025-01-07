@@ -111,6 +111,17 @@
             valueBuilder.addTextValue("Campus Schedules", props.modelValue.campusSchedules.map(s => s.schedule?.text ?? "").join(", "));
         }
 
+        if (props.modelValue.campusTopics && props.modelValue.campusTopics.length > 0) {
+            valueBuilder.addHtmlValue("Topics", props.modelValue.campusTopics
+            .map(s => `
+            <div class="row">
+                <div class="col-md-3"> ${s.type?.text ?? ""} </div>
+                <div class="col-md-6"> ${s.email ?? ""} </div>
+                <div class="col-md-3"> ${s.isPublic ? "Public" : "Internal"} </div>
+            </div>`)
+            .join(""));
+        }
+
         return valueBuilder.build();
     });
 

@@ -15,10 +15,12 @@
 // </copyright>
 //
 
+import { CancellationTokenSource, ICancellationToken } from "./cancellation";
+
 /**
  * Compares two values for equality by performing deep nested comparisons
  * if the values are objects or arrays.
- * 
+ *
  * @param a The first value to compare.
  * @param b The second value to compare.
  * @param strict True if strict comparision is required (meaning 1 would not equal "1").
@@ -108,7 +110,7 @@ export function deepEqual(a: unknown, b: unknown, strict: boolean): boolean {
  * Debounces the function so it will only be called once during the specified
  * delay period. The returned function should be called to trigger the original
  * function that is to be debounced.
- * 
+ *
  * @param fn The function to be called once per delay period.
  * @param delay The period in milliseconds. If the returned function is called
  * more than once during this period then fn will only be executed once for
@@ -141,6 +143,104 @@ export function debounce(fn: (() => void), delay: number = 250, eager: boolean =
         timeout = setTimeout(() => {
             timeout = null;
             fn();
+        }, delay);
+    };
+}
+
+/**
+ * Options for debounceAsync function
+ */
+type DebounceAsyncOptions = {
+    /**
+     * The period in milliseconds. If the returned function is called more than
+     * once during this period, then `fn` will only be executed once for the
+     * period.
+     * @default 250
+     */
+    delay?: number;
+
+    /**
+     * If `true`, then the `fn` function will be called immediately on the first
+     * call, and any subsequent calls will be debounced.
+     * @default false
+     */
+    eager?: boolean;
+};
+
+/**
+ * Debounces the function so it will only be called once during the specified
+ * delay period. The returned function should be called to trigger the original
+ * function that is to be debounced.
+ *
+ * **Note:** Due to the asynchronous nature of JavaScript and how promises work,
+ * `fn` may be invoked multiple times before previous invocations have completed.
+ * To ensure that only the latest invocation proceeds and to prevent stale data,
+ * you should check `cancellationToken.isCancellationRequested` at appropriate
+ * points within your `fn` implementation—ideally after you `await` data from the
+ * server. If cancellation is requested, `fn` should promptly abort execution.
+ *
+ * @param fn The function to be called once per delay period.
+ * @param options An optional object specifying debounce options.
+ *
+ * @returns A function to be called when `fn` should be executed. This function
+ * accepts an optional `parentCancellationToken` that, when canceled, will also
+ * cancel the execution of `fn`.
+ */
+export function debounceAsync(
+    fn: ((cancellationToken?: ICancellationToken) => PromiseLike<void>),
+    options?: DebounceAsyncOptions
+): ((parentCancellationToken?: ICancellationToken) => Promise<void>) {
+    const delay = options?.delay ?? 250;
+    const eager = options?.eager ?? false;
+
+    let timeout: NodeJS.Timeout | null = null;
+    let source: CancellationTokenSource | null = null;
+    let isEagerExecutionInProgress = false;
+
+    return async (parentCancellationToken?: ICancellationToken): Promise<void> => {
+        // Always cancel any ongoing execution of fn.
+        source?.cancel();
+
+        if (timeout) {
+            clearTimeout(timeout);
+            timeout = null;
+        }
+        else if (eager && !isEagerExecutionInProgress) {
+            // Execute immediately on the first call.
+            isEagerExecutionInProgress = true;
+            source = new CancellationTokenSource(parentCancellationToken);
+
+            // Set the timeout before awaiting fn.
+            timeout = setTimeout(() => {
+                timeout = null;
+                isEagerExecutionInProgress = false;
+            }, delay);
+
+            try {
+                await fn(source.token);
+            }
+            catch (e) {
+                console.error(e || "Unknown error while debouncing async function call.");
+                throw e;
+            }
+
+            return;
+        }
+
+        // Schedule the function to run after the delay.
+        source = new CancellationTokenSource(parentCancellationToken);
+        const cts = source;
+        timeout = setTimeout(async () => {
+            try {
+                await fn(cts.token);
+            }
+            catch (e) {
+                console.error(e || "Unknown error while debouncing async function call.");
+                throw e;
+            }
+
+            timeout = null;
+            isEagerExecutionInProgress = false;
         }, delay);
     };
 }

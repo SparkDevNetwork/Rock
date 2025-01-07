@@ -1,0 +1,371 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="registration-edit-family-screen">
+        <MainPanel :title="title"
+                   subtitle="Add or remove people from the family"
+                   :configuration="configuration">
+            <RockForm v-model:submit="submitForm"
+                      @submit="onSaveClick">
+                <div class="d-flex">
+                    <h5 class="flex-grow-1">Family Members</h5>
+                    <RockButton btnSize="sm"
+                                @click="onAddPersonClick">
+                        Add Individual
+                    </RockButton>
+                </div>
+
+                <Grid :data="gridData"
+                      keyField="guid"
+                      light>
+                    <Column name="name">
+                        <template #format="{ row }">
+                            {{ row.nickName }} {{ row.lastName }}
+                        </template>
+                    </Column>
+
+                    <Column name="classification">
+                        <template #format="{ row }">
+                            {{ row.isAdult ? "Adult" : "Child" }}
+                            <template v-if="shouldShowRelationship(row)">
+                                <br>
+                                {{ row.relationshipToAdult.text }}
+                            </template>
+                        </template>
+                    </Column>
+
+                    <Column name="gender">
+                        <template #format="{ row }">
+                            {{ getGenderText(row.gender) }}
+                        </template>
+                    </Column>
+
+                    <Column name="age">
+                        <template #format="{ row }">
+                            {{ getAgeText(row.birthDate) }}
+                        </template>
+                    </Column>
+
+                    <Column name="grade">
+                        <template #format="{ row }">
+                            {{ row.grade?.text }}
+                        </template>
+                    </Column>
+
+                    <EditColumn @click="onEditPersonClick" />
+                    <DeleteColumn @click="onRemovePersonClick" disableConfirmation />
+                </Grid>
+
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <TextBox label="Family Name"
+                                 v-model="familyName"
+                                 rules="required" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <AddressControl label="Address"
+                                        v-model="address" />
+                    </div>
+                </div>
+
+                <AttributeValuesContainer v-model="familyAttributeValues"
+                                          :attributes="props.registrationData.familyAttributes ?? {}"
+                                          isEditMode
+                                          :numberOfColumns="2" />
+            </RockForm>
+        </MainPanel>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import Grid, { DeleteColumn, EditColumn, Column } from "@Obsidian/Controls/grid";
+    import MainPanel from "./mainPanel.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { computed, PropType, ref, watch } from "vue";
+    import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { alert, confirm, showDialog } from "@Obsidian/Utility/dialogs";
+    import { RegistrationScreen, RegistrationScreenData, KioskButton, AugmentedRegistrationPersonBag } from "./types.partial";
+    import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { Gender, GenderDescription } from "@Obsidian/Enums/Crm/gender";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+    import { SaveFamilyOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/saveFamilyOptionsBag";
+    import { SaveFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/saveFamilyResponseBag";
+
+    const props = defineProps({
+        configuration: {
+            type: Object as PropType<KioskConfigurationBag>,
+            required: true
+        },
+
+        registrationData: {
+            type: Object as PropType<RegistrationScreenData>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (event: "updateActions", actions: KioskButton[]): void;
+        (event: "registrationScreen", screen: RegistrationScreen): void;
+        (event: "checkInFamily", familyId: string): void;
+        (event: "closeRegistration"): void;
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const submitForm = ref(false);
+    const familyName = ref(props.registrationData.family.bag.familyName ?? "");
+    const address = ref(props.registrationData.family.bag.address ?? {});
+    const familyAttributeValues = ref(props.registrationData.family.bag.attributeValues ?? {});
+    const people = ref(props.registrationData.people ?? []);
+    const removedPersonIds: string[] = [];
+
+    let savePcs: PromiseCompletionSource | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const title = computed(() => props.registrationData.family.bag.familyName ?? "Edit Family");
+
+    const gridData = computed((): GridDataBag => {
+        const rows = [...people.value];
+
+        rows.sort((a, b) => {
+            if (a.bag.isAdult && !b.bag.isAdult) {
+                return -1;
+            }
+            else if (!a.bag.isAdult && b.bag.isAdult) {
+                return 1;
+            }
+
+            const aDate = RockDateTime.parseISO(a.bag.birthDate ?? "");
+            const bDate = RockDateTime.parseISO(b.bag.birthDate ?? "");
+
+            if (aDate && !bDate) {
+                return -1;
+            }
+            else if (!aDate && bDate) {
+                return 1;
+            }
+
+            return (aDate?.toMilliseconds() ?? 0) - (bDate?.toMilliseconds() ?? 0);
+        });
+
+        return {
+            rows: rows.map(p => p.bag)
+        };
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Update the actions supported by this screen.
+     */
+    function updateActions(): void {
+        const actions: KioskButton[] = [];
+
+        actions.push({
+            key: "save",
+            title: "Save",
+            type: "primary",
+            class: "save-button",
+            disabled: false,
+            handler: (): Promise<void> => {
+                savePcs = new PromiseCompletionSource();
+                submitForm.value = true;
+
+                return savePcs.promise;
+            }
+        });
+
+        actions.push({
+            key: "cancel",
+            title: "Cancel",
+            type: "default",
+            class: "cancel-button",
+            disabled: false,
+            handler: onCancelClick
+        });
+
+        emit("updateActions", actions);
+    }
+
+    function updateRegistrationData(): void {
+        setPropertiesBoxValue(props.registrationData.family, "familyName", familyName.value);
+        setPropertiesBoxValue(props.registrationData.family, "address", address.value);
+        setPropertiesBoxValue(props.registrationData.family, "attributeValues", familyAttributeValues.value);
+        props.registrationData.people = people.value;
+
+        props.registrationData.editPersonGuid = null;
+    }
+
+    function getGenderText(gender: Gender): string {
+        return GenderDescription[gender];
+    }
+
+    function getAgeText(birthdate?: string | null): string {
+        if (!birthdate) {
+            return "";
+        }
+
+        const date = RockDateTime.parseISO(birthdate);
+
+        if (!date) {
+            return "";
+        }
+
+        const years = Math.floor(RockDateTime.now().totalMonths(date) / 12);
+
+        return `${years} ${pluralize("year", years)}`;
+    }
+
+    async function confirmYesNo(message: string): Promise<boolean> {
+        const result = await showDialog({
+            message,
+            buttons: [
+                {
+                    key: "yes",
+                    label: "Yes",
+                    className: "btn btn-primary"
+                },
+                {
+                    key: "no",
+                    label: "No",
+                    className: "btn btn-default"
+                }
+            ]
+        });
+
+        return result === "yes";
+    }
+
+    /**
+     * Determines if the relationship should be displayed below the Adult/Child
+     * designation.
+     *
+     * @param row The row object that is being displayed.
+     * @returns `true` if the relationship should be shown; otherwise `false`.
+     */
+    function shouldShowRelationship(row: AugmentedRegistrationPersonBag): boolean {
+        if (row.isAdult) {
+            return false;
+        }
+
+        if (!row.relationshipToAdult) {
+            return false;
+        }
+
+        // Don't show the relationship if it is the same as the text above it.
+        return row.relationshipToAdult.text !== "Child";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onAddPersonClick(): void {
+        updateRegistrationData();
+
+        emit("registrationScreen", RegistrationScreen.EditIndividual);
+    }
+
+    function onEditPersonClick(guid: string): void {
+        const person = people.value.find(p => p.bag.guid === guid);
+
+        if (!person) {
+            return;
+        }
+
+        updateRegistrationData();
+        props.registrationData.editPersonGuid = guid;
+
+        emit("registrationScreen", RegistrationScreen.EditIndividual);
+    }
+
+    async function onRemovePersonClick(guid: string): Promise<void> {
+        const person = people.value.find(p => p.bag.guid === guid);
+
+        if (!person || !person.bag.id) {
+            return;
+        }
+
+        const confirmResult = await confirm(`Remove ${person.bag.nickName} from this family (they will not be deleted)?`);
+
+        if (!confirmResult) {
+            return;
+        }
+
+        removedPersonIds.push(person.bag.id);
+        people.value = people.value.filter(p => p.bag.guid !== guid);
+    }
+
+    async function onCancelClick(): Promise<void> {
+        if (!await confirm("Do you want to leave without saving?")) {
+            return;
+        }
+
+        if (props.registrationData.family.bag?.id) {
+            emit("checkInFamily", props.registrationData.family.bag.id);
+        }
+        else {
+            emit("closeRegistration");
+        }
+    }
+
+    async function onSaveClick(): Promise<void> {
+        if (people.value.length === 0) {
+            return alert("Please enter at least one family member.");
+        }
+
+        updateRegistrationData();
+
+        const options: SaveFamilyOptionsBag = {
+            templateId: props.configuration.template?.id,
+            kioskId: props.configuration.kiosk?.id,
+            family: props.registrationData.family,
+            people: props.registrationData.people,
+            removedPersonIds: removedPersonIds
+        };
+
+        const result = await invokeBlockAction<SaveFamilyResponseBag>("SaveFamily", { options });
+
+        if (result.isSuccess && result.data) {
+            if (result.data.isCheckInAllowed && result.data.familyId) {
+                if (await confirmYesNo("Family has been saved, proceed to check-in?")) {
+                    emit("checkInFamily", result.data.familyId);
+                }
+                else {
+                    emit("closeRegistration");
+                }
+            }
+            else {
+                emit("closeRegistration");
+            }
+        }
+        else {
+            await alert(result.errorMessage || "Unknown error encountered while trying to save the family.");
+        }
+    }
+
+    // #endregion
+
+    watch(submitForm, () => {
+        if (!submitForm.value && savePcs) {
+            savePcs.resolve();
+            // processingCount.value--;
+        }
+    });
+
+    updateActions();
+</script>

@@ -95,8 +95,6 @@ namespace RockWeb.Blocks.Streaks
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 var enrollment = GetStreak();
@@ -107,10 +105,12 @@ namespace RockWeb.Blocks.Streaks
                 if ( streakType == null )
                 {
                     nbEditModeMessage.Text = "A streak type is required.";
+                    base.OnLoad( e );
                     return;
                 }
 
                 RenderState();
+                base.OnLoad( e );
             }
         }
 

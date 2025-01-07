@@ -17,7 +17,7 @@
                      class="img-responsive preview-image"
                      :src="previewImageSource" />
 
-                <div class="mt-3 text-right">
+                <div v-if="!isZpl" class="mt-3 text-right">
                     <RockButton @click="onDesignerClick">
                         <i class="fa fa-palette"></i> Label Designer
                     </RockButton>
@@ -55,6 +55,7 @@
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { NavigationUrlKey } from "./types.partial";
+    import { LabelFormat } from "@Obsidian/Enums/CheckIn/Labels/labelFormat";
 
     const props = defineProps({
         modelValue: {
@@ -80,6 +81,8 @@
     // #region Computed Values
 
     const isSystem = computed((): boolean => props.modelValue?.isSystem ?? false);
+
+    const isZpl = computed((): boolean => props.modelValue?.labelFormat === LabelFormat.Zpl);
 
     /** The values to display full-width at the top of the block. */
     const topValues = computed((): ValueDetailListItem[] => {
@@ -147,6 +150,9 @@
         else if (props.modelValue.labelType === LabelType.Checkout) {
             filterSources = props.options.checkoutLabelFilterSources ?? [];
         }
+        else if (props.modelValue.labelType === LabelType.PersonLocation) {
+            filterSources = props.options.personLocationLabelFilterSources ?? [];
+        }
         else {
             return undefined;
         }
@@ -178,5 +184,5 @@
         }
     }
 
-            // #endregion
+    // #endregion
 </script>

@@ -298,7 +298,6 @@ namespace Rock.Field.Types
             cb.AutoPostBack = true;
             cb.CheckedChanged += OnQualifierUpdated;
             cb.Label = "Allow Multiple Values";
-            cb.Text = "Yes";
             cb.Help = "When set, allows multiple attributes to be selected.";
 
             // Add textbox for the qualifier column

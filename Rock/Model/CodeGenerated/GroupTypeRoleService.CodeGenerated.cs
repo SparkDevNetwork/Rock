@@ -148,6 +148,7 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.GroupTypeId = source.GroupTypeId;
+            target.IsCheckInAllowed = source.IsCheckInAllowed;
             target.IsExcludedFromPeerNetwork = source.IsExcludedFromPeerNetwork;
             target.IsLeader = source.IsLeader;
             target.IsSystem = source.IsSystem;

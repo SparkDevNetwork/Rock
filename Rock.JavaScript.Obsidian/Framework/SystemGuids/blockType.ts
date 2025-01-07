@@ -95,6 +95,10 @@ export const BlockType = {
     MobileConnectionConnectionTypeList: "31E1FCCF-C4B1-4D84-992C-DEACAF3697CF",
     /** The mobile attribute values &gt; Attribute Values block type. */
     MobileCoreAttributeValues: "DF110543-C295-4DD9-B06E-82640AC63610",
+    /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.MyNotes block type. */
+    MobileCoreMyNotes: "9BDE231C-B6A7-4753-BBB8-1531F6362387",
+    /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.QuickNote block type. */
+    MobileCoreQuickNote: "B7E187C8-6F74-4FBD-8853-5BAC48F5822C",
     /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.Search block type. */
     MobileCoreSearch: "41174BEA-6567-430C-AAD4-A89A5CF70FB0",
     /** The mobile Core &gt; Rock.Blocks.Types.Mobile.Core.SmartSearch block type. */

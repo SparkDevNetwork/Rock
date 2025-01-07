@@ -30,6 +30,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Web.Cache.Entities;
 
 namespace Rock.Web.Cache
 {
@@ -405,13 +406,34 @@ namespace Rock.Web.Cache
         public int? RateLimitRequestPerPeriod { get; set; }
 
         /// <summary>
-        /// Gets or sets the rate limit period.
+        /// Gets or sets the rate limit period (in seconds).
         /// </summary>
         /// <value>
-        /// The rate limit period.
+        /// The rate limit period (in seconds).
+        /// </value>
+        [Obsolete( "Use RateLimitPeriodDurationSeconds instead." )]
+        [RockObsolete( "1.16.7" )]
+        [DataMember]
+        public virtual int? RateLimitPeriod
+        {
+            get
+            {
+                return this.RateLimitPeriodDurationSeconds;
+            }
+            set
+            {
+                this.RateLimitPeriodDurationSeconds = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the rate limit period (in seconds).
+        /// </summary>
+        /// <value>
+        /// The rate limit period (in seconds).
         /// </value>
         [DataMember]
-        public int? RateLimitPeriod { get; set; }
+        public int? RateLimitPeriodDurationSeconds { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is rate limited.
@@ -424,7 +446,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                return RateLimitPeriod != null && RateLimitRequestPerPeriod != null;
+                return RateLimitPeriodDurationSeconds != null && RateLimitRequestPerPeriod != null;
             }
         }
 
@@ -725,9 +747,7 @@ namespace Rock.Web.Cache
             {
                 if ( _interactionIntentValueIds == null )
                 {
-                    var intentSettings = this.GetAdditionalSettings<PageService.IntentSettings>();
-
-                    _interactionIntentValueIds = intentSettings.InteractionIntentValueIds ?? new List<int>();
+                    _interactionIntentValueIds = EntityIntentCache.GetIntentValueIds<Page>( this.Id );
                 }
 
                 return _interactionIntentValueIds;
@@ -818,7 +838,7 @@ namespace Rock.Web.Cache
 #pragma warning restore CS0618
             AdditionalSettingsJson = page.AdditionalSettingsJson;
             MedianPageLoadTimeDurationSeconds = page.MedianPageLoadTimeDurationSeconds;
-            RateLimitPeriod = page.RateLimitPeriod;
+            RateLimitPeriodDurationSeconds = page.RateLimitPeriodDurationSeconds;
             RateLimitRequestPerPeriod = page.RateLimitRequestPerPeriod;
 
             PageContexts = new Dictionary<string, string>();

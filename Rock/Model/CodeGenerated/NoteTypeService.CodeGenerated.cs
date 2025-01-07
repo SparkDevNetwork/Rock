@@ -117,6 +117,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this NoteType target, NoteType source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.AllowsAttachments = source.AllowsAttachments;
             target.AllowsReplies = source.AllowsReplies;
             target.AllowsWatching = source.AllowsWatching;

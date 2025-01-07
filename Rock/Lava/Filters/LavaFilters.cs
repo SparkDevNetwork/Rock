@@ -2620,7 +2620,8 @@ namespace Rock.Lava
             {
                 case "Dictionary":
                     {
-                        var jsonSettings = new JsonSerializerSettings{
+                        var jsonSettings = new JsonSerializerSettings
+                        {
                             Converters = new List<JsonConverter> { new NestedDictionaryConverter() }
                         };
 
@@ -2942,9 +2943,9 @@ namespace Rock.Lava
                 }
 
                 // If the expando didn't have the key, it could be a dictionary
-                return LavaAppendWatchesHelper.AppendMediaForDictionary( xo, startDate, currentPerson, rockContext ) ;
+                return LavaAppendWatchesHelper.AppendMediaForDictionary( xo, startDate, currentPerson, rockContext );
             }
-            
+
 
             return source;
         }
@@ -4069,90 +4070,6 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Returns the image URL for the provided integer ID or Guid input, or a fallback URL if the input is not defined.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <param name="fallbackUrl"></param>
-        /// <param name="options"></param>
-        /// <returns>Returns the image URL for the provided integer ID or Guid input, or a fallback URL if the input is not defined.</returns>
-        public static string AvatarUrl( object input, string fallbackUrl = null, string options = null )
-        {
-            string inputString = input?.ToString();
-            var useFallbackUrl = false;
-            var queryStringKey = "Id";
-
-            if ( !inputString.AsIntegerOrNull().HasValue )
-            {
-                queryStringKey = "Guid";
-
-                if ( !inputString.AsGuidOrNull().HasValue )
-                {
-                    RockLogger.Log.Information( RockLogDomains.Lava, $"The input value provided ('{( inputString ?? "null" )}') is neither an integer nor a Guid." );
-                    useFallbackUrl = true;
-                }
-            }
-
-            if ( useFallbackUrl )
-            {
-                return fallbackUrl ?? string.Empty;
-            }
-
-            var avatarOptions = new GetAvatarUrlOptions();
-
-            if ( !string.IsNullOrEmpty( options ) )
-            {
-                var optionParts = options.Split( ',' );
-                foreach ( var optionPart in optionParts )
-                {
-                    var optionKeyValue = optionPart.Split( '=' );
-                    if ( optionKeyValue.Length == 2 )
-                    {
-                        var optionKey = optionKeyValue[0].Trim();
-                        var optionValue = optionKeyValue[1].Trim();
-
-                        switch ( optionKey.ToLower() )
-                        {
-                            case "width":
-                                avatarOptions.Width = optionValue.AsIntegerOrNull();
-                                break;
-                            case "height":
-                                avatarOptions.Height = optionValue.AsIntegerOrNull();
-                                break;
-                            case "ageclassification":
-                                if ( Enum.TryParse<Rock.Model.AgeClassification>( optionValue, out var ageClassification ) )
-                                {
-                                    avatarOptions.AgeClassification = ageClassification;
-                                }
-                                break;
-                            case "text":
-                                avatarOptions.Text = optionValue;
-                                break;
-                            case "gender":
-                                if ( Enum.TryParse<Rock.Model.Gender>( optionValue, out var gender ) )
-                                {
-                                    avatarOptions.Gender = gender;
-                                }
-                                break;
-                        }
-                    }
-                }
-            }
-
-            string url = null;
-
-            if ( queryStringKey == "Id" )
-            {
-                url = FileUrlHelper.GetAvatarUrl( inputString.ToIntSafe(), avatarOptions );
-            }
-            else
-            {
-                url = FileUrlHelper.GetAvatarUrl( inputString.AsGuid(), avatarOptions );
-            }
-
-            return url ?? fallbackUrl ?? string.Empty;
-        }
-
-        /// <summary>
         /// Returns a named configuration setting for the current Rock instance.
         /// </summary>
         /// <param name="input">The name of the configuration setting.</param>
@@ -4190,7 +4107,7 @@ namespace Rock.Lava
                 return RockApp.Current.GetCurrentLavaEngineName();
             }
 
-            return $"Configuration setting \"{ input }\" is not available.";
+            return $"Configuration setting \"{input}\" is not available.";
         }
 
         /// <summary>
@@ -4252,10 +4169,17 @@ namespace Rock.Lava
         /// </para>
         /// </summary>
         /// <param name="content">JSON formatted string produced by the <see cref="StructureContentEditor"/> control.</param>
+        /// <param name="userValuesJson">The JSON formatted string that represents the user values (on the corresponding note) for the structured content.</param>
         /// <returns></returns>
-        public static string RenderStructuredContentAsHtml( string content )
+        public static string RenderStructuredContentAsHtml( string content, string userValuesJson = null )
         {
-            var helper = new StructuredContentHelper( content );
+            Dictionary<string, string> userValues = null;
+            if( userValuesJson.IsNotNullOrWhiteSpace() )
+            {
+                userValues = userValuesJson.FromJsonOrNull<Dictionary<string, string>>();
+            }
+
+            var helper = new StructuredContentHelper( content, userValues );
             return helper.Render();
         }
 
@@ -4310,7 +4234,7 @@ namespace Rock.Lava
             }
 
             if ( input is IList inputList )
-            { 
+            {
                 return inputList.Contains( containValue );
             }
             else if ( input is IEnumerable<object> inputGenericEnumerable )

@@ -165,7 +165,7 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "description", a => a.AdaptiveMessage.Description )
                 .AddField( "isActive", a => a.AdaptiveMessage.IsActive )
                 .AddTextField( "key", a => a.AdaptiveMessage.Key )
-                .AddField( "categories", p => p.AdaptiveMessage.Categories.Select( a => a.Name ).ToList() )
+                .AddField( "categories", p => p.AdaptiveMessage.AdaptiveMessageCategories.Select( a => a.Category.Name ).ToList() )
                 .AddField( "views", p => p.Views )
                 .AddField( "adaptations", p => p.AdaptiveMessage.AdaptiveMessageAdaptations.Count() )
                 .AddAttributeFieldsFrom( a => a.AdaptiveMessage, _gridAttributes.Value );

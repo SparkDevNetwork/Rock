@@ -34,6 +34,11 @@
             </div>
 
             <div :class="columnClass">
+                <CheckBox v-model="includeInactiveCampus"
+                          label="Include Inactive" />
+            </div>
+
+            <div :class="columnClass">
                 <DropDownList v-model="campusType"
                               label="Campus Type"
                               :items="campusTypeOptions" />
@@ -198,6 +203,7 @@
     const recordStatus = ref(props.modelValue.recordStatus ?? "");
     const connectionStatus = ref(props.modelValue.connectionStatus ?? "");
     const showCampus = ref(props.modelValue.showCampus ?? false);
+    const includeInactiveCampus = ref(props.modelValue.includeInactiveCampus ?? false);
     const campusType = ref(props.modelValue.campusType ?? "");
     const campusStatus = ref(props.modelValue.campusStatus ?? "");
     const gender = ref(props.modelValue.gender?.toString() ?? FormFieldVisibility.Hidden.toString());
@@ -251,7 +257,7 @@
 
     // Watch for any changes in our simple field values and update the
     // modelValue.
-    watch([autofillCurrentPerson, hideIfCurrentPersonKnown, recordStatus, connectionStatus, showCampus, campusType, campusStatus, gender, email, mobilePhone, smsOptIn, birthdate, address, addressType, maritalStatus, spouseEntry, spouseLabel, raceEntry, ethnicityEntry], () => {
+    watch([autofillCurrentPerson, hideIfCurrentPersonKnown, recordStatus, connectionStatus, showCampus, includeInactiveCampus, campusType, campusStatus, gender, email, mobilePhone, smsOptIn, birthdate, address, addressType, maritalStatus, spouseEntry, spouseLabel, raceEntry, ethnicityEntry], () => {
         const newValue: FormPersonEntry = {
             ...props.modelValue,
             autofillCurrentPerson: autofillCurrentPerson.value,
@@ -259,6 +265,7 @@
             recordStatus: recordStatus.value,
             connectionStatus: connectionStatus.value,
             showCampus: showCampus.value,
+            includeInactiveCampus: includeInactiveCampus.value,
             campusType: campusType.value,
             campusStatus: campusStatus.value,
             gender: toNumberOrNull(gender.value) ?? FormFieldVisibility.Hidden,
@@ -286,6 +293,7 @@
         recordStatus.value = props.modelValue.recordStatus ?? "";
         connectionStatus.value = props.modelValue.connectionStatus ?? "";
         showCampus.value = props.modelValue.showCampus ?? false;
+        includeInactiveCampus.value = props.modelValue.includeInactiveCampus ?? true;
         campusType.value = props.modelValue.campusType ?? "";
         campusStatus.value = props.modelValue.campusStatus ?? "";
         gender.value = props.modelValue.gender?.toString() ?? FormFieldVisibility.Hidden.toString();

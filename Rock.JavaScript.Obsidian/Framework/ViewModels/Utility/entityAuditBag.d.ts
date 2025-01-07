@@ -31,6 +31,9 @@ export type EntityAuditBag = {
     /** Gets or sets the identifier of the person that created the model. */
     createdByPersonId?: number | null;
 
+    /** Gets or sets the date and time that the model was created. */
+    createdDateTime?: string | null;
+
     /** Gets or sets the time the model was created relative to now. */
     createdRelativeTime?: string | null;
 
@@ -48,6 +51,9 @@ export type EntityAuditBag = {
 
     /** Gets or sets the identifier of the person that modified the model. */
     modifiedByPersonId?: number | null;
+
+    /** Gets or sets the date and time that the model was modified. */
+    modifiedDateTime?: string | null;
 
     /** Gets or sets the time the model was modified relative to now. */
     modifiedRelativeTime?: string | null;

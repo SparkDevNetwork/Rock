@@ -48,19 +48,19 @@ export type WebFarmSettingsBag = {
     isRunning: boolean;
 
     /** Gets or sets the lower polling limit. */
-    lowerPollingLimit: number;
+    lowerPollingLimit?: number | null;
 
     /** Gets or sets the maximum polling wait seconds. */
-    maxPollingWaitSeconds: number;
+    maxPollingWaitSeconds?: number | null;
 
     /** Gets or sets the minimum polling difference. */
-    minimumPollingDifference: number;
+    minimumPollingDifference?: number | null;
 
     /** Gets or sets the nodes. */
     nodes?: WebFarmNodeBag[] | null;
 
     /** Gets or sets the upper polling limit. */
-    upperPollingLimit: number;
+    upperPollingLimit?: number | null;
 
     /** Gets or sets the web farm key. */
     webFarmKey?: string | null;

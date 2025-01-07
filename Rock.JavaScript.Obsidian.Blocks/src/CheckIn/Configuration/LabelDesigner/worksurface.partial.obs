@@ -414,6 +414,7 @@
 
         lineTransformer?.visible(false);
         transformHelper?.transformer.visible(false);
+        gridLayer.visible(false);
 
         for (const field of props.labelManager.current.value.labelData.fields) {
             if (field.isIncludedOnPreview) {
@@ -435,6 +436,7 @@
         finally {
             lineTransformer?.visible(true);
             transformHelper?.transformer.visible(true);
+            gridLayer.visible(true);
 
             for (const field of props.labelManager.current.value.labelData.fields) {
                 if (field.isIncludedOnPreview) {
@@ -1209,7 +1211,7 @@
     });
 
     // If they want to snap to grid then configure the surface for snapping.
-    watch(() => [props.showGrid, props.snapToGrid], () => {
-        surface.snapToGrid = props.showGrid && props.snapToGrid;
+    watch(() => props.snapToGrid, () => {
+        surface.snapToGrid = props.snapToGrid;
     });
 </script>

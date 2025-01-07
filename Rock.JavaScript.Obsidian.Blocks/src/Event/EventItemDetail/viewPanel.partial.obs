@@ -14,7 +14,7 @@
             </div>
         </div>
 
-        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" :showEmptyValues="false"  />
 
     </fieldset>
 </template>
@@ -72,11 +72,11 @@
             valueBuilder.addTextValue("Summary", props.modelValue.summary);
         }
 
-        if (props.modelValue.selectedCalendarNames) {
+        if (props.modelValue.selectedCalendarNames && props.modelValue.selectedCalendarNames.length > 0) {
             valueBuilder.addTextValue("Calendars", props.modelValue.selectedCalendarNames.join(", "));
         }
 
-        if (props.modelValue.audiences) {
+        if (props.modelValue.audiences && props.modelValue.audiences?.length > 0) {
             valueBuilder.addTextValue("Audiences", props.modelValue.audiences.map(a => a.text).join(", "));
         }
 

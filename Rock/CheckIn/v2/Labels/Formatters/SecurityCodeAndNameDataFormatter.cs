@@ -20,10 +20,10 @@ using Rock.ViewModels.CheckIn.Labels;
 namespace Rock.CheckIn.v2.Labels.Formatters
 {
     /// <summary>
-    /// Formats an <see cref="AttendanceLabel"/> value into a selected format from
+    /// Formats an <see cref="LabelAttendanceDetail"/> value into a selected format from
     /// the list of options.
     /// </summary>
-    internal sealed class SecurityCodeAndNameDataFormatter : DataFormatter<AttendanceLabel>
+    internal sealed class SecurityCodeAndNameDataFormatter : DataFormatter<LabelAttendanceDetail>
     {
         /// <summary>
         /// The singleton instance of the full name formatter.
@@ -48,18 +48,29 @@ namespace Rock.CheckIn.v2.Labels.Formatters
                 Name = "Code NickName",
                 Value = "Code NickName"
             } );
+
+            Options.Add( new DataFormatterOptionBag
+            {
+                Key = "0f75ea6d-95f7-4c67-8e63-44129c996bf5",
+                Name = "Code",
+                Value = "Code"
+            } );
         }
 
         /// <inheritdoc/>
-        protected override string GetFormattedValue( AttendanceLabel value, string optionValue, LabelField field, PrintLabelRequest printRequest )
+        protected override string GetFormattedValue( LabelAttendanceDetail value, string optionValue, LabelField field, PrintLabelRequest printRequest )
         {
             if ( optionValue == "NickName Code" )
             {
-                return $"{value.Person.NickName} {value.SecurityCode}";
+                return $"{value.Person?.NickName} {value.SecurityCode}";
             }
             else if ( optionValue == "Code NickName" )
             {
-                return $"{value.SecurityCode} {value.Person.NickName}";
+                return $"{value.SecurityCode} {value.Person?.NickName}";
+            }
+            else if ( optionValue == "Code" )
+            {
+                return value.SecurityCode ?? string.Empty;
             }
             else
             {

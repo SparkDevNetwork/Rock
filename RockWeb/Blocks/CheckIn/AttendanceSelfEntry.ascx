@@ -24,8 +24,8 @@
 
                         <div class="col-sm-7 col-sm-pull-5">
                             <fieldset>
-                                <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" ValidationGroup="vgPrimary" />
-                                <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" ValidationGroup="vgPrimary" />
+                                <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" ValidationGroup="vgPrimary" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
+                                <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" ValidationGroup="vgPrimary" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                                 <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="false" ValidationGroup="vgPrimary" />
                                 <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birthday" ValidationGroup="vgPrimary" />
                                 <asp:Panel ID="pnlPhone" runat="server" CssClass="margin-b-lg">

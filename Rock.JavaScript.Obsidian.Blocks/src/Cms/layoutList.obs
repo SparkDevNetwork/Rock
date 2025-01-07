@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="isVisible"
+        :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Layout"
@@ -16,21 +17,28 @@
                     field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="5%" />
+                    width="10%" />
 
-        <TextColumn name="fileName"
-                    title="Layout File"
-                    field="fileName"
-                    :filter="textValueFilter"
-                    visiblePriority="xs"
-                    width="50%" />
+        <Column name="fileName"
+                title="Layout File"
+                field="fileName"
+                :filter="textValueFilter"
+                visiblePriority="xs"
+                width="25%">
+            <template #format="{ row }">
+                <span v-if="row.fileName">
+                    {{ row.fileName.split('|')[0] }}
+                    <span v-if="row.fileName.includes('|Missing')" class="label label-danger">Missing</span>
+                </span>
+            </template>
+        </Column>
 
         <TextColumn name="description"
                     title="Description"
                     field="description"
                     :filter="textValueFilter"
                     visiblePriority="md"
-                    width="1%" />
+                    width="35%" />
 
         <BooleanColumn name="isSystem"
                        title="System"
@@ -113,10 +121,9 @@
     <!-- Informational Note -->
     <NotificationBox :alertType="'info'"
                      :dismissible="false"
-                     :class="'mt-4'">
-        <div>
-            <strong>Note</strong> {{ note }}
-        </div>
+                     :class="'mt-4'"
+                     heading="Note">
+           {{ note }}
     </NotificationBox>
 </template>
 
@@ -130,16 +137,26 @@
     import { LayoutListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LayoutList/layoutListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LayoutList/types.partial";
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref } from "vue";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<LayoutListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const store = useStore();
 
     // #region Values
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
-    const note = "Rock will ensure that at least one layout entry exists for each layout file in the site's theme folder. If all the layouts for a layout file are deleted, Rock will automatically and immediately recreate a new layout entry.";
+    const note = " Rock will ensure that at least one layout entry exists for each layout file in the site's theme folder. If all the layouts for a layout file are deleted, Rock will automatically and immediately recreate a new layout entry.";
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isVisible = computed((): boolean => {
+        return store.state.areSecondaryBlocksShown;
+    });
 
     // #endregion
 

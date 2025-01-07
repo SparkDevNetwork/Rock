@@ -38,6 +38,9 @@ namespace Rock.Client
         public string AdditionalSettingsJson { get; set; }
 
         /// <summary />
+        public int? CategoryId { get; set; }
+
+        /// <summary />
         public Guid? ForeignGuid { get; set; }
 
         /// <summary />
@@ -91,6 +94,7 @@ namespace Rock.Client
         {
             this.Id = source.Id;
             this.AdditionalSettingsJson = source.AdditionalSettingsJson;
+            this.CategoryId = source.CategoryId;
             this.ForeignGuid = source.ForeignGuid;
             this.ForeignKey = source.ForeignKey;
             this.ModifiedAuditValuesAlreadyUpdated = source.ModifiedAuditValuesAlreadyUpdated;
@@ -112,6 +116,9 @@ namespace Rock.Client
     /// </summary>
     public partial class PageShortLink : PageShortLinkEntity
     {
+        /// <summary />
+        public bool IsScheduled { get; set; }
+
         /// <summary>
         /// NOTE: Attributes are only populated when ?loadAttributes is specified. Options for loadAttributes are true, false, 'simple', 'expanded' 
         /// </summary>

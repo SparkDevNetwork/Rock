@@ -13,8 +13,8 @@
 
                 <fieldset>
                     <asp:Panel ID="pnlRequester" CssClass="prayer-requester" runat="server">
-                        <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" />
-                        <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="false" />
+                        <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
+                        <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="false" NoSpecialCharacters="true" NoEmojisOrSpecialFonts="true" />
                         <Rock:EmailBox ID="tbEmail" runat="server" Label="Email" Required="false" />
                         <Rock:PhoneNumberBox ID="pnbPhone" runat="server" Label="Mobile Phone" />
                         <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
@@ -28,15 +28,15 @@
                     <Rock:DataTextBox ID="dtbRequest" runat="server" Label="Request" TextMode="MultiLine" Rows="3" ValidateRequestMode="Disabled" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Text" placeholder="Please pray that..."></Rock:DataTextBox>
 
                     <% if ( EnableUrgentFlag ) { %>
-                        <Rock:RockCheckBox ID="cbIsUrgent" runat="server" Checked="false" Label="Urgent?" Text="Yes" Help="If 'yes' is checked the request will be flagged as urgent in need of attention quickly." />
+                        <Rock:RockCheckBox ID="cbIsUrgent" runat="server" Checked="false" Label="Urgent?" Help="If 'yes' is checked the request will be flagged as urgent in need of attention quickly." />
                     <% } %>
                     <% if ( EnableCommentsFlag )
                         { %>
-                        <Rock:RockCheckBox ID="cbAllowComments" runat="server" Checked="false" Label="Allow Encouraging Comments?" Text="Yes" Help="If 'yes' is checked the prayer team can offer encouraging comments on the request." />
+                        <Rock:RockCheckBox ID="cbAllowComments" runat="server" Checked="false" Label="Allow Encouraging Comments?" Help="If 'yes' is checked the prayer team can offer encouraging comments on the request." />
                     <% } %>
                     <% if ( EnablePublicDisplayFlag )
                         { %>
-                        <Rock:RockCheckBox ID="cbAllowPublicDisplay" runat="server" Checked="false" Label="Allow Publication?" Text="Yes" Help="If you check 'yes' you give permission to show the request on the public website." />
+                        <Rock:RockCheckBox ID="cbAllowPublicDisplay" runat="server" Checked="false" Label="Allow Publication?" Help="If you check 'yes' you give permission to show the request on the public website." />
                     <% } %>
                 </fieldset>
 

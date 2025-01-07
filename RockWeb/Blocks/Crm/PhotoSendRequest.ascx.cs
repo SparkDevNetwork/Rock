@@ -123,8 +123,6 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbError.Visible = false;
             nbTestResult.Visible = false;
             nbConfirmMessage.Visible = false;
@@ -133,6 +131,8 @@ namespace RockWeb.Blocks.Crm
             {
                 BindCheckBoxLists();
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

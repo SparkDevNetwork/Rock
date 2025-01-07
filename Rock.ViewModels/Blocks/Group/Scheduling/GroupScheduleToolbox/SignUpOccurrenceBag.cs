@@ -27,6 +27,11 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox
     public class SignUpOccurrenceBag
     {
         /// <summary>
+        /// Gets or sets the occurrence group unique identifier.
+        /// </summary>
+        public Guid GroupGuid { get; set; }
+
+        /// <summary>
         /// Gets or sets the occurrence schedule unique identifier.
         /// </summary>
         public Guid ScheduleGuid { get; set; }

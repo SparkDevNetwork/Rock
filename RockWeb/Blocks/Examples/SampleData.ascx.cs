@@ -163,8 +163,6 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // Set timeout for up to 30 minutes (just like installer)
             Server.ScriptTimeout = 1800;
             ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 1800;
@@ -181,6 +179,8 @@ namespace RockWeb.Blocks.Examples
                     messageContainer.Attributes["style"] = "visibility: visible";
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods

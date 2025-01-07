@@ -188,18 +188,28 @@ namespace Rock.Security
             var valContext = new ValidationContext( this.SecuritySettings, serviceProvider: null, items: null );
             var isValid = Validator.TryValidateObject( this.SecuritySettings, valContext, _validationResults, true );
 
-            if ( SecuritySettings?.AccountProtectionProfilesForDuplicateDetectionToIgnore == null )
+            if ( this.SecuritySettings?.AccountProtectionProfilesForDuplicateDetectionToIgnore == null )
             {
-                ValidationResults.Add( new ValidationResult( "The account protection profile list is null." ) );
+                this.ValidationResults.Add( new ValidationResult( "The account protection profile list is null." ) );
                 isValid = false;
             }
 
             // Validate Groups are security groups.
-            var securityGroupsToValidate = SecuritySettings?.AccountProtectionProfileSecurityGroup?.Values.ToList();
+            var securityGroupsToValidate = this.SecuritySettings?.AccountProtectionProfileSecurityGroup?.Values.ToList();
             if ( securityGroupsToValidate == null )
             {
                 // The only way invalidGroups would be null is if the SecuritySettings or property is null.
-                ValidationResults.Add( new ValidationResult( "The account protection profile security group list is null." ) );
+                this.ValidationResults.Add( new ValidationResult( "The account protection profile security group list is null." ) );
+                isValid = false;
+            }
+
+            // Ensure the rejection date and time are not set in the future, 
+            // as this will block all logins until the date is in the past.
+            var rejectAuthenticationCookiesIssuedBefore = this.SecuritySettings?.RejectAuthenticationCookiesIssuedBefore;
+            if ( rejectAuthenticationCookiesIssuedBefore.HasValue
+                 && rejectAuthenticationCookiesIssuedBefore.Value > RockDateTime.Now )
+            {
+                this.ValidationResults.Add( new ValidationResult( "The reject authentication cookies issued before date and time cannot be in the future." ) );
                 isValid = false;
             }
 

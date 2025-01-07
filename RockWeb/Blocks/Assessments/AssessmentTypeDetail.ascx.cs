@@ -97,10 +97,9 @@ namespace RockWeb.Blocks.Assessments
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !_blockContextIsValid )
             {
+                base.OnLoad( e );
                 return;
             }
 
@@ -108,6 +107,8 @@ namespace RockWeb.Blocks.Assessments
             {
                 this.ShowDetail( _entityId );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

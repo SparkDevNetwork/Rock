@@ -44,6 +44,13 @@ namespace Rock.ViewModels.CheckIn
         public bool IsPending { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this session should enforce
+        /// location capacity limits on the locations.
+        /// </summary>
+        /// <value><c>true</c> if this instance should enforce location capacity; otherwise, <c>false</c>.</value>
+        public bool IsCapacityThresholdEnforced { get; set; }
+
+        /// <summary>
         /// Gets or sets the family identifier that was determined during
         /// the family search operation.
         /// </summary>

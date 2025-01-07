@@ -15,6 +15,12 @@
 // </copyright>
 //
 
+import { ScheduledRedirectBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/scheduledRedirectBag";
+
 export const enum NavigationUrlKey {
     ParentPage = "ParentPage"
 }
+
+export type ScheduledRedirect = ScheduledRedirectBag & {
+    id: string;
+};

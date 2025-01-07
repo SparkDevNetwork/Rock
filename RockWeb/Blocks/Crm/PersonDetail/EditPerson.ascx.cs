@@ -101,6 +101,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         DefaultValue = "Hide",
         Order = 5 )]
 
+    [BooleanField(
+        "Default Mobile SMS Checked",
+        Key = AttributeKey.DefaultMobileSMSChecked,
+        Description = "Determines if the SMS checkbox should be automatically checked when a new mobile phone number is entered.",
+        DefaultBooleanValue = true,
+        Order = 6 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "0A15F28C-4828-4B38-AF66-58AC5BDE48E0" )]
@@ -116,6 +123,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             public const string RequireCompleteBirthDate = "RequireCompleteBirthDate";
             public const string RaceOption = "RaceOption";
             public const string EthnicityOption = "EthnicityOption";
+            public const string DefaultMobileSMSChecked = "DefaultMobileSMSChecked";
         }
 
         private static class ListSource
@@ -274,14 +282,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack && Person != null )
             {
                 ShowDetails();
+                SetDefaultValueForMobileSMS();
             }
 
             ShowOrHideEthnicityAndRace();
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -302,6 +311,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             }
 
             ShowOrHideEthnicityAndRace();
+            SetDefaultValueForMobileSMS();
         }
 
         #region View State related stuff
@@ -960,7 +970,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         numberType.Value = phoneNumberType.Value;
 
                         phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
-                        phoneNumber.IsMessagingEnabled = mobilePhoneType != null && phoneNumberType.Id == mobilePhoneType.Id;
                     }
                     else
                     {
@@ -1260,6 +1269,46 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             epEthnicity.Visible = ethnicityOptionAttributeValue != "Hide";
             epEthnicity.Required = ethnicityOptionAttributeValue == "Required";
+        }
+
+        /// <summary>
+        /// Set the default value of the SMS Checkbox if adding a new mobile phone.
+        /// </summary>
+        private void SetDefaultValueForMobileSMS()
+        {
+            var mobilePhoneType = DefinedValueCache.Get( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
+            if( mobilePhoneType == null )
+            {
+                return;
+            }
+
+            foreach ( RepeaterItem item in rContactInfo.Items )
+            {
+                HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
+                PhoneNumberBox pnbPhone = item.FindControl( "pnbPhone" ) as PhoneNumberBox;
+                CheckBox cbSms = item.FindControl( "cbSms" ) as CheckBox;
+
+                if ( hfPhoneType != null && pnbPhone != null && cbSms != null )
+                {
+                    if ( !pnbPhone.Number.IsNullOrWhiteSpace() )
+                    {
+                        continue;
+                    }
+
+                    int phoneNumberTypeId;
+                    if ( !int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
+                    {
+                        continue;
+                    }
+
+                    if ( phoneNumberTypeId != mobilePhoneType.Id )
+                    {
+                        continue;
+                    }
+
+                    cbSms.Checked = GetAttributeValue( AttributeKey.DefaultMobileSMSChecked ).AsBoolean();
+                }
+            }
         }
     }
 }

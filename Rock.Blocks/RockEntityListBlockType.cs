@@ -31,14 +31,7 @@ namespace Rock.Blocks
     /// Base for a standard List block type. This is a block that will
     /// display a list of items and usually links to a detail page.
     /// </summary>
-    /// <remarks>
-    /// <strong>This is an internal API</strong> that supports the Rock
-    /// infrastructure and not subject to the same compatibility standards
-    /// as public APIs. It may be changed or removed without notice in any
-    /// release and should therefore not be directly used in any plug-ins.
-    /// </remarks>
     /// <typeparam name="T">The type of <see cref="IEntity"/> to be displayed in the grid.</typeparam>
-    [RockInternal( "1.16" )]
     public abstract class RockEntityListBlockType<T> : RockListBlockType<T>
         where T : class, IEntity
     {

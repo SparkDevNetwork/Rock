@@ -81,7 +81,6 @@ namespace Rock.Field.Types
             cbHideUnknownGender.AutoPostBack = true;
             cbHideUnknownGender.CheckedChanged += OnQualifierUpdated;
             cbHideUnknownGender.Label = "Hide Unknown Gender";
-            cbHideUnknownGender.Text = "Yes";
             cbHideUnknownGender.Help = "When set the 'Unknown' option will not appear in the list of genders.";
 
             var controls = base.ConfigurationControls();

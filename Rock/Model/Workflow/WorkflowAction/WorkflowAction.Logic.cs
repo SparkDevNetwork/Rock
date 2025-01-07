@@ -522,7 +522,25 @@ namespace Rock.Model
                 {
                     errorMessages = new List<string>();
 
-                    AddLogEntry( "Criteria test failed. Action was not processed. Processing continued." );
+                    if ( actionType.IsActionCompletedIfCriteriaUnmet )
+                    {
+                        this.LastProcessedDateTime = RockDateTime.Now;
+
+                        if ( actionType.IsActionCompletedOnSuccess )
+                        {
+                            AddLogEntry( "Criteria test failed. Action was not processed but was marked completed. Processing continued." );
+                            this.MarkComplete();
+                        }
+
+                        if ( actionType.IsActivityCompletedOnSuccess )
+                        {
+                            this.Activity.MarkComplete();
+                        }
+                    }
+                    else
+                    {
+                        AddLogEntry( "Criteria test failed. Action was not processed. Processing continued." );
+                    }
 
                     return true;
                 }

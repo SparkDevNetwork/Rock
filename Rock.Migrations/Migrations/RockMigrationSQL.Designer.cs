@@ -1468,11 +1468,146 @@ namespace Rock.Migrations.Migrations {
         ///    chart shortcode allows anyone to create charts with just a few lines of Lava. There are two modes for 
         ///    creating a chart. The first ‘simple’ mode creates a chart with a single series. This option will suffice 
         ///    for most of your charting needs. The second ‘series’ option allows you to create charts with multiple 
-        ///    series. Let’s look at each o [rest of string was truncated]&quot;;.
+        ///    series. Let’s look at e [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _202306151802148_UpdateChartShortcode {
             get {
                 return ResourceManager.GetString("_202306151802148_UpdateChartShortcode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] _202410101546296_AddDefaultCheckInAdvertisement_Image {
+            get {
+                object obj = ResourceManager.GetObject("_202410101546296_AddDefaultCheckInAdvertisement_Image", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///
+        ////* #Obsolete# - Pledge Analytics can be obtained using the spFinance_PledgeAnalyticsQueryWithMultipleAccountIds Stored Procedure. */
+        ///ALTER PROCEDURE [dbo].[spFinance_PledgeAnalyticsQuery]
+        ///	  @AccountId int
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDate datetime = NULL
+        ///	, @MinAmountPledged decimal(18,2) = NULL
+        ///	, @MaxAmountPledged decimal(18,2) = NULL
+        ///	, @MinComplete decimal(18,2) = NU [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyticsQuery {
+            get {
+                return ResourceManager.GetString("_202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyt" +
+                        "icsQuery", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N&apos;[dbo].[spFinance_PledgeAnalyticsQueryWithMultipleAccountIds]&apos;) AND type in (N&apos;P&apos;, N&apos;PC&apos;))
+        ///DROP PROCEDURE [dbo].[spFinance_PledgeAnalyticsQueryWithMultipleAccountIds]
+        ///GO
+        ///
+        ////*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///		This stored procedure returns data used by the pledge analytics block
+        ///	&lt;/summary&gt;
+        ///&lt;/doc&gt;
+        ///*/
+        ///CREATE PROCEDURE [dbo].[spFinance_PledgeAnalyticsQueryWithMultipleAccountIds]
+        ///	  @AccountIds varchar(max)
+        ///	, @StartDate datetime = NULL
+        ///	, @EndDat [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyticsQueryWithMultipleAccountIds {
+            get {
+                return ResourceManager.GetString("_202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyt" +
+                        "icsQueryWithMultipleAccountIds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {&quot;Width&quot;:4.0,&quot;Height&quot;:2.0,&quot;Fields&quot;:[{&quot;Guid&quot;:&quot;a1c5a8b0-602d-4875-bffe-e8b814e1b28f&quot;,&quot;FieldType&quot;:2,&quot;FieldSubType&quot;:0,&quot;ConditionalVisibility&quot;:null,&quot;IsIncludedOnPreview&quot;:true,&quot;Left&quot;:0.0,&quot;Top&quot;:0.0,&quot;Width&quot;:3.9999999999999996,&quot;Height&quot;:0.625,&quot;RotationAngle&quot;:0.0,&quot;CustomData&quot;:null,&quot;ConfigurationValues&quot;:{&quot;isBlack&quot;:&quot;true&quot;,&quot;isFilled&quot;:&quot;true&quot;,&quot;borderThickness&quot;:&quot;0&quot;,&quot;cornerRadius&quot;:&quot;0&quot;,&quot;sourceKey&quot;:&quot;&quot;,&quot;collectionFormat&quot;:&quot;0&quot;,&quot;formatterOptionKey&quot;:&quot;&quot;,&quot;placeholderText&quot;:&quot;&quot;,&quot;fontSize&quot;:&quot;12&quot;,&quot;horizontalAlignment&quot;:&quot;0&quot;,&quot;isBold&quot;:&quot;false&quot;, [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202411062044462_AddDefaultNextGenCheckInLabels_ChildLabelJson {
+            get {
+                return ResourceManager.GetString("_202411062044462_AddDefaultNextGenCheckInLabels_ChildLabelJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] _202411062044462_AddDefaultNextGenCheckInLabels_ChildLabelPng {
+            get {
+                object obj = ResourceManager.GetObject("_202411062044462_AddDefaultNextGenCheckInLabels_ChildLabelPng", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {&quot;Width&quot;:4.0,&quot;Height&quot;:2.0,&quot;Fields&quot;:[{&quot;Guid&quot;:&quot;9397566d-1100-4170-a1fa-42eff25c9128&quot;,&quot;FieldType&quot;:2,&quot;FieldSubType&quot;:0,&quot;ConditionalVisibility&quot;:null,&quot;IsIncludedOnPreview&quot;:true,&quot;Left&quot;:0.0,&quot;Top&quot;:0.0,&quot;Width&quot;:4.0,&quot;Height&quot;:0.625,&quot;RotationAngle&quot;:0.0,&quot;CustomData&quot;:null,&quot;ConfigurationValues&quot;:{&quot;isBlack&quot;:&quot;true&quot;,&quot;isFilled&quot;:&quot;true&quot;,&quot;borderThickness&quot;:&quot;0&quot;,&quot;cornerRadius&quot;:&quot;0&quot;}},{&quot;Guid&quot;:&quot;427feede-0805-4bd8-9667-772601aa7b4a&quot;,&quot;FieldType&quot;:0,&quot;FieldSubType&quot;:1,&quot;ConditionalVisibility&quot;:null,&quot;IsIncludedOnPreview&quot;:true,&quot;Left&quot;:0.082059957452 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202411062044462_AddDefaultNextGenCheckInLabels_NameTagJson {
+            get {
+                return ResourceManager.GetString("_202411062044462_AddDefaultNextGenCheckInLabels_NameTagJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] _202411062044462_AddDefaultNextGenCheckInLabels_NameTagPng {
+            get {
+                object obj = ResourceManager.GetObject("_202411062044462_AddDefaultNextGenCheckInLabels_NameTagPng", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {&quot;Width&quot;:4.0,&quot;Height&quot;:2.0,&quot;Fields&quot;:[{&quot;Guid&quot;:&quot;7eadf522-72dc-47d3-a57d-652f9e23df83&quot;,&quot;FieldType&quot;:2,&quot;FieldSubType&quot;:0,&quot;ConditionalVisibility&quot;:{&quot;Guid&quot;:&quot;0cdb8d71-abb5-4c04-a355-e33347bf1065&quot;,&quot;ExpressionType&quot;:1,&quot;Rules&quot;:[{&quot;Guid&quot;:&quot;c86c1225-533e-4794-a665-e5b743283417&quot;,&quot;ComparisonType&quot;:64,&quot;Value&quot;:&quot;&quot;,&quot;Path&quot;:&quot;Person&quot;,&quot;SourceType&quot;:0,&quot;AttributeGuid&quot;:&quot;f832ab6f-b684-4eea-8db4-c54b895c79ed&quot;,&quot;PropertyName&quot;:null}],&quot;Groups&quot;:null},&quot;IsIncludedOnPreview&quot;:true,&quot;Left&quot;:0.12499999999999996,&quot;Top&quot;:1.3750000000000004,&quot;Width&quot;:0.250000000 [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202411062044462_AddDefaultNextGenCheckInLabels_NoteLabelJson {
+            get {
+                return ResourceManager.GetString("_202411062044462_AddDefaultNextGenCheckInLabels_NoteLabelJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] _202411062044462_AddDefaultNextGenCheckInLabels_NoteLabelPng {
+            get {
+                object obj = ResourceManager.GetObject("_202411062044462_AddDefaultNextGenCheckInLabels_NoteLabelPng", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {&quot;Width&quot;:4.0,&quot;Height&quot;:2.0,&quot;Fields&quot;:[{&quot;Guid&quot;:&quot;dc134272-04d6-46c4-a3a9-f98f385b6a18&quot;,&quot;FieldType&quot;:2,&quot;FieldSubType&quot;:0,&quot;ConditionalVisibility&quot;:null,&quot;IsIncludedOnPreview&quot;:true,&quot;Left&quot;:0.0,&quot;Top&quot;:0.0,&quot;Width&quot;:3.9999999999999956,&quot;Height&quot;:0.62499999999999889,&quot;RotationAngle&quot;:0.0,&quot;CustomData&quot;:null,&quot;ConfigurationValues&quot;:{&quot;isBlack&quot;:&quot;true&quot;,&quot;isFilled&quot;:&quot;true&quot;,&quot;borderThickness&quot;:&quot;0&quot;,&quot;cornerRadius&quot;:&quot;0&quot;,&quot;isDynamicText&quot;:&quot;false&quot;,&quot;staticText&quot;:&quot;&quot;,&quot;dynamicTextTemplate&quot;:&quot;&quot;,&quot;placeholderText&quot;:&quot;&quot;,&quot;fontSize&quot;:&quot;12&quot;,&quot;horizontalAlignment&quot;:&quot;0&quot;, [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _202411062044462_AddDefaultNextGenCheckInLabels_ParentLabelJson {
+            get {
+                return ResourceManager.GetString("_202411062044462_AddDefaultNextGenCheckInLabels_ParentLabelJson", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] _202411062044462_AddDefaultNextGenCheckInLabels_ParentLabelPng {
+            get {
+                object obj = ResourceManager.GetObject("_202411062044462_AddDefaultNextGenCheckInLabels_ParentLabelPng", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

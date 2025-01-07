@@ -177,12 +177,13 @@ namespace Rock.Web
                                 using ( var rockContext = new Rock.Data.RockContext() )
                                 {
                                     var pageShortLink = new PageShortLinkService( rockContext ).GetByToken( shortlink, site.Id );
+                                    var pageShortLinkCache = pageShortLink != null ? PageShortLinkCache.Get( pageShortLink.Id ) : null;
 
                                     // Use the short link if the site IDs match or the current site and shortlink site are not exclusive.
                                     // Note: this is only a restriction based on the site chosen as the owner of the shortlink, the actual URL can go anywhere.
-                                    if ( pageShortLink != null && ( pageShortLink.SiteId == site.Id || ( !site.EnableExclusiveRoutes && !pageShortLink.Site.EnableExclusiveRoutes ) ) )
+                                    if ( pageShortLinkCache != null && ( pageShortLinkCache.SiteId == site.Id || ( !site.EnableExclusiveRoutes && !pageShortLinkCache.Site.EnableExclusiveRoutes ) ) )
                                     {
-                                        if ( pageShortLink.SiteId == site.Id || requestContext.RouteData.DataTokens["RouteName"] == null )
+                                        if ( pageShortLinkCache.SiteId == site.Id || requestContext.RouteData.DataTokens["RouteName"] == null )
                                         {
                                             pageId = string.Empty;
                                             routeId = 0;
@@ -197,7 +198,7 @@ namespace Rock.Web
                                                 }
                                             }
 
-                                            var urlWithUtm = pageShortLink.UrlWithUtm;
+                                            var (_, urlWithUtm, purposeKey) = pageShortLinkCache.GetCurrentUrlData( rockContext );
 
                                             // Dummy interaction to get UTM source value from the Request/ShortLink url.
                                             var interactionUtm = new Interaction();
@@ -208,19 +209,25 @@ namespace Rock.Web
 
                                             var addShortLinkInteractionMsg = new AddShortLinkInteraction.Message
                                             {
-                                                PageShortLinkId = pageShortLink.Id,
-                                                Token = pageShortLink.Token,
+                                                PageShortLinkId = pageShortLinkCache.Id,
+                                                Token = pageShortLinkCache.Token,
                                                 Url = urlWithUtm,
                                                 DateViewed = RockDateTime.Now,
                                                 IPAddress = WebRequestHelper.GetClientIpAddress( routeHttpRequest ),
                                                 UserAgent = routeHttpRequest.UserAgent ?? string.Empty,
                                                 UserName = requestContext.HttpContext.User?.Identity.Name,
                                                 VisitorPersonAliasIdKey = visitorPersonAliasIdKey,
-                                                UtmSource = UtmHelper.GetUtmSourceNameFromDefinedValueOrText( interactionUtm.SourceValueId, interactionUtm.Source )
+                                                UtmSource = UtmHelper.GetUtmSourceNameFromDefinedValueOrText( interactionUtm.SourceValueId, interactionUtm.Source ),
+                                                UtmMedium = UtmHelper.GetUtmMediumNameFromDefinedValueOrText( interactionUtm.MediumValueId, interactionUtm.Medium ),
+                                                UtmCampaign = UtmHelper.GetUtmCampaignNameFromDefinedValueOrText( interactionUtm.CampaignValueId, interactionUtm.Campaign ),
+                                                PurposeKey = purposeKey
                                             };
 
                                             addShortLinkInteractionMsg.Send();
 
+                                            // Set cache headers to prevent the CDNs from caching the temporary redirection to avoid redirection to stale urls.
+                                            requestContext.HttpContext.Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
+                                            requestContext.HttpContext.Response.Cache.SetNoStore();
                                             requestContext.HttpContext.Response.Redirect( urlWithUtm, false );
                                             requestContext.HttpContext.ApplicationInstance.CompleteRequest();
 
@@ -325,7 +332,7 @@ namespace Rock.Web
                 if ( page.IsRateLimited )
                 {
                     
-                    var canProcess = RateLimiterCache.CanProcessPage( page.Id, RockPage.GetClientIpAddress(), TimeSpan.FromSeconds( page.RateLimitPeriod.Value ), page.RateLimitRequestPerPeriod.Value );
+                    var canProcess = RateLimiterCache.CanProcessPage( page.Id, RockPage.GetClientIpAddress(), TimeSpan.FromSeconds( page.RateLimitPeriodDurationSeconds.Value ), page.RateLimitRequestPerPeriod.Value );
                     if ( !canProcess )
                     {
                         return ( System.Web.UI.Page ) BuildManager.CreateInstanceFromVirtualPath( "~/Http429Error.aspx", typeof( System.Web.UI.Page ) );

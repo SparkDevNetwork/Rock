@@ -24,7 +24,8 @@ namespace Rock.Model
     public enum SchedulerResourceGroupMemberFilterType
     {
         /// <summary>
-        /// Show group members whose scheduling preferences match the schedule and location.
+        /// Show group members whose scheduling preferences (every week, every
+        /// other week, Etc.) lands during the sunday week being scheduled.
         /// </summary>
         ShowMatchingPreference = 0,
 

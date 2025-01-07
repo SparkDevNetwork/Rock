@@ -33,14 +33,14 @@
                         </Rock:NotificationBox>
                     </div>
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbUserSelectable" runat="server" Label="User Selectable" Text="Yes" Help="This flag enables notes of this note type to be added from the note entry block" />
-                        <Rock:RockCheckBox ID="cbAllowsWatching" runat="server" Label="Allows Watching" Text="Yes"  Help="If enabled, an option to watch individual notes will appear, and note watch notifications will be sent on watched notes." />
-                        <Rock:RockCheckBox ID="cbAutoWatchAuthors" runat="server" Label="Auto Watch Authors" Text="Yes"  Help="If enabled, the author of a note will get notifications for direct replies to the note. In other words, a 'watch' will be automatically enabled on the note."/>
+                        <Rock:RockCheckBox ID="cbUserSelectable" runat="server" Label="User Selectable" Help="This flag enables notes of this note type to be added from the note entry block" />
+                        <Rock:RockCheckBox ID="cbAllowsWatching" runat="server" Label="Allows Watching"  Help="If enabled, an option to watch individual notes will appear, and note watch notifications will be sent on watched notes." />
+                        <Rock:RockCheckBox ID="cbAutoWatchAuthors" runat="server" Label="Auto Watch Authors"  Help="If enabled, the author of a note will get notifications for direct replies to the note. In other words, a 'watch' will be automatically enabled on the note."/>
 
-                        <Rock:RockCheckBox ID="cbAllowsReplies" runat="server" Label="Allow Replies" AutoPostBack="true" OnCheckedChanged="cbAllowsReplies_CheckedChanged" Text="Yes" />
+                        <Rock:RockCheckBox ID="cbAllowsReplies" runat="server" Label="Allow Replies" AutoPostBack="true" OnCheckedChanged="cbAllowsReplies_CheckedChanged" />
                         <Rock:NumberBox ID="nbMaxReplyDepth" runat="server" CssClass="input-width-sm" NumberType="Integer" MinimumValue="0" MaximumValue="9999" Label="Max Reply Depth" />
 
-                        <Rock:RockCheckBox ID="cbAllowsAttachments" runat="server" Label="Allows Attachments" Text="Yes" Help="If enabled, then this note type will allow attachments. However, not all UI components will currently allow file uploads." AutoPostBack="true" OnCheckedChanged="cbAllowsAttachments_CheckedChanged" />
+                        <Rock:RockCheckBox ID="cbAllowsAttachments" runat="server" Label="Allows Attachments" Help="If enabled, then this note type will allow attachments. However, not all UI components will currently allow file uploads." AutoPostBack="true" OnCheckedChanged="cbAllowsAttachments_CheckedChanged" />
                         <Rock:BinaryFileTypePicker ID="bftpAttachmentType" runat="server" Label="Attachment File Type" Required="true" Help="When a file is attached to a note, it will be stored using this file type." />
 
                         <asp:Panel ID="pnlStructuredFeatures" runat="server">

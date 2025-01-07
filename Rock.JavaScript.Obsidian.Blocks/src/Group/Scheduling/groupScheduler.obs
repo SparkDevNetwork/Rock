@@ -63,7 +63,8 @@
                              @click="onSelectFiltersClick"><i class="fa fa-sliders-h"></i> {{ filtersText }}</div>
 
                         <div class="d-block flex-shrink-0">
-                            <RockButton :btnSize="BtnSize.ExtraSmall"
+                            <RockButton v-if="isCloneSchedulesEnabled"
+                                        :btnSize="BtnSize.ExtraSmall"
                                         :disabled="isSchedulingDisabled"
                                         @click="onCloneSchedulesClick">
                                 <i class="fa fa-clone"></i> Clone Schedules
@@ -78,7 +79,8 @@
                                 <i class="fa fa-calendar-check"></i> Rosters
                             </RockButton>
 
-                            <RockButton :btnSize="BtnSize.ExtraSmall"
+                            <RockButton v-if="isAutoScheduleEnabled"
+                                        :btnSize="BtnSize.ExtraSmall"
                                         :disabled="isSchedulingDisabled"
                                         class="ml-1"
                                         @click="onAutoScheduleClick">
@@ -123,7 +125,7 @@
                                             <i class="fa fa-envelope-o"></i> Send Confirmations
                                         </button>
                                     </li>
-                                    <li>
+                                    <li v-if="isCloneSchedulesEnabled">
                                         <button type="button"
                                                 class="dropdown-item btn-link text-nowrap"
                                                 :disabled="isSchedulingDisabled"
@@ -140,7 +142,7 @@
                                             <i class="fa fa-calendar-check"></i> Rosters
                                         </button>
                                     </li>
-                                    <li>
+                                    <li v-if="isAutoScheduleEnabled">
                                         <button type="button"
                                                 class="dropdown-item btn-link text-nowrap"
                                                 :disabled="isSchedulingDisabled"
@@ -156,6 +158,14 @@
             </template>
 
             <!-- Body -->
+            <div v-if="blockActionErrorMessage" class="panel-body-alert">
+
+                <NotificationBox :alertType="AlertType.Warning">
+                    {{ blockActionErrorMessage }}
+                </NotificationBox>
+
+            </div>
+
             <div v-if="!anyOccurrences" class="panel-body-alert">
 
                 <NotificationBox v-if="!anyGroupsSelected" :alertType="AlertType.Info">
@@ -189,7 +199,8 @@
 
             <CloneSchedules v-model:isVisible="isSelectingCloneSettings"
                             :filters="filters"
-                            @cloneSchedules="onCloneSchedules" />
+                            @cloneSchedules="onCloneSchedules"
+                            @disableCloneSchedules="disableCloneSchedules" />
 
             <ModalAlert v-model="isCloneSchedulesModalVisible"
                         :type="ModalAlertType.Information">
@@ -339,6 +350,8 @@
     const unassignedResourceCounts = ref<GroupSchedulerUnassignedResourceCountBag[]>(config.appliedFilters?.unassignedResourceCounts ?? []);
     const navigationUrls = ref<Record<string, string> | null | undefined>(config.appliedFilters?.navigationUrls);
     const disallowGroupSelection = ref<boolean>(config.disallowGroupSelection);
+    const isCloneSchedulesEnabled = ref<boolean>(config.isCloneSchedulesEnabled);
+    const isAutoScheduleEnabled = ref<boolean>(config.isAutoScheduleEnabled);
 
     const isSelectingFilters = ref(false);
 
@@ -370,7 +383,7 @@
     });
 
     const copyLinkUrl = computed((): string | null => {
-        return navigationUrls.value?.[NavigationUrlKey.CopyLink] ?? "hello";
+        return navigationUrls.value?.[NavigationUrlKey.CopyLink] || null;
     });
 
     const secondaryActions = computed((): PanelAction[] => {
@@ -803,6 +816,13 @@
             }) ?? [];
     }
 
+    /**
+     * Disables the "clone schedules" feature.
+     */
+    function disableCloneSchedules(): void {
+        isCloneSchedulesEnabled.value = false;
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -854,6 +874,11 @@
 
         if (!result.isSuccess) {
             blockActionErrorMessage.value = result.errorMessage || "Unknown error while trying to clone schedules.";
+
+            if (result.statusCode === 403) {
+                disableCloneSchedules();
+            }
+
             return;
         }
 
@@ -890,6 +915,11 @@
 
         if (!result.isSuccess) {
             blockActionErrorMessage.value = result.errorMessage || "Unknown error while auto-scheduling.";
+
+            if (result.statusCode === 403) {
+                isAutoScheduleEnabled.value = false;
+            }
+
             return;
         }
 

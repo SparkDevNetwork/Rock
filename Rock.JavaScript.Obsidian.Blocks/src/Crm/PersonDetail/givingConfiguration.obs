@@ -119,7 +119,6 @@
                     </div>
                 </div>
 
-
                 <!-- Saved Accounts -->
                 <div v-if="hasSavedAccounts" class="mb-3">
                     <hr class="separator" />
@@ -147,7 +146,7 @@
                                         Expired
                                     </div>
                                     <div v-else-if="account.lastErrorCode" class="text-danger text-xs">
-                                        {{ `Error: ${account.lastErrorCode} on ${formatDate(account.lastErrorCodeDateTime)}` }}
+                                        {{ `Error: ${account.lastErrorCode} on ${formatDate(account.lastErrorCodeDateTime ?? null)}` }}
                                     </div>
                                     <div v-else-if="accountIsInUse(account.id.toString())" class="text-success text-xs">
                                         In Use
@@ -308,6 +307,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { NavigationUrlKey, PageParameterKey } from "./types.partial";
+    import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     // #region Values
 
@@ -545,14 +545,12 @@
 
     // #region Helper Functions
 
-    function formatDate(dateString): string {
+    function formatDate(dateString: string | null): string {
         if (!dateString) return "";
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) return "";
-        const day = date.getDate();
-        const month = date.getMonth() + 1;
-        const year = date.getFullYear();
-        return `${month}/${day}/${year}`;
+
+        const date = RockDateTime.parseISO(dateString);
+
+        return date?.toLocaleString(DateTimeFormat.DateShort) || "";
     }
 
     function updateSavedAccountStatus(selectedAccountId: string | undefined): void {

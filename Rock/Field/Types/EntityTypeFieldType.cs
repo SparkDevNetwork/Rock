@@ -130,7 +130,6 @@ namespace Rock.Field.Types
             var cb = new RockCheckBox();
             controls.Add( cb );
             cb.Label = "Include Global Attributes Option";
-            cb.Text = "Yes";
             cb.Help = "Should the 'Global Attributes' entity option be included.";
             cb.CheckedChanged += OnQualifierUpdated;
 

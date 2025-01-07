@@ -199,6 +199,17 @@ namespace Rock.Model
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 
+        /// <summary>
+        /// Gets or sets the default <see cref="Rock.Model.LearningGradingSystem"/> identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier fo the <see cref="LearningGradingSystem"/>
+        /// new <see cref="LearningClass"/> records for this <see cref="LearningProgram" />
+        /// will have when first created.
+        /// </value>
+        [DataMember]
+        public int? DefaultLearningGradingSystemId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -226,6 +237,17 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public virtual WorkflowType CompletionWorkflowType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default <see cref="LearningGradingSystem"/> for this LearningProgram.
+        /// </summary>
+        /// <remarks>
+        /// New <see cref="LearningClass"/> records will be default to this value.
+        /// Especially impactful for On-Demand Configuration modes whose default
+        /// <see cref="LearningClass"/> is created automatically.
+        /// </remarks>
+        [DataMember]
+        public LearningGradingSystem DefaultLearningGradingSystem { get; set; }
 
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.LearningProgramCompletion">LearningProgramCompletions</see> for this LearningProgram.

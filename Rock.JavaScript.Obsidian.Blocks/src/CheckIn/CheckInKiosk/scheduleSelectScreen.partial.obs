@@ -3,12 +3,13 @@
     <div class="schedule-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="currentPerson">
+                   :person="currentPerson"
+                   :configuration="configuration">
             <div class="button-list">
                 <RockButton v-for="schedule in schedules"
-                            btnType="primary"
-                            class="schedule-button"
-                            :class="{ checked: isSelected(schedule) }"
+                            :btnType="isSelected(schedule) ? 'primary' : 'default'"
+                            class="schedule-button illustrated-button"
+                            :disabled="isProcessing"
                             @click="onScheduleClick(schedule)">
                     <span class="selection">
                         <i v-if="isSelected(schedule)" class="fa fa-check-square"></i>
@@ -25,11 +26,11 @@
 <script setup lang="ts">
     import MainPanel from "./mainPanel.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
     import { CheckInSession } from "./checkInSession.partial";
-    import { isAnyIdInList, UnexpectedErrorMessage } from "./utils.partial";
+    import { alert, isAnyIdInList, UnexpectedErrorMessage } from "./utils.partial";
     import { ScheduleOpportunityBag } from "@Obsidian/ViewModels/CheckIn/scheduleOpportunityBag";
     import { KioskCheckInMode } from "@Obsidian/Enums/CheckIn/kioskCheckInMode";
     import { Guid } from "@Obsidian/Types";
@@ -57,6 +58,8 @@
     // #region Values
 
     const selections = ref<Guid[]>(getDefaultSelections(props.session.selectedSchedules));
+    const isProcessing = ref(false);
+    const cancellationTokenSource = new CancellationTokenSource();
 
     // #endregion
 
@@ -143,16 +146,23 @@
      */
     async function onNextClick(): Promise<void> {
         try {
+            isProcessing.value = true;
+
             const newSession = props.session.withSelectedSchedules(selections.value);
 
             emit("next", await newSession.withNextScreen());
         }
         catch (error) {
-            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+            await alert(error instanceof Error ? error.message : UnexpectedErrorMessage, cancellationTokenSource.token);
+        }
+        finally {
+            isProcessing.value = false;
         }
     }
 
     // #endregion
+
+    onBeforeUnmount(() => cancellationTokenSource.cancel());
 
     watch(selections, () => updateActions());
 

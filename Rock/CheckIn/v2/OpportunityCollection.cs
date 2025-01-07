@@ -20,7 +20,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Enums.CheckIn;
 using Rock.Model;
+using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2
@@ -174,7 +176,8 @@ namespace Rock.CheckIn.v2
                     .Select( a => new AreaOpportunity
                     {
                         Id = a.IdKey,
-                        Name = a.Name
+                        Name = a.Name,
+                        LocationSelectionStrategy = a.GetCheckInAreaData( rockContext ).LocationSelectionStrategy
                     } )
                     .ToList(),
                 Groups = new List<GroupOpportunity>(),
@@ -216,8 +219,7 @@ namespace Rock.CheckIn.v2
                     IsClosed = !location.IsActive,
                     CurrentCount = attendeeIds.Count,
                     Capacity = location.SoftRoomThreshold,
-                    CurrentPersonIds = attendeeIds,
-                    ScheduleIds = activeSchedules.Where( s => locationScheduleIds.Contains( s.Id ) ).Select( s => s.IdKey ).ToList()
+                    CurrentPersonIds = attendeeIds
                 } );
             }
 
@@ -249,10 +251,25 @@ namespace Rock.CheckIn.v2
                     AreaId = groupType.IdKey,
                     CheckInData = grp.Group.GetCheckInData( rockContext ),
                     CheckInAreaData = groupType.GetCheckInAreaData( rockContext ),
-                    LocationIds = grp.Locations.OrderBy( gl => gl.Order )
-                        .Select( gl => NamedLocationCache.Get( gl.LocationId ) )
-                        .Where( l => l != null )
-                        .Select( l => l.IdKey )
+                    Locations = grp.Locations
+                        .Where( gl => !gl.IsOverflowLocation )
+                        .OrderBy( gl => gl.Order )
+                        .SelectMany( gl => gl.ScheduleIds.Select( s => new LocationAndScheduleBag
+                        {
+                            LocationId = NamedLocationCache.Get( gl.LocationId, rockContext )?.IdKey,
+                            ScheduleId = NamedScheduleCache.Get( s, rockContext )?.IdKey
+                        } ) )
+                        .Where( l => l.LocationId != null && l.ScheduleId != null )
+                        .ToList(),
+                    OverflowLocations = grp.Locations
+                        .Where( gl => gl.IsOverflowLocation )
+                        .OrderBy( gl => gl.Order )
+                        .SelectMany( gl => gl.ScheduleIds.Select( s => new LocationAndScheduleBag
+                        {
+                            LocationId = NamedLocationCache.Get( gl.LocationId, rockContext )?.IdKey,
+                            ScheduleId = NamedScheduleCache.Get( s, rockContext )?.IdKey
+                        } ) )
+                        .Where( l => l.LocationId != null && l.ScheduleId != null )
                         .ToList()
                 } );
             }
@@ -283,7 +300,8 @@ namespace Rock.CheckIn.v2
                     .Select( a => new AreaOpportunity
                     {
                         Id = a.Id,
-                        Name = a.Name
+                        Name = a.Name,
+                        LocationSelectionStrategy = a.LocationSelectionStrategy
                     } )
                     .ToList(),
                 Groups = Groups
@@ -295,7 +313,9 @@ namespace Rock.CheckIn.v2
                         AreaId = g.AreaId,
                         CheckInData = g.CheckInData,
                         CheckInAreaData = g.CheckInAreaData,
-                        LocationIds = g.LocationIds.ToList()
+                        IsPreferredGroup = g.IsPreferredGroup,
+                        Locations = g.Locations.ToList(),
+                        OverflowLocations = g.OverflowLocations.ToList()
                     } )
                     .ToList(),
                 Locations = Locations
@@ -306,8 +326,7 @@ namespace Rock.CheckIn.v2
                         IsClosed = l.IsClosed,
                         CurrentCount = l.CurrentCount,
                         Capacity = l.Capacity,
-                        CurrentPersonIds = new HashSet<string>( l.CurrentPersonIds ),
-                        ScheduleIds = l.ScheduleIds.ToList()
+                        CurrentPersonIds = new HashSet<string>( l.CurrentPersonIds )
                     } )
                     .ToList(),
                 Schedules = Schedules
@@ -336,33 +355,26 @@ namespace Rock.CheckIn.v2
             // This is why you must call Clone() before calling this method if
             // you plan to use the original opportunities again.
 
-            // Start at the "bottom" and work our way up. So first remove all
-            // locations without schedules.
+            // Remove all groups locations that reference locations or schedules
+            // that don't exist anymore.
             var allScheduleIds = new HashSet<string>( Schedules.Select( s => s.Id ) );
-            var allReferencedLocationIds = new HashSet<string>( Groups.SelectMany( g => g.LocationIds ) );
-
-            foreach ( var location in Locations )
-            {
-                location.ScheduleIds.RemoveAll( scheduleId => !allScheduleIds.Contains( scheduleId ) );
-            }
-
-            Locations.RemoveAll( l => l.ScheduleIds.Count == 0
-                || !allReferencedLocationIds.Contains( l.Id ) );
-
-            // Next remove all schedules without locations.
-            var allReferencedScheduleIds = new HashSet<string>( Locations.SelectMany( l => l.ScheduleIds ) );
-
-            Schedules.RemoveAll( s => !allReferencedScheduleIds.Contains( s.Id ) );
-
-            // Next remove all groups without locations.
             var allLocationIds = new HashSet<string>( Locations.Select( l => l.Id ) );
 
             foreach ( var group in Groups )
             {
-                group.LocationIds.RemoveAll( locationId => !allLocationIds.Contains( locationId ) );
+                group.Locations.RemoveAll( l => !allLocationIds.Contains( l.LocationId ) || !allScheduleIds.Contains( l.ScheduleId ) );
             }
 
-            Groups.RemoveAll( g => g.LocationIds.Count == 0 );
+            // Now remove all locations and schedules that have no groups
+            // referencing them.
+            var allReferencedLocationIds = new HashSet<string>( Groups.SelectMany( g => g.Locations.Select( l => l.LocationId ) ) );
+            var allReferencedScheduleIds = new HashSet<string>( Groups.SelectMany( g => g.Locations.Select( l => l.ScheduleId ) ) );
+
+            Locations.RemoveAll( l => !allReferencedLocationIds.Contains( l.Id ) );
+            Schedules.RemoveAll( s => !allReferencedScheduleIds.Contains( s.Id ) );
+
+            // Next remove all groups without locations.
+            Groups.RemoveAll( g => g.Locations.Count == 0 );
 
             // Finally remove all areas without groups.
             var allReferencedAreaIds = new HashSet<string>( Groups.Select( g => g.AreaId ) );

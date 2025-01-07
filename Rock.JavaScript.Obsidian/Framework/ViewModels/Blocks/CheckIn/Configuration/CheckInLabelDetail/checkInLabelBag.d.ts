@@ -63,6 +63,12 @@ export type CheckInLabelBag = {
     isSystem: boolean;
 
     /**
+     * The label content to be edited. This is only valid if LabelFormat
+     * is ZPL.
+     */
+    labelContent?: string | null;
+
+    /**
      * The format that the label's content is stored in. This determines
      * what UI is displayed for editing the label as well as how the label
      * is printed.

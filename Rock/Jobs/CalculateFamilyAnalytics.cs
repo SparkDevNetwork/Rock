@@ -35,17 +35,42 @@ namespace Rock.Jobs
     [DisplayName( "Family Analytics" )]
     [Description( "Job that populates Rock's family analytics." )]
 
-    [WorkflowTypeField( "eRA Entry Workflow", "The workflow type to launch when a family becomes an eRA.", key: "EraEntryWorkflow", order: 0)]
-    [WorkflowTypeField( "eRA Exit Workflow", "The workflow type to launch when a family exits from being an eRA.", key: "EraExitWorkflow", order: 1 )]
+    [WorkflowTypeField( "eRA Entry Workflow",
+        Description = "The workflow type to launch when a family becomes an eRA.",
+        Key = AttributeKey.EraEntryWorkflow,
+        Order = 0 )]
 
-    [BooleanField("Set Visit Dates", "If enabled will update the first and second visit person attributes.", true, order: 3)]
+    [WorkflowTypeField( "eRA Exit Workflow",
+        Description = "The workflow type to launch when a family exits from being an eRA.",
+        Key = AttributeKey.EraExitWorkflow,
+        Order = 1 )]
 
-    [IntegerField( "Command Timeout", "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (3600). Note, some operations could take several minutes, so you might want to set it at 3600 (60 minutes) or higher", false, 60 * 60, "General", 1, "CommandTimeout" )]
+    [BooleanField( "Set Visit Dates",
+        Description = "If enabled will update the first and second visit person attributes.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.SetVisitDates,
+        Order = 3 )]
+
+    [IntegerField( "Command Timeout",
+        Description = "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (3600). Note, some operations could take several minutes, so you might want to set it at 3600 (60 minutes) or higher",
+        IsRequired = false,
+        DefaultIntegerValue = 60 * 60,
+        Category = "General",
+        Key = AttributeKey.CommandTimeout,
+        Order = 1 )]
     public class CalculateFamilyAnalytics : RockJob
     {
         private const string SOURCE_OF_CHANGE = "Calculate Family Analytics Job";
 
-        /// <summary> 
+        private static class AttributeKey
+        {
+            public const string EraEntryWorkflow = "EraEntryWorkflow";
+            public const string EraExitWorkflow = "EraExitWorkflow";
+            public const string SetVisitDates = "SetVisitDates";
+            public const string CommandTimeout = "CommandTimeout";
+        }
+
+        /// <summary>
         /// Empty constructor for job initialization
         /// <para>
         /// Jobs require a public empty constructor so that the
@@ -61,30 +86,30 @@ namespace Rock.Jobs
         /// </summary>
         public override void Execute()
         {
-            Guid? entryWorkflowType = GetAttributeValue( "EraEntryWorkflow" ).AsGuidOrNull();
-            Guid? exitWorkflowType = GetAttributeValue( "EraExitWorkflow" ).AsGuidOrNull();
-            bool updateVisitDates = GetAttributeValue( "SetVisitDates" ).AsBoolean();
+            Guid? entryWorkflowType = GetAttributeValue( AttributeKey.EraEntryWorkflow ).AsGuidOrNull();
+            Guid? exitWorkflowType = GetAttributeValue( AttributeKey.EraExitWorkflow ).AsGuidOrNull();
+            bool updateVisitDates = GetAttributeValue( AttributeKey.SetVisitDates ).AsBoolean();
 
-            int commandTimeout = GetAttributeValue( "CommandTimeout" ).AsIntegerOrNull() ?? 3600;
+            int commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
-            // configuration
+            // Configuration
             //
 
-            // giving
+            // Giving
             int exitGivingCount = 1;
 
-            // attendance
+            // Attendance
             int exitAttendanceCountShort = 1;
             int exitAttendanceCountLong = 8;
 
-            // get era dataset from stored proc
+            // Get era dataset from stored proc
             var resultContext = new RockContext();
-            
+
             var eraAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_CURRENTLY_AN_ERA.AsGuid() );
             var eraStartAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_START_DATE.AsGuid() );
             var eraEndAttribute = AttributeCache.Get( SystemGuid.Attribute.PERSON_ERA_END_DATE.AsGuid() );
 
-            if (eraAttribute == null || eraStartAttribute == null || eraEndAttribute == null)
+            if ( eraAttribute == null || eraStartAttribute == null || eraEndAttribute == null )
             {
                 throw new Exception( "Family analytic attributes could not be found" );
             }
@@ -103,37 +128,38 @@ namespace Rock.Jobs
             int progressPosition = 0;
             int progressTotal = results.Count;
 
-            foreach (var result in results )
+            foreach ( var result in results )
             {
                 progressPosition++;
-                // create new rock context for each family (https://weblog.west-wind.com/posts/2014/Dec/21/Gotcha-Entity-Framework-gets-slow-in-long-Iteration-Loops)
+                // Create new rock context for each family (https://weblog.west-wind.com/posts/2014/Dec/21/Gotcha-Entity-Framework-gets-slow-in-long-Iteration-Loops)
                 RockContext updateContext = new RockContext();
                 updateContext.SourceOfChange = SOURCE_OF_CHANGE;
                 updateContext.Database.CommandTimeout = commandTimeout;
                 var attributeValueService = new AttributeValueService( updateContext );
                 var historyService = new HistoryService( updateContext );
 
-                // if era ensure it still meets requirements
+                // If era ensure it still meets requirements
                 if ( result.IsEra )
                 {
                     // This process will not remove eRA status from a single inactive family member if the family is considered eRA, even if the person record status is inactive.
                     // It removes eRA status from all family members if the family no longer meets the eRA requirements.
-                    if (result.ExitGiftCountDuration < exitGivingCount && result.ExitAttendanceCountDurationShort < exitAttendanceCountShort && result.ExitAttendanceCountDurationLong < exitAttendanceCountLong )
+                    if ( result.ExitGiftCountDuration < exitGivingCount && result.ExitAttendanceCountDurationShort < exitAttendanceCountShort && result.ExitAttendanceCountDurationLong < exitAttendanceCountLong )
                     {
-                        // exit era (delete attribute value from each person in family)
+                        // Exit era (delete attribute value from each person in family)
                         var family = new GroupService( updateContext ).Queryable( "Members, Members.Person" ).AsNoTracking().Where( m => m.Id == result.FamilyId ).FirstOrDefault();
 
-                        if ( family != null ) {
-                            foreach ( var person in family.Members.Select( m => m.Person ) ) {
-
-                                // remove the era flag
+                        if ( family != null )
+                        {
+                            foreach ( var person in family.Members.Select( m => m.Person ) )
+                            {
+                                // Remove the era flag
                                 var eraAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
                                 if ( eraAttributeValue != null )
                                 {
                                     attributeValueService.Delete( eraAttributeValue );
                                 }
 
-                                // set end date
+                                // Set end date
                                 var eraEndAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraEndAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
                                 if ( eraEndAttributeValue == null )
                                 {
@@ -144,7 +170,7 @@ namespace Rock.Jobs
                                 }
                                 eraEndAttributeValue.Value = RockDateTime.Now.ToISO8601DateString();
 
-                                // add a history record
+                                // Add a history record
                                 if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 )
                                 {
                                     History historyRecord = new History();
@@ -159,7 +185,7 @@ namespace Rock.Jobs
                                     historyRecord.ChangeType = History.HistoryChangeType.Attribute.ConvertToString();
                                     historyRecord.ValueName = "eRA";
                                     historyRecord.NewValue = "Exited";
-                                    
+
                                     historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
                                     historyRecord.RelatedEntityId = eraAttributeId;
                                     historyRecord.CategoryId = personAnalyticsCategoryId;
@@ -169,7 +195,7 @@ namespace Rock.Jobs
                                 updateContext.SaveChanges();
                             }
 
-                            // launch exit workflow
+                            // Launch exit workflow
                             if ( exitWorkflowType.HasValue )
                             {
                                 LaunchWorkflow( exitWorkflowType.Value, family );
@@ -179,7 +205,7 @@ namespace Rock.Jobs
                 }
                 else
                 {
-                    // entered era
+                    // Entered era
                     var family = new GroupService( updateContext ).Queryable( "Members" ).AsNoTracking().Where( m => m.Id == result.FamilyId ).FirstOrDefault();
 
                     if ( family != null )
@@ -194,9 +220,11 @@ namespace Rock.Jobs
                             .Where( m => m.Person.RecordStatusValueId != inactiveStatusId )
                             .Select( m => m.Person );
 
+                        var shouldLaunchWorkflow = false;
+
                         foreach ( var person in familyMembers )
                         {
-                            // set era attribute to true
+                            // Set era attribute to true
                             var eraAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
                             var isCurrentlyEra = eraAttributeValue?.ValueAsBoolean ?? false;
 
@@ -209,7 +237,8 @@ namespace Rock.Jobs
                             }
                             eraAttributeValue.Value = bool.TrueString;
 
-                            // add start date
+                            // Add start date
+                            var nowDate = RockDateTime.Now.ToISO8601DateString();
                             var eraStartAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraStartAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
                             if ( eraStartAttributeValue == null )
                             {
@@ -220,16 +249,25 @@ namespace Rock.Jobs
                             }
                             // There can be some circumstances where a child family member may already be eRa whiles the adult family member is not,
                             // thus we check if the current family member is already eRa, if they are their eRa date and history is not updated.
-                            eraStartAttributeValue.Value = !isCurrentlyEra || !eraStartAttributeValue.ValueAsDateTime.HasValue ? RockDateTime.Now.ToISO8601DateString() : eraStartAttributeValue.Value;
+                            eraStartAttributeValue.Value = !isCurrentlyEra || !eraStartAttributeValue.ValueAsDateTime.HasValue ? nowDate : eraStartAttributeValue.Value;
 
-                            // delete end date if it exists
+                            var adultRoleId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Roles
+                                .Find( r => r.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() )?.Id;
+                            var headOfHouse = family.Members.Where( m => m.GroupRoleId == adultRoleId ).OrderBy( m => m.Person.Gender ).FirstOrDefault()?.Person;
+                            if ( headOfHouse != null && person.Guid == headOfHouse.Guid )
+                            {
+                                // Launch workflow if head of family entered eRa in the current job execution.
+                                shouldLaunchWorkflow = eraStartAttributeValue.Value == nowDate;
+                            }
+
+                            // Delete end date if it exists
                             var eraEndAttributeValue = attributeValueService.Queryable().Where( v => v.AttributeId == eraEndAttribute.Id && v.EntityId == person.Id ).FirstOrDefault();
                             if ( eraEndAttributeValue != null )
                             {
                                 attributeValueService.Delete( eraEndAttributeValue );
                             }
 
-                            // add a history record
+                            // Add a history record
                             if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 && !isCurrentlyEra )
                             {
                                 History historyRecord = new History();
@@ -250,27 +288,27 @@ namespace Rock.Jobs
                             updateContext.SaveChanges();
                         }
 
-                        // launch entry workflow
-                        if ( entryWorkflowType.HasValue )
+                        // Launch entry workflow
+                        if ( entryWorkflowType.HasValue && shouldLaunchWorkflow )
                         {
                             LaunchWorkflow( entryWorkflowType.Value, family );
                         }
                     }
                 }
 
-                // update stats
+                // Update stats
                 this.UpdateLastStatusMessage( $"Updating eRA {progressPosition} of {progressTotal}" );
             }
 
-            // load giving attributes
+            // Load giving attributes
             this.UpdateLastStatusMessage( "Updating Giving..." );
             resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsGiving" );
 
-            // load attendance attributes
+            // Load attendance attributes
             this.UpdateLastStatusMessage( "Updating Attendance..." );
             resultContext.Database.ExecuteSqlCommand( "spCrm_FamilyAnalyticsAttendance" );
 
-            // process visit dates
+            // Process visit dates
             if ( updateVisitDates )
             {
                 this.UpdateLastStatusMessage( "Updating Visit Dates..." );
@@ -287,12 +325,13 @@ namespace Rock.Jobs
         /// <param name="family">The family.</param>
         private void LaunchWorkflow( Guid workflowTypeGuid, Group family )
         {
-            int adultRoleId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Roles.Where(r => r.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid()).FirstOrDefault().Id;
+            int adultRoleId = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid() ).Roles.Where( r => r.Guid == SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid() ).FirstOrDefault().Id;
 
             var headOfHouse = family.Members.Where( m => m.GroupRoleId == adultRoleId ).OrderBy( m => m.Person.Gender ).FirstOrDefault();
 
-            // don't launch a workflow if no adult is present in the family
-            if ( headOfHouse != null && headOfHouse.Person != null && headOfHouse.Person.PrimaryAlias != null ) {
+            // Don't launch a workflow if no adult is present in the family
+            if ( headOfHouse != null && headOfHouse.Person != null && headOfHouse.Person.PrimaryAlias != null )
+            {
                 var spouse = family.Members.Where( m => m.GroupRoleId == adultRoleId && m.PersonId != headOfHouse.Person.Id ).FirstOrDefault();
 
                 using ( var rockContext = new RockContext() )
@@ -328,7 +367,7 @@ namespace Rock.Jobs
         /// eRA Result Class
         /// </summary>
         public class EraResult
-        {            
+        {
             /// <summary>
             /// Gets or sets the family identifier.
             /// </summary>
@@ -391,7 +430,6 @@ namespace Rock.Jobs
             /// Initializes a new instance of the <see cref="EraResult"/> class.
             /// </summary>
             public EraResult() { }
-            
         }
     }
 }

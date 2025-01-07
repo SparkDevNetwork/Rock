@@ -48,10 +48,5 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox
         /// Gets or sets the occurrence date time.
         /// </summary>
         public DateTimeOffset OccurrenceDateTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether this request represents a save (<see langword="true"/>) or delete (<see langword="false"/>) attempt.
-        /// </summary>
-        public bool IsSigningUp { get; set; }
     }
 }

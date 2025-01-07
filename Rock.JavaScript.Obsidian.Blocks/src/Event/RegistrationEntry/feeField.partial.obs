@@ -5,13 +5,13 @@
         <NumberUpDown v-else-if="isNumberUpDown" :validationTitle="props.fee.name ?? undefined" :label="label" :min="0" :max="maxValue" v-model="quantityValue" :rules="rules" />
         <DropDownList v-else-if="isDropDown" :label="label" :items="dropDownListOptions" v-model="dropDownValue" :rules="rules" formControlClasses="input-width-md" />
         <NumberUpDownGroup v-else-if="isNumberUpDownGroup" :label="label" :options="numberUpDownGroupOptions" v-model="numberGroupValue" :rules="rules" />
-        <NotificationBox v-else alertType="danger">This {{ feeTermLowerCase }} configuration is not supported</NotificationBox>
+        <NotificationBox v-else alertType="danger">This {{ registrationEntryTerms.feeSingularLowerCase }} configuration is not supported</NotificationBox>
     </template>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
-    import { CurrentRegistrationEntryState, use } from "./utils.partial";
+    import { RegistrationEntryTerms, use } from "./utils.partial";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -20,7 +20,7 @@
     import { NumberUpDownGroupOption } from "@Obsidian/Types/Controls/numberUpDownGroup";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { areEqual } from "@Obsidian/Utility/guid";
-    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { asFormattedString, toCurrencyOrNull} from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { RegistrationEntryFeeBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeBag";
     import { RegistrationEntryFeeItemBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFeeItemBag";
@@ -41,7 +41,7 @@
         (e: "update:modelValue", value: Record<string, number>): void;
     }>();
 
-    const registrationEntryState = use(CurrentRegistrationEntryState);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     // #region Values
 
@@ -233,24 +233,20 @@
         return undefined;
     });
 
-    /** The fee term (singular) (lower case). */
-    const feeTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.feeTerm?.toLowerCase() || "fee";
-    });
-
     // #endregion
 
     // #region Functions
 
     function getItemLabel(item: RegistrationEntryFeeItemBag): string {
-        const formattedCost = asFormattedString(item.cost, 2);
+        const formattedCost = toCurrencyOrNull(item.cost);
 
+        const formattedItem = item.cost === 0 ? `${item.name}` : `${item.name} (${formattedCost})`;
         if (item.countRemaining !== null && item.countRemaining !== undefined) {
             const formattedRemaining = asFormattedString(item.countRemaining, 0);
-            return `${item.name} ($${formattedCost}) (${formattedRemaining} remaining)`;
+            return `${formattedItem} (${formattedRemaining} remaining)`;
         }
 
-        return `${item.name} ($${formattedCost})`;
+        return formattedItem;
     }
 
     // #endregion

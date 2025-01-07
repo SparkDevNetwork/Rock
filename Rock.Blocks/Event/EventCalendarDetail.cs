@@ -25,6 +25,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.UniversalSearch;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Event.EventCalendarDetail;
 using Rock.ViewModels.Utility;
@@ -92,8 +93,10 @@ namespace Rock.Blocks.Event
         /// <returns>The options that provide additional details to the block.</returns>
         private EventCalendarDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
-            var options = new EventCalendarDetailOptionsBag();
-
+            var options = new EventCalendarDetailOptionsBag()
+            {
+                IndexingEnabled = IndexContainer.IndexingEnabled
+            };
             return options;
         }
 
@@ -140,7 +143,6 @@ namespace Rock.Blocks.Event
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                    box.Entity.CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() ) || entity.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() );
                 }
                 else
                 {
@@ -182,7 +184,8 @@ namespace Rock.Blocks.Event
                 IsActive = entity.IsActive,
                 IsIndexEnabled = entity.IsIndexEnabled,
                 Name = entity.Name,
-                ExportFeedUrl = string.Format( "{0}GetEventCalendarFeed.ashx?CalendarId={1}", GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ), entity.Id )
+                ExportFeedUrl = string.Format( "{0}GetEventCalendarFeed.ashx?CalendarId={1}", GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ), entity.Id ),
+                CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() ) || entity.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() )
             };
         }
 
@@ -654,7 +657,7 @@ namespace Rock.Blocks.Event
         /// <summary>
         /// Gets the attribute.
         /// </summary>
-        /// <param name="attributeId">The attribute identifier.</param>
+        /// <param name="attributeGuid">The attribute identifier.</param>
         /// <returns></returns>
         [BlockAction]
         public BlockActionResult GetAttribute( Guid? attributeGuid )
@@ -683,6 +686,30 @@ namespace Rock.Blocks.Event
             attributes.Where( a => !a.Guid.Equals( attributeGuid ) ).Select( a => a.Key ).ToList().ForEach( a => reservedKeyNames.Add( a ) );
 
             return ActionOk( new { editableAttribute, reservedKeyNames } );
+        }
+
+        /// <summary>
+        /// Changes the ordered position of a single item.
+        /// </summary>
+        /// <param name="guid">The identifier of the item that will be moved.</param>
+        /// <param name="beforeGuid">The identifier of the item it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderAttributes( string idKey, Guid guid, Guid? beforeGuid )
+        {
+            // Get the queryable and make sure it is ordered correctly.
+            var id = Rock.Utility.IdHasher.Instance.GetId( idKey );
+
+            var attributes = GetEventAttributes( RockContext, id?.ToString() );
+
+            if ( !attributes.ReorderEntity( guid.ToString(), beforeGuid.ToString() ) )
+            {
+                return ActionBadRequest( "Invalid reorder attempt." );
+            }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         #endregion

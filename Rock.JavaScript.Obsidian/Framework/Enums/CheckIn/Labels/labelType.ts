@@ -36,7 +36,13 @@ export const LabelType = {
     Attendance: 2,
 
     /** The label is printed once for each person during check-out. */
-    Checkout: 3
+    Checkout: 3,
+
+    /**
+     * The label is printed once for each combination of person and
+     * location.
+     */
+    PersonLocation: 4
 } as const;
 
 /**
@@ -50,7 +56,9 @@ export const LabelTypeDescription: Record<number, string> = {
 
     2: "Attendance",
 
-    3: "Checkout"
+    3: "Checkout",
+
+    4: "Person Location"
 };
 
 /**

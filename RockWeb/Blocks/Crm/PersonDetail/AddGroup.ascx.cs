@@ -580,8 +580,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             nbValidation.Visible = false;
 
             if ( !Page.IsPostBack )
@@ -597,6 +595,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 GetControlData();
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>

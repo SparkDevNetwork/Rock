@@ -54,6 +54,8 @@
     import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
     import { padLeft } from "@Obsidian/Utility/stringUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { LocaleDateFormatter } from "@Obsidian/Utility/localeDateFormatter";
+    import { DateTime } from "luxon";
 
     const props = defineProps({
         modelValue: {
@@ -78,6 +80,8 @@
         (e: "update:modelValue", value: string | null): void;
     }>();
 
+    const currentLocaleDateFormatter = LocaleDateFormatter.fromCurrent();
+
     const input = ref<HTMLInputElement>();
     const internalDateValue = ref<string | null>(null);
     const internalTimeValue = ref<TimePickerValue>({});
@@ -87,37 +91,37 @@
 
     const asRockDateTimeOrNull = computed((): string | null => {
         if (internalDateValue.value) {
-            const dateMatch = /^(\d+)\/(\d+)\/(\d+)/.exec(internalDateValue.value ?? "");
+            const date = DateTime.fromFormat(internalDateValue.value, currentLocaleDateFormatter.aspDateFormat);
 
-            if (dateMatch === null) {
+            if (!date.isValid) {
                 return null;
             }
 
-            let date: RockDateTime | null;
+            let rockDateTime: RockDateTime | null;
             if (internalTimeValue.value.hour !== undefined && internalTimeValue.value.minute !== undefined) {
-                date = RockDateTime.fromParts(toNumber(dateMatch[3]),
-                    toNumber(dateMatch[1]),
-                    toNumber(dateMatch[2]),
+                rockDateTime = RockDateTime.fromParts(date.year,
+                    date.month,
+                    date.day,
                     internalTimeValue.value.hour,
                     internalTimeValue.value.minute);
             }
             else {
-                date = RockDateTime.fromParts(toNumber(dateMatch[3]),
-                    toNumber(dateMatch[1]),
-                    toNumber(dateMatch[2]));
+                rockDateTime = RockDateTime.fromParts(date.year,
+                    date.month,
+                    date.day);
             }
 
-            if (date === null) {
+            if (rockDateTime === null) {
                 return null;
             }
 
-            const year = date.year.toString();
-            const month = padLeft(date.month.toString(), 2, "0");
-            const day = padLeft(date.day.toString(), 2, "0");
-            const hour = padLeft(date.hour.toString(), 2, "0");
-            const minute = padLeft(date.minute.toString(), 2, "0");
-            const second = padLeft(date.second.toString(), 2, "0");
-            const millisecond = padLeft(date.millisecond.toString(), 3, "0");
+            const year = rockDateTime.year.toString();
+            const month = padLeft(rockDateTime.month.toString(), 2, "0");
+            const day = padLeft(rockDateTime.day.toString(), 2, "0");
+            const hour = padLeft(rockDateTime.hour.toString(), 2, "0");
+            const minute = padLeft(rockDateTime.minute.toString(), 2, "0");
+            const second = padLeft(rockDateTime.second.toString(), 2, "0");
+            const millisecond = padLeft(rockDateTime.millisecond.toString(), 3, "0");
 
             // Construct it manually so it doesn't get converted to UTC.
             return `${year}-${month}-${day}T${hour}:${minute}:${second}.${millisecond}`;
@@ -177,7 +181,7 @@
             return;
         }
 
-        const date = RockDateTime.parseISO(props.modelValue);
+        const date = DateTime.fromISO(props.modelValue);
 
         /*
          * This is an anti-pattern, but I couldn't find a quick way
@@ -186,12 +190,12 @@
          * time. There is likely a better way to do this. -dsh.
          */
         skipEmit = true;
-        if (date === null) {
+        if (!date.isValid) {
             internalDateValue.value = null;
             internalTimeValue.value = {};
         }
         else {
-            internalDateValue.value = `${date.month}/${date.day}/${date.year}`;
+            internalDateValue.value = date.toFormat(currentLocaleDateFormatter.aspDateFormat);
             internalTimeValue.value = {
                 hour: date.hour,
                 minute: date.minute
@@ -220,7 +224,7 @@
             id: inputElement.id,
             startView: 0,
             showOnFocus: true,
-            format: "mm/dd/yyyy",
+            format: currentLocaleDateFormatter.datePickerFormat,
             todayHighlight: true,
             forceParse: true,
             onChangeScript: () => {

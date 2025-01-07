@@ -49,14 +49,14 @@ namespace Rock.CheckIn.v2.Labels
         /// The attendance records for the <see cref="Person"/> during this
         /// check-in session.
         /// </summary>
-        public List<AttendanceLabel> PersonAttendance { get; }
+        public List<LabelAttendanceDetail> PersonAttendance { get; }
 
         /// <summary>
         /// All attendance records for this session, including those from
         /// other people being checked in as well as those from
         /// <see cref="PersonAttendance"/>.
         /// </summary>
-        public List<AttendanceLabel> AllAttendance { get; }
+        public List<LabelAttendanceDetail> AllAttendance { get; }
 
         /// <summary>
         /// The family object that was determined via either kiosk search
@@ -120,12 +120,12 @@ namespace Rock.CheckIn.v2.Labels
         /// <summary>
         /// The date and time this person was checked in for this label.
         /// </summary>
-        public DateTime CheckInTime { get; }
+        public DateTime CheckInDateTime { get; }
 
         /// <summary>
         /// The current date and time the label is being printed at.
         /// </summary>
-        public DateTime CurrentTime { get; }
+        public DateTime CurrentDateTime { get; }
 
         /// <summary>
         /// The names of the check-in groups that the person was checked into.
@@ -162,22 +162,22 @@ namespace Rock.CheckIn.v2.Labels
         /// <param name="family">The family group used during the check-in process.</param>
         /// <param name="allAttendance">The list of all attendance labels.</param>
         /// <param name="rockContext">The <see cref="RockContext"/> for data operations.</param>
-        public PersonLabelData( Person person, Group family, List<AttendanceLabel> allAttendance, RockContext rockContext )
+        public PersonLabelData( Person person, Group family, List<LabelAttendanceDetail> allAttendance, RockContext rockContext )
         {
             Person = person;
-            Family = family ?? person.PrimaryFamily;
+            Family = family ?? person?.PrimaryFamily;
             AllAttendance = allAttendance;
 
             PersonAttendance = allAttendance
-                .Where( a => a.Person.Id == person.Id )
+                .Where( a => a.Person != null && a.Person.Id == person.Id )
                 .ToList();
 
             IsFirstTime = PersonAttendance.Any( a => a.IsFirstTime );
             AreaNames = PersonAttendance.Select( a => a.Area.Name ).ToList();
-            CheckInTime = PersonAttendance.Count > 0
+            CheckInDateTime = PersonAttendance.Count > 0
                 ? PersonAttendance.Min( a => a.StartDateTime )
                 : RockDateTime.Now;
-            CurrentTime = RockDateTime.Now;
+            CurrentDateTime = RockDateTime.Now;
             GroupNames = PersonAttendance.Select( a => a.Group.Name ).ToList();
             LocationNames = PersonAttendance.Select( a => a.Location.Name ).ToList();
             ScheduleNames = PersonAttendance.Select( a => a.Schedule.Name ).ToList();
@@ -185,10 +185,7 @@ namespace Rock.CheckIn.v2.Labels
 
             GroupRoleNames = PersonAttendance
                 .SelectMany( a => a.GroupMembers )
-                .Select( gm => GroupTypeCache.Get( gm.GroupTypeId, rockContext )
-                    ?.Roles
-                    .FirstOrDefault( r => r.Id == gm.GroupRoleId )
-                    ?.Name )
+                .Select( gm => GroupTypeRoleCache.Get( gm.GroupRoleId, rockContext )?.Name )
                 .Where( n => n != null )
                 .ToList();
 

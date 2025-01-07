@@ -131,7 +131,13 @@ namespace Rock.Model
         /// <returns>A new instance of <see cref="FieldFilterGroupBag"/> that defines the criteria.</returns>
         public FieldFilterGroupBag GetConditionalPrintCriteria()
         {
-            return this.GetAdditionalSettings<FieldFilterGroupBag>( "Rock.Model.CheckInLabel.ConditionalCriteria" );
+            return this.GetAdditionalSettingsOrNull<FieldFilterGroupBag>( "Rock.Model.CheckInLabel.ConditionalCriteria" )
+                ?? new FieldFilterGroupBag
+                {
+                    Guid = System.Guid.NewGuid(),
+                    ExpressionType = FilterExpressionType.GroupAll,
+                    Rules = new List<FieldFilterRuleBag>()
+                };
         }
 
         /// <summary>
@@ -145,6 +151,8 @@ namespace Rock.Model
             {
                 conditionalPrintCriteria = new FieldFilterGroupBag
                 {
+                    Guid = System.Guid.NewGuid(),
+                    ExpressionType = FilterExpressionType.GroupAll,
                     Rules = new List<FieldFilterRuleBag>()
                 };
             }

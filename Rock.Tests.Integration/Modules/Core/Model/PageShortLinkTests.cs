@@ -17,6 +17,8 @@
 using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Cms;
 using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Model;
@@ -30,8 +32,7 @@ using Rock.Web.Cache;
 namespace Rock.Tests.Integration.Modules.Core.Model
 {
     [TestClass]
-    [TestCategory( "Interactions" )]
-    [TestCategory( "Feature.Cms.UtmTracking" )]
+    [TestCategory( "Cms.Interactions.UtmTracking" )]
     public class PageShortLinkTests : DatabaseTestsBase
     {
         [ClassInitialize]
@@ -65,15 +66,15 @@ namespace Rock.Tests.Integration.Modules.Core.Model
 
             interaction.SetUTMFieldsFromURL( $"http://www.rocksolidchurchdemo.com/signup?utm_source={dvSource.Value}&utm_medium={dvMedium.Value}&utm_campaign={dvCampaign.Value}" );
 
-            // Verify that the elements are recorded as defined values, but the free-form text field is not populated.
+            // Verify that the elements are recorded as defined values.
             Assert.That.AreEqual( dvSource.Id, interaction.SourceValueId );
-            Assert.That.IsEmpty( interaction.Source );
+            Assert.That.AreEqual( "youtube", interaction.Source );
 
             Assert.That.AreEqual( dvMedium.Id, interaction.MediumValueId );
-            Assert.That.IsEmpty( interaction.Medium );
+            Assert.That.AreEqual( "organic", interaction.Medium );
 
             Assert.That.AreEqual( dvCampaign.Id, interaction.CampaignValueId );
-            Assert.That.IsEmpty( interaction.Campaign );
+            Assert.That.AreEqual( _testCampaignNameBlog, interaction.Campaign );
         }
 
         [TestMethod]
@@ -145,15 +146,15 @@ namespace Rock.Tests.Integration.Modules.Core.Model
 
             var interaction = CreateNewPageInteractionWithTransaction( utmInfo );
 
-            // Verify that the elements are recorded as defined values, but the free-form text field is not populated.
+            // Verify that the elements are recorded as defined values.
             Assert.That.AreEqual( dvSource.Id, interaction.SourceValueId );
-            Assert.That.IsEmpty( interaction.Source );
+            Assert.That.AreEqual( "youtube", interaction.Source );
 
             Assert.That.AreEqual( dvMedium.Id, interaction.MediumValueId );
-            Assert.That.IsEmpty( interaction.Medium );
+            Assert.That.AreEqual( "organic", interaction.Medium );
 
             Assert.That.AreEqual( dvCampaign.Id, interaction.CampaignValueId );
-            Assert.That.IsEmpty( interaction.Campaign );
+            Assert.That.AreEqual( _testCampaignNameBlog, interaction.Campaign );
         }
 
         [TestMethod]
@@ -225,7 +226,7 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             var mediumValueId = CoreDataManager.Current.GetDefinedValueIdOrNull( SystemGuid.DefinedType.UTM_MEDIUM, "email" );
             var campaignValueId = CoreDataManager.Current.GetDefinedValueIdOrNull( SystemGuid.DefinedType.UTM_CAMPAIGN, "Test Campaign C" );
 
-            var utmSettings = shortlink.GetAdditionalSettings<Rock.Model.PageShortLink.UtmSettings>();
+            var utmSettings = shortlink.GetAdditionalSettings<UtmSettings>();
 
             utmSettings.UtmSourceValueId = sourceValueId;
             utmSettings.UtmMediumValueId = mediumValueId;
@@ -240,7 +241,7 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             // Retrieve the shortlink and verify the stored values.
             shortlink = EntityLookup.GetByIdentifier<PageShortLink>( _testShortLink1Guid );
 
-            utmSettings = shortlink.GetAdditionalSettings<Rock.Model.PageShortLink.UtmSettings>();
+            utmSettings = shortlink.GetAdditionalSettings<UtmSettings>();
 
             Assert.That.AreEqual( sourceValueId, utmSettings.UtmSourceValueId );
             Assert.That.AreEqual( mediumValueId, utmSettings.UtmMediumValueId );
@@ -314,7 +315,7 @@ namespace Rock.Tests.Integration.Modules.Core.Model
             var mediumValueId = CoreDataManager.Current.GetDefinedValueIdOrNull( SystemGuid.DefinedType.UTM_MEDIUM, mediumValue );
             var campaignValueId = CoreDataManager.Current.GetDefinedValueIdOrNull( SystemGuid.DefinedType.UTM_CAMPAIGN, campaignValue );
 
-            var utmSettings = shortlink.GetAdditionalSettings<Rock.Model.PageShortLink.UtmSettings>();
+            var utmSettings = shortlink.GetAdditionalSettings<UtmSettings>();
 
             utmSettings.UtmSourceValueId = sourceValueId;
             utmSettings.UtmMediumValueId = mediumValueId;

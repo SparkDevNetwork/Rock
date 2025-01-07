@@ -285,7 +285,6 @@ namespace RockWeb.Blocks.Groups
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
             ClearErrorMessage();
 
             bool areRequirementsPubliclyHidden = this.GetAttributeValue( AttributeKey.AreRequirementsPubliclyHidden ).AsBooleanOrNull() ?? false;
@@ -319,6 +318,8 @@ namespace RockWeb.Blocks.Groups
                  */
                 SetRequirementStatuses( new RockContext() );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -356,9 +357,12 @@ namespace RockWeb.Blocks.Groups
                     // This should be replaced with a block setting when converted to Obsidian. -dsh
                     var pageReferenceHistory = ( Dictionary<int, (BreadCrumb pageBreadCrumb, List<BreadCrumb> blockBreadCrumbs)> ) System.Web.HttpContext.Current.Session["RockPageReferenceHistory"];
 
-                    var queryString = pageReferenceHistory.Values
+                    var currentBreadCrumbs = pageReferenceHistory.Values
                         .SelectMany( h => new List<BreadCrumb> { h.pageBreadCrumb }.Union( h.blockBreadCrumbs ) )
                         .Where( bc => bc != null && bc.Url.IsNotNullOrWhiteSpace() && bc.Url.StartsWith( "/" ) )
+                        .ToList();
+
+                    var queryString = currentBreadCrumbs
                         .Select( bc => Uri.TryCreate( "http://ignored" + bc.Url, UriKind.Absolute, out var uri ) ? uri : null )
                         .Where( u => u != null && u.Query.IsNotNullOrWhiteSpace() && u.Query != "?" )
                         .Select( u => u.ParseQueryString() )
@@ -368,7 +372,10 @@ namespace RockWeb.Blocks.Groups
                     if ( !this.IsSignUpMode && !groupIdParam.HasValue || groupIdParam.Value != groupMember.GroupId )
                     {
                         // if the GroupMember's Group isn't included in the breadcrumbs, make sure to add the Group to the breadcrumbs so we know which group the group member is in
-                        breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
+                        if ( !currentBreadCrumbs.Exists( bc => bc.Name == groupMember.Group.Name ) )
+                        {
+                            breadCrumbs.Add( new BreadCrumb( groupMember.Group.Name, true ) );
+                        }
                     }
 
                     breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );

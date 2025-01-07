@@ -216,6 +216,7 @@ namespace Rock.Model
             var personAliasService = this;
             var visitorPersonAlias = new PersonAlias();
             visitorPersonAlias.PersonId = ghostPersonId.Value;
+            visitorPersonAlias.LastVisitDateTime = RockDateTime.Now;
 
             // For an Anonymous Visitor alias, leave AliasPersonId and AliasPersonGuid null
             // Since it isn't aliasing a real person, plus all GhostPersonAliases will have

@@ -65,7 +65,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_FORM_BUILDER_DETAIL_BLOCK_TYPE )]
-    [Rock.SystemGuid.BlockTypeGuid( "A61C5E3C-2267-4CF7-B305-D8AF0DB9660B")]
+    [Rock.SystemGuid.BlockTypeGuid( "A61C5E3C-2267-4CF7-B305-D8AF0DB9660B" )]
     public class FormBuilderDetail : RockBlockType
     {
         private static class PageParameterKey
@@ -156,6 +156,12 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 actionForm.PersonEntrySpouseLabel = formSettings.PersonEntry.SpouseLabel;
                 actionForm.PersonEntryRaceEntryOption = formSettings.PersonEntry.RaceEntry.ToPersonEntryOption();
                 actionForm.PersonEntryEthnicityEntryOption = formSettings.PersonEntry.EthnicityEntry.ToPersonEntryOption();
+
+                // Add the PersonEntry Settings in the Additional Settings.
+                actionForm.SetAdditionalSettings( new PersonEntryAdditionalSettings
+                {
+                    IncludeInactiveCampus = formSettings.PersonEntry.IncludeInactiveCampus
+                } );
             }
 
             UpdateFormSections( formSettings, actionForm, workflowType, rockContext );
@@ -448,6 +454,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
             // Build the person entry settings.
             if ( actionForm.AllowPersonEntry )
             {
+                var personEntryAdditionalSettings = actionForm.GetAdditionalSettings<PersonEntryAdditionalSettings>();
+
                 form.AllowPersonEntry = true;
                 form.PersonEntry = new FormPersonEntryViewModel
                 {
@@ -466,6 +474,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     SmsOptIn = actionForm.PersonEntrySmsOptInEntryOption.ToFormFieldShowHide(),
                     RecordStatus = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryRecordStatusValueId ),
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
+                    IncludeInactiveCampus = personEntryAdditionalSettings?.IncludeInactiveCampus ?? true,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption.ToFormFieldVisibility(),
                     SpouseLabel = actionForm.PersonEntrySpouseLabel,
                     RaceEntry = actionForm.PersonEntryRaceEntryOption.ToFormFieldVisibility(),

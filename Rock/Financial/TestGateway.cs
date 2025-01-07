@@ -577,6 +577,150 @@ namespace Rock.Financial
             }
         }
 
+        /// <inheritdoc/>
+        public override List<DateTime> GetScheduledPaymentDates( int scheduledTransactionFrequencyValueId, DateTime startDate, int numberOfPayments )
+        {
+            if ( numberOfPayments < 1 )
+            {
+                return new List<DateTime>();
+            }
+            else
+            {
+                var scheduledTransactionFrequencyValueGuid = DefinedValueCache.GetGuid( scheduledTransactionFrequencyValueId );
+
+                if ( !scheduledTransactionFrequencyValueGuid.HasValue )
+                {
+                    // Unknown payment frequency.
+                    return new List<DateTime>();
+                }
+                else
+                {
+                    var paymentDates = new List<DateTime>( numberOfPayments );
+
+                    switch ( scheduledTransactionFrequencyValueGuid.ToString().ToUpper() )
+                    {
+                        case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY:
+                            for ( var i = 0; i < numberOfPayments; i++ )
+                            {
+                                paymentDates.Add( startDate.AddDays( i * 14 ) );
+                            }
+
+                            return paymentDates;
+
+                        case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY:
+                        case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_FIRST_AND_FIFTEENTH:
+                            DateTime GetNext1st( DateTime dateTime )
+                            {
+                                dateTime = dateTime.AddMonths( 1 );
+
+                                if ( dateTime.Day == 1 )
+                                {
+                                    return dateTime;
+                                }
+                                else
+                                {
+                                    return dateTime.AddDays( 1 - dateTime.Day );
+                                }
+                            }
+
+                            DateTime GetNext15th( DateTime dateTime )
+                            {
+                                if ( dateTime.Day >= 15 )
+                                {
+                                    dateTime = dateTime.AddMonths( 1 );
+                                }
+
+                                if ( dateTime.Day == 15 )
+                                {
+                                    return dateTime;
+                                }
+                                else
+                                {
+                                    return dateTime.AddDays( 15 - dateTime.Day );
+                                }
+                            }
+
+                            // Ensure the start date is the 1st or 15th for the first payment date.
+                            // If not, find the next closest 1st or 15th.
+                            if ( startDate.Day > 15 )
+                            {
+                                startDate = GetNext1st( startDate );
+                            }
+                            else if ( startDate.Day > 1 && startDate.Day < 15 )
+                            {
+                                startDate = GetNext15th( startDate );
+                            }
+
+                            for ( var i = 0; i < numberOfPayments; i++ ) 
+                            {
+                                paymentDates.Add( startDate );
+
+                                if ( startDate.Day == 1 )
+                                {
+                                    startDate = GetNext15th( startDate );
+                                }
+                                else
+                                {
+                                    startDate = GetNext1st( startDate );
+                                }
+                            }
+
+                            return paymentDates;
+
+                        case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY:
+                            for ( var i = 0; i < numberOfPayments; i++ )
+                            {
+                                paymentDates.Add( startDate.AddMonths( i ) );
+                            }
+
+                            return paymentDates;
+
+                        case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME:
+                            return new List<DateTime>
+                            {
+                                startDate
+                            };
+
+                        case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_QUARTERLY:
+                            for ( var i = 0; i < numberOfPayments; i++ )
+                            {
+                                paymentDates.Add( startDate.AddMonths( i * 3 ) );
+                            }
+
+                            return paymentDates;
+
+                        case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEYEARLY:
+                            for ( var i = 0; i < numberOfPayments; i++ )
+                            {
+                                paymentDates.Add( startDate.AddMonths( i * 6 ) );
+                            }
+
+                            return paymentDates;
+
+                        case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY:
+                            for ( var i = 0; i < numberOfPayments; i++ )
+                            {
+                                paymentDates.Add( startDate.AddDays( i * 7 ) );
+                            }
+
+                            return paymentDates;
+
+                        case SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY:
+                            for ( var i = 0; i < numberOfPayments; i++ )
+                            {
+                                paymentDates.Add( startDate.AddYears( i ) );
+                            }
+
+                            return paymentDates;
+
+                        default:
+                            // Unknown payment frequency.
+                            return new List<DateTime>();
+                    }
+                }
+            }
+      }
+
         #endregion
 
         #region Private Methods

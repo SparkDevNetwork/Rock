@@ -140,12 +140,12 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 ShowDetail( PageParameter( PageParameterKey.CampusId ).AsInteger() );
             }
+
+            base.OnLoad( e );
         }
 
         /// <summary>
@@ -265,7 +265,7 @@ namespace RockWeb.Blocks.Core
             campus.CampusStatusValueId = dvpCampusStatus.SelectedValueAsInt();
             campus.CampusTypeValueId = dvpCampusType.SelectedValueAsInt();
             campus.Url = urlCampus.Text;
-            campus.PhoneNumber = pnbPhoneNumber.Number;
+            campus.PhoneNumber = PhoneNumber.FormattedNumber( pnbPhoneNumber.CountryCode, pnbPhoneNumber.Number, pnbPhoneNumber.CountryCode != PhoneNumber.DefaultCountryCode() );
             campus.LocationId = lpLocation.Location.Id;
             campus.ShortCode = tbCampusCode.Text;
             campus.TimeZoneId = ddlTimeZone.SelectedValue;
@@ -832,7 +832,26 @@ namespace RockWeb.Blocks.Core
             dvpCampusType.SetValue( campus.CampusTypeValueId );
             tbCampusCode.Text = campus.ShortCode;
             urlCampus.Text = campus.Url;
-            pnbPhoneNumber.Number = campus.PhoneNumber;
+
+            var countryCodePart = "";
+            var numberPart = "";
+            var hasCountryCode = PhoneNumber.TryParseNumber( campus.PhoneNumber, out countryCodePart, out numberPart );
+            if ( hasCountryCode )
+            {
+                // Reformat the number according to the country code.
+                var formattedNumber = PhoneNumber.FormattedNumber( countryCodePart, numberPart, includeCountryCode: false );
+                if ( !string.IsNullOrWhiteSpace( formattedNumber ) )
+                {
+                    numberPart = formattedNumber;
+                }
+                pnbPhoneNumber.CountryCode = countryCodePart;
+                pnbPhoneNumber.Number = numberPart;
+            }
+            else
+            {
+                pnbPhoneNumber.Number = campus.PhoneNumber;
+            }
+
             lpLocation.Location = campus.Location;
 
             ddlTimeZone.SetValue( campus.TimeZoneId );

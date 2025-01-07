@@ -3,27 +3,29 @@
     <div v-if="isDiscountPanelVisible || discountCodeInput" class="clearfix">
         <NotificationBox v-if="discountCodeWarningMessage" alertType="warning">{{ discountCodeWarningMessage }}</NotificationBox>
         <NotificationBox v-if="discountCodeSuccessMessage" alertType="success">{{ discountCodeSuccessMessage }}</NotificationBox>
-        <div class="form-group pull-right">
-            <label class="control-label">{{ discountCodeTermTitleCase }}</label>
-            <div class="input-group">
-                <input type="text" :disabled="loading || !isDiscountCodeAllowed" class="form-control input-width-md input-sm" v-model="discountCodeInput" />
-                <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode(false)">
+        <TextBox v-model="discountCodeInput"
+                 formGroupClasses="pull-right"
+                 inputClasses="input-width-md input-sm"
+                 :disabled="isDisabled"
+                 :label="registrationEntryTerms.discountCodeSingularTitleCase">
+            <template #inputGroupAppend>
+                <RockButton v-if="isDiscountCodeAllowed" btnSize="sm" :disabled="isDisabled" :isLoading="loading" class="margin-l-sm" @click="tryDiscountCode(false)">
                     Apply
                 </RockButton>
-            </div>
-        </div>
+            </template>
+        </TextBox>
     </div>
 </template>
 <script setup lang="ts">
     import { computed, onMounted, ref, watch } from "vue";
-    import { CurrentRegistrationEntryState, GetPersistSessionArgs, use } from "./utils.partial";
+    import { CurrentRegistrationEntryState, GetPersistSessionArgs, RegistrationEntryTerms, use } from "./utils.partial";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
-    import { toTitleCase } from "@Obsidian/Utility/stringUtils";
     import { RegistrationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryInitializationBox";
 
     type CheckDiscountCodeResult = {
@@ -37,6 +39,7 @@
     const getPersistSessionArgs = use(GetPersistSessionArgs);
     const invokeBlockAction = useInvokeBlockAction();
     const registrationEntryState = use(CurrentRegistrationEntryState);
+    const registrationEntryTerms = use(RegistrationEntryTerms);
 
     // #region Values
 
@@ -56,6 +59,17 @@
 
     // #region Computed Values
 
+    const isDisabled = computed<boolean>(() => {
+        return loading.value
+            || !isDiscountCodeAllowed.value
+
+            // Is a payment plan already set up?
+            || !!registrationEntryState.viewModel.session?.activePaymentPlan
+
+            // Is a payment plan being set up?
+            || !!registrationEntryState.paymentPlan;
+    });
+
     /** Should the discount panel be shown? */
     const isDiscountPanelVisible = computed<boolean>(() => {
         return config.value.hasDiscountsAvailable;
@@ -74,26 +88,6 @@
     /** This is the data sent from the C# code behind when the block initialized. */
     const config = computed<RegistrationEntryInitializationBox>(() => {
         return registrationEntryState.viewModel;
-    });
-
-    /** The registrant term (singular) (lower case). */
-    const registrantTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.registrantTerm?.toLowerCase() || "registrant";
-    });
-
-    /** The registrants term (plural) (lower case). */
-    const registrantsTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.pluralRegistrantTerm?.toLowerCase() || "registrants";
-    });
-
-    /** The discount code term (singular) (title case). */
-    const discountCodeTermTitleCase = computed<string>(() => {
-        return toTitleCase(registrationEntryState.viewModel.discountCodeTerm ?? null) || "Discount Code";
-    });
-
-    /** The discount code term (singular) (lower case). */
-    const discountCodeTermLowerCase = computed<string>(() => {
-        return registrationEntryState.viewModel.discountCodeTerm?.toLowerCase() || "discount code";
     });
 
     // #endregion
@@ -123,7 +117,7 @@
                         discountCodeWarningMessage.value = result.errorMessage;
                     }
                     else if (discountCodeInput.value != "") {
-                        discountCodeWarningMessage.value = `'${discountCodeInput.value}' is not a valid ${discountCodeTermTitleCase.value}.`;
+                        discountCodeWarningMessage.value = `'${discountCodeInput.value}' is not a valid ${registrationEntryTerms.value.discountCodeSingularTitleCase}.`;
                     }
                 }
             }
@@ -161,13 +155,18 @@
         const discountText = discountPercent ?
             `${asFormattedString(discountPercent * 100, 0)}%` :
             `$${asFormattedString(discountAmount, 2)}`;
+        const {
+            registrantSingularLowerCase,
+            registrantPluralLowerCase,
+            discountCodeSingularLowerCase
+        } = registrationEntryTerms.value;
 
         if (discountMaxRegistrants != 0 && registrantCount > discountMaxRegistrants) {
-            const registrantTerm = discountMaxRegistrants == 1 ? registrantTermLowerCase.value : registrantsTermLowerCase.value;
-            return `Your ${discountText} ${discountCodeTermLowerCase.value} was successfully applied to the maximum allowed number of ${discountMaxRegistrants} ${registrantTerm}`;
+            const registrantTerm = discountMaxRegistrants == 1 ? registrantSingularLowerCase : registrantPluralLowerCase;
+            return `Your ${discountText} ${discountCodeSingularLowerCase} was successfully applied to the maximum allowed number of ${discountMaxRegistrants} ${registrantTerm}`;
         }
 
-        return `Your ${discountText} ${discountCodeTermLowerCase.value} for all registrants was successfully applied.`;
+        return `Your ${discountText} ${discountCodeSingularLowerCase} for all ${registrantPluralLowerCase} was successfully applied.`;
     }
 
     // #endregion

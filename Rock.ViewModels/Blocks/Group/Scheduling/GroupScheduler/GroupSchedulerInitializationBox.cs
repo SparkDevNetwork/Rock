@@ -37,5 +37,21 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduler
         /// Whether to disallow group selection.
         /// </value>
         public bool DisallowGroupSelection { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the "clone schedules" feature is enabled.
+        /// </summary>
+        /// <value>
+        /// Whether the "clone schedules" feature is enabled.
+        /// </value>
+        public bool IsCloneSchedulesEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the "auto schedule" feature is enabled.
+        /// </summary>
+        /// <value>
+        /// Whether the "auto schedule" feature is enabled.
+        /// </value>
+        public bool IsAutoScheduleEnabled { get; set; }
     }
 }

@@ -246,6 +246,7 @@
     import { SiteDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteDetailOptionsBag";
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { Guid } from "@Obsidian/Types";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
 
     const props = defineProps({
         modelValue: {

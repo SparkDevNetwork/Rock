@@ -194,7 +194,7 @@
 
                                                 <div class="row">
                                                     <div class="col-sm-6">
-                                                        <Rock:RockTextBox ID="txtBusinessContactFirstName" runat="server" Label="First Name" />
+                                                        <Rock:FirstNameTextBox ID="txtBusinessContactFirstName" runat="server" Label="First Name" />
                                                     </div>
                                                     <div class="col-sm-6">
                                                         <Rock:RockTextBox ID="txtBusinessContactLastName" runat="server" Label="Last Name" />

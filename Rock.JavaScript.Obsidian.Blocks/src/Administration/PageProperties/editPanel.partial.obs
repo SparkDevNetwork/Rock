@@ -1,0 +1,445 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TabbedBar v-model="selectedTab" :tabs="tabs" type="pills" />
+
+    <div class="tabbed-content mt-4">
+        <div v-if="selectedTab == 'Basic Settings'">
+
+            <div class="row">
+                <div class="col-md-6">
+                    <PagePicker v-model="parentPage"
+                                label="Parent Page"
+                                required="false"
+                                :showSelectCurrentPage="false"
+                                promptForPageRoute />
+
+                    <TextBox v-model="internalName"
+                             label="Internal Name"
+                             rules="required"
+                             help="The internal page name to use when administering this page" />
+
+                    <TextBox v-model="pageTitle"
+                             label="Page Title"
+                             help="The page title to display in menus, breadcrumbs and page headings." />
+
+                    <TextBox v-model="browserTitle"
+                             label="Browser Title"
+                             help="The page title to display in the browser." />
+                </div>
+                <div class="col-md-6">
+                    <DropDownList v-model="site"
+                                  label="Site"
+                                  help="The Site that the page should belong to."
+                                  :items="sites"
+                                  :showBlankItem="false" />
+
+                    <DropDownList v-model="layout"
+                                  label="Layout"
+                                  rules="required"
+                                  :items="layouts"
+                                  :showBlankItem="false" />
+
+                    <CheckBox v-model="menuDisplayIcon"
+                              label="Show Icon" />
+
+                    <TextBox v-model="iconCssClass"
+                             label="Icon CSS Class" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <TextBox v-model="description"
+                             label="Description"
+                             textMode="multiline"
+                             help="The description of the page to include as a meta tag for the page" />
+                </div>
+            </div>
+
+            <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+        </div>
+
+        <div v-if="selectedTab == 'Display Settings'">
+            <fieldset>
+                <h4>Page</h4>
+
+                <InlineCheckbox v-model="pageDisplayTitle"
+                                text="Show Title on Page"
+                                help="If supported by the layout, should the title be displayed when viewing this page?" />
+
+                <InlineCheckbox v-model="pageDisplayBreadCrumb"
+                                text="Show Breadcrumbs on Page"
+                                help="If supported by the layout, should breadcrumbs (links to parent pages) be displayed when viewing this page?" />
+
+                <InlineCheckbox v-model="pageDisplayIcon"
+                                text="Show Icon on Page"
+                                help="If supported by the layout, should the page icon be displayed when viewing this page?" />
+
+                <InlineCheckbox v-model="pageDisplayDescription"
+                                text="Show Description on Page"
+                                help="If supported by the layout, should the page description be displayed when viewing this page?" />
+            </fieldset>
+            <fieldset>
+                <h4>Menu</h4>
+                <DropDownList v-model="displayInNavWhen"
+                              text="Display When"
+                              :items="displayWhenItems" />
+
+                <InlineCheckbox v-model="menuDisplayDescription"
+                                text="Show Description"
+                                help="If supported by the menu, should this page's description be included with its title in the menu?" />
+
+                <InlineCheckbox v-model="menuDisplayChildPages"
+                                text="Show Child Pages"
+                                help="Should the child pages be displayed in the menu?" />
+            </fieldset>
+            <fieldset>
+                <h4>Breadcrumbs</h4>
+                <InlineCheckbox v-model="breadCrumbDisplayName"
+                                text="Show Name in Breadcrumb"
+                                help="Should this page's name be displayed in the breadcrumb trail when viewing this page or a child page?" />
+
+                <InlineCheckbox v-model="breadCrumbDisplayIcon"
+                                text="Show Icon in Breadcrumb"
+                                help="Should this page's icon be displayed in the breadcrumb trail when viewing this page or a child page?" />
+            </fieldset>
+        </div>
+
+        <div v-if="selectedTab == 'Advanced Settings'">
+            <div class="row">
+                <div class="col-md-6">
+                    <CheckBox v-model="requiresEncryption" text="Force SSL" label="" />
+                    <CheckBox v-model="enableViewState" text="Enable ViewState" label="" />
+                    <CheckBox v-model="includeAdminFooter" text="Allow Configuration" label="" />
+                    <CheckBox v-model="allowIndexing" text="Allow Indexing" label="" />
+                </div>
+                <div class="col-md-6">
+                    <TextBox v-model="bodyCssClass"
+                             label="Body CSS Class"
+                             help="The CSS class to add to the body tag (if theme and layout supports it)." />
+                    <fieldset>
+                        <NotificationBox v-if="validationError" alertType="info" v-html="validationError?.message"></NotificationBox>
+                        <TextBox v-model="pageRoute"
+                                 textMode="multiLine"
+                                 :rows="3"
+                                 label="Page Routes"
+                                 help="A unique, friendly route name for the page (e.g. 'Login' or 'Community/GetInvolved')" />
+                    </fieldset>
+                    <DefinedValuePicker v-model="intents"
+                                        label="Page Intent"
+                                        help="Helps classify the purpose of the page. This is written to interactions as individuals view the page. You can provide options here by editing the Interaction Intent Defined Type."
+                                        :multiple="true"
+                                        :definedTypeGuid="intentDefinedTypeGuid" />
+                    <div v-if="showContextDetails">
+                        <fieldset>
+                            <h4>Context Parameters</h4>
+                            <p>
+                                There are one or more blocks on this page that can load content based on a 'context' parameter.
+                                Please enter the route parameter name or query string parameter name that will contain the id for
+                                each of the objects below.
+                            </p>
+                            <div v-for="context of blockContexts">
+                                <TextBox v-model="context.text"
+                                         :label="getContextLabel(context.entityTypeFriendlyName)"
+                                         :help="context.helpText || undefined" />
+                            </div>
+                        </fieldset>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <CacheabilityPicker v-model="cacheControlHeaderSettings" label="" />
+                </div>
+                <div class="col-md-12">
+                    <CheckBox v-model="enableRateLimiting" label="Rate Limiting Enable" help="Rate Limiting restricts the number of requests from each IP Address, helping to protect pages from bot spam." />
+                </div>
+                <div v-if="enableRateLimiting">
+                    <div class="col-md-6">
+                        <NumberBox v-model="rateLimitPeriodDurationSeconds" label="Rate Limit Period">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">seconds</span>
+                            </template>
+                        </NumberBox>
+                    </div>
+                    <div class="col-md-6">
+                        <NumberBox v-model="rateLimitRequestPerPeriod" label="Max Request Per Period" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <CodeEditor v-model="headerContent"
+                                label="Header Content"
+                                mode="lava"
+                                theme="rock"
+                                :editorHeight="400"
+                                help="Additional HTML content to include in the &amp;lt;head&amp;gt; section of the rendered page." />
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.tabbed-bar {
+    padding: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import InlineCheckbox from "./InlineCheckbox.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import { setPropertiesBoxValue, watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { PagePropertiesBag } from "@Obsidian/ViewModels/Blocks/Administration/PageProperties/pagePropertiesBag";
+    import { PagePropertiesOptionsBag } from "@Obsidian/ViewModels/Blocks/Administration/PageProperties/pagePropertiesOptionsBag";
+    import { PagePropertiesValidationResponseBag } from "@Obsidian/ViewModels/Blocks/Administration/PageProperties/pagePropertiesValidationResponseBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { DisplayInNavWhen } from "@Obsidian/Enums/Cms/displayInNavWhen";
+    import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<PagePropertiesBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<PagePropertiesOptionsBag>,
+            required: true
+        },
+
+        validationError: {
+            type: Object as PropType<PagePropertiesValidationResponseBag>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<PagePropertiesBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const selectedTab = ref("Basic Settings");
+    const tabs = ["Basic Settings", "Display Settings", "Advanced Settings"];
+    const sites = ref(props.options.sitesItems ?? []);
+    const layouts = ref(props.options.layoutItems ?? []);
+    const displayWhenItems = ref(props.options.displayWhenItems ?? []);
+    const intentDefinedTypeGuid = ref(props.options.intentDefinedTypeGuid ?? "");
+    const enableRateLimiting = ref(!!props.modelValue.bag?.rateLimitPeriodDurationSeconds || !!props.modelValue.bag?.rateLimitRequestPerPeriod);
+
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+
+    // Basic Settings
+    const parentPage = propertyRef(toPageRouteValueBag(props.modelValue.bag?.parentPage), "ParentPageId");
+    const internalName = propertyRef(props.modelValue.bag?.internalName ?? "", "InternalName");
+    const pageTitle = propertyRef(props.modelValue.bag?.pageTitle ?? "", "PageTitle");
+    const browserTitle = propertyRef(props.modelValue.bag?.browserTitle ?? "", "BrowserTitle");
+    const site = ref(props.modelValue.bag?.site?.value ?? "");
+    const layout = propertyRef(props.modelValue.bag?.layout?.value ?? "", "LayoutId");
+    const menuDisplayIcon = propertyRef(props.modelValue.bag?.menuDisplayIcon ?? false, "MenuDisplayIcon");
+    const iconCssClass = propertyRef(props.modelValue.bag?.iconCssClass ?? "", "IconCssClass");
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+
+    // Display Settings
+    const pageDisplayTitle = propertyRef(props.modelValue.bag?.pageDisplayTitle ?? false, "PageDisplayTitle");
+    const pageDisplayBreadCrumb = propertyRef(props.modelValue.bag?.pageDisplayBreadCrumb ?? false, "PageDisplayBreadCrumb");
+    const pageDisplayIcon = propertyRef(props.modelValue.bag?.pageDisplayIcon ?? false, "PageDisplayIcon");
+    const pageDisplayDescription = propertyRef(props.modelValue.bag?.pageDisplayDescription ?? false, "PageDisplayDescription");
+    const displayInNavWhen = propertyRef(props.modelValue.bag?.displayInNavWhen?.toString() ?? "", "displayInNavWhen");
+    const menuDisplayDescription = propertyRef(props.modelValue.bag?.menuDisplayDescription ?? false, "MenuDisplayDescription");
+    const menuDisplayChildPages = propertyRef(props.modelValue.bag?.menuDisplayChildPages ?? false, "MenuDisplayChildPages");
+    const breadCrumbDisplayName = propertyRef(props.modelValue.bag?.breadCrumbDisplayName ?? false, "BreadCrumbDisplayName");
+    const breadCrumbDisplayIcon = propertyRef(props.modelValue.bag?.breadCrumbDisplayIcon ?? false, "BreadCrumbDisplayIcon");
+
+    // Advanced Settings
+    const requiresEncryption = propertyRef(props.modelValue.bag?.requiresEncryption ?? false, "RequiresEncryption");
+    const enableViewState = propertyRef(props.modelValue.bag?.enableViewState ?? false, "EnableViewState");
+    const includeAdminFooter = propertyRef(props.modelValue.bag?.includeAdminFooter ?? false, "IncludeAdminFooter");
+    const allowIndexing = propertyRef(props.modelValue.bag?.allowIndexing ?? false, "AllowIndexing");
+    const bodyCssClass = propertyRef(props.modelValue.bag?.bodyCssClass ?? "", "BodyCssClass");
+    const pageRoute = ref(props.modelValue.bag?.pageRoute ?? "");
+    const intents = ref(props.modelValue.bag?.intents);
+    const cacheControlHeaderSettings = propertyRef(props.modelValue.bag?.cacheControlHeaderSettings ?? null, "CacheControlHeaderSettings");
+    const rateLimitPeriodDurationSeconds = propertyRef(props.modelValue.bag?.rateLimitPeriodDurationSeconds, "RateLimitPeriodDurationSeconds");
+    const rateLimitRequestPerPeriod = propertyRef(props.modelValue.bag?.rateLimitRequestPerPeriod, "RateLimitRequestPerPeriod");
+    const headerContent = propertyRef(props.modelValue.bag?.headerContent ?? "", "HeaderContent");
+    const blockContexts = ref(props.modelValue.bag?.blockContexts?.map(context => ({ ...context, text: context.text ?? "" })) ?? []);
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [parentPage, internalName, pageTitle, browserTitle, layout, menuDisplayIcon, iconCssClass, description,
+        pageDisplayTitle, pageDisplayBreadCrumb, pageDisplayIcon, pageDisplayDescription, displayInNavWhen, menuDisplayDescription, menuDisplayChildPages, breadCrumbDisplayName, breadCrumbDisplayIcon,
+        requiresEncryption, enableViewState, includeAdminFooter, allowIndexing, bodyCssClass, cacheControlHeaderSettings, rateLimitPeriodDurationSeconds, rateLimitRequestPerPeriod, headerContent];
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Returns true if the page has any blocks with context entities allowing configuration of the page's context entity.
+     */
+    const showContextDetails = computed((): boolean => {
+        return (props.modelValue.bag?.blockContexts?.length ?? 0) > 0;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Converts the page ListItemBag object to a PageRouteValueBag object for the PagePicker.
+     * @param page The specified page
+     */
+    function toPageRouteValueBag(page: ListItemBag | null | undefined): PageRouteValueBag | undefined {
+        return !page ? undefined : {
+            page: page ?? {}
+        };
+    }
+
+    /**
+     * Formats the context entity parameter name textbox label.
+     * @param labelText The label text for the context entity parameter name
+     */
+    function getContextLabel(labelText: string | null | undefined): string {
+        return `${labelText} Parameter Name`;
+    }
+
+    // #endregion
+
+    // Update the Layouts dropdown items if the site changes.
+    watch(() => site.value, async () => {
+
+        const siteGuid = toGuidOrNull(site.value);
+
+        if (!siteGuid || areEqual(siteGuid, emptyGuid)) {
+            return;
+        }
+
+        const request: {
+            siteGuid: Guid
+        } = {
+            siteGuid: siteGuid
+        };
+
+        const result = await invokeBlockAction<{ layouts: ListItemBag[] }>("LoadSiteLayouts", request);
+
+        if (result.isSuccess && result.data) {
+            layouts.value = result.data.layouts;
+        }
+    });
+
+    // Watch for parental changes in our model value and update all our values.
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+
+        // Basic Settings
+        updateRefValue(parentPage, toPageRouteValueBag(props.modelValue.bag?.parentPage));
+        updateRefValue(internalName, props.modelValue.bag?.internalName ?? "");
+        updateRefValue(pageTitle, props.modelValue.bag?.pageTitle ?? "");
+        updateRefValue(site, props.modelValue.bag?.site?.value ?? "");
+        updateRefValue(layout, props.modelValue.bag?.layout?.value ?? "");
+        updateRefValue(browserTitle, props.modelValue.bag?.browserTitle ?? "");
+        updateRefValue(menuDisplayIcon, props.modelValue.bag?.menuDisplayIcon ?? false);
+        updateRefValue(iconCssClass, props.modelValue.bag?.iconCssClass ?? "");
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+
+        // Display Settings
+        updateRefValue(pageDisplayTitle, props.modelValue.bag?.pageDisplayTitle ?? false);
+        updateRefValue(pageDisplayBreadCrumb, props.modelValue.bag?.pageDisplayBreadCrumb ?? false);
+        updateRefValue(pageDisplayIcon, props.modelValue.bag?.pageDisplayIcon ?? false);
+        updateRefValue(pageDisplayDescription, props.modelValue.bag?.pageDisplayDescription ?? false);
+        updateRefValue(displayInNavWhen, props.modelValue.bag?.displayInNavWhen.toString() ?? "");
+        updateRefValue(menuDisplayDescription, props.modelValue.bag?.menuDisplayDescription ?? false);
+        updateRefValue(menuDisplayChildPages, props.modelValue.bag?.menuDisplayChildPages ?? false);
+        updateRefValue(breadCrumbDisplayName, props.modelValue.bag?.breadCrumbDisplayName ?? false);
+        updateRefValue(breadCrumbDisplayIcon, props.modelValue.bag?.breadCrumbDisplayIcon ?? false);
+
+        // Advanced Settings
+        updateRefValue(requiresEncryption, props.modelValue.bag?.requiresEncryption ?? false);
+        updateRefValue(enableViewState, props.modelValue.bag?.enableViewState ?? false);
+        updateRefValue(includeAdminFooter, props.modelValue.bag?.includeAdminFooter ?? false);
+        updateRefValue(allowIndexing, props.modelValue.bag?.allowIndexing ?? false);
+        updateRefValue(bodyCssClass, props.modelValue.bag?.bodyCssClass ?? "");
+        updateRefValue(pageRoute, props.modelValue.bag?.pageRoute ?? "");
+        updateRefValue(intents, props.modelValue.bag?.intents);
+        updateRefValue(cacheControlHeaderSettings, props.modelValue.bag?.cacheControlHeaderSettings ?? null);
+        updateRefValue(rateLimitPeriodDurationSeconds, props.modelValue.bag?.rateLimitPeriodDurationSeconds);
+        updateRefValue(rateLimitRequestPerPeriod, props.modelValue.bag?.rateLimitRequestPerPeriod);
+        updateRefValue(headerContent, props.modelValue.bag?.headerContent ?? "");
+        updateRefValue(blockContexts, props.modelValue.bag?.blockContexts?.map(context => ({ ...context, text: context.text ?? "" })) ?? []);
+        updateRefValue(breadCrumbDisplayIcon, props.modelValue.bag?.breadCrumbDisplayIcon ?? false);
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, site, pageRoute, intents, blockContexts, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<PagePropertiesBag> = {
+            bag: { ...props.modelValue.bag } as PagePropertiesBag
+        };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+
+        // Basic Settings
+        setPropertiesBoxValue(newValue, "parentPage", parentPage.value?.page);
+        setPropertiesBoxValue(newValue, "internalName", internalName.value);
+        setPropertiesBoxValue(newValue, "pageTitle", pageTitle.value);
+        setPropertiesBoxValue(newValue, "site", { text: "", value: site.value });
+        setPropertiesBoxValue(newValue, "layout", { text: "", value: layout.value });
+        setPropertiesBoxValue(newValue, "browserTitle", browserTitle.value);
+        setPropertiesBoxValue(newValue, "menuDisplayIcon", menuDisplayIcon.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+
+        // Display Settings
+        setPropertiesBoxValue(newValue, "pageDisplayTitle", pageDisplayTitle.value);
+        setPropertiesBoxValue(newValue, "pageDisplayBreadCrumb", pageDisplayBreadCrumb.value);
+        setPropertiesBoxValue(newValue, "pageDisplayIcon", pageDisplayIcon.value);
+        setPropertiesBoxValue(newValue, "pageDisplayDescription", pageDisplayDescription.value);
+        setPropertiesBoxValue(newValue, "displayInNavWhen", toNumber(displayInNavWhen.value) as DisplayInNavWhen);
+        setPropertiesBoxValue(newValue, "menuDisplayDescription", menuDisplayDescription.value);
+        setPropertiesBoxValue(newValue, "menuDisplayChildPages", menuDisplayChildPages.value);
+        setPropertiesBoxValue(newValue, "breadCrumbDisplayName", breadCrumbDisplayName.value);
+        setPropertiesBoxValue(newValue, "breadCrumbDisplayIcon", breadCrumbDisplayIcon.value);
+
+        // Advanced Settings
+        setPropertiesBoxValue(newValue, "requiresEncryption", requiresEncryption.value);
+        setPropertiesBoxValue(newValue, "enableViewState", enableViewState.value);
+        setPropertiesBoxValue(newValue, "includeAdminFooter", includeAdminFooter.value);
+        setPropertiesBoxValue(newValue, "allowIndexing", allowIndexing.value);
+        setPropertiesBoxValue(newValue, "bodyCssClass", bodyCssClass.value);
+        setPropertiesBoxValue(newValue, "pageRoute", pageRoute.value);
+        setPropertiesBoxValue(newValue, "intents", intents.value);
+        setPropertiesBoxValue(newValue, "cacheControlHeaderSettings", cacheControlHeaderSettings.value);
+        setPropertiesBoxValue(newValue, "rateLimitPeriodDurationSeconds", rateLimitPeriodDurationSeconds.value);
+        setPropertiesBoxValue(newValue, "rateLimitRequestPerPeriod", rateLimitRequestPerPeriod.value);
+        setPropertiesBoxValue(newValue, "headerContent", headerContent.value);
+        setPropertiesBoxValue(newValue, "blockContexts", blockContexts.value);
+
+        emit("update:modelValue", newValue);
+    }, { deep: true });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+</script>

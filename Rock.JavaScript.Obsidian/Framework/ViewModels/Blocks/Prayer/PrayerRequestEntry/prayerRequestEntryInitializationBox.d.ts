@@ -33,6 +33,12 @@ export type PrayerRequestEntryInitializationBox = {
     /** The prayer request attributes that can be edited. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
+    /** Gets or sets the campus statuses to filter out of the campus picker. */
+    campusStatusFilter?: Guid[] | null;
+
+    /** Gets or sets the campus types to filter out of the campus picker. */
+    campusTypeFilter?: Guid[] | null;
+
     /**
      * The categories the person can choose from when entering their prayer request.
      * If empty, then categories will not be shown.

@@ -166,13 +166,12 @@ namespace RockWeb.Blocks.Security.Oidc
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             // Get the auth client for the request
             var authClient = GetAuthClient();
             if ( authClient == null )
             {
                 DenyAuthorization( "Invalid+client" );
+                base.OnLoad( e );
                 return;
             }
 
@@ -189,10 +188,12 @@ namespace RockWeb.Blocks.Security.Oidc
                 if (action == "deny" )
                 {
                     DenyAuthorization( "The+user+declined+claim+permissions" );
+                    base.OnLoad( e );
                     return;
                 }
 
                 AcceptAuthorization();
+                base.OnLoad( e );
                 return;
             }
 
@@ -200,6 +201,8 @@ namespace RockWeb.Blocks.Security.Oidc
 
             BindClientName();
             BindScopes();
+
+            base.OnLoad( e );
         }
 
         #endregion Base Control Methods

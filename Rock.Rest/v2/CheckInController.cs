@@ -32,6 +32,8 @@ using Rock.Rest.Filters;
 using Rock.Utility;
 using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
+using Rock.ViewModels.CheckIn.Labels;
+
 
 
 #if WEBFORMS
@@ -39,6 +41,7 @@ using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
 using FromQueryAttribute = System.Web.Http.FromUriAttribute;
 using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
+using HttpDeleteAttribute = System.Web.Http.HttpDeleteAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RouteAttribute = System.Web.Http.RouteAttribute;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
@@ -239,6 +242,18 @@ namespace Rock.Rest.v2
                 var director = new CheckInDirector( _rockContext );
                 var session = director.CreateSession( configuration );
 
+                if ( options.OverridePinCode.IsNotNullOrWhiteSpace() )
+                {
+                    if ( director.TryAuthenticatePin( options.OverridePinCode, out var errorMessage ) )
+                    {
+                        session.IsOverrideEnabled = true;
+                    }
+                    else
+                    {
+                        return BadRequest( errorMessage );
+                    }
+                }
+
                 session.LoadAndPrepareAttendeesForFamily( options.FamilyId, areas, kiosk, null );
 
                 return Ok( new FamilyMembersResponseBag
@@ -286,6 +301,18 @@ namespace Rock.Rest.v2
             {
                 var director = new CheckInDirector( _rockContext );
                 var session = director.CreateSession( configuration );
+
+                if ( options.OverridePinCode.IsNotNullOrWhiteSpace() )
+                {
+                    if ( director.TryAuthenticatePin( options.OverridePinCode, out var errorMessage ) )
+                    {
+                        session.IsOverrideEnabled = true;
+                    }
+                    else
+                    {
+                        return BadRequest( errorMessage );
+                    }
+                }
 
                 session.LoadAndPrepareAttendeesForPerson( options.PersonId, options.FamilyId, areas, kiosk, null );
 
@@ -341,19 +368,30 @@ namespace Rock.Rest.v2
                 var director = new CheckInDirector( _rockContext );
                 var session = director.CreateSession( configuration );
                 var sessionRequest = new AttendanceSessionRequest( options.Session );
+                List<ClientLabelBag> clientLabelBags = null;
 
                 var result = session.SaveAttendance( sessionRequest, options.Requests, kiosk, RockRequestContext.ClientInformation.IpAddress );
 
                 if ( !options.Session.IsPending )
                 {
                     var cts = new CancellationTokenSource( 5000 );
-                    await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                    var clientLabels = await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+
+                    clientLabelBags = clientLabels
+                        .Where( l => l.Data != null && l.Error.IsNullOrWhiteSpace() )
+                        .Select( l => new ClientLabelBag
+                        {
+                            PrinterAddress = l.PrintTo?.IPAddress,
+                            Data = Convert.ToBase64String( l.Data )
+                        } )
+                        .ToList();
                 }
 
                 return Ok( new SaveAttendanceResponseBag
                 {
                     Messages = result.Messages,
-                    Attendances = result.Attendances
+                    Attendances = result.Attendances,
+                    Labels = clientLabelBags
                 } );
             }
             catch ( CheckInMessageException ex )
@@ -401,12 +439,22 @@ namespace Rock.Rest.v2
                 var result = session.ConfirmAttendance( options.SessionGuid );
 
                 var cts = new CancellationTokenSource( 5000 );
-                await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                var clientLabels = await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+
+                var clientLabelBags = clientLabels
+                    .Where( l => l.Data != null && l.Error.IsNullOrWhiteSpace() )
+                    .Select( l => new ClientLabelBag
+                    {
+                        PrinterAddress = l.PrintTo?.IPAddress,
+                        Data = Convert.ToBase64String( l.Data )
+                    } )
+                    .ToList();
 
                 return Ok( new ConfirmAttendanceResponseBag
                 {
                     Messages = result.Messages,
-                    Attendances = result.Attendances
+                    Attendances = result.Attendances,
+                    Labels = clientLabelBags
                 } );
             }
             catch ( CheckInMessageException ex )
@@ -466,18 +514,44 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
+        /// Deletes the pending attendance records for a session.
+        /// </summary>
+        /// <param name="sessionGuid">The unique identifier of the session to delete attendance records for.</param>
+        /// <returns>The results from the delete operation.</returns>
+        [HttpDelete]
+        [Authenticate]
+        [Secured]
+        [Route( "PendingAttendance/{sessionGuid}" )]
+        [ProducesResponseType( HttpStatusCode.OK )]
+        [SystemGuid.RestActionGuid( "f914ffc3-8587-493b-9c8a-ae196b5fe028" )]
+        public IActionResult DeletePendingAttendance( Guid sessionGuid )
+        {
+            try
+            {
+                var director = new CheckInDirector( _rockContext );
+
+                director.DeletePendingAttendance( sessionGuid );
+
+                return Ok();
+            }
+            catch ( CheckInMessageException ex )
+            {
+                return BadRequest( ex.Message );
+            }
+        }
+
+        /// <summary>
         /// Establishes a connection from the printer proxy service to this
         /// Rock instance.
         /// </summary>
         /// <param name="deviceId">The identifier of the proxy Device in Rock as either a Guid or an IdKey.</param>
         /// <param name="name">The name of the proxy for UI presentation.</param>
-        /// <param name="priority">The priority for this proxy when choosing between multiple proxies.</param>
         /// <returns>The result of the operation.</returns>
         [HttpGet]
-        [Route( "PrinterProxy/{deviceId}" )]
+        [Route( "CloudPrint/{deviceId}" )]
         [ProducesResponseType( HttpStatusCode.SwitchingProtocols )]
         [SystemGuid.RestActionGuid( "1b4b1d0d-a872-40f7-a49d-666092cf8816" )]
-        public IActionResult GetPrinterProxy( string deviceId, [FromQuery] string name = null, [FromQuery] int priority = 1 )
+        public IActionResult GetPrinterProxy( string deviceId, [FromQuery] string name = null )
         {
             if ( !System.Web.HttpContext.Current.IsWebSocketRequest )
             {
@@ -502,7 +576,8 @@ namespace Rock.Rest.v2
 
             System.Web.HttpContext.Current.AcceptWebSocketRequest( ctx =>
             {
-                var proxy = new PrinterProxySocket( ctx.WebSocket, device.Id, name ?? device.Name, priority );
+                var address = RockRequestContext.ClientInformation.IpAddress;
+                var proxy = new CloudPrintSocket( ctx.WebSocket, device.Id, name ?? device.Name, address );
 
                 return proxy.RunAsync( CancellationToken.None );
             } );

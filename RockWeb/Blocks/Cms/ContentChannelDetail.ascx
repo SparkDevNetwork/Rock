@@ -134,7 +134,7 @@
                     <Rock:PanelWidget ID="wbAdvanced" runat="server" Title="Advanced">
                         <div class="row">
                             <div class="col-md-6">
-                                <Rock:RockCheckBox ID="cbEnableRss" runat="server" Label="Enable RSS" Text="Yes" CssClass="js-content-channel-enable-rss" />
+                                <Rock:RockCheckBox ID="cbEnableRss" runat="server" Label="Enable RSS" CssClass="js-content-channel-enable-rss" />
                                 <div id="divRss" runat="server" class="js-content-channel-rss">
                                     <Rock:DataTextBox ID="tbChannelUrl" runat="server" Label="Channel URL" SourceTypeName="Rock.Model.ContentChannel, Rock" PropertyName="ChannelUrl"
                                         Help="The Content Channel Item Publishing Point will be used for the Item URL in the RSS feed." />

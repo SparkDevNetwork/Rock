@@ -23,7 +23,6 @@ using Rock.Data;
 using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.Observability;
-using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 
@@ -68,6 +67,20 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <value>The attendees.</value>
         public IReadOnlyList<Attendee> Attendees { get; private set; }
+
+        /// <summary>
+        /// Determines if this session will operate in override mode. When in
+        /// override mode no filtering is performed on attendees for the
+        /// opportunities they can attend.
+        /// </summary>
+        public bool IsOverrideEnabled { get; set; }
+
+        /// <summary>
+        /// The value to use for <see cref="Attendance.SourceValueId"/>. This is
+        /// used to identify where the attendance record came from. If <c>null</c>
+        /// then the value for Kiosk will be used.
+        /// </summary>
+        public int? AttendanceSourceValueId { get; set; }
 
         /// <summary>
         /// Gets the opportunity filter provider to be used with this instance.
@@ -181,9 +194,22 @@ namespace Rock.CheckIn.v2
         {
             var opportunities = Director.GetAllOpportunities( possibleAreas, kiosk, locations );
             var groupMemberQry = GetGroupMembersQueryForFamily( familyId );
+
+            // Apply any age restriction filtering.
+            if ( TemplateConfiguration.AgeRestriction == AgeRestrictionMode.HideAdults )
+            {
+                groupMemberQry = groupMemberQry
+                    .Where( gm => gm.Person.AgeClassification != AgeClassification.Adult );
+            }
+            else if ( TemplateConfiguration.AgeRestriction == AgeRestrictionMode.HideChildren )
+            {
+                groupMemberQry = groupMemberQry
+                    .Where( gm => gm.Person.AgeClassification != AgeClassification.Child );
+            }
+
             var members = GetFamilyMemberBags( familyId, groupMemberQry );
 
-            LoadAttendees( members.Select( fm => fm.Person ).ToList(), opportunities );
+            LoadAttendees( members, opportunities );
             PrepareAttendees();
         }
 
@@ -201,9 +227,9 @@ namespace Rock.CheckIn.v2
         {
             var checkInOpportunities = Director.GetAllOpportunities( possibleAreas, kiosk, locations );
             var familyMembersQry = GetGroupMemberQueryForPerson( personId, familyId );
-            var members = GetFamilyMemberBags( null, familyMembersQry );
+            var members = GetFamilyMemberBags( familyId, familyMembersQry );
 
-            LoadAttendees( members.Select( fm => fm.Person ).ToList(), checkInOpportunities );
+            LoadAttendees( members, checkInOpportunities );
             PrepareAttendees();
         }
 
@@ -269,6 +295,11 @@ namespace Rock.CheckIn.v2
         /// <param name="attendee">The attendee whose opportunities will be filtered.</param>
         public void FilterPersonOpportunities( Attendee attendee )
         {
+            if ( IsOverrideEnabled )
+            {
+                return;
+            }
+
             using ( var activity = ObservabilityHelper.StartActivity( $"Filter Opportunities For {attendee.Person.NickName}" ) )
             {
                 activity?.AddTag( "rock.checkin.opportunity_filter_provider", OpportunityFilterProvider.GetType().FullName );
@@ -298,18 +329,18 @@ namespace Rock.CheckIn.v2
         /// gathers all required information to later perform filtering on the
         /// attendees.
         /// </summary>
-        /// <param name="people">The <see cref="PersonBag"/> objects to be used when constructing the <see cref="Attendee"/> objects that will wrap them.</param>
+        /// <param name="members">The <see cref="FamilyMemberBag"/> objects to be used when constructing the <see cref="Attendee"/> objects that will wrap them.</param>
         /// <param name="baseOpportunities">The opportunity collection to clone onto each attendee.</param>
-        public void LoadAttendees( IReadOnlyCollection<PersonBag> people, OpportunityCollection baseOpportunities )
+        public void LoadAttendees( IReadOnlyCollection<FamilyMemberBag> members, OpportunityCollection baseOpportunities )
         {
             using ( var activity = ObservabilityHelper.StartActivity( $"Get Attendee Items" ) )
             {
                 activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
                 var preSelectCutoff = RockDateTime.Today.AddDays( Math.Min( -1, 0 - TemplateConfiguration.AutoSelectDaysBack ) );
-                var recentAttendance = CheckInDirector.GetRecentAttendance( preSelectCutoff, people.Select( fm => fm.Id ).ToList(), RockContext );
+                var recentAttendance = CheckInDirector.GetRecentAttendance( preSelectCutoff, members.Select( fm => fm.Person.Id ).ToList(), RockContext );
 
-                var attendees = Director.ConversionProvider.GetAttendeeItems( people, baseOpportunities, recentAttendance );
+                var attendees = Director.ConversionProvider.GetAttendeeItems( members, baseOpportunities, recentAttendance );
 
                 Attendees = attendees;
             }
@@ -337,6 +368,11 @@ namespace Rock.CheckIn.v2
         /// <param name="attendee">The attendee to be checked in.</param>
         public void SetDefaultSelectionsForAttendee( Attendee attendee )
         {
+            if ( attendee.IsUnavailable )
+            {
+                return;
+            }
+
             using ( var activity = ObservabilityHelper.StartActivity( $"Set Defaults for {attendee.Person.NickName}" ) )
             {
                 var isAutoSelect = TemplateConfiguration.KioskCheckInType == KioskCheckInMode.Family
@@ -349,7 +385,8 @@ namespace Rock.CheckIn.v2
                     attendee.SelectedOpportunities = SelectionProvider.GetDefaultSelectionsForPerson( attendee );
                 }
 
-                attendee.IsPreSelected = TemplateConfiguration.AutoSelectDaysBack > 0 && attendee.RecentAttendances.Count > 0;
+                attendee.IsPreSelected = TemplateConfiguration.AutoSelectDaysBack > 0
+                    && IsAnyOpportunityInRecentAttendance( attendee );
                 attendee.IsMultipleSelectionsAvailable = attendee.Opportunities.Areas.Count > 1
                     || attendee.Opportunities.Groups.Count > 1
                     || attendee.Opportunities.Locations.Count > 1
@@ -539,6 +576,26 @@ namespace Rock.CheckIn.v2
 
                 return SaveProvider.Checkout( sessionRequest, attendanceIds, kiosk );
             }
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// This determines if the person has any recent attendance records that
+        /// match the area of a recent attendance. This is used to decide if the
+        /// attendee should be pre-selected.
+        /// </summary>
+        /// <param name="attendee">The attendee to be checked.</param>
+        /// <returns><c>true</c> if an available opportunity matches a recent attendance for pre-selection.</returns>
+        private static bool IsAnyOpportunityInRecentAttendance( Attendee attendee )
+        {
+            return attendee.Opportunities
+                .Areas
+                .Select( a => a.Id )
+                .Intersect( attendee.RecentAttendances.Select( a => a.GroupTypeId ) )
+                .Any();
         }
 
         #endregion

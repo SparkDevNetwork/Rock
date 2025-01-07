@@ -1,0 +1,72 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ColorPicker :label="field.name || ''"
+                 v-model="value"
+                 :help="field.description || ''">
+        <template #inputGroupAppend>
+            <span v-if="internalValue !== null" class="input-group-btn">
+                <button type="button"
+                        class="btn btn-default"
+                        title="Reset to default"
+                        :disabled="internalValue === null"
+                        @click="onResetValue">
+                    <i class="fa fa-refresh"></i>
+                </button>
+            </span>
+        </template>
+    </ColorPicker>
+</template>
+
+<script setup lang="ts">
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import { ThemeFieldBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeDetail/themeFieldBag";
+    import { computed, PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        field: {
+            type: Object as PropType<ThemeFieldBag>,
+            required: true
+        },
+
+        value: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "updateValue", key: string, value: string | null): void;
+    }>();
+
+    const internalValue = ref<string | null>(props.value);
+    const value = computed({
+        get() {
+            return internalValue.value ?? props.field.defaultValue ?? "";
+        },
+        set(v: string) {
+            // Because of how the native color picker works, it will emit a
+            // new value that matches the original value. So this attempts to
+            // handle the case where we set internalValue to null and then the
+            // color picker emits the default value back to us.
+            if (internalValue.value !== null || v !== props.field.defaultValue?.toLowerCase()) {
+                internalValue.value = v;
+            }
+        }
+    });
+
+    function onResetValue(): void {
+        internalValue.value = null;
+    }
+
+    watch(internalValue, () => {
+        if (props.field.variable) {
+            emit("updateValue", props.field.variable, internalValue.value);
+        }
+    });
+
+    watch([() => props.field, () => props.value], () => {
+        if (props.field.variable) {
+            internalValue.value = props.value;
+        }
+    });
+</script>

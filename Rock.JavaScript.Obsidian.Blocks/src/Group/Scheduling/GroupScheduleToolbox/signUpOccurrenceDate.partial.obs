@@ -42,7 +42,7 @@
     });
 
     defineEmits<{
-        (e: "updatedSignUps", signUps: SignUpsBag | null | undefined): void
+        (e: "updatedSignUps", signUps: SignUpsBag | null | undefined): void;
     }>();
 
     // #region Functions

@@ -367,10 +367,13 @@ namespace RockWeb.Blocks.Communication
 </div>";
 
             componentAssetManager.JsScriptToRegister = @"
-    Sys.Application.add_load(function (e) {
-        var data = '{{ SelectedValue }}';
-        handleAssetUpdate(e, data);
-    });";
+function communicationEntryWizardHandleAssetUpdateOnLoad(e) {
+    Sys.Application.remove_load(communicationEntryWizardHandleAssetUpdateOnLoad);
+
+    var data = '{{ SelectedValue }}';
+    handleAssetUpdate(e, data);
+}
+Sys.Application.add_load(communicationEntryWizardHandleAssetUpdateOnLoad);";
 
             var videoProviders = Rock.Communication.VideoEmbed.VideoEmbedContainer.Instance.Dictionary.Select( c => c.Value.Key );
             lbVideoUrlHelpText.Attributes["data-original-title"] += ( videoProviders.Count() > 1 ? string.Join( ", ", videoProviders.Take( videoProviders.Count() - 1 ) ) + " and " + videoProviders.Last() : videoProviders.FirstOrDefault() ) + ".";
@@ -445,8 +448,6 @@ function onTaskCompleted( resultData )
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             this.OnPropertyChanged -= CommunicationEntryWizard_OnPropertyChanged;
             this.OnPropertyChanged += CommunicationEntryWizard_OnPropertyChanged;
 
@@ -469,6 +470,8 @@ function onTaskCompleted( resultData )
 
             // Reset the Task Activity controls on the page.
             SignalRTaskActivityUiHelper.SetTaskActivityControlMode( this.RockPage, SignalRTaskActivityUiHelper.ControlModeSpecifier.Hidden );
+
+            base.OnLoad( e );
         }
 
         /// <summary>

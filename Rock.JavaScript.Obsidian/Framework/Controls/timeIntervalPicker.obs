@@ -2,7 +2,7 @@
 <template>
     <RockFormField v-bind="standardFieldProps" name="maxAge" :modelValue="internalValue">
         <div class="input-group d-flex">
-            <NumberBox v-model="value" inputClasses="input-width-md min-w-0 border-right-0 rounded-left" />
+            <NumberBox v-model="value" :validationTitle="standardFieldProps.label" inputClasses="input-width-md min-w-0 border-right-0 rounded-left" :minimumValue="0" />
             <DropDownList v-model="unit" :items="options" inputClasses="rounded-0 rounded-right input-width-sm" :showBlankItem="false" />
         </div>
     </RockFormField>

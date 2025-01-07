@@ -1,0 +1,68 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="form-group">
+        <RockLabel :help="field.description ?? undefined">
+            {{ field.name }}
+        </RockLabel>
+
+        <div class="d-flex" style="gap: 8px;">
+            <Switch v-model="booleanValue" />
+
+            <button v-if="internalValue !== null"
+                    type="button"
+                    class="btn btn-default btn-sm align-self-end"
+                    title="Reset to default"
+                    @click="onResetValue">
+                <i class="fa fa-refresh"></i>
+            </button>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { ThemeFieldBag } from "@Obsidian/ViewModels/Blocks/Cms/ThemeDetail/themeFieldBag";
+    import { computed, PropType, ref, watch } from "vue";
+
+    const props = defineProps({
+        field: {
+            type: Object as PropType<ThemeFieldBag>,
+            required: true
+        },
+
+        value: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "updateValue", key: string, value: string | null): void;
+    }>();
+
+    const internalValue = ref<string | null>(props.value);
+    const booleanValue = computed<boolean>({
+        get() {
+            return asBoolean(internalValue.value ?? props.field.defaultValue);
+        },
+        set(v: boolean) {
+            internalValue.value = v ? "true" : "false";
+        }
+    });
+
+    function onResetValue(): void {
+        internalValue.value = null;
+    }
+
+    watch(internalValue, () => {
+        if (props.field.variable) {
+            emit("updateValue", props.field.variable, internalValue.value);
+        }
+    });
+
+    watch([() => props.field, () => props.value], () => {
+        internalValue.value = props.value;
+    });
+</script>

@@ -110,6 +110,7 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="System.String"/> representing the course code.
         /// </value>
+        [MaxLength( 12 )]
         [DataMember]
         public string CourseCode { get; set; }
 

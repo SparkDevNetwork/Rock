@@ -1,0 +1,100 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField :modelValue="internalValue" v-bind="fieldProps" name="x-field">
+        <RadioButtonList v-model="actionType" :items="options" disableLabel horizontal />
+        <NumberBox v-if="showPageCount" v-model="pageCount" label="Page Count" help="The number of pages that will be removed from the navigation stack." class="input-width-sm" rules="required" />
+        <PagePicker v-if="showPageGuid" v-model="page" label="Path" :help="pagePickerHelp" rules="required" :siteType="SiteType.Mobile" />
+    </RockFormField>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough, updateRefValue } from "@Obsidian/Utility/component";
+    import { MobileNavigationActionType, MobileNavigationActionTypeDescription } from "@Obsidian/Enums/Mobile/mobileNavigationActionType";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { MobileNavigationActionBag } from "@Obsidian/ViewModels/Controls/mobileNavigationActionBag";
+    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
+
+    type MobileNavigationActionTypeStrings = `${typeof MobileNavigationActionType[keyof typeof MobileNavigationActionType]}`;
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<MobileNavigationActionBag>,
+            required: true
+        },
+
+        ...standardRockFormFieldProps
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: MobileNavigationActionBag): void
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const actionType = ref<MobileNavigationActionTypeStrings>(internalValue.value?.type?.toString() as MobileNavigationActionTypeStrings ?? MobileNavigationActionType.None.toString());
+    const pageCount = ref<number | null>(internalValue.value?.popCount ?? 1);
+    const page = ref<PageRouteValueBag | null>(internalValue.value?.page ? { page: internalValue.value.page } : null);
+
+    const fieldProps = useStandardRockFormFieldProps(props);
+
+    const showPageCount = computed(() => actionType.value === MobileNavigationActionType.PopPage.toString());
+    const showPageGuid = computed(() => actionType.value === MobileNavigationActionType.ResetToPage.toString()
+        || actionType.value === MobileNavigationActionType.ReplacePage.toString()
+        || actionType.value === MobileNavigationActionType.PushPage.toString()
+    );
+
+    const pagePickerHelp = computed(() => {
+        switch (actionType.value) {
+            case MobileNavigationActionType.PushPage.toString():
+                return "The page that will be pushed onto the navigation stack.";
+
+            case MobileNavigationActionType.ReplacePage.toString():
+                return "The current page will be replaced with the selected page.";
+
+            case MobileNavigationActionType.ResetToPage.toString():
+                return "The entire navigation stack will be cleared and the selected page will become the first page.";
+        }
+        return "";
+    });
+
+    const options: ListItemBag[] = enumToListItemBag(MobileNavigationActionTypeDescription);
+
+    watch([actionType, pageCount, page], () => {
+        updateInternalValue();
+    });
+
+    watch(internalValue, () => {
+        const ivActionType = internalValue.value?.type?.toString() as MobileNavigationActionTypeStrings ?? MobileNavigationActionType.None.toString();
+        if (ivActionType !== actionType.value) {
+            actionType.value = ivActionType;
+        }
+
+        const ivPageCount = internalValue.value?.popCount ?? pageCount.value;
+        if (ivPageCount !== pageCount.value) {
+            pageCount.value = ivPageCount;
+        }
+
+        const ivPage = internalValue.value?.page ?? page.value?.page ?? null;
+        if ((ivPage?.value ?? null) !== (page.value?.page?.value ?? null)) {
+            page.value = { page: ivPage };
+        }
+    }, { immediate: true });
+
+    function updateInternalValue(): void {
+        updateRefValue(internalValue, {
+            type: parseInt(actionType.value, 10) as MobileNavigationActionType,
+            popCount: showPageCount.value ? pageCount.value : null,
+            page: showPageGuid.value ? page.value?.page ?? null : null
+        });
+    }
+
+    if (!internalValue.value || internalValue.value.type == null || internalValue.value.type == undefined) {
+        updateInternalValue();
+    }
+</script>

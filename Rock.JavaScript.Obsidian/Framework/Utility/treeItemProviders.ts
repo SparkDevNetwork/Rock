@@ -38,6 +38,7 @@ import { WorkflowActionTypePickerGetChildrenOptionsBag } from "@Obsidian/ViewMod
 import { MergeFieldPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mergeFieldPickerGetChildrenOptionsBag";
 import { flatten } from "./arrayUtils";
 import { toNumberOrNull } from "./numberUtils";
+import { SiteType } from "@Obsidian/Enums/Cms/siteType";
 
 /**
  * The methods that must be implemented by tree item providers. These methods
@@ -364,6 +365,11 @@ export class PageTreeItemProvider implements ITreeItemProvider {
     public selectedPageGuids?: Guid[] | null;
 
     /**
+     * Limit results to given site type if one is provided
+     */
+    public siteType?: SiteType | null;
+
+    /**
      * Gets the child items of the given parent (or root if no parent given) from the server.
      *
      * @param parentGuid The parent item whose children are retrieved.
@@ -377,7 +383,8 @@ export class PageTreeItemProvider implements ITreeItemProvider {
             guid: toGuidOrNull(parentGuid) ?? emptyGuid,
             rootPageGuid: null,
             hidePageGuids: this.hidePageGuids ?? [],
-            securityGrantToken: this.securityGrantToken
+            securityGrantToken: this.securityGrantToken,
+            siteType: this.siteType
         };
         const url = "/api/v2/Controls/PagePickerGetChildren";
         const response = await post<TreeItemBag[]>(url, undefined, options);

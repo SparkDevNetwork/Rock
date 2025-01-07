@@ -15,7 +15,8 @@
                     ref="barcodeButtonElement"
                     id="barcode-button"
                     btnType="default"
-                    class="scan-barcode-button">
+                    class="scan-barcode-button"
+                    @click="onScanBarcodeClick">
             <span class="title">
                 <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <mask id="mask0_10_348" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120">
@@ -55,20 +56,23 @@
     import ImageRotator from "./imageRotator.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { Html5Qrcode } from "@Obsidian/Libs/html5-qrcode";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
+    import { PrintResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/printResponseBag";
     import { PromotionBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/promotionBag";
     import { KioskStatusBag } from "@Obsidian/ViewModels/CheckIn/kioskStatusBag";
     import { KioskStatusOptionsBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusOptionsBag";
     import { KioskStatusResponseBag } from "@Obsidian/ViewModels/Rest/CheckIn/kioskStatusResponseBag";
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
-    import { doesThemeSupportCamera, isIpadAppWithCamera, secondsToCountdown, UnexpectedErrorMessage, useKioskState } from "./utils.partial";
+    import { isIpadAppWithCamera, printLabels, printLegacyLabels, secondsToCountdown, UnexpectedErrorMessage, useKioskState } from "./utils.partial";
     import { IRockCheckInNative, KioskButton } from "./types.partial";
     import { useHttp } from "@Obsidian/Utility/http";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { alert, showDialog } from "@Obsidian/Utility/dialogs";
     import { CheckInSession } from "./checkInSession.partial";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
+    import { CameraBarcodeConfiguration } from "@Obsidian/Enums/Core/cameraBarcodeConfiguration";
 
     const props = defineProps({
         configuration: {
@@ -88,8 +92,11 @@
     }>();
 
     const kioskState = useKioskState();
+    const blockConfiguration = useConfigurationValues<Record<string, unknown>>();
     const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
+
+    let promotionTimer: number | undefined;
 
     // #region Values
 
@@ -177,13 +184,6 @@
      * @param code The barcode that was scanned.
      */
     async function performScannedCodeSearch(code: string): Promise<void> {
-        if (code.startsWith("PCL+")) {
-            // If using the HTML5 Camera, ignore PCL (Pre-Checkin Labels) QR
-            // Codes. The iPad app will print labels for PCL's itself, but
-            // HTML5 camera mode won't.
-            return;
-        }
-
         if (isProcessingScannedCode) {
             return;
         }
@@ -191,12 +191,17 @@
         isProcessingScannedCode = true;
 
         try {
+            if (code.startsWith("PCL+")) {
+                return await printPreCheckInLabels(code);
+            }
+
             let newSession = props.session.withConfiguration(props.configuration);
 
             newSession = await newSession.withFamilySearch(code, FamilySearchMode.ScannedId);
 
             if (!newSession.families || newSession.families.length === 0 || !newSession.families[0].id) {
                 await alert("Sorry, there were not any families found with the selected identifier.");
+                startNativeCamera(false);
                 return;
             }
 
@@ -206,9 +211,58 @@
         }
         catch (error) {
             await alert(error instanceof Error ? error.message : UnexpectedErrorMessage);
+            startNativeCamera(false);
         }
         finally {
             isProcessingScannedCode = false;
+        }
+    }
+
+    /**
+     * Prints labels associated with the pre check-in QR code.
+     *
+     * @param code The scanned PCL+ code.
+     */
+    async function printPreCheckInLabels(code: string): Promise<void> {
+        const data = {
+            scannedCode: code,
+            kioskId: props.configuration.kiosk?.id
+        };
+        const response = await invokeBlockAction<PrintResponseBag>("PrintPreCheckInLabels", data);
+
+        if (response.isSuccess && response.data) {
+            const errors: string[] = [];
+
+            // Print any client side labels we were provided.
+            if (response.data?.legacyLabels) {
+                errors.push(...await printLegacyLabels(response.data.legacyLabels));
+            }
+
+            if (response.data?.labels) {
+                errors.push(...await printLabels(response.data.labels));
+            }
+
+            // Append any server side errors last, since the server will
+            // include a non-error message by default.
+            if (response.data?.errorMessages && response.data.errorMessages.length > 0) {
+                errors.push(...response.data.errorMessages);
+            }
+
+            // Keep the message up for at most 5 seconds.
+            const cts = new CancellationTokenSource();
+            setTimeout(() => cts.cancel(), 5000);
+
+            await showDialog({
+                message: errors.length > 0 ? errors[0] : "You're all set.",
+                buttons: [
+                    {
+                        key: "ok",
+                        label: "OK",
+                        className: "btn btn-primary"
+                    }
+                ],
+                cancellationToken: cts.token
+            });
         }
     }
 
@@ -250,7 +304,13 @@
             areaIds: props.configuration.areas?.map(a => a.id ?? "") ?? []
         };
 
-        const result = await http.post<KioskStatusResponseBag>("/api/v2/checkin/KioskStatus", undefined, request);
+        let url = "/api/v2/checkin/KioskStatus";
+
+        if (blockConfiguration.apiKey) {
+            url += `?apiKey=${blockConfiguration.apiKey}`;
+        }
+
+        const result = await http.post<KioskStatusResponseBag>(url, undefined, request);
 
         if (result.isSuccess && result.data?.status) {
             kioskStatus.value = result.data.status;
@@ -273,12 +333,12 @@
                 window.clearTimeout(updateKioskStatusTimer);
             }
 
-            // Update the status once per minute. This can probably be changed
-            // to once every 10 minutes once we have RealTime hooked up.
+            // Update the status once every 15 minutes. RealTime engine will
+            // handle more immediate updates, so this just catches rare issues.
             updateKioskStatusTimer = window.setTimeout(() => {
                 updateKioskStatusTimer = undefined;
                 updateKioskStatus();
-            }, 60000);
+            }, 15 * 60 * 1000);
         }
     }
 
@@ -389,6 +449,33 @@
             window.clearTimeout(updateKioskStatusTimer);
             updateKioskStatusTimer = undefined;
         }
+
+        if (promotionTimer !== undefined) {
+            window.clearTimeout(promotionTimer);
+            promotionTimer = undefined;
+        }
+    }
+
+    /**
+     * Starts the native application camera if the device is currently
+     * configured in that mode.
+     *
+     * @param isManualRequest Determines if the person is attempting to start the camera.
+     */
+    function startNativeCamera(isManualRequest: boolean): void {
+        const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
+
+        if (!props.configuration.kiosk || !props.configuration.kiosk.isCameraEnabled || props.configuration.kiosk.cameraMode === CameraBarcodeConfiguration.Off) {
+            return;
+        }
+
+        if (!native || !isIpadAppWithCamera(props.configuration.kiosk)) {
+            return;
+        }
+
+        if (isManualRequest || props.configuration.kiosk.cameraMode === CameraBarcodeConfiguration.AlwaysOn || props.configuration.kiosk.cameraMode === CameraBarcodeConfiguration.Passive) {
+            native.StartCamera?.(props.configuration.kiosk.cameraMode === CameraBarcodeConfiguration.Passive);
+        }
     }
 
     /**
@@ -432,6 +519,30 @@
         }
     }
 
+    /**
+     * Called when the scan barcode button has been clicked. Start the native
+     * camera if the kiosk is configured for it.
+     */
+    function onScanBarcodeClick(): void {
+        startNativeCamera(true);
+    }
+
+    async function onPromotionTimer(): Promise<void> {
+        try {
+            await updatePromotionList();
+        }
+        finally {
+            // Undefined means we have shut down this component.
+            if (promotionTimer !== undefined) {
+                // Update promotions again in another 5 minutes, with some random
+                // shift up to another minute.
+                let seconds = 5 * 60;
+                seconds += Math.random() * 60;
+                promotionTimer = window.setTimeout(onPromotionTimer, seconds * 1000);
+            }
+        }
+    }
+
     // #endregion
 
     // If the kiosk is not open yet then start a timer to update the countdown.
@@ -467,8 +578,7 @@
         }
 
         const deviceId = cameraDeviceId.value;
-        const isCameraEnabled = doesThemeSupportCamera()
-            && props.configuration.kiosk?.isCameraEnabled
+        const isCameraEnabled = props.configuration.kiosk?.isCameraEnabled
             && barcodeButtonElement.value
             && deviceId;
 
@@ -497,12 +607,18 @@
     onMounted(async () => {
         const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
 
-        if (props.configuration.kiosk && isIpadAppWithCamera(props.configuration.kiosk) && native) {
-            // Block configuration check for AlwaysOn or Passive.
-            native.StartCamera?.(false);
-        }
-        else if (doesThemeSupportCamera() && props.configuration.kiosk?.isCameraEnabled) {
-            cameraDeviceId.value = (await Html5Qrcode.getCameras())[0].id;
+        if (props.configuration.kiosk?.isCameraEnabled) {
+            if (props.configuration.kiosk && isIpadAppWithCamera(props.configuration.kiosk)) {
+                startNativeCamera(false);
+            }
+            else {
+                try {
+                    cameraDeviceId.value = (await Html5Qrcode.getCameras())[0].id;
+                }
+                catch {
+                    cameraDeviceId.value = undefined;
+                }
+            }
         }
 
         // If we have a native check-in app then initialize it.
@@ -517,6 +633,9 @@
         document.addEventListener("keypress", onDocumentKeyPress);
 
         updatePromotionList();
+
+        // Update the promotion list after 5 minutes.
+        promotionTimer = window.setTimeout(onPromotionTimer, 5 * 60 * 1000);
     });
 
     // Perform any cleanup when this component is about to be removed from
@@ -532,6 +651,12 @@
         if (codeScanner) {
             codeScanner.stop();
             codeScanner = undefined;
+        }
+
+        const native = window["RockCheckinNative"] as IRockCheckInNative | undefined;
+
+        if (props.configuration.kiosk && isIpadAppWithCamera(props.configuration.kiosk) && native) {
+            native.StopCamera?.();
         }
 
         clearAllTimers();

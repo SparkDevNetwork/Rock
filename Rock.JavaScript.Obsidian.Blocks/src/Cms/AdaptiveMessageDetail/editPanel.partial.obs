@@ -28,8 +28,9 @@
             <div class="col-md-6">
                 <CategoryPicker v-model="categories"
                                 label="Categories"
+                                rules="required"
                                 multiple
-                                :entityTypeGuid="EntityType.AdaptiveMessage" />
+                                :entityTypeGuid="EntityType.AdaptiveMessageCategory" />
             </div>
         </div>
 
@@ -272,7 +273,7 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues,adaptationAttributes, ...propRefs], () => {
+    watch([attributeValues, adaptationAttributes, ...propRefs], () => {
         const newValue: AdaptiveMessageBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,

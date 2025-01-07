@@ -293,8 +293,8 @@ export function textFilterMatches(needle: unknown, haystack: unknown): boolean {
         return false;
     }
 
-    const haystackValue = haystack?.toLowerCase() ?? "";
-    const needleValue = needle["value"].toLowerCase();
+    const haystackValue = haystack?.toLowerCase()?.trim() ?? "";
+    const needleValue = needle["value"].toLowerCase()?.trim();
 
     if (needle["method"] === TextFilterMethod.Equals) {
         return haystackValue === needleValue;
@@ -338,6 +338,10 @@ export function booleanFilterMatches(needle: unknown, haystack: unknown): boolea
     const needleBag = needle as BooleanSearchBag;
 
     if (needleBag.method === BooleanFilterMethod.Yes && haystack === true) {
+        return true;
+    }
+
+    if (needleBag.method === BooleanFilterMethod.No && haystack === false) {
         return true;
     }
 
@@ -486,9 +490,10 @@ export function dateFilterMatches(needle: unknown, haystack: unknown): boolean {
         return false;
     }
 
-    const needleFirstDate = RockDateTime.parseISO(needle["value"] ?? "")?.date.toMilliseconds() ?? 0;
-    const needleSecondDate = RockDateTime.parseISO(needle["secondValue"] ?? "")?.date.toMilliseconds() ?? 0;
-    const haystackDate = RockDateTime.parseISO(haystack ?? "")?.date.toMilliseconds() ?? 0;
+    const needleFirstDate = RockDateTime.parseISO(needle["value"] ?? "")?.rawDate.toMilliseconds() ?? 0;
+    const needleSecondDate = RockDateTime.parseISO(needle["secondValue"] ?? "")?.rawDate.toMilliseconds() ?? 0;
+    const haystackDate = RockDateTime.parseISO(haystack ?? "")?.rawDate.toMilliseconds() ?? 0;
+
     const today = RockDateTime.now().date;
 
     if (needle["method"] === DateFilterMethod.Equals) {
@@ -1036,6 +1041,11 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         if (sortField) {
             sortValue = (r) => {
                 const v = r[sortField];
+
+                // Explicitly handle null and undefined values
+                if (v === null || v === undefined) {
+                    return undefined;
+                }
 
                 if (typeof v === "string" || typeof v === "number") {
                     return v;

@@ -55,8 +55,6 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !Page.IsPostBack )
             {
                 var fontAwesomeProKey = FontAwesomeHelper.GetFontAwesomeProKey();
@@ -66,6 +64,8 @@ namespace RockWeb.Blocks.Cms
                 btnInstallUpdate.Text = hasFontAwesomeProKey ? "Update" : "Install";
                 fupFontAwesomeProPackage.UploadAsTemporary = true;
             }
+
+            base.OnLoad( e );
         }
 
         #endregion

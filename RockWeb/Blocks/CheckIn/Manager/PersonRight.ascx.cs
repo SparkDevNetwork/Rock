@@ -201,8 +201,6 @@ namespace RockWeb.Blocks.CheckIn.Manager
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             var personId = this.PageParameter( PageParameterKey.PersonId ).AsIntegerOrNull();
             if ( !personId.HasValue )
             {
@@ -233,6 +231,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     }
                 }
             }
+
+            base.OnLoad( e );
         }
 
         #endregion
@@ -356,13 +356,47 @@ namespace RockWeb.Blocks.CheckIn.Manager
             }
             else
             {
-                maNoLabelsFound.Show( "No labels were found for re-printing.", ModalAlertType.Alert );
+                // No legacy check-in labels were found, so attempt to print any
+                // next-gen check-in labels. If that still comes back with no
+                // labels then assume there just aren't any for this attendance.
+
+                var labelTypes = ZebraPrint.GetReprintNextGenLabelTypes( attendanceIds );
+
+                if ( !labelTypes.Any() )
+                {
+                    maNoLabelsFound.Show( "No labels were found for re-printing.", ModalAlertType.Alert );
+                    return;
+                }
+
+                cblNextGenLabels.DataSource = labelTypes;
+                cblNextGenLabels.DataBind();
+
+                PopulatePrinterList( ddlNextGenPrinter, rockContext );
+
+                nbReprintNextGenLabelMessages.Text = string.Empty;
+                mdReprintNextGenLabels.Show();
+
                 return;
             }
 
             cblLabels.DataSource = ZebraPrint.GetLabelTypesForPerson( personId, attendanceIds ).OrderBy( l => l.Name );
             cblLabels.DataBind();
 
+            PopulatePrinterList( ddlPrinter, rockContext );
+
+            nbReprintLabelMessages.Text = string.Empty;
+            mdReprintLabels.Show();
+        }
+
+        /// <summary>
+        /// Populate the drop down list control with the printers that are available.
+        /// This automatically detects and includes the "(local printer)" option if
+        /// we are running on the iPad or Windows applications.
+        /// </summary>
+        /// <param name="dropDownList"></param>
+        /// <param name="rockContext"></param>
+        private void PopulatePrinterList( RockDropDownList dropDownList, RockContext rockContext )
+        {
             // Get the printers list.
             var printerList = new DeviceService( rockContext )
                 .GetByDeviceTypeGuid( new Guid( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_PRINTER ) )
@@ -370,24 +404,18 @@ namespace RockWeb.Blocks.CheckIn.Manager
                 .Select( a => new { a.Name, a.Guid } )
                 .ToList();
 
-            ddlPrinter.Items.Clear();
-            ddlPrinter.Items.Add( new ListItem() );
+            dropDownList.Items.Clear();
+            dropDownList.Items.Add( new ListItem() );
 
             if ( hfHasClientPrinter.Value.AsBoolean() )
             {
-                ddlPrinter.Items.Add( new ListItem( "local printer", Guid.Empty.ToString() ) );
+                dropDownList.Items.Add( new ListItem( "local printer", Guid.Empty.ToString() ) );
             }
 
             foreach ( var printer in printerList )
             {
-                ddlPrinter.Items.Add( new ListItem( printer.Name, printer.Guid.ToString() ) );
+                dropDownList.Items.Add( new ListItem( printer.Name, printer.Guid.ToString() ) );
             }
-
-            var labelPrinterGuid = CheckinManagerHelper.GetCheckinManagerConfigurationFromCookie().LabelPrinterGuid;
-            ddlPrinter.SetValue( labelPrinterGuid );
-
-            nbReprintLabelMessages.Text = string.Empty;
-            mdReprintLabels.Show();
         }
 
         /// <summary>
@@ -452,6 +480,56 @@ namespace RockWeb.Blocks.CheckIn.Manager
             nbReprintMessage.Text = messages.JoinStrings( "<br>" );
 
             mdReprintLabels.Hide();
+        }
+
+        /// <summary>
+        /// Handles sending the selected labels off to the selected printer.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void mdReprintNextGenLabels_PrintClick( object sender, EventArgs e )
+        {
+            var attendanceIds = hfCurrentAttendanceIds.Value.SplitDelimitedValues().AsIntegerList();
+            var selectedLabelTypes = cblNextGenLabels.SelectedValues;
+            var printerGuid = ddlNextGenPrinter.SelectedValue.AsGuidOrNull();
+
+            if ( !selectedLabelTypes.Any() )
+            {
+                nbReprintNextGenLabelMessages.Visible = true;
+                nbReprintNextGenLabelMessages.Text = "Please select at least one label.";
+                return;
+            }
+
+            if ( !printerGuid.HasValue )
+            {
+                nbReprintNextGenLabelMessages.Visible = true;
+                nbReprintNextGenLabelMessages.Text = "Please select a printer.";
+                return;
+            }
+
+            var printer = DeviceCache.Get( printerGuid.Value );
+            var printFrom = printer != null ? PrintFrom.Server : PrintFrom.Client;
+
+            ZebraPrint.TryReprintNextGenLabels( attendanceIds, null, printer, printFrom, selectedLabelTypes, out var messages, out var clientLabels );
+
+            if ( clientLabels.Any() )
+            {
+                var script = $@"
+                    if (window.RockCheckinNative && window.RockCheckinNative.PrintV2Labels) {{
+                        window.RockCheckinNative.PrintV2Labels(JSON.stringify({clientLabels.ToJson()}));
+                    }}
+                    ";
+                ScriptManager.RegisterClientScriptBlock( upnlContent, upnlContent.GetType(), "addV2LabelScript", script, true );
+            }
+
+            var printResultMessage = messages.Count == 0
+                ? "Labels printed."
+                : messages.JoinStrings( "<br>" );
+
+            nbReprintMessage.Visible = true;
+            nbReprintMessage.Text = printResultMessage;
+
+            mdReprintNextGenLabels.Hide();
         }
 
         #endregion

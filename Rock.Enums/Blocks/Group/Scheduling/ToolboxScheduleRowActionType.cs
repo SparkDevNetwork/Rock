@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.ComponentModel;
+
 namespace Rock.Enums.Blocks.Group.Scheduling
 {
     /// <summary>
@@ -40,6 +42,12 @@ namespace Rock.Enums.Blocks.Group.Scheduling
         /// <summary>
         /// Delete a person schedule exclusion.
         /// </summary>
-        Delete = 3
+        Delete = 3,
+
+        /// <summary>
+        /// Schedule oneself (or one's family member).
+        /// </summary>
+        [Description( "Self-Schedule" )]
+        SelfSchedule = 4
     }
 }

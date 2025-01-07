@@ -2,8 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using GreenPipes;
-
 using MassTransit;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,6 +10,7 @@ using Moq;
 
 using Rock.Bus;
 using Rock.Bus.Transport;
+using Rock.Configuration;
 using Rock.Logging;
 using Rock.Web.Cache;
 
@@ -31,6 +30,8 @@ namespace Rock.Tests.Shared.TestFramework
         [ClassInitialize( InheritanceBehavior.BeforeEachDerivedClass )]
         public static async Task ClassInitialize( TestContext context )
         {
+            TestHelper.ConfigureRockApp( null );
+
             // Create the fake IBusControl so we can simulate a bus. This fake
             // bus just discards all messages.
             var busControlMock = new Mock<IBusControl>( MockBehavior.Strict );
@@ -54,6 +55,8 @@ namespace Rock.Tests.Shared.TestFramework
             // Register a fake IRockLogger that discards all logged messages.
             var loggerMock = new Mock<IRockLogger>( MockBehavior.Loose );
             RockLogger.SetLoggerInternal( loggerMock.Object );
+
+            RockDateTime.Initialize();
         }
 
         /// <summary>
@@ -67,6 +70,9 @@ namespace Rock.Tests.Shared.TestFramework
 
             // Stop the fake bus.
             RockMessageBus.StopBusInternal();
+
+            // Clear the mock RockApp.
+            RockApp.Current = null;
         }
 
         /// <summary>

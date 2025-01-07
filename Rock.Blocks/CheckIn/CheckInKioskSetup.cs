@@ -19,18 +19,18 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Microsoft.AspNetCore.Hosting;
-
 using Rock.Attribute;
 using Rock.CheckIn.v2;
+using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Utility.ExtensionMethods;
 using Rock.ViewModels.Blocks.CheckIn.CheckInKiosk;
 using Rock.ViewModels.CheckIn;
+using Rock.ViewModels.Rest.CheckIn;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -44,7 +44,7 @@ namespace Rock.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Sets kiosk options and then starts the kiosk to allow self check-in." )]
     [IconCssClass( "fa fa-clipboard" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -111,28 +111,6 @@ namespace Rock.Blocks.CheckIn
 
         #endregion
 
-        #region Fields
-
-        /// <summary>
-        /// The web host environment for this block.
-        /// </summary>
-        private readonly IWebHostEnvironment _environment;
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CheckInKioskSetup"/> class.
-        /// </summary>
-        /// <param name="environment">The environment.</param>
-        public CheckInKioskSetup( IWebHostEnvironment environment )
-        {
-            _environment = environment;
-        }
-
-        #endregion
-
         #region Methods
 
         /// <inheritdoc/>
@@ -148,10 +126,11 @@ namespace Rock.Blocks.CheckIn
             return new
             {
                 KioskConfiguration = kioskConfiguration,
+                IsEditAllowed = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ),
                 IsManualSetupAllowed = GetAttributeValue( AttributeKey.AllowManualSetup ).AsBoolean(),
                 IsConfigureByLocationEnabled = GetAttributeValue( AttributeKey.EnableLocationSharing ).AsBoolean(),
                 GeoLocationCacheInMinutes = GetAttributeValue( AttributeKey.TimeToCacheKioskLocation ).AsInteger(),
-                Campuses = GetCampusesAndKiosks(),
+                Campuses = GetCampusesAndKiosks( RockContext ),
                 CurrentTheme = PageParameter( PageParameterKey.Theme )?.ToLower()
                     .IfEmpty( PageCache.Layout?.Site?.Theme?.ToLower() ),
                 Templates = director.GetConfigurationTemplateBags(),
@@ -175,6 +154,7 @@ namespace Rock.Blocks.CheckIn
                 Name = kiosk.Name,
                 Type = kiosk.KioskType,
                 IsCameraEnabled = kiosk.HasCamera,
+                CameraMode = kiosk.CameraBarcodeConfigurationType ?? CameraBarcodeConfiguration.Off,
                 IsRegistrationModeEnabled = kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean()
             };
 
@@ -186,21 +166,21 @@ namespace Rock.Blocks.CheckIn
         /// manual configuration.
         /// </summary>
         /// <returns>A collection of <see cref="CampusBag"/> objects.</returns>
-        private List<CampusBag> GetCampusesAndKiosks()
+        internal static List<CampusBag> GetCampusesAndKiosks( RockContext rockContext )
         {
-            var kioskDeviceTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid(), RockContext )?.Id;
+            var kioskDeviceTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK.AsGuid(), rockContext )?.Id;
 
             if ( !kioskDeviceTypeValueId.HasValue )
             {
                 throw new Exception( "Device type Check-in Kiosk defined value not found." );
             }
 
-            var campuses = CampusCache.All( RockContext )
+            var campuses = CampusCache.All( rockContext )
                 .Where( c => c.IsActive == true )
                 .OrderBy( c => c.Order )
                 .ToList();
 
-            var kiosks = DeviceCache.All( RockContext )
+            var kiosks = DeviceCache.All( rockContext )
                 .Where( k => k.IsActive && k.DeviceTypeValueId == kioskDeviceTypeValueId.Value )
                 .OrderBy( k => k.Name )
                 .Select( k => new
@@ -245,14 +225,18 @@ namespace Rock.Blocks.CheckIn
         /// <returns>A collection of <see cref="ListItemBag"/> objects.</returns>
         private List<ListItemBag> GetThemes()
         {
-            var di = new DirectoryInfo( Path.Combine( _environment.WebRootPath, "Themes" ) );
+            var checkInPurposeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.THEME_PURPOSE_CHECKIN.AsGuid(), RockContext ).Id;
 
-            return di.EnumerateDirectories()
-                .OrderBy( d => d.Name )
-                .Select( d => new ListItemBag
+            return new ThemeService( RockContext )
+                .Queryable()
+                .Where( t => t.PurposeValueId == checkInPurposeValueId )
+                .OrderBy( t => t.Name )
+                .Select( t => t.Name )
+                .ToList()
+                .Select( n => new ListItemBag
                 {
-                    Value = d.Name.ToLower(),
-                    Text = d.Name.SplitCase()
+                    Value = n.ToLower(),
+                    Text = n.SplitCase()
                 } )
                 .ToList();
         }
@@ -449,7 +433,7 @@ namespace Rock.Blocks.CheckIn
         /// <returns>A collection of <see cref="SavedCheckInConfigurationBag"/> objects.</returns>
         private IReadOnlyCollection<SavedCheckInConfigurationBag> GetSavedConfigurations()
         {
-            var savedConfigurationCache = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS.AsGuid(), RockContext );
+            var savedConfigurationCache = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_KIOSK_TEMPLATES.AsGuid(), RockContext );
 
             if ( savedConfigurationCache == null )
             {
@@ -457,6 +441,7 @@ namespace Rock.Blocks.CheckIn
             }
 
             return savedConfigurationCache.DefinedValues
+                .Where( v => v.IsActive )
                 .Select( GetSavedConfigurationBag )
                 .ToList();
         }
@@ -476,9 +461,31 @@ namespace Rock.Blocks.CheckIn
                 Campuses = definedValue.GetAttributeValue( "Campuses" )
                     .SplitDelimitedValues()
                     .AsGuidList()
-                    .Select( g => CampusCache.Get( g, RockContext ) )
-                    .Where( c => c != null )
-                    .ToListItemBagList(),
+                    .Select( g => CampusCache.Get( g, RockContext )?.IdKey )
+                    .Where( idKey => idKey != null )
+                    .ToList(),
+                Settings = definedValue.GetAttributeValue( "SettingsJson" ).FromJsonOrNull<SavedCheckInConfigurationSettingsBag>()
+            };
+        }
+
+        /// <summary>
+        /// Gets the saved configuration bag from the defined value.
+        /// </summary>
+        /// <param name="definedValue">The defined value.</param>
+        /// <returns>A new <see cref="SavedCheckInConfigurationBag"/> instance.</returns>
+        private SavedCheckInConfigurationBag GetSavedConfigurationBag( DefinedValue definedValue )
+        {
+            return new SavedCheckInConfigurationBag
+            {
+                Id = definedValue.IdKey,
+                Name = definedValue.Value,
+                Description = definedValue.Description,
+                Campuses = definedValue.GetAttributeValue( "Campuses" )
+                    .SplitDelimitedValues()
+                    .AsGuidList()
+                    .Select( g => CampusCache.Get( g, RockContext )?.IdKey )
+                    .Where( idKey => idKey != null )
+                    .ToList(),
                 Settings = definedValue.GetAttributeValue( "SettingsJson" ).FromJsonOrNull<SavedCheckInConfigurationSettingsBag>()
             };
         }
@@ -486,6 +493,43 @@ namespace Rock.Blocks.CheckIn
         #endregion
 
         #region Block Actions
+
+        /// <summary>
+        /// Gets the available configuration options for a kiosk. We do this as
+        /// a block instead instead of API call so that we don't have to worry
+        /// about API security. This is a fairly safe call.
+        /// </summary>
+        /// <param name="kioskId">The optional encrypted kiosk identifier.</param>
+        /// <returns>An instance of <see cref="ConfigurationResponseBag"/>.</returns>
+        [BlockAction]
+        public BlockActionResult GetConfiguration( string kioskId )
+        {
+            var director = new CheckInDirector( RockContext );
+            DeviceCache kiosk = null;
+
+            if ( kioskId.IsNotNullOrWhiteSpace() )
+            {
+                kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
+
+                if ( kiosk == null )
+                {
+                    return ActionBadRequest( "Kiosk was not found." );
+                }
+            }
+
+            try
+            {
+                return ActionOk( new ConfigurationResponseBag
+                {
+                    Templates = director.GetConfigurationTemplateBags(),
+                    Areas = director.GetCheckInAreaSummaries( kiosk, null )
+                } );
+            }
+            catch ( CheckInMessageException ex )
+            {
+                return ActionBadRequest( ex.Message );
+            }
+        }
 
         /// <summary>
         /// A request from the client to determine the kiosk configuration from
@@ -580,30 +624,45 @@ namespace Rock.Blocks.CheckIn
         }
 
         /// <summary>
-        /// Saves the configuration as a new saved configuration item.
+        /// Saves or updates the configuration item.
         /// </summary>
         /// <param name="box">The box that contains the configuration data.</param>
-        /// <returns>A response that indicates success or failure.</returns>
+        /// <returns>An instance of <see cref="SavedCheckInConfigurationBag"/> that represents the configuration.</returns>
         [BlockAction]
         public BlockActionResult SaveConfiguration( ValidPropertiesBox<SavedCheckInConfigurationBag> box )
         {
-            var savedConfigurationDefinedTypeId = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS.AsGuid(), RockContext )?.Id;
-
-            if ( box.Bag.Id.IsNotNullOrWhiteSpace() )
-            {
-                return ActionBadRequest( "Editing existing saved configurations is not supported." );
-            }
+            var savedConfigurationDefinedTypeId = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_KIOSK_TEMPLATES.AsGuid(), RockContext )?.Id;
+            var definedValueService = new DefinedValueService( RockContext );
+            DefinedValue definedValue;
 
             if ( !savedConfigurationDefinedTypeId.HasValue )
             {
                 return ActionInternalServerError( "Saved configuration data does not exist in the database yet." );
             }
 
-            var definedValueService = new DefinedValueService( RockContext );
-            var definedValue = new DefinedValue
+            if ( box.Bag.Id.IsNotNullOrWhiteSpace() )
             {
-                DefinedTypeId = savedConfigurationDefinedTypeId.Value
-            };
+                if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionBadRequest( "You don't have permission to edit saved configurations." );
+                }
+
+                definedValue = definedValueService.Get( box.Bag.Id, false );
+
+                if ( definedValue == null || definedValue.DefinedTypeId != savedConfigurationDefinedTypeId.Value )
+                {
+                    return ActionBadRequest( "Saved configuration was not found." );
+                }
+            }
+            else
+            {
+                definedValue = new DefinedValue
+                {
+                    DefinedTypeId = savedConfigurationDefinedTypeId.Value
+                };
+
+                definedValueService.Add( definedValue );
+            }
 
             definedValue.LoadAttributes( RockContext );
 
@@ -614,12 +673,13 @@ namespace Rock.Blocks.CheckIn
                 () => definedValue.Description = box.Bag.Description );
 
             box.IfValidProperty( nameof( box.Bag.Campuses ),
-                () => definedValue.SetAttributeValue( "Campuses", box.Bag.Campuses.Select( c => c.Value ).JoinStrings( "," ) ) );
+                () => definedValue.SetAttributeValue( "Campuses", box.Bag.Campuses
+                    .Select( c => CampusCache.GetByIdKey( c, RockContext )?.Guid.ToString() )
+                    .Where( guid => guid != null )
+                    .JoinStrings( "," ) ) );
 
             box.IfValidProperty( nameof( box.Bag.Settings ),
                 () => definedValue.SetAttributeValue( "SettingsJson", box.Bag.Settings.ToJson() ) );
-
-            definedValueService.Add( definedValue );
 
             RockContext.WrapTransaction( () =>
             {
@@ -627,14 +687,37 @@ namespace Rock.Blocks.CheckIn
                 definedValue.SaveAttributeValues( RockContext );
             } );
 
+            return ActionOk( GetSavedConfigurationBag( definedValue ) );
+        }
+
+        /// <summary>
+        /// Deletes the saved configuration item.
+        /// </summary>
+        /// <param name="id">The identifier of the saved configuration.</param>
+        /// <returns>A response that indicates success or failure.</returns>
+        [BlockAction]
+        public BlockActionResult DeleteConfiguration( string id )
+        {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You don't have permission to edit saved configurations." );
+            }
+
+            var definedValueService = new DefinedValueService( RockContext );
+            var definedValue = definedValueService.Get( id, false );
+
+            if ( definedValue == null )
+            {
+                return ActionBadRequest( "Configuration was not found." );
+            }
+
+            definedValueService.Delete( definedValue );
+
+            RockContext.SaveChanges();
+
             return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
         }
 
         #endregion
-
-        private class CampusBag : CheckInItemBag
-        {
-            public List<WebKioskBag> Kiosks { get; set; }
-        }
     }
 }

@@ -160,6 +160,13 @@ namespace Rock.Model
         [DataMember]
         public bool IsExcludedFromPeerNetwork { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating if this role can check into the group.
+        /// This only applies during the "already member" check during check-in.
+        /// </summary>
+        [DataMember]
+        public bool IsCheckInAllowed { get; set; } = true;
+
         #endregion
 
         #region Navigation Properties

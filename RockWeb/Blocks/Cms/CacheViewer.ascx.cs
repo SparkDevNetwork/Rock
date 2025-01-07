@@ -50,12 +50,11 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            base.OnLoad( e );
-
             if ( !IsUserAuthorized( Authorization.ADMINISTRATE ) )
             {
                 // This block essentially allows full database read access (for models that are cached)
                 upnlContent.Visible = false;
+                base.OnLoad( e );
                 return;
             }
 
@@ -63,6 +62,8 @@ namespace RockWeb.Blocks.Cms
             {
                 PopulateCacheTypes();
             }
+
+            base.OnLoad( e );
         }
 
         #region Cache Types

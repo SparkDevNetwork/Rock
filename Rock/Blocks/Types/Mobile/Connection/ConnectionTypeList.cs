@@ -48,12 +48,16 @@ namespace Rock.Blocks.Types.Mobile.Connection
         IsRequired = false,
         EditorMode = Rock.Web.UI.Controls.CodeEditorMode.Xml,
         Key = AttributeKey.HeaderTemplate,
+        DefaultValue = @"<ContentView>
+    <Label Text=""Types""
+           StyleClass=""title1, bold, text-interface-strongest"" />
+</ContentView>",
         Order = 0 )]
 
     [BlockTemplateField( "Type Template",
         Description = "The template used to render the connection types.",
         TemplateBlockValueGuid = SystemGuid.DefinedValue.BLOCK_TEMPLATE_MOBILE_CONNECTION_CONNECTION_TYPE_LIST,
-        DefaultValue = "E0D00422-7895-4081-9C06-16DE9BF48E1A",
+        DefaultValue = "F9F29166-A080-4179-A210-AE42CC473D6F",
         IsRequired = true,
         Key = AttributeKey.TypeTemplate,
         Order = 1 )]
