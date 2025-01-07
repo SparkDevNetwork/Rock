@@ -27,7 +27,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Engagement.StreakTypeExclusionDetail;
 using Rock.ViewModels.Blocks.Workflow.WorkflowTriggerDetail;
 using Rock.ViewModels.Blocks.WorkFlow.WorkflowTriggerDetail;
 using Rock.ViewModels.Utility;
@@ -226,13 +225,7 @@ namespace Rock.Blocks.Workflow
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
+        /// <inheritdoc/>
         protected override bool UpdateEntityFromBox( WorkflowTrigger entity, ValidPropertiesBox<WorkflowTriggerBag> box )
         {
             if ( box.ValidProperties == null )
