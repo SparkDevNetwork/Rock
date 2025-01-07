@@ -15,20 +15,16 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Communication.SnippetTypeDetail;
 using Rock.ViewModels.Blocks.Engagement.StreakTypeExclusionDetail;
-using Rock.ViewModels.Blocks.Lms.LearningCourseDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -187,11 +183,7 @@ namespace Rock.Blocks.Engagement
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="StreakTypeExclusionBag"/> that represents the entity.</returns>
+        // <inheritdoc/>
         protected override StreakTypeExclusionBag GetEntityBagForView( StreakTypeExclusion entity )
         {
             if ( entity == null )
@@ -206,11 +198,7 @@ namespace Rock.Blocks.Engagement
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="StreakTypeExclusionBag"/> that represents the entity.</returns>
+        // <inheritdoc/>
         protected override StreakTypeExclusionBag GetEntityBagForEdit( StreakTypeExclusion entity )
         {
             if ( entity == null )
@@ -225,12 +213,7 @@ namespace Rock.Blocks.Engagement
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
+        // <inheritdoc/>
         protected override bool UpdateEntityFromBox( StreakTypeExclusion entity, ValidPropertiesBox<StreakTypeExclusionBag> box )
         {
             if ( box.ValidProperties == null )
@@ -255,11 +238,7 @@ namespace Rock.Blocks.Engagement
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <returns>The <see cref="StreakTypeExclusion"/> to be viewed or edited on the page.</returns>
+        // <inheritdoc/>
         protected override StreakTypeExclusion GetInitialEntity()
         {
             var entity = GetInitialEntity<StreakTypeExclusion, StreakTypeExclusionService>( RockContext, PageParameterKey.StreakTypeExclusionId );
@@ -287,13 +266,7 @@ namespace Rock.Blocks.Engagement
             };
         }
 
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
+        // <inheritdoc/>
         protected override bool TryGetEntityForEditAction( string idKey, out StreakTypeExclusion entity, out BlockActionResult error )
         {
             var entityService = new StreakTypeExclusionService( RockContext );

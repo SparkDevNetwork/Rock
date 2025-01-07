@@ -70,9 +70,9 @@
         const newValue: ValidPropertiesBox<StreakTypeExclusionBag> = {
             bag: { ...props.modelValue.bag } as StreakTypeExclusionBag
         };
-        setPropertiesBoxValue(newValue, "location", location.value),
 
-            emit("update:modelValue", newValue);
+        setPropertiesBoxValue(newValue, "location", location.value);
+        emit("update:modelValue", newValue);
     });
 
     // Watch for any changes to props that represent properties and then
