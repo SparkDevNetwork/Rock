@@ -45,7 +45,7 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./WorkflowTriggerDetail/editPanel.partial.obs";
     import ViewPanel from "./WorkflowTriggerDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./WorkflowTriggerDetail/types.partial";
     import { WorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowTriggerDetail/workflowTriggerBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
@@ -54,7 +54,6 @@
 
     const config = useConfigurationValues<DetailBlockBox<WorkflowTriggerBag, WorkflowTriggerDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -231,8 +230,6 @@
     }
 
     // #endregion
-
-    provideSecurityGrant(securityGrant);
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {

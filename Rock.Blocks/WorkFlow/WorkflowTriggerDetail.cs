@@ -113,7 +113,6 @@ namespace Rock.Blocks.Workflow
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="workflowTrigger">The WorkflowTrigger to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the WorkflowTrigger is valid, <c>false</c> otherwise.</returns>
         private bool ValidateWorkflowTrigger( WorkflowTrigger workflowTrigger, out string errorMessage )
