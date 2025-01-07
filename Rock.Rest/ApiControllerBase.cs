@@ -183,11 +183,14 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// Determines whether the current person has unrestricted view access
-        /// to the current controller action.
+        /// Determines whether the current person has is authorized for the
+        /// security action on the current controller action. This will return
+        /// <c>false</c> if the current rest action does not have a
+        /// <see cref="SystemGuid.RestActionGuidAttribute"/>.
         /// </summary>
-        /// <returns><c>true</c> if the current person has unrestricted view access; otherwise, <c>false</c>.</returns>
-        protected bool IsCurrentPersonUnrestrictedView()
+        /// <param name="securityAction">The security action to be authorized.</param>
+        /// <returns><c>true</c> if the current person has access; otherwise, <c>false</c>.</returns>
+        protected bool IsCurrentPersonAuthorized( string securityAction )
         {
             if ( ActionContext.ActionDescriptor is ReflectedHttpActionDescriptor actionDescriptor )
             {
@@ -197,29 +200,7 @@ namespace Rock.Rest
                 {
                     var restAction = RestActionCache.Get( restGuid.Value );
 
-                    return restAction?.IsAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, RockRequestContext.CurrentPerson ) ?? false;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Determines whether the current person has unrestricted edit access
-        /// to the current controller action.
-        /// </summary>
-        /// <returns><c>true</c> if the current person has unrestricted view access; otherwise, <c>false</c>.</returns>
-        protected bool IsCurrentPersonUnrestrictedEdit()
-        {
-            if ( ActionContext.ActionDescriptor is ReflectedHttpActionDescriptor actionDescriptor )
-            {
-                var restGuid = actionDescriptor.MethodInfo.GetCustomAttribute<SystemGuid.RestActionGuidAttribute>()?.Guid;
-
-                if ( restGuid.HasValue )
-                {
-                    var restAction = RestActionCache.Get( restGuid.Value );
-
-                    return restAction?.IsAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT, RockRequestContext.CurrentPerson ) ?? false;
+                    return restAction?.IsAuthorized( securityAction, RockRequestContext.CurrentPerson ) ?? false;
                 }
             }
 

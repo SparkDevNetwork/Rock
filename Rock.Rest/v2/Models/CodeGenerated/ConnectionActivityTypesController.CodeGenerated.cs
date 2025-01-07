@@ -73,7 +73,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8650bf07-f3a1-520c-a65e-1264e70157ac" )]
         public IActionResult GetItem( string id )
         {
-            return new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this ).Get( id );
+            var helper = new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );
+
+            return helper.Get( id );
         }
 
         /// <summary>
@@ -93,7 +97,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "2e9c2d44-4db4-5b0b-b4a6-1422caa6e03d" )]
         public IActionResult PostItem( [FromBody] Rock.Model.ConnectionActivityType value )
         {
-            return new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this ).Create( value );
+            var helper = new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+
+            return helper.Create( value );
         }
 
         /// <summary>
@@ -115,7 +123,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "47350d50-4683-5f91-8b5b-142852b178d8" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.ConnectionActivityType value )
         {
-            return new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this ).Update( id, value );
+            var helper = new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+
+            return helper.Update( id, value );
         }
 
         /// <summary>
@@ -137,7 +149,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "703e07a6-8543-594f-a722-59331c5b1ebb" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            return new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this ).Patch( id, values );
+            var helper = new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+
+            return helper.Patch( id, values );
         }
 
         /// <summary>
@@ -157,7 +173,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f822f8b8-53ab-5e26-9e80-9ee42707cd69" )]
         public IActionResult DeleteItem( string id )
         {
-            return new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this ).Delete( id );
+            var helper = new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+
+            return helper.Delete( id );
         }
 
         /// <summary>
@@ -177,7 +197,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "05326415-eb74-5fa0-9bb1-7cee8ec41641" )]
         public IActionResult GetAttributeValues( string id )
         {
-            return new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this ).GetAttributeValues( id );
+            var helper = new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );
+
+            return helper.GetAttributeValues( id );
         }
 
         /// <summary>
@@ -199,7 +223,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "bc81c3fa-fd54-5e70-b4f0-51cf1ed05cb2" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            return new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this ).PatchAttributeValues( id, values );
+            var helper = new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+
+            return helper.PatchAttributeValues( id, values );
         }
 
         /// <summary>
@@ -209,14 +237,16 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( "search" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [SystemGuid.RestActionGuid( "f6ee2201-eaaf-51fb-a792-38b41afd29a8" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            return new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this ).Search( query );
+            var helper = new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this );
+
+            return helper.Search( query );
         }
 
         /// <summary>
@@ -226,7 +256,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpGet]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -234,7 +265,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b8ffc003-b70d-5ccc-b530-1ec5073bf4f6" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            return new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this ).Search( searchKey, null );
+            var helper = new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );
+
+            return helper.Search( searchKey, null );
         }
 
         /// <summary>
@@ -245,16 +280,21 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "19887528-3485-5063-aa21-3cc684ef5282" )]
-        public IActionResult PostSearchByKey( [FromBody] EntitySearchQueryBag query, string searchKey )
+        public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            return new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this ).Search( searchKey, query );
+            var helper = new RestApiHelper<Rock.Model.ConnectionActivityType, Rock.Model.ConnectionActivityTypeService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );
+
+            return helper.Search( searchKey, query );
         }
     }
 }

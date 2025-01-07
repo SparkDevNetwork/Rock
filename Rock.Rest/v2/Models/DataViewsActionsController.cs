@@ -46,7 +46,11 @@ namespace Rock.Rest.v2.Models
     /// Provides action API endpoints for DataViews.
     /// </summary>
     [RoutePrefix( "api/v2/models/dataviews/actions" )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, "Allows viewing data views regardless of per-data view security authorization." )]
+    [SecurityAction( Security.Authorization.EXECUTE_VIEW, "Allows execution of API endpoints in the context of viewing data." )]
+    [SecurityAction( Security.Authorization.EXECUTE_EDIT, "Allows execution of API endpoints in the context of editing data." )]
+    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, "Allows execution of API endpoints in the context of viewing data without performing per-entity security checks." )]
+    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT, "Allows execution of API endpoints in the context of editing data without performing per-entity security checks." )]
+    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "4a4d3972-248d-4482-bf99-6e0719ab122f" )]
     public class DataViewsActionsController : ApiControllerBase
     {
@@ -56,11 +60,11 @@ namespace Rock.Rest.v2.Models
         /// <param name="id">The data view identifier as either an Id, Guid or IdKey value.</param>
         /// <param name="entityId">The entity identifier as either an Id, Guid or IdKey value.</param>
         /// <returns>The action result.</returns>
+        [Route( "contains/{id}/{entityId}" )]
         [HttpGet]
         [Authenticate]
-        [Secured( Security.Authorization.VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EDIT )]
-        [Route( "contains/{id}/{entityId}" )]
+        [Secured( Security.Authorization.EXECUTE_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT,  Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( bool ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -78,7 +82,10 @@ namespace Rock.Rest.v2.Models
                     return NotFound( "The data view was not found." );
                 }
 
-                if ( !dataView.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) && !IsCurrentPersonUnrestrictedView() )
+                var isAuthorized = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )
+                    || dataView.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson );
+
+                if ( !isAuthorized )
                 {
                     return Unauthorized( $"You are not authorized to view this data view." );
                 }
@@ -109,11 +116,11 @@ namespace Rock.Rest.v2.Models
         /// <param name="id">The data view identifier as either an Id, Guid or IdKey value.</param>
         /// <param name="fullObjects">If <c>true</c> then the full objects will be returned instead of just identifiers.</param>
         /// <returns>The action result.</returns>
+        [Route( "contents/{id}" )]
         [HttpGet]
         [Authenticate]
-        [Secured( Security.Authorization.VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EDIT )]
-        [Route( "contents/{id}" )]
+        [Secured( Security.Authorization.EXECUTE_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ItemIdentifierBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -131,7 +138,10 @@ namespace Rock.Rest.v2.Models
                     return NotFound( "The data view was not found." );
                 }
 
-                if ( !dataView.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) && !IsCurrentPersonUnrestrictedView() )
+                var isAuthorized = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )
+                    || dataView.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson );
+
+                if ( !isAuthorized )
                 {
                     return Unauthorized( $"You are not authorized to view this data view." );
                 }

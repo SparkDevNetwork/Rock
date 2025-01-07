@@ -28,13 +28,9 @@ using Rock.Web.Cache;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
 using Rock.Core.EntitySearch;
-using Rock.Rest.Filters;
-
-
 
 #if WEBFORMS
 using System.Web.Http;
-using System.Web.Http.Controllers;
 using System.Web.Http.Results;
 
 using IActionResult = System.Web.Http.IHttpActionResult;
@@ -55,22 +51,10 @@ namespace Rock.Rest
         private readonly ApiControllerBase _controller;
 
         /// <summary>
-        /// <para>
-        /// Gets or sets a value indicating whether security is ignored. When
-        /// security is not ignored the entity will be checked for either VIEW
-        /// or EDIT permissions depending on the operation.
-        /// </para>
-        /// <para>
-        /// The default value is determined by having access to the REST action
-        /// of either <c>UnrestrictedView</c> or <c>UnrestrictedEdit</c>
+        /// A value indicating whether security is ignored. When security is
+        /// not ignored the entity will be checked for either VIEW or EDIT
         /// permissions depending on the operation.
-        /// </para>
-        /// <para>
-        /// In other words, having unrestricted authorization to the REST
-        /// action will cause entity security to be bypassed.
-        /// </para>
         /// </summary>
-        /// <value><c>true</c> if security is ignored; otherwise, <c>false</c>.</value>
         public bool IsSecurityIgnored { get; set; }
 
         /// <summary>
@@ -80,38 +64,6 @@ namespace Rock.Rest
         public RestApiHelper( ApiControllerBase controller )
         {
             _controller = controller;
-
-            // Set initial value of IsSecurityIgnored based on Unrestricted access.
-            if ( _controller.ActionContext.ActionDescriptor is ReflectedHttpActionDescriptor actionDescriptor )
-            {
-                var restGuid = actionDescriptor.MethodInfo.GetCustomAttribute<SystemGuid.RestActionGuidAttribute>()?.Guid;
-
-                if ( restGuid.HasValue )
-                {
-                    var restAction = RestActionCache.Get( restGuid.Value );
-                    var securityAction = _controller.Request.Method == System.Net.Http.HttpMethod.Get
-                        ? Security.Authorization.EXECUTE_UNRESTRICTED_VIEW
-                        : Security.Authorization.EXECUTE_UNRESTRICTED_EDIT;
-
-                    var securedAttribute = actionDescriptor.MethodInfo.GetCustomAttribute<SecuredAttribute>();
-
-                    // If the [Secured] attribute specifies either VIEW or EDIT
-                    // as the default security action, then use the associated
-                    // unrestricted security action. In the future we might need
-                    // to allow the constructor to take an additional parameter
-                    // that explicitely specifies this value.
-                    if ( securedAttribute?.SecurityAction == Security.Authorization.VIEW  )
-                    {
-                        securityAction = Security.Authorization.EXECUTE_UNRESTRICTED_VIEW;
-                    }
-                    else if ( securedAttribute?.SecurityAction == Security.Authorization.EDIT )
-                    {
-                        securityAction = Security.Authorization.EXECUTE_UNRESTRICTED_EDIT;
-                    }
-
-                    IsSecurityIgnored = restAction?.IsAuthorized( securityAction, _controller.RockRequestContext.CurrentPerson ) ?? false;
-                }
-            }
         }
 
         #region API Methods
@@ -577,7 +529,7 @@ namespace Rock.Rest
         }
 
         /// <summary>
-        /// GET and POST endpoint. Use this to perform a query via a user supplied
+        /// POST endpoint. Use this to perform a query via a user supplied
         /// entity search query. This should be considered an administrative
         /// level search since no security is checked and no limitations are
         /// set by the system.
@@ -643,9 +595,9 @@ namespace Rock.Rest
                     return NotFound( "Search key was not found." );
                 }
 
-                if ( !entitySearch.IsAuthorized( Rock.Security.Authorization.VIEW, _controller.RockRequestContext.CurrentPerson ) )
+                if ( !CheckAuthorized( Security.Authorization.VIEW, entitySearch, out var authorizationResult ) )
                 {
-                    return Unauthorized( "You are not authorized to perform this search." );
+                    return authorizationResult;
                 }
 
                 if ( !entitySearch.IsRefinementAllowed && query != null )
@@ -689,6 +641,33 @@ namespace Rock.Rest
         /// <param name="errorResult">The error result if <c>false</c> is returned; otherwise <c>null</c>.</param>
         /// <returns><c>true</c> if the person is authorized or security is disabled or not supported, <c>false</c> otherwise.</returns>
         private bool CheckAuthorized( string action, IEntity entity, out IActionResult errorResult )
+        {
+            if ( !IsSecurityIgnored && entity is ISecured securedEntity )
+            {
+                var isAuthorized = securedEntity.IsAuthorized( action, _controller.RockRequestContext.CurrentPerson );
+
+                if ( !isAuthorized )
+                {
+                    errorResult = Unauthorized( $"You are not authorized to {action.SplitCase().ToLower()} this item." );
+
+                    return false;
+                }
+            }
+
+            errorResult = null;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Check if the current person is authorized to the entity with the
+        /// type of action to be performed.
+        /// </summary>
+        /// <param name="action">The action to be performed.</param>
+        /// <param name="entity">The entity to be checked against.</param>
+        /// <param name="errorResult">The error result if <c>false</c> is returned; otherwise <c>null</c>.</param>
+        /// <returns><c>true</c> if the person is authorized or security is disabled or not supported, <c>false</c> otherwise.</returns>
+        private bool CheckAuthorized( string action, IEntityCache entity, out IActionResult errorResult )
         {
             if ( !IsSecurityIgnored && entity is ISecured securedEntity )
             {

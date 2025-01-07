@@ -130,7 +130,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 var actionGuid = NewV5Guid( controllerGuid, "PostItem" );
 
                 AppendLineIfNotFirstAction();
-                codeBuilder.Indent( () => GeneratePostItemAction( codeBuilder, modelTypeFullName, actionGuid ) );
+                codeBuilder.Indent( () => GeneratePostItemAction( codeBuilder, modelTypeFullName, actionGuid, disableEntitySecurity ) );
             }
 
             if ( hasPutItem )
@@ -138,7 +138,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 var actionGuid = NewV5Guid( controllerGuid, "PutItem" );
 
                 AppendLineIfNotFirstAction();
-                codeBuilder.Indent( () => GeneratePutItemAction( codeBuilder, modelTypeFullName, actionGuid ) );
+                codeBuilder.Indent( () => GeneratePutItemAction( codeBuilder, modelTypeFullName, actionGuid, disableEntitySecurity ) );
             }
 
             if ( hasPatchItem )
@@ -146,7 +146,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 var actionGuid = NewV5Guid( controllerGuid, "PatchItem" );
 
                 AppendLineIfNotFirstAction();
-                codeBuilder.Indent( () => GeneratePatchItemAction( codeBuilder, modelTypeFullName, actionGuid ) );
+                codeBuilder.Indent( () => GeneratePatchItemAction( codeBuilder, modelTypeFullName, actionGuid, disableEntitySecurity ) );
             }
 
             if ( hasDeleteItem )
@@ -154,7 +154,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 var actionGuid = NewV5Guid( controllerGuid, "DeleteItem" );
 
                 AppendLineIfNotFirstAction();
-                codeBuilder.Indent( () => GenerateDeleteItemAction( codeBuilder, modelTypeFullName, actionGuid ) );
+                codeBuilder.Indent( () => GenerateDeleteItemAction( codeBuilder, modelTypeFullName, actionGuid, disableEntitySecurity ) );
             }
 
             if ( hasGetAttributeValues )
@@ -162,7 +162,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 var actionGuid = NewV5Guid( controllerGuid, "GetAttributeValues" );
 
                 AppendLineIfNotFirstAction();
-                codeBuilder.Indent( () => GenerateGetAttributeValuesAction( codeBuilder, modelTypeFullName, actionGuid ) );
+                codeBuilder.Indent( () => GenerateGetAttributeValuesAction( codeBuilder, modelTypeFullName, actionGuid, disableEntitySecurity ) );
             }
 
             if ( hasPatchAttributeValues )
@@ -170,7 +170,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 var actionGuid = NewV5Guid( controllerGuid, "PatchAttributeValues" );
 
                 AppendLineIfNotFirstAction();
-                codeBuilder.Indent( () => GeneratePatchAttributeValuesAction( codeBuilder, modelTypeFullName, actionGuid ) );
+                codeBuilder.Indent( () => GeneratePatchAttributeValuesAction( codeBuilder, modelTypeFullName, actionGuid, disableEntitySecurity ) );
             }
 
             if ( hasSearch )
@@ -178,17 +178,17 @@ namespace Rock.CodeGeneration.FileGenerators
                 var actionGuid = NewV5Guid( controllerGuid, "PostSearch" );
 
                 AppendLineIfNotFirstAction();
-                codeBuilder.Indent( () => GeneratePostSearchAction( codeBuilder, modelTypeFullName, actionGuid ) );
+                codeBuilder.Indent( () => GeneratePostSearchAction( codeBuilder, modelTypeFullName, actionGuid, disableEntitySecurity ) );
 
                 actionGuid = NewV5Guid( controllerGuid, "GetSearchByKey" );
 
                 AppendLineIfNotFirstAction();
-                codeBuilder.Indent( () => GenerateGetSearchByKeyAction( codeBuilder, modelTypeFullName, actionGuid ) );
+                codeBuilder.Indent( () => GenerateGetSearchByKeyAction( codeBuilder, modelTypeFullName, actionGuid, disableEntitySecurity ) );
 
                 actionGuid = NewV5Guid( controllerGuid, "PostSearchByKey" );
 
                 AppendLineIfNotFirstAction();
-                codeBuilder.Indent( () => GeneratePostSearchByKeyAction( codeBuilder, modelTypeFullName, actionGuid ) );
+                codeBuilder.Indent( () => GeneratePostSearchByKeyAction( codeBuilder, modelTypeFullName, actionGuid, disableEntitySecurity ) );
             }
 
             codeBuilder.AppendLine( "}" );
@@ -226,22 +226,20 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
+                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine();
+
                 if ( disableEntitySecurity )
                 {
-                    codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this )" );
-                    codeBuilder.AppendLine( "{" );
-                    codeBuilder.Indent( () =>
-                    {
-                        codeBuilder.AppendLine( "IsSecurityIgnored = true" );
-                    } );
-                    codeBuilder.AppendLine( "};" );
-                    codeBuilder.AppendLine();
-                    codeBuilder.AppendLine( "return helper.Get( id );" );
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = true;" );
                 }
                 else
                 {
-                    codeBuilder.AppendLine( $"return new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this ).Get( id );" );
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );" );
                 }
+
+                codeBuilder.AppendLine();
+                codeBuilder.AppendLine( "return helper.Get( id );" );
             } );
             codeBuilder.AppendLine( "}" );
         }
@@ -252,7 +250,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="codeBuilder">The builder to write the method declaration to.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        private static void GeneratePostItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid )
+        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
+        private static void GeneratePostItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Creates a new item in the database." );
@@ -273,7 +272,20 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"return new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this ).Create( value );" );
+                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine();
+
+                if ( disableEntitySecurity )
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = true;" );
+                }
+                else
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );" );
+                }
+
+                codeBuilder.AppendLine();
+                codeBuilder.AppendLine( $"return helper.Create( value );" );
             } );
             codeBuilder.AppendLine( "}" );
         }
@@ -284,7 +296,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="codeBuilder">The builder to write the method declaration to.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        private static void GeneratePutItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid )
+        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
+        private static void GeneratePutItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a full update of the item. All property values must be" );
@@ -307,7 +320,20 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"return new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this ).Update( id, value );" );
+                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine();
+
+                if ( disableEntitySecurity )
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = true;" );
+                }
+                else
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );" );
+                }
+
+                codeBuilder.AppendLine();
+                codeBuilder.AppendLine( $"return helper.Update( id, value );" );
             } );
             codeBuilder.AppendLine( "}" );
         }
@@ -318,7 +344,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="codeBuilder">The builder to write the method declaration to.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        private static void GeneratePatchItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid )
+        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
+        private static void GeneratePatchItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a partial update of the item. Only specified property keys" );
@@ -341,7 +368,20 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"return new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this ).Patch( id, values );" );
+                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine();
+
+                if ( disableEntitySecurity )
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = true;" );
+                }
+                else
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );" );
+                }
+
+                codeBuilder.AppendLine();
+                codeBuilder.AppendLine( $"return helper.Patch( id, values );" );
             } );
             codeBuilder.AppendLine( "}" );
         }
@@ -352,7 +392,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="codeBuilder">The builder to write the method declaration to.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        private static void GenerateDeleteItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid )
+        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
+        private static void GenerateDeleteItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Deletes a single item from the database." );
@@ -373,7 +414,20 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"return new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this ).Delete( id );" );
+                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine();
+
+                if ( disableEntitySecurity )
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = true;" );
+                }
+                else
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );" );
+                }
+
+                codeBuilder.AppendLine();
+                codeBuilder.AppendLine( $"return helper.Delete( id );" );
             } );
             codeBuilder.AppendLine( "}" );
         }
@@ -384,7 +438,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="codeBuilder">The builder to write the method declaration to.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        private static void GenerateGetAttributeValuesAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid )
+        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
+        private static void GenerateGetAttributeValuesAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Gets all the attribute values for the specified item." );
@@ -405,7 +460,20 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"return new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this ).GetAttributeValues( id );" );
+                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine();
+
+                if ( disableEntitySecurity )
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = true;" );
+                }
+                else
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );" );
+                }
+
+                codeBuilder.AppendLine();
+                codeBuilder.AppendLine( $"return helper.GetAttributeValues( id );" );
             } );
             codeBuilder.AppendLine( "}" );
         }
@@ -416,7 +484,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="codeBuilder">The builder to write the method declaration to.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        private static void GeneratePatchAttributeValuesAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid )
+        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
+        private static void GeneratePatchAttributeValuesAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a partial update of attribute values for the item. Only" );
@@ -439,7 +508,20 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"return new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this ).PatchAttributeValues( id, values );" );
+                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine();
+
+                if ( disableEntitySecurity )
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = true;" );
+                }
+                else
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );" );
+                }
+
+                codeBuilder.AppendLine();
+                codeBuilder.AppendLine( $"return helper.PatchAttributeValues( id, values );" );
             } );
             codeBuilder.AppendLine( "}" );
         }
@@ -450,7 +532,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="codeBuilder">The builder to write the method declaration to.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        private static void GeneratePostSearchAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid )
+        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
+        private static void GeneratePostSearchAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a search of items using the specified user query." );
@@ -459,8 +542,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <returns>An array of objects returned by the query.</returns>" );
             codeBuilder.AppendLine( "[HttpPost]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_VIEW )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]" );
             codeBuilder.AppendLine( "[Route( \"search\" )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
@@ -468,7 +551,9 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"return new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this ).Search( query );" );
+                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine();
+                codeBuilder.AppendLine( $"return helper.Search( query );" );
             } );
             codeBuilder.AppendLine( "}" );
         }
@@ -479,7 +564,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="codeBuilder">The builder to write the method declaration to.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        private static void GenerateGetSearchByKeyAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid )
+        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
+        private static void GenerateGetSearchByKeyAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a search of items using the specified system query." );
@@ -488,7 +574,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <returns>An array of objects returned by the query.</returns>" );
             codeBuilder.AppendLine( "[HttpGet]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_VIEW )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]" );
             codeBuilder.AppendLine( "[Route( \"search/{searchKey}\" )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
@@ -498,7 +585,20 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"return new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this ).Search( searchKey, null );" );
+                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine();
+
+                if ( disableEntitySecurity )
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = true;" );
+                }
+                else
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );" );
+                }
+
+                codeBuilder.AppendLine();
+                codeBuilder.AppendLine( $"return helper.Search( searchKey, null );" );
             } );
             codeBuilder.AppendLine( "}" );
         }
@@ -509,7 +609,8 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="codeBuilder">The builder to write the method declaration to.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        private static void GeneratePostSearchByKeyAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid )
+        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
+        private static void GeneratePostSearchByKeyAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a search of items using the specified system query." );
@@ -519,18 +620,32 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <returns>An array of objects returned by the query.</returns>" );
             codeBuilder.AppendLine( "[HttpPost]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_VIEW )]" );
+            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]" );
             codeBuilder.AppendLine( "[Route( \"search/{searchKey}\" )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
-            codeBuilder.AppendLine( "public IActionResult PostSearchByKey( [FromBody] EntitySearchQueryBag query, string searchKey )" );
+            codeBuilder.AppendLine( "public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )" );
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"return new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this ).Search( searchKey, query );" );
+                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine();
+
+                if ( disableEntitySecurity )
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = true;" );
+                }
+                else
+                {
+                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );" );
+                }
+
+                codeBuilder.AppendLine();
+                codeBuilder.AppendLine( $"return helper.Search( searchKey, query );" );
             } );
             codeBuilder.AppendLine( "}" );
         }

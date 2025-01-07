@@ -73,7 +73,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "25427d43-ee30-56f7-8c20-1b0fe1053bf7" )]
         public IActionResult GetItem( string id )
         {
-            return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Get( id );
+            var helper = new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );
+
+            return helper.Get( id );
         }
 
         /// <summary>
@@ -93,7 +97,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "7ef29382-7125-51a7-b364-607585e67a18" )]
         public IActionResult PostItem( [FromBody] Rock.Model.PrayerRequest value )
         {
-            return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Create( value );
+            var helper = new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+
+            return helper.Create( value );
         }
 
         /// <summary>
@@ -115,7 +123,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "5074a78a-1bed-5064-b69f-e807505123a7" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.PrayerRequest value )
         {
-            return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Update( id, value );
+            var helper = new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+
+            return helper.Update( id, value );
         }
 
         /// <summary>
@@ -137,7 +149,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "175ccbcd-ab9f-5073-ba1a-d52792c8d481" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Patch( id, values );
+            var helper = new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+
+            return helper.Patch( id, values );
         }
 
         /// <summary>
@@ -157,7 +173,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ec029e07-b7e2-5690-b438-2f1f41d651d4" )]
         public IActionResult DeleteItem( string id )
         {
-            return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Delete( id );
+            var helper = new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+
+            return helper.Delete( id );
         }
 
         /// <summary>
@@ -177,7 +197,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b3008fbe-3d07-5ec4-9ae6-03d5fa686801" )]
         public IActionResult GetAttributeValues( string id )
         {
-            return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).GetAttributeValues( id );
+            var helper = new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );
+
+            return helper.GetAttributeValues( id );
         }
 
         /// <summary>
@@ -199,7 +223,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "02b1398a-1291-5ad7-8ce0-7427d13c23c6" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).PatchAttributeValues( id, values );
+            var helper = new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT );
+
+            return helper.PatchAttributeValues( id, values );
         }
 
         /// <summary>
@@ -209,14 +237,16 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_VIEW )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( "search" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [SystemGuid.RestActionGuid( "937187b1-7b37-5913-81ab-0d9cd4bd05d1" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Search( query );
+            var helper = new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+
+            return helper.Search( query );
         }
 
         /// <summary>
@@ -226,7 +256,8 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpGet]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -234,7 +265,11 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "23690838-16f0-58a9-9bfc-a1ade311799d" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Search( searchKey, null );
+            var helper = new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );
+
+            return helper.Search( searchKey, null );
         }
 
         /// <summary>
@@ -245,16 +280,21 @@ namespace Rock.Rest.v2.Models
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
         [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
+        [Secured( Security.Authorization.EXECUTE_VIEW )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_EDIT, Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )]
         [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "d7d58359-2b0a-5328-a1b4-71068d716c2b" )]
-        public IActionResult PostSearchByKey( [FromBody] EntitySearchQueryBag query, string searchKey )
+        public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            return new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this ).Search( searchKey, query );
+            var helper = new RestApiHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
+
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW );
+
+            return helper.Search( searchKey, query );
         }
     }
 }

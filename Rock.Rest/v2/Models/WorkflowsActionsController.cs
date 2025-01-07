@@ -43,6 +43,11 @@ namespace Rock.Rest.v2.Models
     /// Provides action API endpoints for Workflows.
     /// </summary>
     [RoutePrefix( "api/v2/models/workflows/actions" )]
+    [SecurityAction( Security.Authorization.EXECUTE_VIEW, "Allows execution of API endpoints in the context of viewing data." )]
+    [SecurityAction( Security.Authorization.EXECUTE_EDIT, "Allows execution of API endpoints in the context of editing data." )]
+    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_VIEW, "Allows execution of API endpoints in the context of viewing data without performing per-entity security checks." )]
+    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT, "Allows execution of API endpoints in the context of editing data without performing per-entity security checks." )]
+    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "cf6d6938-40df-446c-8f91-cb45beef7357" )]
     public class WorkflowsActionsController : ApiControllerBase
     {
@@ -68,12 +73,11 @@ namespace Rock.Rest.v2.Models
         /// <param name="workflowTypeId">The workflow type identifier as either an Id, Guid or IdKey value.</param>
         /// <param name="request">The details describing how the workflow should be launched.</param>
         /// <returns>The action result.</returns>
+        [Route( "launch/{workflowTypeId}" )]
         [HttpPost]
         [Authenticate]
-        [Secured( Security.Authorization.EDIT )]
-        [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT, "Allows launching any workflow type regardless of per-workflow type security authorization." )]
-        [ExcludeSecurityActions( Security.Authorization.VIEW )]
-        [Route( "launch/{workflowTypeId}" )]
+        [Secured( Security.Authorization.EXECUTE_EDIT )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_VIEW, Security.Authorization.EXECUTE_UNRESTRICTED_VIEW )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( LaunchWorkflowResponseBag ), Description = "Returned when the request specifies that the workflow should be awaited." )]
         [ProducesResponseType( HttpStatusCode.NoContent, Description = "Returned when the workflow is launched in the background." )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
@@ -99,7 +103,10 @@ namespace Rock.Rest.v2.Models
                     return NotFound( "The workflow type was not found." );
                 }
 
-                if ( !workflowType.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) && !IsCurrentPersonUnrestrictedEdit() )
+                var isAuthorized = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )
+                    || workflowType.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson );
+
+                if ( !isAuthorized )
                 {
                     return Unauthorized( $"You are not authorized to launch workflows of this type." );
                 }
@@ -141,9 +148,15 @@ namespace Rock.Rest.v2.Models
                         return NotFound( "Entity was not found." );
                     }
 
-                    if ( entity is ISecured secured && !secured.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) && !IsCurrentPersonUnrestrictedEdit() )
+                    if ( entity is ISecured secured )
                     {
-                        return Unauthorized( $"You are not authorized to view this entity." );
+                        var isEntityAuthorized = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_EDIT )
+                            || secured.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson );
+
+                        if ( !isEntityAuthorized )
+                        {
+                            return Unauthorized( $"You are not authorized to view this entity." );
+                        }
                     }
                 }
 
