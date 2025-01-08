@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-namespace Rock.ViewModels.Blocks.WorkFlow.WorkflowTriggerDetail
+namespace Rock.ViewModels.Blocks.Workflow.WorkflowTriggerDetail
 {
     /// <summary>
     /// 

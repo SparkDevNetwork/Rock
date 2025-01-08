@@ -28,7 +28,6 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Workflow.WorkflowTriggerDetail;
-using Rock.ViewModels.Blocks.WorkFlow.WorkflowTriggerDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
