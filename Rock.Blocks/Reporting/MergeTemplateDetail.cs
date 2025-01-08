@@ -29,6 +29,7 @@ using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Reporting
@@ -68,6 +69,8 @@ namespace Rock.Blocks.Reporting
         private static class PageParameterKey
         {
             public const string MergeTemplateId = "MergeTemplateId";
+            public const string CategoryId = "CategoryId";
+            public const string ExpandedIds = "ExpandedIds";
             public const string ParentCategoryId = "ParentCategoryId";
         }
 
@@ -104,8 +107,11 @@ namespace Rock.Blocks.Reporting
         /// <returns>The options that provide additional details to the block.</returns>
         private MergeTemplateDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
-            var options = new MergeTemplateDetailOptionsBag();
-
+            var mergeTemplateIdParam = PageParameter( PageParameterKey.MergeTemplateId );
+            var options = new MergeTemplateDetailOptionsBag()
+            {
+                IsBlockVisible = !string.IsNullOrWhiteSpace( mergeTemplateIdParam ),
+            };
             return options;
         }
 
@@ -166,7 +172,6 @@ namespace Rock.Blocks.Reporting
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
             entity.LoadAttributes( rockContext );
 
@@ -205,7 +210,7 @@ namespace Rock.Blocks.Reporting
             var mergeTemplateOwnership = GetAttributeValue( AttributeKey.MergeTemplatesOwnership )
                 .ConvertToEnum<Rock.Enums.Controls.MergeTemplateOwnership>( Rock.Enums.Controls.MergeTemplateOwnership.PersonalAndGlobal );
 
-            return new MergeTemplateBag
+            var bag = new MergeTemplateBag
             {
                 IdKey = entity.IdKey,
                 Category = entity.Category.ToListItemBag(),
@@ -216,6 +221,15 @@ namespace Rock.Blocks.Reporting
                 PersonAlias = mergeTemplateOwnership == Rock.Enums.Controls.MergeTemplateOwnership.Personal && entity.Id == 0 ? RequestContext.CurrentPerson.PrimaryAlias.ToListItemBag() : entity.PersonAlias.ToListItemBag(),
                 TemplateBinaryFile = entity.TemplateBinaryFile.ToListItemBag()
             };
+
+            if ( entity.Id == 0 )
+            {
+                var categoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() ?? entity.CategoryId;
+                var category = CategoryCache.Get( categoryId );
+                bag.Category = category.ToListItemBag();
+            }
+
+            return bag;
         }
 
         /// <summary>
@@ -605,10 +619,21 @@ namespace Rock.Blocks.Reporting
                     return ActionBadRequest( errorMessage );
                 }
 
+                var categoryId = entity.CategoryId;
+
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                var queryParams = new Dictionary<string, string>();
+                if ( categoryId != 0 )
+                {
+                    queryParams[PageParameterKey.CategoryId] = categoryId.ToString();
+                }
+
+                queryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+                var page = new PageReference( PageCache.Id, 0, queryParams, null );
+
+                return ActionOk( page.BuildUrl() );
             }
         }
 

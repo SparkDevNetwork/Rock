@@ -25,7 +25,6 @@
                     title="Publish Date"
                     field="publishDateTime"
                     :filter="dateValueFilter"
-                    filterValue="publishDateTime"
                     visiblePriority="sm" />
 
         <Column

@@ -5,19 +5,35 @@
 
 <script setup lang="ts">
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
-    import { computed } from "vue";
+    import { computed, PropType } from "vue";
 
-    const props = defineProps(standardCellProps);
+    const props = defineProps({
+        ...standardCellProps,
+
+        /**
+         * A function that will translate the cell value into a string of HTML
+         * content. This is used internally and should not be used by plugins.
+         */
+        selectValue: {
+            type: Function as PropType<(value: unknown) => string | undefined>,
+            required: false
+        }
+    });
 
     // #region Computed Values
 
     const html = computed(() => {
-        if (props.column.field) {
-            return props.row[props.column.field];
-        }
-        else {
+        if (!props.column.field) {
             return "";
         }
+
+        let value = props.row[props.column.field];
+
+        if (props.selectValue) {
+            value = props.selectValue(value);
+        }
+
+        return value;
     });
 
     // #endregion Computed Values

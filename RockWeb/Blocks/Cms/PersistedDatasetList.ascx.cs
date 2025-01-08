@@ -184,8 +184,28 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                // Lastly, convert it so it's safe to display in the JavaScript modal:
-                mdGridWarning.Show( "Failed to parse the build script output into valid JSON.", ModalAlertType.Warning );
+                // limit preview size (default is 1MB)
+                var maxPreviewSizeMB = this.GetAttributeValue( AttributeKey.MaxPreviewSizeMB ).AsDecimalOrNull() ?? 1;
+
+                // make sure they didn't put in a negative number
+                maxPreviewSizeMB = Math.Max( 0.01M, maxPreviewSizeMB );
+
+                var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
+
+                lRefreshJson.Text = ( string.Format( "<pre>{0}</pre>", result?.WarningMessage?.TruncateHtml( maxPreviewSizeLength ) ) );
+
+                if ( result?.WarningMessage?.Length > maxPreviewSizeLength )
+                {
+                    nbRefreshMaxLengthWarning.Text = string.Format( "Output size is {0}. Showing first {1}.", result?.WarningMessage?.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() );
+                    nbRefreshMaxLengthWarning.Visible = true;
+                }
+                else
+                {
+                    nbRefreshMaxLengthWarning.Visible = false;
+                }
+
+                mdRefreshWarning.Show();
+
                 return;
             }
         }
@@ -212,7 +232,7 @@ namespace RockWeb.Blocks.Cms
                 var maxPreviewSizeMB = this.GetAttributeValue( AttributeKey.MaxPreviewSizeMB ).AsDecimalOrNull() ?? 1;
 
                 // make sure they didn't put in a negative number
-                maxPreviewSizeMB = Math.Max( 1, maxPreviewSizeMB );
+                maxPreviewSizeMB = Math.Max( 0.01M, maxPreviewSizeMB );
 
                 var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
 

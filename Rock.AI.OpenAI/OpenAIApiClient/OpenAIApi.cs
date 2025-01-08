@@ -132,6 +132,61 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
                 return response.Data;
             }
 
+            string message = ParseErrorMessage( response );
+
+            return new OpenAIChatCompletionsResponse() { IsSuccessful = false, ErrorMessage = message };
+        }
+
+        /// <summary>
+        /// Performs a text completions request on the OpenAI API.
+        /// </summary>
+        /// <param name="completionRequest"></param>
+        /// <returns></returns>
+        internal async Task<OpenAITextCompletionsResponse> GetTextCompletions( OpenAITextCompletionsRequest completionRequest )
+        {
+            var request = GetOpenAIRequest( "completions", Method.POST );
+
+            request.AddParameter( "application/json", completionRequest.ToJson(), ParameterType.RequestBody );
+
+            // Execute request
+            var response = await _client.ExecuteTaskAsync<OpenAITextCompletionsResponse>( request ).ConfigureAwait( false );
+
+            if ( response.StatusCode == System.Net.HttpStatusCode.OK )
+            {
+                return response.Data;
+            }
+
+            string message = ParseErrorMessage( response );
+
+            return new OpenAITextCompletionsResponse() { IsSuccessful = false, ErrorMessage = message };
+        }
+
+        /// <summary>
+        /// Performs a moderations request on the OpenAI API.
+        /// </summary>
+        /// <param name="moderationRequest"></param>
+        /// <returns></returns>
+        internal async Task<OpenAIModerationsResponse> GetModerations( OpenAIModerationsRequest moderationRequest )
+        {
+            var request = GetOpenAIRequest( "moderations", Method.POST );
+
+            request.AddParameter( "application/json", moderationRequest.ToJson(), ParameterType.RequestBody );
+
+            // Execute request
+            var response = await _client.ExecuteTaskAsync<OpenAIModerationsResponse>( request );
+
+            if ( response.StatusCode == System.Net.HttpStatusCode.OK )
+            {
+                return response.Data;
+            }
+
+            string message = ParseErrorMessage( response );
+
+            return new OpenAIModerationsResponse() { IsSuccessful = false, ErrorMessage = message };
+        }
+
+        private static string ParseErrorMessage( IRestResponse response )
+        {
             // Process the error response.
             string message = null;
 
@@ -155,57 +210,8 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
                 }
             }
 
-            return new OpenAIChatCompletionsResponse() { IsSuccessful = false, ErrorMessage = message };
+            return message;
         }
-
-        /// <summary>
-        /// Performs a text completions request on the OpenAI API.
-        /// </summary>
-        /// <param name="completionRequest"></param>
-        /// <returns></returns>
-        internal async Task<OpenAITextCompletionsResponse> GetTextCompletions( OpenAITextCompletionsRequest completionRequest )
-        {
-            var request = GetOpenAIRequest( "completions", Method.POST );
-
-            request.AddParameter( "application/json", completionRequest.ToJson(), ParameterType.RequestBody );
-
-            // Execute request
-            var response = await _client.ExecuteTaskAsync<OpenAITextCompletionsResponse>( request ).ConfigureAwait( false );
-
-            if ( response.StatusCode == System.Net.HttpStatusCode.OK )
-            {
-                return response.Data;
-            }
-            else
-            {
-                return new OpenAITextCompletionsResponse() { IsSuccessful = false, ErrorMessage = response.ErrorMessage };
-            }
-        }
-
-        /// <summary>
-        /// Performs a moderations request on the OpenAI API.
-        /// </summary>
-        /// <param name="moderationRequest"></param>
-        /// <returns></returns>
-        internal async Task<OpenAIModerationsResponse> GetModerations( OpenAIModerationsRequest moderationRequest )
-        {
-            var request = GetOpenAIRequest( "moderations", Method.POST );
-
-            request.AddParameter( "application/json", moderationRequest.ToJson(), ParameterType.RequestBody );
-
-            // Execute request
-            var response = await _client.ExecuteTaskAsync<OpenAIModerationsResponse>( request );
-
-            if ( response.StatusCode == System.Net.HttpStatusCode.OK )
-            {
-                return response.Data;
-            }
-            else
-            {
-                return new OpenAIModerationsResponse() { IsSuccessful = false, ErrorMessage = response.ErrorMessage };
-            }
-        }
-
 
         #endregion
 

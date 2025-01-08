@@ -104,7 +104,7 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { EventCalendarBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarBag";
     import { EventCalendarDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Event/EventCalendarDetail/eventCalendarDetailOptionsBag";
@@ -122,10 +122,11 @@
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
     import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<EventCalendarBag>,
+            type: Object as PropType<ValidPropertiesBox<EventCalendarBag>>,
             required: true
         },
 
@@ -136,24 +137,24 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: EventCalendarBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<EventCalendarBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const isIndexEnabled = propertyRef(props.modelValue.isIndexEnabled ?? false, "IsActive");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "iconCssClass");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const isIndexEnabled = propertyRef(props.modelValue?.bag?.isIndexEnabled ?? false, "IsActive");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const iconCssClass = propertyRef(props.modelValue?.bag?.iconCssClass ?? "", "iconCssClass");
     const isContentChannelModalOpen = ref(false);
-    const contentChannelsList = ref(props.modelValue.contentChannels ?? []);
+    const contentChannelsList = ref(props.modelValue?.bag?.contentChannels ?? []);
     const contentChannel = ref("");
-    const savedContentChannels = ref(props.modelValue.savedContentChannels ?? []);
-    const eventAttributes = ref(props.modelValue.eventAttributes ?? []);
+    const savedContentChannels = ref(props.modelValue?.bag?.savedContentChannels ?? []);
+    const eventAttributes = ref(props.modelValue?.bag?.eventAttributes ?? []);
     const isAttributeModalOpen = ref(false);
     const submitEditAttribute = ref(false);
     const eventAttribute = ref<PublicEditableAttributeBag | null>(null);
@@ -335,13 +336,13 @@
     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
         let isSuccess = false;
 
-        if (props.modelValue?.idKey) {
+        if (props.modelValue?.bag?.idKey) {
             const data: {
                 idKey: string | null | undefined;
                 guid: Guid;
                 beforeGuid: Guid | null | undefined;
             } = {
-                idKey: props.modelValue?.idKey,
+                idKey: props.modelValue?.bag?.idKey,
                 guid: toGuidOrNull(item?.key as string) ?? emptyGuid,
                 beforeGuid: toGuidOrNull(beforeItem?.key as string)
             };
@@ -378,30 +379,31 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(isIndexEnabled, props.modelValue.isIndexEnabled ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
-        updateRefValue(eventAttributes, props.modelValue.eventAttributes ?? []);
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(isIndexEnabled, props.modelValue?.bag?.isIndexEnabled ?? false);
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(iconCssClass, props.modelValue?.bag?.iconCssClass ?? "");
+        updateRefValue(eventAttributes, props.modelValue?.bag?.eventAttributes ?? []);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, savedContentChannels, eventAttributes, ...propRefs], () => {
-        const newValue: EventCalendarBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            isActive: isActive.value,
-            name: name.value,
-            iconCssClass: iconCssClass.value,
-            savedContentChannels: savedContentChannels.value,
-            eventAttributes: eventAttributes.value,
-            isIndexEnabled: isIndexEnabled.value
+        const newValue: ValidPropertiesBox<EventCalendarBag> = {
+            bag: { ...props.modelValue.bag } as EventCalendarBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "savedContentChannels", savedContentChannels.value);
+        setPropertiesBoxValue(newValue, "eventAttributes", eventAttributes.value);
+        setPropertiesBoxValue(newValue, "isIndexEnabled", isIndexEnabled.value);
 
         emit("update:modelValue", newValue);
     });

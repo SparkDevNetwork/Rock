@@ -345,7 +345,7 @@ namespace Rock.Blocks.Lms
                                                             <p>{{classInfo.Campus}}</p>
                                                         </div>
                                                     {% endif %}
-                                                    {% if classInfo.Location %}
+                                                    {% if classInfo.Location and classInfo.Location != '' %}
                                                         <div class=""text-gray-600"">
                                                             <p class=""text-bold mb-0"">Location: 
                                                             <p>{{classInfo.Location}}</p>
@@ -450,12 +450,17 @@ namespace Rock.Blocks.Lms
 
             var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
 
+            // Get the course details or a default value.
             var course = learningCourseService.GetPublicCourseDetails(
                 courseId,
                 currentPerson,
                 publicOnly,
                 semesterDateRange.Start,
-                semesterDateRange.End );
+                semesterDateRange.End ) ?? new LearningCourseService.PublicLearningCourseBag
+                {
+                    Semesters = new List<LearningCourseService.PublicLearningSemesterBag>(),
+                    ProgramInfo = new LearningProgramService.PublicLearningProgramBag(),
+                };
 
             course.DescriptionAsHtml = new StructuredContentHelper( course.Description ?? string.Empty ).Render();
 

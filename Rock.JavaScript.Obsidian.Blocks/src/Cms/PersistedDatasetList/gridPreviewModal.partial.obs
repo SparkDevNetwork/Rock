@@ -7,8 +7,13 @@
         <!-- Preview Message -->
         <NotificationBox v-if="previewMessage"
                          :alertType="previewMessageType"
+                         v-html="previewMessage"
                          :dismissible="false">
-            {{ previewMessage }}
+        </NotificationBox>
+
+        <!-- Max Length Warning Message -->
+        <NotificationBox v-if="refreshMaxLengthWarning" alertType="info">
+            {{ refreshMaxLengthWarning }}
         </NotificationBox>
 
         <!-- JSON Data -->
@@ -36,6 +41,7 @@
     const previewMessage = ref("");
     const previewMessageType = ref("info");
     const isDataTruncated = ref(false);
+    const refreshMaxLengthWarning = ref("");
 
     const props = defineProps({
         modelValue: {
@@ -57,6 +63,7 @@
             previewMessage.value = newValue.previewMessage;
             previewMessageType.value = newValue.previewMessageType;
             isDataTruncated.value = newValue.isDataTruncated;
+            refreshMaxLengthWarning.value = newValue.refreshMaxLengthWarning;
         }
         else {
             isVisible.value = false;

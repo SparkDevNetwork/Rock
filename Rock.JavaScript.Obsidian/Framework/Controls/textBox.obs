@@ -20,6 +20,7 @@
                                   :rows="rows"
                                   cols="20"
                                   :maxlength="!canExceedMaxLength ? maxLength : undefined"
+                                  :placeholder="placeholder"
                                   :id="uniqueId"
                                   class="form-control"
                                   v-bind="field"

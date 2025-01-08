@@ -837,7 +837,7 @@ namespace Rock.Blocks.CheckIn.Config
         {
             var entity = GetInitialEntity<GroupType, GroupTypeService>( rockContext, PageParameterKey.CheckinTypeId );
 
-            if ( entity.Id == 0 )
+            if ( entity != null && entity.Id == 0 )
             {
                 var templatePurpose = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
                 entity.GroupTypePurposeValueId = templatePurpose?.Id;

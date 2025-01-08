@@ -117,7 +117,7 @@
     function getRowNameFilterValue(row: Record<string, unknown>): string {
         const r = row as Row;
 
-        return `${r.name} ${r.id} ${r.description ?? ""}`;
+        return `${r.name} ${r.description ?? ""}`;
     }
 
     // #endregion

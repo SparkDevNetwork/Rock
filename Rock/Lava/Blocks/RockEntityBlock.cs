@@ -152,7 +152,21 @@ namespace Rock.Lava.Blocks
 
                         List<string> selectionParms = new List<string>();
                         selectionParms.Add( PropertyComparisonConversion( "==" ).ToString() );
-                        selectionParms.Add( parms["id"].AsInteger().ToString() ); // Ensure this is an integer: https://github.com/SparkDevNetwork/Rock/issues/5230
+                        if ( parms["id"].AsIntegerOrNull() != null )
+                        {
+                            selectionParms.Add( parms["id"].AsInteger().ToString() ); // Ensure this is an integer: https://github.com/SparkDevNetwork/Rock/issues/5230
+                        }
+                        else if ( parms["id"].AsGuidOrNull() != null )
+                        {
+                            propertyName = "Guid";
+                            selectionParms.Add( parms["id"].AsGuid().ToString() );
+                        }
+                        else
+                        {
+                            IdHasher.Instance.TryGetId( parms["id"], out var idAsInt );
+                            selectionParms.Add( idAsInt.ToString() );
+                        }
+
                         selectionParms.Add( propertyName );
 
                         var entityProperty = entityType.GetProperty( propertyName );

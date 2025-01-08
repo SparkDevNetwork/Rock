@@ -191,7 +191,7 @@ namespace Rock.Blocks.Group.Scheduling
         DefaultValue = "Cancel Confirmation",
         Category = AttributeCategory.CurrentSchedule,
         Order = 5,
-        IsRequired = false )]
+        IsRequired = true )]
 
     [CustomDropdownListField( "Decline Reason Note",
         Key = AttributeKey.DeclineReasonNote,
@@ -788,7 +788,6 @@ namespace Rock.Blocks.Group.Scheduling
             box.CurrentScheduleButtonText = GetAttributeValue( AttributeKey.CurrentScheduleButtonText );
             box.SchedulePreferencesButtonText = GetAttributeValue( AttributeKey.UpdateSchedulePreferencesButtonText );
             box.ScheduleUnavailabilityButtonText = GetAttributeValue( AttributeKey.ScheduleUnavailabilityButtonText );
-            box.AdditionalTimeSignUpsButtonText = GetAttributeValue( AttributeKey.AdditionalTimeSignUpButtonText );
             box.AdditionalTimeSignUpsButtonText = GetAttributeValue( AttributeKey.AdditionalTimeSignUpButtonText );
             box.ConfirmedButtonText = GetAttributeValue( AttributeKey.ConfirmedButtonText );
             box.DeclineButtonText = GetAttributeValue( AttributeKey.DeclineButtonText );

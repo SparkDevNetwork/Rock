@@ -4,13 +4,13 @@
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
-    <DetailBlock v-if="!blockError"
+    <DetailBlock v-if="!blockError && isBlockVisible"
                  v-model:mode="panelMode"
                  :name="panelName"
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="entityTypeGuid"
-                 entityTypeName="MergeTemplate"
+                 entityTypeName="Merge Template"
                  :isAuditHidden="true"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -114,7 +114,11 @@
     });
 
     const options = computed((): MergeTemplateDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {} as MergeTemplateDetailOptionsBag;
+    });
+
+    const isBlockVisible = computed((): boolean => {
+        return config.options?.isBlockVisible === true;
     });
 
     // #endregion

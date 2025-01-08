@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">
-        {{ blockError }}
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError">
     </NotificationBox>
 
     <Panel v-else type="block" hasFullscreen :title="blockTitle" titleIconCssClass="fa fa-poll-h">

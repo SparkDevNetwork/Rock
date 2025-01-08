@@ -537,7 +537,7 @@ namespace Rock.Blocks.Lms
                 .Where( a => ( a.IsAvailable && !a.IsStudentCompleted && !a.IsFacilitatorCompleted ) )
                 .Select( a => new PublicLearningClassWorkspaceNotificationBag
                 {
-                    Content = a.IsDueSoon || a.IsLate ? $"Due in {a.DueDate.ToElapsedString()}" : a.AvailableDate.HasValue ? $"Available {a.AvailableDate.ToElapsedString()}" : "Available",
+                    Content = a.IsDueSoon || a.IsLate ? $"Due {a.DueDate.ToElapsedString()}" : a.AvailableDate.HasValue ? $"Available {a.AvailableDate.ToElapsedString()}" : "Available",
                     LabelText = a.IsDueSoon ? "Due Soon" : a.IsLate ? "Late" : "Available",
                     LabelType = a.IsDueSoon ? "warning" : a.IsLate ? "danger" : "success",
                     NotificationDateTime = a.IsDueSoon || a.IsLate ? a.DueDate : a.AvailableDate,

@@ -29,18 +29,18 @@
                     </div>
                 </div>
             </div>
-            <div class="form-inline row margin-b-md">
-                <div class="d-flex flex-row justify-content-evenly">
-                    <div class="col-md-2" v-if="!groupTypeIdFromParam">
+            <div class="form-inline margin-b-md">
+                <div class="d-flex flex-row flex-sm-row justify-content-md-start">
+                    <div class="col-md-3" v-if="!groupTypeIdFromParam">
                         <GroupTypePicker v-model="groupType" label="Group Type" :showBlankItem="true" blankValue="All" :groupTypes="[...groupTypeItems]" />
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <LocationItemPicker v-model="parentLocation" label="Parent Location" />
                     </div>
-                    <div class="col-md-2" v-if="areaItems.length > 0">
+                    <div class="col-md-3" v-if="areaItems.length > 0">
                         <GroupTypePicker v-model="area" label="Area" :showBlankItem="true" :groupTypes="[...areaItems]" />
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <CategoryPicker v-model="scheduleCategory" label="Schedule Category" :entityTypeGuid="EntityType.Schedule" />
                     </div>
                 </div>

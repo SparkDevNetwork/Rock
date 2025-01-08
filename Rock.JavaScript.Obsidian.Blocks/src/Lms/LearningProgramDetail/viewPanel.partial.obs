@@ -1,25 +1,45 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <div class="row mb-3">
-
-            <div class="col-md-4">
-                <Billboard :imageFileGuid="imageGuid"
-                           :highlightColor="highlightColor"
-                           :iconCssClass="iconCssClass" />
-            </div>
-
-            <div class="col-md-8">
-                <ValueDetailList :modelValue="topValues" />
-
-                <div v-if="showKpis" class="row d-flex mb-3">
-                    <Kpi :value="activeClasses" label="Active Classes" iconCssClass="fa fa-chalkboard-teacher" color="blue" :isCard="true" tooltip="The number of active classes for courses in this program." />
-                    <Kpi :value="activeStudents" label="Active Students" iconCssClass="fa fa-users" color="red" :isCard="true" tooltip="The total number of students enrolled in courses for this program." />
-                    <Kpi :value="completions" label="Completions" iconCssClass="fa fa-check-square" color="green" :isCard="true" tooltip="The total number of students who've completed this program." />
+        <div class="row">
+            <template v-if="showKpis">
+                <div class="col-md-4">
+                    <Billboard :imageFileGuid="imageGuid"
+                               :highlightColor="highlightColor"
+                               :iconCssClass="iconCssClass" />
                 </div>
 
-                <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
-            </div>
+                <div class="col-md-8">
+                    <ValueDetailList :modelValue="topValues" />
+
+                    <div v-if="showKpis" class="row d-flex mb-3">
+                        <Kpi :value="activeClasses" label="Active Classes" iconCssClass="fa fa-chalkboard-teacher" color="blue" :isCard="true" tooltip="The number of active classes for courses in this program." />
+                        <Kpi :value="activeStudents" label="Active Students" iconCssClass="fa fa-users" color="red" :isCard="true" tooltip="The total number of distinct students enrolled in courses for this program." />
+                        <Kpi :value="completions" v-if="isCompletionStatusTracked" label="Completions" iconCssClass="fa fa-check-square" color="green" :isCard="true" tooltip="The total number of students who've completed this program. This data is populated by a RockJob when 'Track Program Status' is enabled for the program." />
+                    </div>
+
+                    <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+                </div>
+            </template>
+
+            <template v-else>
+                <div class="col-md-12">
+                    <ValueDetailList :modelValue="topValues" />
+                </div>
+
+                <div class="col-md-6">
+                    <ValueDetailList :modelValue="leftSideValues" />
+                </div>
+
+                <div class="col-md-6">
+                    <ValueDetailList :modelValue="rightSideValues" />
+                </div>
+
+                <div class="col-md-12">
+                    <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
+                </div>
+            </template>
+
         </div>
 
     </fieldset>
@@ -35,6 +55,8 @@
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
     import { LearningProgramBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramBag";
     import { LearningProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramDetailOptionsBag";
+    import { ConfigurationModeDescription } from "@Obsidian/Enums/Lms/configurationMode";
+    import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
 
     const props = defineProps({
         modelValue: {
@@ -64,6 +86,7 @@
 
     const imageGuid = computed((): string => props.modelValue?.imageBinaryFile?.value ?? "");
     const iconCssClass = computed((): string => props.modelValue?.iconCssClass ?? "");
+    const isCompletionStatusTracked = computed((): boolean => props.modelValue?.isCompletionStatusTracked ?? false);
     const highlightColor = computed((): string => props.modelValue?.highlightColor ?? "");
 
     /** The values to display full-width at the top of the block. */
@@ -77,6 +100,55 @@
         if (props.modelValue.summary) {
             valueBuilder.addTextValue("", props.modelValue.summary);
         }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        const publicName = props.modelValue.publicName ?? "";
+        if (publicName.length > 0) {
+            valueBuilder.addTextValue("Name", publicName);
+        }
+
+        const configurationModeText = ConfigurationModeDescription[props.modelValue.configurationMode ?? 0];
+        if (configurationModeText) {
+            valueBuilder.addTextValue("Configuration Mode", configurationModeText);
+        }
+
+        if (props.modelValue.defaultGradingSystem?.text) {
+            valueBuilder.addTextValue("Default Grading System", props.modelValue.defaultGradingSystem.text);
+        }
+
+        const isCompletionStatusTracked = asYesNoOrNull(props.modelValue?.isCompletionStatusTracked) ?? "No";
+        valueBuilder.addTextValue("Track Program Status", isCompletionStatusTracked);
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the right side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.category?.text) {
+            valueBuilder.addTextValue("Category", props.modelValue.category.text);
+        }
+
+        const isActive = asYesNoOrNull(props.modelValue?.isActive) ?? "No";
+        valueBuilder.addTextValue("Active", isActive);
+
+        const isPublic = asYesNoOrNull(props.modelValue?.isPublic) ?? "No";
+        valueBuilder.addTextValue("Public", isPublic);
 
         return valueBuilder.build();
     });

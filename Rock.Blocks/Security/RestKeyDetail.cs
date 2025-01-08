@@ -246,7 +246,7 @@ namespace Rock.Blocks.Security
         protected override UserLogin GetInitialEntity()
         {
             var person = GetInitialEntity<Person, PersonService>( RockContext, PageParameterKey.RestUserId );
-            if ( person != null)
+            if ( person != null )
             {
                 if ( person.RecordTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id && person.Users.Any( a => a.ApiKey.IsNotNullOrWhiteSpace() ) )
                 {
@@ -446,10 +446,7 @@ namespace Rock.Blocks.Security
 
             if ( isNew )
             {
-                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.RestUserId] = restUser.IdKey
-                } ) );
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
             }
 
             // Ensure navigation properties will work now.

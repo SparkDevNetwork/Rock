@@ -300,6 +300,18 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the matrix item identifier.
+        /// </summary>
+        /// <value>
+        /// The matrix item identifier.
+        /// </value>
+        public string MatrixItemId
+        {
+            get { return ViewState["MatrixItemId"] as string ?? "Value"; }
+            set { ViewState["MatrixItemId"] = value; }
+        }
+
         #endregion Properties
 
         #region Constructors
@@ -341,23 +353,29 @@ namespace Rock.Web.UI.Controls
                 if ( !attributeMatrixGuid.HasValue )
                 {
                     // if the AttributeMatrixGuid isn't known yet, try to scrape it from the PostBack Params
-                    attributeMatrixGuid = this.Page.Request.Params[_hfAttributeMatrixGuid.UniqueID].AsGuidOrNull();
+                    AttributeMatrixGuid = attributeMatrixGuid = this.Page.Request.Params[_hfAttributeMatrixGuid.UniqueID].AsGuidOrNull();
                 }
 
                 BindGrid( attributeMatrixGuid );
+            }
+        }
 
-                var matrixItemId = _hfMatrixItemId.Value.AsIntegerOrNull();
+        /// <summary>
+        /// Restores view-state information from a previous request that was saved with the <see cref="M:System.Web.UI.WebControls.WebControl.SaveViewState" /> method.
+        /// </summary>
+        /// <param name="savedState">An object that represents the control state to restore.</param>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
 
-                // If the matrixItemId has value we are in edit mode, create the edit mode controls so their state can be preserved,
-                // this is necessary since they are created dynamically.
-                if ( matrixItemId.HasValue )
-                {
-                    var postBackControlId = this.Page.Request.Params["__EVENTTARGET"];
-                    if ( postBackControlId != _btnSaveMatrixItem.UniqueID )
-                    {
-                        EditMatrixItem( matrixItemId.Value );
-                    }
-                }
+            var matrixItemId = MatrixItemId.AsIntegerOrNull();
+
+            // If the matrixItemId has value we are in edit mode, create the edit mode controls so their state can be preserved,
+            // this is necessary since they are created dynamically.
+            if ( matrixItemId.HasValue )
+            {
+                AttributeMatrixGuid = this.Page.Request.Params[_hfAttributeMatrixGuid.UniqueID].AsGuidOrNull();
+                EditMatrixItem( matrixItemId.Value, false );
             }
         }
 
@@ -557,9 +575,11 @@ namespace Rock.Web.UI.Controls
         /// Edits the matrix item.
         /// </summary>
         /// <param name="matrixItemId">The matrix item identifier.</param>
-        private void EditMatrixItem( int matrixItemId )
+        /// <param name="setValue">if set to <c>true</c> values for the attributes will be set.</param>
+        private void EditMatrixItem( int matrixItemId, bool setValue = true )
         {
             _hfMatrixItemId.Value = matrixItemId.ToString();
+            MatrixItemId = matrixItemId.ToString();
 
             // make a temp attributeMatrixItem to see what Attributes they have
             AttributeMatrixItem attributeMatrixItem = null;
@@ -591,7 +611,7 @@ namespace Rock.Web.UI.Controls
 
             // set the validation group on the controls and save button
             string validationGroup = GetValidationGroupForAttributeControls();
-            Rock.Attribute.Helper.AddEditControls( attributeMatrixItem, _phMatrixItemAttributes, true, validationGroup );
+            Rock.Attribute.Helper.AddEditControls( attributeMatrixItem, _phMatrixItemAttributes, setValue, validationGroup );
 
             // Make sure to set the validategroup on the save button to match, just in case it changed since CreateChildControls
             _btnSaveMatrixItem.ValidationGroup = validationGroup;
@@ -633,6 +653,7 @@ namespace Rock.Web.UI.Controls
             _gMatrixItems.Visible = true;
             _pnlEditMatrixItem.Visible = false;
             _hfMatrixItemId.Value = null;
+            MatrixItemId = null;
 
             BindGrid( this.AttributeMatrixGuid );
         }
@@ -647,6 +668,7 @@ namespace Rock.Web.UI.Controls
             _gMatrixItems.Visible = true;
             _pnlEditMatrixItem.Visible = false;
             _hfMatrixItemId.Value = null;
+            MatrixItemId = null;
         }
 
         #endregion EditMatrixItem

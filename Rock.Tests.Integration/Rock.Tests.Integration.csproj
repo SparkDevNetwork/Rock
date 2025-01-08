@@ -230,6 +230,7 @@
     <Compile Include="Modules\Core\OpenAI\AICompletionsUtility.cs" />
     <Compile Include="Modules\Core\Field.Types\PhoneNumberFieldTypeTests.cs" />
     <Compile Include="Modules\CheckIn\v2\FamilyRegistrationTests.cs" />
+    <Compile Include="Modules\CheckIn\v2\OpportunityCollectionTests.cs" />
     <Compile Include="Modules\Core\AttributeMatrixTests.cs" />
     <Compile Include="Modules\Core\Lava\Commands\WorkflowActivateTests.cs" />
     <Compile Include="Modules\Core\Lava\Engine\TypeConversionTests.cs" />

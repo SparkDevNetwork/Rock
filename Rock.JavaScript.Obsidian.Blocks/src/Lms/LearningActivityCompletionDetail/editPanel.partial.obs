@@ -5,6 +5,7 @@
             <div class="col-md-3">
                 <NumberBox v-model="pointsEarned"
                            label="Points Earned"
+                           :minimumValue="0"
                            :rules="'required|lte:' + pointsPossible">
                 </NumberBox>
             </div>

@@ -123,6 +123,13 @@
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveMetricsReminderRequestBag.cs" />
     <Compile Include="Blocks\Cms\LogSettings\LogSettingsBag.cs" />
     <Compile Include="Blocks\Cms\LogSettings\LogSettingsDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\ConversationBag.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\ResponseListingStatusBag.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\SendMessageBag.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\MessageBag.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\SmsConversationsInitializationBox.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\SmsConversationsSaveNoteBag.cs" />
+    <Compile Include="Blocks\Communication\SmsConversations\SnippetBag.cs" />
     <Compile Include="Blocks\Core\PersonSuggestionList\PersonSuggestionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchPageBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchBag.cs" />
@@ -136,6 +143,7 @@
     <Compile Include="Blocks\Event\RegistrationInstanceActiveList\RegistrationInstanceListOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduledJobHistoryList\ScheduledJobHistoryListOptionsBag.cs" />
     <Compile Include="Blocks\Example\ControlGallery\ControlGalleryInitializationBox.cs" />
+    <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningActivityCompletionDetail\LearningActivityCompletionBag.cs" />
     <Compile Include="Blocks\Lms\LearningActivityCompletionDetail\LearningActivityCompletionDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningActivityCompletionList\LearningActivityCompletionListOptionsBag.cs" />
@@ -388,7 +396,6 @@
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutBag.cs" />
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutDetailOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateBag.cs" />
-    <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateBox.cs" />
     <Compile Include="Blocks\Group\GroupRequirementTypeDetail\GroupRequirementTypeBag.cs" />
     <Compile Include="Blocks\Group\GroupRequirementTypeDetail\GroupRequirementTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\PersistedDataViewList\PersistedDataViewListOptionsBag.cs" />
@@ -738,6 +745,7 @@
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormFieldShowHide.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerBag.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerDetailBox.cs" />
+    <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerDetailOptionsBag.cs" />
     <Compile Include="CheckIn\AbilityLevelOpportunityBag.cs" />
     <Compile Include="CheckIn\AchievementBag.cs" />
     <Compile Include="CheckIn\AttendanceRequestBag.cs" />
@@ -796,6 +804,7 @@
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Rest\Controls\AIProviderPickerGetAIProviderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerExtractFileOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MergeFieldPickerGetSearchedMergedFieldsOptionsBag.cs" />
     <Compile Include="Rest\Controls\PageNavButtonsGetLinksOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerMoveFolderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerGetListOfAllFoldersOptionsBag.cs" />

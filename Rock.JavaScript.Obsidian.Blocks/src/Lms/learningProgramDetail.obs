@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock
                  v-if="!blockError"
@@ -177,8 +177,8 @@
         if (displayMode.value === "Detail") {
             // In 'Detail' mode provide a link to the 'Summary' mode.
             footerActions.push({
-                iconCssClass: "fa fa-tasks",
-                title: "Program Operations",
+                iconCssClass: "fa fa-chalkboard",
+                title: "Back to Program Overview",
                 type: "default",
                 handler: async () => {
                     await onViewAlternateDetailPage();
@@ -189,7 +189,7 @@
             // In 'Summary' mode provide a link to the 'Detail' mode.
             footerActions.push({
                 iconCssClass: "fa fa-cog",
-                title: "Program Settings",
+                title: "Configure Program",
                 type: "default",
                 handler: async () => {
                     await onViewAlternateDetailPage();
