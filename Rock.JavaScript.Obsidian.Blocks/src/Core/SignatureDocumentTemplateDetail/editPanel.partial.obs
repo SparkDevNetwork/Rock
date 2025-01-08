@@ -152,7 +152,7 @@
                 </Loading>
             </div>
 
-            <CodeEditor v-else v-model="lavaTemplate" label="Lava Template" help="The Lava template that makes up the body of the document." theme="rock" mode="text" :editorHeight="500" />
+            <CodeEditor v-else v-model="lavaTemplate" label="Lava Template" help="The Lava template that makes up the body of the document. The person's final signature will automatically be appended to the end of the document. However, if you include the keyword '&amp;lt;!--[[ SignatureDetails ]]--&amp;gt;' in the Lava Template, each occurrence of this keyword will be replaced with the person's signature details in the final PDF, and the signature will not be appended to the bottom of the document." theme="rock" mode="text" :editorHeight="500" />
 
         </div>
 
