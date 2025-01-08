@@ -152,6 +152,8 @@ export const ServiceJob = {
     DataMigrations170SwapObsidianBlocks: "EA16D2B2-35CB-4E6B-A6A7-CBD6BCA5998F",
     /** The job for swapping DefinedTypeDetail and DefinedValueList with Webforms Block. */
     DataMigrations170SwapWebformsBlocks: "AD8A38F7-1FCC-47CD-893F-9B4335DD7E08",
+    /** The Job to run Post v17.0 Update Person PrimaryPersonAliasGuid. */
+    DataMigrations170UpdatePersonPrimaryPersonAliasGuid: "11A4E70F-899F-4B1D-BB25-12768E487A24",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail

@@ -53,6 +53,8 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            // ignoring Registration,RegistrationTemplateId
+
             if ( new Service<RegistrationRegistrant>( Context ).Queryable().Any( a => a.RegistrationTemplateId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", RegistrationTemplate.FriendlyTypeName, RegistrationRegistrant.FriendlyTypeName );

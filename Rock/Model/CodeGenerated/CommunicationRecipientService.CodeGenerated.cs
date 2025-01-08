@@ -132,6 +132,7 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
             target.CommunicationId = source.CommunicationId;
+            target.FirstSendAttemptDateTime = source.FirstSendAttemptDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.MediumEntityTypeId = source.MediumEntityTypeId;
