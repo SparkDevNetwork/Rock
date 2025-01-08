@@ -154,15 +154,15 @@
                           help="Determines if a requirement should expire after a configured period of time." />
 
                 <div class="col-md-3" style="padding-left: 0%;">
-                    <TextBox v-if="canExpire"
-                             v-model="expireInDays"
-                             label="Expire Duration"
-                             :rules="validateNumber"
-                             help="The number of days after the requirement is met before it expires (If CanExpire is true). Leave blank if it never expires.">
+                    <NumberBox v-if="canExpire"
+                               v-model="expireInDays"
+                               label="Expire Duration"
+                               :minimumValue="0"
+                               help="The number of days after the requirement is met before it expires (If CanExpire is true). Leave blank if it never expires.">
                         <template #inputGroupAppend>
                             <span class="input-group-addon">days</span>
                         </template>
-                    </TextBox>
+                    </NumberBox>
                 </div>
             </div>
             <div class="col-md-6">
@@ -172,16 +172,16 @@
                                  :items="dueDateOptions" />
 
                 <div class="col-md-3" style="padding-left: 0%;">
-                    <TextBox v-if="dueDateType === 'DaysAfterJoining' || dueDateType === 'GroupAttribute'"
-                             size="small"
-                             v-model="dueDateOffsetInDays"
-                             label="Due Date Offset"
-                             :rules="validateNumber"
-                             help="The number of days before/after the configured date setting to determine the due date period.">
+                    <NumberBox v-if="dueDateType === 'DaysAfterJoining' || dueDateType === 'GroupAttribute'"
+                               size="small"
+                               v-model="dueDateOffsetInDays"
+                               :minimumValue="0"
+                               label="Due Date Offset"
+                               help="The number of days before/after the configured date setting to determine the due date period.">
                         <template #inputGroupAppend>
                             <span class="input-group-addon">days</span>
                         </template>
-                    </TextBox>
+                    </NumberBox>
                 </div>
 
             </div>
@@ -192,9 +192,10 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
@@ -204,17 +205,18 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { GroupRequirementTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupRequirementTypeDetail/groupRequirementTypeBag";
     import { GroupRequirementTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupRequirementTypeDetail/groupRequirementTypeDetailOptionsBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<GroupRequirementTypeBag>,
+            type: Object as PropType<ValidPropertiesBox<GroupRequirementTypeBag>>,
             required: true
         },
 
@@ -225,44 +227,44 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: GroupRequirementTypeBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<GroupRequirementTypeBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
-    const category = propertyRef(props.modelValue.category ?? {}, "CategoryId");
-    const summary = propertyRef(props.modelValue.summary ?? "", "Summary");
-    const sqlExpression = propertyRef(props.modelValue.sqlExpression ?? "", "SqlExpression");
-    const warningSqlExpression = propertyRef(props.modelValue.warningSqlExpression ?? "", "WarningSqlExpression");
-    const dataView = propertyRef(props.modelValue.dataView ?? {}, "DataViewId");
-    const warningDataView = propertyRef(props.modelValue.warningDataView ?? {}, "WarningDataViewId");
-    const positiveLabel = propertyRef(props.modelValue.positiveLabel ?? "", "PositiveLabel");
-    const negativeLabel = propertyRef(props.modelValue.negativeLabel ?? "", "NegativeLabel");
-    const warningLabel = propertyRef(props.modelValue.warningLabel ?? "", "WarningLabel");
-    const doesNotMeetWorkflowType = propertyRef(props.modelValue.doesNotMeetWorkflowType ?? {}, "DoesNotMeetWorkflowTypeId");
-    const warningWorkflowType = propertyRef(props.modelValue.warningWorkflowType ?? {}, "WarningWorkflowTypeId");
-    const shouldAutoInitiateDoesNotMeetWorkflow = propertyRef(props.modelValue.shouldAutoInitiateDoesNotMeetWorkflow, "ShouldAutoInitiateDoesNotMeetWorkflow");
-    const shouldAutoInitiateWarningWorkflow = propertyRef(props.modelValue.shouldAutoInitiateWarningWorkflow, "ShouldAutoInitiateWarningWorkflow");
-    const doesNotMeetWorkflowLinkText = propertyRef(props.modelValue.doesNotMeetWorkflowLinkText ?? "", "DoesNotMeetWorkflowLinkText");
-    const warningWorkflowLinkText = propertyRef(props.modelValue.warningWorkflowLinkText ?? "", "WarningWorkflowLinkText");
-    const canExpire = propertyRef(props.modelValue.canExpire, "CanExpire");
-    const expireInDays = propertyRef(props.modelValue.expireInDays ?? "", "ExpireInDays");
-    const dueDateOffsetInDays = propertyRef(props.modelValue.dueDateOffsetInDays ?? "", "DueDateOffsetInDays");
-    const dueDateType = propertyRef(props.modelValue.dueDateType ?? "", "dueDateType");
-    const requirementCheckType = propertyRef(props.modelValue.requirementCheckType ?? "Manual", "RequirementCheckType");
-    const checkboxLabel = propertyRef(props.modelValue.checkboxLabel ?? "", "CheckboxLabel");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const iconCssClass = propertyRef(props.modelValue?.bag?.iconCssClass ?? "", "IconCssClass");
+    const category = propertyRef(props.modelValue?.bag?.category ?? {}, "CategoryId");
+    const summary = propertyRef(props.modelValue?.bag?.summary ?? "", "Summary");
+    const sqlExpression = propertyRef(props.modelValue?.bag?.sqlExpression ?? "", "SqlExpression");
+    const warningSqlExpression = propertyRef(props.modelValue?.bag?.warningSqlExpression ?? "", "WarningSqlExpression");
+    const dataView = propertyRef(props.modelValue?.bag?.dataView ?? {}, "DataViewId");
+    const warningDataView = propertyRef(props.modelValue?.bag?.warningDataView ?? {}, "WarningDataViewId");
+    const positiveLabel = propertyRef(props.modelValue?.bag?.positiveLabel ?? "", "PositiveLabel");
+    const negativeLabel = propertyRef(props.modelValue?.bag?.negativeLabel ?? "", "NegativeLabel");
+    const warningLabel = propertyRef(props.modelValue?.bag?.warningLabel ?? "", "WarningLabel");
+    const doesNotMeetWorkflowType = propertyRef(props.modelValue?.bag?.doesNotMeetWorkflowType ?? {}, "DoesNotMeetWorkflowTypeId");
+    const warningWorkflowType = propertyRef(props.modelValue?.bag?.warningWorkflowType ?? {}, "WarningWorkflowTypeId");
+    const shouldAutoInitiateDoesNotMeetWorkflow = propertyRef(props.modelValue?.bag?.shouldAutoInitiateDoesNotMeetWorkflow ?? false, "ShouldAutoInitiateDoesNotMeetWorkflow");
+    const shouldAutoInitiateWarningWorkflow = propertyRef(props.modelValue?.bag?.shouldAutoInitiateWarningWorkflow ?? false, "ShouldAutoInitiateWarningWorkflow");
+    const doesNotMeetWorkflowLinkText = propertyRef(props.modelValue?.bag?.doesNotMeetWorkflowLinkText ?? "", "DoesNotMeetWorkflowLinkText");
+    const warningWorkflowLinkText = propertyRef(props.modelValue?.bag?.warningWorkflowLinkText ?? "", "WarningWorkflowLinkText");
+    const canExpire = propertyRef(props.modelValue?.bag?.canExpire ?? false, "CanExpire");
+    const expireInDays = propertyRef(props.modelValue?.bag?.expireInDays, "ExpireInDays");
+    const dueDateOffsetInDays = propertyRef(props.modelValue?.bag?.dueDateOffsetInDays, "DueDateOffsetInDays");
+    const dueDateType = propertyRef(props.modelValue?.bag?.dueDateType ?? "", "dueDateType");
+    const requirementCheckType = propertyRef(props.modelValue?.bag?.requirementCheckType ?? "Manual", "RequirementCheckType");
+    const checkboxLabel = propertyRef(props.modelValue?.bag?.checkboxLabel ?? "", "CheckboxLabel");
     const dueDateOptions = ref(props.options.dueDateOptions ?? []);
     const requirementCheckTypes = ref(props.options.requirementTypeOptions?.map(x => ({
         text: x.text ?? "",
         value: x.value ?? ""
     })));
-    const sqlHelpHTML = props.modelValue.sqlHelpHTML;
+    const sqlHelpHTML = props.modelValue?.bag?.sqlHelpHTML;
     const showSqlHelpHTML = ref(false);
 
     // The properties that are being edited. This should only contain
@@ -270,47 +272,6 @@
     const propRefs = [description, name, iconCssClass, category, summary, sqlExpression, warningSqlExpression, dataView, warningDataView, positiveLabel, negativeLabel,
         warningLabel, doesNotMeetWorkflowType, warningWorkflowType, shouldAutoInitiateDoesNotMeetWorkflow, shouldAutoInitiateWarningWorkflow, doesNotMeetWorkflowLinkText,
         warningWorkflowLinkText, canExpire, expireInDays, dueDateType, requirementCheckType, checkboxLabel, dueDateOffsetInDays];
-
-    // #endregion
-
-    // #region Computed Values
-
-    const sqlButtonGroupClass = computed((): string => {
-        return requirementCheckType.value === "Sql" ? "active" : "";
-    });
-
-    const manualButtonGroupClass = computed((): string => {
-        return requirementCheckType.value === "Manual" ? "active" : "";
-    });
-
-    const dataviewButtonGroupClass = computed((): string => {
-        return requirementCheckType.value === "Dataview" ? "active" : "";
-    });
-
-    // #endregion
-
-    // #region Functions
-
-    function validateNumber(value: unknown): string | boolean {
-
-        const stringValue = value as string;
-
-        if (stringValue) {
-            const num = Number(value);
-            if (!isValidNumber(num)) {
-                return "must be an integer value.";
-            }
-            else if (num < 0 || num > 2147483648) {
-                return "must be an integer value.";
-            }
-        }
-
-        return true;
-    }
-
-    function isValidNumber(num: number): boolean {
-        return !isNaN(num) && isFinite(num);
-    }
 
     // #endregion
 
@@ -324,65 +285,65 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
-        updateRefValue(category, props.modelValue.category ?? {});
-        updateRefValue(summary, props.modelValue.summary ?? "");
-        updateRefValue(sqlExpression, props.modelValue.sqlExpression ?? "");
-        updateRefValue(warningSqlExpression, props.modelValue.warningSqlExpression ?? "");
-        updateRefValue(dataView, props.modelValue.dataView ?? {});
-        updateRefValue(warningDataView, props.modelValue.warningDataView ?? {});
-        updateRefValue(positiveLabel, props.modelValue.positiveLabel ?? "");
-        updateRefValue(negativeLabel, props.modelValue.negativeLabel ?? "");
-        updateRefValue(warningLabel, props.modelValue.warningLabel ?? "");
-        updateRefValue(doesNotMeetWorkflowType, props.modelValue.doesNotMeetWorkflowType ?? {});
-        updateRefValue(warningWorkflowType, props.modelValue.warningWorkflowType ?? {});
-        updateRefValue(shouldAutoInitiateDoesNotMeetWorkflow, props.modelValue.shouldAutoInitiateDoesNotMeetWorkflow);
-        updateRefValue(shouldAutoInitiateWarningWorkflow, props.modelValue.shouldAutoInitiateWarningWorkflow);
-        updateRefValue(doesNotMeetWorkflowLinkText, props.modelValue.doesNotMeetWorkflowLinkText ?? "");
-        updateRefValue(warningWorkflowLinkText, props.modelValue.warningWorkflowLinkText ?? "");
-        updateRefValue(canExpire, props.modelValue.canExpire);
-        updateRefValue(expireInDays, props.modelValue.expireInDays ?? "");
-        updateRefValue(dueDateType, props.modelValue.dueDateType ?? "");
-        updateRefValue(requirementCheckType, props.modelValue.requirementCheckType ?? "");
-        updateRefValue(checkboxLabel, props.modelValue.checkboxLabel ?? "");
-        updateRefValue(dueDateOffsetInDays, props.modelValue.dueDateOffsetInDays ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(iconCssClass, props.modelValue?.bag?.iconCssClass ?? "");
+        updateRefValue(category, props.modelValue?.bag?.category ?? {});
+        updateRefValue(summary, props.modelValue?.bag?.summary ?? "");
+        updateRefValue(sqlExpression, props.modelValue?.bag?.sqlExpression ?? "");
+        updateRefValue(warningSqlExpression, props.modelValue?.bag?.warningSqlExpression ?? "");
+        updateRefValue(dataView, props.modelValue?.bag?.dataView ?? {});
+        updateRefValue(warningDataView, props.modelValue?.bag?.warningDataView ?? {});
+        updateRefValue(positiveLabel, props.modelValue?.bag?.positiveLabel ?? "");
+        updateRefValue(negativeLabel, props.modelValue?.bag?.negativeLabel ?? "");
+        updateRefValue(warningLabel, props.modelValue?.bag?.warningLabel ?? "");
+        updateRefValue(doesNotMeetWorkflowType, props.modelValue?.bag?.doesNotMeetWorkflowType ?? {});
+        updateRefValue(warningWorkflowType, props.modelValue?.bag?.warningWorkflowType ?? {});
+        updateRefValue(shouldAutoInitiateDoesNotMeetWorkflow, props.modelValue?.bag?.shouldAutoInitiateDoesNotMeetWorkflow ?? false);
+        updateRefValue(shouldAutoInitiateWarningWorkflow, props.modelValue?.bag?.shouldAutoInitiateWarningWorkflow ?? false);
+        updateRefValue(doesNotMeetWorkflowLinkText, props.modelValue?.bag?.doesNotMeetWorkflowLinkText ?? "");
+        updateRefValue(warningWorkflowLinkText, props.modelValue?.bag?.warningWorkflowLinkText ?? "");
+        updateRefValue(canExpire, props.modelValue?.bag?.canExpire ?? false);
+        updateRefValue(expireInDays, props.modelValue?.bag?.expireInDays);
+        updateRefValue(dueDateType, props.modelValue?.bag?.dueDateType ?? "");
+        updateRefValue(requirementCheckType, props.modelValue?.bag?.requirementCheckType ?? "");
+        updateRefValue(checkboxLabel, props.modelValue?.bag?.checkboxLabel ?? "");
+        updateRefValue(dueDateOffsetInDays, props.modelValue?.bag?.dueDateOffsetInDays);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        const newValue: GroupRequirementTypeBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            name: name.value,
-            iconCssClass: iconCssClass.value,
-            category: category.value,
-            summary: summary.value,
-            sqlExpression: sqlExpression.value,
-            warningSqlExpression: warningSqlExpression.value,
-            dataView: dataView.value,
-            warningDataView: warningDataView.value,
-            positiveLabel: positiveLabel.value,
-            negativeLabel: negativeLabel.value,
-            warningLabel: warningLabel.value,
-            doesNotMeetWorkflowType: doesNotMeetWorkflowType.value,
-            warningWorkflowType: warningWorkflowType.value,
-            shouldAutoInitiateDoesNotMeetWorkflow: shouldAutoInitiateDoesNotMeetWorkflow.value,
-            shouldAutoInitiateWarningWorkflow: shouldAutoInitiateWarningWorkflow.value,
-            doesNotMeetWorkflowLinkText: doesNotMeetWorkflowLinkText.value,
-            warningWorkflowLinkText: warningWorkflowLinkText.value,
-            canExpire: canExpire.value,
-            expireInDays: expireInDays.value,
-            dueDateType: dueDateType.value,
-            requirementCheckType: requirementCheckType.value,
-            checkboxLabel: checkboxLabel.value,
-            dueDateOffsetInDays: dueDateOffsetInDays.value
+        const newValue: ValidPropertiesBox<GroupRequirementTypeBag> = {
+            bag: { ...props.modelValue.bag } as GroupRequirementTypeBag
         };
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "category", category.value);
+        setPropertiesBoxValue(newValue, "summary", summary.value);
+        setPropertiesBoxValue(newValue, "sqlExpression", sqlExpression.value);
+        setPropertiesBoxValue(newValue, "warningSqlExpression", warningSqlExpression.value);
+        setPropertiesBoxValue(newValue, "dataView", dataView.value);
+        setPropertiesBoxValue(newValue, "warningDataView", warningDataView.value);
+        setPropertiesBoxValue(newValue, "positiveLabel", positiveLabel.value);
+        setPropertiesBoxValue(newValue, "negativeLabel", negativeLabel.value);
+        setPropertiesBoxValue(newValue, "warningLabel", warningLabel.value);
+        setPropertiesBoxValue(newValue, "doesNotMeetWorkflowType", doesNotMeetWorkflowType.value);
+        setPropertiesBoxValue(newValue, "warningWorkflowType", warningWorkflowType.value);
+        setPropertiesBoxValue(newValue, "shouldAutoInitiateDoesNotMeetWorkflow", shouldAutoInitiateDoesNotMeetWorkflow.value);
+        setPropertiesBoxValue(newValue, "shouldAutoInitiateWarningWorkflow", shouldAutoInitiateWarningWorkflow.value,);
+        setPropertiesBoxValue(newValue, "doesNotMeetWorkflowLinkText", doesNotMeetWorkflowLinkText.value);
+        setPropertiesBoxValue(newValue, "warningWorkflowLinkText", warningWorkflowLinkText.value);
+        setPropertiesBoxValue(newValue, "canExpire", canExpire.value);
+        setPropertiesBoxValue(newValue, "expireInDays", expireInDays.value);
+        setPropertiesBoxValue(newValue, "dueDateType", dueDateType.value);
+        setPropertiesBoxValue(newValue, "requirementCheckType", requirementCheckType.value);
+        setPropertiesBoxValue(newValue, "checkboxLabel", checkboxLabel.value);
+        setPropertiesBoxValue(newValue, "dueDateOffsetInDays", dueDateOffsetInDays.value);
 
         emit("update:modelValue", newValue);
     });
