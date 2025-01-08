@@ -8,6 +8,7 @@
           :expectedRowCount="3"
           stickyHeader
           liveUpdates
+          :markInactiveRows="true"
           itemTerm="Facilitator"
           :selectItem="onSelectItem"
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">

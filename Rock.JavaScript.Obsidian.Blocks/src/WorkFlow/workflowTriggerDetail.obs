@@ -27,11 +27,11 @@
                  @save="onSave">
 
         <template #view>
-            <ViewPanel :modelValue="workflowTriggerBag" />
+            <ViewPanel :modelValue="workflowTriggerViewBag" />
         </template>
 
         <template #edit>
-            <EditPanel v-model="workflowTriggerBag" :isEditable="isEditable" />
+            <EditPanel v-model="workflowTriggerEditBag" :isEditable="isEditable" />
         </template>
     </DetailBlock>
 </template>
@@ -45,41 +45,30 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./WorkflowTriggerDetail/editPanel.partial.obs";
     import ViewPanel from "./WorkflowTriggerDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./WorkflowTriggerDetail/types.partial";
     import { WorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowTriggerDetail/workflowTriggerBag";
-    import { WorkflowTriggerDetailBox } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowTriggerDetail/workflowTriggerDetailBox";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
+    import { WorkflowTriggerDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowTriggerDetail/workflowTriggerDetailOptionsBag";
 
-    const config = useConfigurationValues<WorkflowTriggerDetailBox>();
+    const config = useConfigurationValues<DetailBlockBox<WorkflowTriggerBag, WorkflowTriggerDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
     const blockError = ref("");
     const errorMessage = ref("");
 
-    const workflowTriggerBag = ref(config.entity ?? {} as WorkflowTriggerBag);
-    const readOnlyMessage = ref(config.readonlyNotificationMessage);
+    const workflowTriggerViewBag = ref(config.entity);
+    const workflowTriggerEditBag = ref<ValidPropertiesBox<WorkflowTriggerBag>>({
+        bag: {} as WorkflowTriggerBag
+    });
+    const readOnlyMessage = ref(config.entity?.readonlyNotificationMessage);
 
     const entityTypeGuid = EntityType.WorkflowTrigger;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
-
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "entityType",
-        "entityTypeId",
-        "entityTypeQualifierColumn",
-        "entityTypeQualifierValue",
-        "entityTypeQualifierValuePrevious",
-        "isActive",
-        "workflowName",
-        "workflowTriggerType",
-        "workflowType",
-        "workflowTypeId"
-    ];
 
     // #endregion
 
@@ -88,11 +77,11 @@
     /**
      * The entity name to display in the block panel.
      */
-    const panelTitle= computed((): string => {
+    const panelTitle = computed((): string => {
         switch (panelMode.value) {
-            case DetailPanelMode.Add :
+            case DetailPanelMode.Add:
                 return "Add Workflow Trigger";
-            case DetailPanelMode.Edit :
+            case DetailPanelMode.Edit:
                 return "Edit Workflow Trigger";
             default:
                 return "Workflow Trigger";
@@ -103,7 +92,7 @@
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
-        return workflowTriggerBag.value?.idKey ?? "";
+        return workflowTriggerViewBag.value?.idKey ?? "";
     });
 
     /**
@@ -116,7 +105,7 @@
             return undefined;
         }
 
-        if (workflowTriggerBag.value?.isActive === true) {
+        if (workflowTriggerViewBag.value?.isActive === true) {
             labels.push({
                 iconCssClass: "fa fa-lightbulb",
                 title: "Active",
@@ -135,7 +124,7 @@
     });
 
     const isEditable = computed((): boolean => {
-        return config.isEditable === true && workflowTriggerBag.value?.isSystem !== true;
+        return config.isEditable === true && workflowTriggerViewBag.value?.isSystem !== true;
     });
 
     // #endregion
@@ -149,7 +138,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!workflowTriggerBag.value?.idKey) {
+        if (!workflowTriggerEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -170,7 +159,7 @@
         errorMessage.value = "";
 
         const result = await invokeBlockAction<string>("Delete", {
-            key: workflowTriggerBag.value?.idKey
+            key: workflowTriggerViewBag.value?.idKey
         });
 
         if (result.isSuccess && result.data) {
@@ -190,12 +179,15 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<WorkflowTriggerDetailBox>("Edit", {
-            key: workflowTriggerBag.value?.idKey
+        const result = await invokeBlockAction<ValidPropertiesBox<WorkflowTriggerBag>>("Edit", {
+            key: workflowTriggerViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            workflowTriggerBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            workflowTriggerEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
 
             return true;
         }
@@ -217,19 +209,13 @@
             return false;
         }
 
-        const data: WorkflowTriggerDetailBox = {
-            entity: workflowTriggerBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<WorkflowTriggerBag> | string>("Save", {
+            box: workflowTriggerEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                workflowTriggerBag.value = result.data;
+                workflowTriggerViewBag.value = result.data.bag;
 
                 return true;
             }
@@ -245,8 +231,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -255,7 +239,7 @@
         blockError.value = "The specified workflow trigger could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        workflowTriggerBag.value = config.entity;
+        workflowTriggerEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

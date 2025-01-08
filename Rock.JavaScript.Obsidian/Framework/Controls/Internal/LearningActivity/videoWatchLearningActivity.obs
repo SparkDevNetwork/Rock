@@ -37,7 +37,7 @@
 
         <div v-if="screenToShow === ComponentScreen.Summary">
             <NotificationBox :alertType="notificationAlertType">
-                {{ assignee?.name ?? defaultAssigneeDescription }} watched {{ watchedPercentage }}% of this video.
+                {{ assignee?.name ?? defaultAssigneeDescription }} watched {{ formattedWatchedPercentage }}% of this video.
             </NotificationBox>
         </div>
     </Panel>
@@ -124,6 +124,7 @@
 
     const hasPassedThreshold = computed(() => watchedPercentage.value >= completionThreshold.value);
     const notificationAlertType = computed(() => hasPassedThreshold ? "success" : "warning");
+    const formattedWatchedPercentage = computed(() => (watchedPercentage.value * 100).toFixed());
 
     // The threshold control should show as a number between 0 and 100;
     // while the saved value will be normalized as a decimal < 1.

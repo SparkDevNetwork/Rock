@@ -926,7 +926,7 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Gets a list of activities for the current course.
+        /// Gets a list of facilitators for the current course.
         /// </summary>
         /// <returns>A list of Courses</returns>
         [BlockAction]
@@ -949,6 +949,7 @@ namespace Rock.Blocks.Lms
             var gridBuilder = new GridBuilder<LearningParticipant>()
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddPersonField( "name", a => a.Person )
+                .AddField( "isActive", a => a.GroupMemberStatus != GroupMemberStatus.Inactive )
                 .AddTextField( "note", a => a.Note );
 
             return ActionOk( gridBuilder.Build( facilitators ) );
@@ -1063,6 +1064,7 @@ namespace Rock.Blocks.Lms
                 .AddPersonField( "name", p => p.Person )
                 .AddField( "currentGradePercent", p => canViewGrades ? ( decimal? ) Math.Round( p.LearningGradePercent, 1 ) : null )
                 .AddField( "currentGrade", p => canViewGrades ? p.LearningGradingSystemScale?.Name : null )
+                .AddField( "isActive", a => a.GroupMemberStatus != GroupMemberStatus.Inactive )
                 .AddTextField( "note", p => p.Note )
                 .AddTextField( "role", p => p.GroupRole.Name )
                 .AddField( "hasCompletions", p => p.LearningActivities.Any() )

@@ -44,14 +44,15 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { SignalTypeBag } from "@Obsidian/ViewModels/Blocks/Crm/SignalTypeDetail/signalTypeBag";
     import { SignalTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Crm/SignalTypeDetail/signalTypeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<SignalTypeBag>,
+            type: Object as PropType<ValidPropertiesBox<SignalTypeBag>>,
             required: true
         },
 
@@ -67,18 +68,18 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: SignalTypeBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<SignalTypeBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const signalColor = propertyRef(props.modelValue.signalColor ?? "", "SignalColor");
-    const signalIconCssClass = propertyRef(props.modelValue.signalIconCssClass ?? "", "SignalIconCssClass");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const signalColor = propertyRef(props.modelValue?.bag?.signalColor ?? "", "SignalColor");
+    const signalIconCssClass = propertyRef(props.modelValue?.bag?.signalIconCssClass ?? "", "SignalIconCssClass");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -88,25 +89,26 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(signalColor, props.modelValue.signalColor ?? "");
-        updateRefValue(signalIconCssClass, props.modelValue.signalIconCssClass ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(signalColor, props.modelValue?.bag?.signalColor ?? "");
+        updateRefValue(signalIconCssClass, props.modelValue?.bag?.signalIconCssClass ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        const newValue: SignalTypeBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            name: name.value,
-            signalColor: signalColor.value,
-            signalIconCssClass: signalIconCssClass.value
+        const newValue: ValidPropertiesBox<SignalTypeBag> = {
+            bag: { ...props.modelValue.bag } as SignalTypeBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "signalColor", signalColor.value);
+        setPropertiesBoxValue(newValue, "signalIconCssClass", signalIconCssClass.value);
 
         emit("update:modelValue", newValue);
     });
