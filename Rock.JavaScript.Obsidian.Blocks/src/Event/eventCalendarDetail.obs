@@ -136,10 +136,6 @@
         return labels;
     });
 
-    const isEditable = computed((): boolean => {
-        return config.isEditable === true;
-    });
-
     const options = computed((): EventCalendarDetailOptionsBag => {
         return config.options ?? {} as EventCalendarDetailOptionsBag;
     });
