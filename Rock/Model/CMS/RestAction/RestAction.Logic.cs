@@ -129,7 +129,7 @@ namespace Rock.Model
                 return base.SupportedActions;
             }
 
-            var actions = new Dictionary<string, string>( Controller.CalculateSupportedActions() );
+            var actions = new Dictionary<string, string>( Controller.CalculateSupportedActions( Controller.GetMetadata() ) );
 
             var type = Reflection.FindType( typeof( object ), Controller.ClassName );
             var method = type?.GetMethods()

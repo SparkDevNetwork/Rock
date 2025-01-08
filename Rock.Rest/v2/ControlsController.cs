@@ -6723,12 +6723,11 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "NoteEditorMentionSearch" )]
         [Authenticate]
-        [SecurityAction( "FullSearch", "Allows individuals to perform a full search of all individuals in the database." )]
+        [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows individuals to perform a full search of all individuals in the database." )]
         [Rock.SystemGuid.RestActionGuid( "dca338b6-9749-427e-8238-1686c9587d16" )]
         public IActionResult NoteEditorMentionSearch( [FromBody] NoteEditorMentionSearchOptionsBag options )
         {
-            var restAction = RestActionCache.Get( new Guid( "dca338b6-9749-427e-8238-1686c9587d16" ) );
-            var isFullSearchAllowed = restAction.IsAuthorized( "FullSearch", RockRequestContext.CurrentPerson );
+            var isFullSearchAllowed = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             using ( var rockContext = new RockContext() )
             {
@@ -7197,7 +7196,7 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe how the search should be performed.</param>
         /// <returns>A collection of <see cref="Rock.Rest.Controllers.PersonSearchResult"/> objects.</returns>
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EXECUTE_READ )]
         [HttpPost]
         [System.Web.Http.Route( "PersonPickerSearch" )]
         [Rock.SystemGuid.RestActionGuid( "1947578D-B28F-4956-8666-DCC8C0F2B945" )]

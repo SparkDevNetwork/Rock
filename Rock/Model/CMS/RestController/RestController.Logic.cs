@@ -65,7 +65,7 @@ namespace Rock.Model
                     return new Dictionary<string, string>( metadata.SupportedActions );
                 }
 
-                return CalculateSupportedActions();
+                return CalculateSupportedActions( metadata );
             }
         }
 
@@ -77,9 +77,27 @@ namespace Rock.Model
         /// Calculates the support actions of this controller.
         /// </summary>
         /// <returns>A dictionary of the supported actions.</returns>
-        internal Dictionary<string, string> CalculateSupportedActions()
+        internal Dictionary<string, string> CalculateSupportedActions( RestControllerMetadata metadata )
         {
             var actions = new Dictionary<string, string>( base.SupportedActions );
+
+            if ( metadata?.Version == 2 )
+            {
+                // We need to add new items before we remove the old ones
+                // otherwise the order gets screwed up.
+                actions.TryAdd( Authorization.EXECUTE_READ, "Allows execution of API endpoints in the context of viewing data." );
+                actions.TryAdd( Authorization.EXECUTE_WRITE, "Allows execution of API endpoints in the context of editing data." );
+                actions.TryAdd( Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of viewing data without performing per-entity security checks." );
+                actions.TryAdd( Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of editing data without performing per-entity security checks." );
+
+                actions.Remove( Authorization.VIEW );
+                actions.Remove( Authorization.EDIT );
+
+                // Use a new dictionary to force remove the holes left behind
+                // after we removed the VIEW and EDIt permissions so any Adds
+                // below go in the right place.
+                actions = new Dictionary<string, string>( actions );
+            }
 
             var type = Reflection.FindType( typeof( object ), ClassName );
 

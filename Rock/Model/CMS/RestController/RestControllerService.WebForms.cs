@@ -292,8 +292,8 @@ namespace Rock.Model
                     .Where( a => a.AttributeType.FullName == "System.Web.Http.RoutePrefixAttribute" && a.ConstructorArguments.Count == 1 )
                     .Select( a => a.ConstructorArguments[0].Value as string )
                     .FirstOrDefault();
-                metadata.SupportedActions = controller.CalculateSupportedActions();
                 metadata.Version = metadata.RoutePrefix?.StartsWith( "api/v2", StringComparison.OrdinalIgnoreCase ) == true ? 2 : 1;
+                metadata.SupportedActions = controller.CalculateSupportedActions( metadata );
 
                 controller.SetMetadata( metadata );
             }

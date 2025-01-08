@@ -73,7 +73,7 @@ namespace Rock.Rest.v2
         /// <returns>A bag that contains all the configuration items.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EXECUTE_READ )]
         [Route( "Configuration" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ConfigurationResponseBag ) )]
         [SystemGuid.RestActionGuid( "200dd82f-6532-4437-9ba4-a289408b0eb8" )]
@@ -114,7 +114,7 @@ namespace Rock.Rest.v2
         /// <returns>A bag that contains the status.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EXECUTE_READ )]
         [Route( "KioskStatus" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( KioskStatusResponseBag ) )]
         [SystemGuid.RestActionGuid( "7fb87711-1ecf-49ca-90cb-3e2e1b02a933" )]
@@ -158,7 +158,7 @@ namespace Rock.Rest.v2
         /// <returns>A bag that contains all the matched families.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EXECUTE_READ )]
         [Route( "SearchForFamilies" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( SearchForFamiliesResponseBag ) )]
         [SystemGuid.RestActionGuid( "2c587733-0e08-4e93-8f2b-3e2518362768" )]
@@ -215,7 +215,7 @@ namespace Rock.Rest.v2
         /// <returns>A bag that contains all the matched families.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EXECUTE_READ )]
         [Route( "FamilyMembers" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( FamilyMembersResponseBag ) )]
         [SystemGuid.RestActionGuid( "2bd5afdf-da57-48bb-a6db-7dd9ad1ab8da" )]
@@ -275,7 +275,7 @@ namespace Rock.Rest.v2
         /// <returns>A bag that contains all the opportunities.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EXECUTE_READ )]
         [Route( "AttendeeOpportunities" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AttendeeOpportunitiesResponseBag ) )]
         [SystemGuid.RestActionGuid( "6e77e23d-cccb-46b7-a8e9-95706bbb269a" )]
@@ -337,7 +337,7 @@ namespace Rock.Rest.v2
         /// <returns>The results from the save operation.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
         [Route( "SaveAttendance" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( SaveAttendanceResponseBag ) )]
         [SystemGuid.RestActionGuid( "7ef059cb-99ba-4cf1-b7d5-3723eb320a99" )]
@@ -405,7 +405,7 @@ namespace Rock.Rest.v2
         /// <returns>The results from the confirm operation.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
         [Route( "ConfirmAttendance" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ConfirmAttendanceResponseBag ) )]
         [SystemGuid.RestActionGuid( "52070226-289b-442d-a8fe-a8323c0f922c" )]
@@ -468,7 +468,7 @@ namespace Rock.Rest.v2
         /// <returns>The results from the save operation.</returns>
         [HttpPost]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
         [Route( "Checkout" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( CheckoutResponseBag ) )]
         [SystemGuid.RestActionGuid( "733be2ee-dec6-4f7f-92bd-df367c20543d" )]
@@ -518,7 +518,7 @@ namespace Rock.Rest.v2
         /// <returns>The results from the delete operation.</returns>
         [HttpDelete]
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EXECUTE_WRITE )]
         [Route( "PendingAttendance/{sessionGuid}" )]
         [ProducesResponseType( HttpStatusCode.OK )]
         [SystemGuid.RestActionGuid( "f914ffc3-8587-493b-9c8a-ae196b5fe028" )]
