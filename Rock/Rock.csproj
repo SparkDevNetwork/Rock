@@ -717,6 +717,8 @@
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
+    <Compile Include="Cms\RestActionMetadata.cs" />
+    <Compile Include="Cms\RestControllerMetadata.cs" />
     <Compile Include="Core\EntitySearch\CustomExtensionMethodsExpressionVisitor.cs" />
     <Compile Include="Core\EntitySearch\DynamicLinqCustomTypeProvider.cs" />
     <Compile Include="Core\EntitySearch\DynamicLinqQueryExtensionMethods.cs" />
@@ -1747,6 +1749,7 @@
     <Compile Include="Security\Authentication\PasswordlessAuthentication.cs" />
     <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
     <Compile Include="Security\ExcludeSecurityActionsAttribute.cs" />
+    <Compile Include="Security\GlobalRestrictedDefault.cs" />
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />

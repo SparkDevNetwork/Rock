@@ -20,19 +20,14 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
+using Rock.Cms;
 using Rock.Security;
-using Rock.SystemGuid;
 using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     public partial class RestController
     {
-        /// <summary>
-        /// The cached actions that are supported by this instance.
-        /// </summary>
-        private Dictionary<string, string> _supportedActions;
-
         #region ICacheable
 
         /// <summary>
@@ -56,40 +51,72 @@ namespace Rock.Model
 
         #endregion
 
+        #region ISecured
+
         /// <inheritdoc/>
         public override Dictionary<string, string> SupportedActions
         {
             get
             {
-                // If we don't already have the supported actions cached, then
-                // use reflection to find the original type and check for
-                // any SecurityActionAttributes defined on it.
-                if ( _supportedActions == null )
+                var metadata = GetMetadata();
+
+                if ( metadata?.SupportedActions != null )
                 {
-                    var actions = new Dictionary<string, string>( base.SupportedActions );
-
-                    // Might be nice to cache this data in the future.
-                    var type = Reflection.FindType( typeof( object ), ClassName );
-
-                    if ( type != null )
-                    {
-                        foreach ( var sa in type.GetCustomAttributes<SecurityActionAttribute>() )
-                        {
-                            actions.TryAdd( sa.Action, sa.Description );
-                        }
-
-                        foreach ( var action in type.GetCustomAttributes<ExcludeSecurityActionsAttribute>().SelectMany( esa => esa.Actions ) )
-                        {
-                            actions.Remove( action );
-                        }
-                    }
-
-                    _supportedActions = actions;
+                    return new Dictionary<string, string>( metadata.SupportedActions );
                 }
 
-                return _supportedActions;
+                return CalculateSupportedActions();
             }
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Calculates the support actions of this controller.
+        /// </summary>
+        /// <returns>A dictionary of the supported actions.</returns>
+        internal Dictionary<string, string> CalculateSupportedActions()
+        {
+            var actions = new Dictionary<string, string>( base.SupportedActions );
+
+            var type = Reflection.FindType( typeof( object ), ClassName );
+
+            if ( type != null )
+            {
+                foreach ( var sa in type.GetCustomAttributes<SecurityActionAttribute>() )
+                {
+                    actions.TryAdd( sa.Action, sa.Description );
+                }
+
+                foreach ( var action in type.GetCustomAttributes<ExcludeSecurityActionsAttribute>().SelectMany( esa => esa.Actions ) )
+                {
+                    actions.Remove( action );
+                }
+            }
+
+            return actions;
+        }
+
+        /// <summary>
+        /// Gets the metadata for this instance.
+        /// </summary>
+        /// <returns>An instance of <see cref="RestControllerMetadata"/> or <c>null</c>.</returns>
+        internal RestControllerMetadata GetMetadata()
+        {
+            return this.GetAdditionalSettings<RestControllerMetadata>();
+        }
+
+        /// <summary>
+        /// Updates this instance to use the specified metadata.
+        /// </summary>
+        /// <param name="data">The metadata or <c>null</c>.</param>
+        internal void SetMetadata( RestControllerMetadata data )
+        {
+            this.SetAdditionalSettings( data );
+        }
+
+        #endregion
     }
 }

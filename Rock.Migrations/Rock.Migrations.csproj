@@ -108,6 +108,10 @@
     <Compile Include="Migrations\202412221138199_AddStartAndEndDateToAdaptiveModule.Designer.cs">
       <DependentUpon>202412221138199_AddStartAndEndDateToAdaptiveModule.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202501082033192_TempAddRestMetadata.cs" />
+    <Compile Include="Migrations\202501082033192_TempAddRestMetadata.Designer.cs">
+      <DependentUpon>202501082033192_TempAddRestMetadata.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2410,6 +2414,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202412221138199_AddStartAndEndDateToAdaptiveModule.resx">
       <DependentUpon>202412221138199_AddStartAndEndDateToAdaptiveModule.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501082033192_TempAddRestMetadata.resx">
+      <DependentUpon>202501082033192_TempAddRestMetadata.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
