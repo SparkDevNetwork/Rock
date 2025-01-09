@@ -414,8 +414,6 @@ namespace Rock.Blocks.Reporting
             box.NavigationUrls = GetBoxNavigationUrls( dataResults );
             box.SecurityGrantToken = GetSecurityGrantToken();
 
-            SetDynamicPageTitle( dataResults );
-
             return box;
         }
 
@@ -1541,6 +1539,7 @@ namespace Rock.Blocks.Reporting
 
             if ( GetAttributeValue( AttributeKey.EnableQuickReturn ).AsBoolean() )
             {
+                SetDynamicPageTitle( dataResults );
                 response.QuickReturnPageTitle = dataResults.PageTitle;
             }
 
