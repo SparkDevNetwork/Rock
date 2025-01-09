@@ -501,6 +501,11 @@ namespace Rock.Blocks.CheckIn
 
                 if ( sourceSchedule != null && destinationSchedule != null )
                 {
+                    if ( !destinationSchedule.CheckInStartOffsetMinutes.HasValue || !sourceSchedule.CheckInStartOffsetMinutes.HasValue )
+                    {
+                        return ActionBadRequest( "The selected schedule is not enabled for check-in. Please select an active schedule." );
+                    }
+
                     var srcGroupLocations = groupLocationQuery.Where( gl => gl.Schedules.Any( s => s.Id == sourceSchedule.Id ) );
                     var destGroupLocations = groupLocationQuery.Where( gl => gl.Schedules.Any( s => s.Id == destinationSchedule.Id ) );
 
