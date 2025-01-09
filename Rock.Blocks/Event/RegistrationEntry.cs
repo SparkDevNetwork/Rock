@@ -3829,7 +3829,7 @@ namespace Rock.Blocks.Event
                 var accountOptions = new SavedFinancialAccountOptions
                 {
                     FinancialGatewayGuids = new List<Guid> { financialGateway.Guid },
-                    CurrencyTypeGuids = GetAllowedCurrencyTypes( gatewayComponent ).Select( a => a.Guid ).ToList()
+                    CurrencyTypeGuids = GetAllowedCurrencyTypes( gatewayComponent, financialGateway ).Select( a => a.Guid ).ToList()
                 };
 
                 savedAccounts = savedAccountClientService.GetSavedFinancialAccountsForPersonAsAccountListItems( RequestContext.CurrentPerson.Id, accountOptions );
@@ -4706,10 +4706,11 @@ namespace Rock.Blocks.Event
         /// financial gateway.
         /// </summary>
         /// <param name="gatewayComponent">The gateway component that must support the currency types.</param>
+        /// <param name="financialGateway">The financial gateway.</param>
         /// <returns>A list of <see cref="DefinedValueCache"/> objects that represent the currency types.</returns>
-        private List<DefinedValueCache> GetAllowedCurrencyTypes( GatewayComponent gatewayComponent )
+        private List<DefinedValueCache> GetAllowedCurrencyTypes( GatewayComponent gatewayComponent, FinancialGateway financialGateway )
         {
-            var enableACH = gatewayComponent.GetAttributeValue( AttributeKey.EnableACHForEvents ).AsBoolean();
+            var enableACH = gatewayComponent.GetAttributeValue( financialGateway, AttributeKey.EnableACHForEvents ).AsBoolean();
             var enableCreditCard = true;// this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
             var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
             var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
