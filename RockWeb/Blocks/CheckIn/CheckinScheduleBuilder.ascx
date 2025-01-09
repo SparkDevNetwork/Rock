@@ -52,6 +52,7 @@
         <Rock:ModalDialog ID="mdCloneSchedule" runat="server" Title="Copy Schedule" OnSaveClick="mdCloneSchedule_SaveClick" SaveButtonText="Save" Visible="false">
             <Content>
                 <asp:ValidationSummary ID="mdCloneScheduleValidationSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" />
+                <Rock:NotificationBox NotificationBoxType="Danger" runat="server" ID="nbCloneError" Visible="false" Text="The selected schedule is not enabled for check-in. Please select an active schedule." />
                 <Rock:NotificationBox runat="server" ID="nbCloneInfo" Text="This will copy all the enabled locations from the source schedule into the destination schedule." />
                 <div class="row">
                     <div class="col-md-6">

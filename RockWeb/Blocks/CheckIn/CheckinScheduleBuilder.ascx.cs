@@ -642,15 +642,21 @@ namespace RockWeb.Blocks.CheckIn
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdCloneSchedule_SaveClick( object sender, EventArgs e )
         {
+            nbCloneError.Visible = false;
             using ( var rockContext = new RockContext() )
             {
                 var groupLocationQuery = GetGroupLocationQuery( rockContext, out List<CheckinAreaPath> groupPaths ).ToList();
-
                 var sourceSchedule = NamedScheduleCache.Get( spSourceSchedule.SelectedValueAsId() ?? 0 );
                 var destinationSchedule = NamedScheduleCache.Get( spDestinationSchedule.SelectedValueAsId() ?? 0 );
 
                 if ( sourceSchedule != null && destinationSchedule != null )
                 {
+                    if ( !destinationSchedule.CheckInStartOffsetMinutes.HasValue || !sourceSchedule.CheckInStartOffsetMinutes.HasValue )
+                    {
+                        nbCloneError.Visible = true;
+                        return;
+                    }
+
                     var srcGroupLocations = groupLocationQuery.Where( gl => gl.Schedules.Any( s => s.Id == sourceSchedule.Id ) );
                     var destGroupLocations = groupLocationQuery.Where( gl => gl.Schedules.Any( s => s.Id == destinationSchedule.Id ) );
 
