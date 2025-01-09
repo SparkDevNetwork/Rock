@@ -184,6 +184,16 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// For use in Lava -- should subtract two strings (containing integers) and return an int.
+        /// </summary>
+        [TestMethod]
+        public void MinusTwoStringInts_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.Minus( "3", "2" ), "de-DE" );
+            Assert.That.AreEqual( 1, output );
+        }
+
+        /// <summary>
         /// For use in Lava -- should subtract two strings (containing decimals) and return a decimal.
         /// </summary>
         [TestMethod]
@@ -194,12 +204,32 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// For use in Lava -- should subtract two strings (containing decimals) and return a decimal.
+        /// </summary>
+        [TestMethod]
+        public void MinusTwoStringDecimals_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.Minus( "3.0", "2.0" ), "de-DE" );
+            Assert.That.AreEqual( 1.0M, output );
+        }
+
+        /// <summary>
         /// For use in Lava -- should subtract an integer and a string (containing a decimal) and return a decimal.
         /// </summary>
         [TestMethod]
-        public void MinusIntAndDecimal()
+        public void MinusIntAndDecimalString()
         {
             var output = RockFilters.Minus( 3, "2.0" );
+            Assert.That.AreEqual( 1.0M, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should subtract an integer and a string (containing a decimal) and return a decimal.
+        /// </summary>
+        [TestMethod]
+        public void MinusIntAndDecimalString_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.Minus( 3, "2.0" ), "de-DE" );
             Assert.That.AreEqual( 1.0M, output );
         }
 
@@ -246,14 +276,30 @@ namespace Rock.Tests.UnitTests.Lava
             var output = RockFilters.Plus( "3.0", "2.0" );
             Assert.That.AreEqual( 5.0M, output );
         }
+        [TestMethod]
+        public void PlusTwoStringDecimals_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.Plus( "3.0", "2.0" ), "de-DE" );
+            Assert.That.AreEqual( 5.0M, output );
+        }
 
         /// <summary>
         /// For use in Lava -- should add an integer and a string (containing a decimal) and return a decimal.
         /// </summary>
         [TestMethod]
-        public void PlusIntAndDecimal()
+        public void PlusIntAndDecimalString()
         {
             var output = RockFilters.Plus( 3, "2.0" );
+            Assert.That.AreEqual( 5.0M, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should add an integer and a string (containing a decimal) and return a decimal.
+        /// </summary>
+        [TestMethod]
+        public void PlusIntAndDecimalString_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.Plus( 3, "2.0" ), "de-DE" );
             Assert.That.AreEqual( 5.0M, output );
         }
 
@@ -302,6 +348,16 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// For use in Lava -- should multiply two strings (containing integers) and return an int.
+        /// </summary>
+        [TestMethod]
+        public void TimesTwoStringInts_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.Times( "3", "2" ), "de-DE" );
+            Assert.That.AreEqual( 6, output );
+        }
+
+        /// <summary>
         /// For use in Lava -- should multiply two strings (containing decimals) and return a decimal.
         /// </summary>
         [TestMethod]
@@ -312,12 +368,32 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// For use in Lava -- should multiply two strings (containing decimals) and return a decimal.
+        /// </summary>
+        [TestMethod]
+        public void TimesTwoStringDecimals_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.Times( "3.0", "2.0" ), "de-DE" );
+            Assert.That.AreEqual( 6.0M, output );
+        }
+
+        /// <summary>
         /// For use in Lava -- should multiply an integer and a string (containing a decimal) and return a decimal.
         /// </summary>
         [TestMethod]
-        public void TimesIntAndDecimal()
+        public void TimesIntAndDecimalString()
         {
             var output = RockFilters.Times( 3, "2.0" );
+            Assert.That.AreEqual( 6.0M, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should multiply an integer and a string (containing a decimal) and return a decimal.
+        /// </summary>
+        [TestMethod]
+        public void TimesIntAndDecimalString_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.Times( 3, "2.0" ), "de-DE" );
             Assert.That.AreEqual( 6.0M, output );
         }
 
@@ -331,6 +407,90 @@ namespace Rock.Tests.UnitTests.Lava
             var output = RockFilters.Times( "Food", 2 ) as IEnumerable<string>;
 
             Assert.That.AreEqual( expectedOutput, output );
+        }
+
+        #endregion
+
+        #region DividedBy
+
+        /// <summary>
+        /// For use in Lava -- should multiply two integers and return an integer.
+        /// </summary>
+        [TestMethod]
+        public void DividedByTwoInts()
+        {
+            var output = RockFilters.DividedBy( 6, 2 );
+            Assert.That.AreEqual( 3.0M, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should multiply two decimals and return a decimal.
+        /// </summary>
+        [TestMethod]
+        public void DividedByTwoDecimals()
+        {
+            var output = RockFilters.DividedBy( 6.0M, 2.0M );
+            Assert.That.AreEqual( 3.0M, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should multiply two strings (containing integers) and return an int.
+        /// </summary>
+        [TestMethod]
+        public void DividedByTwoStringInts()
+        {
+            var output = RockFilters.DividedBy( "6", "2" );
+            Assert.That.AreEqual( 3.0M, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should multiply two strings (containing integers) and return an int.
+        /// </summary>
+        [TestMethod]
+        public void DividedByTwoStringInts_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.DividedBy( "6", "2" ), "de-DE" );
+            Assert.That.AreEqual( 3.0M, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should multiply two strings (containing decimals) and return a decimal.
+        /// </summary>
+        [TestMethod]
+        public void DividedByTwoStringDecimals()
+        {
+            var output = RockFilters.DividedBy( "6.0", "2.0" );
+            Assert.That.AreEqual( 3.0M, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should multiply two strings (containing decimals) and return a decimal.
+        /// </summary>
+        [TestMethod]
+        public void DividedByTwoStringDecimals_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.DividedBy( "6.0", "2.0" ), "de-DE" );
+            Assert.That.AreEqual( 3.0M, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should multiply an integer and a string (containing a decimal) and return a decimal.
+        /// </summary>
+        [TestMethod]
+        public void DividedByIntAndDecimalString()
+        {
+            var output = RockFilters.DividedBy( 6, "2.0" );
+            Assert.That.AreEqual( 3.0M, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should divide an integer and a string (containing a decimal) and return a decimal.
+        /// </summary>
+        [TestMethod]
+        public void DividedByIntAndDecimalString_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.DividedBy( 6, "2.0" ), "de-DE" );
+            Assert.That.AreEqual( 3.0M, output );
         }
 
         #endregion
@@ -398,6 +558,16 @@ namespace Rock.Tests.UnitTests.Lava
         public void AsInteger_ValidString()
         {
             var output = RockFilters.AsInteger( "3" );
+            Assert.That.AreEqual( 3, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should cast the string to an integer.
+        /// </summary>
+        [TestMethod]
+        public void AsInteger_ValidString_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.AsInteger( "3" ), "de-DE" );
             Assert.That.AreEqual( 3, output );
         }
 
@@ -485,6 +655,13 @@ namespace Rock.Tests.UnitTests.Lava
             Assert.That.AreEqual( output, ( decimal ) 3.14d );
         }
 
+        [TestMethod]
+        public void AsDecimal_ValidString_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.AsDecimal( "3.14" ), "de-DE" );
+            Assert.That.AreEqual( output, ( decimal ) 3.14d );
+        }
+
         /// <summary>
         /// For use in Lava -- should not cast the string to a decimal.
         /// </summary>
@@ -502,6 +679,16 @@ namespace Rock.Tests.UnitTests.Lava
         public void AsDecimal_InvalidDecimalString()
         {
             var output = RockFilters.AsInteger( "3.0.2" );
+            Assert.That.IsNull( output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should not cast the decimal string to a decimal.
+        /// </summary>
+        [TestMethod]
+        public void AsDecimal_InvalidDecimalString_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.AsInteger( "3.0.2" ), "de-DE" );
             Assert.That.IsNull( output );
         }
 
@@ -566,6 +753,16 @@ namespace Rock.Tests.UnitTests.Lava
         public void AsDouble_ValidString()
         {
             var output = RockFilters.AsDouble( "3.14" );
+            Assert.That.AreEqual( ( double ) 3.14d, output );
+        }
+
+        /// <summary>
+        /// For use in Lava -- should cast the string to a double.
+        /// </summary>
+        [TestMethod]
+        public void AsDouble_ValidString_InvariantAgainstClientCulture()
+        {
+            var output = TestConfigurationHelper.ExecuteWithCulture( () => RockFilters.AsDouble( "3.14" ), "de-DE" );
             Assert.That.AreEqual( ( double ) 3.14d, output );
         }
 

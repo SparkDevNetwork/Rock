@@ -1943,17 +1943,17 @@ namespace Rock.Lava
 
             int intInput = -1;
             int intOperand = -1;
-            decimal iInput = -1;
-            decimal iOperand = -1;
+            decimal decimalInput = -1;
+            decimal decimalOperand = -1;
 
             // If both input and operand are INTs keep the return an int.
-            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            if ( input.TryParseInvariant( out intInput ) && operand.TryParseInvariant( out intOperand ) )
             {
                 return intInput + intOperand;
             }
-            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            else if ( input.TryParseInvariant( out decimalInput ) && operand.TryParseInvariant( out decimalOperand ) )
             {
-                return iInput + iOperand;
+                return decimalInput + decimalOperand;
             }
             else
             {
@@ -1976,17 +1976,17 @@ namespace Rock.Lava
 
             int intInput = -1;
             int intOperand = -1;
-            decimal iInput = -1;
-            decimal iOperand = -1;
+            decimal decimalInput = -1;
+            decimal decimalOperand = -1;
 
             // If both input and operand are INTs keep the return an int.
-            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            if ( input.TryParseInvariant( out intInput ) && operand.TryParseInvariant( out intOperand ) )
             {
                 return intInput - intOperand;
             }
-            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            else if ( input.TryParseInvariant( out decimalInput ) && operand.TryParseInvariant( out decimalOperand ) )
             {
-                return iInput - iOperand;
+                return decimalInput - decimalOperand;
             }
             else
             {
@@ -2009,17 +2009,17 @@ namespace Rock.Lava
 
             int intInput = -1;
             int intOperand = -1;
-            decimal iInput = -1;
-            decimal iOperand = -1;
+            decimal decimalInput = -1;
+            decimal decimalOperand = -1;
 
             // If both input and operand are INTs keep the return an int.
-            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            if ( input.TryParseInvariant( out intInput ) && operand.TryParseInvariant( out intOperand ) )
             {
                 return intInput * intOperand;
             }
-            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            else if ( input.TryParseInvariant( out decimalInput ) && operand.TryParseInvariant( out decimalOperand ) )
             {
-                return iInput * iOperand;
+                return decimalInput * decimalOperand;
             }
             else
             {
@@ -2046,7 +2046,7 @@ namespace Rock.Lava
                 decimal dInput = 0;
                 decimal dOperand = 0;
 
-                if ( decimal.TryParse( input.ToString(), out dInput ) && decimal.TryParse( operand.ToString(), out dOperand ) )
+                if ( input.TryParseInvariant( out dInput ) && operand.TryParseInvariant( out dOperand ) )
                 {
                     decimal result = ( dInput / dOperand );
                     return decimal.Round( result, precision );
@@ -5198,7 +5198,7 @@ namespace Rock.Lava
             {
                 return null;
             }
-            return ( int? ) input.ToString().AsDecimalOrNull();
+            return ( int? ) input.ToString().AsDecimalInvariantCultureOrNull();
         }
 
         /// <summary>
@@ -5213,7 +5213,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            return input.ToString().AsDecimalOrNull();
+            return input.ToString().AsDecimalInvariantCultureOrNull();
         }
 
         /// <summary>
@@ -5228,7 +5228,7 @@ namespace Rock.Lava
                 return null;
             }
 
-            return input.ToString().AsDoubleOrNull();
+            return input.ToString().AsDoubleInvariantCultureOrNull();
         }
 
         /// <summary>

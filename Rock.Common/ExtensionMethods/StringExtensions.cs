@@ -1431,6 +1431,30 @@ namespace Rock
         }
 
         /// <summary>
+        /// Attempts to convert string to double.  Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static double? AsDoubleInvariantCultureOrNull( this string str )
+        {
+            if ( !string.IsNullOrWhiteSpace( str ) )
+            {
+                // strip off non numeric and characters at the beginning of the line (currency symbols)
+                str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
+            }
+
+            double value;
+            if ( double.TryParse( str, NumberStyles.Number, CultureInfo.InvariantCulture, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// Attempts to convert string to TimeSpan.  Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>

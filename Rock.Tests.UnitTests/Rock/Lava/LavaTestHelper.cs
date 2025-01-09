@@ -490,15 +490,15 @@ namespace Rock.Tests.UnitTests.Lava
                     _activeEngines.Add( _fluidEngine );
                 }
 
-                if ( DotLiquidEngineIsEnabled )
-                {
-                    _activeEngines.Add( _dotliquidEngine );
-                }
+                //if ( DotLiquidEngineIsEnabled )
+                //{
+                //    _activeEngines.Add( _dotliquidEngine );
+                //}
 
-                if ( RockLiquidEngineIsEnabled )
-                {
-                    _activeEngines.Add( _rockliquidEngine );
-                }
+                //if ( RockLiquidEngineIsEnabled )
+                //{
+                //    _activeEngines.Add( _rockliquidEngine );
+                //}
             }
 
             return _activeEngines;

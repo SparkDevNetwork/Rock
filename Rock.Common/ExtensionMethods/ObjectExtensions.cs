@@ -17,6 +17,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -214,6 +215,70 @@ namespace Rock
             var attrType = typeof( T );
             var property = instance.GetType().GetProperty( propertyName );
             return ( T ) property.GetCustomAttributes( attrType, false ).First();
+        }
+
+        /// <summary>
+        /// Use this method to convert an object to a string properly using the InvariantCulture.
+        /// Using only TryParse will used the culture-dependent object-string and ignore any
+        /// CultureInfo.InvariantCulture you'll try passing to the TryParse method.
+        /// </summary>
+        /// <typeparam name="TOut"></typeparam>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
+        /// <returns></returns>
+        public static bool TryParseInvariant<TOut>( this object input, out TOut output )
+        {
+            return input.TryParseInvariant( out output, default( TOut ) );
+        }
+
+        /// <summary>
+        /// Use this method to convert an object to a string properly using the InvariantCulture.
+        /// Using only TryParse will used the culture-dependent object-string and ignore any
+        /// CultureInfo.InvariantCulture you'll try passing to the TryParse method.
+        /// </summary>
+        /// <typeparam name="TOut"></typeparam>
+        /// <param name="input"></param>
+        /// <param name="output"></param>
+        /// <param name="defaultValue"></param>
+        /// <returns></returns>
+        public static bool TryParseInvariant<TOut>( this object input, out TOut output, TOut defaultValue )
+        {
+            output = defaultValue;
+
+            // We need to convert the object to a string properly, using the InvariantCulture.
+            // Otherwise, attempting to use TryParse will used the culture-dependent object-string
+            // and ignore the CultureInfo.InvariantCulture we're passing to the TryParse. #mindblown
+            var inputString = Convert.ToString( input, CultureInfo.InvariantCulture );
+
+            Type type = typeof( TOut );
+            // Get the four parameter signature of the TryParse:
+            // {type}.TryParse( string, NumberStyles, IFormatProvider, out TOut )
+            MethodInfo parseMethod = type.GetMethod(
+                "TryParse",
+                new Type[] { typeof( string ), typeof(NumberStyles), typeof(IFormatProvider), typeof( TOut ).MakeByRefType() } );
+
+            if ( parseMethod != null )
+            {
+                var numberStyle = NumberStyles.Number;
+                if ( type == typeof (int) )
+                {
+                    numberStyle = NumberStyles.Integer;
+                }
+
+                object[] parameters = new object[] { inputString, numberStyle, CultureInfo.InvariantCulture, output };
+                var value = parseMethod.Invoke( null, parameters );
+
+                if ( value is bool )
+                {
+                    bool successful = ( bool ) value;
+                    if ( successful )
+                    {
+                        output = ( TOut ) parameters[3];
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         #endregion

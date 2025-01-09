@@ -17,6 +17,8 @@
 using System;
 using System.Globalization;
 
+using Rock;
+
 namespace Rock.Lava
 {
     /// <summary>
@@ -327,6 +329,8 @@ namespace Rock.Lava
             // but we can be sure the parse attempt will fail if multiple offsets are specified.
             var nowRockTime = TimeZoneInfo.ConvertTime( DateTimeOffset.UtcNow, rockTimeZone );
 
+            // THIS WORKS, BUT YOU HAVE TO use the InvariantCulture for both the nowRockTime string conversion AND the TryParse:
+            //isParsed = DateTimeOffset.TryParse( stringValue + " " + nowRockTime.ToString( "zzz", CultureInfo.InvariantCulture ), CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dto );
             isParsed = DateTimeOffset.TryParse( stringValue + " " + nowRockTime.ToString( "zzz" ), out dto );
 
             if ( isParsed )
@@ -337,6 +341,8 @@ namespace Rock.Lava
                     var utcOffset = rockTimeZone.GetUtcOffset( dto );
                     var dstOffsetString = ( utcOffset.Hours < 0 ? "-" : "+" ) + ( utcOffset.Hours > 9 ? "" : "0" ) + Math.Abs( utcOffset.Hours ) + ":" + ( utcOffset.Minutes > 9 ? "" : "0" ) + Math.Abs( utcOffset.Minutes );
 
+                    // THIS DID NOT WORK:
+                    //isParsed = DateTimeOffset.TryParse( stringValue + " " + dstOffsetString, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dto );
                     isParsed = DateTimeOffset.TryParse( stringValue + " " + dstOffsetString, out dto );
                 }
             }
@@ -344,6 +350,8 @@ namespace Rock.Lava
             {
                 // Parsing with the additional timezone information failed, so assume that the input string is either invalid
                 // or already specifies a timezone.
+                // THIS DID NOT WORK:
+                //isParsed = DateTimeOffset.TryParse( stringValue, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dto );
                 isParsed = DateTimeOffset.TryParse( stringValue, out dto );
             }
 
@@ -400,6 +408,13 @@ namespace Rock.Lava
             {
                 return string.Empty;
             }
+
+            // THIS IS NOT HAVING ANY EFFECT
+            if ( cultureInfo == null )
+            {
+                cultureInfo = CultureInfo.InvariantCulture;
+            }
+            // ^^^^^^^^^^^^^ THIS IS NOT HAVING ANY EFFECT
 
             var dateString = value.Value.ToString( formatString ?? "G", cultureInfo );
 

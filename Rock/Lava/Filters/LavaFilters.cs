@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data.Entity;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Linq.Dynamic.Core;
@@ -1694,17 +1695,37 @@ namespace Rock.Lava
 
             int intInput = -1;
             int intOperand = -1;
-            decimal iInput = -1;
-            decimal iOperand = -1;
+            decimal decimalInput = -1;
+            decimal decimalOperand = -1;
+
+            /*
+                 10/16/2024 - NA
+
+                 Believe it or not, we need to convert the string properly too. Otherwise
+                 an input object of "1.5" that is converted to a string using intput.ToString()
+                 will be later considered a string from the Client Culture from where it came
+                 when it is TryParsed into an int/decimal *regardless* of passing
+                 CultureInfo.InvariantCulture to the TryParse! (#mindblown)
+
+                 This would mean a browser using de-DE passing "1.5" and "1" to the Plus() will 
+                 consider that as a 15 + 1, and 16 will be returned instead of 2.5.
+
+                 // For Client Culture de-DE, "1.5" x and y are both 15 here: 
+                 int.TryParse( input.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture, out x );
+                 decimal.TryParse( input.ToString(), NumberStyles.Number, CultureInfo.InvariantCulture, out y ); 
+    
+                 Reason: input.ToString() won't work if that value is used in a
+                         int|decimal.TryParse(..., CultureInfo.InvariantCulture )
+            */
 
             // If both input and operand are INTs keep the return an int.
-            if ( int.TryParse( input.ToString(), out intInput ) && int.TryParse( operand.ToString(), out intOperand ) )
+            if ( input.TryParseInvariant( out intInput ) && operand.TryParseInvariant( out intOperand ) )
             {
                 return intInput + intOperand;
             }
-            else if ( decimal.TryParse( input.ToString(), out iInput ) && decimal.TryParse( operand.ToString(), out iOperand ) )
+            else if ( input.TryParseInvariant( out decimalInput ) && operand.TryParseInvariant( out decimalOperand ) )
             {
-                return iInput + iOperand;
+                return decimalInput + decimalOperand;
             }
             else
             {

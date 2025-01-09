@@ -169,6 +169,23 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
+        /// Converts an input value to a date/time value.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "5/1/2018 18:30:00", "01/May/2018 06:30 PM", "en-US" )]
+        public void AsDateTime_UsingInvariantDateFormat_ProducesValidDate( string inputString, string result, string clientCulture )
+        {
+            var template = "{{ '<inputString>' | AsDateTime }}"
+                .Replace( "<inputString>", inputString );
+
+            var output = TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutputDate( result, template );
+                return null;
+            }, clientCulture );
+        }
+
+        /// <summary>
         /// Using the Date filter to format a DateTimeOffset type should correctly report the offset in the output.
         /// </summary>
         [TestMethod]

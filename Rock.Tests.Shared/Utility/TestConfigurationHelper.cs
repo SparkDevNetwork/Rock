@@ -119,5 +119,31 @@ namespace Rock.Tests.Shared
             RockDateTime.Initialize( tz );
         }
 
+        public static T ExecuteWithCulture<T>( Func<T> methodFunc, string cultureName )
+        {
+            T result = default( T );
+
+            var thread = new System.Threading.Thread( () =>
+            {
+                result = methodFunc();
+            } );
+
+            // We MUST preserve the original CurrentCulture otherwise
+            // this thread will infect the pool and other tests will fail.
+            var originalCulture = thread.CurrentCulture;
+
+            try
+            {
+                thread.CurrentCulture = new System.Globalization.CultureInfo( cultureName );
+                thread.Start();
+                thread.Join();
+            }
+            finally
+            {
+                thread.CurrentCulture = originalCulture;
+            }
+
+            return result;
+        }
     }
 }

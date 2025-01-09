@@ -103,7 +103,8 @@ namespace Rock.Lava.Filters
                 }
                 else
                 {
-                    inputDateTime = LavaDateTime.ParseToOffset( input.ToString(), null );
+                    var invariantDateString = Convert.ToString( input, CultureInfo.InvariantCulture );
+                    inputDateTime = LavaDateTime.ParseToOffset( invariantDateString, null );
                 }
 
                 if ( !inputDateTime.HasValue )
