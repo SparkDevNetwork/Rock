@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -225,5 +226,12 @@ namespace Rock.Model
         }
 
         #endregion Public Methods
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => Note ?? NoteType ?? base.ParentAuthority;
+
+        #endregion
     }
 }

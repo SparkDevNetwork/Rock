@@ -16,6 +16,8 @@
 //
 using System.ComponentModel.DataAnnotations;
 
+using Rock.Security;
+
 namespace Rock.Model
 {
     public partial class StepWorkflowTrigger
@@ -42,5 +44,12 @@ namespace Rock.Model
         }
 
         #endregion Overrides
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => StepType ?? StepProgram ?? base.ParentAuthority;
+
+        #endregion
     }
 }

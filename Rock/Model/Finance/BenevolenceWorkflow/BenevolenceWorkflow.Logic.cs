@@ -16,6 +16,7 @@
 //
 
 using Rock.Lava;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -45,6 +46,13 @@ namespace Rock.Model
                 }
             }
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => BenevolenceType ?? base.ParentAuthority;
 
         #endregion
     }

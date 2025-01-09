@@ -16,6 +16,8 @@
 //
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
+
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -50,5 +52,12 @@ namespace Rock.Model
                 return isValid;
             }
         }
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => StreakType ?? base.ParentAuthority;
+
+        #endregion
     }
 }

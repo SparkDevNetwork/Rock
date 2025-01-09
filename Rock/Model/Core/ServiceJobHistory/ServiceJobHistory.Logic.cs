@@ -17,7 +17,9 @@
 
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -59,5 +61,12 @@ namespace Rock.Model
                 return ( int ) ( ( TimeSpan ) ( StopDateTime - StartDateTime ) ).TotalSeconds;
             }
         }
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => ServiceJob ?? base.ParentAuthority;
+
+        #endregion
     }
 }

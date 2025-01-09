@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -58,6 +59,13 @@ namespace Rock.Model
         }
 
         #endregion ICacheable
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => RegistrationTemplateForm ?? base.ParentAuthority;
+
+        #endregion
 
         #region Methods
 
