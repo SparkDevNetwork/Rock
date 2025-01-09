@@ -47,10 +47,8 @@ namespace Rock.Lms
         /// </summary>
         public override string Name => "Point Assessment";
 
-        /// <summary>
-        /// Initializes a new instance of the CheckOffComponent.
-        /// </summary>
-        public PointAssessmentComponent(): base( @"/Obsidian/Controls/Internal/LearningActivity/pointAssessmentLearningActivity.obs" ) { }
+        /// <inheritdoc/>
+        public override string ComponentUrl => @"/Obsidian/Controls/Internal/LearningActivity/pointAssessmentLearningActivity.obs";
 
         /// <summary>
         /// Point Assessments require grading when the due date is in the past and the activity hasn't yet been graded.

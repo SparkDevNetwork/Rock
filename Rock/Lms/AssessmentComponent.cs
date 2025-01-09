@@ -53,10 +53,8 @@ namespace Rock.Lms
         /// </summary>
         public override string Name => "Assessment";
 
-        /// <summary>
-        /// Initializes a new instance of the Assessment component.
-        /// </summary>
-        public AssessmentComponent() : base( @"/Obsidian/Controls/Internal/LearningActivity/assessmentLearningActivity.obs" ) { }
+        /// <inheritdoc/>
+        public override string ComponentUrl => @"/Obsidian/Controls/Internal/LearningActivity/assessmentLearningActivity.obs";
 
         /// <summary>
         /// Calculates the student grade based on the configured multiple choice responses and weights.

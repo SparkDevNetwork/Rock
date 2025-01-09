@@ -572,22 +572,27 @@ namespace Rock.CodeGeneration.Pages
                             "Rock.Extension.Component._typeName",
                             "Rock.Web.HttpModules.ResponseHeaders.Headers",
                             "Rock.Field.FieldType.QualifierUpdated",
+                            "Rock.Communication.Transport.Firebase._currentApp",
+                            "Rock.Communication.Transport.RockMobilePush._currentApp",
+                            "Rock.Communication.Transport.RockMobilePush._currentAppLock",
+                            "Rock.Extension.Component._logger",
 
-                             // Fields that probably should be fixed, but would take some time to figure out how to fix them.
-                             "Rock.Field.Types.CurrencyFieldType.CurrencyCodeDefinedValueId",
-                             "Rock.Field.Types.EnumFieldType`1._EnumValues",
-                             "Rock.Financial.TestGateway.MostRecentException",
-                             "Rock.Financial.TestRedirectionGateway.MostRecentException",
-                             "Rock.Security.BackgroundCheck.ProtectMyMinistry._httpStatusCode",
-                             "Rock.Security.ExternalAuthentication.Twitter._oauthToken",
-                             "Rock.Security.ExternalAuthentication.Twitter._oauthTokenSecret",
-                             "Rock.Security.ExternalAuthentication.Twitter._returnUrl",
-                             "Rock.UniversalSearch.IndexComponents.Elasticsearch._client",
-                             "Rock.Workflow.Action.AddStep._mergeFields",
-                             "Rock.Workflow.Action.PrayerRequestAdd._action",
-                             "Rock.Workflow.Action.PrayerRequestAdd._mergeField",
-                             "Rock.Workflow.Action.PrayerRequestAdd._rockContext",
-                             "Rock.Workflow.Action.PrayerRequestAdd._mergeFields"
+                            // Fields that probably should be fixed, but would take some time to figure out how to fix them.
+                            "Rock.Field.Types.CurrencyFieldType.CurrencyCodeDefinedValueId",
+                            "Rock.Field.Types.EnumFieldType`1._EnumValues",
+                            "Rock.Financial.TestGateway.MostRecentException",
+                            "Rock.Financial.TestRedirectionGateway.MostRecentException",
+                            "Rock.Security.BackgroundCheck.ProtectMyMinistry._httpStatusCode",
+                            "Rock.Security.ExternalAuthentication.Twitter._oauthToken",
+                            "Rock.Security.ExternalAuthentication.Twitter._oauthTokenSecret",
+                            "Rock.Security.ExternalAuthentication.Twitter._returnUrl",
+                            "Rock.UniversalSearch.IndexComponents.Elasticsearch._client",
+                            "Rock.Workflow.Action.AddStep._mergeFields",
+                            "Rock.Workflow.Action.PrayerRequestAdd._action",
+                            "Rock.Workflow.Action.PrayerRequestAdd._mergeField",
+                            "Rock.Workflow.Action.PrayerRequestAdd._rockContext",
+                            "Rock.Workflow.Action.PrayerRequestAdd._mergeFields",
+                            "Rock.Field.Types.PhoneNumberFieldType._defaultCountryCode",
                         };
 
                         if ( typeof( Rock.Field.FieldType ).IsAssignableFrom( type )
