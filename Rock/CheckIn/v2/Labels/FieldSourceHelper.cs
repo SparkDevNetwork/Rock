@@ -291,6 +291,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Schedule Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
             } );
 
@@ -530,6 +531,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Schedule Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValueFunc = ( source, field, printRequest ) => source.Attendance.Schedule?.GetNextCheckInStartTime( source.Attendance.StartDateTime )
             } );
 
@@ -1127,6 +1129,7 @@ namespace Rock.CheckIn.v2.Labels
                 Name = "Schedule Time",
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
+                Formatter = DateTimeDataFormatter.Instance,
                 ValuesFunc = ( source, field, printRequest ) => source.PersonAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
             } );
 
@@ -1137,25 +1140,6 @@ namespace Rock.CheckIn.v2.Labels
                 TextSubType = TextFieldSubType.CheckInInfo,
                 Category = "Common",
                 ValueFunc = ( source, field, printRequest ) => source.SecurityCode
-            } );
-
-
-            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
-            {
-                Key = "6fca79e1-5d42-4598-9ec4-bf9c0f727862",
-                Name = "Schedule Name",
-                TextSubType = TextFieldSubType.CheckInInfo,
-                Category = "Common",
-                ValuesFunc = ( source, field, printRequest ) => source.LocationAttendance.Select( a => a.Location.Name )
-            } );
-
-            dataSources.Add( new MultiValueFieldDataSource<PersonLocationLabelData>
-            {
-                Key = "b9e605ed-1b8e-4fee-9c72-44e81dcde985",
-                Name = "Schedule Time",
-                TextSubType = TextFieldSubType.CheckInInfo,
-                Category = "Common",
-                ValuesFunc = ( source, field, printRequest ) => source.LocationAttendance.Select( a => a.Schedule.GetNextCheckInStartTime( a.StartDateTime ) )
             } );
 
             dataSources.Add( new SingleValueFieldDataSource<PersonLocationLabelData>
