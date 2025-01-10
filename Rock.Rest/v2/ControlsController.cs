@@ -4230,13 +4230,19 @@ namespace Rock.Rest.v2
             Guid MapStyleValueGuid = options.MapStyleValueGuid == null || options.MapStyleValueGuid.IsEmpty() ? Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK.AsGuid() : options.MapStyleValueGuid;
             string mapStyle = "null";
             string markerColor = "";
+            string mapId = string.Empty;
 
             try
             {
                 DefinedValueCache dvcMapStyle = DefinedValueCache.Get( MapStyleValueGuid );
                 if ( dvcMapStyle != null )
                 {
-                    mapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                    var dynamicMapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                    if ( dynamicMapStyle.IsNotNullOrWhiteSpace() )
+                    {
+                        mapStyle = dynamicMapStyle;
+                    }
+                    mapId = dvcMapStyle.GetAttributeValue( "core_GoogleMapId" );
                     var colors = dvcMapStyle.GetAttributeValue( "Colors" ).Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                     if ( colors.Any() )
                     {
@@ -4248,7 +4254,6 @@ namespace Rock.Rest.v2
 
             // Google API Key
             string googleApiKey = GlobalAttributesCache.Get().GetValue( "GoogleAPIKey" );
-            var mapId = GlobalAttributesCache.Get().GetValue( "core_GoogleMapId" );
 
             // Default map location
             double? centerLatitude = null;
@@ -4272,7 +4277,7 @@ namespace Rock.Rest.v2
                 GoogleApiKey = googleApiKey,
                 CenterLatitude = centerLatitude,
                 CenterLongitude = centerLongitude,
-                GoogleMapId = mapId.IsNullOrWhiteSpace() ? "DEFAULT_MAP_ID" : mapId
+                GoogleMapId = mapId
             } );
         }
 
