@@ -541,7 +541,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
         [TestMethod]
         public void WriteTextField_WithRegularText_MakesTextSquare()
         {
-            var expectedPattern = new Regex( $@"\^A0,([0-9]+),([0-9]+)" );
+            var expectedPattern = new Regex( $@"\^A0N,([0-9]+),([0-9]+)" );
 
             var renderer = new ZplLabelRenderer();
             var request = new PrintLabelRequest
@@ -581,7 +581,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
         [TestMethod]
         public void WriteTextField_WithBoldText_MakesTextWider()
         {
-            var expectedPattern = new Regex( $@"\^A0,([0-9]+),([0-9]+)" );
+            var expectedPattern = new Regex( $@"\^A0N,([0-9]+),([0-9]+)" );
 
             var renderer = new ZplLabelRenderer();
             var request = new PrintLabelRequest
@@ -620,7 +620,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
         [TestMethod]
         public void WriteTextField_WithCondensedText_MakesTextNarrower()
         {
-            var expectedPattern = new Regex( $@"\^A0,([0-9]+),([0-9]+)" );
+            var expectedPattern = new Regex( $@"\^A0N,([0-9]+),([0-9]+)" );
 
             var renderer = new ZplLabelRenderer();
             var request = new PrintLabelRequest
@@ -659,7 +659,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
         [TestMethod]
         public void WriteTextField_WithBoldAndCondensedText_MakesTextWider()
         {
-            var expectedPattern = new Regex( $@"\^A0,([0-9]+),([0-9]+)" );
+            var expectedPattern = new Regex( $@"\^A0N,([0-9]+),([0-9]+)" );
 
             var renderer = new ZplLabelRenderer();
             var request = new PrintLabelRequest
@@ -694,6 +694,291 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
             var isWider = match.Groups[1].Value.AsInteger() > match.Groups[2].Value.AsInteger();
 
             Assert.That.IsTrue( isWider, $"Expected '{match.Groups[1].Value.AsInteger()}' to be greater than '{match.Groups[1].Value.AsInteger()}'." );
+        }
+
+        [TestMethod]
+        public void WriteTextField_WithMaxLength_TruncatesText()
+        {
+            var expectedPattern = new Regex( $@"\^A0N,([0-9]+),([0-9]+)" );
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag() );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    MaxLength = 8
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "TestValue" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Contains( zpl, "^FDTestV...^FS" );
+        }
+
+        [TestMethod]
+        public void WriteTextField_With90DegreeRotation_RotatesFont()
+        {
+            var expectedFontCommand = $"^A0R";
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                RotationAngle = 90
+            } );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration() );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "TestValue" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Contains( zpl, expectedFontCommand );
+        }
+
+        [TestMethod]
+        public void WriteTextField_With90DegreeRotation_AdjustsPosition()
+        {
+            var fieldLeft = 1;
+            var fieldTop = 2;
+            var fieldWidth = 0.5;
+            var fieldHeight = 0.5;
+            var fieldFontSize = 36; // 0.5 inch/position size.
+            var dpi = 300;
+            var expectedLeft = 0.5;
+            var expectedTop = 2;
+            var expectedOrigin = $"^FO{expectedLeft * dpi},{expectedTop * dpi}";
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                Left = fieldLeft,
+                Top = fieldTop,
+                Width = fieldWidth,
+                Height = fieldHeight,
+                RotationAngle = 90
+            } );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    FontSize = fieldFontSize
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "TestValue" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Contains( zpl, expectedOrigin );
+        }
+
+        [TestMethod]
+        public void WriteTextField_With180DegreeRotation_RotatesFont()
+        {
+            var expectedFontCommand = $"^A0I";
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                RotationAngle = 180
+            } );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration() );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "TestValue" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Contains( zpl, expectedFontCommand );
+        }
+
+        [TestMethod]
+        public void WriteTextField_With180DegreeRotation_AdjustsPosition()
+        {
+            var fieldLeft = 1;
+            var fieldTop = 2;
+            var fieldWidth = 0.5;
+            var fieldHeight = 0.5;
+            var fieldFontSize = 36; // 0.5 inch/position size.
+            var dpi = 300;
+            var expectedLeft = 0.5;
+            var expectedTop = 1.5;
+            var expectedOrigin = $"^FO{expectedLeft * dpi},{expectedTop * dpi}";
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                Left = fieldLeft,
+                Top = fieldTop,
+                Width = fieldWidth,
+                Height = fieldHeight,
+                RotationAngle = 180
+            } );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    FontSize = fieldFontSize
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "TestValue" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Contains( zpl, expectedOrigin );
+        }
+
+        [TestMethod]
+        public void WriteTextField_With270DegreeRotation_RotatesFont()
+        {
+            var expectedFontCommand = $"^A0B";
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                RotationAngle = 270
+            } );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration() );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "TestValue" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Contains( zpl, expectedFontCommand );
+        }
+
+        [TestMethod]
+        public void WriteTextField_With270DegreeRotation_AdjustsPosition()
+        {
+            var fieldLeft = 1;
+            var fieldTop = 2;
+            var fieldWidth = 0.5;
+            var fieldHeight = 0.5;
+            var fieldFontSize = 36; // 0.5 inch/position size.
+            var dpi = 300;
+            var expectedLeft = 1;
+            var expectedTop = 1.5;
+            var expectedOrigin = $"^FO{expectedLeft * dpi},{expectedTop * dpi}";
+
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities
+                {
+                    Dpi = dpi
+                }
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                Left = fieldLeft,
+                Top = fieldTop,
+                Width = fieldWidth,
+                Height = fieldHeight,
+                RotationAngle = 270
+            } );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration
+                {
+                    FontSize = fieldFontSize
+                } );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "TestValue" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Contains( zpl, expectedOrigin );
         }
 
         #endregion
@@ -2975,7 +3260,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
                 renderer.Dispose();
             } );
 
-            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0,24,24^FDText^FS
+            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0N,24,24^FDText^FS
 ", zpl );
         }
 
@@ -3017,7 +3302,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
                 renderer.Dispose();
             } );
 
-            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0,12,12^FDText With Length Greater Than Thirty^FS
+            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0N,12,12^FDText With Length Greater Than Thirty^FS
 ", zpl );
         }
 
@@ -3058,7 +3343,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
                 renderer.Dispose();
             } );
 
-            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0,24,24^FDText^FS
+            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0N,24,24^FDText^FS
 ", zpl );
         }
 
@@ -3103,7 +3388,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Labels.Renderers
                 renderer.Dispose();
             } );
 
-            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0,12,12^FDText With Length Greater Than Thirty^FS
+            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0N,12,12^FDText With Length Greater Than Thirty^FS
 ", zpl );
         }
 
