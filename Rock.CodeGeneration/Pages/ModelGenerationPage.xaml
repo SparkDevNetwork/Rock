@@ -191,6 +191,7 @@
         <TextBox x:Name="ResultsTextBox"
                  Grid.Row="4"
                  IsReadOnly="True"
+                 Foreground="Red"
                  VerticalScrollBarVisibility="Visible"
                  Margin="5,0,5,5"/>
     </Grid>

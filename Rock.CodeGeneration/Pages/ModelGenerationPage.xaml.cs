@@ -574,7 +574,6 @@ namespace Rock.CodeGeneration.Pages
                             "Rock.Field.FieldType.QualifierUpdated",
                             "Rock.Communication.Transport.Firebase._currentApp",
                             "Rock.Communication.Transport.RockMobilePush._currentApp",
-                            "Rock.Communication.Transport.RockMobilePush._currentAppLock",
                             "Rock.Extension.Component._logger",
 
                             // Fields that probably should be fixed, but would take some time to figure out how to fix them.
