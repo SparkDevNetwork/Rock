@@ -23,7 +23,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Lava;
-using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model

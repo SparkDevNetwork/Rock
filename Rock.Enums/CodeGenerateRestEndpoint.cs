@@ -16,13 +16,13 @@
 //
 using System;
 
-namespace Rock.Utility
+namespace Rock.Enums
 {
     /// <summary>
     /// Identifies the various REST v2 API endpoints that can be generated.
     /// </summary>
     [Flags]
-    internal enum CodeGenerateRestEndpoint
+    public enum CodeGenerateRestEndpoint
     {
         /// <summary>
         /// No endpoints will be generated.

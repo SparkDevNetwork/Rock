@@ -31,7 +31,6 @@ using Rock.Enums.Cms;
 using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
-using Rock.Utility;
 
 namespace Rock.Model
 {

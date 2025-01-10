@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "LavaShortcode" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "7574A473-3326-4973-8DF6-C7BF5F64EB36" )]
     public partial class LavaShortcode : Model<LavaShortcode>, ICacheable
     {

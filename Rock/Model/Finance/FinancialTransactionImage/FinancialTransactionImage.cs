@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialTransactionImage" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "78DCA7EE-C5FE-49AE-9995-0E254CC8E2A2")]
     public partial class FinancialTransactionImage : Model<FinancialTransactionImage>, IOrdered
     {

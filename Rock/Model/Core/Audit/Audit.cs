@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "Audit" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [HideFromReporting]
     [Rock.SystemGuid.EntityTypeGuid( "5DE389E2-4E25-4BB0-8292-67A94ECB379B")]
     public partial class Audit : Entity<Audit>

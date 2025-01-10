@@ -20,7 +20,6 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Lava;
-using Rock.Utility;
 
 namespace Rock.Model
 {

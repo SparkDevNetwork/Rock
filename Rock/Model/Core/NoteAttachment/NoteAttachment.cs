@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "NoteAttachment" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "D090C50E-2FE1-4284-9631-19D06F4AD8B0")]
     public partial class NoteAttachment : Model<NoteAttachment>
     {

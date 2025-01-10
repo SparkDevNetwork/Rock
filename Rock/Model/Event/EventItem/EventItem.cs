@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventItem" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "6A58AD11-3491-84AE-4896-8F39906EA65E")]
     [ContentCollectionIndexable( typeof( Rock.Cms.ContentCollection.Indexers.EventItemIndexer ), typeof( Rock.Cms.ContentCollection.IndexDocuments.EventItemDocument ) )]
     public partial class EventItem : Model<EventItem>, IHasActiveFlag, IRockIndexable

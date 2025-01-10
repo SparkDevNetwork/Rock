@@ -41,10 +41,10 @@ namespace Rock.Model
     /// (TPT) inheritance strategy should not be used and is not supported for plugins.
     /// </remarks>
     [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Due to inheritance from Group.
-    [CodeGenerateRest( CodeGenerateRestEndpoint.None )]
     [RockDomain( "LMS" )]
     [Table( "LearningClass" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_CLASS )]
     public partial class LearningClass : Group
     {

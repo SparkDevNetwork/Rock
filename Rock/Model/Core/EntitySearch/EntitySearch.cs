@@ -33,7 +33,8 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "EntitySearch" )]
     [DataContract]
-    [CodeGenExclude( CodeGenFeature.DefaultRestController )]
+    [CodeGenerateRest]
+    [CodeGenExclude( CodeGenFeature.DefaultRestController )] // exclude v1 api controller
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ENTITY_SEARCH )]
     public partial class EntitySearch : Model<EntitySearch>, ICacheable
     {

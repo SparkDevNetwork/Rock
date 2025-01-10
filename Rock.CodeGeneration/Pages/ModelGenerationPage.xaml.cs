@@ -455,6 +455,7 @@ namespace Rock.CodeGeneration.Pages
             bool hasWarnings = false;
             StringBuilder rockObsoleteWarnings = new StringBuilder();
             StringBuilder rockGuidWarnings = new StringBuilder();
+            StringBuilder codeGenerateRestWarnings = new StringBuilder();
             Dictionary<string, string> rockGuids = new Dictionary<string, string>(); // GUID, Class/Method
             List<string> singletonClassVariablesWarnings = new List<string>();
             List<string> obsoleteReportList = new List<string>();
@@ -518,6 +519,17 @@ namespace Rock.CodeGeneration.Pages
                             {
                                 rockGuidWarnings.AppendLine( $" - DUPLICATE,{type},{rockGuid},{rockGuids[rockGuid]}" );
                             }
+                        }
+                    }
+
+                    // See if this is an Entity that doesn't have a defined.
+                    if ( typeof( Data.IEntity ).IsAssignableFrom( type ) && !type.IsAbstract )
+                    {
+                        var attr = type.GetCustomAttribute<CodeGenerateRestAttribute>();
+
+                        if ( attr == null )
+                        {
+                            codeGenerateRestWarnings.AppendLine( $" - {type.FullName}" );
                         }
                     }
 
@@ -688,6 +700,14 @@ namespace Rock.CodeGeneration.Pages
                 warnings.AppendLine();
                 warnings.AppendLine( "[RockGuid] issues found." );
                 warnings.Append( rockGuidWarnings );
+            }
+
+            if ( codeGenerateRestWarnings.Length > 0 )
+            {
+                hasWarnings = true;
+                warnings.AppendLine();
+                warnings.AppendLine( "The following types are missing [CodeGenerateRest] attributes:" );
+                warnings.Append( codeGenerateRestWarnings );
             }
 
             if ( IsReportObsoleteChecked )

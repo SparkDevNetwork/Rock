@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Device" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "C06EE1FE-AF12-410A-A364-7A366CD72414")]
     public partial class Device : Model<Device>, ICacheable
     {

@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupMemberScheduleTemplate" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "D84ED719-B659-433C-BFA0-E798E52C6B24")]
     public partial class GroupMemberScheduleTemplate : Model<GroupMemberScheduleTemplate>
     {

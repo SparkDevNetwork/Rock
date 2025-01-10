@@ -16,7 +16,9 @@
 //
 using System;
 
-namespace Rock.Utility
+using Rock.Enums;
+
+namespace Rock
 {
     /// <summary>
     /// <para>

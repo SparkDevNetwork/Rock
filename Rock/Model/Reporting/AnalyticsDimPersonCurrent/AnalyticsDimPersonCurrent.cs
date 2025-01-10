@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimPersonCurrent" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "30CBF82B-4C90-4767-9C2D-622308439BF2")]
     public class AnalyticsDimPersonCurrent : AnalyticsDimPersonBase<AnalyticsDimPersonCurrent>
     {

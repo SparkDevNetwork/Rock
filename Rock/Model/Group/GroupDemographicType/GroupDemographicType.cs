@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupDemographicType" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.None )]
     [Rock.SystemGuid.EntityTypeGuid( "9AE7A87B-E274-4FF5-BEFD-55CCF603CE13")]
     public partial class GroupDemographicType : Model<GroupDemographicType>
     {

@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "PersistedDataset" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [HideFromReporting]
     [Rock.SystemGuid.EntityTypeGuid( "9C3064C0-CF9C-4549-9A80-022514B7FF83")]
     public partial class PersistedDataset : Entity<PersistedDataset>, ICacheable

@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsFactFinancialTransaction" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "6447497F-C40F-41B9-AB5B-A1F14F80DD18")]
     public class AnalyticsFactFinancialTransaction : AnalyticsBaseFinancialTransaction<AnalyticsFactFinancialTransaction>
     {
