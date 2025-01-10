@@ -1080,7 +1080,7 @@ namespace Rock.Jobs
             {
                 // Verify that the workflow is not being used by something important by letting CanDelete tell
                 // us if it's OK to delete.
-                if ( workflowService.CanDelete( workflow, out _ ) )
+                if ( workflowService.IsEligibleForDelete( workflow, out _ ) )
                 {
                     workflowIdsSafeToDelete.Add( workflow.Id );
                 }
