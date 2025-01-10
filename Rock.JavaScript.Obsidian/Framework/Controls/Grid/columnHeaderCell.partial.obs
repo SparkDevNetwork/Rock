@@ -26,6 +26,7 @@
                   :to="popupTarget"
                   :disabled="!popupTarget">
             <div class="grid-filter-popup-container"
+                 ref="popup"
                  :style="popupContainerStyle">
                 <div ref="filterElement" class="grid-filter-popup">
                     <div class="grid-filter-popup-content">
@@ -95,8 +96,11 @@
     const filterButtonElement = ref<HTMLElement | null>(null);
     const columnHeaderElement = ref<HTMLElement | null>(null);
     const popupTarget = ref<Element>();
+    const popup = ref<HTMLElement>();
     const popupContainerStyle = ref({});
+    const isIntersecting = ref(false);
     let columnResizeObserver: ResizeObserver | undefined = window.ResizeObserver ? new ResizeObserver(onColumnResized) : undefined;
+    let popupIntersectObserver: IntersectionObserver | undefined = window.IntersectionObserver ? new IntersectionObserver(onPopupIntersect, { root: null, threshold: 1.0, rootMargin: "-80px 0px 0px 0px" }) : undefined;
 
     // #endregion
 
@@ -193,14 +197,30 @@
     function updatePopupPosition(): void {
         const gridElement = columnHeaderElement.value?.closest(".grid-obsidian") as HTMLElement | null;
 
-        if (columnHeaderElement.value && gridElement) {
+        if (columnHeaderElement.value && popup.value && gridElement) {
             const columnRect = columnHeaderElement.value.getBoundingClientRect();
 
-            popupContainerStyle.value = {
-                left: columnRect.left + "px",
-                width: columnRect.width + "px",
-                top: (columnRect.top + 55) + "px"
-            };
+            if (isIntersecting.value) {
+                popupContainerStyle.value = {
+                    left: columnRect.left + "px",
+                    width: columnRect.width + "px",
+                    top: (columnRect.top - popup.value.clientHeight) + "px"
+                };
+            }
+            else {
+                popupContainerStyle.value = {
+                    left: columnRect.left + "px",
+                    width: columnRect.width + "px",
+                    top: (columnRect.top + 55) + "px"
+                };
+            }
+        }
+
+        // Check if there is enough space to flip down.
+        const viewPortHeight = window.innerHeight;
+        const popupClientRect = popup.value?.getBoundingClientRect();
+        if (popupClientRect && ((popupClientRect.bottom + popupClientRect.height + 55) < viewPortHeight)) {
+            isIntersecting.value = false;
         }
     }
 
@@ -284,6 +304,16 @@
         }
     };
 
+    function onPopupIntersect(entries: IntersectionObserverEntry[]): void {
+        entries.forEach(entry => {
+            // If the entry is intersecting with the ViewPort border. I know, it's weird — the naming is might cause confusion.
+            // I think when they say "entry.isIntersecting," it means the element is in the viewport or intersecting with it.
+            if (!entry.isIntersecting) {
+                isIntersecting.value = true;
+            }
+        });
+    }
+
     /**
      * Called when the column or grid has been resized.
      */
@@ -321,6 +351,10 @@
                 // TODO: Make filter components do default focus.
                 // Hack until this is handled by a filter component.
                 filterElement.value?.querySelector("input")?.focus();
+
+                if (popup.value && popupIntersectObserver) {
+                    popupIntersectObserver?.observe(popup.value);
+                }
             });
         }
         else {
@@ -345,5 +379,6 @@
         document.removeEventListener("mousedown", onMouseDownEvent);
 
         columnResizeObserver?.disconnect();
+        popupIntersectObserver?.disconnect();
     });
 </script>
