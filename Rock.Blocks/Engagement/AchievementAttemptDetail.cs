@@ -638,7 +638,7 @@ namespace Rock.Blocks.Engagement
             entity = entityService.Get( entity.Id );
             entity.LoadAttributes( RockContext );
 
-            var bag = GetAttemptDetailsForBag( GetEntityBagForEdit( entity ), entity );
+            var bag = GetAttemptDetailsForBag( GetEntityBagForView( entity ), entity );
 
             return ActionOk( new ValidPropertiesBox<AchievementAttemptBag>
             {
