@@ -27,6 +27,47 @@ namespace Rock.Model
     public partial class WorkflowService 
     {
         /// <summary>
+        /// Determines whether this instance can delete the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>
+        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
+        /// </returns>
+        public bool IsEligibleForDelete( Workflow item, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            var workFlowType = WorkflowTypeCache.Get( item.WorkflowTypeId );
+
+            /*
+             SK: 01-08-2025
+             Custom Code has been added. Please don't remove this as this is necessary.
+             */
+            var isEligibleForDeleteAfterRetentionPeriod = workFlowType != null && item.CompletedDateTime.HasValue && workFlowType.CompletedWorkflowRetentionPeriod.HasValue
+                && RockDateTime.Now > item.CompletedDateTime.Value.AddDays( workFlowType.CompletedWorkflowRetentionPeriod.Value );
+
+            if ( !isEligibleForDeleteAfterRetentionPeriod && new Service<ConnectionRequestWorkflow>( Context ).Queryable().Any( a => a.WorkflowId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Workflow.FriendlyTypeName, ConnectionRequestWorkflow.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<GroupMemberRequirement>( Context ).Queryable().Any( a => a.DoesNotMeetWorkflowId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Workflow.FriendlyTypeName, GroupMemberRequirement.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<GroupMemberRequirement>( Context ).Queryable().Any( a => a.WarningWorkflowId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Workflow.FriendlyTypeName, GroupMemberRequirement.FriendlyTypeName );
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Processes the specified workflow.
         /// </summary>
         /// <param name="workflow">The workflow.</param>
