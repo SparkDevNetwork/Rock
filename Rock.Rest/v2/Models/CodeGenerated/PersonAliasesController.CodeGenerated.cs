@@ -156,30 +156,6 @@ namespace Rock.Rest.v2.Models
         }
 
         /// <summary>
-        /// Deletes a single item from the database.
-        /// </summary>
-        /// <param name="id">The identifier as either an Id, Guid or IdKey value.</param>
-        /// <returns>An empty response.</returns>
-        [HttpDelete]
-        [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_WRITE )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [Route( "{id}" )]
-        [ProducesResponseType( HttpStatusCode.NoContent )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "3b8eae5f-1677-52fe-af2c-f9b986ec4209" )]
-        public IActionResult DeleteItem( string id )
-        {
-            var helper = new CrudEndpointHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
-
-            helper.IsSecurityIgnored = true;
-
-            return helper.Delete( id );
-        }
-
-        /// <summary>
         /// Gets all the attribute values for the specified item.
         /// </summary>
         /// <param name="id">The identifier as either an Id, Guid or IdKey value.</param>

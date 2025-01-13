@@ -49,8 +49,6 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Prayer Requests.
     /// </summary>
     [RoutePrefix( "api/v2/models/prayerrequests" )]
-    [SecurityAction( Security.Authorization.EXECUTE_READ, "Allows execution of API endpoints in the context of reading data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_WRITE, "Allows execution of API endpoints in the context of writing data." )]
     [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of reading data without performing per-entity security checks." )]
     [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of writing data without performing per-entity security checks." )]
     [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
@@ -64,7 +62,7 @@ namespace Rock.Rest.v2.Models
         /// <returns>The requested item.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_READ )]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Rock.Model.PrayerRequest ) )]
@@ -76,7 +74,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
+            helper.IsSecurityIgnored = true;
 
             return helper.Get( id );
         }
@@ -100,7 +98,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
+            helper.IsSecurityIgnored = true;
 
             return helper.Create( value );
         }
@@ -126,7 +124,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
+            helper.IsSecurityIgnored = true;
 
             return helper.Update( id, value );
         }
@@ -152,7 +150,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
+            helper.IsSecurityIgnored = true;
 
             return helper.Patch( id, values );
         }
@@ -176,7 +174,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
+            helper.IsSecurityIgnored = true;
 
             return helper.Delete( id );
         }
@@ -200,7 +198,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
+            helper.IsSecurityIgnored = true;
 
             return helper.GetAttributeValues( id );
         }
@@ -226,7 +224,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
+            helper.IsSecurityIgnored = true;
 
             return helper.PatchAttributeValues( id, values );
         }
@@ -268,7 +266,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
+            helper.IsSecurityIgnored = true;
 
             return helper.Search( searchKey, null );
         }
@@ -293,7 +291,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.PrayerRequest, Rock.Model.PrayerRequestService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
+            helper.IsSecurityIgnored = true;
 
             return helper.Search( searchKey, query );
         }
