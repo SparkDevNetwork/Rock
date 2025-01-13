@@ -44,9 +44,7 @@ namespace Rock.Lms
         /// </summary>
         public override string Name => "Video Watch";
 
-        /// <summary>
-        /// Initializes a new instance of the CheckOffComponent.
-        /// </summary>
-        public VideoWatchComponent() : base( @"/Obsidian/Controls/Internal/LearningActivity/videoWatchLearningActivity.obs" ) { }
+        /// <inheritdoc/>
+        public override string ComponentUrl => @"/Obsidian/Controls/Internal/LearningActivity/videoWatchLearningActivity.obs";
     }
 }

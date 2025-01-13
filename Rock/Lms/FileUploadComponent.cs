@@ -46,11 +46,9 @@ namespace Rock.Lms
         /// </summary>
         public override string Name => "File Upload";
 
-        /// <summary>
-        /// Initializes a new instance of the CheckOffComponent.
-        /// </summary>
-        public FileUploadComponent() : base( @"/Obsidian/Controls/Internal/LearningActivity/fileUploadLearningActivity.obs" ) { }
-        
+        /// <inheritdoc/>
+        public override string ComponentUrl => @"/Obsidian/Controls/Internal/LearningActivity/fileUploadLearningActivity.obs";
+
         /// <summary>
         /// The <see cref="FileUploadComponent"/> always requires completed activities to be graded.
         /// </summary>

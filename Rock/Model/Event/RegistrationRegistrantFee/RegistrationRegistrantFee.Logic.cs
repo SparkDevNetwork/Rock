@@ -15,7 +15,9 @@
 // </copyright>
 
 using System.ComponentModel.DataAnnotations.Schema;
+
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -72,5 +74,12 @@ namespace Rock.Model
         }
 
         #endregion Methods
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => RegistrationRegistrant ?? base.ParentAuthority;
+
+        #endregion
     }
 }

@@ -454,5 +454,12 @@ namespace Rock.Model
         }
 
         #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => DataView ?? base.ParentAuthority;
+
+        #endregion
     }
 }

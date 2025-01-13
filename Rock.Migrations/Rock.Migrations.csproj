@@ -120,6 +120,14 @@
     <Compile Include="Migrations\202501070941039_AddPrimaryAliasGuidToPerson.Designer.cs">
       <DependentUpon>202501070941039_AddPrimaryAliasGuidToPerson.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202501081726013_Rollup_20250108.cs" />
+    <Compile Include="Migrations\202501081726013_Rollup_20250108.designer.cs">
+      <DependentUpon>202501081726013_Rollup_20250108.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202501081813592_CodeGenerated_20250108.cs" />
+    <Compile Include="Migrations\202501081813592_CodeGenerated_20250108.designer.cs">
+      <DependentUpon>202501081813592_CodeGenerated_20250108.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2431,6 +2439,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202501070941039_AddPrimaryAliasGuidToPerson.resx">
       <DependentUpon>202501070941039_AddPrimaryAliasGuidToPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501081726013_Rollup_20250108.resx">
+      <DependentUpon>202501081726013_Rollup_20250108.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501081813592_CodeGenerated_20250108.resx">
+      <DependentUpon>202501081813592_CodeGenerated_20250108.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>

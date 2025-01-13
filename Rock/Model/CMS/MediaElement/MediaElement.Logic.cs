@@ -15,13 +15,14 @@
 // </copyright>
 //
 
-
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Rock.Media;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -103,6 +104,13 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         public virtual List<MediaElementThumbnailData> ThumbnailData { get; set; } = new List<MediaElementThumbnailData>();
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => MediaFolder ?? base.ParentAuthority;
 
         #endregion
     }

@@ -44,9 +44,7 @@ namespace Rock.Lms
         /// </summary>
         public override string Name => "Acknowledgment";
 
-        /// <summary>
-        /// Initializes a new instance of the CheckOffComponent.
-        /// </summary>
-        public AcknowledgmentComponent() : base( @"/Obsidian/Controls/Internal/LearningActivity/acknowledgmentLearningActivity.obs" ) { }
+        /// <inheritdoc/>
+        public override string ComponentUrl => @"/Obsidian/Controls/Internal/LearningActivity/acknowledgmentLearningActivity.obs";
     }
 }

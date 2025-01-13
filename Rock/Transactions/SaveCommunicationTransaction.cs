@@ -30,8 +30,6 @@ namespace Rock.Transactions
     /// <seealso cref="Rock.Transactions.ITransaction" />
     public class SaveCommunicationTransaction : ITransaction
     {
-        private List<string> _recipientEmailAddresses;
-
         /// <summary>
         /// Gets or sets the rock message recipients.
         /// </summary>
@@ -223,12 +221,6 @@ namespace Rock.Transactions
                             .FirstOrDefault();
                         senderPersonAliasId = sender?.PrimaryAliasId;
                     }
-                }
-
-                if ( this.Recipients?.Any() != true && _recipientEmailAddresses != null )
-                {
-                    this.Recipients = new List<RockMessageRecipient>();
-                    this.Recipients.AddRange( _recipientEmailAddresses.Select( a => RockEmailMessageRecipient.CreateAnonymous( a, null ) ).ToList() );
                 }
 
                 if ( this.Recipients?.Any() == true )

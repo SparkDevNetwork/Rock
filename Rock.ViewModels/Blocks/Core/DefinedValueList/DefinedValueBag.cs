@@ -55,5 +55,13 @@ namespace Rock.ViewModels.Blocks.Core.DefinedValueList
         /// The category.
         /// </value>
         public ListItemBag Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
+        public int Id { get; set; }
     }
 }

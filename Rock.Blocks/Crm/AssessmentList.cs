@@ -147,19 +147,31 @@ namespace Rock.Blocks.Crm
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
+            var bag = new AssessmentListBag
             {
-                return GetAssessmentListBag( rockContext );
-            }
+                AssessmentListContent = GetAssessmentListContent()
+            };
+
+            return bag;
         }
 
-        private AssessmentListBag GetAssessmentListBag( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override string GetInitialHtmlContent()
         {
-            var assessmentListBag = new AssessmentListBag();
+            return GetAssessmentListContent();
+        }
+
+        /// <summary>
+        /// Gets the HTML Content for the AssessmentList
+        /// </summary>
+        /// <returns>A string of the Assessment List HTML Content</returns>
+        private string GetAssessmentListContent()
+        {
+            var assessmentListContent = string.Empty;
             var currentPersonId = RequestContext?.CurrentPerson?.Id;
 
             // Gets Assessment types and assessments for each
-            AssessmentTypeService assessmentTypeService = new AssessmentTypeService( rockContext );
+            AssessmentTypeService assessmentTypeService = new AssessmentTypeService( RockContext );
             var allAssessmentsOfEachType = assessmentTypeService.Queryable().AsNoTracking()
                 .Where( x => x.IsActive )
                 .Select( t => new AssessmentTypeListItem
@@ -186,7 +198,7 @@ namespace Rock.Blocks.Crm
                             .OrderByDescending( x => x.RequestedDate )
                             .ThenByDescending( x => x.CompletedDate )
                             .FirstOrDefault(),
-                })
+                } )
                 // order by requested then by pending, completed, then by available to take
                 .OrderByDescending( x => x.LastRequestObject.Status )
                 .ThenBy( x => x.LastRequestObject )
@@ -221,41 +233,37 @@ namespace Rock.Blocks.Crm
             bool hidIfNoRequests = GetAttributeValue( AttributeKey.HideIfNoRequests ).AsBoolean();
             if ( ( hideIfNoActiveRequests && !areThereAnyPendingRequests ) || ( hidIfNoRequests && !areThereAnyRequests ) )
             {
-                assessmentListBag.HasContent = false;
+                return assessmentListContent;
+            }
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, RequestContext.CurrentPerson );
+
+            // Show only the tests requested or completed?...
+            if ( GetAttributeValue( AttributeKey.OnlyShowRequested ).AsBoolean() )
+            {
+                // the completed data is only populated if the assessment was actually completed, where as a complete status can be assinged if it was not taken. So use date instead of status for completed.
+                var onlyRequestedOrCompleted = allAssessmentsOfEachType
+                    .Where( x => x.LastRequestObject != null )
+                    .Where( x => x.LastRequestObject.Requester != null )
+                    .Where( x => x.LastRequestObject.Status == AssessmentRequestStatus.Pending || x.LastRequestObject.CompletedDate != null );
+
+                mergeFields.Add( "AssessmentTypes", onlyRequestedOrCompleted );
             }
             else
             {
-                assessmentListBag.HasContent = true;
-                var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null, RequestContext.CurrentPerson );
+                // ...Otherwise show any allowed, requested or completed requests.
+                // the completed data is only populated if the assessment was actually completed, where as a complete status can be assigned if it was not taken. So use date instead of status for completed.
+                var onlyAllowedRequestedOrCompleted = allAssessmentsOfEachType
+                    .Where( x => !x.RequiresRequest
+                        || ( x.LastRequestObject != null && x.LastRequestObject.Status == AssessmentRequestStatus.Pending )
+                        || ( x.LastRequestObject != null && x.LastRequestObject.CompletedDate != null )
+                    );
 
-                // Show only the tests requested or completed?...
-                if ( GetAttributeValue( AttributeKey.OnlyShowRequested ).AsBoolean() )
-                {
-                    // the completed data is only populated if the assessment was actually completed, where as a complete status can be assinged if it was not taken. So use date instead of status for completed.
-                    var onlyRequestedOrCompleted = allAssessmentsOfEachType
-                        .Where( x => x.LastRequestObject != null )
-                        .Where( x => x.LastRequestObject.Requester != null )
-                        .Where( x => x.LastRequestObject.Status == AssessmentRequestStatus.Pending || x.LastRequestObject.CompletedDate != null );
-
-                    mergeFields.Add( "AssessmentTypes", onlyRequestedOrCompleted );
-                }
-                else
-                {
-                    // ...Otherwise show any allowed, requested or completed requests.
-                    // the completed data is only populated if the assessment was actually completed, where as a complete status can be assigned if it was not taken. So use date instead of status for completed.
-                    var onlyAllowedRequestedOrCompleted = allAssessmentsOfEachType
-                        .Where( x => !x.RequiresRequest
-                            || ( x.LastRequestObject != null && x.LastRequestObject.Status == AssessmentRequestStatus.Pending )
-                            || ( x.LastRequestObject != null && x.LastRequestObject.CompletedDate != null )
-                        );
-
-                    mergeFields.Add( "AssessmentTypes", onlyAllowedRequestedOrCompleted );
-                }
-
-                assessmentListBag.AssessmentList = GetAttributeValue( AttributeKey.LavaTemplate ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+                mergeFields.Add( "AssessmentTypes", onlyAllowedRequestedOrCompleted );
             }
 
-            return assessmentListBag;
+            assessmentListContent = GetAttributeValue( AttributeKey.LavaTemplate ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
+
+            return assessmentListContent;
         }
 
         #endregion Methods

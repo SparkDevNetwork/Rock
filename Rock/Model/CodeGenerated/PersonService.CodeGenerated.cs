@@ -176,6 +176,7 @@ namespace Rock.Model
             target.NickNamePronunciationOverride = source.NickNamePronunciationOverride;
             target.PhotoId = source.PhotoId;
             target.PreferredLanguageValueId = source.PreferredLanguageValueId;
+            target.PrimaryAliasGuid = source.PrimaryAliasGuid;
             target.PrimaryAliasId = source.PrimaryAliasId;
             target.PrimaryCampusId = source.PrimaryCampusId;
             target.PrimaryFamilyId = source.PrimaryFamilyId;

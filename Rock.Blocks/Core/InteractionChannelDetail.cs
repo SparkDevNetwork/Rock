@@ -181,7 +181,6 @@ namespace Rock.Blocks.Core
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.Entity.CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) || entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
                 }
                 else
                 {
@@ -194,6 +193,8 @@ namespace Rock.Blocks.Core
 <strong>Missing Channel Information </strong>
 <p>Make sure you have navigated to this page from Channel Listing page.</p>";
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -252,6 +253,7 @@ namespace Rock.Blocks.Core
             }
 
             bag.Content = template.ResolveMergeFields( mergeFields );
+            bag.CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) || entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
             return bag;
         }

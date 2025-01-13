@@ -22,6 +22,9 @@ namespace Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail
     /// </summary>
     public class MergeTemplateDetailOptionsBag
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsBlockVisible { get; set; }
     }
 }

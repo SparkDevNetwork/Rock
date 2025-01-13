@@ -5515,7 +5515,8 @@ END
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        [Obsolete( "1.15.2" )]
+        [RockObsolete( "1.15.2" )]
+        [Obsolete( "Use the method that takes a restActionGuid parameter." )]
         public void AddSecurityAuthForRestAction( string restActionMethod, string restActionPath, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
         {
             /*
@@ -7972,7 +7973,8 @@ END
         /// <param name="controllerClass">The controller class.</param>
         /// <param name="actionMethod">The action method.</param>
         /// <param name="actionPath">The action path.</param>
-        [Obsolete( message: "1.15.2" )]
+        [RockObsolete( "1.15.2" )]
+        [Obsolete( "Use the method that takes the restActionGuid parameter." )]
         public void AddRestAction( string controllerName, string controllerClass, string actionMethod, string actionPath )
         {
             /*
