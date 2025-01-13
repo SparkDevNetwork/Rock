@@ -46,7 +46,7 @@ namespace Rock.Rest
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
     /// <typeparam name="TService">The type of the service class.</typeparam>
     public class CrudEndpointHelper<TEntity, TService>
-        where TEntity : Entity<TEntity>, new()
+        where TEntity : class, IEntity, new()
         where TService : Service<TEntity>
     {
         private readonly ApiControllerBase _controller;

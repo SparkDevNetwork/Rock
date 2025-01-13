@@ -47,29 +47,25 @@ namespace Rock.Rest.Swagger
             // a format that is closer to the markdown that Swagger UI expects.
             foreach ( var path in swaggerDoc.paths )
             {
-                if ( path.Key.StartsWith( "/api/v2/models/workflows/actions" ) )
+                var operations = new Operation[]
                 {
-                    var operations = new Operation[]
-                    {
-                        path.Value.delete,
-                        path.Value.get,
-                        path.Value.head,
-                        path.Value.options,
-                        path.Value.patch,
-                        path.Value.post,
-                        path.Value.put
-                    };
+                    path.Value.delete,
+                    path.Value.get,
+                    path.Value.head,
+                    path.Value.options,
+                    path.Value.patch,
+                    path.Value.post,
+                    path.Value.put
+                };
 
-                    foreach ( var operation in operations )
+                foreach ( var operation in operations )
+                {
+                    if ( operation != null && operation.description != null )
                     {
-                        if ( operation != null && operation.description != null)
-                        {
-                            operation.description = RockV2XmlCommentsTextHelper.Humanize( operation.description );
-                        }
+                        operation.description = RockV2XmlCommentsTextHelper.Humanize( operation.description );
                     }
                 }
             }
         }
-
     }
 }
