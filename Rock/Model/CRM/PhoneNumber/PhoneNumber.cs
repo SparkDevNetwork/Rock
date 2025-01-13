@@ -34,7 +34,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "PhoneNumber" )]
     [DataContract]
-    [CodeGenerateRest]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "AD7E27CB-036D-40C6-B352-81B38BFAE798")]
     public partial class PhoneNumber : Model<PhoneNumber>
     {

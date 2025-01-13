@@ -31,7 +31,7 @@ namespace Rock
     /// </para>
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = false )]
-    internal class CodeGenerateRestAttribute : System.Attribute
+    public class CodeGenerateRestAttribute : System.Attribute
     {
         /// <summary>
         /// The endpoints that should be generated.

@@ -34,6 +34,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "RestController" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "65CDFD5B-A9AA-48FA-8D22-669612D5EA7D")]
     public partial class RestController : Model<RestController>, ICacheable, IHasAdditionalSettings
     {

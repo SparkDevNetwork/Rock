@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StreakType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "66203975-2A7A-4000-870E-76457DF3C920")]
     public partial class StreakType : Model<StreakType>, IHasActiveFlag, ICacheable
     {

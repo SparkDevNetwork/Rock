@@ -30,10 +30,11 @@ using Rock.ViewModels.Rest.Models;
 using Rock.Core.EntitySearch;
 
 #if WEBFORMS
-using System.Web.Http;
 using System.Web.Http.Results;
 
+using HttpError = System.Web.Http.HttpError;
 using IActionResult = System.Web.Http.IHttpActionResult;
+using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
 #endif
 
 namespace Rock.Rest
@@ -44,7 +45,7 @@ namespace Rock.Rest
     /// </summary>
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
     /// <typeparam name="TService">The type of the service class.</typeparam>
-    internal class RestApiHelper<TEntity, TService>
+    public class RestApiHelper<TEntity, TService>
         where TEntity : Entity<TEntity>, new()
         where TService : Service<TEntity>
     {
@@ -107,7 +108,8 @@ namespace Rock.Rest
                     rockContext.SaveChanges();
                 }
 
-                var locationUri = new Uri( $"/api/v2/models/{typeof( TEntity ).Name.Pluralize().ToLower()}/{entity.Id}", UriKind.Relative );
+                var routePrefixAttribute = _controller.GetType().GetCustomAttribute<RoutePrefixAttribute>();
+                var locationUri = new Uri( $"{routePrefixAttribute.Prefix}/{entity.Id}", UriKind.Relative );
                 var response = new CreatedAtResponseBag
                 {
                     Id = entity.Id,

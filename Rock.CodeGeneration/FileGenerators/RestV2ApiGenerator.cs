@@ -5,6 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 using Rock.CodeGeneration.Utility;
+using Rock.Enums;
 using Rock.Utility;
 
 namespace Rock.CodeGeneration.FileGenerators

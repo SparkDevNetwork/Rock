@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "RestAction" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "D4F7F055-5351-4ADF-9F8D-4802CAD6CC9D")]
     public partial class RestAction : Model<RestAction>, ICacheable, IHasAdditionalSettings
     {

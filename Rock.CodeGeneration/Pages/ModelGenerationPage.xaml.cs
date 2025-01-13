@@ -21,6 +21,7 @@ using System.Windows.Input;
 using Rock;
 using Rock.CodeGeneration.Utility;
 using Rock.CodeGeneration.XmlDoc;
+using Rock.Enums;
 using Rock.Utility;
 
 namespace Rock.CodeGeneration.Pages
@@ -1541,7 +1542,6 @@ GO
         {
             var codeGeneratedDirectory = Path.Combine( rootFolder, "v2", "Models", "CodeGenerated" );
             var filesAdded = new List<string>();
-            var filesRemoved = new List<string>();
             var generator = new FileGenerators.RestV2ApiGenerator();
             var solutionPath = SupportTools.GetSolutionPath();
 
@@ -1569,7 +1569,6 @@ GO
                 {
                     if ( !filesAdded.Any( f => Path.GetFileName( f ) == Path.GetFileName( filename ) ) )
                     {
-                        filesRemoved.Add( filename );
                         File.Delete( filename );
                     }
                 }
@@ -1578,25 +1577,6 @@ GO
             if ( solutionPath == null )
             {
                 return;
-            }
-
-            using ( var solution = SolutionHelper.LoadSolution( Path.Combine( solutionPath, "Rock.sln" ) ) )
-            {
-                // For each file that was created, make sure it
-                // has been added to the project file automatically.
-                foreach ( var filename in filesAdded )
-                {
-                    solution.AddCompileFileToProject( "Rock.Rest", filename );
-                }
-
-                // For each file that was removed, make sure it
-                // has been removed from the project file.
-                foreach ( var filename in filesRemoved )
-                {
-                    solution.RemoveFileFromProject( "Rock.Rest", filename );
-                }
-
-                solution.Save();
             }
         }
 

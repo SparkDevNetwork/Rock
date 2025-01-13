@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "RemoteAuthenticationSession" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "2FDEE857-08BE-47F3-8E86-B2027F545EE8")]
     public partial class RemoteAuthenticationSession : Model<RemoteAuthenticationSession>
     {
