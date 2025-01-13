@@ -72,7 +72,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "01d7f020-3476-54ff-87a7-2a84d7ea2beb" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new RestApiHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -96,7 +96,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b608441b-022f-562f-a788-0286c06ac231" )]
         public IActionResult PostItem( [FromBody] Rock.Model.PersonAlias value )
         {
-            var helper = new RestApiHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -122,7 +122,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "83ae2316-6c53-5a1a-8976-e258fa9cc169" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.PersonAlias value )
         {
-            var helper = new RestApiHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -148,7 +148,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "168063a9-cb73-5792-9abb-c58d90d3d680" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new RestApiHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -172,7 +172,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "3b8eae5f-1677-52fe-af2c-f9b986ec4209" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new RestApiHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -196,7 +196,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "1342e54b-12bc-54ea-8a55-e2d06043d5cc" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new RestApiHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -222,7 +222,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ae5ee0e9-77c6-5b07-8fc6-e56a1561a157" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new RestApiHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -243,7 +243,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b47bb250-79f0-5361-a19c-a6938e2f3ebf" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new RestApiHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
 
             return helper.Search( query );
         }
@@ -264,7 +264,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "4f69dedd-7072-5842-9661-afd545309cf1" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new RestApiHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
 
             helper.IsSecurityIgnored = true;
 
@@ -289,7 +289,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "346e3f8f-ebb7-5ae2-a210-da718e47b82d" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new RestApiHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.PersonAlias, Rock.Model.PersonAliasService>( this );
 
             helper.IsSecurityIgnored = true;
 

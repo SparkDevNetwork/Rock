@@ -74,7 +74,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d3b54d6e-fd1d-57da-9958-6586fe793b07" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new RestApiHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -98,7 +98,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "b18f1917-9ab0-5068-a764-847ef2b3d71d" )]
         public IActionResult PostItem( [FromBody] Rock.Model.ContentChannelItemSlug value )
         {
-            var helper = new RestApiHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -124,7 +124,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "285178e0-97ff-5e9a-ab26-2d82ecc94914" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.ContentChannelItemSlug value )
         {
-            var helper = new RestApiHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -150,7 +150,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8f9c2d29-5e3f-522b-892f-9c0f846ba728" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new RestApiHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -174,7 +174,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "20456eb0-6733-54c8-867e-e3acded07cd2" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new RestApiHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -198,7 +198,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "fc94d999-3da9-53ac-a88a-3feb1bc124d1" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new RestApiHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -224,7 +224,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "27c52a65-9438-5eaf-96b8-32d4538b875a" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new RestApiHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -245,7 +245,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "23fa7533-7a7a-5cc2-9327-e8428429ded9" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new RestApiHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
 
             return helper.Search( query );
         }
@@ -266,7 +266,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "bed423ac-527a-56e1-b59c-7a5f5a5eafc0" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new RestApiHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -291,7 +291,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a4369dd7-dc47-5705-913c-e2588cfad134" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new RestApiHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.ContentChannelItemSlug, Rock.Model.ContentChannelItemSlugService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

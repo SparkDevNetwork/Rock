@@ -74,7 +74,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "f0f6ad21-081c-5f18-8fd6-5ac2f942ebc4" )]
         public IActionResult GetItem( string id )
         {
-            var helper = new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -98,7 +98,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e24a9c68-2ed1-5d1e-add1-eacad8c32b30" )]
         public IActionResult PostItem( [FromBody] Rock.Model.DefinedValue value )
         {
-            var helper = new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -124,7 +124,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "587bef64-bd15-537a-b5df-c7901bf18001" )]
         public IActionResult PutItem( string id, [FromBody] Rock.Model.DefinedValue value )
         {
-            var helper = new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -150,7 +150,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "e79afc01-d04c-5817-8b80-e504fd8fbb28" )]
         public IActionResult PatchItem( string id, [FromBody] Dictionary<string, object> values )
         {
-            var helper = new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -174,7 +174,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "d3df9e49-469f-50e3-a252-09940900f424" )]
         public IActionResult DeleteItem( string id )
         {
-            var helper = new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -198,7 +198,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "52b3dbee-eb31-51c2-be67-7a3a53f3724b" )]
         public IActionResult GetAttributeValues( string id )
         {
-            var helper = new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -224,7 +224,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "ad0b00fc-d7cf-57cc-90df-5c881475f932" )]
         public IActionResult PatchAttributeValues( string id, [FromBody] Dictionary<string, string> values )
         {
-            var helper = new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
@@ -245,7 +245,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "8db7fcd2-7f7d-5b31-92b9-7763248ba4e9" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
 
             return helper.Search( query );
         }
@@ -266,7 +266,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "a379f268-0884-5252-bea9-d8d9308eeb99" )]
         public IActionResult GetSearchByKey( string searchKey )
         {
-            var helper = new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
@@ -291,7 +291,7 @@ namespace Rock.Rest.v2.Models
         [SystemGuid.RestActionGuid( "378fc605-1402-56e6-9f79-754c5fa2f4f2" )]
         public IActionResult PostSearchByKey( string searchKey, [FromBody] EntitySearchQueryBag query )
         {
-            var helper = new RestApiHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
+            var helper = new CrudEndpointHelper<Rock.Model.DefinedValue, Rock.Model.DefinedValueService>( this );
 
             helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 

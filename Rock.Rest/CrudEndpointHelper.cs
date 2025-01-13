@@ -40,12 +40,12 @@ using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
 namespace Rock.Rest
 {
     /// <summary>
-    /// Helper class for providing standard REST API actions to various
+    /// Helper class for providing standard CRUD API actions to various
     /// entity controllers.
     /// </summary>
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
     /// <typeparam name="TService">The type of the service class.</typeparam>
-    public class RestApiHelper<TEntity, TService>
+    public class CrudEndpointHelper<TEntity, TService>
         where TEntity : Entity<TEntity>, new()
         where TService : Service<TEntity>
     {
@@ -59,10 +59,10 @@ namespace Rock.Rest
         public bool IsSecurityIgnored { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RestApiHelper{TEntity, TService}"/> class.
+        /// Initializes a new instance of the <see cref="CrudEndpointHelper{TEntity, TService}"/> class.
         /// </summary>
         /// <param name="controller">The controller.</param>
-        public RestApiHelper( ApiControllerBase controller )
+        public CrudEndpointHelper( ApiControllerBase controller )
         {
             _controller = controller;
         }

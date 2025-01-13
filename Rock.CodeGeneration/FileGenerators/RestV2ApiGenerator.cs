@@ -223,7 +223,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -269,7 +269,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -317,7 +317,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -365,7 +365,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -411,7 +411,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -457,7 +457,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -505,7 +505,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -548,7 +548,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
                 codeBuilder.AppendLine( $"return helper.Search( query );" );
             } );
@@ -582,7 +582,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
@@ -629,7 +629,7 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "{" );
             codeBuilder.Indent( () =>
             {
-                codeBuilder.AppendLine( $"var helper = new RestApiHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
+                codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
 
                 if ( disableEntitySecurity )
