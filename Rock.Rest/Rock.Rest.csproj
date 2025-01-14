@@ -509,10 +509,10 @@
     <Compile Include="v2\Models\CodeGenerated\WorkflowsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\WorkflowTriggersController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\WorkflowTypesController.CodeGenerated.cs" />
-    <Compile Include="v2\Models\DataViewsActionsController.cs" />
+    <Compile Include="v2\Models\Actions\DataViewsActionsController.cs" />
     <Compile Include="v2\Models\EventItemsController.cs" />
-    <Compile Include="v2\Models\FollowingsActionsController.cs" />
-    <Compile Include="v2\Models\WorkflowsActionsController.cs" />
+    <Compile Include="v2\Models\Actions\FollowingsActionsController.cs" />
+    <Compile Include="v2\Models\Actions\WorkflowsActionsController.cs" />
     <Compile Include="v2\TvController.cs" />
     <Compile Include="Utility\ApiModelMapper.cs" />
     <Compile Include="v2\BlockActionsController.cs" />

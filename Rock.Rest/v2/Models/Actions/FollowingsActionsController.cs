@@ -37,7 +37,7 @@ using RouteAttribute = System.Web.Http.RouteAttribute;
 using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
 #endif
 
-namespace Rock.Rest.v2.Models
+namespace Rock.Rest.v2.Models.Actions
 {
     /// <summary>
     /// Provides action API endpoints for Followings.

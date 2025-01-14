@@ -37,7 +37,7 @@ using RouteAttribute = System.Web.Http.RouteAttribute;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
 #endif
 
-namespace Rock.Rest.v2.Models
+namespace Rock.Rest.v2.Models.Actions
 {
     /// <summary>
     /// Provides action API endpoints for Workflows.
