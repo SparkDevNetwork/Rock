@@ -129,10 +129,9 @@ namespace Rock.Model
                 return base.SupportedActions;
             }
 
-            var actions = new Dictionary<string, string>( Controller.CalculateSupportedActions( Controller.GetMetadata() ) );
+            var actions = new Dictionary<string, string>( Controller.CalculateSupportedActions( Controller.GetMetadata(), out var controllerType ) );
 
-            var type = Reflection.FindType( typeof( object ), Controller.ClassName );
-            var method = type?.GetMethods()
+            var method = controllerType?.GetMethods()
                 .Where( m => m.GetCustomAttribute<RestActionGuidAttribute>()?.Guid == Guid )
                 .FirstOrDefault();
 

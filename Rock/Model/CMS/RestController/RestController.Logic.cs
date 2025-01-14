@@ -65,7 +65,7 @@ namespace Rock.Model
                     return new Dictionary<string, string>( metadata.SupportedActions );
                 }
 
-                return CalculateSupportedActions( metadata );
+                return CalculateSupportedActions( metadata, out _ );
             }
         }
 
@@ -94,8 +94,10 @@ namespace Rock.Model
         /// <summary>
         /// Calculates the support actions of this controller.
         /// </summary>
+        /// <param name="metadata">The existing metadata that has been calculated on this controller.</param>
+        /// <param name="controllerType">On return this will contain the controller type if one was found.</param>
         /// <returns>A dictionary of the supported actions.</returns>
-        internal Dictionary<string, string> CalculateSupportedActions( RestControllerMetadata metadata )
+        internal Dictionary<string, string> CalculateSupportedActions( RestControllerMetadata metadata, out System.Type controllerType )
         {
             var actions = new Dictionary<string, string>( base.SupportedActions );
 
@@ -117,16 +119,16 @@ namespace Rock.Model
                 actions = new Dictionary<string, string>( actions );
             }
 
-            var type = Reflection.FindType( typeof( object ), ClassName );
+            controllerType = Reflection.FindType( "System.Web.Http.ApiController", ClassName );
 
-            if ( type != null )
+            if ( controllerType != null )
             {
-                foreach ( var sa in type.GetCustomAttributes<SecurityActionAttribute>() )
+                foreach ( var sa in controllerType.GetCustomAttributes<SecurityActionAttribute>() )
                 {
                     actions.TryAdd( sa.Action, sa.Description );
                 }
 
-                foreach ( var action in type.GetCustomAttributes<ExcludeSecurityActionsAttribute>().SelectMany( esa => esa.Actions ) )
+                foreach ( var action in controllerType.GetCustomAttributes<ExcludeSecurityActionsAttribute>().SelectMany( esa => esa.Actions ) )
                 {
                     actions.Remove( action );
                 }

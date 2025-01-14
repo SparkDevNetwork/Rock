@@ -293,7 +293,7 @@ namespace Rock.Model
                     .Select( a => a.ConstructorArguments[0].Value as string )
                     .FirstOrDefault();
                 metadata.Version = metadata.RoutePrefix?.StartsWith( "api/v2", StringComparison.OrdinalIgnoreCase ) == true ? 2 : 1;
-                metadata.SupportedActions = controller.CalculateSupportedActions( metadata );
+                metadata.SupportedActions = controller.CalculateSupportedActions( metadata, out _ );
 
                 controller.SetMetadata( metadata );
             }
