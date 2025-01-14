@@ -202,7 +202,14 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
         private static void GenerateGetItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
-            var securityAction = disableEntitySecurity ? "EXECUTE_UNRESTRICTED_READ" : "EXECUTE_READ";
+            var securityAction = "EXECUTE_READ";
+            var additionalExcludedActions = string.Empty;
+
+            if ( disableEntitySecurity )
+            {
+                securityAction = "EXECUTE_UNRESTRICTED_READ";
+                additionalExcludedActions = "Security.Authorization.EXECUTE_READ, ";
+            }
 
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Gets a single item from the database." );
@@ -210,10 +217,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <param name=\"id\">The identifier as either an Id, Guid or IdKey value.</param>" );
             codeBuilder.AppendLine( "/// <returns>The requested item.</returns>" );
             codeBuilder.AppendLine( "[HttpGet]" );
+            codeBuilder.AppendLine( "[Route( \"{id}\" )]" );
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
-            codeBuilder.AppendLine( "[Route( \"{id}\" )]" );
+            codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( $"[ProducesResponseType( HttpStatusCode.OK, Type = typeof( {modelTypeFullName} ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
@@ -250,16 +257,25 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
         private static void GeneratePostItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
+            var securityAction = "EXECUTE_WRITE";
+            var additionalExcludedActions = string.Empty;
+
+            if ( disableEntitySecurity )
+            {
+                securityAction = "EXECUTE_UNRESTRICTED_WRITE";
+                additionalExcludedActions = "Security.Authorization.EXECUTE_WRITE, ";
+            }
+
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Creates a new item in the database." );
             codeBuilder.AppendLine( "/// </summary>" );
             codeBuilder.AppendLine( "/// <param name=\"value\">The item to be created.</param>" );
             codeBuilder.AppendLine( "/// <returns>An object that contains the new identifier values.</returns>" );
             codeBuilder.AppendLine( "[HttpPost]" );
+            codeBuilder.AppendLine( "[Route( \"\" )]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_WRITE )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
-            codeBuilder.AppendLine( "[Route( \"\" )]");
+            codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
+            codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
@@ -296,6 +312,15 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
         private static void GeneratePutItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
+            var securityAction = "EXECUTE_WRITE";
+            var additionalExcludedActions = string.Empty;
+
+            if ( disableEntitySecurity )
+            {
+                securityAction = "EXECUTE_UNRESTRICTED_WRITE";
+                additionalExcludedActions = "Security.Authorization.EXECUTE_WRITE, ";
+            }
+
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a full update of the item. All property values must be" );
             codeBuilder.AppendLine( "/// specified." );
@@ -304,10 +329,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <param name=\"value\">The item that represents all the new values.</param>" );
             codeBuilder.AppendLine( "/// <returns>An empty response.</returns>" );
             codeBuilder.AppendLine( "[HttpPut]" );
-            codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_WRITE )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[Route( \"{id}\" )]" );
+            codeBuilder.AppendLine( "[Authenticate]" );
+            codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
+            codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NoContent )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
@@ -344,6 +369,15 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
         private static void GeneratePatchItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
+            var securityAction = "EXECUTE_WRITE";
+            var additionalExcludedActions = string.Empty;
+
+            if ( disableEntitySecurity )
+            {
+                securityAction = "EXECUTE_UNRESTRICTED_WRITE";
+                additionalExcludedActions = "Security.Authorization.EXECUTE_WRITE, ";
+            }
+
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a partial update of the item. Only specified property keys" );
             codeBuilder.AppendLine( "/// will be updated." );
@@ -352,10 +386,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <param name=\"values\">An object that identifies the properties and values to be updated.</param>" );
             codeBuilder.AppendLine( "/// <returns>An empty response.</returns>" );
             codeBuilder.AppendLine( "[HttpPatch]" );
-            codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_WRITE )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[Route( \"{id}\" )]" );
+            codeBuilder.AppendLine( "[Authenticate]" );
+            codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
+            codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NoContent )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
@@ -392,16 +426,25 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
         private static void GenerateDeleteItemAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
+            var securityAction = "EXECUTE_WRITE";
+            var additionalExcludedActions = string.Empty;
+
+            if ( disableEntitySecurity )
+            {
+                securityAction = "EXECUTE_UNRESTRICTED_WRITE";
+                additionalExcludedActions = "Security.Authorization.EXECUTE_WRITE, ";
+            }
+
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Deletes a single item from the database." );
             codeBuilder.AppendLine( "/// </summary>" );
             codeBuilder.AppendLine( "/// <param name=\"id\">The identifier as either an Id, Guid or IdKey value.</param>" );
             codeBuilder.AppendLine( "/// <returns>An empty response.</returns>" );
             codeBuilder.AppendLine( "[HttpDelete]" );
-            codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_WRITE )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[Route( \"{id}\" )]" );
+            codeBuilder.AppendLine( "[Authenticate]" );
+            codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
+            codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NoContent )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
@@ -438,16 +481,25 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
         private static void GenerateGetAttributeValuesAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
+            var securityAction = "EXECUTE_READ";
+            var additionalExcludedActions = string.Empty;
+
+            if ( disableEntitySecurity )
+            {
+                securityAction = "EXECUTE_UNRESTRICTED_READ";
+                additionalExcludedActions = "Security.Authorization.EXECUTE_READ, ";
+            }
+
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Gets all the attribute values for the specified item." );
             codeBuilder.AppendLine( "/// </summary>" );
             codeBuilder.AppendLine( "/// <param name=\"id\">The identifier as either an Id, Guid or IdKey value.</param>" );
             codeBuilder.AppendLine( "/// <returns>An array of objects that represent all the attribute values.</returns>" );
             codeBuilder.AppendLine( "[HttpGet]" );
-            codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_READ )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[Route( \"{id}/attributevalues\" )]" );
+            codeBuilder.AppendLine( "[Authenticate]" );
+            codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
+            codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
@@ -484,6 +536,15 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
         private static void GeneratePatchAttributeValuesAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
+            var securityAction = "EXECUTE_WRITE";
+            var additionalExcludedActions = string.Empty;
+
+            if ( disableEntitySecurity )
+            {
+                securityAction = "EXECUTE_UNRESTRICTED_WRITE";
+                additionalExcludedActions = "Security.Authorization.EXECUTE_WRITE, ";
+            }
+
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a partial update of attribute values for the item. Only" );
             codeBuilder.AppendLine( "/// attributes specified will be updated." );
@@ -492,10 +553,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <param name=\"values\">An object that identifies the attribute keys and raw values to be updated.</param>" );
             codeBuilder.AppendLine( "/// <returns>An empty response.</returns>" );
             codeBuilder.AppendLine( "[HttpPatch]" );
-            codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_WRITE )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[Route( \"{id}/attributevalues\" )]" );
+            codeBuilder.AppendLine( "[Authenticate]" );
+            codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
+            codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NoContent )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
@@ -538,10 +599,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <param name=\"query\">Query options to be applied.</param>" );
             codeBuilder.AppendLine( "/// <returns>An array of objects returned by the query.</returns>" );
             codeBuilder.AppendLine( "[HttpPost]" );
+            codeBuilder.AppendLine( "[Route( \"search\" )]" );
             codeBuilder.AppendLine( "[Authenticate]" );
             codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]" );
             codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
-            codeBuilder.AppendLine( "[Route( \"search\" )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
             codeBuilder.AppendLine( $"[SystemGuid.RestActionGuid( \"{actionGuid}\" )]" );
             codeBuilder.AppendLine( "public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )" );
@@ -564,16 +625,25 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
         private static void GenerateGetSearchByKeyAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
+            var securityAction = "EXECUTE_READ";
+            var additionalExcludedActions = string.Empty;
+
+            if ( disableEntitySecurity )
+            {
+                securityAction = "EXECUTE_UNRESTRICTED_READ";
+                additionalExcludedActions = "Security.Authorization.EXECUTE_READ, ";
+            }
+
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a search of items using the specified system query." );
             codeBuilder.AppendLine( "/// </summary>" );
             codeBuilder.AppendLine( "/// <param name=\"searchKey\">The key that identifies the entity search query to execute.</param>" );
             codeBuilder.AppendLine( "/// <returns>An array of objects returned by the query.</returns>" );
             codeBuilder.AppendLine( "[HttpGet]" );
-            codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_READ )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[Route( \"search/{searchKey}\" )]" );
+            codeBuilder.AppendLine( "[Authenticate]" );
+            codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
+            codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
@@ -609,6 +679,15 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
         private static void GeneratePostSearchByKeyAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
         {
+            var securityAction = "EXECUTE_READ";
+            var additionalExcludedActions = string.Empty;
+
+            if ( disableEntitySecurity )
+            {
+                securityAction = "EXECUTE_UNRESTRICTED_READ";
+                additionalExcludedActions = "Security.Authorization.EXECUTE_READ, ";
+            }
+
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a search of items using the specified system query." );
             codeBuilder.AppendLine( "/// </summary>" );
@@ -616,10 +695,10 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "/// <param name=\"searchKey\">The key that identifies the entity search query to execute.</param>" );
             codeBuilder.AppendLine( "/// <returns>An array of objects returned by the query.</returns>" );
             codeBuilder.AppendLine( "[HttpPost]" );
-            codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_READ )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[Route( \"search/{searchKey}\" )]" );
+            codeBuilder.AppendLine( "[Authenticate]" );
+            codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
+            codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );

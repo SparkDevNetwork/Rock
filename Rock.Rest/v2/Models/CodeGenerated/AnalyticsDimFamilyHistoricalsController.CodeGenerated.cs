@@ -61,10 +61,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="id">The identifier as either an Id, Guid or IdKey value.</param>
         /// <returns>The requested item.</returns>
         [HttpGet]
+        [Route( "{id}" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "{id}" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Rock.Model.AnalyticsDimFamilyHistorical ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -85,10 +85,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="id">The identifier as either an Id, Guid or IdKey value.</param>
         /// <returns>An array of objects that represent all the attribute values.</returns>
         [HttpGet]
-        [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_READ )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "{id}/attributevalues" )]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -109,10 +109,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="query">Query options to be applied.</param>
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
+        [Route( "search" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "search" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [SystemGuid.RestActionGuid( "fbb70434-d507-53a0-a61a-c4c4782788ad" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
@@ -128,10 +128,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="searchKey">The key that identifies the entity search query to execute.</param>
         /// <returns>An array of objects returned by the query.</returns>
         [HttpGet]
-        [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_READ )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "search/{searchKey}" )]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
@@ -152,10 +152,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="searchKey">The key that identifies the entity search query to execute.</param>
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
-        [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_READ )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "search/{searchKey}" )]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]

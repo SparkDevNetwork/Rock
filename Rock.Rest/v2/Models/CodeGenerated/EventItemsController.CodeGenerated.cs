@@ -63,10 +63,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="id">The identifier as either an Id, Guid or IdKey value.</param>
         /// <returns>The requested item.</returns>
         [HttpGet]
+        [Route( "{id}" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Rock.Model.EventItem ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -89,10 +89,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="value">The item that represents all the new values.</param>
         /// <returns>An empty response.</returns>
         [HttpPut]
+        [Route( "{id}" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "{id}" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -115,10 +115,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="values">An object that identifies the properties and values to be updated.</param>
         /// <returns>An empty response.</returns>
         [HttpPatch]
+        [Route( "{id}" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -139,10 +139,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="id">The identifier as either an Id, Guid or IdKey value.</param>
         /// <returns>An empty response.</returns>
         [HttpDelete]
+        [Route( "{id}" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -163,10 +163,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="id">The identifier as either an Id, Guid or IdKey value.</param>
         /// <returns>An array of objects that represent all the attribute values.</returns>
         [HttpGet]
+        [Route( "{id}/attributevalues" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "{id}/attributevalues" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -189,10 +189,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="values">An object that identifies the attribute keys and raw values to be updated.</param>
         /// <returns>An empty response.</returns>
         [HttpPatch]
+        [Route( "{id}/attributevalues" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [Route( "{id}/attributevalues" )]
         [ProducesResponseType( HttpStatusCode.NoContent )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -213,10 +213,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="query">Query options to be applied.</param>
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
+        [Route( "search" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "search" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [SystemGuid.RestActionGuid( "b57a1dcb-224d-5e50-9bec-b2bfc764afe9" )]
         public IActionResult PostSearch( [FromBody] EntitySearchQueryBag query )
@@ -232,10 +232,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="searchKey">The key that identifies the entity search query to execute.</param>
         /// <returns>An array of objects returned by the query.</returns>
         [HttpGet]
+        [Route( "search/{searchKey}" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
@@ -256,10 +256,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="searchKey">The key that identifies the entity search query to execute.</param>
         /// <returns>An array of objects returned by the query.</returns>
         [HttpPost]
+        [Route( "search/{searchKey}" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "search/{searchKey}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
