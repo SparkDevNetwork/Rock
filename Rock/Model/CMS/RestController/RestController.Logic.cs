@@ -119,7 +119,7 @@ namespace Rock.Model
                 actions = new Dictionary<string, string>( actions );
             }
 
-            controllerType = Reflection.FindType( "System.Web.Http.ApiController", ClassName );
+            controllerType = Reflection.FindType( typeof( object ), ClassName );
 
             if ( controllerType != null )
             {
