@@ -15,8 +15,10 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.Data.Entity;
 
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -35,6 +37,23 @@ namespace Rock.Model
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             EntitySearchCache.UpdateCachedEntity( Id, entityState );
+        }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var actions = new Dictionary<string, string>( base.SupportedActions );
+
+                actions.TryAdd( Authorization.EXECUTE, "Allows execution of search query." );
+
+                return actions;
+            }
         }
 
         #endregion

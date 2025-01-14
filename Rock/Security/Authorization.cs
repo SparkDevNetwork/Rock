@@ -182,6 +182,11 @@ namespace Rock.Security
         /// </summary>
         public const string EDIT_GRADES = "EditGrades";
 
+        /// <summary>
+        /// Authorization to execute the item.
+        /// </summary>
+        public const string EXECUTE = "Execute";
+
         #region API Security Actions
 
         /// <summary>

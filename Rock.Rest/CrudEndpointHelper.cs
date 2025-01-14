@@ -597,7 +597,7 @@ namespace Rock.Rest
                     return NotFound( "Search key was not found." );
                 }
 
-                if ( !CheckAuthorized( Security.Authorization.VIEW, entitySearch, out var authorizationResult ) )
+                if ( !CheckAuthorized( Security.Authorization.EXECUTE, entitySearch, out var authorizationResult ) )
                 {
                     return authorizationResult;
                 }

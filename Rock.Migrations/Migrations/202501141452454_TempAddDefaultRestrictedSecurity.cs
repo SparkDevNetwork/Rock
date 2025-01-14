@@ -181,6 +181,28 @@ namespace Rock.Migrations
                 null,
                 SpecialRole.AllUsers,
                 "539f0406-fcad-4f1c-b9b8-c9e24f3ee06a" );
+
+            // Add default EXECUTE permissions for administrators on EntitySearch.
+            RockMigrationHelper.AddOrUpdateEntityType( "Rock.Model.EntitySearch",
+                Rock.SystemGuid.EntityType.ENTITY_SEARCH,
+                true,
+                true );
+
+            RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.EntitySearch",
+                0,
+                Authorization.EXECUTE,
+                true,
+                SystemGuid.Group.GROUP_ADMINISTRATORS,
+                ( int ) SpecialRole.None,
+                "83113606-57f3-4262-b92f-f1865780e425" );
+
+            RockMigrationHelper.AddSecurityAuthForEntityType( "Rock.Model.EntitySearch",
+                1,
+                Authorization.EXECUTE,
+                false,
+                null,
+                ( int ) SpecialRole.AllUsers,
+                "3d603aed-38c6-4837-b830-bd47166de794" );
         }
 
         /// <summary>
@@ -188,6 +210,10 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            // EntitySearch
+            RockMigrationHelper.DeleteSecurityAuth( "3d603aed-38c6-4837-b830-bd47166de794" );
+            RockMigrationHelper.DeleteSecurityAuth( "83113606-57f3-4262-b92f-f1865780e425" );
+
             // Controls Controller
             RockMigrationHelper.DeleteSecurityAuth( "539f0406-fcad-4f1c-b9b8-c9e24f3ee06a" );
             RockMigrationHelper.DeleteSecurityAuth( "72ec0496-1066-407e-8d96-40490af6ddfb" );
@@ -211,7 +237,6 @@ namespace Rock.Migrations
             // GlobalRestrictedDefault
             RockMigrationHelper.DeleteSecurityAuth( "5266bd3b-bcf2-433a-82c7-eff06f430d3c" );
             RockMigrationHelper.DeleteSecurityAuth( "7c01fdb4-7e70-45c5-9f51-ef3b45f5b9f5" );
-            RockMigrationHelper.DeleteEntityType( "0a326a00-6f00-45b8-bb39-ec6ebe53ce88" );
         }
     }
 }
