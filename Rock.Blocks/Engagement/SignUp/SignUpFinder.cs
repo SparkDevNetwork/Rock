@@ -428,7 +428,7 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             get
             {
-                return this.RequestContext.CurrentUser?.IsAuthenticated == true;
+                return this.RequestContext.CurrentPerson != null;
             }
         }
 
