@@ -27,7 +27,7 @@ DECLARE
     -- set this to @populateStartDateTimeLastHour or @populateStartDateTimeLast12Months (or custom), depending on what you need
     @populateStartDateTime DATETIME = @populateStartDateTimeLast12Months
     , @populateEndDateTime DATETIME = DateAdd(hour, 0, GetDate())
-    , @maxInteractionCount INT = 150000
+    , @maxInteractionCount INT = 2000
     , @avgInteractionsPerSession INT = 10
     , @personSampleSize INT = 2500 -- number of people to use when randomly assigning a person to each interaction. You might want to set this lower or higher depending on what type of data you want
 	,@forceIncludeAnonymousVisitors bit = 1 -- leave this true to add anonymous visitors to the set of PersonAliasIds
@@ -135,14 +135,17 @@ END
 DECLARE @personAliasIdTable AS TABLE (Id INT NOT NULL PRIMARY KEY)
 
 INSERT INTO @personAliasIdTable
-SELECT TOP (@personSampleSize) Id
+SELECT TOP (@personSampleSize) pa.Id
 FROM PersonAlias pa
-WHERE pa.PersonId NOT IN (
+INNER JOIN 
+Person p on pa.PersonId = p.Id
+WHERE  p.[Guid] not in ('7ebc167b-512d-4683-9d80-98b6bb02e1b9', '802235dc-3ca5-94b0-4326-aace71180f48') and pa.PersonId NOT IN (
         SELECT Id
         FROM Person
         WHERE (
                 IsDeceased = 1
                 AND RecordStatusValueId != 3
+				AND [Guid] not in ('7ebc167b-512d-4683-9d80-98b6bb02e1b9', '802235dc-3ca5-94b0-4326-aace71180f48') 
                 )
         )
 ORDER BY newid();

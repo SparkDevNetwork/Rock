@@ -16,19 +16,19 @@
 }
 
 .gm-clear-button {
-    z-index: 10;
-    position: absolute;
+    z-index:            10;
+    position:           absolute;
     /* right: 0px; */
-    margin-top: 5px;
-    line-height: 0;
-    overflow: hidden;
-    color: #8c4b4b;
-    background: white;
-    padding: 4px;
-    border-radius: 2px;
-    box-shadow: rgba(0, 0, 0, 0.3) 0 1px 4px -1px;
-    border: 0;
-    text-align: left;
+    margin-top:         var(--spacing-tiny);
+    line-height:        0;
+    overflow:           hidden;
+    color:              #8c4b4b;
+    background:         var(--color-interface-softest);
+    padding:            var(--spacing-tiny);
+    border-radius:      var(--rounded-tiny);
+    box-shadow:         rgba(0, 0, 0, 0.3) 0 1px 4px -1px;
+    border:             0;
+    text-align:         left;
 }
 
 .gm-clear-button:hover {
@@ -37,11 +37,11 @@
 
 .gm-clear-button:disabled {
     color: #aaa;
-    background: white;
+    background: var(--color-interface-softest);
 }
 
 .gm-clear-button i.fa {
-    font-size: 16px;
+    font-size: var(--font-size-regular);
     padding: 0 2.5px;
 }
 

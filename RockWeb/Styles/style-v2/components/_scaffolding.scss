@@ -41,12 +41,12 @@ textarea {
 }
 
 a {
-  color:            var(--color-primary);
+  color:            var(--color-link);
   text-decoration:  none;
 
   &:hover,
   &:focus {
-    color:            var(--color-primary-shade);
+    color:            var(--color-link-shade);
     text-decoration:  none;
   }
 

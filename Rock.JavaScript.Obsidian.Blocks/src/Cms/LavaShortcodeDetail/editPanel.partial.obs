@@ -46,12 +46,14 @@
                         label="Documentation"
                         help="Technical description of the internals of the shortcode."
                         :editorHeight="250"
-                        toolbar="light" />
+                        toolbar="light"
+                        :isTogglableCodeEditorForced="true" />
 
             <CodeEditor v-model="markup"
                         label="Short Code Markup"
                         theme="rock"
                         mode="text"
+                        readonly
                         :editorHeight="350"
                         rules="required" />
 
@@ -96,6 +98,7 @@
                         theme="rock"
                         mode="text"
                         :editorHeight="850"
+                        :disabled="isSystem"
                         rules="required" />
 
             <strong>Parameters</strong>
@@ -118,12 +121,14 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import { watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { LavaShortcodeBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaShortcodeDetail/lavaShortcodeBag";

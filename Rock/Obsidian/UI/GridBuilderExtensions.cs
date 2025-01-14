@@ -142,7 +142,11 @@ namespace Rock.Obsidian.UI
                 {
                     var attributesItem = selector( item );
 
-                    return attributesItem.GetAttributeCondensedHtmlValue( key );
+                    return new
+                    {
+                        Html = attributesItem.GetAttributeCondensedHtmlValue( key ),
+                        Text = attributesItem.GetAttributeCondensedTextValue( key )
+                    };
                 } );
 
                 builder.AddDefinitionAction( definition =>

@@ -1,29 +1,29 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock
-                    v-if="!blockError"
-                    v-model:mode="panelMode"
-                    :alwaysShowLabels="true"
-                    :isFullScreenVisible="false"
-                    :isAuditHidden="true"
-                    :name="panelName"
-                    :labels="blockLabels"
-                    :entityKey="entityKey"
-                    :entityTypeGuid="entityTypeGuid"
-                    entityTypeName="LearningProgram"
-                    :isBadgesVisible="false"
-                    :isSecurityHidden="isSecurityHidden"
-                    :footerSecondaryActions="footerSecondaryActions"
-                    :headerActions="headerSecondaryActions"
-                    :isEditVisible="showEditButton"
-                    :onDelete="onDelete"
-                    @cancelEdit="onCancelEdit"
-                    @edit="onEdit"
-                    @save="onSave">
+                 v-if="!blockError"
+                 v-model:mode="panelMode"
+                 :alwaysShowLabels="true"
+                 :isFullScreenVisible="false"
+                 :isAuditHidden="true"
+                 :name="panelName"
+                 :labels="blockLabels"
+                 :entityKey="entityKey"
+                 :entityTypeGuid="entityTypeGuid"
+                 entityTypeName="LearningProgram"
+                 :isBadgesVisible="false"
+                 :isSecurityHidden="isSecurityHidden"
+                 :footerActions="footerActions"
+                 :headerActions="headerSecondaryActions"
+                 :isEditVisible="showEditButton"
+                 :onDelete="onDelete"
+                 @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
+                 @save="onSave">
         <template #view>
             <ViewPanel :modelValue="learningProgramViewBag" :options="options" :hasFullScreen="false" />
 
@@ -48,13 +48,14 @@
     import EditPanel from "./LearningProgramDetail/editPanel.partial.obs";
     import ViewPanel from "./LearningProgramDetail/viewPanel.partial.obs";
     import AdditionalDetailsModal from "./LearningProgramDetail/additionalDetailsModal.obs";
-    import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./LearningProgramDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { LearningProgramBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramBag";
     import { LearningProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramDetail/learningProgramDetailOptionsBag";
     import { ConfigurationModeDescription } from "@Obsidian/Enums/Lms/configurationMode";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<DetailBlockBox<LearningProgramBag, LearningProgramDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -67,7 +68,7 @@
     const showDetailsModal = ref(false);
 
     const learningProgramViewBag = ref(config.entity);
-    const learningProgramEditBag = ref<ValidPropertiesBox<LearningProgramBag>>({bag: {} as LearningProgramBag});
+    const learningProgramEditBag = ref<ValidPropertiesBox<LearningProgramBag>>({ bag: {} as LearningProgramBag });
     const learningProgramAdditionalDetailsBag = ref(config.entity);
     const displayMode = ref(config.options?.displayMode ?? "Summary");
 
@@ -79,6 +80,9 @@
         blockConfig: config,
         entity: learningProgramEditBag
     });
+
+    // This block uses the browser bus to notify other blocks that it's entering 'Add' mode.
+    const browserBus = useBlockBrowserBus();
 
     // #endregion
 
@@ -150,16 +154,8 @@
             });
         }
 
-        if (learningProgramViewBag.value?.isActive === true) {
+        if (learningProgramViewBag.value?.isActive === false) {
             labels.push({
-                iconCssClass: "fa fa-lightbulb",
-                title: "Active",
-                type: "success"
-            });
-        }
-        else {
-            labels.push({
-                iconCssClass: "far fa-lightbulb",
                 title: "Inactive",
                 type: "danger"
             });
@@ -171,25 +167,37 @@
     /**
      * The footer secondary actions for the block panel.
      */
-    const footerSecondaryActions = computed((): PanelAction[] => {
-        if (panelMode.value != DetailPanelMode.View) {
+    const footerActions = computed((): PanelAction[] => {
+        if (panelMode.value != DetailPanelMode.View || !isEditable.value) {
             return [];
         }
 
-        const secondaryActions: PanelAction[] = [];
+        const footerActions: PanelAction[] = [];
 
-        if (displayMode.value === "Summary") {
-            secondaryActions.push({
-                iconCssClass: "fa fa-cog",
-                title: "Configure",
+        if (displayMode.value === "Detail") {
+            // In 'Detail' mode provide a link to the 'Summary' mode.
+            footerActions.push({
+                iconCssClass: "fa fa-chalkboard",
+                title: "Back to Program Overview",
                 type: "default",
                 handler: async () => {
-                    await onConfigure();
+                    await onViewAlternateDetailPage();
+                }
+            });
+        }
+        else {
+            // In 'Summary' mode provide a link to the 'Detail' mode.
+            footerActions.push({
+                iconCssClass: "fa fa-cog",
+                title: "Configure Program",
+                type: "default",
+                handler: async () => {
+                    await onViewAlternateDetailPage();
                 }
             });
         }
 
-        return secondaryActions;
+        return footerActions;
     });
 
     const isEditable = computed((): boolean => config.isEditable === true);
@@ -233,7 +241,7 @@
      *
      * @returns true if the panel should enter edit mode; otherwise false.
      */
-     async function onConfigure(): Promise<boolean | string>{
+    async function onViewAlternateDetailPage(): Promise<boolean | string> {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage];
         }
@@ -276,7 +284,7 @@
         });
 
         if (result.isSuccess && result.data && result.data.bag) {
-            learningProgramEditBag.value.bag = result.data.bag;
+            learningProgramEditBag.value = result.data;
 
             return true;
         }
@@ -351,6 +359,7 @@
     else if (!config.entity.idKey) {
         learningProgramEditBag.value.bag = config.entity;
         panelMode.value = DetailPanelMode.Add;
+        browserBus.publish(BlockMessages.BeginEdit);
     }
 
 </script>

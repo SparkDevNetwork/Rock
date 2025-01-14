@@ -69,6 +69,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.DEVICE_TYPE )]
+        [EnableAttributeQualification]
         public int DeviceTypeValueId { get; set; }
 
         /// <summary>

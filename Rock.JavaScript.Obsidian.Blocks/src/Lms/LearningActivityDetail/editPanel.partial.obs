@@ -4,6 +4,7 @@
         <div class="row">
             <div class="col-md-6">
                 <TextBox v-model="name"
+                         :maxLength="100"
                          label="Name"
                          rules="required" />
             </div>
@@ -16,6 +17,9 @@
         </div>
 
         <div class="row">
+            <div class="col-md-6">
+                <DropDownList v-model="activityComponentValue" :grouped="false" :items="activityComponentListItems" rules="required" label="Activity Type" :multiple="false" :showBlankItem="true" />
+            </div>
             <div class="col-md-6">
                 <RadioButtonList v-model="assignTo"
                                  label="Completed By"
@@ -92,15 +96,13 @@
         </div>
 
         <div class="row">
-            <div class="col-md-6">
-                <DropDownList v-model="activityComponentValue" :grouped="false" :items="activityComponentListItems" rules="required" label="Activity Type" :multiple="false" :showBlankItem="true" />
-            </div>
 
             <div class="col-md-6">
                 <NumberBox v-model="points"
                            label="Points"
+                           :minimumValue="0"
                            help="This is the total number of points available for this activity."
-                           inputGroupClasses="input-width-md" />
+                           inputClasses="input-width-md" />
             </div>
         </div>
 
@@ -177,6 +179,8 @@
     const activityComponents = ref<LearningActivityComponentBag[]>(props.options.activityTypes ?? []);
     const activityBag = ref(props.modelValue.bag ?? {} as LearningActivityBag);
 
+    const isNew = activityBag.value.idKey?.length === 0;
+
     const attributes = ref(activityBag.value?.attributes ?? {});
     const attributeValues = ref(activityBag.value?.attributeValues ?? {});
     const name = propertyRef(activityBag.value?.name ?? "", "Name");
@@ -194,7 +198,7 @@
     const activityComponentSettingsJson = propertyRef(activityBag.value?.activityComponentSettingsJson ?? "", "ActivityComponentSettingsJson");
     const activityComponent = propertyRef(activityBag.value?.activityComponent ?? {} as LearningActivityComponentBag, "ActivityComponent");
 
-    const points = propertyRef(activityBag.value?.points ?? 0, "Points");
+    const points = propertyRef(isNew ? 10 : activityBag.value?.points ?? 10, "Points");
 
     const activityComponentValue = ref(activityBag.value?.activityComponent?.guid ?? "");
 
@@ -231,12 +235,12 @@
 
     // #endregion
 
-    const activityTypeComponent = computed((): Component | null => {
+    const activityTypeComponent = computed((): Promise<Component> | null => {
         activityComponent.value = activityComponents.value.find(c => c.guid === activityComponentValue.value) ?? {};
 
         const componentUrl = activityComponent.value?.componentUrl ?? "";
         if (componentUrl.length > 0) {
-            return defineAsyncComponent(() => import(componentUrl));
+            return defineAsyncComponent(async () => await import(componentUrl));
         }
         return null;
     });
@@ -254,7 +258,9 @@
         // Look for a configuration for the new activity type if there was a previous one.
         // Otherwise clear it out so the default constructor can be used to
         // properly generate the refs in the dynamic component.
-        activityBag.value.activityComponentSettingsJson = typeConfigMap.has(newValue) ? typeConfigMap.get(newValue) : "";
+        const newConfiguration = typeConfigMap.has(newValue) ? typeConfigMap.get(newValue) ?? "" : "";
+        activityComponentSettingsJson.value = newConfiguration;
+        activityBag.value.activityComponentSettingsJson = newConfiguration;
     });
 
     // Watch for parental changes in our model value and update all our values.
@@ -311,4 +317,5 @@
     watch(activityBag, () => {
         activityComponentSettingsJson.value = activityBag.value?.activityComponentSettingsJson ?? "";
     });
+
 </script>

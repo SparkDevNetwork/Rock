@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
 
@@ -28,7 +28,12 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="financialAccountEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <NotificationBox v-if="validationMessage"
+                             alertType="validation">
+                <p>Please correct the following:</p>
+                <span v-html="validationMessage"></span>
+            </NotificationBox>
+            <EditPanel v-model="financialAccountEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -42,51 +47,35 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./FinancialAccountDetail/editPanel.partial.obs";
     import ViewPanel from "./FinancialAccountDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./FinancialAccountDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { FinancialAccountBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialAccountDetail/financialAccountBag";
     import { FinancialAccountDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Finance/FinancialAccountDetail/financialAccountDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<FinancialAccountBag, FinancialAccountDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
     const blockError = ref("");
     const errorMessage = ref("");
+    const validationMessage = ref("");
 
     const financialAccountViewBag = ref(config.entity);
-    const financialAccountEditBag = ref<FinancialAccountBag>({} as FinancialAccountBag);
+    const financialAccountEditBag = ref<ValidPropertiesBox<FinancialAccountBag>>({
+        bag: {} as FinancialAccountBag
+    });
 
     const entityTypeGuid = EntityType.FinancialAccount;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "accountTypeValue",
-        "campus",
-        "description",
-        "endDate",
-        "glCode",
-        "isActive",
-        "isPublic",
-        "isTaxDeductible",
-        "name",
-        "parentAccount",
-        "publicDescription",
-        "publicName",
-        "startDate",
-        "url",
-        "imageBinaryFile",
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(financialAccountEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: financialAccountEditBag
+    });
 
     // #endregion
 
@@ -153,6 +142,24 @@
 
     // #region Functions
 
+    function setErrorMessage(message: string | null): void {
+        const defaultErrorMessage = "Unknown error while trying to save financial account.";
+
+        try {
+            const errorResponse = JSON.parse(message || "");
+            if (errorResponse?.isValidationError) {
+                validationMessage.value = errorResponse.message;
+            }
+            else {
+                errorMessage.value = message ?? defaultErrorMessage;
+            }
+        }
+        catch {
+            errorMessage.value = message ?? defaultErrorMessage;
+        }
+    }
+
+
     // #endregion
 
     // #region Event Handlers
@@ -164,7 +171,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!financialAccountEditBag.value?.idKey) {
+        if (!financialAccountEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -205,35 +212,21 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<FinancialAccountBag, FinancialAccountDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<FinancialAccountBag>>("Edit", {
             key: financialAccountViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            financialAccountEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            financialAccountEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
 
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -245,19 +238,13 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<FinancialAccountBag, FinancialAccountDetailOptionsBag> = {
-            entity: financialAccountEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<FinancialAccountBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<FinancialAccountBag> | string>("Save", {
+            box: financialAccountEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                financialAccountViewBag.value = result.data;
+                financialAccountViewBag.value = result.data.bag;
 
                 return true;
             }
@@ -266,14 +253,12 @@
             }
         }
 
-        errorMessage.value = result.errorMessage ?? "Unknown error while trying to save financial account.";
+        setErrorMessage(result.errorMessage);
 
         return false;
     }
 
     // #endregion
-
-    provideSecurityGrant(securityGrant);
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
@@ -283,7 +268,7 @@
         blockError.value = "The specified financial account could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        financialAccountEditBag.value = config.entity;
+        financialAccountEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

@@ -357,6 +357,7 @@ namespace Rock.CheckIn.v2
                 .Where( a => a.PersonAlias != null
                     && a.Occurrence.Group != null
                     && a.Occurrence.Schedule != null
+                    && a.Occurrence.Location != null
                     && a.StartDateTime >= cutoffDateTime
                     && a.DidAttend.HasValue
                     && a.DidAttend.Value == true

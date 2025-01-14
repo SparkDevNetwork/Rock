@@ -97,6 +97,14 @@
         startInCodeEditorMode: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+        /**
+         * When set to true, the code editor allows toggling even if the content includes Lava commands,
+         * bypassing any usual restrictions related to such content.
+         */
+        isTogglableCodeEditorForced: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -130,7 +138,7 @@
 
     /** Determines whether the code editor should be forced to display. */
     const isCodeEditorForced = computed<boolean>(() => {
-        return hasLavaCommandFields(internalValue.value) || hasLavaShortcodeFields(internalValue.value);
+        return (hasLavaCommandFields(internalValue.value) || hasLavaShortcodeFields(internalValue.value)) && !props.isTogglableCodeEditorForced;
     });
 
     //#endregion
@@ -208,6 +216,47 @@
         });
     }
 
+    function hideEditArea(): void {
+        if (editorInstance.value) {
+            const editorContainer = editorInstance.value.getContainer();
+            editorContainer.dataset.editSourceCode = "true";
+            const toolbarContainer = editorContainer.querySelector(".tox-editor-header");
+
+            if (toolbarContainer) {
+                const editAreaContainer = toolbarContainer.nextElementSibling as HTMLElement;
+
+                if (editAreaContainer) {
+                    const editAreaContainerHeight = editAreaContainer.clientHeight;
+                    const editorHeightBeforeHidden = editorContainer.style.height;
+                    const heightBeforeAsNumber = editorHeightBeforeHidden.endsWith("px") ? parseInt(editorHeightBeforeHidden) : 0;
+
+                    if (heightBeforeAsNumber > editAreaContainerHeight) {
+                        editorContainer.style.height = `${heightBeforeAsNumber - editAreaContainerHeight}px`;
+                    }
+
+                    editAreaContainer.style.display = "none";
+                }
+            }
+        }
+    }
+
+    function showEditArea(): void {
+        if (editorInstance.value) {
+            const editorContainer = editorInstance.value.getContainer();
+            editorContainer.style.height = `${props.editorHeight}px`;
+            delete editorContainer.dataset.editSourceCode;
+            const toolbarContainer = editorContainer.querySelector(".tox-editor-header");
+
+            if (toolbarContainer) {
+                const editAreaContainer = toolbarContainer.nextElementSibling as HTMLElement;
+
+                if (editAreaContainer) {
+                    editAreaContainer.style.display = "";
+                }
+            }
+        }
+    }
+
     //#endregion
 
     //#region Event Handlers
@@ -259,10 +308,16 @@
                 if (!props.disabled) {
                     toolbarButtonApi.value?.setEnabled(true);
                 }
+
+                // Hide the editor's content area.
+                hideEditArea();
             }
             else {
                 // Disable the toolbar but keep the edit source code toolbar button enabled.
                 setEditorEnabled(editorInstance.value, true);
+
+                // Show the editor's content area.
+                showEditArea();
             }
 
             // Always update the button UI based on whether the editor is shown.

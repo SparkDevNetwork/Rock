@@ -5,7 +5,8 @@
             <div class="col-md-6">
                 <TextBox v-model="name"
                          label="Name"
-                         rules="required" />
+                         rules="required"
+                         @blur="populateMessageKey" />
             </div>
 
             <div class="col-md-6">
@@ -23,20 +24,29 @@
                 <TextBox v-model="key"
                          label="Key"
                          help="The unique key that will identify this adaptive message."
-                         rules="required" />
+                         :rules="validityKeyRules" />
             </div>
             <div class="col-md-6">
                 <CategoryPicker v-model="categories"
                                 label="Categories"
+                                rules="required"
                                 multiple
-                                :entityTypeGuid="EntityType.AdaptiveMessage" />
+                                :entityTypeGuid="EntityType.AdaptiveMessageCategory" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <DatePicker v-model="startDate" label="Start Date" />
+            </div>
+            <div class="col-md-6">
+                <DatePicker v-model="endDate" label="End Date" />
             </div>
         </div>
 
         <Panel title="Adaptation Attributes" :hasCollapse="false" :isDrawerOpen="true">
             <div class="panel-body">
                 <NotificationBox alertType="info">
-                    These Attributes apply to all adaptations. Each adaptation will have thier own value for these attributes.
+                    These Attributes apply to all adaptations. Each adaptation will have their own value for these attributes.
                 </NotificationBox>
                 <h5>Shared Adaptation Attributes</h5>
                 <div class="grid grid-panel">
@@ -68,14 +78,6 @@
             </div>
             <Modal v-model="isModalOpen" title="Adaptation Attributes">
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                        Please correct the following:
-                        <ul>
-                            <li v-for="error of attributeErrors">
-                                {{ error }}
-                            </li>
-                        </ul>
-                    </NotificationBox>
                     <AttributeEditor v-model="adaptationAttribute" :reservedKeyNames="reservedKeyNames" />
                 </RockForm>
 
@@ -90,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch } from "vue";
+    import { computed, PropType, reactive, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -109,6 +111,9 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
         modelValue: {
@@ -140,13 +145,15 @@
     const adaptationAttributes = ref(props.modelValue.adaptationAttributes ?? []);
     const adaptationAttribute = ref<PublicEditableAttributeBag | null>(null);
     const isModalOpen = ref<boolean>(false);
-    const attributeErrors = ref<string[]>([]);
     const submitEditAttribute = ref<boolean>(false);
     const reservedKeyNames = ref(props.options.reservedKeyNames ?? []);
+    const messageReservedKeyNames = ref(props.options.messageReservedKeyNames ?? []);
+    const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
+    const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, categories, key];
+    const propRefs = [description, isActive, name, categories, key, startDate, endDate];
 
     // #endregion
 
@@ -159,6 +166,11 @@
     const gridData: GridDataBag = reactive<GridDataBag>({
         rows: adaptationAttributes.value.map(x => convertToRowItem(x))
     });
+
+    const validityKeyRules = computed<ValidationRule[]>(() => [
+        "required",
+        validateKeyValue
+    ]);
 
     // #endregion
 
@@ -173,17 +185,40 @@
         };
     }
 
+    function populateMessageKey(): void {
+        // if the attribute key hasn't been filled in yet, populate it with the attribute name minus whitespace
+        if (key.value.trim() == "" && name.value.trim() != "") {
+            let keyValue = name.value.trim().replace(/[^a-zA-Z0-9_.-]/g, "");
+            let newKeyValue = keyValue;
+
+            let i = 1;
+
+            while (messageReservedKeyNames.value.some(k => k === newKeyValue)) {
+                newKeyValue = keyValue + i++;
+            }
+
+            key.value = newKeyValue;
+        }
+    }
+
+    function validateKeyValue(value: unknown): string | boolean {
+        if (messageReservedKeyNames.value.some(k => k === key.value)) {
+            return "There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.";
+        }
+
+        return true;
+    }
+
     // #endregion
 
     // #region Event Handlers
     async function onAddItem(): Promise<void> {
         adaptationAttribute.value = {} as PublicEditableAttributeBag;
         isModalOpen.value = true;
-        attributeErrors.value = [];
+        adaptationAttribute.value.fieldTypeGuid = FieldTypeGuids.Text;
     }
 
     const onEditItem = async (key: string): Promise<void> => {
-        attributeErrors.value = [];
         const selectedSiteAttribute = adaptationAttributes.value.find(x => x.key === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedSiteAttribute) {
@@ -198,6 +233,7 @@
         // Close modal and remove deleted attribute from the current collection of attributes.
         isModalOpen.value = false;
         adaptationAttributes.value = adaptationAttributes.value.filter(s => s.key !== key);
+        reservedKeyNames.value = reservedKeyNames.value.filter(r => r !== key);
 
         // Update the grid.
         if (gridData.rows) {
@@ -239,22 +275,13 @@
                 gridData.rows?.push(newRowItem);
             }
 
-            const key = adaptationAttribute.value?.key ?? "";
-            adaptationAttribute.value = null;
             isModalOpen.value = false;
-            if (!reservedKeyNames.value.includes(key)) {
-                reservedKeyNames.value.push(key);
-            }
+            adaptationAttribute.value = null;
         }
     }
 
     const onStartSaveAttribute = (): void => {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(adaptationAttribute.value?.key ?? "") && !adaptationAttribute.value?.guid;
-        submitEditAttribute.value = !isExistingKey;
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
+        submitEditAttribute.value = true;
     };
 
     // #endregion
@@ -268,11 +295,13 @@
         updateRefValue(name, props.modelValue.name ?? "");
         updateRefValue(key, props.modelValue.key ?? "");
         updateRefValue(categories, props.modelValue.categories ?? []);
+        updateRefValue(startDate, props.modelValue.startDate ?? "");
+        updateRefValue(endDate, props.modelValue.endDate ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues,adaptationAttributes, ...propRefs], () => {
+    watch([attributeValues, adaptationAttributes, ...propRefs], () => {
         const newValue: AdaptiveMessageBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -282,9 +311,22 @@
             key: key.value,
             categories: categories.value,
             adaptationAttributes: adaptationAttributes.value,
+            startDate: startDate.value,
+            endDate: endDate.value
         };
 
         emit("update:modelValue", newValue);
+    });
+
+    watch(isModalOpen, () => {
+        if (isModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== adaptationAttribute.value?.key);
+        }
+        else {
+            if (adaptationAttribute.value?.key && !reservedKeyNames.value.some(k => k === adaptationAttribute.value?.key)) {
+                reservedKeyNames.value.push(adaptationAttribute.value.key);
+            }
+        }
     });
 
     // Watch for any changes to props that represent properties and then

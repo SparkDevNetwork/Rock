@@ -655,6 +655,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest = new ConnectionRequest();
                         connectionRequest.ConnectionOpportunityId = hfConnectionOpportunityId.ValueAsInt();
+                        connectionRequest.ConnectionTypeId = new ConnectionOpportunityService( rockContext ).Get( connectionRequest.ConnectionOpportunityId ).ConnectionTypeId;
 
                         if ( cpCampus.SelectedCampusId.HasValue )
                         {
@@ -1062,6 +1063,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest.ConnectionOpportunity = connectionOpportunity;
                         connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                        connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                     }
                 }
 
@@ -1083,6 +1085,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest.ConnectionOpportunity = connectionOpportunity;
                         connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                        connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                     }
                 }
 
@@ -1104,6 +1107,7 @@ namespace RockWeb.Blocks.Connection
                     {
                         connectionRequest.ConnectionOpportunity = connectionOpportunity;
                         connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                        connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                     }
                 }
 
@@ -1174,6 +1178,7 @@ namespace RockWeb.Blocks.Connection
                         connectionRequestActivity.Note = tbTransferNote.Text;
                         connectionRequestActivityService.Add( connectionRequestActivity );
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
+                        connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
 
                         if ( newOpportunity.ShowStatusOnTransfer && ddlTransferStatus.Visible )
                         {
@@ -2009,6 +2014,7 @@ namespace RockWeb.Blocks.Connection
                         connectionRequest = new ConnectionRequest();
                         connectionRequest.ConnectionOpportunity = connectionOpportunity;
                         connectionRequest.ConnectionOpportunityId = connectionOpportunity.Id;
+                        connectionRequest.ConnectionTypeId = connectionOpportunity.ConnectionTypeId;
                         connectionRequest.ConnectionState = ConnectionState.Active;
                         connectionRequest.ConnectionStatus = connectionStatus;
                         connectionRequest.ConnectionStatusId = connectionStatus.Id;

@@ -26,15 +26,12 @@ using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Lms;
-using Rock.Lms;
 using Rock.Model;
-using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningCourseDetail;
 using Rock.ViewModels.Blocks.Lms.LearningCourseRequirement;
-using Rock.ViewModels.Blocks.Lms.LearningParticipantDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -42,40 +39,16 @@ using Rock.Web.Cache;
 namespace Rock.Blocks.Lms
 {
     /// <summary>
-    /// Displays the details of a particular learning course.
+    /// Displays the details of a particular learning requiredCourse.
     /// </summary>
 
     [DisplayName( "Learning Course Detail" )]
     [Category( "LMS" )]
-    [Description( "Displays the details of a particular learning course." )]
+    [Description( "Displays the details of a particular learning requiredCourse." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
-
-    [LinkedPage( "Activity Detail Page",
-        Description = "The page that will be navigated to when clicking an activity row.",
-        Key = AttributeKey.ActivityDetailPage,
-        IsRequired = false,
-        Order = 1 )]
-
-    [LinkedPage( "Participant Detail Page",
-        Description = "The page that will be navigated to when clicking a student row.",
-        Key = AttributeKey.ParticipantDetailPage,
-        IsRequired = false,
-        Order = 2 )]
-
-    [LinkedPage( "Content Page Detail Page",
-        Description = "The page that will be navigated to when clicking a content page row.",
-        Key = AttributeKey.ContentPageDetailPage,
-        IsRequired = false,
-        Order = 3 )]
-
-    [LinkedPage( "Announcement Detail Page",
-        Description = "The page that will be navigated to when clicking an announcement row.",
-        Key = AttributeKey.AnnouncementDetailPage,
-        IsRequired = false,
-        Order = 4 )]
 
     #endregion
 
@@ -140,10 +113,11 @@ namespace Rock.Blocks.Lms
         /// <returns>The options that provide additional details to the block.</returns>
         private LearningCourseDetailOptionsBag GetBoxOptions( LearningCourseBag entity )
         {
-            var disablePredictableIds = PageCache.Layout?.Site?.DisablePredictableIds ?? false;
             // Get the ConfigurationMode for the parent Program.
-            var programConfigurationMode = new LearningCourseService( RockContext )
-                .GetSelect( entity.IdKey, c => c.LearningProgram.ConfigurationMode, !disablePredictableIds );
+            var programConfigurationMode = new LearningProgramService( RockContext )
+                .GetSelect( PageParameter( PageParameterKey.LearningProgramId ),
+                c => c.ConfigurationMode,
+                !this.PageCache.Layout.Site.DisablePredictableIds );
 
             return new LearningCourseDetailOptionsBag
             {
@@ -383,9 +357,23 @@ namespace Rock.Blocks.Lms
             // If a zero identifier is specified then create a new entity.
             if ( entityId == 0 )
             {
+                /*
+                    12/12/2024 - JC
+
+                    We must load the parent LearningProgram for new records.
+                    When the authorization is checked the LearningProgram (the ParentAuthority)
+                    might be checked for approving/denying access (see LearningCourse.IsAuthorized).
+
+                    Reason: ParentAuthority (LearningProgram) might be checked for authorization.
+                */
+                var program = new LearningProgramService( RockContext ).Get(
+                    PageParameter( PageParameterKey.LearningProgramId ),
+                    !this.PageCache.Layout.Site.DisablePredictableIds );
+
                 return new LearningCourse
                 {
-                    LearningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId ),
+                    LearningProgram = program,
+                    LearningProgramId = program.Id,
                     Id = 0,
                     Guid = Guid.Empty,
                     IsActive = true
@@ -506,7 +494,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningCourse.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningCourse.FriendlyTypeName}." );
                 return false;
             }
 
@@ -605,7 +593,7 @@ namespace Rock.Blocks.Lms
         /// <summary>
         /// Gets a list of active courses which the current user is authorized to view.
         /// </summary>
-        /// <param name="key">The identifier of the course the list will be shown for.</param>
+        /// <param name="key">The identifier of the requiredCourse the list will be shown for.</param>
         /// <returns>A list of Courses</returns>
         [BlockAction]
         public BlockActionResult GetActiveCourses( string key )
@@ -618,7 +606,7 @@ namespace Rock.Blocks.Lms
                 entityService.GetQueryableByKey( key )
                     .Include( c => c.LearningCourseRequirements )
                     .SelectMany( c => c.LearningCourseRequirements.Select( r => r.RequiredLearningCourseId ) )
-                    .ToList() :
+                    .ToList():
                 new List<int>();
 
             var currentId = Rock.Utility.IdHasher.Instance.GetId( key );
@@ -633,33 +621,34 @@ namespace Rock.Blocks.Lms
                 .Where( c => c.IsActive )
                 .Where( c => !currentRequirementIds.Contains( c.Id ) )
                 .ToList()
-                // Make sure the current user is authorized to view the course.
+                // Make sure the current user is authorized to view the requiredCourse.
                 .Where( c => c.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .OrderBy( c => c.Name )
                 .ToListItemBagList();
 
             return ActionOk( allCourses );
         }
 
         /// <summary>
-        /// Get the detail for a course requirement.
+        /// Get the detail for a requiredCourse requirement.
         /// </summary>
-        /// <param name="key">The identifier of the course the requirement will be added to (for including the relationship).</param>
-        /// <param name="guid">The Guid identifier of the required course.</param>
-        /// <param name="requirementType">The type of requirement for the required course.</param>
-        /// <returns>The <see cref="LearningCourseRequirementBag"/> containing the course requirement details.</returns>
+        /// <param name="key">The identifier of the requiredCourse the requirement will be added to (for including the relationship).</param>
+        /// <param name="guid">The Guid identifier of the required requiredCourse.</param>
+        /// <param name="requirementType">The type of requirement for the required requiredCourse.</param>
+        /// <returns>The <see cref="LearningCourseRequirementBag"/> containing the requiredCourse requirement details.</returns>
         [BlockAction]
         public BlockActionResult GetCourseRequirementDetail( string key, string guid, RequirementType requirementType )
         {
             var courseService = new LearningCourseService( RockContext );
             var courseId = IdHasher.Instance.GetId( key ).ToIntSafe();
 
-            // Make sure the Guid of the required course is valid.
+            // Make sure the Guid of the required requiredCourse is valid.
             if ( !Guid.TryParse( guid, out var requiredCourseGuid ) )
             {
                 return ActionBadRequest( $"Required {nameof( guid )} was invalid." );
             }
 
-            // Make sure the required course exists.
+            // Make sure the required requiredCourse exists.
             var requiredCourse = courseService.Queryable()
                 .Where( c => c.Guid == requiredCourseGuid )
                 .Select( c => new
@@ -693,9 +682,9 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Deletes the specified course requirement.
+        /// Deletes the specified requiredCourse requirement.
         /// </summary>
-        /// <param name="key">The identifier of the course requirement to be deleted.</param>
+        /// <param name="key">The identifier of the requiredCourse requirement to be deleted.</param>
         /// <returns>A string that contains the URL to be redirected to on success.</returns>
         [BlockAction]
         public BlockActionResult DeleteCourseRequirement( string key )
@@ -722,610 +711,33 @@ namespace Rock.Blocks.Lms
 
         #endregion
 
-        /*
-            2024/04/04 - JSC
-
-            To match mock-ups of the Course Detail block (On-Demand mode)
-            we had to embed several "list blocks" in the LearningCourseDetail component.
-            Because each Obsidian block requires an instance of that block type on the page
-            we couldn't create re-usable blocks, but instead had to route their block actions
-            through the Course Detail block. We tried to componentize these grids as much as possible.
-            If at a later time - we have a method of adding blocks to a tabbed control in Obsidian
-            we can look at refactoring this code.
-	
-            Reason: Unable to embed child blocks in an Obsidian block.
-        */
-        #region Secondary List/Grid Block Actions
-
-        /// <summary>
-        /// Deletes the specified activity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult DeleteActivity( string key )
-        {
-            var entityService = new LearningActivityService( RockContext );
-            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-            if ( entity == null )
-            {
-                return ActionBadRequest( $"{LearningActivity.FriendlyTypeName} not found." );
-            }
-
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( $"Not authorized to delete ${LearningActivity.FriendlyTypeName}." );
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
-
-            return ActionOk();
-        }
-
-        /// <summary>
-        /// Deletes the specified activity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult DeleteAnnouncement( string key )
-        {
-            var entityService = new LearningClassAnnouncementService( RockContext );
-            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-            if ( entity == null )
-            {
-                return ActionBadRequest( $"{LearningClassAnnouncement.FriendlyTypeName} not found." );
-            }
-
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( $"Not authorized to delete ${LearningClassAnnouncement.FriendlyTypeName}." );
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
-
-            return ActionOk();
-        }
-
-        /// <summary>
-        /// Deletes the specified activity.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult DeleteContentPage( string key )
-        {
-            var entityService = new LearningClassContentPageService( RockContext );
-            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-            if ( entity == null )
-            {
-                return ActionBadRequest( $"{LearningClassContentPage.FriendlyTypeName} not found." );
-            }
-
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( $"Not authorized to delete ${LearningClassContentPage.FriendlyTypeName}." );
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
-
-            return ActionOk();
-        }
-
-        /// <summary>
-        /// Deletes the specified participant.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be deleted.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult DeleteParticipant( string key )
-        {
-            var entityService = new LearningParticipantService( RockContext );
-            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-            if ( entity == null )
-            {
-                return ActionBadRequest( $"{LearningParticipant.FriendlyTypeName} not found." );
-            }
-
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( $"Not authorized to delete ${LearningParticipant.FriendlyTypeName}." );
-            }
-
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
-            {
-                return ActionBadRequest( errorMessage );
-            }
-
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
-
-            return ActionOk();
-        }
-
-        /// <summary>
-        /// Gets a list of announcements for the current course/class.
-        /// </summary>
-        /// <returns>A list of class announcements</returns>
-        [BlockAction]
-        public BlockActionResult GetAnnouncements()
-        {
-            var entity = GetInitialEntity();
-
-            if ( entity == null )
-            {
-                return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} was not found." );
-            }
-
-            var defaultClassId = new LearningClassService( RockContext ).GetCourseDefaultClass( entity.Id, c => c.Id );
-
-            if ( defaultClassId == 0 )
-            {
-                return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} has no classes." );
-            }
-
-            var announcements = new LearningClassAnnouncementService( RockContext )
-                .Queryable()
-                .Where( a => a.LearningClassId == defaultClassId )
-                .ToList();
-
-            // Return all announcements for the course's default class.
-            var gridBuilder = new GridBuilder<LearningClassAnnouncement>()
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "title", a => a.Title )
-                .AddField( "publishDateTime", a => a.PublishDateTime )
-                .AddField( "communicationMode", a => a.CommunicationMode )
-                .AddField( "communicationSent", a => a.CommunicationSent );
-
-            return ActionOk( gridBuilder.Build( announcements ) );
-        }
-
-        /// <summary>
-        /// Gets a list of content pages for the current course/class.
-        /// </summary>
-        /// <returns>A list of class content pages</returns>
-        [BlockAction]
-        public BlockActionResult GetContentPages()
-        {
-            var entity = GetInitialEntity();
-
-            if ( entity == null )
-            {
-                return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} was not found." );
-            }
-
-            var defaultClassId = new LearningClassService( RockContext ).GetCourseDefaultClass( entity.Id, c => c.Id );
-
-            if ( defaultClassId == 0 )
-            {
-                return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} has no classes." );
-            }
-
-            var contentPages = new LearningClassContentPageService( RockContext )
-                .Queryable()
-                .Where( c => c.LearningClassId == defaultClassId )
-                .ToList();
-
-            // Return all announcements for the course's default class.
-            var gridBuilder = new GridBuilder<LearningClassContentPage>()
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "title", a => a.Title )
-                .AddField( "startDate", a => a.StartDateTime );
-
-            return ActionOk( gridBuilder.Build( contentPages ) );
-        }
-
-        /// <summary>
-        /// Gets a list of facilitators for the current course/class.
-        /// </summary>
-        /// <returns>A list of facilitators</returns>
-        [BlockAction]
-        public BlockActionResult GetFacilitators()
-        {
-            var entity = GetInitialEntity();
-
-            if ( entity == null )
-            {
-                return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} was not found." );
-            }
-
-            var defaultClass = entity.LearningClasses.FirstOrDefault();
-
-            if ( defaultClass == null )
-            {
-                return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} has no classes." );
-            }
-
-            var facilitators = new LearningParticipantService( RockContext )
-                .GetFacilitators( defaultClass.Id )
-                .ToList();
-
-            // Return all facilitators for the course's default class.
-            var gridBuilder = new GridBuilder<LearningParticipant>()
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddPersonField( "name", a => a.Person )
-                .AddTextField( "note", a => a.Note );
-
-            return ActionOk( gridBuilder.Build( facilitators ) );
-        }
-
-        /// <summary>
-        /// Gets a list of activities for the current course/class.
-        /// </summary>
-        /// <returns>A list of learning activities</returns>
-        [BlockAction]
-        public BlockActionResult GetLearningPlan()
-        {
-            var entity = GetInitialEntity();
-
-            if ( entity == null )
-            {
-                return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} was not found." );
-            }
-           
-            var components = LearningActivityContainer.Instance.Components;
-
-            var classId = GetClassId().ToIntSafe();
-
-            if ( classId == 0 )
-            {
-                return ActionBadRequest( $"The {LearningClass.FriendlyTypeName} was not found." );
-            }
-
-            var students = new LearningParticipantService( RockContext ).GetStudents( classId );
-
-            // Return all activities for the course.
-            var gridBuilder = new GridBuilder<LearningActivity>()
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "name", a => a.Name )
-                .AddField( "assignTo", a => a.AssignTo )
-                .AddField( "type", a => a.ActivityComponentId )
-                .AddField( "dates", a => a.DatesDescription )
-                .AddField( "isPastDue", a => a.DueDateCalculated == null ? false : a.DueDateCalculated.Value.IsPast() )
-                .AddField( "count", a => a.LearningActivityCompletions.Count() )
-                .AddField( "completedCount", a => a.LearningActivityCompletions.Count( c => c.IsStudentCompleted ) )
-                .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.IconCssClass )
-                .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.HighlightColor )
-                .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.ActivityComponentId ).Value.Value.Name )
-                .AddField( "points", a => a.Points )
-                .AddField( "isAttentionNeeded", a => a.LearningActivityCompletions.Any( c => c.NeedsAttention ) )
-                .AddField( "hasStudentComments", a => a.LearningActivityCompletions.Any( c => c.HasStudentComment ) );
-
-            var orderedItems = new LearningActivityService( RockContext )
-                    .GetClassLearningPlan( classId )
-                    .AsNoTracking();
-
-            return ActionOk( gridBuilder.Build( orderedItems ) );
-        }
-
-        /// <summary>
-        /// Gets a list of students for the current class (default of the course).
-        /// </summary>
-        /// <returns>A list of students</returns>
-        [BlockAction]
-        public BlockActionResult GetStudents()
-        {
-            var entity = GetInitialEntity();
-
-            if ( entity == null )
-            {
-                return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} was not found." );
-            }
-
-            var defaultClass = entity.LearningClasses.FirstOrDefault();
-
-            if ( defaultClass == null )
-            {
-                return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} has no classes." );
-            }
-
-            var defaultClassTakesAttendance = new LearningClassService( RockContext ).Queryable()
-                .Include( c => c.GroupType )
-                .Any( c => c.GroupType.TakesAttendance && c.Id == defaultClass.Id );
-
-            // Get the "current assignment" for each student.
-            var activityService = new LearningActivityService( RockContext );
-            var activities = activityService.Queryable()
-                    .Include( a => a.LearningActivityCompletions )
-                    .Include( a => a.LearningClass )
-                    .Include( a => a.LearningClass.LearningSemester )
-                    .Where( a => a.LearningClassId == entity.Id )
-                    .Select( a => new
-                    {
-                        a.Name,
-                        a.DueDateCriteria,
-                        a.DueDateOffset,
-                        a.DueDateDefault,
-                        EnrollmentDate = a.LearningClass.CreatedDateTime,
-                        ClassStartDate = a.LearningClass.LearningSemester.StartDate,
-                        CompletedStudentIds = a.LearningActivityCompletions.Select( c => c.StudentId )
-                    } )
-                    .ToList()
-                    .Select( a => new
-                    {
-                        CompletedStudentIds = a.CompletedStudentIds.Distinct(),
-                        DueDate = LearningActivity.CalculateDueDate( a.DueDateCriteria, a.DueDateDefault, a.DueDateOffset, a.ClassStartDate, a.EnrollmentDate ),
-                        a.Name
-                    } )
-                    .OrderBy( a => a.DueDate );
-
-            // Return all students for the course's default class.
-            var gridBuilder = new GridBuilder<LearningParticipant>()
-                .AddTextField( "idKey", p => p.IdKey )
-                .AddPersonField( "name", p => p.Person )
-                .AddField( "currentGradePercent", p => p.LearningGradePercent )
-                .AddField( "currentGrade", p => p.LearningGradingSystemScale?.Name )
-                .AddTextField( "note", p => p.Note )
-                .AddTextField( "role", p => p.GroupRole.Name )
-                .AddTextField( "currentAssignment", p =>
-                    activities.Where( a => !a.CompletedStudentIds.Contains( p.Id ) ).Select( a => a.Name ).FirstOrDefault() );
-
-            if ( defaultClassTakesAttendance )
-            {
-                var groupAttendance = new AttendanceService( RockContext )
-                .Queryable()
-                .AsNoTracking()
-                .Where( a =>
-                    a.DidAttend.HasValue &&
-                    a.DidAttend.Value &&
-                    a.Occurrence.GroupId == defaultClass.Id &&
-                    a.PersonAlias != null )
-                .GroupBy( a => a.PersonAlias.PersonId )
-                .ToList();
-
-                gridBuilder = gridBuilder
-                    .AddField( "absences", a =>
-                        groupAttendance.Any() ?
-                        groupAttendance.FirstOrDefault( g => g.Key == a.Person.Id )
-                        .Count() : 0 )
-                    .AddField( "absencesLabelStyle", a =>
-                        a.LearningClass.AbsencesLabelStyle(
-                            groupAttendance.Any() ?
-                            groupAttendance.FirstOrDefault( g => g.Key == a.Person.Id )
-                            .Count() : 0,
-                            entity.LearningProgram ) );
-            }
-
-            var students = new LearningParticipantService( RockContext )
-                .GetStudents( defaultClass.Id )
-                .ToList();
-
-            return ActionOk( gridBuilder.Build( students ) );
-        }
-
-        /// <summary>
-        /// Changes the ordered position of a single activity.
-        /// </summary>
-        /// <param name="key">The identifier of the item that will be moved.</param>
-        /// <param name="beforeKey">The identifier of the item it will be placed before.</param>
-        /// <returns>An empty result that indicates if the operation succeeded.</returns>
-        [BlockAction]
-        public BlockActionResult ReorderActivity( string key, string beforeKey )
-        {
-            var classId = GetClassId().ToIntSafe();
-
-            if ( classId == 0 )
-            {
-                return ActionBadRequest( $"The {LearningCourse.FriendlyTypeName} has no classes." );
-            }
-
-            // Get the queryable and make sure it is ordered correctly.
-            var items = GetOrderedLearningPlan( classId ).ToList();
-
-            if ( !items.ReorderEntity( key, beforeKey ) )
-            {
-                return ActionBadRequest( "Invalid reorder attempt." );
-            }
-
-            RockContext.SaveChanges();
-
-            return ActionOk();
-        }
-
-        /// <summary>
-        /// Saves the new or updated participant for the class.
-        /// </summary>
-        /// <param name="participantBag">The bag containing the participant info that should be added or updated.</param>
-        /// <returns>The participantBag with updated data.</returns>
-        [BlockAction]
-        public BlockActionResult SaveParticipant( LearningParticipantBag participantBag )
-        {
-            var classService = new LearningClassService( RockContext );
-            var classIdKey = PageParameter( PageParameterKey.LearningClassId );
-
-            // If the course doesn't explicitly specify which Class we're looking at
-            // then get the default class for the course.
-            var classId = classIdKey.IsNullOrWhiteSpace() ?
-                classService.GetCourseDefaultClass(
-                    RequestContext.GetPageParameter( PageParameterKey.LearningCourseId ),
-                    c => c.Id ) :
-                classService.GetSelect( classIdKey, p => p.Id );
-
-            var isNew = participantBag.IdKey.IsNullOrWhiteSpace();
-            var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
-
-            var learningParticipantService = new LearningParticipantService( RockContext );
-            LearningParticipant entity;
-
-            if ( isNew )
-            {
-                entity = GetNewLearningParticipantFromBag( participantBag, classService, classId );
-                learningParticipantService.Add( entity );
-            }
-            else
-            {
-                entity = learningParticipantService.Get( participantBag.IdKey, !disablePredictableIds );
-                entity.Note = participantBag.Note;
-            }
-
-            if ( participantBag.AttributeValues != null )
-            {
-                // Load attributes for the entity.
-                entity.LoadAttributes( RockContext );
-
-                // Set the attribute values from the bag.
-                entity.SetPublicAttributeValues( participantBag.AttributeValues, RequestContext.CurrentPerson );
-            }
-
-            RockContext.SaveChanges();
-
-            var updatedBag = GetLearningParticipantBag( entity, learningParticipantService );
-
-            return ActionOk( updatedBag );
-        }
-
-        #endregion
-
         #region Private methods
 
         /// <summary>
-        /// Gets the identifier for the specified LearningClass (or Default LearningClass for the LearningCourse).
+        /// Updates the required courses for the current requiredCourse/class.
         /// </summary>
-        /// <returns></returns>
-        private int? GetClassId()
-        {
-            // Get the page parameter value (either IdKey or Id).
-            var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
-
-            if ( classId > 0 )
-            {
-                return classId;
-            }
-
-            var courseIdKey = PageParameter( PageParameterKey.LearningCourseId );
-
-            // If this is for a course then try to get the default class.
-            if ( courseIdKey.IsNotNullOrWhiteSpace() )
-            {
-                return new LearningClassService( RockContext ).GetCourseDefaultClass( courseIdKey, c => c.Id );
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Gets the LearningParticipantBag for the specified <paramref name="entity"/>
-        /// and using the specified <paramref name="participantService"/>.
-        /// </summary>
-        /// <param name="entity">The <see cref="LearningParticipant"/> to convert to bag.</param>
-        /// <param name="participantService">The LearningParticipantService to use for getting the updated information.</param>
-        /// <returns>A LearningParticipantBag with the latest values from the database.</returns>
-        private LearningParticipantBag GetLearningParticipantBag( LearningParticipant entity, LearningParticipantService participantService )
-        {
-            var participantDetails = participantService
-                .Queryable()
-                .Include( p => p.Person )
-                .Include( p => p.GroupRole )
-                .Include( p => p.LearningGradingSystemScale )
-                .Where( p => p.Id == entity.Id )
-                .FirstOrDefault();
-
-            return new LearningParticipantBag
-            {
-                IdKey = entity.IdKey,
-                CurrentGradePercent = participantDetails.LearningGradePercent,
-                CurrentGradeText = participantDetails.LearningGradingSystemScale?.Name,
-                ParticipantRole = participantDetails.GroupRole.ToListItemBag(),
-                PersonAlias = participantDetails.Person.PrimaryAlias.ToListItemBag(),
-                IsFacilitator = participantDetails.GroupRole.IsLeader
-            };
-        }
-
-        /// <summary>
-        /// Gets a new LearningParticipant based on the data in the provided bag.
-        /// </summary>
-        /// <param name="participantBag">The bag containing the necessary information to get a LearningParticipant.</param>
-        /// <param name="classService">The <see cref="LearningClassService"/> to use for getting class roles.</param>
-        /// <param name="classId">The integer identifier of the <see cref="LearningClass"/> the participant belongs to.</param>
-        /// <returns>A New LearningParticipant record for the specified <paramref name="classId"/>, person and role (from <paramref name="participantBag"/>.</returns>
-        private LearningParticipant GetNewLearningParticipantFromBag( LearningParticipantBag participantBag, LearningClassService classService, int classId )
-        {
-            int? personId = null;
-            if ( Guid.TryParse( participantBag.PersonAlias.Value, out var primaryAliasGuid ) )
-            {
-                personId = new PersonAliasService( RockContext ).GetSelect( primaryAliasGuid, pa => pa.PersonId );
-            }
-
-            var classRoles = classService.GetClassRoles( classId ).Where( r => r.IsLeader == participantBag.IsFacilitator );
-
-            int groupRoleId = classRoles.Select( r => r.Id ).FirstOrDefault();
-
-            return new LearningParticipant
-            {
-                PersonId = personId.ToIntSafe(),
-                LearningClassId = classId,
-                GroupId = classId,
-                Note = participantBag.Note,
-                GroupRoleId = groupRoleId.ToIntSafe(),
-                LearningCompletionStatus = LearningCompletionStatus.Incomplete,
-                LearningGradePercent = 0
-            };
-        }
-
-        /// <summary>
-        /// Gets the ordered learning plan for the class specified by the current PageParameter.
-        /// </summary>
-        /// <param name="rockContext">The RockContex tto use for getting the ordered results</param>
-        /// <returns>An IQueryable of ordered <see cref="LearningActivity"/> records.</returns>
-        private IQueryable<LearningActivity> GetOrderedLearningPlan( int classId )
-        {
-            if ( classId > 0 )
-            {
-                return new LearningActivityService( RockContext )
-                    .GetClassLearningPlan( classId )
-                    .AsNoTracking();
-            }
-
-            return new List<LearningActivity>().AsQueryable();
-        }
-
-        /// <summary>
-        /// Updates the required courses for the current course/class.
-        /// </summary>
-        /// <param name="bag">The bag.</param>
-        /// <param name="contentChannel">The content channel.</param>
+        /// <param name="bag">The bag from the block.</param>
+        /// <param name="entity">The learning course entity.</param>
         /// <param name="rockContext">The rock context.</param>
         private void UpdateRequiredCourses( LearningCourseBag bag, LearningCourse entity, RockContext rockContext )
         {
-            var currentRequirements = bag.CourseRequirements.Select( cr => new LearningCourseRequirement
+            var selectedRequirements = bag.CourseRequirements.Select( cr => new LearningCourseRequirement
             {
                 Id = IdHasher.Instance.GetId( cr.IdKey ) ?? 0,
                 RequiredLearningCourseId = IdHasher.Instance.GetId( cr.RequiredLearningCourseIdKey ) ?? 0,
-                LearningCourseId = IdHasher.Instance.GetId( cr.LearningCourseIdKey ) ?? 0,
+                LearningCourseId = entity.Id,
                 RequirementType = cr.RequirementType
             } )
             .Where( cr => cr.RequiredLearningCourseId > 0 && cr.LearningCourseId == entity.Id )
             .ToList();
 
-            var requirementsRemoved = entity.LearningCourseRequirements.Where( prev => !currentRequirements.Any( cur => prev.Id == cur.Id ) );
-            var newRequirements = currentRequirements.Where( cur => !entity.LearningCourseRequirements.Any( prev => prev.Id == cur.Id ) );
+            var requirementsRemoved = entity.LearningCourseRequirements.Where( prev => !selectedRequirements.Any( cur => prev.Id == cur.Id ) );
+            var newRequirements = selectedRequirements.Where( cur => !entity.LearningCourseRequirements.Any( ex => ex.Id == cur.Id ) ).ToList();
 
             var entityService = new LearningCourseRequirementService( rockContext );
 
-            entityService.DeleteRange( requirementsRemoved );
             entityService.AddRange( newRequirements );
+            entityService.DeleteRange( requirementsRemoved );
         }
 
         #endregion

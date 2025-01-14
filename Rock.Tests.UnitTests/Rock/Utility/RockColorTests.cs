@@ -937,12 +937,12 @@ namespace Rock.Tests.UnitTests.Rock.Utility
         /// <param name="expectedForegroundHex">The expected foreground hexadecimal.</param>
         /// <param name="expectedBackgroundHex">The expected background hexadecimal.</param>
         [TestMethod]
-        [DataRow( "#219ff3", "#143952", "#c1e4fb" )]
-        [DataRow( "#4caf50", "#145217", "#c1fbc3" )]
-        [DataRow( "#cd2bba", "#52144a", "#fbc1f4" )]
-        [DataRow( "#cdb6b6", "#521414", "#fbc1c1" )]
-        [DataRow( "#8f5252", "#521414", "#fbc1c1" )]
-        [DataRow( "#ffffff", "#333333", "#dedede" )]
+        [DataRow( "#219ff3", "#143952", "#e6f5fe" )]
+        [DataRow( "#4caf50", "#145217", "#e6fee7" )]
+        [DataRow( "#cd2bba", "#52144a", "#fee6fc" )]
+        [DataRow( "#cdb6b6", "#521414", "#fee6e6" )]
+        [DataRow( "#8f5252", "#521414", "#fee6e6" )]
+        [DataRow( "#ffffff", "#333333", "#f2f2f2" )]
         public void CalculateColorPair_ProducesCorrectColors( string hexColor, string expectedForegroundHex, string expectedBackgroundHex )
         {
             var color = new RockColor( hexColor );
@@ -964,8 +964,8 @@ namespace Rock.Tests.UnitTests.Rock.Utility
         /// <param name="recipe">The recipe.</param>
         /// <param name="expectedHexColor">Expected color of the hexadecimal.</param>
         [TestMethod]
-        [DataRow( "#219ff3", ColorRecipe.Lightest, "#c1e4fb" )]
-        [DataRow( "#219ff3", ColorRecipe.Light, "#f1f3f4" )]
+        [DataRow( "#219ff3", ColorRecipe.Lightest, "#e6f5fe" )]
+        [DataRow( "#219ff3", ColorRecipe.Light, "#c4dae8" )]
         [DataRow( "#219ff3", ColorRecipe.Medium, "#97acba" )]
         [DataRow( "#219ff3", ColorRecipe.Dark, "#507a95" )]
         [DataRow( "#219ff3", ColorRecipe.Darkest, "#143952" )]

@@ -271,7 +271,7 @@ namespace Rock.Jobs
             // Note run Workflow Log Cleanup before Workflow Cleanup to avoid timing out if a Workflow has lots of workflow logs (there is a cascade delete)
             RunCleanupTask( "workflow", () => CleanUpWorkflows() );
 
-            RunCleanupTask( "unused attribute value", () => CleanupOrphanedAttributes() );
+            RunCleanupTask( "unused attribute value", CleanupUnusedAttributeValues );
 
             RunCleanupTask( "transient communication", () => CleanupTransientCommunications() );
 
@@ -284,6 +284,9 @@ namespace Rock.Jobs
 
             // Search for and delete group memberships duplicates (same person, group, and role)
             RunCleanupTask( "group membership", () => GroupMembershipCleanup() );
+
+            // Search for and delete previous family location if it's the same as their current home address.
+            RunCleanupTask( "family location", () => DeleteDuplicatePreviousFamilyLocations() );
 
             RunCleanupTask( "primary family", () => UpdateMissingPrimaryFamily() );
 
@@ -848,9 +851,6 @@ namespace Rock.Jobs
             // Known Relationship Group
             resultCount += AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid(), commandTimeout );
 
-            // Implied Relationship Group
-            resultCount += AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK ), Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid(), commandTimeout );
-
             // Find family groups that have no members or that have only 'inactive' people (record status) and mark the groups inactive.
             using ( var familyRockContext = CreateRockContext() )
             {
@@ -964,12 +964,13 @@ namespace Rock.Jobs
                 // Update Person records that have an empty or placeholder PrimaryAlias reference.
                 var people = personService.Queryable( personSearchOptions )
                     .Include( p => p.Aliases )
-                    .Where( p => p.PrimaryAliasId == null || p.PrimaryAliasId == 0 )
+                    .Where( p => p.PrimaryAliasId == null || p.PrimaryAliasId == 0 || p.PrimaryAliasGuid == null )
                     .Take( 300 );
 
                 foreach ( var person in people )
                 {
                     person.PrimaryAliasId = person.PrimaryAlias?.Id;
+                    person.PrimaryAliasGuid = person.PrimaryAlias?.Guid;
                     resultCount++;
                 }
 
@@ -1722,6 +1723,19 @@ namespace Rock.Jobs
         }
 
         /// <summary>
+        /// Cleans up any attribute values that are no longer needed.
+        /// </summary>
+        /// <returns>The number of records deleted.</returns>
+        private int CleanupUnusedAttributeValues()
+        {
+            var recordsDeleted = CleanupOrphanedAttributes();
+
+            recordsDeleted += CleanupEmptyAttributeValues();
+
+            return recordsDeleted;
+        }
+
+        /// <summary>
         /// Cleanups the orphaned attributes.
         /// </summary>
         /// <returns></returns>
@@ -1793,6 +1807,28 @@ namespace Rock.Jobs
                 var entityIdsQuery = new Service<T>( rockContext ).AsNoFilter().Select( a => a.Id );
                 var orphanedAttributeValuesQuery = attributeValueService.Queryable().Where( a => a.EntityId.HasValue && a.Attribute.EntityTypeId == entityTypeId.Value && !entityIdsQuery.Contains( a.EntityId.Value ) );
                 recordsDeleted += BulkDeleteInChunks( orphanedAttributeValuesQuery, batchAmount, commandTimeout );
+            }
+
+            return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Cleans up empty attribute values that no longer need to exist in the database.
+        /// </summary>
+        /// <returns>The number of records deleted.</returns>
+        private int CleanupEmptyAttributeValues()
+        {
+            int recordsDeleted = 0;
+
+            using ( var rockContext = CreateRockContext() )
+            {
+                var attributeValueService = new AttributeValueService( rockContext );
+
+                var emptyValuesQuery = attributeValueService.Queryable()
+                    .Where( av => av.Value == null || av.Value == "" )
+                    .WithQueryableAttributeValues();
+
+                recordsDeleted += BulkDeleteInChunks( emptyValuesQuery, batchAmount, commandTimeout );
             }
 
             return recordsDeleted;
@@ -2165,6 +2201,39 @@ namespace Rock.Jobs
 
             // Return the count of memberships deleted
             return groupMemberIds.Count();
+        }
+
+        private int DeleteDuplicatePreviousFamilyLocations()
+        {
+            var rockContext = CreateRockContext();
+
+            var groupLocationService = new GroupLocationService( rockContext );
+            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+            var previousLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS ).Id;
+            var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
+
+            var duplicateFamilyLocations = groupLocationService.Queryable()
+                .Where( gl => gl.Group.GroupTypeId == familyGroupTypeId )
+                .GroupBy( gl => new { gl.GroupId, gl.LocationId } )
+                .Where( g => g.Count() > 1 )
+                .ToList();
+            var recordsToDelete = new List<GroupLocation>();
+
+            foreach ( var duplicateFamilyLocation in duplicateFamilyLocations )
+            {
+                var previousLocation = duplicateFamilyLocation.FirstOrDefault( x => x.GroupLocationTypeValueId == previousLocationTypeId );
+                var isOtherDuplicateHomeLocation = duplicateFamilyLocation.Any( gl => gl.GroupLocationTypeValueId == homeLocationTypeId );
+
+                if ( previousLocation != null && isOtherDuplicateHomeLocation )
+                {
+                    recordsToDelete.Add( previousLocation );
+                }
+            }
+
+            groupLocationService.DeleteRange( recordsToDelete );
+            rockContext.SaveChanges();
+
+            return recordsToDelete.Count;
         }
 
         /// <summary>

@@ -767,7 +767,15 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void lbViewCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            var parameters = new Dictionary<string, string>();
+            var personIdParam = PageParameter( PageParameterKey.PersonId );
+
+            if ( !string.IsNullOrWhiteSpace( personIdParam ) )
+            {
+                parameters.Add( PageParameterKey.PersonId, personIdParam );
+            }
+
+            NavigateToParentPage( parameters );
         }
 
         /// <summary>
@@ -1140,6 +1148,8 @@ namespace RockWeb.Blocks.Finance
             var benevolenceTypeList = new BenevolenceTypeService( rockContext )
                 .Queryable()
                 .OrderBy( p => p.Name )
+                .AsEnumerable()
+                .Where( p => p.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 .ToList();
 
             // Load Benevolence Types and set the value from the Benevolence Request

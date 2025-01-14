@@ -45,6 +45,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int MediaFolderId { get; set; }
 
         /// <summary>

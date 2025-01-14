@@ -20,6 +20,7 @@ using Rock.Enums.Crm;
 using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.Utility.Enums;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -712,6 +713,21 @@ namespace Rock.Model
         }
 
         private int? _primaryAliasId;
+
+        /// <summary>
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see> identifier.
+        /// </summary>
+        /// <value>
+        /// The primary alias identifier.
+        /// </value>
+        [DataMember]
+        public Guid? PrimaryAliasGuid
+        {
+            get => _primaryAliasGuid ?? PrimaryAlias?.Guid;
+            set => _primaryAliasGuid = value;
+        }
+
+        private Guid? _primaryAliasGuid;
 
         #endregion
 

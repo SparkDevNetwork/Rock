@@ -101,12 +101,13 @@
   --line-height-compact: 1.055;
 
   /* SPACING */
-  --spacing-tiny: 4px;
-  --spacing-small: 8px;
-  --spacing-medium: 16px;
-  --spacing-large: 24px;
-  --spacing-xlarge: 48px;
-  --spacing-huge: 80px;
+  --spacing-tiny:       4px;
+  --spacing-xsmall:     8px;
+  --spacing-small:     12px;
+  --spacing-medium:    16px;
+  --spacing-large:     24px;
+  --spacing-xlarge:    48px;
+  --spacing-huge:      80px; 
 
   /* BORDER RADIUS */
   --rounded-tiny: 2px;
@@ -191,12 +192,14 @@
 @import "_blocks-groups.less";
 @import "_blocks-finance.less";
 @import "_blocks-crm.less";
+@import "_blocks-lms.less";
 @import "_blocks-communication.less";
 @import "_blocks-workflow.less";
 @import "_blocks-events.less";
 @import "_components.less";
 
 @import "_page-specific.less";
+@import "_tox-overrides.less";
 
 @import "_scroll.less";
 @import "_helpers.less";
@@ -1505,8 +1508,23 @@ div.aspNetDisabled {
 }
 
 
+
 /* Implement Bootstrap v4 borderless tables. */
 .table.table-borderless > tbody > tr > td,
 .table.table-borderless > tbody > tr > th {
   border: 0;
+}
+
+.modal.container.modal-content.rock-modal:has(.ant-select-dropdown) {
+  overflow: visible;
+
+  .modal-header {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+  }
+}
+.modal.container.modal-content.rock-modal form {
+  border-bottom-right-radius: inherit;
+  border-bottom-left-radius: inherit;
+
 }

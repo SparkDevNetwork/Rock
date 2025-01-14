@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -23,6 +24,7 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Jobs
 {
@@ -35,7 +37,7 @@ namespace Rock.Jobs
     [IntegerField(
         "Command Timeout",
         Key = AttributeKey.CommandTimeoutSeconds,
-        Description = "Maximum amount of time (in seconds) to wait for the sql operations to complete. Leave blank to use the default for this job (180).",
+        Description = "Maximum amount of time (in seconds) to wait for the SQL operations to complete. Leave blank to use the default for this job (180).",
         IsRequired = false,
         DefaultIntegerValue = 60 * 3,
         Order = 1 )]
@@ -75,7 +77,9 @@ namespace Rock.Jobs
                 var completionService = new LearningProgramCompletionService( rockContext );
                 var courseService = new LearningCourseService( rockContext );
 
-                var trackedCourses = courseService.Queryable().AsNoTracking().Include( c => c.LearningProgram )
+                var trackedCourses = courseService.Queryable()
+                    .AsNoTracking()
+                    .Include( c => c.LearningProgram )
                     .Where( c => c.LearningProgram.IsCompletionStatusTracked )
                     .Select( c => new
                     {
@@ -83,7 +87,7 @@ namespace Rock.Jobs
                         c.LearningProgramId
                     } );
 
-                // All participant records for any of the tracked courses that don't already have a Program Completion record or have a 'Pending' program status.
+                // All participant records for any of the tracked courses that don't already have a Program Completion record or have a 'Pending' completion status.
                 var participants = participantService.Queryable()
                     .Include( p => p.Person )
                     .Include( p => p.LearningProgramCompletion )
@@ -105,6 +109,9 @@ namespace Rock.Jobs
 
                     CampusId = p.LearningProgramCompletion != null ? p.LearningProgramCompletion.CampusId : p.LearningClass.CampusId,
 
+                    // The current completionData status.
+                    CompletionStatus = p.LearningProgramCompletion != null ? ( Enums.Lms.CompletionStatus? ) p.LearningProgramCompletion.CompletionStatus : null,
+
                     // The oldest enrollment date (GroupMember.CreatedDateTime) for the student.
                     MinClassCreatedDateTime = p.LearningProgramCompletion != null ? p.LearningProgramCompletion.StartDate : participants
                         .Where( p2 =>
@@ -114,7 +121,7 @@ namespace Rock.Jobs
                         )
                         .Min( p2 => p2.LearningClass.CreatedDateTime ),
 
-                    // The most recent completion date for a course within the program (and for the student).
+                    // The most recent completionData date for a course within the completion (and for the student).
                     MaxClassCompletionDateTime = participants
                         .Where( p2 =>
                             p2.PersonId == p.PersonId &&
@@ -123,7 +130,7 @@ namespace Rock.Jobs
                         )
                         .Max( p2 => p2.LearningCompletionDateTime ),
 
-                    // Whether the student has passed all courses in the program.
+                    // Whether the student has passed all courses in the completion.
                     AllCoursesPassed = participants.Where( p2 =>
                             p2.PersonId == p.PersonId &&
                             p2.LearningClass.LearningCourse.LearningProgramId == p.LearningClass.LearningCourse.LearningProgramId )
@@ -134,8 +141,10 @@ namespace Rock.Jobs
                 var now = RockDateTime.Now;
 
                 // Get a list of Program Completions that should be marked 'Completed'.
-                var completedPrograms = completionData
+                var existingProgramsCompleted = completionData
                     .Where( p => p.AllCoursesPassed )
+                    .Where( p => p.Id > 0 )
+                    .Where( p => p.CompletionStatus != Enums.Lms.CompletionStatus.Completed )
                     .Select( p => new LearningProgramCompletion
                     {
                         Id = p.Id,
@@ -144,13 +153,13 @@ namespace Rock.Jobs
                         CampusId = p.CampusId,
                         StartDate = p.MinClassCreatedDateTime.HasValue ? p.MinClassCreatedDateTime.Value : now,
                         EndDate = p.MaxClassCompletionDateTime,
-                        CompletionStatus = Enums.Lms.CompletionStatus.Completed
+                        CompletionStatus = p.AllCoursesPassed ? Enums.Lms.CompletionStatus.Completed : Enums.Lms.CompletionStatus.Completed
                     } )
                     // The LearningParticipantIds will cause some duplication - make it distinct by ProgramCompletionId.
                     .DistinctBy( c => c.Id );
 
                 // Get a list of Program Completions that need to be created with a 'Pending' status.
-                var pendingPrograms = completionData
+                var programsToCreate = completionData
                     .Where( p => p.Id == 0 )
                     .Select( p => new LearningProgramCompletion
                     {
@@ -158,43 +167,54 @@ namespace Rock.Jobs
                         PersonAliasId = p.PersonAliasId,
                         CampusId = p.CampusId,
                         StartDate = p.MinClassCreatedDateTime.HasValue ? p.MinClassCreatedDateTime.Value : now,
+                        EndDate = p.MaxClassCompletionDateTime.HasValue ? (DateTime?)p.MaxClassCompletionDateTime.Value : null,
                         CompletionStatus = Enums.Lms.CompletionStatus.Pending
                     } )
                     // The LearningParticipantIds will cause some duplication - make it distinct by ProgramId and PersonAliasId.
                     .DistinctBy( pc => new { pc.LearningProgramId, pc.PersonAliasId } );
 
+                var completedProgramsText = "completion".PluralizeIf( existingProgramsCompleted.Count() != 1 );
+                var newProgramsText = "completion".PluralizeIf( programsToCreate.Count() != 1 );
+                var completedWasOrWere = existingProgramsCompleted.Count() == 1 ? "was" : "were";
+                var newProgramsWasOrWere = programsToCreate.Count() == 1 ? "was" : "were";
+
                 // Set the job result text.
-                if ( completedPrograms.Any() && pendingPrograms.Any() )
+                if ( existingProgramsCompleted.Any() && programsToCreate.Any() )
                 {
-                    resultsBuilder.Append( $"{completedPrograms.Count()} programs were updated to 'Completed' and {pendingPrograms.Count()} programs were created as 'Pending'." );
+                    resultsBuilder.AppendLine( $"{existingProgramsCompleted.Count()} {completedProgramsText} {completedWasOrWere} updated to 'Completed' and {programsToCreate.Count()} {newProgramsText} {newProgramsWasOrWere} created as 'Pending'." );
                 }
-                else if ( completedPrograms.Any() )
+                else if ( existingProgramsCompleted.Any() )
                 {
-                    resultsBuilder.Append( $"{completedPrograms.Count()} programs were updated to 'Completed'." );
+                    resultsBuilder.AppendLine( $"{existingProgramsCompleted.Count()} {completedProgramsText} {completedWasOrWere} updated to 'Completed'." );
                 }
-                else if ( pendingPrograms.Any() )
+                else if ( programsToCreate.Any() )
                 {
-                    resultsBuilder.Append( $"{pendingPrograms.Count()} programs were created as 'Pending'." );
+                    resultsBuilder.AppendLine( $"{programsToCreate.Count()} {newProgramsText} {newProgramsWasOrWere} created as 'Pending'." );
                 }
                 else
                 {
-                    this.UpdateLastStatusMessage( "No program completions to add or update." );
+                    resultsBuilder.AppendLine( "No completions to add or update." );
                 }
 
+                var completionWorkflowsLaunched = 0;
+
                 // If there are changes to be made perform them.
-                if ( completedPrograms.Any() || pendingPrograms.Any() )
+                if ( existingProgramsCompleted.Any() || programsToCreate.Any() )
                 {
                     rockContext.WrapTransaction( () =>
                     {
                         // There were records to be added.
-                        if ( pendingPrograms.Any() )
+                        if ( programsToCreate.Any() )
                         {
-                            completionService.AddRange( pendingPrograms );
+                            completionService.AddRange( programsToCreate );
                         }
 
                         rockContext.SaveChanges();
 
-                        var participantIds = completionData.Where( c => c.Id == 0 ).Select( c => c.ParticipantId );
+                        var personAliasIds = completionData.Select( p => p.PersonAliasId ).Distinct();
+                        var programIds = completionData.Select( p => p.LearningProgramId ).Distinct();
+
+                        var participantIds = completionData.Where( c => c.Id == 0 ).Select( c => c.ParticipantId ).Distinct();
 
                         var participantsData = participantService.Queryable()
                             .Where( p => participantIds.Contains( p.Id ) )
@@ -210,24 +230,77 @@ namespace Rock.Jobs
                                 }
                             );
 
-                        // Note that the the variable, 'now', was defined before the call to SaveChanges().
-                        var createdProgramCompletions = new LearningProgramCompletionService( rockContext )
+                        // Need to materialize now for use by completed programs to update
+                        // and for later use by participantsData loop (for linking completion to participant).
+                        var learningProgramCompletions = new LearningProgramCompletionService( rockContext )
                             .Queryable()
-                            .Where( c => c.CreatedDateTime > now );
+                            .Where( c => 
+                                personAliasIds.Contains( c.PersonAliasId )
+                                && programIds.Contains( c.LearningProgramId ) )
+                            .ToList();
 
+                        // Update the CompletionStatus and EndDate of newly completed programs.
+                        var completedProgramsToUpdate = learningProgramCompletions.Where( p => existingProgramsCompleted.Any( e => e.Id == p.Id && p.CompletionStatus != Enums.Lms.CompletionStatus.Completed ) );
+                        foreach ( var programCompletion in completedProgramsToUpdate )
+                        {
+                            programCompletion.CompletionStatus = Enums.Lms.CompletionStatus.Completed;
+                            if ( !programCompletion.EndDate.HasValue )
+                            {
+                                programCompletion.EndDate = completionData.FirstOrDefault( c => c.Id == c.Id )?.MaxClassCompletionDateTime ?? now;
+                            }
+                        }
+
+                        // Ensure the LearningParticipant record refers to the appropriate LearningProgramCompletion
+                        // and ensure the ProgramCompletionStatus is completed if necessary.
                         foreach ( var data in participantsData )
                         {
-                            var programCompletion = createdProgramCompletions
+                            var programCompletion = learningProgramCompletions
                                 .FirstOrDefault( pc => pc.PersonAliasId == data.CompletionData.PersonAliasId && pc.LearningProgramId == data.CompletionData.LearningProgramId );
 
+                            // Ensure the Participant is linked to the program.
                             data.Participant.LearningProgramCompletionId = programCompletion.Id;
                         }
 
+                        // Again save changes before launching any workflows.
                         rockContext.SaveChanges();
-                    } );
 
-                    this.UpdateLastStatusMessage( resultsBuilder.ToString() );
+                        var persons = new PersonService( rockContext )
+                            .Queryable()
+                            .Where( p => p.PrimaryAliasId.HasValue && personAliasIds.Contains( ( int ) p.PrimaryAliasId ) )
+                            .ToList();
+
+                        // For any newly completed programs launch the configured workflow (if any).
+                        foreach ( var completedProgramData in existingProgramsCompleted )
+                        {
+                            var completion = learningProgramCompletions.FirstOrDefault( p => p.Id == completedProgramData.LearningProgramId );
+
+                            // Skip the workflow launch if there's no completion or workflow.
+                            if (
+                                completion == null ||
+                                !completion.LearningProgram.CompletionWorkflowTypeId.HasValue )
+                            {
+                                continue;
+                            }
+
+                            var person = persons.FirstOrDefault( p => p.PrimaryAliasId == completedProgramData.PersonAliasId );
+                            var workflowAttributes = new Dictionary<string, string>
+                            {
+                                {"Person", person.ToJson() }
+                            };
+
+                            var workflow = WorkflowTypeCache.Get( completion.LearningProgram.CompletionWorkflowTypeId.Value );
+                            completion.LaunchWorkflow( completion.LearningProgram.CompletionWorkflowTypeId, workflow?.Name, workflowAttributes, null );
+                            completionWorkflowsLaunched++;
+                        }
+
+                    } );
                 }
+
+                var workflowsText = "workflow".PluralizeIf( completionWorkflowsLaunched != 1 );
+
+                resultsBuilder.AppendLine( $"{completionWorkflowsLaunched} completion {workflowsText} launched." );
+
+                this.UpdateLastStatusMessage( resultsBuilder.ToString() );
             }
         }
     }

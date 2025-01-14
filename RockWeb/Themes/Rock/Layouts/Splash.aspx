@@ -3,18 +3,18 @@
 
 <script runat="server">
 
-    // keep code below to call base class init method
+// keep code below to call base class init method
 
-    /// <summary>
-    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-    /// </summary>
-    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-    protected override void OnInit( EventArgs e )
-    {
-        base.OnInit( e );
+/// <summary>
+/// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+/// </summary>
+/// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+//protected override void OnInit( EventArgs e )
+//{
+//    base.OnInit( e );
 
-        lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath("~/Assets/Images/rock-logo-circle.svg") );
-    }
+//    lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath("~/Assets/Images/rock-logo-circle.svg") );
+//}
 
 </script>
 
@@ -38,8 +38,9 @@
     <form id="form1" runat="server">
 
         <div id="content">
-            <div id="logo">
-                <asp:Literal ID="lLogoSvg" runat="server" />
+
+            <div class="logo-background">
+                <div id="logo"></div>
             </div>
 
             <div id="content-box" class="clearfix">

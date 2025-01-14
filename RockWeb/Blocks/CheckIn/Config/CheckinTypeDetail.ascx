@@ -69,7 +69,7 @@
                                                 Help="Allows check-out to be enabled in the Check-in Manager." />
 
                                             <Rock:RockCheckBox ID="cbAllowRemoveFromFamilyAtKiosk" runat="server" Label="Enable Remove From Family at Kiosk"
-                                                Help="Only supported in next-gen check-in. Allows can check-in relationships to be removed at the kiosk without requiring a supervisor login." />
+                                                Help="Only supported in next-gen check-in. Allows can check-in relationships to be removed at the kiosk without requiring a supervisor login. This action removes all known relationships marked as &quot;Can Check-in&quot;." />
 
                                             <Rock:RockCheckBox ID="cbEnableOverride" runat="server" Label="Enable Override"
                                                 Help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
@@ -78,6 +78,7 @@
 
                                     <Rock:RockListBox ID="listboxAchievementTypes" runat="server" Label="Achievement Types" Help="Select achievement types that will used for checkin celebrations." />
 
+                                    <Rock:RockDropDownList ID="ddlPromotionsContentChannel" runat="server" Label="Promotions Content Channel" Help="The content channel to use for displaying promotions on the kiosk welcome screen. Only supported by next-gen check-in." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:NumberBox ID="nbAutoSelectDaysBack" runat="server" Label="Auto Select Days Back" MinimumValue="0" NumberType="Integer"
@@ -229,6 +230,21 @@
                                         <asp:ListItem Value="special-needs" Text="Remove Special Needs Groups" />
                                         <asp:ListItem Value="non-special-needs" Text="Remove Non-Special Needs Groups" />
                                     </Rock:RockCheckBoxList>
+
+                                    <Rock:RockDropDownList ID="ddlGradeAndAgeMatchingBehavior"
+                                        runat="server"
+                                        Label="Grade and Age Matching Behavior"
+                                        Required="true"
+                                        Help="Only supported in next-gen check-in. Defines how the Grade Range and Age Range/Birthdate Range values are used (blank ranges are still allowed in all cases). See documentation for edge cases not described here.
+                                            &quot;Grade And Age Must Match&quot; means Grade Range and one of Age Range or Birthdate Range must match.
+                                            &quot;Age Match Not Required&quot; means that if a Grade Range is specified on the group and the person has a matching Grade then that will be considered sufficient and neither Age Range nor Birthdate Range will be checked even if they are specified.
+                                            &quot;Prioritize Grade Over Age&quot; will use the same filtering logic as Age Match Not Required. After that, if any groups were matched by grade then all groups that were not matched by grade will be excluded." />
+
+                                    <Rock:RockDropDownList ID="ddlAgeRestriction"
+                                        runat="server"
+                                        Label="Age Restriction"
+                                        Required="true"
+                                        Help="Limits the ages of people that will be considered for check-in when using this configuration. This also limits who will be displayed on the person select screen. Only applies to next-gen check-in." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockCheckBox ID="cbAgeRequired" runat="server" Label="Age is Required"

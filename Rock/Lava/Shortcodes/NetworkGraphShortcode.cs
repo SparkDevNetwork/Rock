@@ -275,7 +275,7 @@ namespace Rock.Lava.Shortcodes
             };
 
             // Construct the CSS style for this media player.
-            var style = $"width: {settings.Attributes[ParameterKeys.Width]}; height: {settings.Attributes[ParameterKeys.Height]};";
+            var style = $"width: {settings.Attributes[ParameterKeys.Width]}; height: {settings.Attributes[ParameterKeys.Height]}; position: relative;";
 
             // Construct the JavaScript to initialize the graph.
             var script = $@"<script>
@@ -397,7 +397,18 @@ namespace Rock.Lava.Shortcodes
                                 Content = parmContent
                             };
 
-                            var parmItems = Regex.Matches( tagParms, @"(\S*?:'[^']+')" )
+                            // Regex pattern explanation:
+                            //
+                            //  \S*? Matches any non-whitespace characters (non-greedy) before the colon.
+                            //  : Matches the colon character.
+                            //  (['"]) Capturing group that matches either a single ' or double " quote. This group is captured as \2 for backreference.
+                            //  (.*?): Non-greedy match of any character, capturing as few characters as needed.
+                            //  \2: Backreference to the matched quote in (['"]), ensuring the string is closed with the same type of quote.
+                            //
+                            // This allows for network graph labels that include single quotes, and will match either:
+                            //  label:'A/V Team'
+                            //  label:"Pete's Group'
+                            var parmItems = Regex.Matches( tagParms, @"(\S*?:(['""])(.*?)\2)" )
                                 .Cast<Match>()
                                 .Select( m => m.Value )
                                 .ToList();

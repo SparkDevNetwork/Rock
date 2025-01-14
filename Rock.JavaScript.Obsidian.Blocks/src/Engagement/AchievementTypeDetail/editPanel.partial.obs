@@ -211,17 +211,18 @@
     import StepProgramPicker from "@Obsidian/Controls/stepProgramPicker.obs";
     import StepTypePicker from "@Obsidian/Controls/stepTypePicker.obs";
     import StepStatusPicker from "@Obsidian/Controls/stepStatusPicker.obs";
-    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AchievementTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementTypeDetail/achievementTypeBag";
     import { AchievementTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementTypeDetail/achievementTypeDetailOptionsBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<AchievementTypeBag>,
+            type: Object as PropType<ValidPropertiesBox<AchievementTypeBag>>,
             required: true
         },
 
@@ -232,40 +233,40 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: AchievementTypeBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<AchievementTypeBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const isPublic = propertyRef(props.modelValue.isPublic ?? false, "IsPublic");
-    const category = propertyRef(props.modelValue.category ?? {}, "Category");
-    const allowOverAchievement = propertyRef(props.modelValue.allowOverAchievement ?? false, "AllowOverAchievement");
-    const maxAccomplishmentsAllowed = propertyRef(props.modelValue.maxAccomplishmentsAllowed, "MaxAccomplishmentsAllowed");
-    const achievementIconCssClass = propertyRef(props.modelValue.achievementIconCssClass ?? "", "AchievementIconCssClass");
-    const highlightColor = propertyRef(props.modelValue.highlightColor ?? "", "HighlightColor");
-    const achievementEntityType = propertyRef(props.modelValue.achievementEntityType ?? {}, "ComponentEntityTypeId");
-    const addStepOnSuccess = ref(props.modelValue.addStepOnSuccess ?? false);
-    const achievementStepProgram = ref(props.modelValue.stepProgram ?? {});
-    const achievementStepType = propertyRef(props.modelValue.achievementStepType ?? {}, "AchievementStepType");
-    const achievementStepStatus = propertyRef(props.modelValue.achievementStepStatus ?? {}, "AchievementStepStatus");
-    const prerequisites = ref(props.modelValue.prerequisites ?? []);
-    const availablePrerequisites = ref(props.modelValue.availablePrerequisites ?? []);
-    const achievementStartWorkflowType = propertyRef(props.modelValue.achievementStartWorkflowType ?? {}, "AchievementStartWorkflowType");
-    const achievementFailureWorkflowType = propertyRef(props.modelValue.achievementFailureWorkflowType ?? {}, "AchievementFailureWorkflowType");
-    const achievementSuccessWorkflowType = propertyRef(props.modelValue.achievementSuccessWorkflowType ?? {}, "AchievementSuccessWorkflowType");
-    const badgeLavaTemplate = propertyRef(props.modelValue.badgeLavaTemplate ?? "", "BadgeLavaTemplate");
-    const resultsLavaTemplate = propertyRef(props.modelValue.resultsLavaTemplate ?? "", "ResultsLavaTemplate");
-    const imageBinaryFile = propertyRef(props.modelValue.imageBinaryFile ?? {}, "ImageBinaryFileId");
-    const alternateImageBinaryFile = propertyRef(props.modelValue.alternateImageBinaryFile ?? {}, "AlternateImageBinaryFileId");
-    const customSummaryLavaTemplate = propertyRef(props.modelValue.customSummaryLavaTemplate ?? "", "CustomSummaryLavaTemplate");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const isPublic = propertyRef(props.modelValue?.bag?.isPublic ?? false, "IsPublic");
+    const category = propertyRef(props.modelValue?.bag?.category ?? {}, "Category");
+    const allowOverAchievement = propertyRef(props.modelValue?.bag?.allowOverAchievement ?? false, "AllowOverAchievement");
+    const maxAccomplishmentsAllowed = propertyRef(props.modelValue?.bag?.maxAccomplishmentsAllowed, "MaxAccomplishmentsAllowed");
+    const achievementIconCssClass = propertyRef(props.modelValue?.bag?.achievementIconCssClass ?? "", "AchievementIconCssClass");
+    const highlightColor = propertyRef(props.modelValue?.bag?.highlightColor ?? "", "HighlightColor");
+    const achievementEntityType = propertyRef(props.modelValue?.bag?.achievementEntityType ?? {}, "ComponentEntityTypeId");
+    const addStepOnSuccess = ref(props.modelValue?.bag?.addStepOnSuccess ?? false);
+    const achievementStepProgram = ref(props.modelValue?.bag?.stepProgram ?? {});
+    const achievementStepType = propertyRef(props.modelValue?.bag?.achievementStepType ?? {}, "AchievementStepType");
+    const achievementStepStatus = propertyRef(props.modelValue?.bag?.achievementStepStatus ?? {}, "AchievementStepStatus");
+    const prerequisites = ref(props.modelValue?.bag?.prerequisites ?? []);
+    const availablePrerequisites = ref(props.modelValue?.bag?.availablePrerequisites ?? []);
+    const achievementStartWorkflowType = propertyRef(props.modelValue?.bag?.achievementStartWorkflowType ?? {}, "AchievementStartWorkflowType");
+    const achievementFailureWorkflowType = propertyRef(props.modelValue?.bag?.achievementFailureWorkflowType ?? {}, "AchievementFailureWorkflowType");
+    const achievementSuccessWorkflowType = propertyRef(props.modelValue?.bag?.achievementSuccessWorkflowType ?? {}, "AchievementSuccessWorkflowType");
+    const badgeLavaTemplate = propertyRef(props.modelValue?.bag?.badgeLavaTemplate ?? "", "BadgeLavaTemplate");
+    const resultsLavaTemplate = propertyRef(props.modelValue?.bag?.resultsLavaTemplate ?? "", "ResultsLavaTemplate");
+    const imageBinaryFile = propertyRef(props.modelValue?.bag?.imageBinaryFile ?? {}, "ImageBinaryFileId");
+    const alternateImageBinaryFile = propertyRef(props.modelValue?.bag?.alternateImageBinaryFile ?? {}, "AlternateImageBinaryFileId");
+    const customSummaryLavaTemplate = propertyRef(props.modelValue?.bag?.customSummaryLavaTemplate ?? "", "CustomSummaryLavaTemplate");
     const entityAttributes = ref<Record<string, PublicAttributeBag>>({});
-    const componentDescription = ref(props.modelValue.achievementEventDescription ?? "");
+    const componentDescription = ref(props.modelValue?.bag?.achievementEventDescription ?? "");
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -295,7 +296,7 @@
     });
 
     const isComponentPickerEnabled = computed((): boolean => {
-        return !props.modelValue.idKey;
+        return !props.modelValue?.bag?.idKey;
     });
 
     const achievementEvent = computed((): string => {
@@ -313,41 +314,43 @@
 
         const result = await invokeBlockAction<AchievementTypeBag>("GetEntityAttributes", {
             entityTypeGuid: entityTypeGuid,
-            IdKey: props.modelValue.idKey
+            IdKey: props.modelValue?.bag?.idKey
         });
 
         if (result.isSuccess && result.data) {
             entityAttributes.value = result.data.attributes ?? {};
             attributeValues.value = result.data.attributeValues ?? {};
             componentDescription.value = result.data.achievementEventDescription ?? "";
+            availablePrerequisites.value = result.data.availablePrerequisites ?? [];
+            prerequisites.value = result.data.prerequisites ?? [];
         }
     }, { immediate: true });
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(isPublic, props.modelValue.isPublic ?? false);
-        updateRefValue(category, props.modelValue.category ?? {});
-        updateRefValue(allowOverAchievement, props.modelValue.allowOverAchievement ?? false);
-        updateRefValue(maxAccomplishmentsAllowed, props.modelValue.maxAccomplishmentsAllowed);
-        updateRefValue(achievementIconCssClass, props.modelValue.achievementIconCssClass ?? "");
-        updateRefValue(highlightColor, props.modelValue.highlightColor ?? "");
-        updateRefValue(achievementEntityType, props.modelValue.achievementEntityType ?? {});
-        updateRefValue(achievementStepType, props.modelValue.achievementStepType ?? {});
-        updateRefValue(achievementStepStatus, props.modelValue.achievementStepStatus ?? {});
-        updateRefValue(achievementStartWorkflowType, props.modelValue.achievementStartWorkflowType ?? {});
-        updateRefValue(achievementFailureWorkflowType, props.modelValue.achievementFailureWorkflowType ?? {});
-        updateRefValue(achievementSuccessWorkflowType, props.modelValue.achievementSuccessWorkflowType ?? {});
-        updateRefValue(badgeLavaTemplate, props.modelValue.badgeLavaTemplate ?? "");
-        updateRefValue(resultsLavaTemplate, props.modelValue.resultsLavaTemplate ?? "");
-        updateRefValue(customSummaryLavaTemplate, props.modelValue.customSummaryLavaTemplate ?? "");
-        updateRefValue(imageBinaryFile, props.modelValue.imageBinaryFile ?? {});
-        updateRefValue(alternateImageBinaryFile, props.modelValue.alternateImageBinaryFile ?? {});
-        updateRefValue(prerequisites, props.modelValue.prerequisites ?? []);
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(isPublic, props.modelValue?.bag?.isPublic ?? false);
+        updateRefValue(category, props.modelValue?.bag?.category ?? {});
+        updateRefValue(allowOverAchievement, props.modelValue?.bag?.allowOverAchievement ?? false);
+        updateRefValue(maxAccomplishmentsAllowed, props.modelValue?.bag?.maxAccomplishmentsAllowed);
+        updateRefValue(achievementIconCssClass, props.modelValue?.bag?.achievementIconCssClass ?? "");
+        updateRefValue(highlightColor, props.modelValue?.bag?.highlightColor ?? "");
+        updateRefValue(achievementEntityType, props.modelValue?.bag?.achievementEntityType ?? {});
+        updateRefValue(achievementStepType, props.modelValue?.bag?.achievementStepType ?? {});
+        updateRefValue(achievementStepStatus, props.modelValue?.bag?.achievementStepStatus ?? {});
+        updateRefValue(achievementStartWorkflowType, props.modelValue?.bag?.achievementStartWorkflowType ?? {});
+        updateRefValue(achievementFailureWorkflowType, props.modelValue?.bag?.achievementFailureWorkflowType ?? {});
+        updateRefValue(achievementSuccessWorkflowType, props.modelValue?.bag?.achievementSuccessWorkflowType ?? {});
+        updateRefValue(badgeLavaTemplate, props.modelValue?.bag?.badgeLavaTemplate ?? "");
+        updateRefValue(resultsLavaTemplate, props.modelValue?.bag?.resultsLavaTemplate ?? "");
+        updateRefValue(customSummaryLavaTemplate, props.modelValue?.bag?.customSummaryLavaTemplate ?? "");
+        updateRefValue(imageBinaryFile, props.modelValue?.bag?.imageBinaryFile ?? {});
+        updateRefValue(alternateImageBinaryFile, props.modelValue?.bag?.alternateImageBinaryFile ?? {});
+        updateRefValue(prerequisites, props.modelValue?.bag?.prerequisites ?? []);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -359,33 +362,34 @@
             maximumAccomplishmentsAllowed = 1;
         }
 
-        const newValue: AchievementTypeBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            isActive: isActive.value,
-            name: name.value,
-            isPublic: isPublic.value,
-            category: category.value,
-            allowOverAchievement: allowOverAchievement.value,
-            maxAccomplishmentsAllowed: maximumAccomplishmentsAllowed,
-            achievementIconCssClass: achievementIconCssClass.value,
-            highlightColor: highlightColor.value,
-            achievementEntityType: achievementEntityType.value,
-            achievementStepType: achievementStepType.value,
-            achievementStepStatus: achievementStepStatus.value,
-            achievementStartWorkflowType: achievementStartWorkflowType.value,
-            achievementFailureWorkflowType: achievementFailureWorkflowType.value,
-            achievementSuccessWorkflowType: achievementSuccessWorkflowType.value,
-            badgeLavaTemplate: badgeLavaTemplate.value,
-            resultsLavaTemplate: resultsLavaTemplate.value,
-            customSummaryLavaTemplate: customSummaryLavaTemplate.value,
-            imageBinaryFile: imageBinaryFile.value,
-            alternateImageBinaryFile: alternateImageBinaryFile.value,
-            prerequisites: prerequisites.value,
-            stepProgram: achievementStepProgram.value,
-            addStepOnSuccess: addStepOnSuccess.value
+        const newValue: ValidPropertiesBox<AchievementTypeBag> = {
+            bag: { ...props.modelValue.bag } as AchievementTypeBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
+        setPropertiesBoxValue(newValue, "category", category.value);
+        setPropertiesBoxValue(newValue, "allowOverAchievement", allowOverAchievement.value);
+        setPropertiesBoxValue(newValue, "maxAccomplishmentsAllowed", maximumAccomplishmentsAllowed);
+        setPropertiesBoxValue(newValue, "achievementIconCssClass", achievementIconCssClass.value);
+        setPropertiesBoxValue(newValue, "highlightColor", highlightColor.value);
+        setPropertiesBoxValue(newValue, "achievementEntityType", achievementEntityType.value);
+        setPropertiesBoxValue(newValue, "achievementStepType", achievementStepType.value);
+        setPropertiesBoxValue(newValue, "achievementStepStatus", achievementStepStatus.value);
+        setPropertiesBoxValue(newValue, "achievementStartWorkflowType", achievementStartWorkflowType.value);
+        setPropertiesBoxValue(newValue, "achievementFailureWorkflowType", achievementFailureWorkflowType.value);
+        setPropertiesBoxValue(newValue, "achievementSuccessWorkflowType", achievementSuccessWorkflowType.value);
+        setPropertiesBoxValue(newValue, "badgeLavaTemplate", badgeLavaTemplate.value);
+        setPropertiesBoxValue(newValue, "resultsLavaTemplate", resultsLavaTemplate.value);
+        setPropertiesBoxValue(newValue, "customSummaryLavaTemplate", customSummaryLavaTemplate.value);
+        setPropertiesBoxValue(newValue, "imageBinaryFile", imageBinaryFile.value);
+        setPropertiesBoxValue(newValue, "alternateImageBinaryFile", alternateImageBinaryFile.value);
+        setPropertiesBoxValue(newValue, "prerequisites", prerequisites.value);
+        setPropertiesBoxValue(newValue, "stepProgram", achievementStepProgram.value);
+        setPropertiesBoxValue(newValue, "addStepOnSuccess", addStepOnSuccess.value);
 
         emit("update:modelValue", newValue);
     });

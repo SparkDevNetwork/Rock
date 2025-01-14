@@ -117,7 +117,12 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningProgram> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext );
+            var currentPerson = GetCurrentPerson();
+
+            // Materialize the LearningPrograms so that we can check for View authorization.
+            return new LearningProgramService( rockContext ).Queryable().ToList()
+                .Where( p => p.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                .AsQueryable();
         }
 
         /// <inheritdoc/>
@@ -139,6 +144,12 @@ namespace Rock.Blocks.Lms
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 
+        /// <inheritdoc/>
+        protected override IQueryable<LearningProgram> GetOrderedListQueryable( IQueryable<LearningProgram> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( s => s.Name );
+        }
+
         #endregion
 
         #region Block Actions
@@ -150,33 +161,46 @@ namespace Rock.Blocks.Lms
         /// <returns>An empty result that indicates if the operation succeeded.</returns>
         [BlockAction]
         public BlockActionResult Delete( string key )
-        {
-            using ( var rockContext = new RockContext() )
+    {
+            var entityService = new LearningProgramService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new LearningProgramService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{LearningProgram.FriendlyTypeName} not found." );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete ${LearningProgram.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{LearningProgram.FriendlyTypeName} not found." );
             }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {LearningProgram.FriendlyTypeName}." );
+            }
+
+            entityService.Delete( entity.Id );
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
+
+        /// <summary>
+        /// Determines if any of the classes for the <see cref="LearningProgram"/>
+        /// specified by the <paramref name="key"/> has any activity completions.
+        /// </summary>
+        /// <param name="key">The identifier of the <see cref="LearningProgram"/> to be evaluated.</param>
+        /// <returns><c>true</c> if the <see cref="LearningProgram"/> has activity completion records; otherwise <c>false</c>.</returns>
+        [BlockAction]
+        public BlockActionResult HasStudentCompletions( string key )
+        {
+            var disablePredicatableIds = PageCache.Layout.Site.DisablePredictableIds;
+            var programId = new LearningProgramService( RockContext ).GetSelect( key, p => p.Id, !disablePredicatableIds );
+            var entityService = new LearningActivityService( RockContext );
+
+            var hasCompletions = entityService.Queryable()
+                .Where( c => c.LearningClass.LearningCourse.LearningProgramId == programId )
+                .Any( c => c.LearningActivityCompletions.Any() );
+
+            return ActionOk( hasCompletions );
+        }
+
 
         #endregion
     }

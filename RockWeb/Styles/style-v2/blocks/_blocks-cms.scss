@@ -131,7 +131,7 @@
 // ==================== SOCIAL TOOLS ====================
 .socialsharing {
   padding:              0;
-  margin-top:           12px;
+  margin-top:           var(--spacing-small);
 
   li {
     display:            inline-block;
@@ -353,7 +353,7 @@
   .results-header {
     display:            flex;
     align-items:        center;
-    padding-bottom:     12px;
+    padding-bottom:     var(--spacing-small);
     margin-bottom:      var(--spacing-large);
     border-bottom:      1px solid var(--color-interface-soft);
   }
@@ -391,7 +391,7 @@
   margin:               0;
 
   .icon {
-    margin:             8px 12px 0 0;
+    margin:             var(--spacing-xsmall) var(--spacing-small) 0 0;
     font-size:          24px;
   }
 
@@ -405,11 +405,11 @@
   }
 
   .requirement-message {
-    margin-bottom:      12px;
+    margin-bottom:      var(--spacing-small);
   }
 
   .list-requirements {
-    margin:             12px 0 0;
+    margin:             var(--spacing-small) 0 0;
     font-weight:        var(--font-weight-medium);
     a {
       border-bottom:    none;

@@ -54,6 +54,36 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
     <script src="<%# ResolveRockUrl("~~/Assets/Scripts/theme.js", true) %>"></script>
 
+  <script>
+
+            let attributeName = "theme"
+            var htmlElement = document.documentElement;
+
+            const states = ["light", "dark", "system"];
+            let currentStateIndex;
+
+            const value = localStorage.getItem(attributeName);
+            if (value != null) {
+                htmlElement.setAttribute(attributeName, value);
+                currentStateIndex = states.indexOf(value);
+            } else {
+                currentStateIndex = 2;
+            };
+      document.addEventListener("DOMContentLoaded", function () {
+          const button = document.getElementById("themeSwitchButton");
+
+          button.addEventListener("click", () => {
+
+              currentStateIndex = (currentStateIndex + 1) % states.length;
+
+              localStorage.setItem(attributeName, states[currentStateIndex]);
+
+              const value = localStorage.getItem(attributeName);
+              htmlElement.setAttribute(attributeName, value);
+          });
+      });
+  </script>
+
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
@@ -80,6 +110,9 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
 
                 <div id="fixed-header" class="header-content" role="navigation">
                     <div class="navbar-zone-login"><Rock:Zone Name="Login" runat="server" /></div>
+                    <div>
+                        <button id="themeSwitchButton" class="theme-toggle" type="button"><i id="theme-icon" class="ti theme-mode-icon"></i></button>
+                    </div>
                     <div class="navbar-zone-header"><Rock:Zone Name="Header" runat="server" /></div>
                 </div>
             </nav>
@@ -106,11 +139,26 @@ through Christ, we find forgiveness, salvation, and the assurance of eternal lif
         <asp:ScriptManager ID="sManager" runat="server"/>
         <asp:UpdateProgress id="updateProgress" runat="server" DisplayAfter="800">
 		        <ProgressTemplate>
-		            <div class="updateprogress-status">
-                        <div class="spinner">
-                          <div class="rect1"></div><div class="rect2"></div><div class="rect3"></div><div class="rect4"></div><div class="rect5"></div>
-                        </div>
+                <div class="updateprogress-status">
+                    <div class="grid-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
                     </div>
+                </div>
                     <div class="updateprogress-bg modal-backdrop"></div>
 		        </ProgressTemplate>
         </asp:UpdateProgress>

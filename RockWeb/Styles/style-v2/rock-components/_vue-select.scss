@@ -43,6 +43,13 @@
   --vs-dropdown-option--deselect-color: #fff;
   --vs-transition-timing-function: cubic-bezier(1, -.115, .975, .855);
   --vs-transition-duration: 150ms;
+
+  --vs-transition-timing-function: cubic-bezier(1, .5, .8, 1);
+  --vs-transition-duration: .15s;
+
+  --vs-disabled-bg:     var(--vs-state-disabled-bg);
+  --vs-disabled-color:  var(--vs-state-disabled-color);
+  --vs-disabled-cursor: var(--vs-state-disabled-cursor);
 }
 
 .v-select {
@@ -53,11 +60,6 @@
 .v-select,
 .v-select * {
   box-sizing:   border-box;
-}
-
-:root {
-  --vs-transition-timing-function: cubic-bezier(1, .5, .8, 1);
-  --vs-transition-duration: .15s;
 }
 
 @-webkit-keyframes vSelectSpinner {
@@ -89,12 +91,6 @@
 .vs__fade-enter,
 .vs__fade-leave-to {
   opacity: 0;
-}
-
-:root {
-  --vs-disabled-bg:     var(--vs-state-disabled-bg);
-  --vs-disabled-color:  var(--vs-state-disabled-color);
-  --vs-disabled-cursor: var(--vs-state-disabled-cursor);
 }
 
 .vs--disabled .vs__clear,

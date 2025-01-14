@@ -94,11 +94,11 @@ WHERE NOT EXISTS (
     WHERE ex.[Guid] = p.[Guid]
 )
 
-/* Add A semesters for each program */
+/* Add a semesters for each program */
 INSERT [LearningSemester] ( [Name], [LearningProgramId], [StartDate], [EndDate], [EnrollmentCloseDate], [Guid] )
 SELECT IIF(
             ps.[ConfigurationMode] = @onDemandMode,
-            'Default',
+            'Initial Semester',
             CONCAT('SPRING ', @nextYear)
         )
         , p.Id, 
@@ -169,16 +169,16 @@ DECLARE
     
     -- Activities
     @assessmentComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'A585C101-02E8-4953-BF77-C783C7CFDFDC'),
-    @assessment1Description NVARCHAR(MAX) = '{"time":1714411974206,"blocks":[{"id":"nUecbc6V6Z","type":"paragraph","data":{"text":"My Content Here"}}],"version":"2.28.0"}',
+    @assessment1Description NVARCHAR(MAX) = '',
     @assessment1Settings NVARCHAR(MAX) = '{"items":[{"uniqueId":"B6D5C8A6-3C4E-4F5F-9ADA-C092BDF8BC3F","typeName":"Multiple Choice","question":"How many apostles are there?","helpText":"","answers":["7","12","20"],"correctAnswer":"12","response":"","order":1},{"uniqueId":"D1524351-462B-49DC-9330-F11C8C31619B","typeName":"Section","title":"Short Answer Section","summary":"Please answer with as much detail as you can.","response":"","order":4},{"uniqueId":"F62B3AA3-A126-4A4B-8DE6-26E817EB13CF","answerBoxRows":5,"helpText":"","maxCharacterCount":120,"pointsEarned":0,"question":"Are there any other numbers in the Bible that match the number of apostles?","questionWeight":20,"response":"","typeName":"Short Answer","order":5},{"answerBoxRows":2,"helpText":"Possibly one of the Gospels?","maxCharacterCount":50,"pointsEarned":0,"question":"Which apostle was the one Jesus loved?","questionWeight":30,"response":"","typeName":"Short Answer","order":6,"uniqueId":"B5658589-B322-4193-85B5-F71767ACD7AB"},{"uniqueId":"ae4fe271-abd2-4779-9ebf-c9481c209d46","typeName":"Multiple Choice","question":"Who was sold into slavery in Egypt?","helpText":"","answers":["Joseph","Jonathan","Johab","Jorge"],"correctAnswer":"Joseph","response":"","order":2},{"uniqueId":"64a74114-92fa-4099-8dea-9e010c912d48","typeName":"Multiple Choice","question":"Who led the Israelites after Moses died?","helpText":"","answers":["Joshua","Johab","Jonah","Lot"],"correctAnswer":"Joshua","order":3}],"assessmentTerm":"Assessment","header":"{\"time\":1716326144116,\"blocks\":[{\"id\":\"-SQIQa_9xh\",\"type\":\"paragraph\",\"data\":{\"text\":\"Please complete to the best of your ability.\"}}],\"version\":\"2.28.0\"}","multipleChoiceWeight":50,"showMissedQuestionsOnResults":true,"showResultsOnCompletion":true}',
     @pointAssessmentComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'A6E91C3C-4A4C-4FC2-816A-A6B1E6422381'),
     @presentationDescription NVARCHAR(MAX) = '',
     @presentationSettings NVARCHAR(MAX) = '{"instructions":"{\"time\":1719941564985,\"blocks\":[{\"id\":\"uiHbfAQlzA\",\"type\":\"paragraph\",\"data\":{\"text\":\"Be sure to speak loud enough for all to hear and remember to make eye contact with people in the audience.\"}}],\"version\":\"2.28.0\"}","rubric":"{\"time\":1715703275889,\"blocks\":[{\"id\":\"D2cSRK74X8\",\"type\":\"paragraph\",\"data\":{\"text\":\"Grading Rubric:\"}},{\"id\":\"qZ7h7XNvN2\",\"type\":\"table\",\"data\":{\"withHeadings\":true,\"content\":[[\"Item\",\"Score\"],[\"Eye Contact\",\"5\"],[\"Speaking Quality\",\"5\"],[\"Content\",\"20\"],[\"Slides\",\"20\"]]}}],\"version\":\"2.28.0\"}"}',
-    @checkOffComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '7FAE61A2-5F08-4FD9-8BB7-FF7FAB410AC5'),
-    @checkOffDescription NVARCHAR(MAX) = '',
-    @checkOffSettings NVARCHAR(MAX) = '{"content":"","confirmationText":"I Certify that I have prepared my final assessment on my own without any significant contributions from others.","isConfirmationRequired":true}',
+    @acknowledgementComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '7FAE61A2-5F08-4FD9-8BB7-FF7FAB410AC5'),
+    @acknowledgementDescription NVARCHAR(MAX) = '',
+    @acknowledgementSettings NVARCHAR(MAX) = '{"content":"","confirmationText":"I Certify that I have prepared my final assessment on my own without any significant contributions from others.","isConfirmationRequired":true}',
     @fileUploadComponentId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = 'DEB298FE-383B-46BD-A974-AFD92C09843A'),
-    @fileUploadDescription NVARCHAR(MAX) = '{"time":1719854012944,"blocks":[{"id":"XD223JYWoi","type":"paragraph", "data": {"text":"Please upload your mid term paper. Changes will be accepted up until the due date."}}]}',
+    @fileUploadDescription NVARCHAR(MAX) = 'Please upload your mid term paper. Changes will be accepted up until the due date.',
     @fileUploadSettings NVARCHAR(MAX) = '';
     
 
@@ -257,13 +257,13 @@ DECLARE
     @availableAfterPreviousComplete INT = 4;
 
 /* Create the Activities for the Class */
-INSERT [LearningActivity] ( [LearningClassId], [Name], [Order], [ActivityComponentId], [AssignTo], [DueDateCriteria], [DueDateDefault], [DueDateOffset], [AvailabilityCriteria], [AvailableDateDefault], [AvailableDateOffset], [Points], [IsStudentCommentingEnabled], [SendNotificationCommunication], [Guid], [Description], [ActivityComponentSettingsJson] )
-SELECT g.[Id], seed.[Name], seed.[Order], [ActivityComponentId], [AssignTo], [DueCalculationMethod], [DueDateDefault], [DueDateOffset], [AvailableCalculationMethod], [AvailableDateDefault], [AvailableDateOffset], [Points], [IsStudentCommentingEnabled], [SendNotificationCommunication], NEWID() [Guid], seed.[Description], [SettingsJson]
+INSERT [LearningActivity] ( [LearningClassId], [Name], [Order], [ActivityComponentId], [AssignTo], [DueDateCriteria], [DueDateDefault], [DueDateOffset], [AvailabilityCriteria], [AvailableDateDefault], [AvailableDateOffset], [Points], [IsStudentCommentingEnabled], [SendNotificationCommunication], [Guid], [Description], [ActivityComponentSettingsJson], [CreatedDateTime], [ModifiedDateTime] )
+SELECT g.[Id], seed.[Name], seed.[Order], [ActivityComponentId], [AssignTo], [DueCalculationMethod], [DueDateDefault], [DueDateOffset], [AvailableCalculationMethod], [AvailableDateDefault], [AvailableDateOffset], [Points], [IsStudentCommentingEnabled], [SendNotificationCommunication], NEWID() [Guid], seed.[Description], [SettingsJson], seed.[CreatedDateTime], seed.[ModifiedDateTime]
 FROM (
-    SELECT 'Assessment 1' [Name], 1 [Order], @assessmentComponentId [ActivityComponentId], 0 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 2 [DueDateOffset], @alwaysAvailable [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 10 [Points], 1 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @assessment1Description [Description], @assessment1Settings [SettingsJson]
-    UNION SELECT 'Check Off' [Name], 2 [Order], @checkOffComponentId [ActivityComponentId], 0 [AssignTo], @neverDue [DueCalculationMethod], NULL [DueDateDefault], NULL [DueDateOffset], @alwaysAvailable [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 0 [Points], 0 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @checkOffDescription, @checkOffSettings
-    UNION SELECT 'Mid Term' [Name], 3 [Order], @fileUploadComponentId [ActivityComponentId], 0 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 12 [DueDateOffset], @availableAfterPreviousComplete [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 30 [Points], 1 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @fileUploadDescription, @fileUploadSettings
-    UNION SELECT 'Final Project' [Name], 4 [Order], @pointAssessmentComponentId [ActivityComponentId], 1 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 24 [DueDateOffset], @availableAfterPreviousComplete [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 50 [Points], 0 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @presentationDescription, @presentationSettings
+    SELECT 'Assessment 1' [Name], 1 [Order], @assessmentComponentId [ActivityComponentId], 0 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 2 [DueDateOffset], @alwaysAvailable [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 10 [Points], 1 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @assessment1Description [Description], @assessment1Settings [SettingsJson], @now [CreatedDateTime], @now [ModifiedDateTime]
+    UNION SELECT 'Check Off' [Name], 2 [Order], @acknowledgementComponentId [ActivityComponentId], 0 [AssignTo], @neverDue [DueCalculationMethod], NULL [DueDateDefault], NULL [DueDateOffset], @alwaysAvailable [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 0 [Points], 0 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @acknowledgementDescription, @acknowledgementSettings, @now, @now
+    UNION SELECT 'Mid Term' [Name], 3 [Order], @fileUploadComponentId [ActivityComponentId], 0 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 12 [DueDateOffset], @availableAfterPreviousComplete [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 30 [Points], 1 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @fileUploadDescription, @fileUploadSettings, @now, @now
+    UNION SELECT 'Final Project' [Name], 4 [Order], @pointAssessmentComponentId [ActivityComponentId], 1 [AssignTo], @classStartOffset [DueCalculationMethod], NULL [DueDateDefault], 24 [DueDateOffset], @availableAfterPreviousComplete [AvailableCalculationMethod], NULL [AvailableDateDefault], NULL AvailableDateOffset, 50 [Points], 0 [IsStudentCommentingEnabled], 0 [SendNotificationCommunication], @presentationDescription, @presentationSettings, @now, @now
 ) seed
 JOIN [Group] g ON 1 = 1
 JOIN #classes c ON g.[Guid] = c.[ClassGuid];
@@ -330,61 +330,62 @@ JOIN [GroupMember] gm ON gm.[Guid] = p.[GroupMemberGuid]
 JOIN [Person] pers on pers.[Id] = p.[PersonId]
 JOIN #classes c on c.[ClassGuid] = p.[ClassGuid]
 
-/* Add the Student Activity Completions */
-INSERT [LearningActivityCompletion] ( [LearningActivityId], [StudentId], [IsStudentCompleted], [IsFacilitatorCompleted], [Guid]
-    , [AvailableDateTime], [DueDate], [StudentComment], [FacilitatorComment], [CompletedDateTime], [WasCompletedOnTime], [PointsEarned], [CompletedByPersonAliasId] )
-SELECT [a].[Id], 
-    gm.[Id], 
-    IIF(gm.[Id] % 5 IN (0, 1), 1, 0) [IsStudentCompleted],
-    0 [IsFacilitatorCompleted],
-    NEWID() [Guid],
-    CASE 
-        WHEN [AvailabilityCriteria] = @specificDate THEN [AvailableDateDefault] 
-        WHEN [AvailabilityCriteria] = @classStartOffset THEN DATEADD(DAY, [AvailableDateOffset], [RandomDateTimeAdded])
-        WHEN [AvailabilityCriteria] = @enrollmentOffset THEN DATEADD(DAY, [AvailableDateOffset], [DateTimeAdded])
-        WHEN [AvailabilityCriteria] = @availableAfterPreviousComplete THEN NULL
-        ELSE @now
-    END [AvailableDate],
-    CASE 
-        WHEN [DueDateCriteria] = @specificDate THEN [DueDateDefault] 
-        WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
-        WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
-        ELSE NULL
-    END [DueDate],
-    IIF(
-        a.[IsStudentCommentingEnabled] = 1, 
-        IIF( gm.[Id] % 3 = 0, 'I was hoping to discuss this further', NULL), 
-        NULL
-    ) StudentComment,
-    IIF( gm.[Id] % 4 = 0 AND gm.[Id] % 5 IN (0, 1), 'Excellent Work!', NULL) FacilitatorComment,
+/* TODO: Add some Student Activity Completions */
+--INSERT [LearningActivityCompletion] ( [LearningActivityId], [StudentId], [IsStudentCompleted], [IsFacilitatorCompleted], [Guid]
+--    , [AvailableDateTime], [DueDate], [StudentComment], [FacilitatorComment], [CompletedDateTime], [WasCompletedOnTime], [PointsEarned], [CompletedByPersonAliasId] )
+--SELECT [a].[Id], 
+--    gm.[Id], 
+--    1 [IsStudentCompleted],
+--    0 [IsFacilitatorCompleted],
+--    NEWID() [Guid],
+--    CASE 
+--        WHEN [AvailabilityCriteria] = @specificDate THEN [AvailableDateDefault] 
+--        WHEN [AvailabilityCriteria] = @classStartOffset THEN DATEADD(DAY, [AvailableDateOffset], [RandomDateTimeAdded])
+--        WHEN [AvailabilityCriteria] = @enrollmentOffset THEN DATEADD(DAY, [AvailableDateOffset], [DateTimeAdded])
+--        WHEN [AvailabilityCriteria] = @availableAfterPreviousComplete THEN NULL
+--        ELSE @now
+--    END [AvailableDate],
+--    CASE 
+--        WHEN [DueDateCriteria] = @specificDate THEN [DueDateDefault] 
+--        WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
+--        WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
+--        ELSE NULL
+--    END [DueDate],
+--    IIF(
+--        a.[IsStudentCommentingEnabled] = 1, 
+--        IIF( gm.[Id] % 3 = 0, 'I''ve learned so much!', NULL), 
+--        NULL
+--    ) StudentComment,
+--    IIF( gm.[Id] % 4 = 0 AND gm.[Id] % 5 IN (0, 1), 'Excellent Work!', NULL) FacilitatorComment,
 
-    /* Every 5 activities mark one completed on time and one late  */
-    CASE 
-        WHEN gm.[Id] % 5 = 0 THEN  
-            /* DueDate - 24 hours and some additional random hours */
-            DATEADD(HOUR, -(24 + (FLOOR(RAND(CHECKSUM(NEWID())) * 20 + 7))), CASE 
-                WHEN [DueDateCriteria] = @specificDate THEN DueDateDefault 
-                WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
-                WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
-                ELSE NULL
-            END)
-        WHEN gm.[Id] % 5 = 1 THEN  
-            /* DueDate + 1 */
-            DATEADD(HOUR, 24 + FLOOR(RAND(CHECKSUM(NEWID())) * 20 + 7), CASE 
-                WHEN [DueDateCriteria] = @specificDate THEN [DueDateDefault] 
-                WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
-                WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
-                ELSE NULL
-        END)
-    END [CompletedDate],
-    IIF( gm.[Id] % 5 = 0, 1, 0) [WasCompletedOnTime],
-    IIF( gm.[Id] % 5 = 0, FLOOR(RAND(CHECKSUM(NEWID())) * a.[Points]), 0) [PointedEarned],
-    IIF( gm.[Id] % 5 IN (0, 1), pers.[PrimaryAliasId], NULL) [CompletedByPersonAliasId]
-FROM [LearningActivity] a
-JOIN #participants p on p.[GroupId] = a.[LearningClassId]
-JOIN Person pers ON pers.Id = p.PersonId
-JOIN [GroupMember] gm ON gm.[Guid] = p.[GroupMemberGuid]
-JOIN #classes c ON c.[ClassGuid] = p.[ClassGuid]
+--    /* Every 5 activities mark one completed on time and one late  */
+--    CASE 
+--        WHEN gm.[Id] % 5 = 0 THEN  
+--            /* DueDate - 24 hours and some additional random hours */
+--            DATEADD(HOUR, -(24 + (FLOOR(RAND(CHECKSUM(NEWID())) * 20 + 7))), CASE 
+--                WHEN [DueDateCriteria] = @specificDate THEN DueDateDefault 
+--                WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
+--                WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
+--                ELSE NULL
+--            END)
+--        WHEN gm.[Id] % 5 = 1 THEN  
+--            /* DueDate + 1 */
+--            DATEADD(HOUR, 24 + FLOOR(RAND(CHECKSUM(NEWID())) * 20 + 7), CASE 
+--                WHEN [DueDateCriteria] = @specificDate THEN [DueDateDefault] 
+--                WHEN [DueDateCriteria] = @classStartOffset THEN DATEADD(DAY, [DueDateOffset], [RandomDateTimeAdded])
+--                WHEN [DueDateCriteria] = @enrollmentOffset THEN DATEADD(DAY, [DueDateOffset], [DateTimeAdded])
+--                ELSE NULL
+--        END)
+--    END [CompletedDate],
+--    IIF( gm.[Id] % 5 = 0, 1, 0) [WasCompletedOnTime],
+--    IIF( gm.[Id] % 5 = 0, FLOOR(RAND(CHECKSUM(NEWID())) * a.[Points]), 0) [PointsEarned],
+--    IIF( gm.[Id] % 5 IN (0, 1), pers.[PrimaryAliasId], NULL) [CompletedByPersonAliasId]
+--FROM [LearningActivity] a
+--JOIN #participants p on p.[GroupId] = a.[LearningClassId]
+--JOIN Person pers ON pers.Id = p.PersonId
+--JOIN [GroupMember] gm ON gm.[Guid] = p.[GroupMemberGuid]
+--JOIN #classes c ON c.[ClassGuid] = p.[ClassGuid]
+--WHERE gm.[Id] % 7 = 0
 
 /* Redeclare the variables here in case we want to run the query without the inserts above. */
 DECLARE

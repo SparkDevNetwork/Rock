@@ -109,14 +109,14 @@ namespace Rock.Blocks
         protected abstract bool UpdateEntityFromBox( TEntity entity, ValidPropertiesBox<TEntityBag> box );
 
         /// <summary>
-        /// Gets the bag for viewing the specied entity.
+        /// Gets the bag for viewing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for view purposes.</param>
         /// <returns>A <see cref="TEntityBag"/> that represents the entity.</returns>
         protected abstract TEntityBag GetEntityBagForView( TEntity entity );
 
         /// <summary>
-        /// Gets the bag for editing the specied entity.
+        /// Gets the bag for editing the specified entity.
         /// </summary>
         /// <param name="entity">The entity to be represented for edit purposes.</param>
         /// <returns>A <see cref="TEntityBag"/> that represents the entity.</returns>

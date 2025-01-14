@@ -36,6 +36,10 @@
     font-weight: var(--font-weight-semibold);
 }
 
+.check-in-page .btn.btn-dimmed {
+    opacity: 0.33;
+}
+
 .check-in-page .button-list {
     display: flex;
     flex-direction: column;
@@ -133,6 +137,20 @@
 /*
  * Styles for the page body.
  */
+.check-in-page .messages {
+    align-self: center;
+    margin-top: var(--spacing-huge);
+    width: fit-content;
+    color: var(--color-warning-strong);
+    background: var(--color-warning-soft);
+    padding: var(--spacing-xlarge);
+    border-radius: var(--rounded-small);
+}
+
+.check-in-page .messages:empty {
+    padding:0;
+}
+
 .check-in-page .page-body {
     flex-grow: 1;
     overflow: auto;
@@ -166,12 +184,37 @@
     color: var(--color-interface-strong);
 }
 
+.check-in-page .illustrated-button .btn.btn-info {
+    background: color-mix(in srgb, var(--color-primary) 100%, #000000 10%);
+    color: var(--color-interface-softest);
+    border-left: 1px solid color-mix(in srgb, var(--color-primary-tint) 100%, transparent 80%);
+}
+
+.check-in-page .illustrated-button .btn.btn-info:hover {
+    background: color-mix(in srgb, var(--color-primary) 100%, #000000 19%);
+}
+
+.check-in-page .illustrated-button .remove-attendee-button {
+    background-color: color-mix(in srgb, var(--color-primary) 100%, #000000 10%);
+    border-left: 1px solid color-mix(in srgb, var(--color-primary-tint) 100%, transparent 80%);
+}
+
+.check-in-page .illustrated-button .remove-attendee-button:hover {
+    background: color-mix(in srgb, var(--color-primary) 100%, #000000 19%);
+}
+
 .check-in-page .btn .title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: var(--font-size-h4);
     font-weight: var(--font-weight-semibold);
 }
 
 .check-in-page .btn .subtitle {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: var(--font-size-regular);
     font-weight: var(--font-weight-regular);
 }
@@ -184,7 +227,7 @@
 
 .check-in-page .btn-default {
     padding: var(--spacing-xsmall) var(--spacing-medium);
-    font-size: var(--font-size-h3);
+    font-size: var(--font-size-regular);
     font-weight: var(--font-weight-regular);
 }
 
@@ -208,6 +251,11 @@
     min-height: 82px;
     overflow: hidden;
     gap: 0;
+}
+
+.check-in-panel .body .button-list .btn.btn-primary.ability-level-button {
+    padding: 0 var(--spacing-large);
+    height: 82px;
 }
 
 .check-in-page .illustrated-button > * {
@@ -247,7 +295,7 @@
     align-items: center;
     flex-direction: row;
     flex-shrink: 0;
-    gap: var(--spacing-xsmall);
+    gap: var(--spacing-medium);
     min-height: 64px;
     color: var(--color-interface-strong);
 }
@@ -266,7 +314,7 @@
 }
 
 .check-in-page .actions .btn.btn-primary.next-button {
-    font-size: var(--font-size-h3);
+    font-size: var(--font-size-regular);
     padding: var(--spacing-xsmall) var(--spacing-xlarge);
 }
 
@@ -307,6 +355,11 @@
     flex-grow: 1;
     align-items: end;
     justify-content: end;
+}
+
+.check-in-page .saved-configuration-button .subtitle {
+    flex-grow: 1;
+    text-align: left;
 }
 
 /*
@@ -416,6 +469,10 @@
     min-width: 400px;
 }
 
+.check-in-page .input-group .btn.btn-default {
+    padding: 7px var(--spacing-small);
+    font-size: var(--font-size-regular);
+}
 /**
  * Family Select Screen.
  */
@@ -550,7 +607,7 @@
 .check-in-page .attendance-card .attendance-detail {
     border-radius: var(--spacing-xsmall);
     background-color: var(--color-primary);
-    color: var(--theme-white);
+    color: var(--color-interface-softest);
     padding: var(--spacing-tiny) var(--spacing-xsmall);
     display: flex;
     justify-content: space-between;
@@ -574,6 +631,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-tiny);
+}
+
+.achievement .header .subtitle {
+    min-width: 50px;
 }
 
 .check-in-page .attendance-card .achievement .header {
@@ -677,6 +738,10 @@ ul li::marker {
 /**
  * Supervisor Reprint Screen
 */
+.supervisor-reprint-screen .button-list {
+    margin-top: var(--spacing-medium);
+}
+
 .supervisor-reprint-screen .attendance-button .btn {
     justify-content: initial;
     border: 0;
@@ -696,13 +761,16 @@ ul li::marker {
 }
 
 .supervisor-reprint-screen input.search-term {
-    height: 64px;
-    font-size: 36px;
+    height: 48px;
+    font-size: 28px;
     max-width: 480px;
     margin-left: auto;
     margin-right: auto;
 }
 
+.supervisor-reprint-screen input.search-term::placeholder {
+    color: var(--color-interface-medium);
+}
 
 /**
  * Supervisor Schedule Locations Screen
@@ -742,4 +810,33 @@ ul li::marker {
 
 .grid-obsidian .grid-body .grid-row .btn.btn-default {
     padding: var(--spacing-xsmall) 0px;
+}
+
+
+.check-in-page .check-in-panel.page-footer .title {
+    display: none;
+}
+
+@media screen and (min-width: 576px) {
+    .check-in-page .actions .btn.btn-primary.next-button {
+        font-size: var(--font-size-regular);
+    }
+
+    .check-in-page .btn-default {
+        font-size: var(--font-size-regular);
+    }
+}
+
+@media screen and (min-width: 768px) {
+    .check-in-page .actions .btn.btn-primary.next-button {
+        font-size: var(--font-size-h4);
+    }
+
+    .check-in-page .btn-default {
+        font-size: var(--font-size-h4);
+    }
+
+    .check-in-page .check-in-panel.page-footer .title {
+        display: block;
+    }
 }

@@ -23,6 +23,8 @@
 
 /** Service Job guids */
 export const ServiceJob = {
+    /** The job for calculating peer networks for individuals. */
+    CalculatePeerNetwork: "D3172560-0E8C-4E69-A477-56ABC018FEEF",
     /** The collect hosting metrics job - collect metrics regarding database connections, Etc. */
     CollectHostingMetrics: "36FA38CA-9DB0-40A8-BABD-5411121B4809",
     /** The data migrations 120 add communication get queued index */
@@ -128,8 +130,14 @@ export const ServiceJob = {
     DataMigrations166UpdateAchievementtypeTargetcountColumn: "ab4d7fa7-8e07-48d3-8225-bdecc63b71f5",
     /** The Job to run Post v16.7 Data Migrations to chop AccountEdit Block. */
     DataMigrations167ChopAccountEditBlock: "E581688C-E60D-4841-B3C3-C535CAD0002D",
+    /** The Job to run Post v16.7 Data Migrations to chop PledgeEntry Block. */
+    DataMigrations167ChopPledgeEntryBlock: "8E8C177E-DE88-47B2-AD9A-FC6AD5965882",
     /** The Job to run Post v16.7 to populate EntityIntents from AdditionalSettingsJson. */
     DataMigrations167PopulateEntityIntentsFromAdditionalSettingsJson: "155C2051-1513-4BB3-83AD-8D37EBBC3F59",
+    /** The Job to run Post v16.8 to update indexes. */
+    DataMigrations168UpdateIndexes: "E27CF068-B7DA-4AD0-ABC0-380AB68F1778",
+    /** The Job to run Post v17.0 to add new and update existing indexes to support the Peer Network feature. */
+    DataMigrations170AddAndUpdatePeerNetworkIndexes: "195DDB5A-FF1C-438E-BCA4-37EBC3D0F558",
     /** The Job to run Post v17.0 Data Migrations to chop Block. */
     DataMigrations170ChopObsidianBlocks: "74265B89-31DF-4430-84D4-8343C64F2580",
     /** The Job to run Post v17.0 Data Migrations to chop Shortened Link Block. */
@@ -142,6 +150,8 @@ export const ServiceJob = {
     DataMigrations170RemoveLegacyPreferences: "46d98280-7611-4588-831d-6924e2be9da6",
     /** The Job to run Post v17.0 Data Migrations to swap Block. */
     DataMigrations170SwapObsidianBlocks: "EA16D2B2-35CB-4E6B-A6A7-CBD6BCA5998F",
+    /** The job for swapping DefinedTypeDetail and DefinedValueList with Webforms Block. */
+    DataMigrations170SwapWebformsBlocks: "AD8A38F7-1FCC-47CD-893F-9B4335DD7E08",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail

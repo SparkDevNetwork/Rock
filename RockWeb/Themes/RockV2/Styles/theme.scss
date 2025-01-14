@@ -3,10 +3,10 @@
 @import "../../../Styles/style-v2/sass-variable";
 @import "../../../Styles/style-v2/core.css";
 
-@import "../../../Styles/style-v2/icons/fontawesome-icon.css";
-@import "../../../Styles/style-v2/icons/fontawesome-regular.css"; 
-@import "../../../Styles/style-v2/icons/fontawesome-solid.css";
-@import "../../../Styles/style-v2/icons/tabler-icon.css";
+// @import "../../../Styles/style-v2/icons/fontawesome-icon.css";
+// @import "../../../Styles/style-v2/icons/fontawesome-regular.css"; 
+// @import "../../../Styles/style-v2/icons/fontawesome-solid.css";
+// @import "../../../Styles/style-v2/icons/tabler-icon.css";
 
 
 @-ms-viewport {
@@ -14,7 +14,7 @@
 }
 
 html {
-  -ms-overflow-style: scrollbar; // need for IE 10 issue with scrollbars being on TOP of the content
+  -ms-overflow-style: scrollbar; // need for IE 10 issue with scrollbar being on TOP of the content
   -webkit-font-smoothing: antialiased;
 }
 
@@ -29,10 +29,10 @@ body.navbar-side-open {
 
 
 // Page Structure
-.row {
-  margin-right: -12px;
-  margin-left: -12px;
-}
+// .row {
+//   margin-right: -12px;
+//   margin-left: -12px;
+// }
 
 // .col-xs-1, .col-sm-1, .col-md-1, .col-lg-1, .col-xs-2, .col-sm-2, .col-md-2, .col-lg-2, .col-xs-3, .col-sm-3, .col-md-3, .col-lg-3, .col-xs-4, .col-sm-4, .col-md-4, .col-lg-4, .col-xs-5, .col-sm-5, .col-md-5, .col-lg-5, .col-xs-6, .col-sm-6, .col-md-6, .col-lg-6, .col-xs-7, .col-sm-7, .col-md-7, .col-lg-7, .col-xs-8, .col-sm-8, .col-md-8, .col-lg-8, .col-xs-9, .col-sm-9, .col-md-9, .col-lg-9, .col-xs-10, .col-sm-10, .col-md-10, .col-lg-10, .col-xs-11, .col-sm-11, .col-md-11, .col-lg-11, .col-xs-12, .col-sm-12, .col-md-12, .col-lg-12 {
 //   padding-right: 12px;
@@ -63,7 +63,7 @@ body.navbar-side-open {
 
     .breadcrumb {
       padding: 0;
-      margin: 0;
+      margin-top: var(--spacing-tiny);
       font-size: var(--font-size-xsmall);
 
       a:hover {
@@ -95,8 +95,8 @@ body.navbar-side-open {
     .page-header {
       padding:        var(--spacing-medium) var(--spacing-large);
       margin:         0 0 24px 0;
-      box-shadow:     0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
-      border-radius:  4px;
+      box-shadow:     var(--box-shadow);
+      border-radius:  var(--rounded-medium);
     }
   }
 
@@ -116,8 +116,9 @@ body.navbar-side-open {
   background-color: var(--color-interface-softest);
   margin: 24px 0 8px;
   padding: 16px 24px;
-  box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
-  border-radius: 4px;
+  box-shadow: var(--box-shadow);
+  border-radius: var(--rounded-medium);
+  border: 1px solid var(--color-interface-soft);
 
   p {
     margin: 0;
@@ -181,7 +182,8 @@ $navbar-element-height: 40px;
   // =============
 
   @media (min-width: $screen-medium) {
-    padding-top: $navbar-top-height;
+    margin-top: $navbar-top-height;
+    height: calc(100vh - 80px);
   }
 
 }
@@ -307,7 +309,7 @@ $navbar-element-height: 40px;
       bottom: 0;
       left: 0;
       content: "";
-      background-image: url("../../../Assets/Images/rock-logo-circle-white.svg");
+      background-image: var(--logo-image);
       background-repeat: no-repeat;
       background-position: center center;
       background-size: ($navbarside-width * .525);
@@ -332,7 +334,7 @@ $navbar-element-height: 40px;
     padding: 0;
     margin: 0;
     font-size: .875em;
-    border: 0;
+    border: 1px solid var(--color-interface-soft);
 
     @media (min-width: $screen-small) {
       height: $navbar-element-height;
@@ -449,9 +451,9 @@ $navbar-element-height: 40px;
     }
   }
 
-  .dropdown-menu {
-    border: 0;
-  }
+  // .dropdown-menu {
+  //   border: 0;
+  // }
 
   .header-content {
     display: flex;
@@ -467,6 +469,12 @@ $navbar-element-height: 40px;
     }
   }
 
+}
+
+.nav-pills > li > a {
+  color: var(--color-interface-strong);
+  background-color: var(--color-interface-softer);
+  border: 1px solid var(--color-interface-soft);
 }
 
 // Side Nav
@@ -504,7 +512,7 @@ $navbar-element-height: 40px;
       &.open {
         .nav-childpages {
           display: inline-block;
-          box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+          box-shadow: var(--popup-box-shadow);
         }
       }
 
@@ -571,7 +579,7 @@ $navbar-element-height: 40px;
 
     .nav-item {
       .nav-link {
-        padding: var(--spacing-tiny);
+        padding: var(--spacing-xsmall);
         line-height: 1.4;
         display: flex;
         align-items: center;
@@ -589,7 +597,7 @@ $navbar-element-height: 40px;
           margin-right: 14px;
           margin-bottom: 1px;
           content: " ";
-          background-color: var(--color-interface-soft);
+          background-color: transparent;
           border-radius: 100px;
         }
 
@@ -599,9 +607,9 @@ $navbar-element-height: 40px;
         }
 
         &:hover {
-          color: var(--color-interface-strong);
-          background-color: var(--color-interface-soft);
-          border-radius: var(--rounded-small);
+          color: var(--color-primary);
+          background-color:  color-mix(in srgb, var(--color-primary) 25%, transparent 90%);
+          border-radius: var(--rounded-medium);
 
           &::before {
             width: 8px;
@@ -614,9 +622,9 @@ $navbar-element-height: 40px;
       &.current {
         .nav-link {
           font-weight: 600;
-          color: var(--color-interface-strong);
-          // background-color: var(--color-primary);
-          // border-radius: var(--rounded-small);
+          color: #FFFFFF;
+          background-color: var(--color-primary);
+          border-radius: var(--rounded-medium);
 
           &::before {
             width: 8px;
@@ -667,9 +675,9 @@ $navbar-element-height: 40px;
         }
       }
 
-      &:last-child {
-        // margin-bottom: 72px; // dont know the margin botton is here in the first place why???????
-      }
+      // &:last-child {
+        // margin-bottom: 72px; // don't know the margin button is here in the first place why???????
+      // }
     }
 
     &::-webkit-scrollbar {
@@ -715,6 +723,7 @@ $navbar-element-height: 40px;
 
     .nav-open & {
       z-index: 2000;
+      border-radius: 0 0 0 12px;
     }
 
     .navbar-side:first-child {
@@ -764,7 +773,7 @@ $navbar-element-height: 40px;
 
     .nav-childpages {
       top: 0;
-      left: calc($navbarside-width + 9px);
+      left: calc($navbarside-width + 8px);
       width: 280px;
       border-radius: 0 14px 14px 0;
       margin-top:     var(--spacing-xsmall);
@@ -1021,7 +1030,9 @@ $hamburger-spacing: 4px;
 .panel-widget .panel-heading {
   display: flex;
   align-items: center;
-
+  border-top-left-radius: var(--rounded-medium);
+  border-top-right-radius: var(--rounded-medium);
+  
   .pull-left {
     margin-right: auto;
   }
@@ -1207,3 +1218,135 @@ $hamburger-spacing: 4px;
   box-shadow: 0 4px 8px 0 rgba(0,0,0,.1);
 }
 
+.gap {
+  gap: 8px;
+
+  .rockbadge {
+    margin: 0;
+  }
+}
+
+// splash screen
+#splash {
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+
+  #content {
+    position: relative;
+    display: grid;
+    grid-template-columns: 10fr 8fr;
+    align-items: center;
+
+    background-color: var(--color-interface-softest);
+    padding: var(--spacing-large);
+    border-radius: var(--rounded-large);
+    gap: var(--spacing-xlarge);
+    margin-top:22vh;
+
+    // TO change the height or width of the content
+    width: 1000px;
+    min-height: 500px;
+
+    @media (max-width: $screen-medium) {
+      margin-top: 10vh;
+      grid-template-columns: 1fr;
+      grid-template-rows: 8fr 10fr;
+      gap: 0;
+      
+      min-width: 480px;
+      width: 80vw;
+    }
+  }
+
+  .logo-background {
+    position: absolute;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--rounded-large);
+    background-color: var(--color-primary);
+
+    height: -webkit-fill-available;
+    width: -webkit-fill-available;
+    grid-column: 1 / 2;  
+    grid-row: 1 / 2; 
+
+    z-index: 1001;
+    animation: slide-left 1.3s ease-in-out forwards;
+
+    @media (max-width: $screen-medium) {
+      animation: none;
+    }
+  }
+
+  #content-box {
+    margin: var(--spacing-large) 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    grid-column: 2 / 3;
+    grid-row: 1 / 2; 
+
+    @media (max-width: $screen-medium) {
+      display: block;
+      grid-column: 1 / 2;
+      grid-row: 2 / 3;
+      width: -webkit-fill-available;
+    }
+  }
+
+  #logo::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    content: "";
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 200px;
+    fill: var(--color-interface-softest);
+    background-image: var(--logo-image);
+    
+    @media (max-width: $screen-medium) {
+      background-size: 120px;
+    }
+  }
+
+  .login-block {
+    legend {
+      display: none;
+    }
+  }
+
+  .checkbox {
+    // Override the normal check box margin.
+    margin-bottom: var(--spacing-medium);
+  }
+}
+
+@keyframes slide-left {
+  0% {
+    width: 190%;
+  }
+  50% {
+    width: 190%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+// .obsidian-loading {
+//   .login-block {
+//     opacity: 0;
+//   }
+// }
+
+// .login-block {
+//   transition: opacity 1s;
+//   opacity: 1;
+// }

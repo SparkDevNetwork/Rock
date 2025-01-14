@@ -44,7 +44,7 @@
             <asp:UpdatePanel ID="upnlCategory" Class="filter-options" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
                 <ContentTemplate>
                     <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" />
-                    <div class="category-header d-flex align-items-center justify-content-between mb-2">
+                    <div class="category-header d-flex align-items-center justify-content-between">
                         <strong class="d-block text-sm m-0">Form Categories</strong>
                         <div runat="server" id="divTreeviewActions" class="btn-group pull-right">
                             <button type="button" class="btn btn-link text-color btn-xs btn-square dropdown-toggle" data-toggle="dropdown" title='<asp:Literal ID="ltAddCategory" runat="server" Text="Add Category" />'>
@@ -190,7 +190,7 @@
                     <asp:HiddenField ID="hfSelectedCategory" runat="server" />
                     <div class="container-in-block">
                         <div class="rock-header">
-                            <h3 class="title mb-2">
+                            <h3 class="title">
                                 <asp:Literal ID="lTitle" runat="server" /></h3>
                             <div class="d-flex flex-wrap justify-content-between">
                                 <div class="description">
@@ -205,11 +205,11 @@
                             <hr class="section-header-hr" />
                         </div>
                         <asp:Panel ID="pnlFormList" runat="server" Visible="false">
-                            <div class="d-flex flex-wrap align-items-start justify-content-end">
-                                <div class="form-horizontal label-auto">
+                            <div class="d-flex flex-wrap align-items-start">
+                                <div class="form-inline margin-b-md label-auto">
                                     <Rock:RockDropDownList ID="ddlSortBy" Label="Sort By" runat="server" FormGroupCssClass="form-group-sm" AutoPostBack="true" OnSelectedIndexChanged="ddlSortBy_SelectedIndexChanged" />
                                 </div>
-                                <asp:LinkButton ID="lbAddForm" runat="server" ToolTip="Add Form" CssClass="btn btn-sm btn-square btn-primary ml-2 " OnClick="lbAddForm_Click"><i class="fa fa-plus"></i></asp:LinkButton>
+                                <asp:LinkButton ID="lbAddForm" runat="server" ToolTip="Add Form" CssClass="btn btn-sm btn-square btn-primary ml-2 ml-auto" OnClick="lbAddForm_Click"><i class="fa fa-plus"></i></asp:LinkButton>
                             </div>
                             <asp:Repeater ID="rForms" runat="server" OnItemDataBound="rForms_ItemDataBound" OnItemCommand="rForms_ItemCommand">
                                 <ItemTemplate>
@@ -218,25 +218,27 @@
                                             <div class="flex-fill">
                                                 <h3 class="m-0"><%# Eval("Name") %></h3>
                                                 <div class="position-relative">
-                                                    <span class="position-absolute inset-0 d-inline-flex align-items-center text-muted text-sm group-hover-item group-hover-hide"><%# Eval("Description") %></span>
-                                                    <div class="d-flex justify-content-between align-items-center group-hover-item group-hover-show">
-                                                        <div class="text-muted">
-                                                            <asp:LinkButton ID="lbSubmissions" runat="server" Text="Submissions" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbBuilder" runat="server" Text="Builder" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbCommunications" runat="server" Text="Communications" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Communications" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbSettings" runat="server" Text="Settings" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Settings" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbAnalytics" runat="server" Text="Analytics" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' />
-
-                                                        </div>
-                                                        <div class="text-nowrap">
-                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-sm py-0 btn-link text-muted" data-toggle="tooltip" data-trigger="hover" data-delay="250" title="Delete form and all submissions." OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
-                                                            <asp:LinkButton ID="lbCopy" runat="server" CssClass="btn btn-sm py-0 btn-link text-muted" data-toggle="tooltip" data-trigger="hover" data-delay="250" title="Copy" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-clone"></i></asp:LinkButton>
-                                                        </div>
-                                                    </div>
+                                                    <span class="position-absolute d-inline-flex align-items-center text-muted text-sm group-hover-item"><%# Eval("Description") %></span>
                                                 </div>
                                             </div>
-                                            <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center ml-2 group-hover-hide" runat="server">
-                                                <span class='badge badge-info'><%# Eval("SubmissionCount") %></span>
+                                            <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center" runat="server">
+                                                <asp:LinkButton ID="lbBuilder" runat="server" ToolTip="Builder" CssClass="btn btn-default btn-sm btn-square ml-2" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-list'></i>" />
+                                                <asp:LinkButton ID="lbSubmissions" runat="server" ToolTip="Submissions" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Submissions" Text="<i class='fa fa-edit'></i>" CommandArgument='<%# Eval( "Id" ) %>' />
+                                                <asp:LinkButton ID="lbCommunications" runat="server" ToolTip="Communications" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Communications" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-envelope'></i>" />
+                                                <asp:LinkButton ID="lbSettings" runat="server" ToolTip="Settings" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Settings" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-cog'></i>" />
+                                                <asp:LinkButton ID="lbAnalytics" runat="server" ToolTip="Analytics" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-chart-bar'></i>" />
+                                                <div class="dropdown js-group-actions hide-dragging">
+                                                    <button type="button" class="btn btn-default btn-sm btn-square dropdown-toggle ml-1" data-toggle="dropdown">
+                                                        <i class="fa fa-ellipsis-v"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li>
+                                                            <asp:LinkButton ID="lbCopy" runat="server" title="Copy" CssClass="btn btn-link" CommandName="Copy" CommandArgument='<%# Eval( "Id" ) %>' Text="Clone" />
+                                                            <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-link" title="Delete form and all submissions." OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" Text="Delete" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' />
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                <span class='badge badge-info ml-1'><%# Eval("SubmissionCount") %></span>
                                             </asp:Panel>
                                         </div>
                                     </div>

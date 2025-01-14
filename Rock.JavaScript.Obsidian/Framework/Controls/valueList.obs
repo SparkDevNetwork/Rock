@@ -35,6 +35,7 @@
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { isEmpty } from "@Obsidian/Utility/stringUtils";
 
     export type ValueItem = {
         value: string;
@@ -87,7 +88,9 @@
      * or uses the provided customValues if present, otherwise
      */
     const options = computed((): ListItemBag[] => definedValues.value.length ? definedValues.value : props.customValues ?? []);
-
+    const valuePrompt = computed((): string => {
+        return isEmpty(props.valuePrompt) ? "Value" : props.valuePrompt;
+    });
     const hasValues = computed((): boolean => options.value.length > 0);
 
     const rowClasses = computed((): string => {
@@ -103,8 +106,8 @@
     const valueInputClasses = computed((): string => {
         let classes = "key-value-value form-control";
 
-        if (!props.fullWidth) {
-            classes += " input-width-lg";
+        if (props.fullWidth) {
+            classes += " full-width";
         }
 
         return classes;

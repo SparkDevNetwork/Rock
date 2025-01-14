@@ -537,7 +537,7 @@
                 dataRefreshed.value = false;
                 gridData = reactive(result.data);
                 if (bag.uniqueCampuses) {
-                    uniqueCampuses.value = [{ text: "All", value: "" }, ...bag.uniqueCampuses.map(campus => ({ text: decodeHtml(campus), value: campus }))];
+                    uniqueCampuses.value = [{ text: "All", value: "" }, ...bag.uniqueCampuses];
                 }
                 if (bag.uniqueGroups) {
                     uniqueGroups.value = [{ text: "All", value: "" }, ...bag.uniqueGroups.map(group => ({ text: decodeHtml(group), value: group }))];

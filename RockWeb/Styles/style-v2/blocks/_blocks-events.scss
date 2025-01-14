@@ -45,11 +45,11 @@
   }
 
   table.calendar-title td {
-    padding:            10px 5px;
+    padding:            var(--spacing-small) var(--spacing-tiny);
   }
 
   td.calendar-day {
-    padding:            5px;
+    padding:            var(--spacing-tiny);
   }
 
   table.calendar-title,

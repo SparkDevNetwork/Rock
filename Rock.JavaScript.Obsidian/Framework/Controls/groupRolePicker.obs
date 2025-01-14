@@ -6,12 +6,14 @@
                      :label="label"
                      :displayStyle="displayStyle"
                      :items="actualTypeItems"
+                     :showBlankItem="true"
                      :multiple="false" />
     <BaseAsyncPicker v-model="internalRoleValue"
                      v-bind="standardProps"
                      :label="roleLabel"
                      :displayStyle="displayStyle"
                      :items="actualRoleItems"
+                     :showBlankItem="true"
                      :multiple="false" />
 </template>
 
@@ -207,7 +209,7 @@
 
     // #region Initialization
 
-    if (props.modelValue) {
+    if (props.modelValue?.value) {
         // Load the type and list of items based on the selected value
         loadRoleOptionsFromValue();
     }

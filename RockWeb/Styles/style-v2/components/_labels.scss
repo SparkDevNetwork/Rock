@@ -72,8 +72,8 @@
 }
 
 .label-primary{
-  background-color:   var(--color-primary-tint);
-  color:              var(--color-primary);
+  background-color:   var(--color-primary);
+  color:              var(--color-interface-softest);
 
   &[href] {
     &:hover,
@@ -87,7 +87,6 @@
 .label-info{
   background-color:   var(--color-info-soft);
   color:              var(--color-info-strong);
-  border: 1px solid var(--color-info-strong);
 
   &[href] {
     &:hover,
@@ -135,9 +134,9 @@
   // ======================== END ALTERNATIVE STYLE ========================
 
 
-  .label {
-    display: inline-flex;
-    padding: .5em 1em;
-    font-weight: 500; // make the font light
-    gap: .5em;
-  }
+.label {
+  display:      inline-flex;
+  padding:      .5em 1em;
+  font-weight:  500; // make the font light
+  gap:          .5em;
+}

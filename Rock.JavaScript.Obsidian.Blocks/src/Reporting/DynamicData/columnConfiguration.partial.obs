@@ -31,7 +31,8 @@
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                <CheckBox v-model="enableFiltering"
+                <CheckBox v-if="isFilteringAvailable"
+                          v-model="enableFiltering"
                           label=""
                           text="Enable Filtering"
                           :disabled="disabled" />
@@ -125,9 +126,15 @@
         }
     });
 
+    const isFilteringAvailable = computed((): boolean => {
+        return columnType.value !== "html";
+    });
+
     const enableFiltering = computed<boolean>({
         get() {
-            return props.config.enableFiltering;
+            return isFilteringAvailable.value
+                ? props.config.enableFiltering
+                : false;
         },
         set(newValue: boolean) {
             props.config.enableFiltering = newValue;

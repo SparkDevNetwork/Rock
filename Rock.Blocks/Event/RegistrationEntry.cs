@@ -162,6 +162,7 @@ namespace Rock.Blocks.Event
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
             public const string EnableSavedAccount = "EnableSavedAccount";
             public const string DisableCaptchaSupport = "DisableCaptchaSupport";
+            public const string EnableACHForEvents = "Ach";
         }
 
         /// <summary>
@@ -573,7 +574,8 @@ namespace Rock.Blocks.Event
                     // for the various support methods used.
                     context.Registration = new Registration
                     {
-                        RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId
+                        RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId,
+                        RegistrationTemplateId = context.RegistrationSettings.RegistrationTemplateId
                     };
 
                     if ( context.RegistrationSettings.RegistrarOption == RegistrarOption.UseLoggedInPerson && RequestContext.CurrentPerson != null )
@@ -1196,7 +1198,8 @@ namespace Rock.Blocks.Event
                 // This is a new registration
                 context.Registration = new Registration
                 {
-                    RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId
+                    RegistrationInstanceId = context.RegistrationSettings.RegistrationInstanceId,
+                    RegistrationTemplateId = context.RegistrationSettings.RegistrationTemplateId
                 };
 
                 var registrationService = new RegistrationService( rockContext );
@@ -3108,7 +3111,7 @@ namespace Rock.Blocks.Event
         /// <param name="index">The index.</param>
         /// <param name="multipleFamilyGroupIds">The multiple family group ids.</param>
         /// <param name="singleFamilyId">The single family identifier.</param>
-        /// <param name="forceWaitlist">if set to <c>true</c> then registrant is on the wait list.</param>
+        /// <param name="isWaitlist">if set to <c>true</c> then registrant is on the wait list.</param>
         /// <param name="isCreatedAsRegistrant">if set to <c>true</c> [is created as registrant].</param>
         /// <param name="isNewRegistration"><c>true</c> if the registration is new; otherwise <c>false</c>.</param>
         /// <param name="postSaveActions">Additional post save actions that can be appended to.</param>
@@ -3121,13 +3124,13 @@ namespace Rock.Blocks.Event
             int index,
             Dictionary<Guid, int> multipleFamilyGroupIds,
             ref int? singleFamilyId,
-            bool forceWaitlist,
+            bool isWaitlist,
             bool isCreatedAsRegistrant,
             bool isNewRegistration,
             List<Action> postSaveActions )
         {
             // Force waitlist if specified by param, but allow waitlist if requested
-            var isWaitlist = forceWaitlist || ( context.RegistrationSettings.IsWaitListEnabled && registrantInfo.IsOnWaitList );
+            isWaitlist |= (context.RegistrationSettings.IsWaitListEnabled && registrantInfo.IsOnWaitList);
 
             var personService = new PersonService( rockContext );
             var registrationInstanceService = new RegistrationInstanceService( rockContext );
@@ -3178,15 +3181,10 @@ namespace Rock.Blocks.Event
                 {
                     Guid = registrantInfo.Guid,
                     RegistrationId = context.Registration.Id,
+                    RegistrationTemplateId = context.Registration.RegistrationTemplateId.Value,
                     Cost = context.RegistrationSettings.PerRegistrantCost
                 };
                 registrantService.Add( registrant );
-            }
-
-            if ( forceWaitlist )
-            {
-                // Clear the cost if the registrant is forced to be wait-listed.
-                registrant.Cost = 0;
             }
 
             registrant.OnWaitList = isWaitlist;
@@ -4711,7 +4709,7 @@ namespace Rock.Blocks.Event
         /// <returns>A list of <see cref="DefinedValueCache"/> objects that represent the currency types.</returns>
         private List<DefinedValueCache> GetAllowedCurrencyTypes( GatewayComponent gatewayComponent )
         {
-            var enableACH = true;// this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            var enableACH = gatewayComponent.GetAttributeValue( AttributeKey.EnableACHForEvents ).AsBoolean();
             var enableCreditCard = true;// this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
             var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
             var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );

@@ -29,7 +29,5 @@ export const enum PreferenceKey {
 
 
 export type GridSettingsOptions = {
-    dateRange?: string | null;
-
     category?: ListItemBag | null;
 };

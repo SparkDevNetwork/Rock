@@ -1316,6 +1316,63 @@ namespace Rock
         }
 
         /// <summary>
+        /// Attempts to convert string to decimal percentage. Returns 0 if unsuccessful.
+        /// </summary>
+        /// <remarks>
+        /// It's assumed that an integer string will be provided, with an optional "%" symbol.
+        /// </remarks>
+        /// <param name="str">The string.</param>
+        /// <param name="precision">The number of decimal places to return.</param>
+        /// <param name="minPercentage">The optional minimum percentage (e.g. 0). Will be used to calculate the decimal
+        /// percentage if the parsed integer percentage is less than this value.</param>
+        /// <param name="maxPercentage">The optional maximum percentage (e.g. 100). Will be used to calculate the decimal
+        /// percentage if the parsed integer percentage is greater than this value.</param>
+        /// <returns>The decimal equivalent of the provided integer string or 0.</returns>
+        public static decimal AsDecimalPercentage( this string str, int precision = 2, int? minPercentage = null, int? maxPercentage = null )
+        {
+            return str.AsDecimalPercentageOrNull( precision, minPercentage, maxPercentage ) ?? 0;
+        }
+
+        /// <summary>
+        /// Attempts to convert string to decimal percentage. Returns null if unsuccessful.
+        /// </summary>
+        /// <remarks>
+        /// It's assumed that an integer string will be provided, with an optional "%" symbol.
+        /// </remarks>
+        /// <param name="str">The string.</param>
+        /// <param name="precision">The number of decimal places to return.</param>
+        /// <param name="minPercentage">The optional minimum percentage (e.g. 0). Will be used to calculate the decimal
+        /// percentage if the parsed integer percentage is less than this value.</param>
+        /// <param name="maxPercentage">The optional maximum percentage (e.g. 100). Will be used to calculate the decimal
+        /// percentage if the parsed integer percentage is greater than this value.</param>
+        /// <returns>The decimal equivalent of the provided integer string or null.</returns>
+        public static decimal? AsDecimalPercentageOrNull( this string str, int precision = 2, int? minPercentage = null, int? maxPercentage = null )
+        {
+            if ( str.IsNotNullOrWhiteSpace() )
+            {
+                // strip off percentage symbol and any whitespace
+                str = str.Replace( "%", string.Empty ).Trim();
+            }
+
+            if ( !int.TryParse( str, out var percentage ) )
+            {
+                return null;
+            }
+
+            if ( minPercentage.HasValue && percentage < minPercentage )
+            {
+                percentage = minPercentage.Value;
+            }
+
+            if ( maxPercentage.HasValue && percentage > maxPercentage )
+            {
+                percentage = maxPercentage.Value;
+            }
+
+            return Math.Round( (decimal) percentage / 100, precision );
+        }
+
+        /// <summary>
         /// Attempts to convert string to decimal with invariant culture. Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The string.</param>
@@ -1768,6 +1825,12 @@ namespace Rock
             }
 
             return new string( chars );
+        }
+
+        public static bool IsSingleSpecialCharacter( this string value )
+        {
+            string specialCharacters = "!@#$%^&*()_+[]{}|;:'\",.<>/?`~";
+            return !string.IsNullOrEmpty( value ) && value.Length == 1 && specialCharacters.Contains( value );
         }
 
         #endregion String Extensions

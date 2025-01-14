@@ -56,14 +56,20 @@ namespace Rock.Blocks.Cms
     [CustomizedGrid]
     public class PageList : RockEntityListBlockType<Page>
     {
-        #region Attribute Keys
+        #region Keys
 
         private static class AttributeKey
         {
             public const string ShowPageId = "ShowPageId";
         }
 
-        #endregion Attribute Keys
+        private static class PageParameterKey
+        {
+            public const string SiteId = "SiteId";
+        }
+
+        #endregion Keys
+
 
         #region Methods
 
@@ -99,7 +105,8 @@ namespace Rock.Blocks.Cms
         protected override IQueryable<Page> GetListQueryable( RockContext rockContext )
         {
             // Retrieve the siteId from page parameters
-            int siteId = RequestContext?.PageParameters?["SiteId"]?.AsInteger() ?? 0;
+            var siteIdParam = PageParameter( PageParameterKey.SiteId );
+            var siteId = Rock.Utility.IdHasher.Instance.GetId( siteIdParam ) ?? siteIdParam.AsIntegerOrNull();
 
             // Fetch pages directly associated with the site
             var pages = new PageService( rockContext )

@@ -302,6 +302,9 @@ namespace RockWeb.Blocks.Reporting
                 this.StyleCode = "[]";
             }
 
+            var mapId = GlobalAttributesCache.Get().GetValue( "core_GoogleMapId" );
+            this.MapId = mapId.IsNullOrWhiteSpace() ? "DEFAULT_MAP_ID" : mapId;
+
             var polygonColorList = GetAttributeValue( "PolygonColors" ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
             string polygonColors = polygonColorList.AsDelimited( "," );
 
@@ -480,6 +483,14 @@ namespace RockWeb.Blocks.Reporting
         /// The style code.
         /// </value>
         public string StyleCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Map Id.
+        /// </summary>
+        /// <value>
+        /// The Map Id.
+        /// </value>
+        public string MapId { get; set; }
 
         /// <summary>
         /// Shows the settings.

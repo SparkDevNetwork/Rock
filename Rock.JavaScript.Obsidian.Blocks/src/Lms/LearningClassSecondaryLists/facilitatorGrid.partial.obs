@@ -8,6 +8,7 @@
           :expectedRowCount="3"
           stickyHeader
           liveUpdates
+          itemTerm="Facilitator"
           :selectItem="onSelectItem"
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
         <SelectColumn />
@@ -15,7 +16,9 @@
         <Column name="name"
                 title="Name"
                 field="name"
-                :filter="textValueFilter"
+                :filter="pickExistingValueFilter"
+                :sortValue="getFormattedName"
+                :quickFilterValue="getPersonNameFilterValue"
                 :filterValue="getPersonNameFilterValue">
             <template #format="{ row }">
 
@@ -27,14 +30,14 @@
                         <span>
                             <strong>{{ getFormattedName(row) }}</strong>
                             <span
-                                v-if="row.note"
-                                :ref="(el) => addTooltip(el as Element)"
-                                data-toggle="tooltip"
-                                data-placement="auto"
-                                data-container="body"
-                                data-html="true"
-                                class="note-tooltip ml-2"
-                                :data-original-title="row.note">
+                                  v-if="row.note"
+                                  :ref="(el) => addTooltip(el as Element)"
+                                  data-toggle="tooltip"
+                                  data-placement="auto"
+                                  data-container="body"
+                                  data-html="true"
+                                  class="note-tooltip ml-2"
+                                  :data-original-title="row.note">
                                 <i class='fa fa-file-text-o text-info'></i>
                             </span>
                         </span>
@@ -52,7 +55,7 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { Column, DeleteColumn, SelectColumn, textValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { Column, DeleteColumn, SelectColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
@@ -104,7 +107,7 @@
     * @param row The row to be filtered.
     */
     function getPersonNameFilterValue(row: Record<string, unknown>): string {
-        const person = row["individual"] as PersonFieldBag;
+        const person = row["name"] as PersonFieldBag;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
     }
 

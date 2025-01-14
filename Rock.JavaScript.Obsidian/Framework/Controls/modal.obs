@@ -11,7 +11,7 @@
                      aria-hidden="false"
                      tabindex="-1"
                      role="dialog"
-                     style="display: block; margin-top: 0px;">
+                     style="display: block; margin-top: 0;">
                     <div class="modal-header">
                         <button v-if="!isCloseButtonHidden" @click="onClose" class="close" aria-hidden="true" type="button">&times;</button>
                         <template v-if="title">

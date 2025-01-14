@@ -23,4 +23,9 @@
 
 /** The additional configuration options for the Active Registration Instance List block. */
 export type RegistrationInstanceActiveListOptionsBag = {
+    /**
+     * Gets or sets a value indicating whether the grid should be visible.
+     * The grid will not be displayed if the 'RegistrationTemplateId' or 'CategoryId' is provided in the URL.
+     */
+    isGridVisible: boolean;
 };

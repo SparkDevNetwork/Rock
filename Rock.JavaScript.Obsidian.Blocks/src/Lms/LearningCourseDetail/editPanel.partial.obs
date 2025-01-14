@@ -7,6 +7,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <TextBox v-model="name"
+                                     :maxLength="100"
                                      @blur="onNameBlur"
                                      label="Name"
                                      rules="required" />
@@ -15,14 +16,14 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <CheckBox
-                                            v-model="isActive"
-                                            label="Active" />
+                                              v-model="isActive"
+                                              label="Active" />
                                 </div>
 
                                 <div class="col-md-6">
                                     <CheckBox
-                                            v-model="isPublic"
-                                            label="Public" />
+                                              v-model="isPublic"
+                                              label="Public" />
 
                                 </div>
                             </div>
@@ -30,23 +31,17 @@
                     </div>
 
                     <TextBox
-                            v-model="summary"
-                            label="Public Summary"
-                            textMode="multiline" />
+                             v-model="summary"
+                             :maxLength="500"
+                             label="Public Summary"
+                             textMode="multiline" />
 
                     <div class="row">
                         <div class="col-md-6">
 
                             <TextBox v-model="publicName"
+                                     :maxLength="100"
                                      label="Public Name" />
-
-
-
-                            <NumberBox v-if="!isOnDemandMode"
-                                       v-model="credits"
-                                       class="input-width-sm"
-                                       label="Credits"
-                                       rules="required" />
 
                             <ImageUploader v-model="imageBinaryFile"
                                            label="Image"
@@ -98,7 +93,13 @@
                                         <RadioButtonList v-model="addRequirementType" label="Requirement Type" horizontal rules="required" :items="requirementTypes" />
                                     </div>
                                     <div class="col-md-6">
-                                        <DropDownList v-model="requiredCourse" :enhanceForLongLists="courseOptions.length > 10" :grouped="false" :items="courseOptions" rules="required" label="Course" :multiple="false" :showBlankItem="false" />
+                                        <DropDownList enhanceForLongLists
+                                                      :popupContainerOverride="documentBody"
+                                                      v-model="requiredCourse"
+                                                      :items="courseOptions"
+                                                      rules="required"
+                                                      label="Course"
+                                                      :showBlankItem="false" />
                                     </div>
                                 </div>
                             </Modal>
@@ -110,32 +111,47 @@
                     <Panel title="Advanced Settings" :hasCollapse="true" class="mt-4">
                         <div class="row">
                             <div class="col-md-6">
-                                <TextBox v-model="courseCode"
-                                            class="input-width-md"
-                                            label="Course Code"
-                                            :max="12" />
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <TextBox v-model="courseCode"
+                                                 class="input-width-md"
+                                                 label="Course Code"
+                                                 :max="12" />
+                                    </div>
+                                    <div class="col-md-6">
 
+                                        <NumberBox
+                                                   v-if="isAcademicCalendarMode"
+                                                   v-model="credits"
+                                                   class="input-width-sm"
+                                                   :minimumValue="0"
+                                                   label="Credits" />
+
+                                    </div>
+                                </div>
                                 <WorkflowTypePicker
-                                            v-model="completionWorkflowType"
-                                            label="Completion Workflow Type"
-                                            help="The workflow to launch when an individual completes the course." />
+                                                    v-model="completionWorkflowType"
+                                                    label="Completion Workflow Type"
+                                                    help="The workflow to launch when an individual completes the course." />
                             </div>
                             <div class="col-md-6">
                                 <NumberBox v-model="maxStudents"
-                                       class="input-width-sm"
-                                       label="Maximum Students"
-                                       help="The maximum number of students a class can have." />
+                                           class="input-width-sm"
+                                           label="Maximum Students"
+                                           :minimumValue="0"
+                                           help="The maximum number of students a class can have." />
 
                                 <div class="row">
                                     <div class="col-md-6">
                                         <CheckBox
-                                            v-model="allowHistoricalAccess"
-                                            label="Allow Historical Access" />
+                                                  v-model="allowHistoricalAccess"
+                                                  label="Allow Historical Access" />
                                     </div>
                                     <div class="col-md-6">
                                         <CheckBox
-                                            v-model="enableAnnouncements"
-                                            label="Enable Announcements" />
+                                                  v-if="isAcademicCalendarMode"
+                                                  v-model="enableAnnouncements"
+                                                  label="Enable Announcements" />
                                     </div>
                                 </div>
                             </div>
@@ -149,7 +165,6 @@
         </template>
     </TabbedContent>
 </template>
-
 <script setup lang="ts">
     import Panel from "@Obsidian/Controls/panel.obs";
     import { computed, PropType, ref, watch } from "vue";
@@ -201,6 +216,9 @@
 
     // #region Values
 
+    // Use the document body for the popup container as using the default control-wrapper in the modal
+    // prevents enhanceForLongLists from working.
+    const documentBody = ref(document.body);
     const courseDetailTabs: Array<string> = ["Overview", "Description"];
     const imageFileTypeGuid = BinaryFiletype.Default;
     const showAddCourseRequirementModal = ref(false);
@@ -229,6 +247,8 @@
     const enableAnnouncements = propertyRef(props.modelValue.bag?.enableAnnouncements ?? false, "EnableAnnouncements");
     const imageBinaryFile = propertyRef(props.modelValue.bag?.imageBinaryFile ?? null, "ImageBinaryFile");
     const courseRequirements = propertyRef(props.modelValue.bag?.courseRequirements ?? [], "CourseRequirements");
+
+    const isAcademicCalendarMode = ref(props.options.configurationMode === ConfigurationMode.AcademicCalendar);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -259,8 +279,6 @@
             rows: [...courseRequirements.value]
         };
     });
-
-    const isOnDemandMode = ref(props.options?.configurationMode === ConfigurationMode.OnDemandLearning);
 
     // #endregion
 
@@ -314,6 +332,15 @@
         if (result.isSuccess && result.data) {
             courseRequirements.value.push(result.data);
             courseRequirements.value = Array.from(courseRequirements.value);
+
+            // Remove the added course from the list of options.
+            const indexOfAddedCourse = courseOptions.value.findIndex(c => c.value === requiredCourse.value);
+            courseOptions.value.splice(indexOfAddedCourse, 1);
+
+            // Clear the modal selections in case another item will be added.
+            requiredCourse.value = "";
+            addRequirementType.value = undefined;
+
             showAddCourseRequirementModal.value = false;
         }
     }

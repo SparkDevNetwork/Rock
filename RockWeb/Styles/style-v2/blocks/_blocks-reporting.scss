@@ -73,14 +73,14 @@ span.data-view-filter-label {
   min-height:          calc(($line-height-computed + var(--font-size-regular)) - 2);
   padding-top:         var(--spacing-xsmall);
   padding-bottom:      var(--spacing-xsmall);
-  margin:              0 12px 0 0;
+  margin:              0 var(--spacing-small) 0 0;
 }
 // ====================== END DATA VIEW ======================
 
 
 // ====================== DYNAMIC REPORT ======================
 .filterfield {
-  margin-bottom:        12px;
+  margin-bottom:        var(--spacing-small);
 
   // Override table-cell alignment for dynamic reports and data views
   .field-criteria > div {
@@ -129,13 +129,13 @@ span.data-view-filter-label {
 }
 
 .filter-rule {
-  display:             flex;
-  align-items:        flex-start;
-  margin-bottom:      var(--spacing-medium);
+  display:              flex;
+  align-items:          flex-start;
+  margin-bottom:        var(--spacing-medium);
 
   .filter-rule-fields {
     flex:            1 1 auto;
-    margin-right:    5px;
+    margin-right:    var(--spacing-tiny);
   }
 
   .flex-rule-remove {

@@ -101,6 +101,16 @@ namespace Rock.Web.Cache
         public int LayoutId { get; private set; }
 
         /// <summary>
+        /// Gets the site identifier of the Page's Layout
+        /// NOTE: This is needed so that Page Attributes qualified by SiteId work
+        /// </summary>
+        /// <value>
+        /// The site identifier.
+        /// </value>
+        [DataMember]
+        public int SiteId { get; private set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [requires encryption].
         /// </summary>
         /// <value>
@@ -385,18 +395,18 @@ namespace Rock.Web.Cache
         /// <value>
         /// The rate limit period (in seconds).
         /// </value>
-        [Obsolete( "Use RateLimitPeriodDuration instead." )]
+        [Obsolete( "Use RateLimitPeriodDurationSeconds instead." )]
         [RockObsolete( "1.16.7" )]
         [DataMember]
         public virtual int? RateLimitPeriod
         {
             get
             {
-                return this.RateLimitPeriodDuration;
+                return this.RateLimitPeriodDurationSeconds;
             }
             set
             {
-                this.RateLimitPeriodDuration = value;
+                this.RateLimitPeriodDurationSeconds = value;
             }
         }
 
@@ -407,7 +417,7 @@ namespace Rock.Web.Cache
         /// The rate limit period (in seconds).
         /// </value>
         [DataMember]
-        public int? RateLimitPeriodDuration { get; set; }
+        public int? RateLimitPeriodDurationSeconds { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is rate limited.
@@ -420,7 +430,7 @@ namespace Rock.Web.Cache
         {
             get
             {
-                return RateLimitPeriodDuration != null && RateLimitRequestPerPeriod != null;
+                return RateLimitPeriodDurationSeconds != null && RateLimitRequestPerPeriod != null;
             }
         }
 
@@ -448,16 +458,6 @@ namespace Rock.Web.Cache
         /// </summary>
         public LayoutCache Layout => LayoutCache.Get( LayoutId );
 
-        /// <summary>
-        /// Gets the site identifier of the Page's Layout
-        /// NOTE: This is needed so that Page Attributes qualified by SiteId work
-        /// </summary>
-        /// <value>
-        /// The site identifier.
-        /// </value>
-        public virtual int SiteId => Layout?.SiteId ?? 0;
-
-        
         /// <summary>
         /// Gets the child pages.
         /// </summary>
@@ -802,6 +802,7 @@ namespace Rock.Web.Cache
             BrowserTitle = page.BrowserTitle;
             ParentPageId = page.ParentPageId;
             LayoutId = page.LayoutId;
+            SiteId = page.SiteId;
             IsSystem = page.IsSystem;
             RequiresEncryption = page.RequiresEncryption;
             EnableViewState = page.EnableViewState;
@@ -830,7 +831,7 @@ namespace Rock.Web.Cache
 #pragma warning restore CS0618
             AdditionalSettingsJson = page.AdditionalSettingsJson;
             MedianPageLoadTimeDurationSeconds = page.MedianPageLoadTimeDurationSeconds;
-            RateLimitPeriodDuration = page.RateLimitPeriodDuration;
+            RateLimitPeriodDurationSeconds = page.RateLimitPeriodDurationSeconds;
             RateLimitRequestPerPeriod = page.RateLimitRequestPerPeriod;
 
             PageContexts = new Dictionary<string, string>();

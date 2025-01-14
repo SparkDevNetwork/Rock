@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Enums.CheckIn;
+
 namespace Rock.ViewModels.CheckIn
 {
     /// <summary>
@@ -21,5 +23,10 @@ namespace Rock.ViewModels.CheckIn
     /// </summary>
     public class AreaOpportunityBag : CheckInItemBag
     {
+        /// <summary>
+        /// How locations should be selected when a group in this area is
+        /// being used for check-in.
+        /// </summary>
+        public LocationSelectionStrategy LocationSelectionStrategy { get; set; }
     }
 }

@@ -42,26 +42,32 @@
         </div>
     </Panel>
 
-    <div v-if="screenToShow === ComponentScreen.Completion">
-        <fieldset>
-            <div class="header-section">
-                <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
+    <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
+
+        <div class="header-section">
+            <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
+        </div>
+
+        <div class="video-section">
+            <MediaPlayer v-model:watchedPercentage="watchedPercentage"
+                         :mediaElementGuid="video?.value ?? ''" />
+        </div>
+
+        <div class="footer-section">
+            <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
+
+            <div v-if="showStudentComment" class="optional-comments-container">
+                <TextBox v-model="studentComment" label="Optional Comments" textMode="multiline" :rows="4" />
             </div>
 
-            <div class="video-section">
-                <MediaPlayer v-model:watchedPercentage="watchedPercentage"
-                             :mediaElementGuid="video?.value ?? ''" />
-            </div>
-            <div class="footer-section">
-                <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
-            </div>
-            <div class="footer-buttons">
-                <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold || isStudentCompleted"
-                            @click="onCompletedAndClosed">
-                    {{ isStudentCompleted ? 'Completed' : 'Complete' }}
-                </RockButton>
-            </div>
-        </fieldset>
+        </div>
+        <div class="footer-button-section">
+            <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold"
+                        @click="onCompletedAndClosed">
+                {{ completeButtonText }}
+            </RockButton>
+        </div>
+
     </div>
 </template>
 <script setup lang="ts">
@@ -74,6 +80,7 @@
     import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
     import MediaPlayer from "@Obsidian/Controls/mediaPlayer.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
@@ -86,11 +93,14 @@
     const emits = defineEmits({ ...learningActivityEmits });
 
     const disabled = ref(props.disabled ?? false);
+    const completeClicked = ref(false);
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = computed(() => props.activityBag);
     const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
     const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
+    const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
+    const studentComment = ref(completionBag.value.studentComment ?? "");
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
@@ -100,6 +110,7 @@
         defaultAssigneeDescription,
         footerContent,
         headerContent,
+        isCompleted,
         panelTitle,
         pointsPossibleAtCompletion,
         video,
@@ -113,7 +124,6 @@
 
     const hasPassedThreshold = computed(() => watchedPercentage.value >= completionThreshold.value);
     const notificationAlertType = computed(() => hasPassedThreshold ? "success" : "warning");
-    const isStudentCompleted = ref(completionBag.value.isStudentCompleted);
 
     // The threshold control should show as a number between 0 and 100;
     // while the saved value will be normalized as a decimal < 1.
@@ -123,14 +133,20 @@
             completionThreshold.value
     ));
 
+    function onCompletedAndClosed(): void {
+        if (isCompleted.value === false) {
+            emits("completed", true);
+            completeClicked.value = true;
+        }
+
+        emits("closed");
+    }
+
+    const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");
+
     watch(completionThresholdForView, () => {
         completionThreshold.value = completionThresholdForView.value / 100;
     });
-
-    function onCompletedAndClosed(): void {
-        emits("completed", true);
-        emits("closed");
-    }
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
@@ -159,6 +175,8 @@
                 ...toValue(completionBag)
             } as LearningActivityCompletionBag;
 
+            updatedCompletionBag.studentComment = studentComment.value;
+
             updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
                 watchedPercentage: watchedPercentage.value,
                 pointsPossibleAtCompletion: pointsPossibleAtCompletion?.value ?? activityBag.value.points
@@ -166,7 +184,7 @@
             emits("update:completionBag", updatedCompletionBag);
         }
     });
-    watch(watchedPercentage, () => {
+    watch([watchedPercentage, studentComment], () => {
         debouncedCompletionBagEmits();
     }, { deep: true });
 </script>

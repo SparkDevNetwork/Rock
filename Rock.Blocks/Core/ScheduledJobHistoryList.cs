@@ -45,11 +45,6 @@ namespace Rock.Blocks.Core
     {
         #region Keys
 
-        private static class AttributeKey
-        {
-            public const string DetailPage = "DetailPage";
-        }
-
         private static class PageParameterKey
         {
             public const string ScheduledJobId = "ScheduledJobId";
@@ -88,7 +83,7 @@ namespace Rock.Blocks.Core
         {
             var options = new ScheduledJobHistoryListOptionsBag()
             {
-                IsJobIdValid = PageParameter( PageParameterKey.ScheduledJobId ).IsNotNullOrWhiteSpace(),
+                IsJobIdValid = GetScheduledJobId().HasValue,
                 ServiceJobName = GetServiceJobName(),
             };
 
@@ -98,15 +93,22 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<ServiceJobHistory> GetListQueryable( RockContext rockContext )
         {
-            var scheduledJobId = PageParameter( PageParameterKey.ScheduledJobId ).AsIntegerOrNull();
+            var scheduledJobId = GetScheduledJobId();
 
-            if ( scheduledJobId.HasValue )
+            if (scheduledJobId.HasValue)
             {
-                var jobHistoryService = new ServiceJobHistoryService( rockContext );
-                return jobHistoryService.GetServiceJobHistory( scheduledJobId );
+                var jobHistoryService = new ServiceJobHistoryService(rockContext);
+                return jobHistoryService.GetServiceJobHistory(scheduledJobId);
             }
 
             return new List<ServiceJobHistory>().AsQueryable();
+        }
+
+        private int? GetScheduledJobId()
+        {
+            var scheduledJobIdParam = PageParameter(PageParameterKey.ScheduledJobId);
+            var scheduledJobId = Rock.Utility.IdHasher.Instance.GetId(scheduledJobIdParam) ?? scheduledJobIdParam.AsIntegerOrNull();
+            return scheduledJobId;
         }
 
         /// <inheritdoc/>
@@ -172,7 +174,7 @@ namespace Rock.Blocks.Core
         {
             if ( _serviceJobName.IsNullOrWhiteSpace() )
             {
-                var scheduledJobId = PageParameter( PageParameterKey.ScheduledJobId ).AsIntegerOrNull();
+                var scheduledJobId = GetScheduledJobId(); ;
 
                 if ( scheduledJobId.HasValue )
                 {

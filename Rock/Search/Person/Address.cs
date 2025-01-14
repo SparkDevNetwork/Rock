@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -54,6 +54,11 @@ namespace Rock.Search.Person
         /// <inheritdoc/>
         public override IOrderedQueryable<object> SearchQuery( string searchTerm )
         {
+            if ( searchTerm.IsSingleSpecialCharacter() )
+            {
+                return Enumerable.Empty<object>().AsQueryable().OrderBy( _ => true );
+            }
+
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
             var groupMemberService = new GroupMemberService( rockContext );
@@ -73,6 +78,11 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
+            if ( searchterm.IsSingleSpecialCharacter() )
+            {
+                return Enumerable.Empty<string>().AsQueryable();
+            }
+
             var rockContext = new RockContext();
 
             Guid groupTypefamilyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );

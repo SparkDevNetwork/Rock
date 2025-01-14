@@ -27,6 +27,9 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
 
 export type BinaryFileTypeBag = {
+    /** Gets or sets a flag indicating if this BinaryFileType allows anonymous uploads. */
+    allowAnonymous: boolean;
+
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 

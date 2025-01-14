@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data.Entity;
 using System.IO;
 using System.IO.Compression;
@@ -6099,6 +6100,29 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
+        /// Gets the merge fields that match the given search terms.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent the merge fields that match the search.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "MergeFieldPickerGetSearchedMergeFields" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "f7dd9588-9eff-4f08-ae0e-674de8dcb592" )]
+        public IHttpActionResult MergePickerGetSearchedMergeFields( [FromBody] MergeFieldPickerGetSearchedMergedFieldsOptionsBag options )
+        {
+            if ( options.SearchTerm.IsNullOrWhiteSpace() )
+            {
+                return BadRequest( "Search Term is required" );
+            }
+
+            var searchedFields = GetMergeFields( options.AdditionalFields, GetPerson() )
+                .Where( mf => mf.Text.Contains( options.SearchTerm ) )
+                .ToList();
+
+            return Ok( searchedFields );
+        }
+
+        /// <summary>
         /// Formats a selected Merge Field value as Lava
         /// This endpoint returns items formatted for use in a tree view control.
         /// ***NOTE***: Also implemented in Rock.Web.UI.Controls.MergeFieldPicker's FormatSelectedValue method.
@@ -6511,6 +6535,238 @@ namespace Rock.Rest.v2
             }
 
             return items.OrderBy( i => i.Name ).AsQueryable();
+        }
+
+        internal static IQueryable<ListItemBag> GetMergeFields( string additionalFields, Person person )
+        {
+            var rootItems = new List<ListItemBag>();
+            var items = new List<ListItemBag>();
+
+            if ( !string.IsNullOrWhiteSpace( additionalFields ) )
+            {
+                foreach ( string fieldInfo in additionalFields.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    string[] parts = fieldInfo.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+
+                    string fieldId = parts.Length > 0 ? parts[0] : string.Empty;
+
+                    if ( fieldId == "AdditionalMergeFields" )
+                    {
+                        if ( parts.Length > 1 )
+                        {
+                            var fieldsTv = new ListItemBag
+                            {
+                                Value = $"AdditionalMergeFields_{parts[1]}",
+                                Text = "Additional Fields"
+                            };
+
+                            foreach ( string fieldName in parts[1].Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries ) )
+                            {
+                                items.Add( new ListItemBag
+                                {
+                                    Value = $"AdditionalMergeField_{fieldName}",
+                                    Text = fieldName.SplitCase()
+                                } );
+                            }
+
+                            rootItems.Add( fieldsTv );
+                        }
+                    }
+                    else
+                    {
+                        string[] idParts = fieldId.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+
+                        string mergeFieldId = idParts.Length > 1 ? idParts[1] : fieldId;
+
+                        var entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( mergeFieldId );
+                        if ( entityTypeInfo?.EntityType != null )
+                        {
+                            rootItems.Add( new ListItemBag
+                            {
+                                Value = fieldId.UrlEncode(),
+                                Text = parts.Length > 1 ? parts[1] : entityTypeInfo.EntityType.FriendlyName
+                            } );
+                        }
+                        else
+                        {
+                            rootItems.Add( new ListItemBag
+                            {
+                                Value = fieldId,
+                                Text = parts.Length > 1 ? parts[1] : mergeFieldId.SplitCase()
+                            } );
+                        }
+                    }
+                }
+            }
+
+            foreach ( var id in rootItems.ConvertAll( i => i.Value ) )
+            {
+                var category = rootItems.FirstOrDefault( i => i.Value == id )?.Text;
+
+                if ( id == "GlobalAttribute" )
+                {
+                    var globalAttributes = GlobalAttributesCache.Get();
+
+                    foreach ( var attributeCache in globalAttributes.Attributes.Where( a => a.IsAuthorized( Authorization.VIEW, person ) ).OrderBy( a => a.Key ) )
+                    {
+                        items.Add( new ListItemBag
+                        {
+                            Value = "GlobalAttribute|" + attributeCache.Key,
+                            Text = attributeCache.Name,
+                            Category = category
+                        } );
+                    }
+                }
+                else
+                {
+                    // In this scenario, the id should be a concatenation of a root qualified entity name and then the property path
+                    var idParts = id.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    if ( idParts.Count > 0 )
+                    {
+                        // Get the root type
+                        int pathPointer = 0;
+                        EntityTypeCache entityType = null;
+                        MergeFieldPicker.EntityTypeInfo.EntityTypeQualifier[] entityTypeQualifiers = null;
+                        while ( entityType == null && pathPointer < idParts.Count() )
+                        {
+                            string item = idParts[pathPointer];
+                            string[] itemParts = item.Split( new char[] { '^' }, StringSplitOptions.RemoveEmptyEntries );
+                            string entityTypeMergeFieldId = itemParts.Length > 1 ? itemParts[1] : item;
+                            MergeFieldPicker.EntityTypeInfo entityTypeInfo = MergeFieldPicker.GetEntityTypeInfoFromMergeFieldId( entityTypeMergeFieldId );
+                            entityType = entityTypeInfo?.EntityType;
+                            entityTypeQualifiers = entityTypeInfo?.EntityTypeQualifiers;
+                            pathPointer++;
+                        }
+
+                        if ( entityType != null )
+                        {
+                            Type type = entityType.GetEntityType();
+
+                            // Traverse the Property path
+                            while ( idParts.Count > pathPointer )
+                            {
+                                var childProperty = type.GetProperty( idParts[pathPointer] );
+                                if ( childProperty != null )
+                                {
+                                    type = childProperty.PropertyType;
+
+                                    if ( type.IsGenericType &&
+                                        type.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                                        type.GetGenericArguments().Length == 1 )
+                                    {
+                                        type = type.GetGenericArguments()[0];
+                                    }
+                                }
+
+                                pathPointer++;
+                            }
+
+                            entityType = EntityTypeCache.Get( type );
+
+                            // Add the tree view items
+                            foreach ( var propInfo in Rock.Lava.LavaHelper.GetLavaProperties( type ) )
+                            {
+                                GetPropertyMergeFields( items, id, category, propInfo, new List<Type>() );
+                            }
+
+                            if ( type == typeof( Rock.Model.Person ) )
+                            {
+                                items.Add( new ListItemBag
+                                {
+                                    Value = $"{id}|Campus",
+                                    Text = "Campus",
+                                    Category = category
+                                } );
+                            }
+
+                            if ( entityType.IsEntity )
+                            {
+                                var attributeList = new AttributeService( new Rock.Data.RockContext() ).GetByEntityTypeId( entityType.Id, false ).ToAttributeCacheList();
+                                if ( entityTypeQualifiers?.Any() == true )
+                                {
+                                    var qualifiedAttributeList = new List<AttributeCache>();
+                                    foreach ( var entityTypeQualifier in entityTypeQualifiers )
+                                    {
+                                        var qualifierAttributes = attributeList.Where( a =>
+                                             a.EntityTypeQualifierColumn.Equals( entityTypeQualifier.Column, StringComparison.OrdinalIgnoreCase )
+                                             && a.EntityTypeQualifierValue.Equals( entityTypeQualifier.Value, StringComparison.OrdinalIgnoreCase ) ).ToList();
+
+                                        qualifiedAttributeList.AddRange( qualifierAttributes );
+                                    }
+
+                                    attributeList = qualifiedAttributeList;
+                                }
+                                else
+                                {
+                                    // Only include attributes without a qualifier since we weren't specified a qualifiercolumn/value
+                                    attributeList = attributeList.Where( a => a.EntityTypeQualifierColumn.IsNullOrWhiteSpace() && a.EntityTypeQualifierValue.IsNullOrWhiteSpace() ).ToList();
+                                }
+
+                                foreach ( var attribute in attributeList )
+                                {
+                                    if ( attribute.IsAuthorized( Authorization.VIEW, person ) )
+                                    {
+                                        items.Add( new ListItemBag
+                                        {
+                                            Value = $"{id}|{attribute.Key}",
+                                            Text = attribute.Name,
+                                            Category = category
+                                        } );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            items.AddRange( rootItems );
+
+            return items.OrderBy( i => i.Text ).AsQueryable();
+        }
+
+        private static void GetPropertyMergeFields( List<ListItemBag> items, string parentId, string category, PropertyInfo propInfo, List<Type> parentTypes )
+        {
+            var id = parentId + "|" + propInfo.Name;
+            if ( !parentTypes.Contains( propInfo.DeclaringType ) )
+            {
+                parentTypes.Add( propInfo.DeclaringType );
+            }
+
+            var mergeFieldItem = new ListItemBag
+            {
+                Value = id,
+                Text = propInfo.Name.SplitCase(),
+                Category = category
+            };
+
+            Type propertyType = propInfo.PropertyType;
+
+            if ( propertyType.IsGenericType &&
+                propertyType.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                propertyType.GetGenericArguments().Length == 1 )
+            {
+                mergeFieldItem.Text += " (Collection)";
+                mergeFieldItem.Category = $"{category} > {mergeFieldItem.Text}";
+                propertyType = propertyType.GetGenericArguments()[0];
+            }
+
+            List<PropertyInfo> childProperties = new List<PropertyInfo>();
+
+            if ( EntityTypeCache.Get( propertyType.FullName, false ) != null )
+            {
+                childProperties = Rock.Lava.LavaHelper.GetLavaProperties( propertyType ).Where( p => !parentTypes.Contains( p.PropertyType ) ).ToList();
+            }
+
+            if ( childProperties.Count > 0 && !parentTypes.Contains( propertyType ) )
+            {
+                foreach ( var item in childProperties )
+                {
+                    GetPropertyMergeFields( items, id, $"{category} > {mergeFieldItem.Text}", item, parentTypes );
+                }
+            }
+
+            items.Add( mergeFieldItem );
         }
 
         #endregion
@@ -6993,6 +7249,105 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Page Nav Buttons
+
+        /// <summary>
+        /// Gets the tree list of pages
+        /// </summary>
+        /// <param name="options">The options that describe which pages to retrieve.</param>
+        /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the pages.</returns>
+        [Authenticate, Secured]
+        [HttpPost]
+        [System.Web.Http.Route( "PageNavButtonsGetLinks" )]
+        [Rock.SystemGuid.RestActionGuid( "49F4C35C-5528-44F3-9057-DCD3C387C8A5" )]
+        public IHttpActionResult PageNavButtonsGetLinks( [FromBody] PageNavButtonsGetLinksOptionsBag options )
+        {
+            if ( options.RootPageGuid == null || options.RootPageGuid.IsEmpty() )
+            {
+                return BadRequest( "Please provide a valid Root Page Guid." );
+            }
+
+            Person currentPerson = RockRequestContext.CurrentPerson;
+            PageCache rootPage = PageCache.Get( options.RootPageGuid );
+            List<ListItemBag> linkList = new List<ListItemBag>();
+
+            if ( rootPage == null )
+            {
+                return BadRequest( "Root Page Does Not Exist" );
+            }
+
+            foreach ( PageCache page in GetPageNavButtonsChildPages( rootPage, currentPerson ) )
+            {
+                // href
+                var pageReference = new PageReference( page.Id );
+                if ( options.Parameters != null )
+                {
+                    pageReference.Parameters = options.Parameters;
+                }
+
+                if ( options.QueryString != null )
+                {
+                    var nvcQueryString = new NameValueCollection();
+
+                    foreach ( var kvp in options.QueryString )
+                    {
+                        nvcQueryString.Add( kvp.Key.ToString(), kvp.Value.ToString() );
+                    }
+
+                    pageReference.QueryString = nvcQueryString;
+                }
+
+                var item = new ListItemBag
+                {
+                    Value = pageReference.BuildUrl(),
+                    Text = page.PageTitle,
+                };
+
+                // class
+                if ( page.Guid.Equals( options.CurrentPageGuid ) )
+                {
+                    item.Category = "active";
+                }
+
+                linkList.Add( item );
+            }
+
+            return Ok( linkList );
+        }
+
+        /// <summary>
+        /// Gets the child pages of the given root.
+        /// </summary>
+        /// <param name="rootPage">The root page.</param>
+        /// <param name="currentPerson">The current person.</param>
+        private List<PageCache> GetPageNavButtonsChildPages( PageCache rootPage, Person currentPerson )
+        {
+            var pages = new List<PageCache>();
+
+            using ( var rockContext = new RockContext() )
+            {
+                foreach ( PageCache page in rootPage.GetPages( rockContext ) )
+                {
+                    // IsAuthorized() knows how to handle a null person argument.
+                    if ( page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed && !page.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    {
+                        continue;
+                    }
+
+                    if ( page.DisplayInNavWhen == DisplayInNavWhen.Never )
+                    {
+                        continue;
+                    }
+
+                    pages.Add( page );
+                }
+            }
+
+            return pages;
+        }
+
+        #endregion
+
         #region Person Link
 
         /// <summary>
@@ -7273,6 +7628,288 @@ namespace Rock.Rest.v2
 
                 return Ok( items );
             }
+        }
+
+        #endregion
+
+        #region Reminder Button
+
+        /// <summary>
+        /// Gets the data needed for the initial state of the Reminder modal.
+        /// </summary>
+        /// <param name="options">The options that describe which items to load.</param>
+        /// <returns>A Bag of data useful to initialize the Reminder Button.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ReminderButtonGetReminders" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "4D015951-9B44-4E70-99AD-8D52728ADF3E" )]
+        public IHttpActionResult ReminderButtonGetReminders( [FromBody] ReminderButtonGetRemindersOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var reminderViewModels = ReminderButtonGetReminders( options.EntityTypeGuid, options.EntityGuid, rockContext );
+                var currentPerson = GetPerson();
+                var currentPersonId = currentPerson?.Id;
+
+                if ( currentPersonId == null || options.EntityTypeGuid.IsEmpty() || options.EntityGuid.IsEmpty() )
+                {
+                    return BadRequest();
+                }
+
+                var entityType = EntityTypeCache.Get( options.EntityTypeGuid );
+                var contextEntity = Rock.Reflection.GetIEntityForEntityType( entityType.GetEntityType(), options.EntityGuid );
+
+                // Load reminder types for this context entity.
+                var reminderTypeService = new ReminderTypeService( rockContext );
+                var reminderTypes = reminderTypeService.GetReminderTypesForEntityType( contextEntity.TypeId, currentPerson ).ToListItemBagList();
+
+                var entityTypeName = EntityTypeCache.Get( contextEntity.TypeId ).FriendlyName;
+                if ( contextEntity.TypeId == EntityTypeCache.GetId<PersonAlias>() )
+                {
+                    // Show "Person" instead of "Person Alias".
+                    entityTypeName = EntityTypeCache.Get<Person>().FriendlyName;
+                }
+
+                var viewUrl = "";
+                var editUrl = "";
+
+                var pageReference = new PageReference( options.ViewRemindersPage.ToStringSafe() );
+                if ( pageReference.PageId > 0 )
+                {
+                    viewUrl = pageReference.BuildUrl();
+                }
+
+                pageReference = new PageReference( options.EditReminderPage.ToStringSafe() );
+                if ( pageReference.PageId > 0 )
+                {
+                    editUrl = pageReference.BuildUrl();
+                }
+
+
+                return Ok( new ReminderButtonGetRemindersResultsBag
+                {
+                    Reminders = reminderViewModels,
+                    EntityName = contextEntity.ToString(),
+                    EntityTypeName = entityTypeName,
+                    ReminderTypes = reminderTypes,
+                    ViewUrl = viewUrl,
+                    EditUrl = editUrl,
+                } );
+            }
+        }
+
+        /// <summary>
+        /// Add a new reminder
+        /// </summary>
+        /// <param name="options">The data for the reminder to save.</param>
+        /// <returns>The status of the insertion: successful or failed.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ReminderButtonAddReminder" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "58DC4454-ED33-4871-9BD1-2AC9118340E2" )]
+        public IHttpActionResult ReminderButtonAddReminder( [FromBody] ReminderButtonAddReminderOptionsBag options )
+        {
+            if ( options.EntityTypeGuid.IsEmpty() || options.EntityGuid.IsEmpty() || options.ReminderTypeGuid.IsEmpty() )
+            {
+                return BadRequest();
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var entityType = EntityTypeCache.Get( options.EntityTypeGuid );
+                var contextEntity = Rock.Reflection.GetIEntityForEntityType( entityType.GetEntityType(), options.EntityGuid );
+
+                var reminderTypeService = new ReminderTypeService( new RockContext() );
+                var reminderType = reminderTypeService.Get( options.ReminderTypeGuid );
+
+                if ( reminderType == null )
+                {
+                    return BadRequest();
+                }
+
+                var reminder = new Reminder
+                {
+                    EntityId = contextEntity.Id,
+                    ReminderTypeId = reminderType.Id,
+                    ReminderDate = DateTime.Parse( options.ReminderDate ),
+                    Note = options.Note,
+                    IsComplete = false,
+                    RenewPeriodDays = options.RenewPeriodDays,
+                    RenewMaxCount = options.RenewMaxCount,
+                    RenewCurrentCount = 0
+                };
+
+                var person = GetPerson();
+                PersonAlias personAlias = null;
+
+                if ( !options.AssignedToGuid.IsEmpty() )
+                {
+                    person = new PersonService( rockContext ).Get( options.AssignedToGuid );
+                }
+                // Person might not be found because the given Guid might be a PersonAlias Guid
+                if ( person == null && !options.AssignedToGuid.IsEmpty() )
+                {
+                    personAlias = new PersonAliasService( rockContext ).Get( options.AssignedToGuid );
+                }
+
+                if ( personAlias != null )
+                {
+                    reminder.PersonAliasId = personAlias.Id;
+                }
+                else
+                {
+                    reminder.PersonAliasId = person.PrimaryAliasId.Value;
+                }
+
+                var reminderService = new ReminderService( rockContext );
+                reminderService.Add( reminder );
+                rockContext.SaveChanges();
+
+                return Ok( "ok" );
+            }
+
+        }
+
+        /// <summary>
+        /// Mark a reminder as complete
+        /// </summary>
+        /// <param name="options">The data to determine which reminder to mark complete</param>
+        /// <returns>The list of reminders.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ReminderButtonCompleteReminder" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "D0720DE1-8417-4E01-8163-A17AB5D7F0BF" )]
+        public IHttpActionResult ReminderButtonCompleteReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var reminderService = new ReminderService( rockContext );
+                var reminder = reminderService.Get( options.ReminderGuid );
+                reminder.CompleteReminder();
+                rockContext.SaveChanges();
+
+                var reminders = ReminderButtonGetReminders( options.EntityTypeGuid, options.EntityGuid, rockContext );
+
+                return Ok( reminders );
+            }
+        }
+
+        /// <summary>
+        /// Delete a reminder
+        /// </summary>
+        /// <param name="options">The data to determine which reminder to delete</param>
+        /// <returns>The list of reminders.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ReminderButtonDeleteReminder" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "52CF7D4D-E604-4B2E-B64E-DE865E2E0DF9" )]
+        public IHttpActionResult ReminderButtonDeleteReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var reminderService = new ReminderService( rockContext );
+                var reminder = reminderService.Get( options.ReminderGuid );
+                reminderService.Delete( reminder );
+                rockContext.SaveChanges();
+
+                var reminders = ReminderButtonGetReminders( options.EntityTypeGuid, options.EntityGuid, rockContext );
+
+                return Ok( reminders );
+            }
+        }
+
+        /// <summary>
+        /// Cancel the reoccurance of a reminder
+        /// </summary>
+        /// <param name="options">The data to determine which reminder to cancel</param>
+        /// <returns>The list of reminders.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "ReminderButtonCancelReminder" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "2B3F7D40-2AD2-432E-8B77-C9F40AC45D2D" )]
+        public IHttpActionResult ReminderButtonCancelReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var reminderService = new ReminderService( rockContext );
+                var reminder = reminderService.Get( options.ReminderGuid );
+                reminder.CancelReoccurrence();
+                rockContext.SaveChanges();
+
+                var reminders = ReminderButtonGetReminders( options.EntityTypeGuid, options.EntityGuid, rockContext );
+
+                return Ok( reminders );
+            }
+        }
+
+        /// <summary>
+        /// Fetch a list of the current person's 3 most pressing reminders for the given entity.
+        /// </summary>
+        /// <param name="entityTypeGuid"></param>
+        /// <param name="entityGuid"></param>
+        /// <param name="rockContext"></param>
+        /// <returns>A List of <see cref="ReminderButtonGetRemindersReminderBag"/> objects that represent the reminders.</returns>
+        private List<ReminderButtonGetRemindersReminderBag> ReminderButtonGetReminders( Guid entityTypeGuid, Guid entityGuid, RockContext rockContext )
+        {
+            var reminderViewModels = new List<ReminderButtonGetRemindersReminderBag>();
+            var currentPerson = GetPerson();
+            var currentPersonId = currentPerson?.Id;
+
+            var entityType = EntityTypeCache.Get( entityTypeGuid );
+            var contextEntity = Rock.Reflection.GetIEntityForEntityType( entityType.GetEntityType(), entityGuid );
+
+            var reminderService = new ReminderService( rockContext );
+
+            if ( contextEntity is PersonAlias personAlias )
+            {
+                var personAliasService = new PersonAliasService( rockContext );
+                var personAliasIds = personAlias.Person.Aliases.Select( a => a.Id ).ToList();
+
+                var reminders = reminderService
+                    .GetReminders( currentPersonId.Value, contextEntity.TypeId, null, null )
+                    .Where( r => personAliasIds.Contains( r.EntityId ) && !r.IsComplete && r.ReminderDate < RockDateTime.Now ) // only get active reminders for this person.
+                    .OrderByDescending( r => r.ReminderDate )
+                    .Take( 3 ); // We're only interested in two reminders plus one more just to determine if there are more than 2.
+
+                foreach ( var reminder in reminders.ToList() )
+                {
+                    reminderViewModels.Add( new ReminderButtonGetRemindersReminderBag
+                    {
+                        Guid = reminder.Guid,
+                        Id = reminder.Id,
+                        ReminderDate = reminder.ReminderDate.ToShortDateString(),
+                        HighlightColor = reminder.ReminderType.HighlightColor,
+                        ReminderTypeName = reminder.ReminderType.Name,
+                        Note = reminder.Note,
+                        IsRenewing = reminder.IsRenewing
+                    } );
+                }
+            }
+            else
+            {
+                var entityTypeService = new EntityTypeService( rockContext );
+                var reminders = reminderService
+                    .GetReminders( currentPersonId.Value, contextEntity.TypeId, contextEntity.Id, null )
+                    .Where( r => !r.IsComplete && r.ReminderDate < RockDateTime.Now ) // only get active reminders.
+                    .OrderByDescending( r => r.ReminderDate )
+                    .Take( 3 ); // We're only interested in two reminders plus one more just to determine if there are more than 2.
+
+                foreach ( var reminder in reminders.ToList() )
+                {
+                    reminderViewModels.Add( new ReminderButtonGetRemindersReminderBag
+                    {
+                        Guid = reminder.Guid,
+                        Id = reminder.Id,
+                        ReminderDate = reminder.ReminderDate.ToShortDateString(),
+                        HighlightColor = reminder.ReminderType.HighlightColor,
+                        ReminderTypeName = reminder.ReminderType.Name,
+                        Note = reminder.Note,
+                        IsRenewing = reminder.IsRenewing
+                    } );
+                }
+            }
+
+            return reminderViewModels;
         }
 
         #endregion
@@ -7598,6 +8235,47 @@ namespace Rock.Rest.v2
 
                 return Ok( items );
             }
+        }
+
+        #endregion
+
+        #region Search Field
+
+        /// <summary>
+        /// Gets the search filters available for the Search Field control
+        /// </summary>
+        /// <returns>A Dictionary of <see cref="ListItemBag"/> objects that represent all of the availabe filters.</returns>
+        [HttpPost]
+        [System.Web.Http.Route( "SearchFieldGetSearchFilters" )]
+        [Authenticate]
+        [Rock.SystemGuid.RestActionGuid( "6FF52C9E-985B-46C3-B5A5-E69312D189CB" )]
+        public IHttpActionResult SearchFieldGetSearchFilters()
+        {
+            var searchExtensions = new Dictionary<string, ListItemBag>();
+
+            var currentPerson = RockRequestContext.CurrentPerson;
+            if ( currentPerson != null )
+            {
+                foreach ( KeyValuePair<int, Lazy<Rock.Search.SearchComponent, Rock.Extension.IComponentData>> service in Rock.Search.SearchContainer.Instance.Components )
+                {
+                    var searchComponent = service.Value.Value;
+                    if ( searchComponent.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                    {
+                        if ( !searchComponent.AttributeValues.ContainsKey( "Active" ) || bool.Parse( searchComponent.AttributeValues["Active"].Value ) )
+                        {
+                            var item = new ListItemBag
+                            {
+                                Value = searchComponent.ResultUrl,
+                                Text = searchComponent.SearchLabel,
+
+                            };
+                            searchExtensions.Add( service.Key.ToString(), item );
+                        }
+                    }
+                }
+            }
+
+            return Ok( searchExtensions );
         }
 
         #endregion
@@ -8063,7 +8741,7 @@ namespace Rock.Rest.v2
                 } );
             }
 
-            return items;
+            return items.OrderBy( a => a.Text ).ToList();
         }
 
         /// <summary>

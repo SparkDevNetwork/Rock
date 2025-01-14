@@ -333,7 +333,7 @@ namespace Rock.Web.UI.Controls
 
             StringBuilder valueHtml = new StringBuilder();
             valueHtml.Append( @"<div class=""controls controls-row form-control-group"">" );
-            valueHtml.AppendFormat( @"<div class=""input-group""><span class=""input-group-addon""><i class=""fa fa-bars""></i></span><input class=""form-control input-width-lg js-list-items-input"" data-id=""00000000-0000-0000-0000-000000000000"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
+            valueHtml.AppendFormat( @"<div class=""input-group""><span class=""input-group-addon""><i class=""fa fa-bars""></i></span><input class=""form-control js-list-items-input"" data-id=""00000000-0000-0000-0000-000000000000"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
             valueHtml.Append( @"</div><a href=""#"" class=""btn btn-sm btn-square btn-danger list-items-remove""><i class=""fa fa-times""></i></a></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
@@ -368,7 +368,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                     writer.RenderEndTag();
 
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control input-width-lg js-list-items-input" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-control js-list-items-input" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Type, "text" );
                     writer.AddAttribute( "data-id", keyValuePair.Key.ToString() );
                     writer.AddAttribute( "placeholder", ValuePrompt );

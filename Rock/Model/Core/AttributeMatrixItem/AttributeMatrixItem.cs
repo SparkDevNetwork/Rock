@@ -41,7 +41,18 @@ namespace Rock.Model
         /// The attribute matrix identifier.
         /// </value>
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int AttributeMatrixId { get; set; }
+
+        /// <summary>
+        /// Gets the attribute matrix template identifier (Need this so that Attributes can be qualified on AttributeMatrix's AttributeMatrixTempleId)
+        /// </summary>
+        /// <value>
+        /// The attribute matrix template identifier.
+        /// </value>
+        [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
+        public int AttributeMatrixTemplateId { get; set; }
 
         /// <summary>
         /// Gets or sets the order.
@@ -57,29 +68,6 @@ namespace Rock.Model
         #region Navigation Properties
 
         /// <summary>
-        /// Gets the attribute matrix template identifier (Need this so that Attributes can be qualified on AttributeMatrix's AttributeMatrixTempleId)
-        /// </summary>
-        /// <value>
-        /// The attribute matrix template identifier.
-        /// </value>
-        public virtual int AttributeMatrixTemplateId
-        {
-            get
-            {
-                // Need to check for a null in case the AttributeMatrix obj didn't get lazy loaded as is the case with the REST API.
-                if ( this.AttributeMatrix == null )
-                {
-                    using ( var rockContext = new RockContext() )
-                    {
-                        return new AttributeMatrixService( rockContext ).GetNoTracking( this.AttributeMatrixId ).AttributeMatrixTemplateId;
-                    }
-                }
-
-                return this.AttributeMatrix.AttributeMatrixTemplateId;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the attribute matrix.
         /// </summary>
         /// <value>
@@ -87,6 +75,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual AttributeMatrix AttributeMatrix { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attribute matrix template.
+        /// </summary>
+        /// <value>
+        /// The attribute matrix template.
+        /// </value>
+        [DataMember]
+        public virtual AttributeMatrixTemplate AttributeMatrixTemplate { get; set; }
 
         #endregion Navigation Properties
     }
@@ -103,6 +100,7 @@ namespace Rock.Model
         /// </summary>
         public AttributeMatrixItemConfiguration()
         {
+            this.HasRequired( p => p.AttributeMatrixTemplate ).WithMany().HasForeignKey( p => p.AttributeMatrixTemplateId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.AttributeMatrix ).WithMany( p => p.AttributeMatrixItems ).HasForeignKey( p => p.AttributeMatrixId ).WillCascadeOnDelete( false );
         }
     }

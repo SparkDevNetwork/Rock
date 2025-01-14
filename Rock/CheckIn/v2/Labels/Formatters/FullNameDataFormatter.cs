@@ -77,11 +77,30 @@ namespace Rock.CheckIn.v2.Labels.Formatters
                 Name = "First L",
                 Value = "First L"
             } );
+
+            Options.Add( new DataFormatterOptionBag
+            {
+                Key = "a6b365dc-34d1-4827-aa7c-b6924a86d326",
+                Name = "Nick",
+                Value = "Nick"
+            } );
+
+            Options.Add( new DataFormatterOptionBag
+            {
+                Key = "cc0f5a3b-5445-4b84-9371-ee77b531fb22",
+                Name = "First",
+                Value = "First"
+            } );
         }
 
         /// <inheritdoc/>
         protected override string GetFormattedValue( Person value, string optionValue, LabelField field, PrintLabelRequest printRequest )
         {
+            if ( value == null )
+            {
+                return string.Empty;
+            }
+
             if ( optionValue == "Nick Last" )
             {
                 return $"{value.NickName} {value.LastName}";
@@ -105,6 +124,14 @@ namespace Rock.CheckIn.v2.Labels.Formatters
             else if ( optionValue == "Nick L" )
             {
                 return $"{value.NickName} {value.LastName.Truncate( 1, false )}";
+            }
+            else if ( optionValue == "Nick" )
+            {
+                return value.NickName;
+            }
+            else if ( optionValue == "First" )
+            {
+                return value.FirstName;
             }
             else
             {

@@ -866,18 +866,19 @@ export default defineComponent({
 
     <template #footerActions>
         <template v-if="isEditMode">
-            <RockButton btnType="primary" autoDisable @click="onSaveClick" shortcutKey="s">Save</RockButton>
+            <RockButton btnType="primary" autoDisable autoLoading @click="onSaveClick" shortcutKey="s">Save</RockButton>
             <RockButton btnType="link" @click="onEditCancelClick" shortcutKey="c">Cancel</RockButton>
         </template>
 
         <template v-else>
-            <RockButton v-if="isEditVisible" btnType="primary" @click="onEditClick" autoDisable shortcutKey="e">Edit</RockButton>
-            <RockButton v-if="isDeleteVisible" btnType="link" @click="onDeleteClick" autoDisable>Delete</RockButton>
+            <RockButton v-if="isEditVisible" btnType="primary" @click="onEditClick" autoDisable autoLoading shortcutKey="e">Edit</RockButton>
+            <RockButton v-if="isDeleteVisible" btnType="link" @click="onDeleteClick" autoDisable autoLoading>Delete</RockButton>
         </template>
 
         <RockButton v-for="action in footerActions" :btnType="action.type" @click="onActionClick(action, $event)">
+            <i v-if="action.iconCssClass" :class="action.iconCssClass"></i>
+            <template v-if="action.title && action.title">&nbsp;</template>
             <template v-if="action.title">{{ action.title }}</template>
-            <i v-else :class="action.iconCssClass"></i>
         </RockButton>
     </template>
 

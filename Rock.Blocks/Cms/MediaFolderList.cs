@@ -25,7 +25,9 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Reporting.DataFilter.ContentChannelItem;
 using Rock.Security;
+using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.MediaFolderList;
@@ -56,6 +58,8 @@ namespace Rock.Blocks.Cms
     [CustomizedGrid]
     public class MediaFolderList : RockListBlockType<MediaFolderData>
     {
+        private MediaAccount SelectedMediaAccount { get; set; }
+
         #region Keys
 
         private static class AttributeKey
@@ -68,8 +72,13 @@ namespace Rock.Blocks.Cms
             public const string DetailPage = "DetailPage";
         }
 
-        #endregion Keys
+        private static class PageParameterKey
+        {
+            public const string MediaAccountId = "MediaAccountId";
+            public const string MediaFolderId = "MediaFolderId";
+        }
 
+        #endregion Keys
 
         #region Fields
 
@@ -104,8 +113,15 @@ namespace Rock.Blocks.Cms
         /// <returns>The options that provide additional details to the block.</returns>
         private MediaFolderListOptionsBag GetBoxOptions()
         {
-            var options = new MediaFolderListOptionsBag();
+            var mediaAccount = GetMediaAccount();
 
+            if ( mediaAccount == null )
+            {
+                return null;
+            }
+            var options = new MediaFolderListOptionsBag();
+            options.MediaAccountName = mediaAccount.Name;
+            options.IsBlockVisible = mediaAccount != null;
             return options;
         }
 
@@ -126,18 +142,32 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var mediaAccountId = PageParameter( PageParameterKey.MediaAccountId );
+            var queryParams = new Dictionary<string, string>()
+            {
+                { PageParameterKey.MediaFolderId, "((Key))" },
+                { PageParameterKey.MediaAccountId, mediaAccountId },
+            };
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "MediaFolderId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams )
             };
         }
 
         /// <inheritdoc/>
         private IQueryable<MediaFolder> GetMediaFolderListQueryable( RockContext rockContext )
         {
+            var mediaAccount = GetMediaAccount();
+            if ( mediaAccount == null )
+            {
+                return Enumerable.Empty<MediaFolder>().AsQueryable();
+            }
+
             var qry = new MediaFolderService( rockContext )
                .Queryable()
-               .Include( "MediaElements" );
+               .Include( "MediaElements" )
+               .Where( i => i.MediaAccountId == mediaAccount.Id );
 
             return qry;
         }
@@ -192,6 +222,7 @@ namespace Rock.Blocks.Cms
                 .WithBlock( this, blockOptions )
                 .AddTextField( "idKey", a => a.MediaFolder.IdKey )
                 .AddTextField( "name", a => a.MediaFolder.Name )
+                .AddField( "contentChannelSync", a => a.MediaFolder?.ContentChannel?.Name )
                 .AddField( "isContentChannelSyncEnabled", a => a.MediaFolder.IsContentChannelSyncEnabled )
                 .AddField( "watchCount", a => a.WatchCount )
                 .AddField( "videoCount", a => a.VideoCount )
@@ -215,6 +246,16 @@ namespace Rock.Blocks.Cms
             }
 
             return new List<AttributeCache>();
+        }
+
+        private MediaAccount GetMediaAccount()
+        {
+            if ( SelectedMediaAccount == null )
+            {
+                SelectedMediaAccount = new MediaAccountService( new RockContext() ).Get( RequestContext.GetPageParameter( PageParameterKey.MediaAccountId ) );
+            }
+
+            return SelectedMediaAccount;
         }
 
         #endregion
@@ -257,7 +298,6 @@ namespace Rock.Blocks.Cms
         }
 
         #endregion
-
 
         #region Support Classes
 

@@ -91,6 +91,24 @@ namespace Rock.Blocks.Engagement.SignUp
         DefaultBooleanValue = false,
         Order = 5 )]
 
+    [DefinedValueField( "Connection Status",
+        Key = AttributeKey.ConnectionStatus,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
+        Description = "The connection status to use for new individuals (default: 'Prospect').",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
+        Order = 6 )]
+
+    [DefinedValueField( "Record Status",
+        Key = AttributeKey.RecordStatus,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
+        Description = "The record status to use for new individuals (default: 'Pending').",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
+        Order = 7 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "ED7A31F2-8D4C-469A-B2D8-7E28B8717FB8" )]
@@ -107,6 +125,8 @@ namespace Rock.Blocks.Engagement.SignUp
             public const string RegistrantConfirmationSystemCommunication = "RegistrantConfirmationSystemCommunication";
             public const string RequireEmail = "RequireEmail";
             public const string RequireMobilePhone = "RequireMobilePhone";
+            public const string ConnectionStatus = "ConnectionStatus";
+            public const string RecordStatus = "RecordStatus";
         }
 
         private static class PageParameterKey
@@ -708,7 +728,7 @@ namespace Rock.Blocks.Engagement.SignUp
             var personGroupRequirementStatuses = group.PersonMeetsGroupRequirements( rockContext, personId, groupRoleId );
             foreach ( var personGroupRequirementStatus in personGroupRequirementStatuses
                                                                 .Where( s => s.GroupRequirement.MustMeetRequirementToAddMember
-                                                                            && s.MeetsGroupRequirement != MeetsGroupRequirement.Meets ) )
+                                                                            && s.MeetsGroupRequirement != MeetsGroupRequirement.Meets && s.MeetsGroupRequirement != MeetsGroupRequirement.NotApplicable ) )
             {
                 var groupRequirementType = personGroupRequirementStatus.GroupRequirement.GroupRequirementType;
                 if ( groupRequirementType == null )
@@ -1000,7 +1020,9 @@ namespace Rock.Blocks.Engagement.SignUp
                             LastName = registrant.LastName?.Trim(),
                             Email = registrant.Email?.Trim(),
                             RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
-                            CommunicationPreference = communicationPreference
+                            CommunicationPreference = communicationPreference,
+                            RecordStatusValueId = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() )?.Id,
+                            ConnectionStatusValueId = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() )?.Id,
                         };
 
                         if ( wasMobilePhoneProvided )

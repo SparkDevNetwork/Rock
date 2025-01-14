@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock
                  v-if="!blockError"
@@ -16,7 +16,7 @@
                  :entityTypeGuid="entityTypeGuid"
                  entityTypeName="Activity"
                  :isBadgesVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  :footerSecondaryActions="footerSecondaryActions"
                  :isEditVisible="isEditable"
                  @cancelEdit="onCancelEdit"
@@ -29,24 +29,22 @@
             <EditPanel v-model="learningActivityEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :hasFullScreen="false" />
 
             <Modal
-                v-model="showDueDateChangeConfirmation"
-                title="Confirm Due Date Change"
-                saveText="Update All"
-                saveThenAddText="Update Matching"
-                :onSave="onSaveWithUpdateAllDueDates"
-                @saveThenAdd="onSaveWithUpdateMatchingDueDates"
-            >
+                   v-model="showDueDateChangeConfirmation"
+                   title="Confirm Due Date Change"
+                   saveText="Update All"
+                   saveThenAddText="Update Matching"
+                   :onSave="onSaveWithUpdateAllDueDatesConfirmed"
+                   @saveThenAdd="onSaveWithUpdateMatchingDueDatesConfirmed">
                 You are about to change the due date for this assignment.
                 Please select how you want these changes applied.
                 You can update the due date for all students, only those with the original due date, or cancel if you don't want to proceed.
             </Modal>
 
             <Modal
-                v-model="showAvailabilityChangeConfirmation"
-                title="Confirm Availability Change"
-                saveText="Update All"
-                :onSave="onSaveInternal"
-            >
+                   v-model="showAvailabilityChangeConfirmation"
+                   title="Confirm Availability Change"
+                   saveText="Update All"
+                   :onSave="onSaveAvailabilityConfirmed">
                 You are about to change the availability date for this assignment.
                 This update will apply to all students in the class.
                 Please confirm if you would like to proceed or cancel.
@@ -73,6 +71,10 @@
     import { NavigationUrlKey } from "./LearningActivityDetail/types.partial";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { DueDateChangeType } from "@Obsidian/Enums/Lms/dueDateChangeType";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { AvailabilityCriteria } from "@Obsidian/Enums/Lms/availabilityCriteria";
+    import { DueDateCriteria } from "@Obsidian/Enums/Lms/dueDateCriteria";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
 
     const config = useConfigurationValues<DetailBlockBox<LearningActivityBag, LearningActivityDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -110,12 +112,11 @@
     // and prompt the individual to confirm the change
     // as well the method for updating (Due Dates only).
     const originalDueDateCriteria = computed(() => learningActivityViewBag.value?.dueDateCriteria);
-    const originalDueDateDefault = computed(() => learningActivityViewBag.value?.dueDateDefault);
+    const originalDueDateDefault = computed(() => RockDateTime.parseISO(learningActivityViewBag.value?.dueDateDefault ?? ""));
     const originalDueDateOffset = computed(() => learningActivityViewBag.value?.dueDateOffset);
     const originalAvailabilityCriteria = computed(() => learningActivityViewBag.value?.availabilityCriteria);
-    const originalAvailableDateDefault = computed(() => learningActivityViewBag.value?.availableDateDefault);
+    const originalAvailableDateDefault = computed(() => RockDateTime.parseISO(learningActivityViewBag.value?.availableDateDefault ?? ""));
     const originalAvailableDateOffset = computed(() => learningActivityViewBag.value?.availableDateOffset);
-
 
     /**
      * Additional labels to display in the block panel.
@@ -175,7 +176,7 @@
 
         const secondaryActions: PanelAction[] = [];
 
-        if (isEditable) {
+        if (isEditable.value === true) {
             secondaryActions.push({
                 iconCssClass: "fa fa-copy",
                 title: "Copy Activity",
@@ -252,39 +253,103 @@
         }
     }
 
+    /** Determines whether the available date configuration has had any changes since the last save. */
     const hasAvailabilityChanges = computed((): boolean => {
+        const currentDateMs = RockDateTime.parseISO(learningActivityEditBag.value?.bag?.availableDateDefault ?? "")?.toMilliseconds() ?? 0;
+        const originalDateMs = originalAvailableDateDefault.value?.date.toMilliseconds() ?? 0;
+
         return !isNewActivity
-        && (learningActivityEditBag.value?.bag?.availabilityCriteria !== originalAvailabilityCriteria.value
-            || learningActivityEditBag.value?.bag?.availableDateDefault !== originalAvailableDateDefault.value
-            || learningActivityEditBag.value?.bag?.availableDateOffset !== originalAvailableDateOffset.value);
+            && (learningActivityEditBag.value?.bag?.availabilityCriteria !== originalAvailabilityCriteria.value
+                || currentDateMs !== originalDateMs
+                || learningActivityEditBag.value?.bag?.availableDateOffset !== originalAvailableDateOffset.value);
     });
 
+    /** Determines whether the due date configuration has had any changes since the last save. */
     const hasDueDateChanges = computed((): boolean => {
+        const currentDateMs = RockDateTime.parseISO(learningActivityEditBag.value?.bag?.dueDateDefault ?? "")?.toMilliseconds() ?? 0;
+        const originalDateMs = originalDueDateDefault.value?.date.toMilliseconds() ?? 0;
+
         return !isNewActivity
             && (learningActivityEditBag.value?.bag?.dueDateCriteria !== originalDueDateCriteria.value
-             || learningActivityEditBag.value?.bag?.dueDateDefault !== originalDueDateDefault.value
-             || learningActivityEditBag.value?.bag?.dueDateOffset !== originalDueDateOffset.value);
+                || currentDateMs !== originalDateMs
+                || learningActivityEditBag.value?.bag?.dueDateOffset !== originalDueDateOffset.value);
     });
 
-    async function onSaveWithUpdateAllDueDates(): Promise<void> {
-        if (!learningActivityEditBag.value?.bag || isNewActivity) {
-            showDueDateChangeConfirmation.value = false;
+    /**
+     * Calls to the block action for updating activity completion instance records
+     * for all records.
+     */
+    async function onSaveWithUpdateAllDueDatesConfirmed(): Promise<void> {
+        console.warn("onSaveWithUpdateAllDueDatesConfirmed", dueDateCriteriaConfirmedSource);
+        if (learningActivityEditBag.value?.bag && !isNewActivity) {
+            learningActivityEditBag.value.bag.dueDateChangeType = DueDateChangeType.UpdateAll;
+        }
+
+        showDueDateChangeConfirmation.value = false;
+        dueDateCriteriaConfirmedSource.resolve();
+    }
+
+    /**
+     * Calls to the block action for updating activity completion instance records
+     * where the due date matches the previous value.
+     */
+    async function onSaveWithUpdateMatchingDueDatesConfirmed(): Promise<void> {
+        console.warn("onSaveWithUpdateMatchingDueDatesConfirmed", dueDateCriteriaConfirmedSource);
+        if (learningActivityEditBag.value?.bag && !isNewActivity) {
+            learningActivityEditBag.value.bag.dueDateChangeType = DueDateChangeType.UpdateMatching;
+        }
+
+        showDueDateChangeConfirmation.value = false;
+        dueDateCriteriaConfirmedSource.resolve();
+    }
+
+    async function onSaveAvailabilityConfirmed(): Promise<void> {
+        console.warn("onSaveAvailabilityConfirmed", availabilityCriteriaConfirmedSource);
+        showAvailabilityChangeConfirmation.value = false;
+        availabilityCriteriaConfirmedSource.resolve();
+    }
+
+    /**
+     * Removes availableDateDefault and/or availableDateOffset values for
+     * availabilityCriteria where those fields are not applicable.
+     */
+    function removeUnsetAvailabilityDateFields(): void {
+        if (!learningActivityEditBag.value.bag) {
             return;
         }
 
-        learningActivityEditBag.value.bag.dueDateChangeType = DueDateChangeType.UpdateAll;
-        await onSaveInternal();
+        if (learningActivityEditBag.value.bag.availabilityCriteria !== AvailabilityCriteria.SpecificDate) {
+            learningActivityEditBag.value.bag.availableDateDefault = null;
+        }
+
+        const offsetBasedCriteria: AvailabilityCriteria[] = [AvailabilityCriteria.ClassStartOffset, AvailabilityCriteria.EnrollmentOffset];
+        if (!offsetBasedCriteria.includes(learningActivityEditBag.value.bag.availabilityCriteria)) {
+            learningActivityEditBag.value.bag.availableDateOffset = null;
+        }
     }
 
-    async function onSaveWithUpdateMatchingDueDates(): Promise<void> {
-        if (!learningActivityEditBag.value?.bag|| isNewActivity) {
-            showDueDateChangeConfirmation.value = false;
+    /**
+     * Removes dueDateDefault and/or dueDateOffset values for
+     * dueDateCriteria where those fields are not applicable.
+     */
+    function removeUnsetDueDateFields(): void {
+        if (!learningActivityEditBag.value.bag) {
             return;
         }
 
-        learningActivityEditBag.value.bag.dueDateChangeType = DueDateChangeType.UpdateMatching;
-        await onSaveInternal();
+        if (learningActivityEditBag.value.bag.dueDateCriteria !== DueDateCriteria.SpecificDate) {
+            learningActivityEditBag.value.bag.dueDateDefault = null;
+        }
+
+        const offsetBasedCriteria: DueDateCriteria[] = [DueDateCriteria.ClassStartOffset, DueDateCriteria.EnrollmentOffset];
+        if (!offsetBasedCriteria.includes(learningActivityEditBag.value.bag.dueDateCriteria)) {
+            learningActivityEditBag.value.bag.dueDateOffset = null;
+        }
     }
+
+    /** The promise sources for the confirmation of date criteria changes  */
+    let availabilityCriteriaConfirmedSource = new PromiseCompletionSource<void>();
+    let dueDateCriteriaConfirmedSource = new PromiseCompletionSource<void>();
 
     /**
      * Event handler for the panel's Save event. Send the data to the server
@@ -293,23 +358,53 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onSave(): Promise<boolean | string> {
-        errorMessage.value = "";
-
-        if (hasDueDateChanges.value){
+        if (hasDueDateChanges.value === false) {
+            // If the due date criteria has not changed
+            // resolve the confirmation promise.
+            dueDateCriteriaConfirmedSource.resolve();
+        }
+        else {
+            // If the due date criteria has changed
+            // update any other due date fields as necessary
+            // and create a new confirmation promise.
+            removeUnsetDueDateFields();
             showDueDateChangeConfirmation.value = true;
-            return false;
+            dueDateCriteriaConfirmedSource = new PromiseCompletionSource<void>();
         }
-        else if (hasAvailabilityChanges.value){
+
+        if (hasAvailabilityChanges.value === false) {
+            // If the available date criteria has not changed
+            // resolve the confirmation promise.
+            availabilityCriteriaConfirmedSource.resolve();
+        }
+        else {
+            // If the availability date criteria has changed
+            // update any other availability date fields as necessary
+            // and create a new confirmation promise.
+            removeUnsetAvailabilityDateFields();
             showAvailabilityChangeConfirmation.value = true;
-            return false;
+            availabilityCriteriaConfirmedSource = new PromiseCompletionSource<void>();
         }
 
-        await onSaveInternal();
-        const hasError = errorMessage.value;
+        // Wait for confirmations before saving.
+        return await Promise.all([dueDateCriteriaConfirmedSource.promise, availabilityCriteriaConfirmedSource.promise]).then(
+            async () => {
+                // On confirmed try to save.
+                errorMessage.value = "";
 
-        return !hasError;
+                await onSaveInternal();
+                const hasError = errorMessage.value;
+
+                return !hasError;
+            }, async () => {
+                // onrejected hide any additional modals.
+                showDueDateChangeConfirmation.value = false;
+                showAvailabilityChangeConfirmation.value = false;
+                return false;
+            });
     }
 
+    /** Shared method for saving the activity details (after any modals have been shown). */
     async function onSaveInternal(): Promise<void> {
         const result = await invokeBlockAction<ValidPropertiesBox<LearningActivityBag> | string>("Save", {
             box: learningActivityEditBag.value
@@ -321,12 +416,9 @@
             }
         }
 
-        if (!result.isSuccess){
+        if (!result.isSuccess) {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to save the learning activity.";
         }
-
-        showDueDateChangeConfirmation.value = false;
-        showAvailabilityChangeConfirmation.value = false;
 
         panelMode.value = DetailPanelMode.View;
     }

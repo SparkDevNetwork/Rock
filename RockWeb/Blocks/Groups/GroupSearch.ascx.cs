@@ -76,7 +76,7 @@ namespace RockWeb.Blocks.Groups
             var groupService = new GroupService( new RockContext() );
             var groups = new List<Group>();
 
-            if ( !string.IsNullOrWhiteSpace( type ) && !string.IsNullOrWhiteSpace( term ) )
+            if ( !string.IsNullOrWhiteSpace( type ) && !string.IsNullOrWhiteSpace( term ) && !term.IsSingleSpecialCharacter() )
             {
                 switch ( type.ToLower() )
                 {

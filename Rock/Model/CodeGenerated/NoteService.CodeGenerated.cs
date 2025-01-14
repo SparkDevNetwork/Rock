@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -54,6 +55,24 @@ namespace Rock.Model
 
             // ignoring Note,ParentNoteId
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( Note.NoteQueryableAttributeValue ), nameof( NoteAttributeValues ) )]
+    public partial class Note
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<NoteQueryableAttributeValue> NoteAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class NoteQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 

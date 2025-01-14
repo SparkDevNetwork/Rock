@@ -16,7 +16,9 @@
 //
 
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
+using Rock.Data;
 using Rock.Enums.Lms;
 
 namespace Rock.Model
@@ -26,6 +28,7 @@ namespace Rock.Model
         /// <summary>
         /// Attempts to calculate the available date or provides a textual description if unable to calculate.
         /// </summary>
+        [NotAudited]
         public string AvailableDateDescription
         {
             get
@@ -41,20 +44,22 @@ namespace Rock.Model
                     case AvailabilityCriteria.ClassStartOffset:
                         if ( LearningClass?.LearningSemester?.StartDate.HasValue == true )
                         {
-                            return LearningClass.LearningSemester.StartDate.Value.AddDays( AvailableDateOffset.Value ).ToShortDateString();
+                            return LearningClass.LearningSemester.StartDate.Value.Date.AddDays( AvailableDateOffset.Value ).ToShortDateString();
                         }
                         else
                         {
-                            return $"{DateOffsetText( AvailableDateOffset )} class start.";
+                            return $"{DateOffsetText( AvailableDateOffset )} class start";
                         }
                     case AvailabilityCriteria.EnrollmentOffset:
-                        if ( LearningClass?.CreatedDateTime.HasValue == true )
+                        var daysOffset = AvailableDateOffset.ToIntSafe();
+                        if ( daysOffset == 0 )
                         {
-                            return LearningClass.CreatedDateTime.Value.AddDays( AvailableDateOffset.Value ).ToShortDateString();
+                            return "At Enrollment";
                         }
                         else
                         {
-                            return $"{DateOffsetText( AvailableDateOffset )} class enrollment.";
+                            var daysText = "Day".PluralizeIf( daysOffset != 1 );
+                            return $"{daysOffset} {daysText} After Enrollment";
                         }
                     case AvailabilityCriteria.AfterPreviousCompleted:
                         return "After Previous";
@@ -69,6 +74,7 @@ namespace Rock.Model
         /// <summary>
         /// A description of the Due Date.
         /// </summary>
+        [NotAudited]
         public string DueDateDescription
         {
             get
@@ -84,20 +90,22 @@ namespace Rock.Model
                     case DueDateCriteria.ClassStartOffset:
                         if ( LearningClass?.LearningSemester?.StartDate.HasValue == true )
                         {
-                            return LearningClass.LearningSemester.StartDate.Value.AddDays( DueDateOffset.Value ).ToShortDateString();
+                            return LearningClass.LearningSemester.StartDate.Value.Date.AddDays( DueDateOffset.Value ).ToShortDateString();
                         }
                         else
                         {
-                            return $"{DateOffsetText( DueDateOffset )} class start.";
+                            return $"{DateOffsetText( DueDateOffset )} class start";
                         }
                     case DueDateCriteria.EnrollmentOffset:
-                        if ( LearningClass.CreatedDateTime.HasValue )
+                        var daysOffset = DueDateOffset.ToIntSafe();
+                        if ( daysOffset == 0 )
                         {
-                            return LearningClass.CreatedDateTime.Value.AddDays( DueDateOffset.Value ).ToShortDateString();
+                            return "At Enrollment";
                         }
                         else
                         {
-                            return $"{DateOffsetText( DueDateOffset )} class enrollment.";
+                            var daysText = "Day".PluralizeIf( daysOffset != 1 );
+                            return $"{daysOffset} {daysText} After Enrollment";
                         }
                     case DueDateCriteria.NoDate:
                         return string.Empty;
@@ -115,12 +123,13 @@ namespace Rock.Model
         /// When an AVailableDateOffset is required, but is null zero will be used for the calculation.
         /// for a Course.
         /// </remarks>
+        [NotAudited]
         public DateTime? AvailableDateCalculated => CalculateAvailableDate(
                 AvailabilityCriteria,
                 AvailableDateDefault,
                 AvailableDateOffset,
                 LearningClass?.LearningSemester?.StartDate,
-                LearningClass?.CreatedDateTime
+                null
             );
 
         /// <summary>
@@ -148,13 +157,13 @@ namespace Rock.Model
                 case AvailabilityCriteria.ClassStartOffset:
                     if ( semesterStart.HasValue )
                     {
-                        return semesterStart.Value.AddDays( offset ?? 0 );
+                        return semesterStart.Value.Date.AddDays( offset ?? 0 );
                     }
                     break;
                 case AvailabilityCriteria.EnrollmentOffset:
                     if ( enrollmentDate.HasValue )
                     {
-                        return enrollmentDate.Value.AddDays( offset ?? 0 );
+                        return enrollmentDate.Value.Date.AddDays( offset ?? 0 );
                     }
                     break;
                 case AvailabilityCriteria.AlwaysAvailable:
@@ -189,13 +198,13 @@ namespace Rock.Model
                 case DueDateCriteria.ClassStartOffset:
                     if ( semesterStart.HasValue )
                     {
-                        return semesterStart.Value.AddDays( offset ?? 0 );
+                        return semesterStart.Value.Date.AddDays( offset ?? 0 );
                     }
                     break;
                 case DueDateCriteria.EnrollmentOffset:
                     if ( enrollmentDate.HasValue )
                     {
-                        return enrollmentDate.Value.AddDays( offset ?? 0 );
+                        return enrollmentDate.Value.Date.AddDays( offset ?? 0 );
                     }
                     break;
             }
@@ -210,18 +219,20 @@ namespace Rock.Model
         /// The NoDate calculation criteria will return null indicating there is no due date.
         /// When a DueDateOffset is required, but is null - zero will be used for the calculation
         /// </remarks>
+        [NotAudited]
         public DateTime? DueDateCalculated =>
                 CalculateDueDate(
                     DueDateCriteria,
                     DueDateDefault,
                     DueDateOffset,
                     LearningClass?.LearningSemester?.StartDate,
-                    LearningClass?.CreatedDateTime
+                    null
                 );
 
         /// <summary>
         /// A textual description of the available and due dates for the activity.
         /// </summary>
+        [NotAudited]
         public string DatesDescription
         {
             get
@@ -240,12 +251,52 @@ namespace Rock.Model
         /// <summary>
         /// <c>true</c> if the calculated due date is in the past; otherwise <c>false</c>.
         /// </summary>
+        /// <remarks>
+        /// If the DueDate is today this will return <c>false</c> since we don't allow setting a time.
+        /// </remarks>
+        [NotAudited]
         public bool IsPastDue
         {
             get
             {
-                return DueDateCalculated.HasValue && DueDateCalculated.Value.IsPast();
+                // We don't allow setting the time portion
+                // so compare as a Date (excluding time).
+                return DueDateCalculated.HasValue
+                    && DueDateCalculated.Value.Date < RockDateTime.Today.Date;
             }
+        }
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        [NotMapped]
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.LearningClass?.Id > 0 )
+                {
+                    return this.LearningClass;
+                }
+                else
+                {
+                    return this.LearningClassId > 0 ?
+                        new LearningClassService( new Data.RockContext() ).Get( this.LearningClassId ) :
+                        base.ParentAuthority;
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Rock.Model.Person person )
+        {
+            // Defer to the parent authority.
+            // We don't add any logic to the authorization process
+            // that's not already included in that logic.
+            return ParentAuthority.IsAuthorized( action, person );
         }
 
         #region Private methods

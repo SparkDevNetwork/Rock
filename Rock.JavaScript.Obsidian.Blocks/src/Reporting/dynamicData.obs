@@ -15,7 +15,7 @@
                   :definition="gridDefinition"
                   :title="gridTitle"
                   :isTitleHidden="isGridTitleHidden"
-                  :keyField="keyField"
+                  keyField="uniqueKey"
                   :personKeyField="personKeyField"
                   :communicationRecipientPersonKeyFields="communicationRecipientPersonKeyFields"
                   :liveUpdates="true"
@@ -55,7 +55,7 @@
 <script setup lang="ts">
     import { computed, onBeforeUnmount, reactive, ref, watch } from "vue";
     import { NavigationUrlKey } from "./DynamicData/types.partial";
-    import Grid, { BooleanColumn, CurrencyColumn, DateColumn, DateTimeColumn, defaultColumnFilters, DynamicColumns, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, CurrencyColumn, DateColumn, DateTimeColumn, defaultColumnFilters, DynamicColumns, HtmlColumn, NumberColumn, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn } from "@Obsidian/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { getRowKey } from "@Obsidian/Core/Controls/grid";
     import { setInnerHTML } from "@Obsidian/Core/Utilities/domUtils";
@@ -88,6 +88,7 @@
         "currency": CurrencyColumn,
         "date": DateColumn,
         "dateTime": DateTimeColumn,
+        "html": HtmlColumn,
         "number": NumberColumn,
         "person": PersonColumn,
         "text": TextColumn
@@ -198,8 +199,10 @@
         return gridDefinition.value?.dynamicFields
             ?.filter((field: DynamicFieldDefinitionBag) => !!(field.columnType))
             ?.map((field: DynamicFieldDefinitionBag) => {
-                const filter = defaultColumnFilters[field.columnType ?? ""]
-                    ?? pickExistingValueFilter;
+                let filter: ColumnFilter | undefined = defaultColumnFilters[field.columnType ?? ""];
+                if (!filter && field.columnType !== "html") {
+                    filter = pickExistingValueFilter;
+                }
 
                 let filterValue: string | undefined = undefined;
                 if (field.columnType === "person") {
@@ -350,6 +353,10 @@
         }
 
         if (result.isSuccess && result.data) {
+            if (result.data.rows) {
+                result.data.rows.forEach((d, index) => d.uniqueKey = index);
+            }
+
             gridData = reactive(result.data);
             return gridData;
         }
@@ -390,7 +397,7 @@
             return;
         }
 
-        const row = gridData?.rows?.find(r => getRowKey(r, keyField.value) === rowKey);
+        const row = gridData?.rows?.find(r => getRowKey(r, "uniqueKey") === rowKey);
         if (row) {
             columnKeys.forEach(columnKey => {
                 // Replace each column key with the column value.

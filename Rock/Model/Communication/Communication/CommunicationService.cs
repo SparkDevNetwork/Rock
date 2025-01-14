@@ -544,33 +544,30 @@ namespace Rock.Model
                 //      )
                 //  )
                 queuedCommunicationsQry = queuedCommunicationsQry.Where( c =>
-                    // First, try to use the reviewed date to get the queued communications.
+
+                    // First, try to use the future send date to get the queued communications.
                     (
-                        c.ReviewedDateTime.HasValue
+                        c.FutureSendDateTime.HasValue
+                        && c.FutureSendDateTime.Value >= earliestDateTime
+                        && c.FutureSendDateTime.Value <= currentDateTime
+                    )
+
+                    // Next, try to use the reviewed date to get the queued communications.
+                    || (
+                        !c.FutureSendDateTime.HasValue
+                        && c.ReviewedDateTime.HasValue
                         && c.ReviewedDateTime.Value >= earliestDateTime
                         && c.ReviewedDateTime.Value <= latestDateTime
-                        && (
-                            !c.FutureSendDateTime.HasValue
-                            || (
-                                c.FutureSendDateTime.Value >= earliestDateTime
-                                && c.FutureSendDateTime.Value <= currentDateTime
-                            )
-                        )
                     )
-                    // Next, try to use the created date to get the queued communications.
+
+                    // Finally, try to use the created date to get the queued communications.
                     // This is for communications that are created by legacy plugins that have not switched to using reviewed date.
                     || (
-                        !c.ReviewedDateTime.HasValue
+                        !c.FutureSendDateTime.HasValue
+                        && !c.ReviewedDateTime.HasValue
                         && c.CreatedDateTime.HasValue
                         && c.CreatedDateTime.Value >= earliestDateTime
                         && c.CreatedDateTime.Value <= latestDateTime
-                        && (
-                            !c.FutureSendDateTime.HasValue
-                            || (
-                                c.FutureSendDateTime.Value >= earliestDateTime
-                                && c.FutureSendDateTime.Value <= currentDateTime
-                            )
-                        )
                     )
                 );
             }
@@ -722,6 +719,43 @@ namespace Rock.Model
                 .Clients
                 .Channel( channelName )
                 .ConversationMarkedAsRead( conversationKey );
+        }
+
+        /// <summary>
+        /// Send all real time notifications for a conversation that has had
+        /// a change to its read status on a new background Task.
+        /// </summary>
+        /// <param name="conversationKey">The key that identifies the conversation that was read.</param>
+        /// <param name="readStatus">The read status that the conversation was changed to.</param>
+        internal static void SendConversationReadStatusChangedRealTimeNotificationsInBackground( string conversationKey, bool readStatus )
+        {
+            Task.Run( async () =>
+            {
+                try
+                {
+                    await SendConversationReadStatusChangedRealTimeNotificationsAsync( conversationKey, readStatus );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
+            } );
+        }
+
+        /// <summary>
+        /// Send all real time notifications for a conversation that had a change to its read status.
+        /// </summary>
+        /// <param name="conversationKey">The key that identifies the conversation that was changed.</param>
+        /// <param name="readStatus">The read status that the conversation was changed to.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        internal static async Task SendConversationReadStatusChangedRealTimeNotificationsAsync( string conversationKey, bool readStatus )
+        {
+            var channelName = RealTime.Topics.ConversationParticipantTopic.GetChannelForConversationKey( conversationKey );
+
+            await RealTime.RealTimeHelper.GetTopicContext<RealTime.Topics.IConversationParticipant>()
+                .Clients
+                .Channel( channelName )
+                .ConversationReadStatusChanged( conversationKey, readStatus );
         }
 
         /// <summary>

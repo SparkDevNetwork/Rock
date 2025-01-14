@@ -18,6 +18,8 @@ using System;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
@@ -174,10 +176,38 @@ namespace RockWeb.Blocks.Cms
             var rockContext = new RockContext();
             PersistedDatasetService persistedDatasetService = new PersistedDatasetService( rockContext );
             PersistedDataset persistedDataset = persistedDatasetService.Get( e.RowKeyId );
-            persistedDataset.UpdateResultData();
-            rockContext.SaveChanges();
+            var result = persistedDataset.UpdateResultData();
+            if ( result.IsSuccess )
+            {
+                rockContext.SaveChanges();
+                BindGrid();
+            }
+            else
+            {
+                // limit preview size (default is 1MB)
+                var maxPreviewSizeMB = this.GetAttributeValue( AttributeKey.MaxPreviewSizeMB ).AsDecimalOrNull() ?? 1;
 
-            BindGrid();
+                // make sure they didn't put in a negative number
+                maxPreviewSizeMB = Math.Max( 0.01M, maxPreviewSizeMB );
+
+                var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
+
+                lRefreshJson.Text = ( string.Format( "<pre>{0}</pre>", result?.WarningMessage?.TruncateHtml( maxPreviewSizeLength ) ) );
+
+                if ( result?.WarningMessage?.Length > maxPreviewSizeLength )
+                {
+                    nbRefreshMaxLengthWarning.Text = string.Format( "Output size is {0}. Showing first {1}.", result?.WarningMessage?.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() );
+                    nbRefreshMaxLengthWarning.Visible = true;
+                }
+                else
+                {
+                    nbRefreshMaxLengthWarning.Visible = false;
+                }
+
+                mdRefreshWarning.Show();
+
+                return;
+            }
         }
 
         /// <summary>
@@ -187,6 +217,7 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void lbPreview_Click( object sender, RowEventArgs e )
         {
+            PersistedDataset.UpdateResult result = null;
             try
             {
                 var rockContext = new RockContext();
@@ -194,28 +225,35 @@ namespace RockWeb.Blocks.Cms
                 PersistedDataset persistedDataset = persistedDatasetService.GetNoTracking( e.RowKeyId );
                 if ( persistedDataset.LastRefreshDateTime == null )
                 {
-                    persistedDataset.UpdateResultData();
+                    result = persistedDataset.UpdateResultData();
                 }
 
                 // limit preview size (default is 1MB)
                 var maxPreviewSizeMB = this.GetAttributeValue( AttributeKey.MaxPreviewSizeMB ).AsDecimalOrNull() ?? 1;
 
                 // make sure they didn't put in a negative number
-                maxPreviewSizeMB = Math.Max( 1, maxPreviewSizeMB );
+                maxPreviewSizeMB = Math.Max( 0.01M, maxPreviewSizeMB );
 
                 var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
 
-                var preViewObject = persistedDataset.ResultData.FromJsonDynamic().ToJson( true );
-
-                lPreviewJson.Text = ( string.Format( "<pre>{0}</pre>", preViewObject ) ).Truncate( maxPreviewSizeLength );
-
-                nbPreviewMessage.Visible = false;
-                nbPreviewMaxLengthWarning.Visible = false;
-
-                if ( preViewObject.Length > maxPreviewSizeLength )
+                if ( persistedDataset.ResultData.IsNullOrWhiteSpace() )
                 {
-                    nbPreviewMaxLengthWarning.Text = string.Format( "JSON size is {0}. Showing first {1}.", preViewObject.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() );
-                    nbPreviewMaxLengthWarning.Visible = true;
+                    lPreviewJson.Text = ( string.Format( "<pre>{0}</pre>", "The result data for this dataset is empty, rebuild the dataset to refresh the result data." ) );
+                }
+                else
+                {
+                    var preViewObject = persistedDataset.ResultData.FromJsonDynamic().ToJson( true );
+
+                    lPreviewJson.Text = ( string.Format( "<pre>{0}</pre>", preViewObject ) ).Truncate( maxPreviewSizeLength );
+
+                    nbPreviewMessage.Visible = false;
+                    nbPreviewMaxLengthWarning.Visible = false;
+
+                    if ( preViewObject.Length > maxPreviewSizeLength )
+                    {
+                        nbPreviewMaxLengthWarning.Text = string.Format( "JSON size is {0}. Showing first {1}.", preViewObject.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() );
+                        nbPreviewMaxLengthWarning.Visible = true;
+                    }
                 }
 
                 nbPreviewMessage.Text = string.Format( "Time to build Dataset: {0:F0}ms", persistedDataset.TimeToBuildMS );
@@ -226,7 +264,7 @@ namespace RockWeb.Blocks.Cms
             catch ( Exception ex )
             {
                 nbPreviewMessage.Text = "Error building Dataset object from the JSON generated from the Build Script";
-                nbPreviewMessage.Details = ex.Message;
+                nbPreviewMessage.Details = result?.WarningMessage ?? ex.Message;
                 nbPreviewMessage.NotificationBoxType = NotificationBoxType.Danger;
                 nbPreviewMessage.Visible = true;
             }

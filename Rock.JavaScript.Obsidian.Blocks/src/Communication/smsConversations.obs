@@ -1,0 +1,1388 @@
+<template>
+    <Panel type="block"
+           title="SMS Conversations"
+           titleIconCssClass="fa fa-comments"
+           :hasFullscreen="true">
+        <template #headerActions>
+            <div v-if="systemPhoneNumbers.length > 0" class="panel-heading pl-0">
+                <HighlightLabel v-if="systemPhoneNumbers.length === 1" customClass="text-sm label-default system-phone-selection w-100 text-truncate" labelType="custom">{{ systemPhoneNumbers[0].text }}</HighlightLabel>
+
+                <DropDownList v-else
+                              v-model="selectedSystemPhoneNumberValue"
+                              :items="systemPhoneNumbers"
+                              :showBlankItem="false"
+                              inputClasses="text-sm system-phone-selection" />
+            </div>
+        </template>
+        <div class="d-flex flex-column h-100">
+            <NotificationBox v-if="isSuccessNotificationBoxVisible"
+                             alertType="success"
+                             class="mb-0 text-center flex-shrink-0"
+                             v-html="successNotificationBoxMessage" />
+            <NotificationBox v-if="isErrorNotificationBoxVisible"
+                             alertType="danger"
+                             class="mb-0 text-center flex-shrink-0"
+                             :dismissible="true"
+                             @dismiss="clearErrorNotificationBoxText">
+                {{ errorNotificationText }}
+            </NotificationBox>
+            <div class="sms-conversations-parent flex-grow-1">
+                <div class="sms-conversations-container styled-scroll">
+                    <div class="conversation-list d-flex flex-column">
+                        <div class="header">
+                            <div class="clearfix">
+                                <RockButton v-if="isNewMessageButtonVisible"
+                                            :btnType="BtnType.Primary"
+                                            :btnSize="BtnSize.Small"
+                                            @click="showNewMessageModal">
+                                    New Message
+                                </RockButton>
+                                <RockButton :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.Small"
+                                            :isSquare="true"
+                                            @click="togglePersonFilter()"
+                                            :class="['pull-right', { 'bg-warning': personFilterSelection?.value }]">
+                                    <i class="fa fa-filter"></i>
+                                </RockButton>
+                            </div>
+                            <transition name="slide">
+                                <div v-show="showPersonFilter" style="--slide-height: 150px">
+                                    <PersonPicker v-show="showPersonFilter"
+                                                  v-model="personFilterSelection"
+                                                  label="Recipient"
+                                                  formGroupClasses="mt-2 mb-0"
+                                                  @update:modelValue="togglePersonFilter(false)" />
+                                    <transition name="slide">
+                                        <div v-show="isPersonFilterToggled" style="--slide-height: 75px">
+                                            <DropDownList
+                                                          v-model="messageFilterSelection"
+                                                          :items="messageFilterItems"
+                                                          :showBlankItem="false"
+                                                          inputClasses="mt-2 mb-0"
+                                                          style="width: 225px;"
+                                                          @update:modelValue="togglePersonFilter()" />
+                                        </div>
+                                    </transition>
+                                </div>
+                            </transition>
+                        </div>
+                        <div class="overflow-scroll">
+                            <div v-for="(conversation, index) in filteredAndSortedConversations" :class="['recipient-row', { 'selected': conversation.conversationKey === selectedConversation?.conversationKey }]" @click="getConversationForRecipient(conversation)">
+                                <div class="mr-3 flex-shrink-0"
+                                     :style="{ 'width': '36px', 'height': '36px', 'border-radius': '18px', 'background-image': `url('${conversation.recipientPhotoUrl}')`, 'background-size': 'cover' }">
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="layout-row">
+                                        <div class="d-flex align-items-center">
+                                            <RockLabel class="sms-name">
+                                                {{ conversation.isRecipientNamelessPerson ? formattedPhoneNumber(conversation.recipientPhoneNumber) : conversation.recipientFullName }}
+                                            </RockLabel>
+                                            <span v-if="!conversation.isConversationRead" class="status-dot mb-1"></span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div v-if="conversation.messages" class="date">
+                                                {{ humanizedDateTime(conversation.messages[conversation.messages.length - 1].createdDateTime) }}
+                                            </div>
+                                            <div :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === index }]">
+                                                <button type="button"
+                                                        class="btn btn-xs btn-link btn-overflow"
+                                                        data-toggle="dropdown"
+                                                        aria-haspopup="true"
+                                                        aria-expanded="false"
+                                                        @click.stop="toggleReadDropdown(index)">
+                                                    <i class="fa fa-ellipsis-v"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <button type="button"
+                                                                class="dropdown-item btn-link"
+                                                                @click.stop="changeReadStatusFromDropdown(conversation, index)">
+                                                            <span v-if="conversation.isConversationRead"><i class="fa fa-eye-slash mr-2"></i>Mark As Unread</span>
+                                                            <span v-else><i class="fa fa-eye mr-2"></i>Mark As Read</span>
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-if="conversation.messages" class="message-truncate text-sm">
+                                        {{ getSmsMessagePreview(conversation) }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="filteredAndSortedConversations.length === 0" class="no-recipients-container">
+                                <span class="table-empty">No Communication Recipient Responses Found</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="selectedConversation" :class="['conversation-panel', { 'has-focus': conversationHasFocus }]">
+                        <div class="header d-flex align-items-center justify-content-between">
+                            <div class="d-flex">
+                                <a href="#" class="conversation-back mr-3" @click.prevent="conversationHasFocus = false">
+                                    <i class="fa fa-chevron-left"></i>
+                                </a>
+                                <div v-if="!isNullOrWhiteSpace(selectedConversation.recipientDescription)" class="header-lava" v-html="selectedConversation.recipientDescription"></div>
+                                <div v-else class="header-lava"> {{ selectedFormattedPhoneNumber }} (Unknown Person)</div>
+                            </div>
+                            <div class="d-flex gap-1 flex-wrap">
+                                <RockButton :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.Small"
+                                            :isSquare="true"
+                                            @click="onNoteEditorButtonClick">
+                                    <i class="fa fa-edit"></i>
+                                </RockButton>
+                                <ReminderButton v-if="selectedConversation.entityGuidForReminder && selectedConversation.entityTypeGuidForReminder"
+                                                :contextEntityGuid="selectedConversation.entityGuidForReminder"
+                                                :contextEntityTypeGuid="selectedConversation.entityTypeGuidForReminder"
+                                                :btnSize="BtnSize.Small"
+                                                @addSuccess="onAddReminder" />
+                                <RockButton :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.Small"
+                                            :isSquare="true"
+                                            @click="toggleConversationReadStatus(selectedConversation)">
+                                    <i v-if="selectedConversation.isConversationRead" class="fa fa-eye-slash"></i>
+                                    <i v-else class="fa fa-eye"></i>
+                                </RockButton>
+                                <RockButton v-if="selectedConversation.isLinkToPersonVisible"
+                                            :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.Small"
+                                            @click="showLinkToPersonModal">
+                                    Link To Person
+                                </RockButton>
+                                <RockButton v-if="selectedConversation.isViewMergeRequestVisible"
+                                            :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.Small"
+                                            @click="viewMergeRequest">
+                                    View Merge Request
+                                </RockButton>
+                            </div>
+                        </div>
+                        <transition name="slide">
+                            <NoteEditor v-if="isNoteEditorVisible"
+                                        v-model="addNoteBag"
+                                        style="--slide-padding-close: 0 15px; --slide-padding-open: 26px 15px; --slide-height: 250px"
+                                        :noteTypes="box.noteTypes ?? []"
+                                        :avatarUrl="selectedConversation.recipientPhotoUrl"
+                                        :showAlert="true"
+                                        :showPrivate="true"
+                                        @cancel="toggleNoteEditor()"
+                                        @save="onNoteAddSave" />
+                        </transition>
+                        <div class="messages-outer-container">
+                            <div class="messages-scroll-container">
+                                <div class="conversation">
+                                    <template v-for="message in selectedConversation.messages">
+                                        <div :class="messageClasses(message)">
+                                            <div class="bubble" v-if="!isNullOrWhiteSpace(message.smsMessage)">
+                                                {{ message.smsMessage }}
+                                            </div>
+                                            <div v-for="attacmentUrl in message.attachmentUrls">
+                                                <a :href="attacmentUrl" target="_blank" rel="noopener noreferrer">
+                                                    <img :src="attacmentUrl" class="img-responsive sms-image">
+                                                </a>
+                                            </div>
+                                            <div class="message-meta">
+                                                <span class="sender-name">
+                                                    {{ message.outboundSenderFullName }}
+                                                </span>
+                                                <RockLabel class="date cursor-text" :title="formattedLongDate(message.createdDateTime)">
+                                                    {{ humanizedDateTime(message.createdDateTime) }}
+                                                </RockLabel>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <RockLabel v-if="selectedConversation.messages?.length === 0" class="text-muted">No conversations found.</RockLabel>
+                                    <div id="last-item"></div>
+                                </div>
+                            </div>
+                            <transition name="slide">
+                                <div v-if="isImageAttachmentToggled" class="sms-image-uploader-container" style="--slide-padding-open: 8px; --slide-height: 200px">
+                                    <RockButton :btnType="BtnType.Default"
+                                                :btnSize="BtnSize.Small"
+                                                class="close"
+                                                @click="toggleImageUploader(false)">
+                                        <i class="fa fa-times"></i>
+                                    </RockButton>
+                                    <div class="sms-image-uploader">
+                                        <ImageUploader v-model="imageAttachment"
+                                                       :binaryFileTypeGuid="BinaryFiletype.CommunicationAttachment"
+                                                       help="Optional image to include in the message."
+                                                       label="Image" />
+                                    </div>
+                                </div>
+                            </transition>
+                        </div>
+                        <div ref="newMessageTextBoxContainer" class="footer">
+                            <div class="message-actions-prepend">
+                                <RockButton :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.Default"
+                                            :isSquare="true"
+                                            @click="showSnippetModal">
+                                    <i class="fa fa-bolt"></i>
+                                </RockButton>
+                            </div>
+                            <TextBox v-model="newMessageText" :rows="1" textMode="multiline" placeholder="Type a message" />
+                            <div class="message-actions-append d-flex gap-x-1">
+                                <RockButton :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.Default"
+                                            :isSquare="true"
+                                            @click="toggleImageUploader()">
+                                    <i class="fa fa-camera"></i>
+                                </RockButton>
+                                <RockButton :btnType="BtnType.Primary"
+                                            :btnSize="BtnSize.Default"
+                                            @click="sendMessage">
+                                    Send
+                                </RockButton>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else-if="isConversationLoading" class="d-flex align-items-center justify-content-center">
+                        <Loading :isLoading="isConversationLoading" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Panel>
+
+    <NewMessageModal v-model="isNewMessageModalVisible"
+                     :selectedSystemPhoneName="systemPhoneNumbers.find(s => s.value === selectedSystemPhoneNumberValue)?.text ?? ''"
+                     :errorMessage="newMessageModalErrorText"
+                     @save="createNewMessage"
+                     @dismissMessage="newMessageModalErrorText = ''" />
+
+    <SnippetModal v-model="isSnippetModalVisible"
+                  :snippetBags="box.snippets ?? []"
+                  :errorMessage="snippetModalErrorMessage"
+                  @insertSnippet="insertSnippet" />
+
+    <LinkToPersonModal v-model="isLinkToPersonModalVisible"
+                       :recipientPhoneNumber="selectedFormattedPhoneNumber"
+                       :errorMessage="linkToPersonModalErrorMessage"
+                       @saveNewPerson="saveNewPerson"
+                       @linkToPerson="linkToPerson" />
+</template>
+
+<style scoped>
+.recipient-row:hover {
+    background-color: var(--theme-lightest);
+    cursor: pointer;
+}
+
+.no-recipients-container {
+    padding: 14px 16px 16px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 8px;
+    background-color: #0084ff;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+    transition: all 0.5s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: var(--slide-padding-close, 0) !important;
+}
+
+.slide-enter-to,
+.slide-leave-from {
+    max-height: var(--slide-height, 200px);
+    opacity: 1;
+    padding: var(--slide-padding-open, 0) !important;
+}
+
+:deep(.system-phone-selection) {
+    width: 210px;
+}
+
+:deep(.panel-body) {
+    padding: 0;
+}
+
+:deep(.panel-action-fullscreen) {
+    display: block !important;
+}
+
+:deep(.panel.panel-flex>.panel-heading>.panel-title) {
+    padding-right: 5px;
+}
+
+.sms-conversations-parent {
+    position: relative;
+    height: 100%;
+    min-height: var(--block-min-height, calc(100vh - 200px));
+    overflow: auto;
+}
+
+.sms-conversations-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    -ms-flex-wrap: wrap;
+    flex-wrap: wrap;
+}
+
+.sms-conversations-container > div {
+    position: relative;
+    flex-basis: 0;
+    flex-grow: 1;
+    width: 100%;
+    max-width: 100%;
+    -ms-flex-preferred-size: 0;
+    -ms-flex-positive: 1;
+}
+
+.sms-conversations-container .header {
+    min-height: 49px;
+    padding: 12px 16px;
+    font-weight: 700;
+    border-bottom: 1px solid #eee;
+}
+
+.sms-conversations-container .message-truncate {
+    color: rgba(0, 0, 0, .5);
+    font-weight: 600;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    /* line-clamp is not fully supported yet so we need to keep -webkit-line-clamp */
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.sms-conversations-container .conversation-list {
+    position: relative;
+    flex-grow: 0;
+    min-width: 100%;
+    height: 100%;
+    min-height: 300px;
+    border-right: 1px solid rgba(0, 0, 0, .2);
+}
+
+@media (min-width: 599px) {
+    .sms-conversations-container .conversation-list {
+        min-width: 320px;
+    }
+}
+
+@media (min-width: 992px) {
+    .sms-conversations-container .conversation-list {
+        min-width: 360px;
+    }
+}
+
+.sms-conversations-container .conversation-list .header {
+    padding: 7px 16px;
+    font-weight: 400;
+    background-color: #f5f5f5;
+}
+
+.sms-conversations-container .conversation-list .overflow-scroll {
+    flex: 1 1 0;
+    width: 100%;
+    overflow: hidden;
+    overflow-y: scroll;
+}
+
+.sms-conversations-container .conversation-list .sms-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: #000;
+}
+
+.sms-conversations-container .conversation-list .layout-row {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+}
+
+.sms-conversations-container .conversation-list .table {
+    table-layout: fixed;
+}
+
+.sms-conversations-container .conversation-list .recipient-row {
+    padding: 14px 16px 16px;
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    height: 90px;
+}
+
+.recipient-row {
+    border-top: 1px solid #eee;
+}
+
+.sms-conversations-container .conversation-list .overflow-scroll:first-child .recipient-row {
+    border-top: 0;
+}
+
+.sms-conversations-container .conversation-list .date {
+    box-sizing: border-box;
+    -webkit-flex: 1 0 auto;
+    flex: 1 0 auto;
+    font-size: 13px;
+    line-height: 24px;
+    color: rgba(0, 0, 0, .5);
+    text-align: right;
+    text-transform: capitalize;
+    -webkit-box-flex: 1;
+}
+
+.sms-conversations-container .conversation-list .selected {
+    background: rgba(0, 0, 0, .02);
+}
+
+.sms-conversations-container .conversation-list .unread {
+    box-shadow: inset 4px 0 0 0 var(--color-primary);
+}
+
+.sms-conversations-container .messages-outer-container {
+    position: relative;
+    flex-grow: 1;
+    overflow: hidden;
+    -webkit-box-flex: 1;
+    -ms-flex-positive: 1;
+}
+
+.sms-conversations-container .messages-scroll-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 15px;
+    overflow-y: scroll;
+}
+
+.sms-conversations-container .note-editor {
+    padding: 26px 15px;
+    border-bottom: 1px solid #eee
+}
+
+.sms-conversations-container .footer {
+    position: relative;
+    flex-shrink: 0;
+    border-top: 1px solid #eee;
+    -ms-flex-negative: 0;
+}
+
+.sms-conversations-container .footer :deep(.control-wrapper .form-control) {
+    padding: 18px 162px 18px 62px;
+    resize: none;
+    border: 0;
+}
+
+.sms-conversations-container .footer .message-actions-prepend {
+    position: absolute;
+    left: 12px;
+    bottom: 10px;
+}
+
+.sms-conversations-container .footer .message-actions-append {
+    position: absolute;
+    right: 12px;
+    bottom: 10px;
+}
+
+.sms-conversations-container .conversation-panel {
+    position: relative;
+    display: -webkit-flex;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-flex: 1;
+    flex: 1;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 0;
+    height: 100%;
+    min-height: 300px;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+}
+
+@media (max-width: 599px) {
+    .sms-conversations-container .conversation-panel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 21;
+        width: 100%;
+        height: 100%;
+        background-color: #fff;
+        -webkit-transition: transform .3s cubic-bezier(.4, 0, 1, 1);
+        transition: transform .3s cubic-bezier(.4, 0, 1, 1);
+        -webkit-transform: translateX(103%);
+        transform: translateX(103%);
+        will-change: transform;
+    }
+
+    :deep(.system-phone-selection) {
+        width: 150px !important;
+    }
+}
+
+.sms-conversations-container .conversation-panel .sms-image-uploader {
+    position: relative;
+    width: 106px;
+    margin: 0 auto;
+}
+
+.sms-conversations-container .conversation-panel .sms-image-uploader-container {
+    position: absolute;
+    right: -1px;
+    bottom: -1px;
+    width: 220px;
+    max-width: 100%;
+    padding: 8px;
+    margin: 0;
+    background: #f5f5f5;
+    border: 1px solid #eee;
+}
+
+.sms-conversations-container .conversation-panel .sms-image-uploader-container .close {
+    font-size: 18px;
+}
+
+.sms-conversations-container .conversation-back {
+    display: none;
+}
+
+@media (max-width: 599px) {
+    .sms-conversations-container .conversation-back {
+        display: block;
+    }
+
+    .sms-conversations-container .has-focus {
+        -webkit-transition: transform .3s cubic-bezier(0, 0, .2, 1);
+        transition: transform .3s cubic-bezier(0, 0, .2, 1);
+        -webkit-transform: translateX(0);
+        transform: translateX(0);
+    }
+}
+
+
+.conversation {
+    width: 100%;
+    max-width: 848px;
+    margin: 0 auto;
+}
+
+.conversation .message {
+    box-sizing: border-box;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-align-content: flex-start;
+    align-content: flex-start;
+    -webkit-align-items: flex-start;
+    align-items: flex-start;
+    -webkit-box-orient: vertical;
+    -webkit-box-align: start;
+}
+
+.conversation .message.outbound {
+    -webkit-align-content: flex-end;
+    align-content: flex-end;
+    -webkit-align-items: flex-end;
+    align-items: flex-end;
+    -webkit-box-align: end;
+}
+
+.conversation .message .bubble {
+    display: inline-block;
+    max-width: 75%;
+    padding: 10px 14px;
+    color: #000;
+    word-break: break-word;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-line;
+    background-color: #f3f3f3;
+    border-radius: 20px;
+}
+
+.conversation .message.outbound .bubble {
+    color: #fff;
+    background-color: #0084ff;
+}
+
+.conversation .message .message-meta {
+    padding: 4px 14px 8px;
+    font-size: 12px;
+    color: rgba(0, 0, 0, .5);
+}
+
+.conversation .message .message-meta .date {
+    text-transform: capitalize;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.conversation .message .sender-name::after {
+    content: " - ";
+}
+
+.conversation .message.inbound .sender-name {
+    display: none;
+}
+
+.conversation .message .sms-image {
+    width: 200px;
+    min-height: 100px;
+    margin-top: 5px;
+    border-radius: 10px;
+}
+</style>
+
+<script setup lang="ts">
+    import { onConfigurationValuesChanged, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { SmsConversationsInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/smsConversationsInitializationBox";
+    import { CommunicationMessageFilter, CommunicationMessageFilterDescription } from "@Obsidian/Enums/Communication/communicationMessageFilter";
+    import { SmsConversationsSaveNoteBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/smsConversationsSaveNoteBag";
+    import { ConversationBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/conversationBag";
+    import { SendMessageBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/sendMessageBag";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/messageBag";
+    import { ConversationMessageBag } from "@Obsidian/ViewModels/Communication/conversationMessageBag";
+    import { IConversationParticipantTopic, PreferenceKey } from "./SmsConversations/types.partial";
+    import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag";
+    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/saveNoteRequestBag";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteEditBag";
+    import { formatPhoneNumber, stripPhoneNumber } from "@Obsidian/Utility/phone";
+    import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { getTopic } from "@Obsidian/Utility/realTime";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import ImageUploader from "@Obsidian/Controls/imageuploader.obs";
+    import NoteEditor from "./SmsConversations/noteEditor.partial.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import SnippetModal from "./SmsConversations/snippetModal.partial.obs";
+    import ReminderButton from "@Obsidian/Controls/Internal/reminderButton.obs";
+    import NewMessageModal from "./SmsConversations/newMessageModal.partial.obs";
+    import LinkToPersonModal from "./SmsConversations/linkToPersonModal.partial.obs";
+
+    const box = useConfigurationValues<SmsConversationsInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+    const messageFilterItems = enumToListItemBag(CommunicationMessageFilterDescription);
+
+    // #region Filter Values
+
+    const messageFilterSelection = ref<string>(preferences.getValue(PreferenceKey.SelectedMessageFilter) ?? CommunicationMessageFilter.ShowUnreadReplies.toString());
+    const personFilterSelection = ref<ListItemBag | undefined>();
+    const isPersonFilterToggled = ref<boolean>(false);
+    const systemPhoneNumbers = ref<ListItemBag[]>(box.systemPhoneNumbers ?? []);
+    const selectedSystemPhoneNumberValue = ref<string>(getSelectedSystemPhoneNumber());
+
+    // #endregion
+
+    // #region Conversation Values
+
+    const conversations = ref<ConversationBag[]>(box.conversations ?? []);
+    const selectedConversation = ref<ConversationBag | null>(null);
+    const conversationHasFocus = ref<boolean>(false);
+    const openDropdownIndex = ref<number | null>(null);
+    const imageAttachment = ref<ListItemBag>();
+    const isImageAttachmentToggled = ref<boolean>(false);
+    const newMessageText = ref<string>("");
+    const newMessageTextBoxContainer = ref<HTMLElement>();
+    const isNewMessageButtonVisible = ref<boolean>(box.isNewMessageButtonVisible);
+    const isNoteEditorVisible = ref<boolean>(false);
+    const selectableNoteTypes = box.noteTypes?.filter(nt => nt.userSelectable) ?? [];
+    const addNoteBag = ref<NoteEditBag>({ isAlert: false, isPrivate: false, isPinned: false });
+    const isSuccessNotificationBoxVisible = ref<boolean>(false);
+    const errorNotificationText = ref<string>(box.errorMessage ?? "");
+    const successNotificationBoxMessage = ref<string>("");
+    const isConversationLoading = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Modal Values
+
+    const isNewMessageModalVisible = ref<boolean>(false);
+    const isSnippetModalVisible = ref<boolean>(false);
+    const isLinkToPersonModalVisible = ref<boolean>(false);
+    const newMessageModalErrorText = ref<string>("");
+    const linkToPersonModalErrorMessage = ref<string>("");
+    const snippetModalErrorMessage = ref<string>("");
+
+    // #endregion
+
+    // #region Computed Values
+
+    const showPersonFilter = computed(() => isPersonFilterToggled.value || personFilterSelection?.value);
+
+    const selectedFormattedPhoneNumber = computed(() => formattedPhoneNumber(selectedConversation.value?.recipientPhoneNumber));
+
+    const isErrorNotificationBoxVisible = computed(() => !isNullOrWhiteSpace(errorNotificationText.value));
+
+    /**
+     *  Computed property to sort conversations by the last message's date using RockDateTime and filter messages based on person filter selection.
+     */
+    const filteredAndSortedConversations = computed(() => {
+        if (!isNullOrWhiteSpace(personFilterSelection.value?.value)) {
+            return conversations.value.filter(c => c.recipientPersonAliasGuid === personFilterSelection.value?.value);
+        }
+
+        return [...conversations.value].sort((a, b) => {
+            const lastMessageDateA = a.messages?.[a.messages.length - 1]?.createdDateTime || null;
+            const lastMessageDateB = b.messages?.[b.messages.length - 1]?.createdDateTime || null;
+
+            const rockDateA = lastMessageDateA ? RockDateTime.parseISO(lastMessageDateA)?.localDateTime : null;
+            const rockDateB = lastMessageDateB ? RockDateTime.parseISO(lastMessageDateB)?.localDateTime : null;
+
+            // Handle cases where either date is null
+            if (!rockDateA && !rockDateB) return 0;
+            if (!rockDateA) return 1;
+            if (!rockDateB) return -1;
+
+            return rockDateB.toMilliseconds() - rockDateA.toMilliseconds();
+        });
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Formats the long date to be shown as a tooltip under messages.
+     * @param dateTime the datetime the message was created at.
+     * @returns the formatted long date string.
+     */
+    const formattedLongDate = (dateTime: string | null | undefined): string => {
+        return RockDateTime.parseISO(dateTime ?? "")?.localDateTime.toLocaleString(DateTimeFormat.DateTimeShortWithSeconds) ?? "";
+    };
+
+    /**
+     * Returns a humanized version of the datetime or the time if it's today.
+     * @param dateTime the datetime to be humanized.
+     * @returns the humanized date or time string.
+     */
+    const humanizedDateTime = (dateTime: string | null | undefined): string => {
+        const currentDate = RockDateTime.now();
+        const messageDateTime = RockDateTime.parseISO(dateTime ?? "");
+        if (messageDateTime && currentDate.localDateTime.date.isEqualTo(messageDateTime.localDateTime.date)) {
+            return messageDateTime?.localDateTime.toLocaleString(DateTimeFormat.TimeShort) ?? "";
+        }
+
+        return messageDateTime?.localDateTime?.humanizeElapsed() ?? "";
+    };
+
+    /**
+     * Formats a phone number into a readable format.
+     * @param phoneNumber the phone number to format.
+     * @returns the formatted phone number string.
+     */
+    const formattedPhoneNumber = (phoneNumber: string | null | undefined): string => {
+        return formatPhoneNumber(stripPhoneNumber(phoneNumber as string));
+    };
+
+    /**
+     * Returns a preview of the last message in a conversation.
+     * @param conversation the conversation containing the messages.
+     * @returns the message preview or "Image" if the last message contains an attachment.
+     */
+    const getSmsMessagePreview = (conversation: ConversationBag): string | null | undefined => {
+        if (!conversation.messages) {
+            return;
+        }
+
+        const lastMessage = conversation.messages[conversation.messages.length - 1];
+        if (isNullOrWhiteSpace(lastMessage.smsMessage) && lastMessage.attachmentUrls?.length) {
+            return "Image";
+        }
+        return lastMessage.smsMessage;
+    };
+
+
+    /**
+     * Determines the CSS classes for a message based on whether it is outbound or inbound.
+     * @param message the message to determine classes for.
+     * @returns a string representing the message's CSS classes.
+     */
+    const messageClasses = (message: MessageBag): string => {
+        let messageClasses = "message";
+        if (message.isOutbound) {
+            messageClasses += " outbound";
+        }
+        else {
+            messageClasses += " inbound";
+        }
+
+        return messageClasses;
+    };
+
+    /**
+     * Gets the selected system phone number, considering user preferences.
+     * @returns the selected system phone number.
+     */
+    function getSelectedSystemPhoneNumber(): string {
+        // If there is more than 1 system phone number check preferences to make sure that the selected system phone number is in the list of possible system phone numbers.
+        if (systemPhoneNumbers.value.length > 1) {
+            return systemPhoneNumbers.value.find(spn => spn.value === preferences.getValue(PreferenceKey.SelectedSystemPhoneNumber))?.value ?? "";
+        }
+
+        return systemPhoneNumbers.value[0]?.value ?? "";
+    }
+
+    /**
+     * Displays the modal for creating a new message.
+     */
+    function showNewMessageModal(): void {
+        // Clear old error messages
+        newMessageModalErrorText.value = "";
+
+        isNewMessageModalVisible.value = true;
+    }
+
+    /**
+     * Displays the modal for adding a snippet.
+     */
+    function showSnippetModal(): void {
+        // Clear old error messages
+        snippetModalErrorMessage.value = "";
+
+        isSnippetModalVisible.value = true;
+    }
+
+    /**
+     * Displays the modal for linking to a person.
+     */
+    function showLinkToPersonModal(): void {
+        // Clear old error messages
+        linkToPersonModalErrorMessage.value = "";
+
+        isLinkToPersonModalVisible.value = true;
+    }
+
+    /**
+     * Handles the button click to toggle the note editor.
+     */
+    function onNoteEditorButtonClick(): void {
+        // If the note editor is already visible then hide it.
+        if (isNoteEditorVisible.value) {
+            toggleNoteEditor();
+            return;
+        }
+
+        // Make sure we start off on a clean slate.
+        addNoteBag.value = {
+            noteTypeIdKey: selectableNoteTypes[0].idKey,
+            text: "",
+            isAlert: false,
+            isPrivate: false,
+            isPinned: false,
+            attributeValues: {}
+        };
+        toggleNoteEditor(true);
+    }
+
+    /**
+     * Toggles the visibility of the note editor.
+     * @param toggleValue whether to show or hide the note editor.
+     */
+    function toggleNoteEditor(toggleValue: boolean = !isNoteEditorVisible.value): void {
+        isNoteEditorVisible.value = toggleValue;
+    }
+
+    /**
+     * Toggles the visibility of the person filter.
+     * @param toggleFilterValue whether to show or hide the person filter.
+     */
+    function togglePersonFilter(toggleFilterValue: boolean = !isPersonFilterToggled.value): void {
+        isPersonFilterToggled.value = toggleFilterValue;
+    }
+
+    /**
+     * Toggles the visibility of the success notification box.
+     * @param toggleValue whether to show or hide the success notification box.
+     */
+    function toggleSuccessNotificationBox(toggleValue: boolean = !isSuccessNotificationBoxVisible.value): void {
+        isSuccessNotificationBoxVisible.value = toggleValue;
+    }
+
+    /**
+     * Clears the text in the error notification box.
+     */
+    function clearErrorNotificationBoxText(): void {
+        errorNotificationText.value = "";
+    }
+
+    /**
+     * Toggles the visibility of the read dropdown based on the provided index.
+     * @param index the index of the dropdown to toggle.
+     */
+    function toggleReadDropdown(index: number): void {
+        if (openDropdownIndex.value === index) {
+            openDropdownIndex.value = null;
+        }
+        else {
+            openDropdownIndex.value = index;
+        }
+    }
+
+    /**
+     * Changes the read status of a conversation from the dropdown and toggles its visibility.
+     * @param conversation the conversation whose read status is to be toggled.
+     * @param index the index of the dropdown to close after the action.
+     */
+    function changeReadStatusFromDropdown(conversation: ConversationBag, index: number): void {
+        toggleConversationReadStatus(conversation);
+        toggleReadDropdown(index);
+    }
+
+    /**
+     * Closes the dropdowns if a click outside the dropdown area is detected.
+     * @param event the click event to check for outside clicks.
+     */
+    function handleClickOutside(event: Event): void {
+        const dropdowns = document.querySelectorAll(".dropdown");
+        let isOutside = true;
+
+        dropdowns.forEach(dropdown => {
+            if (dropdown.contains(event.target as HTMLElement)) {
+                isOutside = false;
+            }
+        });
+
+        if (isOutside) {
+            openDropdownIndex.value = null;
+        }
+    }
+
+    /**
+     * Toggles the read status of a conversation based on its conversation key.
+     * @param conversationKey the key of the conversation to update.
+     * @param readStatus the read status to set for the conversation.
+     */
+    function toggleIsRead(conversationKey: string | null | undefined, readStatus: boolean): void {
+        let conversation = conversations.value.find(c => c.conversationKey === conversationKey);
+
+        if (conversation) {
+            conversation.isConversationRead = readStatus;
+        }
+    }
+
+    /**
+     * Toggles the visibility of the image uploader for attachments.
+     * @param toggleFilterValue whether to show or hide the image uploader.
+     */
+    function toggleImageUploader(toggleFilterValue: boolean = !isImageAttachmentToggled.value): void {
+        isImageAttachmentToggled.value = toggleFilterValue;
+    }
+
+    /**
+     * Scrolls the view to the last message in the conversation.
+     */
+    function scrollToLastMessage(): void {
+        nextTick(() => {
+            let lastMessage = document.body.querySelector("#last-item");
+            if (lastMessage) {
+                setTimeout(() => {
+                    lastMessage?.scrollIntoView({ block: "end", behavior: "smooth" });
+                }, 500);
+            }
+        });
+    }
+
+    /**
+     * Handles the action of adding a reminder, showing a success notification.
+     */
+    function onAddReminder(): void {
+        toggleSuccessNotificationBox(true);
+        // TODO: Update this to use IdKey when ReminderList is converted to Obsidian.
+        successNotificationBoxMessage.value = `Reminder successfully added. <a href="/reminders?EntityId=${selectedConversation.value?.recipientPersonAliasId}&Due=Due+This+Month">View Reminders</a>`;
+    }
+
+    /**
+     * Refreshes the conversation with new message data and adds it to the conversation.
+     * @param newMessageData the new message data to be added.
+     */
+    function refreshMessages(newMessageData: ConversationMessageBag): void {
+        const conversationToUpdate = conversations.value.find(c => c.conversationKey === newMessageData.conversationKey);
+
+        let attachmentUrls: (string | null | undefined)[] = [];
+        if (newMessageData.attachments != null && newMessageData.attachments.length > 0) {
+            attachmentUrls = newMessageData.attachments.map(attachment => attachment.url);
+        }
+
+        if (conversationToUpdate) {
+
+
+            const newMessage = <MessageBag>{
+                attachmentUrls: attachmentUrls,
+                createdDateTime: newMessageData.messageDateTime,
+                isOutbound: newMessageData.isOutbound,
+                messageKey: newMessageData.messageKey,
+                outboundSenderFullName: newMessageData.outboundSenderFullName,
+                smsMessage: newMessageData.message
+            };
+
+            if (!conversationToUpdate.messages) {
+                conversationToUpdate.messages = [];
+            }
+            conversationToUpdate.messages.push(newMessage);
+
+            if (!newMessage.isOutbound) {
+                conversationToUpdate.isConversationRead = false;
+            }
+
+            if (conversationToUpdate.conversationKey === selectedConversation.value?.conversationKey) {
+                scrollToLastMessage();
+            }
+        }
+        else {
+            const newConversation = <ConversationBag>{
+                conversationKey: newMessageData.conversationKey,
+                recipientPhoneNumber: newMessageData.contactKey,
+                recipientFullName: newMessageData.fullName,
+                recipientPersonGuid: newMessageData.personGuid,
+                isRecipientNamelessPerson: newMessageData.isNamelessPerson,
+                recipientPhotoUrl: newMessageData.photoUrl,
+                isConversationRead: newMessageData.isRead,
+                messages: [<MessageBag>{
+                    isOutbound: newMessageData.isOutbound,
+                    smsMessage: newMessageData.message,
+                    attachmentUrls: attachmentUrls,
+                    createdDateTime: newMessageData.messageDateTime,
+                    messageKey: newMessageData.messageKey,
+                    outboundSenderFullName: newMessageData.outboundSenderFullName
+                }]
+            };
+
+            conversations.value.push(newConversation);
+        }
+    }
+
+    /**
+     * Sets focus to the message input text box.
+     */
+    function setTextBoxFocus(): void {
+        nextTick(() => {
+            const messageInput = newMessageTextBoxContainer.value?.querySelector("textarea") as HTMLInputElement | null;
+            messageInput?.focus();
+        });
+    }
+
+    /**
+     * Subscribes to the topic using the current selected system phone Guid unique identifier.
+     */
+    async function startRealTime(): Promise<void> {
+        const systemPhoneGuid = selectedSystemPhoneNumberValue.value;
+
+        if (!systemPhoneGuid) {
+            throw new Error("Missing a selected System Phone Number.");
+        }
+
+        const topic = await getTopic<IConversationParticipantTopic>("Rock.RealTime.Topics.ConversationParticipantTopic");
+
+        topic.onDisconnected(async () => {
+            await startRealTime();
+        });
+
+        await topic.server.joinSmsNumber(systemPhoneGuid);
+
+        topic.on("newSmsMessage", refreshMessages);
+        topic.on("conversationReadStatusChanged", toggleIsRead);
+    }
+
+    // #endregion
+
+    // #region Block Actions
+
+    /**
+     * Fetches the conversation for a specific recipient and updates the selected conversation.
+     * @param conversation the conversation object for the recipient to fetch.
+     */
+    async function getConversationForRecipient(conversation: ConversationBag): Promise<void> {
+        if (conversation.conversationKey === selectedConversation.value?.conversationKey) {
+            return;
+        }
+
+        toggleNoteEditor(false);
+        toggleSuccessNotificationBox(false);
+        clearErrorNotificationBoxText();
+        conversationHasFocus.value = true;
+        selectedConversation.value = null;
+        isConversationLoading.value = true;
+
+        const bag = <ConversationBag>{
+            recipientPersonAliasIdKey: conversation.recipientPersonAliasIdKey,
+            recipientPhoneNumber: conversation.recipientPhoneNumber,
+            recipientPersonGuid: conversation.recipientPersonGuid,
+            recipientPersonAliasId: conversation.recipientPersonAliasId,
+            recipientPersonAliasGuid: conversation.recipientPersonAliasGuid,
+        };
+
+        const result = await invokeBlockAction<ConversationBag>("GetConversationForRecipient", { bag });
+
+        if (result.isSuccess) {
+            conversation.messages = result.data?.messages;
+            conversation.recipientPersonAliasIdKey = result.data?.recipientPersonAliasIdKey;
+            conversation.recipientPersonAliasGuid = result.data?.recipientPersonAliasGuid;
+            conversation.recipientPersonAliasId = result.data?.recipientPersonAliasId ?? 0;
+            conversation.recipientDescription = result.data?.recipientDescription;
+            conversation.entityTypeGuidForReminder = result.data?.entityTypeGuidForReminder;
+            conversation.entityGuidForReminder = result.data?.entityGuidForReminder;
+            conversation.isLinkToPersonVisible = result.data?.isLinkToPersonVisible;
+            conversation.isViewMergeRequestVisible = result.data?.isViewMergeRequestVisible;
+            selectedConversation.value = conversation;
+
+            scrollToLastMessage();
+            newMessageText.value = "";
+            setTextBoxFocus();
+        }
+        else {
+            errorNotificationText.value = result.errorMessage ?? "Unknown error while trying to get conversations.";
+        }
+
+        isConversationLoading.value = false;
+    }
+
+    /**
+     * Sends a new message to a new recipient, including handling attachments.
+     * @param bag the data for sending the new message.
+     */
+    async function createNewMessage(bag: SendMessageBag): Promise<void> {
+        if (bag.message?.length === 0 && !bag.attachmentGuid) {
+            return;
+        }
+
+        const result = await invokeBlockAction<ConversationBag>("SendMessageToNewRecipient", { bag });
+
+        if (result.isSuccess) {
+            isNewMessageModalVisible.value = false;
+        }
+        else {
+            newMessageModalErrorText.value = result.errorMessage ?? "";
+        }
+    }
+
+    /**
+     * Sends a message to an existing recipient, handling message and attachment data.
+     */
+    async function sendMessage(): Promise<void> {
+        if (newMessageText.value.length === 0 && !imageAttachment.value?.value) {
+            return;
+        }
+
+        const bag = <SendMessageBag>{
+            recipientPersonAliasIdKey: selectedConversation.value?.recipientPersonAliasIdKey,
+            message: newMessageText.value,
+            attachmentGuid: imageAttachment.value?.value
+        };
+
+        const result = await invokeBlockAction<ConversationBag>("SendMessageToExistingRecipient", { bag });
+
+        if (result.isSuccess) {
+            newMessageText.value = "";
+            imageAttachment.value = {};
+        }
+        else {
+            errorNotificationText.value = result.errorMessage ?? "Unknown error while trying to send a message.";
+        }
+    }
+
+    /**
+     * Toggles the read status of a conversation.
+     * @param conversation the conversation whose read status is to be toggled.
+     */
+    async function toggleConversationReadStatus(conversation: ConversationBag): Promise<void> {
+        const bag = <ConversationBag>{
+            recipientPersonAliasIdKey: conversation.recipientPersonAliasIdKey,
+            recipientPersonGuid: conversation.recipientPersonGuid,
+            isConversationRead: conversation.isConversationRead
+        };
+
+        const result = await invokeBlockAction<ConversationBag>("ToggleConversationReadStatus", { bag });
+
+        if (result.isError) {
+            errorNotificationText.value = result.errorMessage ?? "Unknown error while trying to toggle the read status of conversations.";
+        }
+    }
+
+    /**
+     * Saves a note added to the selected conversation.
+     */
+    async function onNoteAddSave(): Promise<void> {
+        const request: SaveNoteRequestBag = {};
+
+        setPropertiesBoxValue(request, "idKey", addNoteBag.value.idKey);
+        setPropertiesBoxValue(request, "parentNoteIdKey", undefined);
+        setPropertiesBoxValue(request, "noteTypeIdKey", addNoteBag.value.noteTypeIdKey);
+        setPropertiesBoxValue(request, "text", addNoteBag.value.text);
+        setPropertiesBoxValue(request, "isAlert", addNoteBag.value.isAlert);
+        setPropertiesBoxValue(request, "isPrivate", addNoteBag.value.isPrivate);
+        setPropertiesBoxValue(request, "isPinned", addNoteBag.value.isPinned);
+        setPropertiesBoxValue(request, "attributeValues", addNoteBag.value.attributeValues);
+
+        const bag = <SmsConversationsSaveNoteBag>{
+            selectedPersonAliasIdKey: selectedConversation.value?.recipientPersonAliasIdKey,
+            noteRequestBag: request
+        };
+
+        const result = await invokeBlockAction<string>("SaveNote", { bag });
+
+        if (result.isSuccess) {
+            toggleNoteEditor();
+            toggleSuccessNotificationBox(true);
+            successNotificationBoxMessage.value = `Note successfully added. <a href="/Person/${result.data}">View Profile</a>`;
+        }
+        else {
+            errorNotificationText.value = result.errorMessage ?? "Unknown error while saving a note.";
+        }
+    }
+
+    /**
+     * Saves a new person using the provided data and prompts a merge of the nameless person to the newly saved person.
+     * @param bag the data for the new person.
+     */
+    async function saveNewPerson(bag: PersonBasicEditorBag): Promise<void> {
+        const result = await invokeBlockAction("SaveNewPerson", {
+            personBag: bag,
+            recipientPersonAliasIdKey: selectedConversation.value?.recipientPersonAliasIdKey ?? ""
+        });
+
+        if (result.isSuccess) {
+            // Redirecting to the merge page
+            const redirectUrl = result.data as string;
+            window.location.href = makeUrlRedirectSafe(redirectUrl);
+        }
+        else {
+            linkToPersonModalErrorMessage.value = result.errorMessage ?? "Unkown error while saving new person.";
+        }
+    }
+
+    /**
+     * Links a conversation with a nameless person to an existing person.
+     * @param bag the list item containing the person data to link.
+     */
+    async function linkToPerson(bag: ListItemBag | undefined): Promise<void> {
+        const result = await invokeBlockAction("LinkToExistingPerson", {
+            existingPersonAliasGuid: bag?.value ?? "",
+            recipientPersonAliasIdKey: selectedConversation.value?.recipientPersonAliasIdKey ?? ""
+        });
+
+        if (result.isSuccess) {
+            // Redirecting to the merge page
+            const redirectUrl = result.data as string;
+            window.location.href = makeUrlRedirectSafe(redirectUrl);
+        }
+        else {
+            linkToPersonModalErrorMessage.value = result.errorMessage ?? "Unkown error while linking to existing person.";
+        }
+    }
+
+    /**
+     * Views a merge request for the current conversation with a nameless person.
+     */
+    async function viewMergeRequest(): Promise<void> {
+        const result = await invokeBlockAction("ViewMergeRequest", {
+            recipientPersonAliasIdKey: selectedConversation.value?.recipientPersonAliasIdKey ?? ""
+        });
+
+        if (result.isSuccess) {
+            // Redirecting to the merge page
+            const redirectUrl = result.data as string;
+            window.location.href = makeUrlRedirectSafe(redirectUrl);
+        }
+        else {
+            errorNotificationText.value = result.errorMessage ?? "Unkown error while viewing a merge request.";
+        }
+    }
+
+    /**
+     * Inserts a snippet into the new message text box.
+     * @param snippetGuid the GUID of the snippet to insert.
+     */
+    async function insertSnippet(snippetGuid: string): Promise<void> {
+        const result = await invokeBlockAction<string>("InsertSnippet", {
+            snippetGuid,
+            recipientPersonAliasIdKey: selectedConversation.value?.recipientPersonAliasIdKey ?? ""
+        });
+
+        if (result.isSuccess) {
+            newMessageText.value = result.data ?? "";
+            isSnippetModalVisible.value = false;
+        }
+        else {
+            snippetModalErrorMessage.value = result.errorMessage ?? "Unkown error while inserting a snippet.";
+        }
+    }
+
+    /**
+     * Reloads all conversations.
+     */
+    async function reloadConversations(): Promise<void> {
+        const result = await invokeBlockAction<ConversationBag[]>("ReloadConversations");
+
+        if (result.isSuccess) {
+            conversations.value = result.data ?? [];
+        }
+        else {
+            errorNotificationText.value = result.errorMessage ?? "An unknown error occurred while reloading conversations.";
+        }
+    }
+
+    onMounted(() => {
+        document.addEventListener("click", handleClickOutside);
+    });
+
+    onUnmounted(() => {
+        document.removeEventListener("click", handleClickOutside);
+    });
+
+    watch([selectedSystemPhoneNumberValue, messageFilterSelection], async () => {
+        preferences.setValue(PreferenceKey.SelectedMessageFilter, messageFilterSelection.value);
+        preferences.setValue(PreferenceKey.SelectedSystemPhoneNumber, selectedSystemPhoneNumberValue.value);
+
+        await preferences.save();
+
+        reloadConversations();
+    });
+
+    watch(selectedSystemPhoneNumberValue, () => {
+        //Restart realtime when the system phone number changes
+        startRealTime();
+    });
+
+    if (selectedSystemPhoneNumberValue.value) {
+        startRealTime();
+    }
+
+    onConfigurationValuesChanged(useReloadBlock());
+</script>

@@ -17,7 +17,7 @@ export const EditComponent = defineComponent({
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-        const internalValue = ref({} as ListItemBag[]);
+        const internalValue = ref({} as ListItemBag | null);
 
         const entityTypeGuid = computed<Guid | null>(() => {
             const entityType = JSON.parse(props.configurationValues[ConfigurationValueKey.EntityTypeName] ?? "{}") as ListItemBag;
@@ -25,7 +25,7 @@ export const EditComponent = defineComponent({
         });
 
         watch(() => props.modelValue, () => {
-            internalValue.value = JSON.parse(props.modelValue || "{}");
+            internalValue.value = JSON.parse(props.modelValue || "null");
         }, { immediate: true });
 
         watch(() => internalValue.value, () => {

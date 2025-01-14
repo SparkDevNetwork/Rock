@@ -24,10 +24,10 @@
 /** Contains the data representing the response to a question series for the DISC assessment. */
 export type AssessmentResponseBag = {
     /** Gets or sets the least score. */
-    leastScore?: string | undefined;
+    leastScore?: string | null;
 
     /** Gets or sets the most score. */
-    mostScore?: string | undefined;
+    mostScore?: string | null;
 
     /** Gets or sets the question number. */
     questionNumber?: string | null;

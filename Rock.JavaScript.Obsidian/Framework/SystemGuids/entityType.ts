@@ -37,6 +37,8 @@ export const EntityType = {
     AdaptiveMessageAdaptation: "39753CCE-184A-4F14-AE80-08241DE8FC2E",
     /** The EntityType Guid for Rock.Model.AdaptiveMessageAdaptationSegment  */
     AdaptiveMessageAdaptationSegment: "40EDF82B-EFF5-4253-A129-965F7BC90033",
+    /** The EntityType Guid for Rock.Model.AdaptiveMessageCategory  */
+    AdaptiveMessageCategory: "D47BDA25-03A3-46EE-A0A6-F8B220E39E4A",
     /** The EntityType Guid for Rock.Model.AIProvider  */
     AiProvider: "945A994F-F15E-43AC-B503-A54BDE70F77F",
     /** The EntityType Guid for Rock.Model.AnalyticsDimCampus  */
@@ -451,7 +453,7 @@ export const EntityType = {
     Metriccategory: "3D35C859-DF37-433F-A20A-0FFD0FCB9862",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Prayer.AnswerToPrayer. */
     MobileAnswerToPrayerBlockType: "759AFCA0-9E0B-4A22-A402-CD4499F2A457",
-    /** The GUID for the mobile check-in block */
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.CheckIn.CheckIn. */
     MobileCheckinCheckin: "BC0A4B6C-9F6D-4D39-8FFE-B6F9FA4B2F49",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Cms.DailyChallengeEntry */
     MobileCmsDailyChallengeEntry: "E9BC058A-CFE4-498B-A7E7-DD38DC74B30E",

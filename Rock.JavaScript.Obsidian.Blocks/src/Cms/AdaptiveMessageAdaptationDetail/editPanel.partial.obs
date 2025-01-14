@@ -18,19 +18,26 @@
                  label="Description"
                  textMode="multiline" />
 
-         <div class="row">
+        <div class="row">
             <div class="col-md-3">
-                <NumberBox v-model="viewSaturationCount" label="View Saturation Count" help="The number of times a person should view the message before it's deemed to have been saturated." />
+                <NumberBox :minimumValue="0" v-model="viewSaturationCount" label="View Saturation Count" help="The number of times a person should view the message before it's deemed to have been saturated." />
             </div>
             <div class="col-md-3">
-                <NumberBox v-model="viewSaturationInDays" label="View Saturation Date Range" help="Specify the number of days to be taken into consideration for the saturation calculation of views. Views outside this range will not be considered.">
+                <NumberBox :minimumValue="0" v-model="viewSaturationInDays" label="View Saturation Date Range" help="Specify the number of days to be taken into consideration for the saturation calculation of views. Views outside this range will not be considered.">
                     <template #inputGroupAppend>
                         <span class="input-group-addon">days</span>
                     </template>
                 </NumberBox>
             </div>
         </div>
-
+        <div class="row">
+            <div class="col-md-3">
+                <DatePicker v-model="startDate" label="Start Date" />
+            </div>
+            <div class="col-md-3">
+                <DatePicker v-model="endDate" label="End Date" />
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-6">
                 <DropDownList
@@ -38,14 +45,13 @@
                               enhanceForLongLists
                               multiple
                               label="Segments"
-                              help="The segment that an individual need to be in order for this message adaptation to be considered relevant. Leave blank for all individuals to be considered relevant."
+                              help="The segments that an individual needs to be in order for this message adaptation to be considered relevant. Leave blank for all individuals to be considered relevant."
                               :items="segmentOptions" />
             </div>
         </div>
-
-        <SectionHeader title="Message Content"
-                       description="The items below represent different forms of content that can the associated with the message." />
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="1" :showCategoryLabel="false" />
+        <SectionHeader class="margin-t-lg" title="Message Content"
+                       description="The items below represent different forms of content that can be associated with the message." />
+        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" :showCategoryLabel="false" />
     </fieldset>
 </template>
 
@@ -62,6 +68,7 @@
     import { AdaptiveMessageAdaptationBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationBag";
     import { AdaptiveMessageAdaptationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import DatePicker from "@Obsidian/Controls/datePicker.obs";
 
     const props = defineProps({
         modelValue: {
@@ -82,6 +89,8 @@
 
     // #region Values
 
+    const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
+    const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
     const description = propertyRef(props.modelValue.description ?? "", "Description");
@@ -92,7 +101,7 @@
     const segments = propertyRef(props.modelValue.segments ?? [], "Segments");
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, segments, viewSaturationCount, viewSaturationInDays];
+    const propRefs = [description, isActive, name, segments, viewSaturationCount, viewSaturationInDays, startDate, endDate];
 
     // #endregion
 
@@ -122,6 +131,8 @@
         updateRefValue(viewSaturationCount, props.modelValue.viewSaturationCount ?? null);
         updateRefValue(viewSaturationInDays, props.modelValue.viewSaturationInDays ?? null);
         updateRefValue(segments, props.modelValue.segments ?? []);
+        updateRefValue(startDate, props.modelValue.startDate ?? "");
+        updateRefValue(endDate, props.modelValue.endDate ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -135,7 +146,9 @@
             viewSaturationCount: viewSaturationCount.value,
             isActive: isActive.value,
             name: name.value,
-            segments: segments.value
+            segments: segments.value,
+            startDate: startDate.value,
+            endDate: endDate.value
         };
 
         emit("update:modelValue", newValue);

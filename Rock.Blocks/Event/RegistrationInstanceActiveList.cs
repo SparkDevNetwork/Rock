@@ -63,6 +63,12 @@ namespace Rock.Blocks.Event
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PageParameterKey
+        {
+            public const string CategoryId = "CategoryId";
+            public const string RegistrationTemplateId = "RegistrationTemplateId";
+        }
+
         #endregion Keys
 
         #region Methods
@@ -90,7 +96,7 @@ namespace Rock.Blocks.Event
         private RegistrationInstanceActiveListOptionsBag GetBoxOptions()
         {
             var options = new RegistrationInstanceActiveListOptionsBag();
-
+            options.IsGridVisible = PageParameter( PageParameterKey.CategoryId )?.Length == 0 && PageParameter( PageParameterKey.RegistrationTemplateId )?.Length == 0;
             return options;
         }
 
@@ -122,6 +128,7 @@ namespace Rock.Blocks.Event
         {
             var qry = new RegistrationInstanceService( rockContext )
                     .Queryable()
+                    .Include( i => i.Registrations.Select( r => r.Registrants ) )
                     .Where( i =>
                         ( i.StartDateTime <= RockDateTime.Now || !i.StartDateTime.HasValue ) &&
                         ( i.EndDateTime > RockDateTime.Now || !i.EndDateTime.HasValue ) &&

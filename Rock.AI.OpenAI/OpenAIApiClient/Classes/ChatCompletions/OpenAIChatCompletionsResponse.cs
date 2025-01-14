@@ -25,7 +25,7 @@ using Rock.AI.Classes.ChatCompletions;
 namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
 {
     /// <summary>
-    /// The Reponse object for a completion.
+    /// The Response object for a completion.
     /// </summary>
     internal class OpenAIChatCompletionsResponse
     {

@@ -115,6 +115,7 @@
     <Compile Include="Communication\CommunicationEntry\ValidationContext.cs" />
     <Compile Include="Communication\CommunicationEntry\ValidationContextExtensions.cs" />
     <Compile Include="Cms\LogSettings.cs" />
+    <Compile Include="Communication\SmsConversations.cs" />
     <Compile Include="Core\PersonSuggestionList.cs" />
     <Compile Include="Cms\PageSearch.cs" />
     <Compile Include="Core\DocumentTypeList.cs" />
@@ -138,6 +139,7 @@
     <Compile Include="Lms\LearningProgramCompletionDetail.cs" />
     <Compile Include="Lms\LearningSemesterDetail.cs" />
     <Compile Include="Lms\Public\PublicLearningClassWorkspace.cs" />
+    <Compile Include="Lms\Public\PublicLearningClassEnrollment.cs" />
     <Compile Include="Lms\Public\PublicLearningCourseDetail.cs" />
     <Compile Include="Lms\Public\PublicLearningCourseList.cs" />
     <Compile Include="Lms\Public\PublicLearningProgramList.cs" />
@@ -156,6 +158,8 @@
     <Compile Include="Cms\PersonalLinkSectionList.cs" />
     <Compile Include="Cms\PageRouteList.cs" />
     <Compile Include="Core\PersonFollowingList.cs" />
+    <Compile Include="Core\SignatureDocumentDetail.cs" />
+    <Compile Include="Core\SignatureDocumentList.cs" />
     <Compile Include="Tv\RokuPageDetail.cs" />
     <Compile Include="Tv\TvPageList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
@@ -255,7 +259,7 @@
     <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
     <Compile Include="Finance\FinancialGatewayList.cs" />
     <Compile Include="Finance\BusinessContactList.cs" />
-	<Compile Include="Event\RegistrationInstanceList.cs" />
+    <Compile Include="Event\RegistrationInstanceList.cs" />
     <Compile Include="Event\RegistrationInstancePaymentList.cs" />
     <Compile Include="Finance\SavedAccountList.cs" />
     <Compile Include="Finance\FinancialPledgeDetail.cs" />

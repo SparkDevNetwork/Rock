@@ -45,7 +45,7 @@ namespace Rock.Model
                         {
                             new LearningSemester
                             {
-                                Name = "Default",
+                                Name = "Initial Semester",
                                 Guid = Guid.NewGuid(),
                                 LearningProgramId = Entity.Id
                             }

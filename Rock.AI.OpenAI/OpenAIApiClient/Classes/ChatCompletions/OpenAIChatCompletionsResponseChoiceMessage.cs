@@ -29,7 +29,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions
         #region Properties
 
         /// <summary>
-        /// The text reponse for the completion.
+        /// The text response for the completion.
         /// </summary>
         [JsonProperty( "role" )]
         public OpenAIChatMessageRole Role { get; set; }

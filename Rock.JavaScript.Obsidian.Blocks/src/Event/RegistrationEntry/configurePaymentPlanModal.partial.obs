@@ -136,7 +136,7 @@
     const invokeBlockAction = useInvokeBlockAction();
 
     const amountToPayTodayRules: ValidationRule[] = [
-        "required",
+        "notblank",
         validateAmountToPayTodayRule,
         validateAmountToPayTodayLessThanRemaining,
         validateAmountToPayTodayResultsInAtLeastTwoNumberOfPayments

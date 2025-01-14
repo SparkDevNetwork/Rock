@@ -50,6 +50,6 @@ namespace Rock.CheckIn.v2
         /// proper order of location priority.
         /// </summary>
         /// <value>The overflow location identifiers.</value>
-        public List<string> OverflowLocationIds { get; set; }
+        public List<LocationAndScheduleBag> OverflowLocations { get; set; }
     }
 }

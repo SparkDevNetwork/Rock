@@ -26,9 +26,19 @@
         </div>
     </Panel>
 
-    <div v-if="screenToShow === ComponentScreen.Completion">
-        <div :class="containerClasses">
+    <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
+        <div class="instructions-section">
             <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="true" />
+        </div>
+
+        <div v-if="showStudentComment" class="optional-comments-container">
+            <TextBox v-model="studentComment" label="Optional Comments" textMode="multiline" :rows="4" />
+        </div>
+
+        <div class="footer-button-section">
+            <RockButton v-if="isCompleted" :btnType="BtnType.Primary" @click="onContinueClicked">
+                Continue
+            </RockButton>
         </div>
     </div>
 </template>
@@ -38,6 +48,9 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
@@ -51,6 +64,8 @@
     const activityBag = computed(() => props.activityBag);
     const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
     const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
+    const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
+    const studentComment = ref(completionBag.value.studentComment ?? "");
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
@@ -59,6 +74,7 @@
         defaultAssigneeDescription,
         hasBeenGraded,
         instructions,
+        isCompleted,
         rubric,
         panelTitle
     } = useLearningComponent<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion>(
@@ -70,21 +86,42 @@
 
     const disabled = ref(props.disabled ?? false);
 
+    function onContinueClicked(): void {
+        if (studentComment.value) {
+            emits("completed", true);
+        }
+
+        emits("closed");
+    }
+
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
-            const updatedActivityBag = {
-                ...toValue(activityBag)
-            } as LearningActivityBag;
+        const updatedActivityBag = {
+            ...toValue(activityBag)
+        } as LearningActivityBag;
 
-            updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
-                instructions: instructions.value,
-                rubric: rubric.value
-            }) ?? "{}";
+        updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
+            instructions: instructions.value,
+            rubric: rubric.value
+        }) ?? "{}";
 
-            emits("update:activityBag", updatedActivityBag);
+        emits("update:activityBag", updatedActivityBag);
     });
 
     watch([activityBag.value.points, instructions, rubric], () => {
         debouncedActivityBagEmits();
     }, { deep: true });
+
+
+    /** Watch for modified component completion. */
+    watch(studentComment, () => {
+        const updatedCompletionBag = {
+            ...toValue(completionBag)
+        } as LearningActivityCompletionBag;
+
+        updatedCompletionBag.studentComment = studentComment.value;
+
+        emits("update:completionBag", updatedCompletionBag);
+    });
+
 </script>

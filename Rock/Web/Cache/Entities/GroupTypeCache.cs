@@ -20,6 +20,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Attribute;
 using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Enums.CheckIn;
@@ -387,9 +388,12 @@ namespace Rock.Web.Cache
         /// <param name="groupType">Type of the group.</param>
         /// <param name="purposeGuid">The purpose unique identifier.</param>
         /// <param name="startingGroup">Starting group is used to avoid circular references.</param>
+        /// <param name="processedGroupTypeIds">A collection of unique identifiers representing specific group types already processed by the method. This parameter filters the operation to include only the specified group types.</param>
         /// <returns></returns>
-        private GroupTypeCache GetParentPurposeGroupType( GroupTypeCache groupType, Guid purposeGuid, GroupTypeCache startingGroup )
+        private GroupTypeCache GetParentPurposeGroupType( GroupTypeCache groupType, Guid purposeGuid, GroupTypeCache startingGroup, List<int> processedGroupTypeIds = null )
         {
+            processedGroupTypeIds = processedGroupTypeIds ?? new List<int>();
+
             if ( groupType != null &&
                 groupType.GroupTypePurposeValue != null &&
                 groupType.GroupTypePurposeValue.Guid.Equals( purposeGuid ) )
@@ -402,12 +406,15 @@ namespace Rock.Web.Cache
                 // skip if parent group type and current group type are the same (a situation that should not be possible) to prevent stack overflow
                 if ( groupType.Id == parentGroupType.Id ||
                      // also skip if the parent group type and starting group type are the same as this is a circular reference and can cause a stack overflow
-                     startingGroup.Id == parentGroupType.Id )
+                     startingGroup.Id == parentGroupType.Id ||
+                     processedGroupTypeIds.Contains( parentGroupType.Id ) )
                 {
                     continue;
                 }
 
-                var testGroupType = GetParentPurposeGroupType( parentGroupType, purposeGuid, startingGroup );
+                processedGroupTypeIds.Add( parentGroupType.Id );
+
+                var testGroupType = GetParentPurposeGroupType( parentGroupType, purposeGuid, startingGroup, processedGroupTypeIds );
                 if ( testGroupType != null )
                 {
                     return testGroupType;
@@ -634,6 +641,13 @@ namespace Rock.Web.Cache
         public ScheduleConfirmationLogic ScheduleConfirmationLogic { get; set; }
 
         /// <summary>
+        /// Gets a value that groups in this area should not be available
+        /// when a person already has a check-in for the same schedule.
+        /// </summary>
+        [DataMember]
+        public bool IsConcurrentCheckInPrevented { get; private set; }
+
+        /// <summary>
         /// Gets or sets the roles.
         /// </summary>
         /// <value>
@@ -854,7 +868,93 @@ namespace Rock.Web.Cache
 
         /// <inheritdoc cref="Rock.Model.Group.ScheduleCoordinatorNotificationTypes" />
         [DataMember]
-        public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; set; }
+        public ScheduleCoordinatorNotificationType? ScheduleCoordinatorNotificationTypes { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Group Type has Peer Network enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if peer network is enabled; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsPeerNetworkEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether relationship growth is enabled.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [relationship growth enabled]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool RelationshipGrowthEnabled { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the relationship strength.
+        /// </summary>
+        /// <value>
+        /// The relationship strength.
+        /// </value>
+        [DataMember]
+        public int RelationshipStrength { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the leader to leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The leader to leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal LeaderToLeaderRelationshipMultiplier { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the leader to non leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The leader to non leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal LeaderToNonLeaderRelationshipMultiplier { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the non leader to non leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The non leader to non leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal NonLeaderToNonLeaderRelationshipMultiplier { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the non leader to leader relationship multiplier.
+        /// </summary>
+        /// <value>
+        /// The non leader to leader relationship multiplier.
+        /// </value>
+        [DataMember]
+        [DecimalPrecision( 8, 2 )]
+        public decimal NonLeaderToLeaderRelationshipMultiplier { get; private set; }
+
+        /// <summary>
+        /// Gets whether any relationship multipliers have been customized for this group type (if any of them don't
+        /// equal 100%).
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.17.0" )]
+        public bool AreAnyRelationshipMultipliersCustomized =>
+            LeaderToLeaderRelationshipMultiplier != 1m
+            || LeaderToNonLeaderRelationshipMultiplier != 1m
+            || NonLeaderToLeaderRelationshipMultiplier != 1m
+            || NonLeaderToNonLeaderRelationshipMultiplier != 1m;
 
         #endregion
 
@@ -871,6 +971,19 @@ namespace Rock.Web.Cache
         {
             var groupTypeIds = GetInheritedGroupTypeIds();
 
+            return GetInheritedAttributesForQualifier( groupTypeIds, entityTypeId, entityTypeQualifierColumn );
+        }
+
+        /// <summary>
+        /// Gets a list of all attributes defined for the GroupTypes specified that
+        /// match the entityTypeQualifierColumn and the GroupType Ids.
+        /// </summary>
+        /// <param name="groupTypeIds">The list of group type ids that must be matched.</param>
+        /// <param name="entityTypeId">The Entity Type Id for which Attributes to load.</param>
+        /// <param name="entityTypeQualifierColumn">The EntityTypeQualifierColumn value to match against.</param>
+        /// <returns>A list of attributes defined in the inheritance tree.</returns>
+        internal static List<AttributeCache> GetInheritedAttributesForQualifier( List<int> groupTypeIds, int entityTypeId, string entityTypeQualifierColumn )
+        {
             var inheritedAttributes = new Dictionary<int, List<AttributeCache>>();
             groupTypeIds.ForEach( g => inheritedAttributes.Add( g, new List<AttributeCache>() ) );
 
@@ -1050,6 +1163,14 @@ namespace Rock.Web.Cache
             IsCapacityRequired = groupType.IsCapacityRequired;
             GroupsRequireCampus = groupType.GroupsRequireCampus;
             ScheduleCoordinatorNotificationTypes = groupType.ScheduleCoordinatorNotificationTypes;
+            IsConcurrentCheckInPrevented = groupType.IsConcurrentCheckInPrevented;
+            IsPeerNetworkEnabled = groupType.IsPeerNetworkEnabled;
+            RelationshipGrowthEnabled = groupType.RelationshipGrowthEnabled;
+            RelationshipStrength = groupType.RelationshipStrength;
+            LeaderToLeaderRelationshipMultiplier = groupType.LeaderToLeaderRelationshipMultiplier;
+            LeaderToNonLeaderRelationshipMultiplier = groupType.LeaderToNonLeaderRelationshipMultiplier;
+            NonLeaderToLeaderRelationshipMultiplier = groupType.NonLeaderToLeaderRelationshipMultiplier;
+            NonLeaderToNonLeaderRelationshipMultiplier = groupType.NonLeaderToNonLeaderRelationshipMultiplier;
         }
 
         /// <summary>

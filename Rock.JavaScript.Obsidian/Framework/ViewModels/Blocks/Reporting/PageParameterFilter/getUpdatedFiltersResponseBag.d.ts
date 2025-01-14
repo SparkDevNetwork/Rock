@@ -28,6 +28,9 @@ export type GetUpdatedFiltersResponseBag = {
     /** Gets or sets the filter page parameters. */
     filterPageParameters?: Record<string, string> | null;
 
+    /** Gets or sets the navigation urls. */
+    navigationUrls?: Record<string, string> | null;
+
     /** Gets or sets the public filters available for selection. */
     publicFilters?: Record<string, PublicAttributeBag> | null;
 

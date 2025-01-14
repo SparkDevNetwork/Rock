@@ -161,14 +161,6 @@
             <Modal v-model="isModalOpen" title="Page Attributes">
 
                 <RockForm v-model:submit="submitEditAttribute" @submit="onSaveAttribute">
-                    <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                        Please correct the following:
-                        <ul>
-                            <li v-for="error of attributeErrors">
-                                {{ error }}
-                            </li>
-                        </ul>
-                    </NotificationBox>
                     <AttributeEditor v-model="siteAttribute" :reservedKeyNames="reservedKeyNames" />
                 </RockForm>
 
@@ -314,7 +306,6 @@
     const reservedKeyNames = ref(props.options.reservedKeyNames ?? []);
     const siteAttribute = ref<PublicEditableAttributeBag | null>(null);
     const submitEditAttribute = ref<boolean>(false);
-    const attributeErrors = ref<string[]>([]);
 
     const defaultPage = ref({
         page: props.modelValue?.bag?.defaultPage ?? null
@@ -373,11 +364,9 @@
             fieldTypeGuid: FieldType.Text
         } as PublicEditableAttributeBag;
         isModalOpen.value = true;
-        attributeErrors.value = [];
     }
 
     function onEditItem(key: string): void {
-        attributeErrors.value = [];
         const selectedSiteAttribute = siteAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedSiteAttribute) {
@@ -442,13 +431,19 @@
     }
 
     const onStartSaveAttribute = (): void => {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(siteAttribute.value?.key ?? "") && !siteAttribute.value?.guid;
-        submitEditAttribute.value = !isExistingKey;
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
+        submitEditAttribute.value = true;
     };
+
+    watch(isModalOpen, () => {
+        if (isModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== siteAttribute.value?.key);
+        }
+        else {
+            if (siteAttribute.value?.key && !reservedKeyNames.value.some(k => k === siteAttribute.value?.key)) {
+                reservedKeyNames.value.push(siteAttribute.value.key);
+            }
+        }
+    });
 
     // #endregion
 

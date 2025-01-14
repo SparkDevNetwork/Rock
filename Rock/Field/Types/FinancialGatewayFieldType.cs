@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// Stored as FinancialGateway.Guid
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.FINANCIAL_GATEWAY )]
     public class FinancialGatewayFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

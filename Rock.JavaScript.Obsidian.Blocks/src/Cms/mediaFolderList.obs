@@ -1,16 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="config.options?.isBlockVisible"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
-          itemTerm="Media Folder"
+          :itemTerm="config?.options?.mediaAccountName + ' Folders'"
           :entityTypeGuid="EntityType.MediaFolder"
           stickyHeader
           liveUpdates
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
-        <SelectColumn />
-
         <TextColumn name="name"
                     title="Name"
                     field="name"
@@ -29,9 +28,10 @@
             </template>
         </NumberColumn>
 
-        <BooleanColumn name="isContentChannelSyncEnabled"
-                       title="Is Content Channel Sync Enabled"
-                       field="isContentChannelSyncEnabled"
+        <TextColumn name="contentChannelSync"
+                       title="Content Channel Sync"
+                       field="contentChannelSync"
+                       :filter="pickExistingValueFilter"
                        visiblePriority="xs" />
 
         <NumberColumn name="watchCount"
@@ -55,7 +55,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn, NumberColumn, numberValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, TextColumn, textValueFilter, pickExistingValueFilter, DeleteColumn, NumberColumn, numberValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { MediaFolderListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaFolderList/mediaFolderListOptionsBag";

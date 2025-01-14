@@ -43,8 +43,11 @@ namespace Rock.Tests.Shared.TestFramework
                     All = true
                 } );
 
+                var currentMigrationNumber = long.Parse( GetTargetMigration().Truncate( 15, false ) );
+
                 var latestImage = images.SelectMany( img => img.RepoTags )
                     .Where( t => t.StartsWith( $"{RepositoryName}:" ) )
+                    .Where( t => long.TryParse( t.Substring( 26 ), out var migrationNumber ) && migrationNumber <= currentMigrationNumber )
                     .OrderByDescending( t => t )
                     .FirstOrDefault();
 
@@ -121,6 +124,8 @@ namespace Rock.Tests.Shared.TestFramework
 
                 MigrateDatabase( csb.ConnectionString );
 
+                RockDateTimeHelper.SynchronizeTimeZoneConfiguration( RockDateTime.OrgTimeZoneInfo.Id );
+
                 // Install the sample data if it is configured.
                 if ( !upgrade && sampleDataUrl.IsNotNullOrWhiteSpace() )
                 {
@@ -171,7 +176,9 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             try
             {
-                migrator.Update( targetMigrationName );
+                var decorator = new System.Data.Entity.Migrations.Infrastructure.MigratorLoggingDecorator( migrator, new BuilderMigrationLogger() );
+
+                decorator.Update( targetMigrationName );
 
                 LogHelper.Log( $"Migrate Database: complete." );
             }
@@ -238,7 +245,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 FabricateAttendance = true,
                 EnableGiving = true,
                 Password = "password",
-                RandomizerSeed = 42283823
+                RandomizerSeed = 42283823,
+                AttendanceCodeIssuedDateTime = RockDateTime.Now.AddDays( -1 )
             };
 
             factory.CreateFromXmlDocumentFile( sampleDataUrl, args );
@@ -290,6 +298,32 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
         public static string GetRepositoryAndTag()
         {
             return $"{RepositoryName}:{GetTargetMigration().Truncate( 15, false )}";
+        }
+
+        /// <summary>
+        /// Helper class to log migrations to the debug output. This can help
+        /// with debugging migrations that are failing during image build.
+        /// </summary>
+        private class BuilderMigrationLogger : System.Data.Entity.Migrations.Infrastructure.MigrationsLogger
+        {
+            /// <inheritdoc/>
+            public override void Info( string message )
+            {
+                if ( message.StartsWith( "Applying explicit migration:" ) )
+                {
+                    LogHelper.Log( message );
+                }
+            }
+
+            /// <inheritdoc/>
+            public override void Warning( string message )
+            {
+            }
+
+            /// <inheritdoc/>
+            public override void Verbose( string message )
+            {
+            }
         }
     }
 }

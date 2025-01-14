@@ -26,7 +26,7 @@ namespace Rock.ViewModels.CheckIn
     public class CampusBag : CheckInItemBag
     {
         /// <summary>
-        /// Gets or sets a list of Kiosks
+        /// List of associated kiosks.
         /// </summary>
         public List<WebKioskBag> Kiosks { get; set; }
     }

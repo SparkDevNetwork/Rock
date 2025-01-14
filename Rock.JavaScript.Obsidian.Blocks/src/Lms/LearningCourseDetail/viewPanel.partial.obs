@@ -4,12 +4,12 @@
         <template #tabpane="{ item }">
             <template v-if="item === 'Overview'" class="row">
 
-                <div class="col-md-4">
-                    <ImageWithIcon :imageFileGuid="imageGuid"
-                                :highlightColor="highlightColor"
-                                :iconCssClass="iconCssClass" />
+                <div class="col-md-4 course-detail-billboard">
+                    <Billboard :imageFileGuid="imageGuid"
+                               :highlightColor="highlightColor"
+                               :iconCssClass="iconCssClass" />
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-8 course-detail-content">
                     <fieldset>
                         <ValueDetailList :modelValue="topValues" />
                         <div class="row">
@@ -47,7 +47,7 @@
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
-    import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
+    import Billboard from "@Obsidian/Controls/billboard.obs";
 
     const props = defineProps({
         modelValue: {
@@ -107,7 +107,7 @@
         }
 
         // On-Demand mode doesn't allow  course credits.
-        if (isOnDemandMode.value === false){
+        if (isOnDemandMode.value === false) {
             valueBuilder.addTextValue("Credits", (props.modelValue.credits ?? 0).toString());
         }
 
@@ -131,7 +131,7 @@
         const emptyValue = "<br />";
 
         const courseCode = props.modelValue.courseCode ?? "";
-        if (courseCode.length > 0){
+        if (courseCode.length > 0) {
             valueBuilder.addTextValue("Course Code", courseCode);
         }
 

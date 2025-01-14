@@ -95,6 +95,68 @@ namespace Rock.Model
         [Obsolete( "Does nothing. No longer needed. We replaced this with a private property under the SaveHook class for this entity.", true )]
         public virtual History.HistoryChangeList HistoryChangeList { get; set; }
 
+        /// <summary>
+        /// Gets whether this group is overriding its parent group type's relationship strength configuration.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.17.0" )]
+        public bool IsOverridingGroupTypeRelationshipStrength =>
+            GroupType?.IsPeerNetworkEnabled == true
+            && (
+                RelationshipStrengthOverride != null
+                || RelationshipGrowthEnabledOverride != null
+                || LeaderToLeaderRelationshipMultiplierOverride != null
+                || LeaderToNonLeaderRelationshipMultiplierOverride != null
+                || NonLeaderToLeaderRelationshipMultiplierOverride != null
+                || NonLeaderToNonLeaderRelationshipMultiplierOverride != null
+            );
+
+        /// <summary>
+        /// Gets whether any relationship multipliers have been customized for this group or its parent group type.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "1.17.0" )]
+        public bool AreAnyRelationshipMultipliersCustomized
+        {
+            get
+            {
+                // First, if all of this group's direct values are 100%, treat this as not customized.
+                if ( LeaderToLeaderRelationshipMultiplierOverride.GetValueOrDefault() == 1m
+                    && LeaderToNonLeaderRelationshipMultiplierOverride.GetValueOrDefault() == 1m
+                    && NonLeaderToLeaderRelationshipMultiplierOverride.GetValueOrDefault() == 1m
+                    && NonLeaderToNonLeaderRelationshipMultiplierOverride.GetValueOrDefault() == 1m )
+                {
+                    return false;
+                }
+
+                // Next, check if any of the parent group type's values are customized (not 100%).
+                if ( GroupType?.AreAnyRelationshipMultipliersCustomized == true )
+                {
+                    return true;
+                }
+
+                // Last, check if any of this group's direct values are defined.
+                return LeaderToLeaderRelationshipMultiplierOverride != null
+                    || LeaderToNonLeaderRelationshipMultiplierOverride != null
+                    || NonLeaderToLeaderRelationshipMultiplierOverride != null
+                    || NonLeaderToNonLeaderRelationshipMultiplierOverride != null;
+            }
+        }
+
         #endregion Properties
 
         #region Indexing Methods

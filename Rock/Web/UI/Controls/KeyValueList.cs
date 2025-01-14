@@ -301,7 +301,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                html.AppendFormat( @"<input class=""key-value-key form-control input-width-md js-key-value-input"" type=""text"" placeholder=""{0}""></input> ", KeyPrompt );
+                html.AppendFormat( @"<input class=""key-value-key form-control js-key-value-input"" type=""text"" placeholder=""{0}""></input> ", KeyPrompt );
             }
         }
 
@@ -323,7 +323,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                html.AppendFormat( @"<input class=""key-value-value input-width-md form-control js-key-value-input"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
+                html.AppendFormat( @"<input class=""key-value-value form-control js-key-value-input"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
             }
         }
 

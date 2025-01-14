@@ -126,6 +126,7 @@
                       iconClass="fa fa-clone"
                       visiblePriority="xs"
                       :excludeFromExport="true"
+                      width="150"
                       @click="onCopyClick" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />

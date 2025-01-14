@@ -66,7 +66,7 @@ namespace Rock
 
             if ( response.RecipientPersonGuid.HasValue )
             {
-                using( var rockContext = new RockContext() )
+                using ( var rockContext = new RockContext() )
                 {
                     // We want to use the recipient person guid to get the avatar view for the person.
                     var photoUrl = new PersonService( rockContext )
@@ -74,7 +74,7 @@ namespace Rock
                         .FirstOrDefault( p => p.Guid == response.RecipientPersonGuid.Value )?.PhotoUrl;
 
                     // Update the photo URL to use the avatar if there is one.
-                    if( photoUrl.IsNotNullOrWhiteSpace() )
+                    if ( photoUrl.IsNotNullOrWhiteSpace() )
                     {
                         bag.PhotoUrl = MobileHelper.BuildPublicApplicationRootUrl( photoUrl );
                     }
@@ -126,11 +126,11 @@ namespace Rock
         }
 
         /// <summary>
-        /// Converts the <see cref="CommunicationRecipientResponse"/> to a
-        /// <see cref="ConversationMessageBag"/>.
+        /// Converts a collection of <see cref="CommunicationRecipientResponse"/> objects to a collection of <see cref="ConversationMessageBag"/> objects.
+        /// This includes loading and associating attachments with the appropriate messages.
         /// </summary>
-        /// <param name="responses">The collection of responses to be converted.</param>
-        /// <returns>A collection of <see cref="ConversationMessageBag"/> objects that represent the responses.</returns>
+        /// <param name="responses">The collection of responses to be converted into message bags.</param>
+        /// <returns>A collection of <see cref="ConversationMessageBag"/> objects, each representing a response along with its associated attachments.</returns>
         internal static IEnumerable<ConversationMessageBag> ToMessageBags( this IEnumerable<CommunicationRecipientResponse> responses )
         {
             var attachmentsLookup = new Dictionary<string, List<(Guid Guid, string FileName, string MimeType)>>();
@@ -139,18 +139,24 @@ namespace Rock
             // than executing a query for every single response.
             using ( var rockContext = new RockContext() )
             {
-                var communicationIdMap = responses
-                    .Where( r => r.CommunicationId.HasValue )
-                    .ToDictionary( r => r.CommunicationId.Value, r => r.MessageKey );
+                // Communication recipient responses can have duplicate communication IDs,
+                // so we want to ensure that we get each unique communication ID with all of
+                // its associated message keys.
+                var communicationIdMap = responses.Where( r => r.CommunicationId.HasValue )
+                    .GroupBy( r => r.CommunicationId.Value )
+                    .ToDictionary( g => g.Key, g => g.Select( r => r.MessageKey ).ToList() );
 
+                // CommunicationResponseId is unique, so we can use a more straightforward
+                // dictionary to map the response ID to the message key.
                 var communicationResponseIdMap = responses
                     .Where( r => !r.CommunicationId.HasValue && r.CommunicationResponseId.HasValue )
                     .ToDictionary( r => r.CommunicationResponseId.Value, r => r.MessageKey );
 
-                // Load all the CommunicationAttachment data.
+                // Load all of the communication attachments for the communication
+                // and ensure to add it for the specific message.
                 if ( communicationIdMap.Count > 0 )
                 {
-                    var communicationIds = communicationIdMap.Keys.ToList();
+                    var communicationIds = communicationIdMap.Keys;
 
                     var results = new CommunicationAttachmentService( rockContext )
                         .Queryable()
@@ -165,13 +171,24 @@ namespace Rock
                         .ToList()
                         .GroupBy( ca => ca.CommunicationId );
 
+                    // We need to add the attachments to each individual
+                    // message key that is associated with the communication ID.
                     foreach ( var result in results )
                     {
-                        attachmentsLookup.AddOrReplace( communicationIdMap[result.Key], result.Select( r => (r.Guid, r.FileName, r.MimeType) ).ToList() );
+                        var messageKeys = communicationIdMap[result.Key];
+
+                        foreach ( var messageKey in messageKeys )
+                        {
+                            if ( messageKey.IsNotNullOrWhiteSpace() )
+                            {
+                                attachmentsLookup.AddOrReplace( messageKey, result.Select( r => (r.Guid, r.FileName, r.MimeType) ).ToList() );
+                            }
+                        }
                     }
                 }
 
-                // Load all the CommunicationResponseAttachment data.
+                // Load all of the communication response attachments for the communication
+                // and ensure to add it for the specific message.
                 if ( communicationResponseIdMap.Count > 0 )
                 {
                     var communicationResponseIds = communicationResponseIdMap.Keys.ToList();

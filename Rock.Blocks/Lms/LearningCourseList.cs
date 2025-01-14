@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -130,10 +131,17 @@ namespace Rock.Blocks.Lms
         protected override IQueryable<LearningCourse> GetListQueryable( RockContext rockContext )
         {
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
+            var currentPerson = GetCurrentPerson();
 
-            return programId > 0 ?
-                base.GetListQueryable( rockContext ).Where( c => c.LearningProgramId == programId ) :
-                base.GetListQueryable( rockContext );
+            // Eagerly load the program so it can be checked for Authorization.
+            var courses = programId > 0 ?
+                new LearningCourseService( rockContext ).Queryable()
+                    .Include( c => c.LearningProgram )
+                    .Where( c => c.LearningProgramId == programId )
+                    .ToList():
+                new List<LearningCourse>();
+
+            return courses.Where( c => c.IsAuthorized( Authorization.VIEW, currentPerson ) ).AsQueryable();
         }
 
         /// <inheritdoc/>
@@ -191,26 +199,63 @@ namespace Rock.Blocks.Lms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            var entityService = new LearningCourseService( RockContext );
-            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+            var courseService = new LearningCourseService( RockContext );
 
-            if ( entity == null )
+            var course = courseService
+                    .GetInclude( key, c => c.LearningCourseRequirements, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( course == null )
             {
                 return ActionBadRequest( $"{LearningCourse.FriendlyTypeName} not found." );
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !course.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${LearningCourse.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningCourse.FriendlyTypeName}." );
             }
 
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            var requiredCourseService = new LearningCourseRequirementService( RockContext );
+            var coursesDependingOnThisCourse = requiredCourseService
+                .Queryable()
+                .Where( c => c.RequiredLearningCourseId == course.Id )
+                .Select( c => c.LearningCourse.Name );
+
+            // If other courses are dependent on this one, don't allow deletion.
+            if ( coursesDependingOnThisCourse.Count() > 0 )
             {
+                var errorMessage = string.Format(
+                    "This {0} is required by {1}: {2}.",
+                    LearningCourse.FriendlyTypeName,
+                    "course".PluralizeIf( coursesDependingOnThisCourse.Count() != 1 ),
+                    coursesDependingOnThisCourse.JoinStringsWithCommaAnd() );
                 return ActionBadRequest( errorMessage );
             }
 
-            entityService.Delete( entity );
-            RockContext.SaveChanges();
+            // Delete everything or nothing.
+            RockContext.WrapTransaction( () =>
+            {
+                var classService = new LearningClassService( RockContext );
+                // Include related entities that should be deleted along with the class.
+                var classesForCourse = classService.Queryable()
+                    .Include( c => c.LearningActivities )
+                    .Include( c => c.LearningParticipants )
+                    .Include( c => c.ContentPages )
+                    .Include( c => c.Announcements )
+                    .Where( c => c.LearningCourseId == course.Id );
+
+                // Remove any classes for this course
+                foreach ( var courseClass in classesForCourse )
+                {
+                    classService.Delete( courseClass );
+                }
+
+                // Remove any course requirements from this course.
+                requiredCourseService.DeleteRange( course.LearningCourseRequirements );
+
+                // Finally remove this course.
+                courseService.Delete( course );
+                RockContext.SaveChanges();
+            } );
 
             return ActionOk();
         }

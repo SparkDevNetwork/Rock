@@ -74,6 +74,15 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsActive { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets the category ids.
+        /// </summary>
+        /// <value>
+        /// The category ids.
+        /// </value>
+        [DataMember]
+        public List<int> CategoryIds { get; private set; }
+
         #endregion Entity Properties
 
         #region Related Cache Objects
@@ -86,6 +95,32 @@ namespace Rock.Web.Cache
         /// </value>
         public List<AdaptiveMessageAdaptationCache> Adaptations
             => AdaptiveMessageAdaptationCache.All().Where( amc => amc.AdaptiveMessageId == Id ).ToList();
+
+        /// <summary>
+        /// Gets the categories.
+        /// </summary>
+        /// <value>
+        /// The categories.
+        /// </value>
+        public List<CategoryCache> Categories
+        {
+            get
+            {
+                var categories = new List<CategoryCache>();
+
+                if ( CategoryIds == null )
+                {
+                    return categories;
+                }
+
+                foreach ( var id in CategoryIds.ToList() )
+                {
+                    categories.Add( CategoryCache.Get( id ) );
+                }
+
+                return categories;
+            }
+        }
 
         #endregion Related Cache Objects
 
@@ -109,6 +144,7 @@ namespace Rock.Web.Cache
             Description = adaptiveMessage.Description;
             IsActive = adaptiveMessage.IsActive;
             Key = adaptiveMessage.Key;
+            CategoryIds = adaptiveMessage.AdaptiveMessageCategories.Select( c => c.CategoryId ).ToList();
         }
 
         /// <summary>

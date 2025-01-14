@@ -2580,6 +2580,34 @@ namespace Rock.NMI
         }
 
         /// <summary>
+        /// Determines whether a result code is an error (as opposed to declined transaction).
+        /// </summary>
+        /// <param name="resultCode">The result code.</param>
+        /// <returns></returns>
+        internal static bool ResultCodeIsError( int resultCode )
+        {
+            switch ( resultCode )
+            {
+                case 300: // Transaction was rejected by gateway.
+                case 400: // Transaction error returned by processor.
+                case 410: // Invalid merchant configuration.
+                case 411: // Merchant account is inactive.
+                case 420: // Communication error.
+                case 421: // Communication error with issuer.
+                case 430: // Duplicate transaction at processor.
+                case 440: // Processor format error.
+                case 441: // Invalid transaction information.
+                case 460: // Processor feature not available.
+                case 461: // Unsupported card type.
+                    return true;
+
+                default:
+                    return false;
+            }
+
+        }
+
+        /// <summary>
         /// The friendly message map
         /// These can be exact or partial matches of the error message.
         /// </summary>

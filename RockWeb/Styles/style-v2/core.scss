@@ -55,7 +55,7 @@
 @import 'components/tables';                // Fully Format. Really hard to read. There are Some hard coded value. Have to be under forms.scss to override checkbox positioning.
 @import 'components/input-groups';          // Fully Format. There are Some hard coded value.
 @import 'components/bootstrap-chosen';
-@import 'components/jcrop.scss';
+@import 'components/jcrop.scss';            // Minified File.
 @import 'components/breadcrumbs';           // Fully Format.
 @import 'components/thumbnails';            // Fully Format.
 @import 'components/scaffolding';           // Fully Format. There are Some hard coded value.
@@ -111,7 +111,7 @@
 @import 'rock-components/list-extensions';          // Fully Format. There are Some hard coded value.
 @import 'rock-components/kpi';                      // Fully Format. There are Some hard coded value. 
 @import 'rock-components/key-value';                // Fully Format.
-@import 'rock-components/image-with-icon';          // Fully Format. There are Some hard coded value. 
+@import 'rock-components/billboard';          // Fully Format. There are Some hard coded value. 
 @import 'rock-components/modal';                    // Fully Format. Must import below the bootstrap modal.
 @import 'rock-components/pickers';                  // Fully Format. There are Some hard coded value.
 @import 'rock-components/person-program-step';      // Fully Format.
@@ -126,6 +126,9 @@
 @import 'rock-components/html-editor';
 @import 'rock-components/ant-select';
 @import 'rock-components/profile';
+@import 'rock-components/connection-request.scss';
+@import 'rock-components/hero-section';
+@import 'rock-components/tox-overrides';
 
 
 /* ===================== BLOCK =================== */
@@ -160,4 +163,5 @@
 /* ======================= ICON  ======================*/
 @import './icons/core-icon';                //Fully Format.
 @import './font-styling/font-styling-core'  //Fully Format.
+
 

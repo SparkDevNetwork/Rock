@@ -14,13 +14,55 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+
 using Rock.Enums.Lms;
+using Rock.Security;
 
 namespace Rock.Model
 {
     public partial class LearningProgram
     {
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Rock.Model.Person person )
+        {
+            // Check to see if user is authorized using normal authorization rules
+            bool authorized = base.IsAuthorized( action, person );
 
+            if ( authorized )
+            {
+                return authorized;
+            }
+
+            // Authorize "ViewGrades" when the person has "EditGrades".
+            if ( action == Authorization.VIEW_GRADES )
+            {
+                // We only need to check for the additional action, "EditGrades" because
+                // the call to base.IsAuthorized would already have checked for "ViewGrades".
+                var isAuthorizedToEditGrades = Authorization.Authorized( this, Authorization.EDIT_GRADES, person );
+
+                if ( isAuthorizedToEditGrades )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Provides a <see cref="Dictionary{TKey, TValue}"/> of actions that this model supports, and the description of each.
+        /// </summary>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var supportedActions = base.SupportedActions;
+                supportedActions.AddOrReplace( Authorization.VIEW_GRADES, "The roles and/or users that have access to view grades." );
+                supportedActions.AddOrReplace( Authorization.EDIT_GRADES, "The roles and/or users that have access to edit grades." );
+                return supportedActions;
+            }
+        }
     }
 
     /// <summary>

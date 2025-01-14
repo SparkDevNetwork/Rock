@@ -165,6 +165,12 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<DefinedType> GetOrderedListQueryable( IQueryable<DefinedType> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.Category.Name ).ThenBy( a => a.Name );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<DefinedType> GetGridBuilder()
         {
             return new GridBuilder<DefinedType>()

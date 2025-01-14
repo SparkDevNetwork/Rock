@@ -109,12 +109,6 @@ namespace Rock.Blocks.Communication
         protected DateTime? FilterCreatedDateRangeTo => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterCreatedDateRangeTo ).AsDateTime();
 
-        protected DateTime? FilterSentDateRangeFrom => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterSentDateRangeFrom ).AsDateTime();
-
-        protected DateTime? FilterSentDateRangeTo => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterSentDateRangeTo ).AsDateTime();
-
         protected string FilterContent => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterContent );
 
@@ -153,7 +147,7 @@ namespace Rock.Blocks.Communication
             var options = new CommunicationListOptionsBag()
             {
                 CanApprove = GetCanApprove(),
-                CurrentPerson = GetCurrentPerson()?.ToListItemBag(),
+                CurrentPerson = GetCurrentPerson()?.PrimaryAlias?.ToListItemBag(),
                 CommunicationTypeItems = typeof( CommunicationType ).ToEnumListItemBag(),
                 StatusItems = typeof( CommunicationStatus ).ToEnumListItemBag(),
             };
@@ -201,8 +195,6 @@ namespace Rock.Blocks.Communication
             queryable = FilterByRecipientCount( queryable );
 
             queryable = FilterByCreatedDateRange( queryable );
-
-            queryable = FilterBySentDateRange( queryable );
 
             queryable = FilterByContent( queryable );
 
@@ -273,27 +265,6 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
-        /// Filters the queryable by the selected Send Date Range filter.
-        /// </summary>
-        /// <param name="queryable">The <see cref="Rock.Model.Communication"/> queryable</param>
-        /// <returns></returns>
-        private IQueryable<Model.Communication> FilterBySentDateRange( IQueryable<Model.Communication> queryable )
-        {
-            if ( FilterSentDateRangeFrom.HasValue )
-            {
-                queryable = queryable.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) >= FilterSentDateRangeFrom.Value );
-            }
-
-            if ( FilterSentDateRangeTo.HasValue )
-            {
-                DateTime upperDate = FilterSentDateRangeTo.Value.Date.AddDays( 1 );
-                queryable = queryable.Where( a => ( a.SendDateTime ?? a.FutureSendDateTime ) < upperDate );
-            }
-
-            return queryable;
-        }
-
-        /// <summary>
         /// Filters the queryable by the selected Created Date Range filter.
         /// </summary>
         /// <param name="queryable">The <see cref="Rock.Model.Communication"/> queryable</param>
@@ -354,8 +325,8 @@ namespace Rock.Blocks.Communication
 
             if ( GetCanApprove() )
             {
-                var createdBy = FilterCreatedBy?.Value.AsGuidOrNull();
-                if ( FilterCreatedBy != null && createdBy.HasValue )
+                var createdBy = FilterCreatedBy == null ? currentPerson.PrimaryAlias.Guid : FilterCreatedBy?.Value.AsGuidOrNull();
+                if ( createdBy.HasValue )
                 {
                     queryable = queryable
                         .Where( c =>
@@ -391,6 +362,7 @@ namespace Rock.Blocks.Communication
         protected override GridBuilder<Rock.Model.Communication> GetGridBuilder()
         {
             var recipients = new CommunicationRecipientService( new RockContext() ).Queryable();
+            var rootUrl = RequestContext.ResolveRockUrl( "/" );
 
             return new GridBuilder<Rock.Model.Communication>()
                 .WithBlock( this )
@@ -401,8 +373,10 @@ namespace Rock.Blocks.Communication
                 .AddDateTimeField( "sendDateTime", a => a.SendDateTime ?? a.FutureSendDateTime )
                 .AddDateTimeField( "futureSendDateTime", a => a.FutureSendDateTime )
                 .AddPersonField( "sender", a => a.SenderPersonAlias?.Person )
+                .AddTextField( "senderTag", a => a.SenderPersonAlias?.Person?.GetAnchorTag( rootUrl ) )
                 .AddDateTimeField( "reviewedDateTime", a => a.ReviewedDateTime )
                 .AddPersonField( "reviewer", a => a.ReviewerPersonAlias?.Person )
+                .AddTextField( "reviewerTag", a => a.ReviewerPersonAlias?.Person?.GetAnchorTag( rootUrl ) )
                 .AddField( "status", a => a.Status )
                 .AddField( "recipients", a => recipients.Count( r => r.CommunicationId == a.Id ) )
                 .AddField( "pendingRecipients", a => recipients.Count( r => r.CommunicationId == a.Id && r.Status == CommunicationRecipientStatus.Pending ) )
@@ -474,11 +448,9 @@ namespace Rock.Blocks.Communication
                         communicationService.Add( newCommunication );
                         rockContext.SaveChanges();
 
-                        var newCommunicationId = newCommunication.Id;
-
                         var pageParams = new Dictionary<string, string>
                         {
-                            { PageParameterKey.CommunicationId, newCommunicationId.ToString() }
+                            { PageParameterKey.CommunicationId, newCommunication.IdKey }
                         };
 
                         linkedPageUrl = this.GetLinkedPageUrl( AttributeKey.DetailPage, pageParams );

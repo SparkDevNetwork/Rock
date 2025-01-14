@@ -20,6 +20,7 @@
                     <NumberBox v-model="questionWeight"
                                :key="weightsValidationKey"
                                :disabled="disabled"
+                               :minimumValue="0"
                                label="Question Weight"
                                :rules="allAssessmentWeightsSumTo100"
                                :help="configurationWeightHelpText"
@@ -32,6 +33,7 @@
                 <div class="configuration-field-answer-box-rows">
                     <NumberBox v-model="answerBoxRows"
                                :disabled="disabled"
+                               :minimumValue="1"
                                label="Answer Box Rows"
                                help="Determines the height of the answer box that is shown for this answer." />
 
@@ -39,6 +41,7 @@
                 <div class="configuration-field-max-character-count">
                     <NumberBox v-model="maxCharacterCount"
                                :disabled="disabled"
+                               :minimumValue="0"
                                label="Max Character Count"
                                help="Optionally limits the number of characters that can be provided in the answer." />
                 </div>
@@ -69,6 +72,7 @@
                 <NumberBox v-model="pointsEarned"
                            label="Score"
                            :min="0"
+                           :minimumValue="0"
                            :max="pointsPossible"
                            :rules="'lte:' + pointsPossible"
                            inputGroupClasses="input-width-lg">
@@ -91,52 +95,6 @@
         </div>
     </div>
 </template>
-
-<style>
-.question-header {
-    display: flex;
-    justify-content: space-between;
-}
-
-.summary-screen-question-header {
-    margin-bottom: 16px;
-}
-
-.assessment-item-short-answer-configuration-container {
-    display: grid;
-    column-gap: 8px;
-    grid-template-columns: repeat(2, 1fr);
-}
-
-.configuration-field-question {
-    grid-column: 1 / 3;
-    grid-row: 1;
-}
-
-.configuration-field-help-text {
-    grid-column: 1 / 3;
-    grid-row: 2;
-}
-
-.configuration-field-question-weight {
-    grid-column: 1 / 2;
-    grid-row: 3;
-}
-
-.configuration-field-answer-box-rows {
-    grid-column: 1 / 2;
-    grid-row: 4;
-}
-
-.configuration-field-max-character-count {
-    grid-column: 2 / 3;
-    grid-row: 4;
-}
-
-.question-section {
-    font-weight: bold;
-}
-</style>
 
 <script setup lang="ts">
     import { PropType, computed, ref, toValue, watch } from "vue";

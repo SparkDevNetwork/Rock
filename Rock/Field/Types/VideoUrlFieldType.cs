@@ -27,6 +27,7 @@ namespace Rock.Field.Types
     /// Video Url field type
     /// Stored as URL
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.VIDEO_URL )]
     public class VideoUrlFieldType : FieldType

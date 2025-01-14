@@ -17,6 +17,9 @@ interface Window {
             },
             mediaplayer: {
                 initialize: (args: Record<string, unknown>) => void
+            },
+            searchField: {
+                initialize: (args: Record<string, unknown>) => void
             }
         },
         UI: {

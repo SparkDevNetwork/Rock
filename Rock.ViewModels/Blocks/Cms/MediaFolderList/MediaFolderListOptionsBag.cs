@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,5 +22,17 @@ namespace Rock.ViewModels.Blocks.Cms.MediaFolderList
     /// </summary>
     public class MediaFolderListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the block should be visible to the media account.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if a valid media account exists; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsBlockVisible { get; set; }
+
+        /// <summary>
+        ///
+        /// </summary>
+        public string MediaAccountName { get; set; }
     }
 }

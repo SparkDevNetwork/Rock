@@ -366,12 +366,22 @@ namespace Rock.Blocks.Core
                     r.Parameters.Count == 1
                     && r.Parameters.FirstOrDefault().Equals( "CategoryId", StringComparison.OrdinalIgnoreCase ) );
 
-            var templateUrl = $"{RequestContext.RootUrlPath}/{routeWithCategoryId.Route}";
-            return new Dictionary<string, string>
+            if ( routeWithCategoryId?.Route?.IsNotNullOrWhiteSpace() == true )
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [NavigationUrlKey.CurrentPageTemplate] = templateUrl
-            };
+                var templateUrl = $"{RequestContext.RootUrlPath}/{routeWithCategoryId?.Route}";
+                return new Dictionary<string, string>
+                {
+                    [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
+                    [NavigationUrlKey.CurrentPageTemplate] = templateUrl
+                };
+            }
+            else
+            {
+                return new Dictionary<string, string>
+                {
+                    [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                };
+            }
         }
 
         // <inheritdoc/>
@@ -503,7 +513,7 @@ namespace Rock.Blocks.Core
                         {
                             ParentGuid = parentGuid
                         } )
-                        .Max( siblingCategory => (int?)siblingCategory.Order );
+                        .Max( siblingCategory => ( int? ) siblingCategory.Order );
 
                     nextOrder = ( maxOrder ?? -1 ) + 1;
                 }
@@ -520,7 +530,19 @@ namespace Rock.Blocks.Core
             RockContext.WrapTransaction( () =>
             {
                 RockContext.SaveChanges();
-                entity.SaveAttributeValues( RockContext );
+
+                if ( box.Bag.DeleteAttributeValues )
+                {
+                    var attributeIds = entity.AttributeValues.Values.ToList().Select( a => a.AttributeId );
+                    var attributeValueService = new AttributeValueService( RockContext );
+                    var attributeValues = attributeValueService.GetByAttributeIdsAndEntityId( attributeIds, entity.Id );
+                    attributeValueService.DeleteRange( attributeValues );
+                    RockContext.SaveChanges();
+                }
+                else
+                {
+                    entity.SaveAttributeValues( RockContext );
+                }
             } );
 
             if ( isNew )
@@ -567,7 +589,16 @@ namespace Rock.Blocks.Core
             entityService.Delete( entity );
             RockContext.SaveChanges();
 
-            return ActionOk( this.GetParentPageUrl() );
+            var pageReference = new Rock.Web.PageReference( this.PageCache.Guid.ToString(), new Dictionary<string, string>() );
+
+            if ( pageReference.PageId > 0 )
+            {
+                return ActionOk( pageReference.BuildUrl() );
+            }
+            else
+            {
+                return ActionOk( this.GetCurrentPageUrl() );
+            }
         }
 
         /// <summary>
@@ -643,7 +674,7 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult ReorderChildCategory( string parentCategoryIdKey, string idKey, string beforeIdKey )
         {
-            using (var rockContext = new RockContext() )
+            using ( var rockContext = new RockContext() )
             {
                 // Get the queryable and make sure it is ordered correctly.
                 var items = OrderedChildCategories( parentCategoryIdKey, rockContext );
@@ -687,7 +718,7 @@ namespace Rock.Blocks.Core
         }
 
         /// <summary>
-        /// Gets a list of Categories that are direct children of specified category identifer.
+        /// Gets a list of Categories that are direct children of specified category identifier.
         /// </summary>
         /// <returns>A list of categories.</returns>
         [BlockAction]
@@ -704,7 +735,7 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="idKey">The parent id key hash to use for getting the list of child categories.</param>
         /// <returns>A list of <see cref="Category"/>.</returns>
-        private List<Category> OrderedChildCategories(string idKey, RockContext rockContext )
+        private List<Category> OrderedChildCategories( string idKey, RockContext rockContext )
         {
             var categoryService = new CategoryService( rockContext );
             var parentGuid = categoryService.GetSelect( idKey, c => c.Guid );

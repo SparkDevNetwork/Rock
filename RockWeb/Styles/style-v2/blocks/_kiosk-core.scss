@@ -44,9 +44,9 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .btn-kioskselect {
   width:                  100%;
-  padding-top:            14px;
-  padding-bottom:         14px;
-  margin-bottom:          12px;
+  padding-top:            var(--spacing-small);
+  padding-bottom:         var(--spacing-small);
+  margin-bottom:          var(--spacing-small);
   font-size:              var(--font-size-h4);
   font-weight:            var(--font-weight-bold);
   text-align:             center;
@@ -112,7 +112,7 @@ input[type="number"]::-webkit-outer-spin-button {
   height:               8px;
   background-color:     var(--color-interface-strongest);
   border:               1px solid var(--color-interface-soft);
-  border-radius:        3px;
+  border-radius:        var(--rounded-xsmall);
   opacity:              0.3;
   -webkit-transition:    0ms cubic-bezier(.1, .57, .1, 1);
   transition:           0ms cubic-bezier(.1, .57, .1, 1);

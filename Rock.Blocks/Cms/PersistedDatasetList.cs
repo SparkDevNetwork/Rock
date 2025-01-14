@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Data;
@@ -136,6 +137,12 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<PersistedDataset> GetOrderedListQueryable( IQueryable<PersistedDataset> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( p => p.Name ).ThenBy( p => p.AccessKey );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<PersistedDataset> GetGridBuilder()
         {
             return new GridBuilder<PersistedDataset>()
@@ -170,13 +177,36 @@ namespace Rock.Blocks.Cms
                 }
 
                 // Refresh the dataset and save changes
-                persistedDataset.UpdateResultData();
-                rockContext.SaveChanges();
+                var result = persistedDataset.UpdateResultData();
 
-                // Update the cache
-                PersistedDatasetCache.UpdateCachedEntity( persistedDataset.Id, EntityState.Modified );
+                if ( result.IsSuccess )
+                {
+                    rockContext.SaveChanges();
 
-                return ActionOk();
+                    // Update the cache
+                    PersistedDatasetCache.UpdateCachedEntity( persistedDataset.Id, EntityState.Modified );
+
+                    return ActionOk();
+                }
+                else
+                {
+                    // Get max preview size from block settings (default 1MB)
+                    var maxPreviewSizeMB = this.GetAttributeValue( AttributeKey.MaxPreviewSizeMB ).AsDecimalOrNull() ?? 1;
+                    maxPreviewSizeMB = Math.Max( 1, maxPreviewSizeMB );
+                    var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
+
+                    string refreshMaxLengthWarning = result?.WarningMessage?.Length > maxPreviewSizeLength
+                        ? string.Format( "Output size is {0}. Showing first {1}.", result?.WarningMessage?.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() )
+                        : null;
+
+                    var response = new
+                    {
+                        RefreshJson = ( string.Format( "<pre>{0}</pre>", result?.WarningMessage?.TruncateHtml( maxPreviewSizeLength ) ) ),
+                        RefreshMaxLengthWarning = refreshMaxLengthWarning,
+                    };
+
+                    return ActionBadRequest( response.ToCamelCaseJson( false, true ) );
+                }
             }
         }
 
@@ -193,10 +223,20 @@ namespace Rock.Blocks.Cms
                     return ActionNotFound();
                 }
 
+                var result = new PersistedDataset.UpdateResult()
+                {
+                    IsSuccess = persistedDataset.LastRefreshDateTime != null
+                };
+
                 // Ensure data is refreshed if needed
                 if ( persistedDataset.LastRefreshDateTime == null )
                 {
-                    persistedDataset.UpdateResultData();
+                    result = persistedDataset.UpdateResultData();
+                }
+
+                if ( !result.IsSuccess && !persistedDataset.ResultData.IsNullOrWhiteSpace() )
+                {
+                    return ActionBadRequest( result.WarningMessage );
                 }
 
                 // Get max preview size from block settings (default 1MB)
@@ -204,9 +244,23 @@ namespace Rock.Blocks.Cms
                 maxPreviewSizeMB = Math.Max( 1, maxPreviewSizeMB );
                 var maxPreviewSizeLength = ( int ) ( maxPreviewSizeMB * 1024 * 1024 );
 
+                if ( persistedDataset.ResultData.IsNullOrWhiteSpace() )
+                {
+                    return ActionOk( new
+                    {
+                        PreviewData = "The result data for this dataset is empty, rebuild the dataset to refresh the result data.",
+                        TimeToBuildMS = persistedDataset.TimeToBuildMS
+                    } );
+                }
+
+                var preViewObject = persistedDataset.ResultData.FromJsonDynamic().ToJson( true );
+                string refreshMaxLengthWarning = preViewObject?.Length < maxPreviewSizeLength
+                    ? string.Format( "JSON size is {0}. Showing first {1}.", preViewObject?.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() )
+                    : null;
+
                 // Truncate data if it exceeds max size
-                var previewData = persistedDataset.ResultData;
-                if ( previewData.Length > maxPreviewSizeLength )
+                var previewData =  preViewObject.Truncate( maxPreviewSizeLength );
+                if ( previewData?.Length > maxPreviewSizeLength )
                 {
                     previewData = previewData.Substring( 0, maxPreviewSizeLength );
                 }
@@ -214,7 +268,8 @@ namespace Rock.Blocks.Cms
                 var response = new
                 {
                     PreviewData = previewData,
-                    TimeToBuildMS = persistedDataset.TimeToBuildMS
+                    TimeToBuildMS = persistedDataset.TimeToBuildMS,
+                    RefreshMaxLengthWarning = refreshMaxLengthWarning
                 };
 
                 return ActionOk( response );

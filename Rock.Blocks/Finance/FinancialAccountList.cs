@@ -40,7 +40,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays a list of financial accounts." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the financial account details.",
@@ -117,11 +117,12 @@ namespace Rock.Blocks.Finance
         {
             var accountIdParameter = PageParameter( PageParameterKey.AccountId );
             var parentAccountId = accountIdParameter.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( accountIdParameter );
+            var topLevelOnly = PageParameter( PageParameterKey.TopLevel ).AsBoolean();
 
             var options = new FinancialAccountListOptionsBag
             {
                 GridTitle = parentAccountId.HasValue ? "Child Accounts".FormatAsHtmlTitle() : "Accounts".FormatAsHtmlTitle(),
-                IsBlockVisible = parentAccountId.HasValue && parentAccountId > 0
+                IsBlockVisible = (parentAccountId.HasValue && parentAccountId > 0) || topLevelOnly
             };
 
             return options;

@@ -23,7 +23,7 @@
   cursor:               pointer;
   background-image:     none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
   border:               1px solid transparent;
-  padding:              6px 16px;
+  padding:              var(--spacing-tiny) var(--spacing-medium);
   font-size:            var(--font-size-regular);
   line-height:          var(--line-height-normal);
   border-radius:        var(--rounded-small);
@@ -106,13 +106,14 @@
   &.facebook,
   &.google,
   &.twitter {
-    background-color:   var(--color-interface-softest);
-    border-color:       var(--color-interface-soft);
+    background-color: var(--color-interface-softest);
+    border-color:     var(--color-interface-soft);
 
     &::before {
+      color:          var(--btn-bg);
       display:        inline-block;
       margin-right:   12px;
-      font-family:    "@{fa-font-face} Brands";
+      font-family:    "Font Awesome 5 Brands";
       font-weight:    var(--font-weight-regular);
       content:        var(--social-icon);
       flex:           0 0 1.25em;
@@ -120,9 +121,8 @@
   }
 
   &.facebook {
-    color:          var(--color-interface-softest);
-    --btn-bg:       $brand-facebook;
-    --btn-hover-bg: $brand-facebook; // TODO darken by 10% when available
+    --btn-bg:       #{$brand-facebook};
+    --btn-hover-bg: #{$brand-facebook}; // TODO darken by 10% when available
     --social-icon:  "\f39e";
   }
 
@@ -140,14 +140,22 @@
   }
 
   &.twitter {
-    color:          var(--color-interface-softest);
-    --btn-bg:       $brand-twitter;
-    --btn-hover-bg: $brand-twitter; // TODO darken by 10% when available
-    --social-icon:  @fa-var-twitter;
+    --btn-bg:       #{$brand-twitter};
+    --btn-hover-bg: #{$brand-twitter}; // TODO darken by 10% when available
+    &:before {
+      background-image:     url("/Assets/Icons/X_logo_2023.svg");
+      background-size:      contain;
+      background-repeat:    no-repeat;
+      background-position:  center;
+      width:                1em;
+      height:               1em;
+      content: "  ";
+    }
   }
 
   &:hover {
     background-color: var(--color-interface-softer);
+    color: var(--color-interface-strong);
   }
 }
 
@@ -669,7 +677,7 @@
     }
   }
 }
-// ======================== END ALTERNAVTIVE BUTTON ========================
+// ======================== END ALTERNATIVE BUTTON ========================
 
 
 // ========================== OUTLINE ==========================
@@ -799,7 +807,7 @@
   padding:        var(--spacing-tiny) var(--spacing-xsmall);
   font-size:      var(--font-size-xsmall);
   line-height:    16px;
-  border-radius:  var(--rounded-small);
+  border-radius:  var(--rounded-xsmall);
 }
 // ======================== END BUTTON SIZE ========================
 
@@ -886,3 +894,56 @@ input[type="button"] {
 .ant-select-selector .ant-select-selection-overflow .btn-link {
   color: var(--color-interface-medium);
 }
+
+.theme-toggle {
+  display: flex;
+  margin-left: var(--spacing-small);
+  padding: var(--spacing-xsmall) var(--spacing-xsmall);
+  
+  border: 1px solid var(--color-interface-softest);
+  border-radius: 99px;
+
+  color: var(--color-interface-strong);
+  background-color: var(--color-interface-softer);
+
+  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
+  &:hover {
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-soft);
+  }
+  
+  &:focus {
+    color: var(--color-interface-stronger);
+    border-color: var(--color-interface-stronger);
+  }
+  
+  &:focus:active {
+    color: var(--color-interface-stronger);
+    background-color: var(--color-interface-soft);
+    border-color: var(--color-interface-stronger);
+
+  }
+}
+
+[theme="dark"] {
+  .theme-toggle {
+    .ti.theme-mode-icon:before {
+      content:"\eaf8"
+    }
+  }
+}
+[theme="light"] {
+  .theme-toggle {
+    .ti.theme-mode-icon:before {
+      content:"\eb30"
+    }
+  }
+}
+[theme="system"] {
+  .theme-toggle {
+    .ti.theme-mode-icon:before {
+      content:"\f23a"
+    }
+  }
+}
+

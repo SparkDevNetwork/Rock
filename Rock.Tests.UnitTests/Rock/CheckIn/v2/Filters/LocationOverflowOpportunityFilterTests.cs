@@ -35,20 +35,26 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
                     new GroupOpportunity
                     {
                         Name = "Kindergarten",
-                        LocationIds = new List<string>
+                        Locations = new List<LocationAndScheduleBag>
                         {
-                            "101"
+                            new LocationAndScheduleBag
+                            {
+                                LocationId = "101"
+                            }
                         },
-                        OverflowLocationIds = new List<string>()
+                        OverflowLocations = new List<LocationAndScheduleBag>()
                     },
                     new GroupOpportunity
                     {
                         Name = "5yr olds",
-                        LocationIds = new List<string>
+                        Locations = new List<LocationAndScheduleBag>
                         {
-                            "201"
+                            new LocationAndScheduleBag
+                            {
+                                LocationId = "201"
+                            }
                         },
-                        OverflowLocationIds = new List<string>()
+                        OverflowLocations = new List<LocationAndScheduleBag>()
                     }
                 },
                 Locations = new List<LocationOpportunity>
@@ -66,10 +72,10 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 
             filter.FilterLocations( opportunities );
 
-            Assert.That.AreEqual( 1, opportunities.Groups[0].LocationIds.Count );
-            Assert.That.AreEqual( "101", opportunities.Groups[0].LocationIds[0] );
-            Assert.That.AreEqual( 1, opportunities.Groups[1].LocationIds.Count );
-            Assert.That.AreEqual( "201", opportunities.Groups[1].LocationIds[0] );
+            Assert.That.AreEqual( 1, opportunities.Groups[0].Locations.Count );
+            Assert.That.AreEqual( "101", opportunities.Groups[0].Locations[0].LocationId );
+            Assert.That.AreEqual( 1, opportunities.Groups[1].Locations.Count );
+            Assert.That.AreEqual( "201", opportunities.Groups[1].Locations[0].LocationId );
             Assert.That.AreEqual( 2, opportunities.Locations.Count );
         }
 
@@ -86,22 +92,31 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
                     new GroupOpportunity
                     {
                         Name = "Kindergarten",
-                        LocationIds = new List<string>
+                        Locations = new List<LocationAndScheduleBag>
                         {
-                            "101"
+                            new LocationAndScheduleBag
+                            {
+                                LocationId = "101"
+                            }
                         },
-                        OverflowLocationIds = new List<string>()
+                        OverflowLocations = new List<LocationAndScheduleBag>()
                     },
                     new GroupOpportunity
                     {
                         Name = "5yr olds",
-                        LocationIds = new List<string>
+                        Locations = new List<LocationAndScheduleBag>
                         {
-                            "201"
+                            new LocationAndScheduleBag
+                            {
+                                LocationId = "201"
+                            }
                         },
-                        OverflowLocationIds = new List<string>
+                        OverflowLocations = new List<LocationAndScheduleBag>
                         {
-                            "202"
+                            new LocationAndScheduleBag
+                            {
+                                LocationId = "202"
+                            }
                         }
                     }
                 },
@@ -124,13 +139,13 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 
             filter.FilterLocations( opportunities );
 
-            Assert.That.AreEqual( 1, opportunities.Groups[0].LocationIds.Count );
-            Assert.That.AreEqual( "101", opportunities.Groups[0].LocationIds[0] );
-            Assert.That.AreEqual( 0, opportunities.Groups[0].OverflowLocationIds.Count );
+            Assert.That.AreEqual( 1, opportunities.Groups[0].Locations.Count );
+            Assert.That.AreEqual( "101", opportunities.Groups[0].Locations[0].LocationId );
+            Assert.That.AreEqual( 0, opportunities.Groups[0].OverflowLocations.Count );
 
-            Assert.That.AreEqual( 1, opportunities.Groups[1].LocationIds.Count );
-            Assert.That.AreEqual( "201", opportunities.Groups[1].LocationIds[0] );
-            Assert.That.AreEqual( 0, opportunities.Groups[1].OverflowLocationIds.Count );
+            Assert.That.AreEqual( 1, opportunities.Groups[1].Locations.Count );
+            Assert.That.AreEqual( "201", opportunities.Groups[1].Locations[0].LocationId );
+            Assert.That.AreEqual( 0, opportunities.Groups[1].OverflowLocations.Count );
 
             Assert.That.AreEqual( 2, opportunities.Locations.Count );
             Assert.That.AreEqual( "101", opportunities.Locations[0].Id );
@@ -150,22 +165,31 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
                     new GroupOpportunity
                     {
                         Name = "Kindergarten",
-                        LocationIds = new List<string>
+                        Locations = new List<LocationAndScheduleBag>
                         {
-                            "101"
+                            new LocationAndScheduleBag
+                            {
+                                LocationId = "101"
+                            }
                         },
-                        OverflowLocationIds = new List<string>()
+                        OverflowLocations = new List<LocationAndScheduleBag>()
                     },
                     new GroupOpportunity
                     {
                         Name = "5yr olds",
-                        LocationIds = new List<string>
+                        Locations = new List<LocationAndScheduleBag>
                         {
-                            "201"
+                            new LocationAndScheduleBag
+                            {
+                                LocationId = "201"
+                            }
                         },
-                        OverflowLocationIds = new List<string>
+                        OverflowLocations = new List<LocationAndScheduleBag>
                         {
-                            "202"
+                            new LocationAndScheduleBag
+                            {
+                                LocationId = "202"
+                            }
                         }
                     }
                 },
@@ -184,12 +208,12 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2.Filters
 
             // The kindergarten group should now have no locations which will
             // cause it to be removed in production.
-            Assert.That.AreEqual( 0, opportunities.Groups[0].LocationIds.Count );
-            Assert.That.AreEqual( 0, opportunities.Groups[0].OverflowLocationIds.Count );
+            Assert.That.AreEqual( 0, opportunities.Groups[0].Locations.Count );
+            Assert.That.AreEqual( 0, opportunities.Groups[0].OverflowLocations.Count );
 
-            Assert.That.AreEqual( 1, opportunities.Groups[1].LocationIds.Count );
-            Assert.That.AreEqual( "202", opportunities.Groups[1].LocationIds[0] );
-            Assert.That.AreEqual( 0, opportunities.Groups[1].OverflowLocationIds.Count );
+            Assert.That.AreEqual( 1, opportunities.Groups[1].Locations.Count );
+            Assert.That.AreEqual( "202", opportunities.Groups[1].Locations[0].LocationId );
+            Assert.That.AreEqual( 0, opportunities.Groups[1].OverflowLocations.Count );
 
             Assert.That.AreEqual( 1, opportunities.Locations.Count );
             Assert.That.AreEqual( "202", opportunities.Locations[0].Id );

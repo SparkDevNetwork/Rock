@@ -1,567 +1,589 @@
-.grid-overflow {
-    overflow-x: auto;
-}
 
-.grid-obsidian {
-    --table-cell-padding-x: 16px;
-    --table-cell-padding-y: 16px;
-    color: var(--color-interface-strongest);
-    margin-bottom: var(--spacing-large);
-}
-
-.grid-obsidian.grid-bordered {
-    box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
-}
-
-.grid-obsidian.grid-bordered {
-    border: 1px solid var(--color-interface-soft);
-    border-radius: 4px;
-}
-
-.grid-heading {
-    background: var(--color-interface-softest);
-    border-radius: 4px 4px 0 0;
-}
-
-.grid-obsidian.grid-sticky > .grid-heading {
-    position: sticky;
-    top: var(--sticky-element-offset);
-    z-index: 10;
-}
-
-.grid-obsidian.grid-sticky .sticky-column-header {
-    position: sticky;
-    top: calc(var(--sticky-element-offset) + 57px);
-    z-index: 9;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading {
-    display: flex;
-    flex-wrap: wrap;
-    border-bottom: 1px solid var(--color-interface-soft);
-    align-items: center;
-    font-size: 18px;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-title {
-    flex-grow: 1;
-    font-size: var(--font-size-h5);
-    font-weight: 500;
-    line-height: 1;
-    padding-left: 24px;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-badges {
-    height: 56px;
-    display: flex;
-    align-items: center;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions {
-    background-color: initial;
-    text-align: initial;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action {
-    width: 56px;
-    height: 56px;
-    margin: 0;
-    border-radius: 0;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.active {
-    background-color: var(--color-interface-soft);
-    color: var(--color-interface-strong);
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add {
-    color: var(--color-info-strong);
-    font-size: 115%;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add:hover {
-    color: var(--color-info-strong);
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action:hover {
-    background-color: var(--color-interface-soft);
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter {
-    display: flex;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search {
-    width: 0;
-    overflow: hidden;
-    transition: width 0.3s ease;
-    display: inline-flex;
-    align-items: stretch;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .grid-quick-filter-search {
-    width: 240px;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .btn-grid-action {
-    background-color: var(--color-interface-soft);
-    color: var(--color-interface-strong);
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper {
-    width: 100%;
-    height: 100%;
-}
-
-.grid-quick-filter-search > .control-wrapper > div {
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    display: flex;
-    align-items: center;
-}
-
-.grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper .form-control {
-    height: 100%;
-    width: 100%;
-    border-radius: 0;
-}
-
-.grid-column-heading {
-    display: flex;
-    font-weight: 500;
-    border-bottom: 1px solid var(--color-interface-soft);
-    color: var(--theme-dark);
-}
-
-.grid-column-header {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 14px;
-    padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
-}
-
-.grid-bordered .grid-column-header {
-    background-color: var(--color-interface-softer);
-}
-
-.grid-column-header.sortable {
-    cursor: pointer;
-    min-width: 120px;
-}
-
-.grid-column-header.sortable:hover {
-    background-color: var(--color-interface-soft);
-}
-
-.grid-column-title {
-    flex: 1 1 auto;
-    overflow: hidden;
-}
-
-.grid-sort-direction {
-    display: flex;
-    align-items: center;
-    transition: transform .11s cubic-bezier(.2, 0, .38, .9);
-    accent-color: var(--color-info-strong);
-}
-
-.grid-sort-direction svg {
-    width: 14px;
-    height: 21px;
-}
-
-.grid-sort-direction.sort-desc {
-    /* transform flip */
-    transform: rotate(180deg);
-    /* transform origin center */
-    transform-origin: center;
-}
-
-.grid-column-header.grid-select-field .checkbox label {
-    margin: 0;
-}
-
-.grid-column-header > .btn-grid-column-filter {
-    border: 0;
-    text-align: center;
-    background-color: transparent;
-    margin-left: 4px;
-    width: 26px;
-    height: 24px;
-    border-radius: 4px;
-    color: var(--color-interface-strong);
-    opacity: 0;
-    transition: opacity 250ms, color 250ms;
-    z-index: 10;
-}
-
-.grid-column-heading:hover .btn-grid-column-filter {
-    opacity: 0.5;
-}
-
-.grid-column-header > .btn-grid-column-filter:hover {
-    opacity: 1;
-    background-color: var(--color-interface-softest);
-}
-
-.grid-column-header > .btn-grid-column-filter svg {
-    width: 14px;
-    height: 14px;
-}
-
-.grid-column-header > .btn-grid-column-filter.active {
-    opacity: 1;
-    color: var(--color-info-strong);
-}
-
-.grid-column-header > .grid-filter-popup {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    margin-top: 6px;
-    min-width: 240px;
-    max-width: 320px;
-    max-height: 400px;
-    background-color: var(--color-interface-softest);
-    border: 1px solid var(--color-interface-soft);
-    border-radius: 0;
-    border-bottom-right-radius: 6px;
-    border-bottom-left-radius: 6px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
-    cursor: initial;
-    font-weight: initial;
-    z-index: 10;
-    /* Temporary Fix Until JS */
-    bottom: 0;
-    transform: translateY(100%);
-}
-
-.grid-column-header > .grid-filter-popup > .grid-filter-popup-content {
-    flex-grow: 1;
-    overflow-y: auto;
-}
-
-.grid-column-header > .grid-filter-popup > .grid-filter-popup-content > .grid-filter-popup-body {
-    margin: 10px;
-    padding: 2px;
-    overflow-x: clip;
-}
-
-.grid-column-header > .grid-filter-popup > .actions {
-    display: flex;
-    border-top: 1px solid var(--color-interface-soft);
-    background-color: var(--color-interface-softer);
-    padding: 8px;
-    gap: 8px;
-}
-
-.grid-column-header > .grid-filter-popup .alert {
-    border-top: 0;
-    box-shadow: none;
-    padding: 8px;
-}
-
-.grid-row {
-    display: flex;
-    background-color: var(--color-interface-softest);
-    border-bottom: 1px solid var(--color-interface-soft);
-    transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
-}
-
-.grid-row.grid-row-selectable {
-    cursor: pointer;
-}
-
-.grid-striped .grid-row.grid-row-even {
-    background-color: var(--color-interface-softer);
-}
-
-.grid-hover .grid-row:hover {
-    background-color: var(--color-interface-soft);
-}
-
-.grid-cell {
-    display: flex;
-    align-items: center;
-    padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
-    line-height: 1.4;
-    align-self: stretch;
-    background-color: inherit;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    min-width: 120px;
-}
-
-.grid-cell.grid-columnreorder {
-    min-width: fit-content;
-}
-
-.grid-select-field {
-    min-width: 60px;
-}
-
-.grid-select-field:first-child {
-    align-items: center;
-    padding-right: calc(var(--table-cell-padding-x) / 2);
-    flex: 0 0 calc(var(--table-cell-padding-x) + 20px) !important;
-}
-
-.grid-columncommand {
-    --table-cell-padding-y: 0;
-    display: flex;
-    align-items: center;
-    padding: 0;
-    min-width: fit-content;
-}
-
-.grid-columncommand .btn {
-    opacity: .4;
-}
-
-.grid-columncommand .btn:hover {
-    opacity: 1;
-}
-
-.grid-columnreorder {
-    align-items: center;
-}
-
-.grid-footing {
-    color: var(--color-interface-strongest);
-    background-color: var(--color-interface-softest);
-    border-radius: 0 0 4px 4px;
-    overflow: hidden;
-}
-
-.grid-paging-footer {
-    display: flex;
-    padding: 8px var(--table-cell-padding-x);
-    align-items: center;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes {
-    flex: 1 1 auto;
-    display: flex;
-    justify-content: start;
-    align-items: center;
-    font-size: 14px;
-    line-height: 16px;
-    gap: 8px;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes .form-control {
-    flex: 0 0 80px;
-}
-
-.grid-page-size-picker .btn {
-    font-weight: 400;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker {
-    display: inline-flex;
-    justify-content: center;
-    align-items: stretch;
-    line-height: 1;
-    color: var(--color-interface-stronger);
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button {
-    display: inline-flex;
-    justify-content: center;
-    border: 1px solid var(--color-interface-soft);
-    background-color: transparent;
-    padding: 8px 12px;
-    font-size: 14px;
-    line-height: 16px;
-    min-width: 2.75em;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button:hover {
-    background-color: var(--color-interface-softer);
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button ~ button {
-    margin-left: -1px;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker .prev {
-    border-radius: 4px 0 0 4px;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker .next {
-    border-radius: 0 4px 4px 0;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button.disabled {
-    color: var(--color-interface-strong);
-    pointer-events: none;
-}
-
-.grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button.active {
-    background-color: var(--color-interface-soft);
-}
-
-.grid-obsidian .grid-cell .highlight-detail {
-    color: var(--color-interface-strong);
-    font-size: 14px;
-}
-
-.grid-obsidian .grid-cell .highlight-title {
-    font-weight: 600;
-}
-
-@media (max-width: 767px) {
-    .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > .page-num {
-        display: none;
-    }
-}
-
-@media (max-width:992px) {
-    .grid-obsidian.grid-sticky .sticky-column-header {
-        top: calc(var(--sticky-element-offset) + 114px);
-    }
-}
-
-.grid-actions {
-    text-align:       right;
-    background-color: var(--color-interface-softest);
-  
-    .btn {
-      margin-left:    var(--spacing-xsmall);
+// Wrap in obsidian block to win over specificity over the style in grid.obs
+.obsidian-block {
+
+//     .grid-overflow {
+//         overflow-x: auto;
+//     }
+    
+//     .grid-obsidian {
+//         --table-cell-padding-x: var(--spacing-medium);
+//         --table-cell-padding-y: var(--spacing-medium);
+//         color: var(--color-interface-strongest);
+//         margin-bottom: var(--spacing-large);
+//     }
+    
+//     .grid-obsidian.grid-bordered {
+//         box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.03), 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+//     }
+    
+//     .grid-obsidian.grid-bordered {
+//         border: 1px solid var(--color-interface-soft);
+//         border-radius: var(--spacing-xsmall);
+//     }
+    
+    .grid-heading {
+        background: var(--color-interface-softest);
+        border-radius: var(--rounded-xsmall) var(--spacing-xsmall) 0 0;
     }
     
-    &:hover {
-      color:          var(--color-interface-strong);
-    }
-  
-    .btn-add:hover {
-      color: #16c98d; // Need to hard code to  make the UI looks better.
-    }
-  
-    .btn-grid-action {
-      padding:          5px 7px; // Need to hard coded so that the action btn in the group scheduler takes more space, for the "filter options" button to fit in 
-      margin:           0 0 0 2px;
-      font-size:        var(--font-size-regular);
-      border:           0;
-      box-shadow:       none;
-      transition:       color 250ms;
-      color:            var(--color-interface-medium);
-      background-color: transparent;
-      border-color:     transparent;
-    }
-  
-    .btn-grid-custom-action {
-      margin-bottom: var(--spacing-xsmall);
-    }
-}
-
-.grid-columncommand .btn-danger {
-    color:              var(--color-interface-strong);
-    background-color:   transparent;
-    border-color:       transparent;
+//     .grid-obsidian.grid-sticky > .grid-heading {
+//         position: sticky;
+//         top: var(--sticky-element-offset);
+//         z-index: 10;
+//     }
     
-    &:focus,
-    &.focus {
-      color:            var(--color-interface-softest);
-      background-color: var(--color-danger-soft); // TODO darken by 10% when available
-      border-color:     var(--color-danger-stronger);
+//     .grid-obsidian.grid-sticky .sticky-column-header {
+//         position: sticky;
+//         top: calc(var(--sticky-element-offset) + 57px);
+//         z-index: 9;
+//     }
+    
+    .grid-obsidian > .grid-heading > .grid-title-heading {
+        display: flex;
+        flex-wrap: wrap;
+        // border-bottom: 1px solid var(--color-interface-soft);
+        align-items: center;
+        font-size: var(--font-size-h5);
     }
     
-    &:hover {
-      color:            var(--color-interface-softest);
-      background-color: var(--color-danger-soft); // TODO darken by 10% when available
-      border-color:     var(--color-danger-stronger);
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-title {
+//         flex-grow: 1;
+//         font-size: var(--font-size-h5);
+//         font-weight: 500;
+//         line-height: 1;
+//         padding-left: var(--spacing-large);
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-badges {
+//         height: 56px;
+//         display: flex;
+//         align-items: center;
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions {
+//         background-color: initial;
+//         text-align: initial;
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action {
+//         width: 56px;
+//         height: 56px;
+//         margin: 0;
+//         border-radius: 0;
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.active {
+//         background-color: var(--color-interface-soft);
+//         color: var(--color-interface-strong);
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add {
+//         color: var(--color-info-strong);
+//         font-size: 115%;
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action.btn-add:hover {
+//         color: var(--color-info-strong);
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-actions .btn-grid-action:hover {
+//         background-color: var(--color-interface-soft);
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter {
+//         display: flex;
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search {
+//         width: 0;
+//         overflow: hidden;
+//         transition: width 0.3s ease;
+//         display: inline-flex;
+//         align-items: stretch;
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .grid-quick-filter-search {
+//         width: 240px;
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter.active > .btn-grid-action {
+//         background-color: var(--color-interface-soft);
+//         color: var(--color-interface-strong);
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper {
+//         width: 100%;
+//         height: 100%;
+//     }
+    
+//     .grid-quick-filter-search > .control-wrapper > div {
+//         width: 100%;
+//         height: 100%;
+//         padding: 0;
+//         display: flex;
+//         align-items: center;
+//     }
+    
+//     .grid-obsidian > .grid-heading > .grid-title-heading > .grid-quick-filter > .grid-quick-filter-search > .control-wrapper .form-control {
+//         height: 100%;
+//         width: 100%;
+//         border-radius: 0;
+//     }
+    
+    .grid-column-heading {
+      display: flex;
+      font-weight: 500;
+      color: var(--theme-dark);
+      // border-bottom: 1px solid var(--color-interface-soft);
+    }
+    .grid-column-heading > *{
+      border-bottom: 1px solid var(--color-interface-soft);
     }
     
-    &:active,
-    &.active,
-    .open > .dropdown-toggle & {
-      color:            var(--color-interface-softest); 
-      background-color: var(--color-danger-soft); // TODO this uses darken, which is a Less function
-      background-image: none;
-      border-color:     var(--color-danger-stronger);
-  
-      &:hover,
-      &:focus,
-      &.focus {
-        color:            var(--color-interface-softest);
-        background-color: var(--color-danger-medium);
-        border-color:     var(--color-danger-stronger);
-      }
-    }
+//     .grid-column-header {
+//         position: relative;
+//         display: flex;
+//         justify-content: center;
+//         align-items: center;
+//         font-size: var(--font-size-small);
+//         padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+//     }
     
-    &.disabled,
-    &[disabled],
-    fieldset[disabled] & {
-      &:hover,
-      &:focus,
-      &.focus {
+//     .grid-bordered .grid-column-header {
+//         background-color: var(--color-interface-softer);
+//     }
+    
+//     .grid-column-header.sortable {
+//         cursor: pointer;
+//         min-width: 120px;
+//     }
+    
+//     .grid-column-header.sortable:hover {
+//         background-color: var(--color-interface-soft);
+//     }
+    
+//     .grid-column-title {
+//         flex: 1 1 auto;
+//         overflow: hidden;
+//     }
+    
+//     .grid-sort-direction {
+//         display: flex;
+//         align-items: center;
+//         transition: transform .11s cubic-bezier(.2, 0, .38, .9);
+//         accent-color: var(--color-info-strong);
+//     }
+    
+//     .grid-sort-direction svg {
+//         width: 14px;
+//         height: 21px;
+//     }
+    
+//     .grid-sort-direction.sort-desc {
+//         /* transform flip */
+//         transform: rotate(180deg);
+//         /* transform origin center */
+//         transform-origin: center;
+//     }
+    
+//     .grid-column-header.grid-select-field .checkbox label {
+//         margin: 0;
+//     }
+    
+//     .grid-column-header > .btn-grid-column-filter {
+//         border: 0;
+//         text-align: center;
+//         background-color: transparent;
+//         margin-left: var(--spacing-tiny);
+//         width: 26px;
+//         height: 24px;
+//         border-radius: var(--rounded-xsmall);
+//         color: var(--color-interface-strong);
+//         opacity: 0;
+//         transition: opacity 250ms, color 250ms;
+//         z-index: 10;
+//     }
+    
+//     .grid-column-heading:hover .btn-grid-column-filter {
+//         opacity: 0.5;
+//     }
+    
+//     .grid-column-header > .btn-grid-column-filter:hover {
+//         opacity: 1;
+//         background-color: var(--color-interface-softest);
+//     }
+    
+//     .grid-column-header > .btn-grid-column-filter svg {
+//         width: 14px;
+//         height: 14px;
+//     }
+    
+//     .grid-column-header > .btn-grid-column-filter.active {
+//         opacity: 1;
+//         color: var(--color-info-strong);
+//     }
+    
+//     .grid-column-header > .grid-filter-popup {
+//         position: absolute;
+//         display: flex;
+//         flex-direction: column;
+//         margin-top: 6px;
+//         min-width: 240px;
+//         max-width: 320px;
+//         max-height: 400px;
+//         background-color: var(--color-interface-softest);
+//         border: 1px solid var(--color-interface-soft);
+//         border-radius: 0;
+//         border-bottom-right-radius: var(--rounded-small);
+//         border-bottom-left-radius: var(--rounded-small);
+//         box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+//         cursor: initial;
+//         font-weight: initial;
+//         z-index: 20;
+//         /* Temporary Fix Until JS */
+//         bottom: 0;
+//         transform: translateY(100%);
+//     }
+    
+//     .grid-column-header > .grid-filter-popup > .grid-filter-popup-content {
+//         flex-grow: 1;
+//         overflow-y: auto;
+//     }
+    
+//     .grid-column-header > .grid-filter-popup > .grid-filter-popup-content > .grid-filter-popup-body {
+//         margin: 10px;
+//         padding: 2px;
+//         overflow-x: clip;
+//     }
+    
+//     .grid-column-header > .grid-filter-popup > .actions {
+//         display: flex;
+//         border-top: 1px solid var(--color-interface-soft);
+//         background-color: var(--color-interface-softer);
+//         padding: var(--spacing-xsmall);
+//         gap: var(--spacing-xsmall);
+//     }
+    
+//     .grid-column-header > .grid-filter-popup .alert {
+//         border-top: 0;
+//         box-shadow: none;
+//         padding: var(--spacing-xsmall);
+//     }
+    
+    .grid-row {
+        display: flex;
         background-color: var(--color-interface-softest);
-        border-color:     var(--color-interface-soft);
-      }
+        transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
+        // border-bottom: 1px solid var(--color-interface-soft);
     }
     
-    .badge {
-      color:            var(--color-interface-softest);
-      background-color: var(--color-interface-stronger);
+//     .grid-row:hover > .grid-cell {
+//         background-color: rgba(85, 150, 230, .1);
+//     }
+    
+//     .grid-row.grid-row-selectable {
+//         cursor: pointer;
+//     }
+    
+//     .grid-striped .grid-row.grid-row-even {
+//         background-color: var(--color-interface-softer);
+//     }
+    
+//     .grid-hover .grid-row:hover {
+//         background-color: var(--color-interface-softer);
+//     }
+    
+    .grid-cell {
+        border-bottom: 1px solid var(--color-interface-soft);
+        display: flex;
+        align-items: center;
+        padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+        line-height: 1.4;
+        align-self: stretch;
+        background-color: inherit;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        min-width: 120px;
+    }
+    
+//     .grid-cell.grid-columnreorder {
+//         min-width: fit-content;
+//     }
+    
+    .grid-select-field {
+        min-width: 60px;
+    }
+    
+//     .grid-select-field:first-child {
+//         align-items: center;
+//         padding-right: calc(var(--table-cell-padding-x) / 2);
+//         flex: 0 0 calc(var(--table-cell-padding-x) + 20px) !important;
+//     }
+    
+//     .grid-columncommand {
+//         --table-cell-padding-y: 0;
+//         display: flex;
+//         align-items: center;
+//         padding: 0;
+//         min-width: fit-content;
+//     }
+    
+//     .grid-columncommand .btn {
+//         opacity: .4;
+//     }
+    
+//     .grid-columncommand .btn:hover {
+//         opacity: 1;
+//     }
+    
+//     .grid-columnreorder {
+//         align-items: center;
+//     }
+    
+    .grid-footing {
+        color: var(--color-interface-strongest);
+        background-color: var(--color-interface-softest);
+        border-radius: 0 0 var(--rounded-xsmall) var(--rounded-xsmall);
+        overflow: hidden;
+    }
+    
+//     .grid-paging-footer {
+//         display: flex;
+//         padding: var(--spacing-xsmall) var(--table-cell-padding-x);
+//         align-items: center;
+//     }
+    
+//     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes {
+//         flex: 1 1 auto;
+//         display: flex;
+//         justify-content: start;
+//         align-items: center;
+//         font-size: var(--font-size-small);
+//         line-height: 16px;
+//         gap: var(--spacing-xsmall);
+//     }
+    
+//     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-sizes .form-control {
+//         flex: 0 0 80px;
+//     }
+    
+//     .grid-page-size-picker .btn {
+//         font-weight: 400;
+//     }
+    
+//     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker {
+//         display: inline-flex;
+//         justify-content: center;
+//         align-items: stretch;
+//         line-height: 1;
+//         color: var(--color-interface-stronger);
+//     }
+    
+//     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button {
+//         display: inline-flex;
+//         justify-content: center;
+//         border: 1px solid var(--color-interface-soft);
+//         background-color: transparent;
+//         padding: var(--spacing-xsmall) var(--spacing-small);
+//         font-size: var(--font-size-small);
+//         line-height: 16px;
+//         min-width: 2.75em;
+//     }
+    
+//     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button:hover {
+//         background-color: var(--color-interface-softer);
+//     }
+    
+//     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button ~ button {
+//         margin-left: -1px;
+//     }
+    
+//     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker .prev {
+//         border-radius: var(--rounded-xsmall) 0 0 var(--rounded-xsmall);
+//     }
+    
+//     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker .next {
+//         border-radius: 0 var(--rounded-xsmall) var(--rounded-xsmall) 0;
+//     }
+    
+//     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button.disabled {
+//         color: var(--color-interface-strong);
+//         pointer-events: none;
+//     }
+    
+//     .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > button.active {
+//         background-color: var(--color-interface-soft);
+//     }
+    
+//     .grid-obsidian .grid-cell .highlight-detail {
+//         color: var(--color-interface-strong);
+//         font-size: var(--font-size-small);
+//     }
+    
+//     .grid-obsidian .grid-cell .highlight-title {
+//         font-weight: 600;
+//     }
+    
+//     @media (max-width: 767px) {
+//         .grid-obsidian > .grid-footing > .grid-paging-footer > .grid-page-picker > .page-num {
+//             display: none;
+//         }
+//     }
+    
+//     @media (max-width:992px) {
+//         .grid-obsidian.grid-sticky .sticky-column-header {
+//             top: calc(var(--sticky-element-offset) + 114px);
+//         }
+//     }
+    
+//     .grid-actions {
+//         text-align:       right;
+//         background-color: var(--color-interface-softest);
+      
+//         .btn {
+//           margin-left:    var(--spacing-xsmall);
+//         }
+        
+//         &:hover {
+//           color:          var(--color-interface-strong);
+//         }
+      
+//         .btn-add:hover {
+//           color: #16c98d; // Need to hard code to  make the UI looks better.
+//         }
+      
+//         .btn-grid-action {
+//           padding:          5px 7px; // Need to hard coded so that the action btn in the group scheduler takes more space, for the "filter options" button to fit in 
+//           margin:           0 0 0 2px;
+//           font-size:        var(--font-size-regular);
+//           border:           0;
+//           box-shadow:       none;
+//           transition:       color 250ms;
+//           color:            var(--color-interface-medium);
+//           background-color: transparent;
+//           border-color:     transparent;
+//         }
+      
+//         .btn-grid-custom-action {
+//           margin-bottom: var(--spacing-xsmall);
+//         }
+//     }
+    
+//     .grid-columncommand .btn-danger {
+//         color:              var(--color-interface-strong);
+//         background-color:   transparent;
+//         border-color:       transparent;
+        
+//         &:focus,
+//         &.focus {
+//           color:            var(--color-interface-softest);
+//           background-color: var(--color-danger-soft); // TODO darken by 10% when available
+//           border-color:     var(--color-danger-stronger);
+//         }
+        
+//         &:hover {
+//           color:            var(--color-interface-softest);
+//           background-color: var(--color-danger-soft); // TODO darken by 10% when available
+//           border-color:     var(--color-danger-stronger);
+//         }
+        
+//         &:active,
+//         &.active,
+//         .open > .dropdown-toggle & {
+//           color:            var(--color-interface-softest); 
+//           background-color: var(--color-danger-soft); // TODO this uses darken, which is a Less function
+//           background-image: none;
+//           border-color:     var(--color-danger-stronger);
+      
+//           &:hover,
+//           &:focus,
+//           &.focus {
+//             color:            var(--color-interface-softest);
+//             background-color: var(--color-danger-medium);
+//             border-color:     var(--color-danger-stronger);
+//           }
+//         }
+        
+//         &.disabled,
+//         &[disabled],
+//         fieldset[disabled] & {
+//           &:hover,
+//           &:focus,
+//           &.focus {
+//             background-color: var(--color-interface-softest);
+//             border-color:     var(--color-interface-soft);
+//           }
+//         }
+        
+//         .badge {
+//           color:            var(--color-interface-softest);
+//           background-color: var(--color-interface-stronger);
+//         }
+//     }
+    
+//     .grid-columncommand {
+//         .btn {
+//             width:    34px;
+//             padding:  var(--spacing-xsmall) 0;
+//         }
+    
+//         .btn-default,
+//         .btn-security,
+//         .btn-danger {
+//             background-color: transparent;
+//             border-color:     transparent;
+//             box-shadow:       none;
+//         }
+    
+//         .btn-default,
+//         .btn-security {
+//             &:focus,
+//             &:hover,
+//             &:active {
+//             background-color: var(--color-danger-softer); // TODO darken ui softest it by 10%
+//             }
+//         }
+    
+//         .btn-danger {
+//             color: var(--color-interface-strong);
+//             background: transparent;
+//             &:active,
+//             &:hover {
+//             color:        var(--color-danger-strong);
+//             background:   var(--color-danger-soft); // TODO fade by 10%
+//             border-color: transparent;
+//             }
+    
+//             &:focus,
+//             &:active &:active:hover,
+//             &:active:focus {
+//             color:        var(--color-danger-strong);
+//             background:   var(--color-danger-soft);
+//             border-color: var(--color-danger-strong);
+//             }
+//         }
+//     }
+    
+    .grid-light-action-row {
+      justify-content: flex-end;
+    }
+    
+    .grid-light-action-row .grid-actions {
+      background-color: inherit;
+      padding: calc(var(--table-cell-padding-y) * .25) 0;
+    }
+    
+    .grid-light-action-row .grid-actions:last-child {
+      padding-right: var(--table-cell-padding-x);
+    }
+
+    .grid-row:has(.table-empty) {
+        border-bottom: 1px solid var(--color-interface-soft);
+    }
+
+    .grid-cell.table-empty {
+        border-bottom: none;
     }
 }
 
-.grid-columncommand {
-    .btn {
-        width:    34px;
-        padding:  var(--spacing-xsmall) 0;
-    }
-
-    .btn-default,
-    .btn-security,
-    .btn-danger {
-        background-color: transparent;
-        border-color:     transparent;
-        box-shadow:       none;
-    }
-
-    .btn-default,
-    .btn-security {
-        &:focus,
-        &:hover,
-        &:active {
-        background-color: var(--color-danger-softer); // TODO darken ui softest it by 10%
-        }
-    }
-
-    .btn-danger {
-        color: var(--color-interface-strong);
-        background: transparent;
-        &:active,
-        &:hover {
-        color:        var(--color-danger-strong);
-        background:   var(--color-danger-soft); // TODO fade by 10%
-        border-color: transparent;
-        }
-
-        &:focus,
-        &:active &:active:hover,
-        &:active:focus {
-        color:        var(--color-danger-strong);
-        background:   var(--color-danger-soft);
-        border-color: var(--color-danger-strong);
-        }
-    }
-}
-
-.grid-light-action-row {
-  justify-content: flex-end;
-}
-
-.grid-light-action-row .grid-actions {
-  background-color: inherit;
-  padding: calc(var(--table-cell-padding-y) * .25) 0;
-}
-
-.grid-light-action-row .grid-actions:last-child {
-  padding-right: var(--table-cell-padding-x);
-}

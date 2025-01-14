@@ -123,6 +123,12 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<SignalType> GetOrderedListQueryable( IQueryable<SignalType> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( s => s.Order ).ThenBy( s => s.Name );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<SignalType> GetGridBuilder()
         {
             return new GridBuilder<SignalType>()

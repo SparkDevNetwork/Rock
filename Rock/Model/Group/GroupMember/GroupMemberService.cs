@@ -28,6 +28,14 @@ using Z.EntityFramework.Plus;
 
 namespace Rock.Model
 {
+    /*
+    12/16/2024 - DSH
+
+    The GroupMember model participates in the the TPT (Table-Per-Type) pattern. This
+    can cause some rare unexpected results. See the engineering note above the
+    Group class for details.
+    */
+
     /// <summary>
     /// The data access/service class for <see cref="Rock.Model.GroupMember"/> entity objects. 
     /// </summary>
@@ -781,18 +789,31 @@ namespace Rock.Model
         /// <param name="relationshipRoleId">The relationship role identifier.</param>
         public void DeleteKnownRelationship( int personId, int relatedPersonId, int relationshipRoleId )
         {
+            DeleteKnownRelationships( personId, relatedPersonId, new List<int> { relationshipRoleId } );
+        }
+
+        /// <summary>
+        /// Deletes the known relationship.
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="relatedPersonId">The related person identifier.</param>
+        /// <param name="relationshipRoleIds">The relationship role identifiers.</param>
+        internal void DeleteKnownRelationships( int personId, int relatedPersonId, List<int> relationshipRoleIds )
+        {
             var groupMemberService = this;
             var rockContext = this.Context as RockContext;
 
             var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
             var ownerRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid() ) );
-            var relationshipRole = knownRelationshipGroupType.Roles.FirstOrDefault( r => r.Id == relationshipRoleId );
+            var validRoleIds = knownRelationshipGroupType.Roles.Select( r => r.Id ).ToList();
+            var hasInvalidRole = relationshipRoleIds.Any( roleId => !validRoleIds.Contains( roleId ) );
+
             if ( ownerRole == null )
             {
                 throw new Exception( "Unable to find known relationships owner role" );
             }
 
-            if ( relationshipRole == null )
+            if ( hasInvalidRole )
             {
                 throw new Exception( "Specified relationshipRoleId is not a known relationships role" );
             }
@@ -811,13 +832,21 @@ namespace Rock.Model
             }
 
             // lookup the relationship to delete
-            var relationshipMember = groupMemberService.Queryable( true )
-                .FirstOrDefault( m =>
+            var relationshipMemberQry = groupMemberService.Queryable( true )
+                .Where( m =>
                     m.GroupId == knownRelationshipGroup.Id &&
-                    m.PersonId == relatedPersonId &&
-                    m.GroupRoleId == relationshipRoleId );
+                    m.PersonId == relatedPersonId );
 
-            if ( relationshipMember != null )
+            if ( relationshipRoleIds.Count == 1 )
+            {
+                relationshipMemberQry = relationshipMemberQry.Where( m => m.GroupRoleId == relationshipRoleIds[0] );
+            }
+            else
+            {
+                relationshipMemberQry = relationshipMemberQry.Where( m => relationshipRoleIds.Contains( m.GroupRoleId ) );
+            }
+
+            foreach ( var relationshipMember in relationshipMemberQry )
             {
                 var inverseGroupMember = groupMemberService.GetInverseRelationship( relationshipMember, true );
                 if ( inverseGroupMember != null )
@@ -826,8 +855,9 @@ namespace Rock.Model
                 }
 
                 groupMemberService.Delete( relationshipMember );
-                rockContext.SaveChanges();
             }
+
+            rockContext.SaveChanges();
         }
 
         /// <summary>

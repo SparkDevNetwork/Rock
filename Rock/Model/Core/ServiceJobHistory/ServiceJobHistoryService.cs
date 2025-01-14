@@ -197,6 +197,42 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the Service job history record before the latest one.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        /// <param name="job">The job.</param>
+        [RockInternal( "1.17" )]
+        internal ServiceJobHistory GetServiceJobHistoryForLastRun( ServiceJob job )
+        {
+            // Check if there is an incomplete job history record for this job.
+            var jobHistoryQuery = this.AsNoFilter()
+                .Where( h => h.ServiceJobId == job.Id )
+                .Where( h => h.StartDateTime.HasValue );
+
+            if ( job.LastRunDurationSeconds.HasValue && job.LastRunDurationSeconds > 0 )
+            {
+                jobHistoryQuery = jobHistoryQuery.Where( h => h.StartDateTime < job.LastRunDateTime );
+            }
+            else
+            {
+                jobHistoryQuery = jobHistoryQuery.Where( h => h.StartDateTime <= job.LastRunDateTime );
+            }
+
+            // Get the previous job history record before the latest one.
+            return jobHistoryQuery
+                .OrderByDescending( h => h.StartDateTime.Value )
+                .Skip( 1 )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
         /// Gets the started date time of a job's last run.
         /// </summary>
         /// <remarks>

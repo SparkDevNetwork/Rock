@@ -35,17 +35,15 @@ export const EditComponent = defineComponent({
 
     setup(props, { emit }) {
         const internalValue = ref<ListItemBag>({});
-        const groupTypeValue = ref<ListItemBag>({});
-
         const groupTypeGuid = computed<Guid | null>(() => toGuidOrNull(groupTypeValue.value?.value));
 
         watch(() => props.modelValue, () => {
             internalValue.value = JSON.parse(props.modelValue || "{}");
         }, { immediate: true });
 
-        watch(() => props.configurationValues, () => {
-            groupTypeValue.value = JSON.parse(props.configurationValues[ConfigurationValueKey.GroupType] || "{}");
-        }, { immediate: true });
+        const groupTypeValue = computed((): ListItemBag => {
+            return JSON.parse(props.configurationValues[ConfigurationValueKey.GroupType] || "{}");
+        });
 
         watch(() => internalValue.value, () => {
             emit("update:modelValue", JSON.stringify(internalValue.value));

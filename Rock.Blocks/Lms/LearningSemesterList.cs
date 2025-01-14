@@ -95,16 +95,13 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningSemesterListOptionsBag();
 
-            var progamInfo = new LearningProgramService(RockContext).GetSelect(PageParameter(PageParameterKey.LearningProgramId), p => new
-            {
-                p.Id,
-                p.Name
-            } );
+            var progam = new LearningProgramService( RockContext ).Get( PageParameter( PageParameterKey.LearningProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( progamInfo != null )
+            if ( progam != null )
             {
-                options.LearningProgramIdKey = Rock.Utility.IdHasher.Instance.GetHash( progamInfo.Id );
-                options.LearningProgramName = progamInfo.Name;
+                options.CanEditProgram = progam.IsAuthorized( Authorization.EDIT, GetCurrentPerson() );
+                options.LearningProgramIdKey = Rock.Utility.IdHasher.Instance.GetHash( progam.Id );
+                options.LearningProgramName = progam.Name;
             }
 
             return options;
@@ -139,26 +136,25 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningSemester> GetListQueryable( RockContext rockContext )
         {
-            var entityId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
+            var entity = new LearningProgramService( rockContext ).Get(
+                PageParameter( PageParameterKey.LearningProgramId ),
+                !this.PageCache.Layout.Site.DisablePredictableIds );
 
-            // If the PageParameter has a value then use that
-            // otherwise try to get the Id for filtering from the ContextEntity.
-            if ( entityId > 0 )
+            // Return an empty list if no entity or the current person is not authorized to view the program.
+            if ( entity == null || !entity.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
             {
-                return base.GetListQueryable( rockContext )
-                .Include( a => a.LearningClasses )
-                .Where( a => a.LearningProgramId == entityId );
+                return new List<LearningSemester>().AsQueryable();
             }
 
-            var contextEntity = RequestContext.GetContextEntity<LearningProgram>();
-            if ( contextEntity != null && contextEntity.Id > 0 )
-            {
-                return base.GetListQueryable( rockContext )
+            return base.GetListQueryable( rockContext )
                 .Include( a => a.LearningClasses )
-                .Where( a => a.LearningProgramId == contextEntity.Id );
-            }
+                .Where( a => a.LearningProgramId == entity.Id );
+        }
 
-            return new List<LearningSemester>().AsQueryable();
+        /// <inheritdoc/>
+        protected override IQueryable<LearningSemester> GetOrderedListQueryable( IQueryable<LearningSemester> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.StartDate );
         }
 
         /// <inheritdoc/>
@@ -198,7 +194,7 @@ namespace Rock.Blocks.Lms
 
                 if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${LearningSemester.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {LearningSemester.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

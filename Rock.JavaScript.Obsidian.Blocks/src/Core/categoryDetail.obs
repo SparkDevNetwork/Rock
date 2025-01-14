@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
@@ -22,7 +22,7 @@
                  @edit="onEdit"
                  @save="onSave">
             <template #view>
-            <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab">
+            <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab" selectedTabQueryParameterKey="tab">
                 <template #tabpane="{ item }">
                     <div v-if="item === 'Details'">
                         <ViewPanel :modelValue="categoryViewBag" :options="options"  />
@@ -30,6 +30,7 @@
                     <div v-else-if="item === 'Child Categories'">
                         <span class="ml-4">Below are the child categories for the {{ panelName }}. From here you can add, delete or reorder the categories as needed.</span>
                         <Grid light
+                            v-if="!isLoadingChildCategories"
                             :data="gridData"
                             keyField="idKey"
                             itemTerm="Category"
@@ -46,14 +47,14 @@
                             <Column name="name"
                                     title="Category"
                                     field="name"
-                                    :filter="textValueFilter"
                                     width="15%"
-                                    visiblePriority="lg">
+                                    :filter="textValueFilter"
+                                    visiblePriority="xs">
                             </Column>
 
-                            <AttributeColumns :attributes="gridDefinition?.attributeFields ?? []" />
+                            <AttributeColumns visiblePriority="md" :attributes="gridDefinition?.attributeFields ?? []" />
 
-                            <DeleteColumn v-if="categoryViewBag?.isDeletable" @click="onDeleteChildCategoryClick" :rowDisabled="(row) => row.isSystem === true"  />
+                            <DeleteColumn visiblePriority="xs" @click="onDeleteChildCategoryClick" :rowDisabled="(row) => row.isSystem === true"  />
 
                             <template #gridFooterAppend>
                                 <div class="add-button pull-right">
@@ -82,7 +83,7 @@
 
 </style>
 <script setup lang="ts">
-    import { computed, reactive, ref, watch } from "vue";
+    import { computed, reactive, ref } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -99,6 +100,7 @@
     import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
 
     const config = useConfigurationValues<DetailBlockBox<CategoryBag, CategoryDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -107,6 +109,7 @@
 
     const blockError = ref("");
     const errorMessage = ref("");
+    const isLoadingChildCategories = ref(false);
 
     const categoryViewBag = ref(config.entity);
     const categoryEditBag = ref<ValidPropertiesBox<CategoryBag>>({
@@ -123,14 +126,7 @@
         entity: categoryEditBag
     });
     const tabs = ref(["Details", "Child Categories"]);
-    const selectedTab = ref("Details");
-    let hasLoadedChildCategories = false;
-
-    watch(selectedTab, () => {
-        if (!hasLoadedChildCategories) {
-            loadGridData();
-        }
-    });
+    const selectedTab = ref(new URLSearchParams(window.location.search).get("tab") ?? "Details");
 
     let gridData: GridDataBag | undefined;
     const gridDefinition = ref<GridDefinitionBag | undefined>();
@@ -298,13 +294,14 @@
      * Called when the grid is requesting the row data be loaded.
      */
      async function loadGridData(): Promise<GridDataBag> {
+        isLoadingChildCategories.value = true;
         const result = await invokeBlockAction<GridDataBag>("GetChildCategories", {
             idKey: categoryViewBag.value?.idKey ?? ""
         });
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
-            hasLoadedChildCategories = true;
+            isLoadingChildCategories.value = false;
             return gridData;
         }
         else {
@@ -317,6 +314,7 @@
      * happens only if they have confirmed the delete action.
      */
      async function onDeleteChildCategoryClick(key: string): Promise<void> {
+        isLoadingChildCategories.value = true;
         const result = await invokeBlockAction<string>("Delete", {
             key
         });
@@ -333,6 +331,8 @@
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to delete category.");
         }
+
+        isLoadingChildCategories.value = false;
     }
 
     /** Handles the onNewChildCategoryClick event. Navigates to the Category Detail page to add a new record. */
@@ -376,7 +376,6 @@
 
             const navigationUrl = currentPageTemplate.replace(categoryIdRouteParamKey, categoryId.toString()) + "?" + params.toString();
 
-            console.warn("navigationUrl", navigationUrl);
             window.location.href = navigationUrl;
         }
     }
@@ -406,6 +405,35 @@
 
     // #endregion
 
+    // #region Watches
+
+    // const backButtonClicked = ref(false);
+    // function updateUrlWithSelectedTab(): void {
+    //     const queryParams = new URLSearchParams(window.location.search);
+    //     queryParams.set("tab", selectedTab.value ?? "");
+    //     history.pushState(null, "", "?" + queryParams.toString());
+    // }
+
+    // watch(selectedTab, (current, previous) => {
+    //     if (current !== previous && !backButtonClicked.value){
+    //         updateUrlWithSelectedTab();
+    //     }
+    // });
+
+    // #endregion
+
+    // // Listen for the browser back button click and update the selected tab if necessary.
+    // window.addEventListener("popstate", function () {
+    //     const tab = new URLSearchParams(window.location.search).get("tab") ?? "";
+
+    //     if (tab && tab !== selectedTab.value) {
+    //         backButtonClicked.value = true;
+    //         selectedTab.value = tab;
+    //         nextTick(() => backButtonClicked.value = false);
+    //     }
+    // });
+
+
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -421,4 +449,6 @@
     }
 
     getGridDefinition();
+
+    loadGridData();
 </script>

@@ -13,8 +13,8 @@
             </div>
 
             <div class="col-md-6">
-                <div  class="grid">
-                    <Grid v-if="isGridVisible" :data="attributesGridData" keyField="key" itemTerm="Attribute" liveUpdates light @addItem="onAddAttribute">
+                <div class="grid">
+                    <Grid v-if="isGridVisible" :data="attributesGridData" keyField="key" itemTerm="Attribute" liveUpdates light :onAddItem="!isStandAlone ? onAddAttribute : undefined">
                         <ReorderColumn v-if="!isStandAlone" @orderChanged="onOrderChanged" />
                         <TextColumn field="name" name="attribute" title="Attributes for Defined Type" />
                         <EditColumn v-if="!isStandAlone" @click="onEditAttribute" />
@@ -22,14 +22,6 @@
                     </Grid>
                 </div>
                 <Modal v-model="isAttributeModalOpen" title="Defined Type Attributes" saveText="Save" @save="onSaveAttribute">
-                    <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                        Please correct the following:
-                        <ul>
-                            <li v-for="error of attributeErrors">
-                                {{ error }}
-                            </li>
-                        </ul>
-                    </NotificationBox>
                     <AttributeEditor v-model="definedTypeAttribute" :reservedKeyNames="reservedKeyNames" />
                 </Modal>
 
@@ -42,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, reactive, ref } from "vue";
+    import { computed, PropType, reactive, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
@@ -56,6 +48,7 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 
     const props = defineProps({
         modelValue: {
@@ -78,7 +71,6 @@
     const isAttributeModalOpen = ref(false);
     const definedTypeAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
-    const attributeErrors = ref<string[]>([]);
     const invokeBlockAction = useInvokeBlockAction();
 
     // #endregion
@@ -117,7 +109,7 @@
             valueBuilder.addTextValue("Category", props.modelValue.category.text);
         }
 
-        if(props.modelValue.reportDetailPageUrl) {
+        if (props.modelValue.reportDetailPageUrl) {
             valueBuilder.addHtmlValue("Categorized Values", `<a href='${props.modelValue.reportDetailPageUrl}'>Edit Value Categories</a>`);
         }
 
@@ -155,13 +147,13 @@
     // #region Event Handlers
     // #region Event Handlers
     async function onAddAttribute(): Promise<void> {
-        definedTypeAttribute.value = {} as PublicEditableAttributeBag;
+        definedTypeAttribute.value = {
+            fieldTypeGuid: FieldType.Text
+        } as PublicEditableAttributeBag;
         isAttributeModalOpen.value = true;
-        attributeErrors.value = [];
     }
 
     const onEditAttribute = async (key: string): Promise<void> => {
-        attributeErrors.value = [];
         const selectedAttribute = definedTypeAttributes.value.find(x => x.key === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute) {
@@ -178,7 +170,6 @@
         isAttributeModalOpen.value = false;
 
         const deletedAttribute = definedTypeAttributes.value.find(a => a.key == key);
-        reservedKeyNames.value = definedTypeAttributes.value.map(k => k.key!);
 
         if (deletedAttribute) {
             if (deletedAttribute.guid) {
@@ -200,6 +191,7 @@
 
     function removeAttributeFromGrid(key: string): void {
         definedTypeAttributes.value = definedTypeAttributes.value.filter(s => s.key !== key);
+        reservedKeyNames.value = definedTypeAttributes.value.map(k => k.key!);
 
         // Update the grid.
         if (attributesGridData.rows) {
@@ -212,54 +204,46 @@
     }
 
     async function onSaveAttribute(): Promise<void> {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(definedTypeAttribute.value?.key ?? "") && !definedTypeAttribute.value?.guid;
 
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
-        else {
+        if (definedTypeAttribute.value) {
+            const data = {
+                idKey: props.modelValue?.idKey,
+                attributeBag: definedTypeAttribute.value
+            };
 
-            if (definedTypeAttribute.value) {
-                const data = {
-                    idKey: props.modelValue?.idKey,
-                    attributeBag: definedTypeAttribute.value
-                };
+            const result = await invokeBlockAction<PublicEditableAttributeBag>("SaveAttribute", data);
 
-                const result = await invokeBlockAction<PublicEditableAttributeBag>("SaveAttribute", data);
+            if (result.isSuccess && result.data) {
+                definedTypeAttribute.value = result.data;
+                const index = definedTypeAttributes.value.findIndex(a => a.key === definedTypeAttribute.value?.key);
+                if (index !== -1) {
+                    // Get the updated attribute and rowItem.
+                    let editedAttribute = definedTypeAttributes.value.find(a => a.key == definedTypeAttribute.value?.key);
+                    let rowItem = attributesGridData.rows?.find(x => x.key == definedTypeAttribute.value?.key);
 
-                if (result.isSuccess && result.data) {
-                    definedTypeAttribute.value = result.data;
-                    const index = definedTypeAttributes.value.findIndex(a => a.key === definedTypeAttribute.value?.key);
-                    if (index !== -1) {
-                        // Get the updated attribute and rowItem.
-                        let editedAttribute = definedTypeAttributes.value.find(a => a.key == definedTypeAttribute.value?.key);
-                        let rowItem = attributesGridData.rows?.find(x => x.key == definedTypeAttribute.value?.key);
-
-                        if (editedAttribute) {
-                            // Replace old attribute with updated attribute.
-                            editedAttribute = definedTypeAttribute.value;
-                            definedTypeAttributes.value.splice(index, 1, editedAttribute);
-                        }
-
-                        if (rowItem && attributesGridData.rows && editedAttribute) {
-                            // Update GridRowItem so changes are reflected in the UI.
-                            const rowIndex = attributesGridData.rows.findIndex(r => r.key === definedTypeAttribute.value?.key);
-                            rowItem = convertToAttributeGridRowItem(editedAttribute);
-                            attributesGridData.rows?.splice(rowIndex, 1, rowItem);
-                        }
+                    if (editedAttribute) {
+                        // Replace old attribute with updated attribute.
+                        editedAttribute = definedTypeAttribute.value;
+                        definedTypeAttributes.value.splice(index, 1, editedAttribute);
                     }
-                    else {
-                        definedTypeAttributes.value.push(definedTypeAttribute.value);
 
-                        // Add new RowItem to the grid to represent the newly added attribute.
-                        const newRowItem = convertToAttributeGridRowItem(definedTypeAttribute.value);
-                        attributesGridData.rows?.push(newRowItem);
+                    if (rowItem && attributesGridData.rows && editedAttribute) {
+                        // Update GridRowItem so changes are reflected in the UI.
+                        const rowIndex = attributesGridData.rows.findIndex(r => r.key === definedTypeAttribute.value?.key);
+                        rowItem = convertToAttributeGridRowItem(editedAttribute);
+                        attributesGridData.rows?.splice(rowIndex, 1, rowItem);
                     }
                 }
+                else {
+                    definedTypeAttributes.value.push(definedTypeAttribute.value);
 
-                isAttributeModalOpen.value = false;
+                    // Add new RowItem to the grid to represent the newly added attribute.
+                    const newRowItem = convertToAttributeGridRowItem(definedTypeAttribute.value);
+                    attributesGridData.rows?.push(newRowItem);
+                }
             }
+
+            isAttributeModalOpen.value = false;
         }
     }
 
@@ -282,5 +266,16 @@
 
         return result.isSuccess;
     }
+
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== definedTypeAttribute.value?.key);
+        }
+        else {
+            if (definedTypeAttribute.value?.key && !reservedKeyNames.value.some(k => k === definedTypeAttribute.value?.key)) {
+                reservedKeyNames.value.push(definedTypeAttribute.value.key);
+            }
+        }
+    });
     // #endregion
 </script>

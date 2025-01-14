@@ -172,6 +172,16 @@ namespace Rock.Security
         /// </summary>
         public const string ROCK_BROWSER_RECOGNITION_COOKIE = ".ROCK_BROWSER_KEY";
 
+        /// <summary>
+        /// Authorization to view grades in the LMS system.
+        /// </summary>
+        public const string VIEW_GRADES = "ViewGrades";
+
+        /// <summary>
+        /// Authorization to edit grades in the LMS system.
+        /// </summary>
+        public const string EDIT_GRADES = "EditGrades";
+
         #endregion
 
         #region Public Methods

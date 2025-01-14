@@ -41,7 +41,7 @@ namespace Rock.Blocks.CheckIn.Config
     [Category( "Check-in > Configuration" )]
     [Description( "Displays the details of a particular Check-in Type." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -837,7 +837,7 @@ namespace Rock.Blocks.CheckIn.Config
         {
             var entity = GetInitialEntity<GroupType, GroupTypeService>( rockContext, PageParameterKey.CheckinTypeId );
 
-            if ( entity.Id == 0 )
+            if ( entity != null && entity.Id == 0 )
             {
                 var templatePurpose = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
                 entity.GroupTypePurposeValueId = templatePurpose?.Id;

@@ -32,6 +32,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a list of label files
     /// Stored as BinaryFile's Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LABEL )]
     public class LabelFieldType : BinaryFileFieldType

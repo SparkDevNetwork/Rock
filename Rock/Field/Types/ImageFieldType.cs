@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,6 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
-using Rock.Web.Cache;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
@@ -59,6 +58,40 @@ namespace Rock.Field.Types
         /// The default image tag template
         /// </summary>
         protected const string DefaultImageTagTemplate = "<img src='{{ ImageUrl }}' class='img-responsive' />";
+
+        /// <summary>
+        /// The image URL generated from the image guid.
+        /// </summary>
+        protected const string IMAGE_URL = "imageUrl";
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            var publicValues = new Dictionary<string, string>( base.GetPublicConfigurationValues( privateConfigurationValues, usage, value ) );
+
+            if ( publicValues.ContainsKey( IMG_TAG_TEMPLATE ) )
+            {
+                var imageTagTemplate = publicValues[IMG_TAG_TEMPLATE];
+                if ( imageTagTemplate.IsNullOrWhiteSpace() )
+                {
+                    publicValues[IMG_TAG_TEMPLATE] = DefaultImageTagTemplate;
+                }
+            }
+
+            publicValues[IMAGE_URL] = FileUrlHelper.GetImageUrl( value.AsGuid() );
+
+            return publicValues;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            var privateValues = new Dictionary<string, string>( base.GetPrivateConfigurationValues( publicConfigurationValues ) );
+
+            privateValues.Remove( IMAGE_URL );
+
+            return privateValues;
+        }
 
         #endregion
 

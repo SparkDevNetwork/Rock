@@ -5,6 +5,7 @@
             <div class="col-md-6">
                 <TextBox v-model="name"
                          label="Name"
+                         :maxLength="100"
                          rules="required" />
 
             </div>
@@ -24,9 +25,10 @@
                          textMode="multiline" />
             </div>
         </div>
-        <div class="row" v-if="isAcademicCalendarMode">
+        <div class="row">
             <div class="col-md-6">
                 <DropDownList
+                              v-if="isAcademicCalendarMode"
                               label="Semester"
                               v-model="semester"
                               :grouped="false"
@@ -63,6 +65,18 @@
                 <CampusPicker v-model="campus" label="Campus" forceVisible showBlankItem />
             </div>
         </div>
+
+        <Panel title="Advanced Settings" :hasCollapse="true" class="mt-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <NumberBox v-model="groupCapacity"
+                               :minimumValue="0"
+                               label="Maximum Students (Override)"
+                               help="The maximum number of students this class can have."
+                               inputClasses="input-width-md" />
+                </div>
+            </div>
+        </Panel>
     </fieldset>
 </template>
 
@@ -70,6 +84,8 @@
     import { computed, PropType, watch } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
     import { LocationPickerMode, LocationPickerModeFlag } from "@Obsidian/Enums/Controls/locationPickerMode";
@@ -110,6 +126,7 @@
     const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
     const isPublic = propertyRef(props.modelValue.bag?.isPublic ?? false, "IsPublic");
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const groupCapacity = propertyRef(props.modelValue.bag?.groupCapacity, "GroupCapacity");
     const semester = propertyRef(props.modelValue.bag?.semester?.value ?? "", "Semester");
     const schedule = propertyRef(props.modelValue.bag?.schedule, "Schedule");
     const location = propertyRef<ListItemBag | undefined>(props.modelValue.bag?.location ?? undefined, "Location");
@@ -126,6 +143,7 @@
         , isActive
         , isPublic
         , description
+        , groupCapacity
         , semester
         , schedule
         , location
@@ -161,6 +179,7 @@
         updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
         updateRefValue(isPublic, props.modelValue.bag?.isPublic ?? false);
         updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(groupCapacity, props.modelValue.bag?.groupCapacity);
         updateRefValue(semester, props.modelValue.bag?.semester?.value ?? "");
         updateRefValue(schedule, props.modelValue.bag?.schedule ?? {});
         updateRefValue(location, props.modelValue.bag?.location ?? undefined);
@@ -179,6 +198,7 @@
         setPropertiesBoxValue(newValue, "isActive", isActive.value);
         setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
         setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "groupCapacity", groupCapacity.value);
         setPropertiesBoxValue(newValue, "semester", { value: semester.value });
         setPropertiesBoxValue(newValue, "schedule", schedule.value);
         setPropertiesBoxValue(newValue, "location", location.value);

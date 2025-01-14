@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <Panel type="block" :title="panelName">
         <template #default>
@@ -10,9 +10,16 @@
                 Please correct the following:
                 <div v-html="validationError" />
             </div>
-            <ViewPanel v-if="panelMode == DetailPanelMode.View" :modelValue="achievementTypeViewBag" :options="options" :rebuildActionSuccessMessage="rebuildActionSuccessMessage" />
+            <ViewPanel v-if="panelMode == DetailPanelMode.View"
+                       :modelValue="achievementTypeViewBag"
+                       :options="options"
+                       :rebuildActionSuccessMessage="rebuildActionSuccessMessage" />
+
             <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
-                <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit" v-model="achievementTypeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+                <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit"
+                           v-model="achievementTypeEditBag"
+                           :options="options"
+                           @propertyChanged="baseBlock.onPropertyChanged" />
             </RockForm>
         </template>
         <template #footerActions>
@@ -20,6 +27,8 @@
                 <RockButton v-if="isEditable"
                             :btnSize="BtnSize.Default"
                             :btnType="BtnType.Primary"
+                            autoDisable
+                            autoLoading
                             @click="onStartSubmitForm">
                     Save
                 </RockButton>
@@ -34,11 +43,15 @@
             <div v-if="panelMode === DetailPanelMode.View && isEditable">
                 <RockButton :btnSize="BtnSize.Default"
                             :btnType="BtnType.Primary"
+                            autoDisable
+                            autoLoading
                             @click="onEdit">
                     Edit
                 </RockButton>
                 <RockButton :btnSize="BtnSize.Default"
                             :btnType="BtnType.Link"
+                            autoDisable
+                            autoLoading
                             @click="onDelete">
                     Delete
                 </RockButton>
@@ -48,6 +61,8 @@
             <RockButton v-if="panelMode == DetailPanelMode.View"
                         :btnSize="BtnSize.Default"
                         :btnType="BtnType.Danger"
+                        autoDisable
+                        autoLoading
                         @click="onRebuild">
                 Rebuild
             </RockButton>
@@ -67,18 +82,17 @@
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./AchievementTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { AchievementTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementTypeDetail/achievementTypeBag";
     import { AchievementTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/AchievementTypeDetail/achievementTypeDetailOptionsBag";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -90,39 +104,16 @@
     const validationError = ref("");
 
     const achievementTypeViewBag = ref(config.entity);
-    const achievementTypeEditBag = ref<AchievementTypeBag>({} as AchievementTypeBag);
+    const achievementTypeEditBag = ref<ValidPropertiesBox<AchievementTypeBag>>({
+        bag: {} as AchievementTypeBag
+    });
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "achievementEntityType",
-        "achievementFailureWorkflowType",
-        "achievementIconCssClass",
-        "achievementStartWorkflowType",
-        "achievementStepStatus",
-        "achievementStepType",
-        "achievementSuccessWorkflowType",
-        "allowOverAchievement",
-        "alternateImageBinaryFile",
-        "badgeLavaTemplate",
-        "category",
-        "customSummaryLavaTemplate",
-        "description",
-        "highlightColor",
-        "imageBinaryFile",
-        "isActive",
-        "isPublic",
-        "maxAccomplishmentsAllowed",
-        "name",
-        "prerequisites",
-        "resultsLavaTemplate",
-        "addStepOnSuccess"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(achievementTypeEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: achievementTypeEditBag
+    });
 
     // #endregion
 
@@ -179,7 +170,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<void> {
-        if (!achievementTypeEditBag.value?.idKey) {
+        if (!achievementTypeEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
             }
@@ -221,31 +212,17 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<void> {
-        const result = await invokeBlockAction<DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<AchievementTypeBag>>("Edit", {
             key: achievementTypeViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            achievementTypeEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            achievementTypeEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
             panelMode.value = DetailPanelMode.Edit;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -258,19 +235,13 @@
         errorMessage.value = "";
         validationError.value = "";
 
-        const data: DetailBlockBox<AchievementTypeBag, AchievementTypeDetailOptionsBag> = {
-            entity: achievementTypeEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<AchievementTypeBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<AchievementTypeBag> | string>("Save", {
+            box: achievementTypeEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                achievementTypeViewBag.value = result.data;
+                achievementTypeViewBag.value = result.data.bag;
                 panelMode.value = DetailPanelMode.View;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
@@ -292,8 +263,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -302,7 +271,7 @@
         blockError.value = "The specified achievement type could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        achievementTypeEditBag.value = config.entity;
+        achievementTypeEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

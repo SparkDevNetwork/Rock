@@ -49,6 +49,7 @@ namespace Rock.Model
         /// The content channel type identifier.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int ContentChannelTypeId { get; set; }
 
         /// <summary>

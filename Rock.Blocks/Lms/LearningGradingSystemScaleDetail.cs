@@ -292,7 +292,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningGradingSystemScale.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningGradingSystemScale.FriendlyTypeName}." );
                 return false;
             }
 

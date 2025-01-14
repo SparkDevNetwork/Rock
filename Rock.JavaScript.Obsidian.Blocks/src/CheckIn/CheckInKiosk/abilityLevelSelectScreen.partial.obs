@@ -3,11 +3,13 @@
     <div class="ability-level-select-screen">
         <MainPanel :title="title"
                    :subtitle="subtitle"
-                   :person="session.getCurrentAttendee()?.person">
+                   :person="session.getCurrentAttendee()?.person"
+                   :configuration="session.configuration">
             <div class="button-list">
                 <RockButton v-for="abilityLevel in abilityLevels"
                             btnType="primary"
                             class="ability-level-button"
+                            :class="{ 'btn-dimmed': abilityLevel.isDeprioritized }"
                             :disabled="abilityLevel.isDisabled || isProcessing"
                             @click="onAbilityLevelClick(abilityLevel)">
                     <span v-if="abilityLevel.id === currentAbilityLevelId"

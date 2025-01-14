@@ -3564,47 +3564,11 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
+        [RockObsolete( "1.17" )]
+        [Obsolete( "Peer Networks can now be found in the PeerNetwork table, and are no longer tied to Groups." )]
         public Group GetPeerNetworkGroup( int personId )
         {
-            var peerNetworkGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK.AsGuid() );
-            var impliedOwnerRole = peerNetworkGroupType.Roles.Where( r => r.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ).FirstOrDefault();
-
-            var rockContext = this.Context as RockContext;
-
-            var peerNetworkGroup = new GroupMemberService( rockContext ).Queryable()
-                                    .Where(
-                                        m => m.PersonId == personId
-                                        && m.GroupRoleId == impliedOwnerRole.Id
-                                        && m.Group.GroupTypeId == peerNetworkGroupType.Id )
-                                    .Select( m => m.Group )
-                                    .FirstOrDefault();
-
-            // It's possible that a implied group does not exist for this person due to poor migration from a different system or a manual insert of the data
-            if ( peerNetworkGroup == null )
-            {
-                // Create the new peer network group using a new context so as not to save changes in the current one
-                using ( var rockContextClean = new RockContext() )
-                {
-                    var groupServiceClean = new GroupService( rockContextClean );
-
-                    var groupMember = new GroupMember();
-                    groupMember.PersonId = personId;
-                    groupMember.GroupRoleId = impliedOwnerRole.Id;
-
-                    var peerNetworkGroupClean = new Group();
-                    peerNetworkGroupClean.Name = peerNetworkGroupType.Name;
-                    peerNetworkGroupClean.GroupTypeId = peerNetworkGroupType.Id;
-                    peerNetworkGroupClean.Members.Add( groupMember );
-
-                    groupServiceClean.Add( peerNetworkGroupClean );
-                    rockContextClean.SaveChanges();
-
-                    // Get the new peer network group using the original context
-                    peerNetworkGroup = new GroupService( rockContext ).Get( peerNetworkGroupClean.Id );
-                }
-            }
-
-            return peerNetworkGroup;
+            return null;
         }
 
         #endregion
@@ -3712,30 +3676,6 @@ namespace Rock.Model
                     var group = new Group();
                     group.Name = knownRelationshipGroupType.Name;
                     group.GroupTypeId = knownRelationshipGroupType.Id;
-                    group.Members.Add( groupMember );
-
-                    var groupService = new GroupService( rockContext );
-                    groupService.Add( group );
-                }
-            }
-
-            // Create/Save Implied Relationship Group
-            var impliedRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK );
-            if ( impliedRelationshipGroupType != null )
-            {
-                var ownerRole = impliedRelationshipGroupType.Roles
-                    .FirstOrDefault( r =>
-                        r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ) );
-                if ( ownerRole != null )
-                {
-                    var groupMember = new GroupMember();
-                    groupMember.Person = person;
-                    groupMember.GroupRoleId = ownerRole.Id;
-                    groupMember.GroupTypeId = impliedRelationshipGroupType.Id;
-
-                    var group = new Group();
-                    group.Name = impliedRelationshipGroupType.Name;
-                    group.GroupTypeId = impliedRelationshipGroupType.Id;
                     group.Members.Add( groupMember );
 
                     var groupService = new GroupService( rockContext );
@@ -4833,6 +4773,26 @@ UPDATE Person
 SET PrimaryAliasId = @primaryAliasId
 WHERE Id = @personId",
         new System.Data.SqlClient.SqlParameter( "@personId", personId ), new System.Data.SqlClient.SqlParameter( "@primaryAliasId", primaryAliasId ) );
+        }
+
+        /// <summary>
+        /// Sets the PrimaryAliasId and PrimaryAliasGuid for the specified person
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <param name="primaryAliasId">The PrimaryAlias identifier.</param>
+        /// <param name="primaryAliasGuid">The PrimaryAlias guid identifier.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static int UpdatePrimaryAlias( int personId, int primaryAliasId, Guid primaryAliasGuid, RockContext rockContext )
+        {
+            return rockContext.Database.ExecuteSqlCommand( @"
+UPDATE Person
+SET PrimaryAliasId = @primaryAliasId,
+    PrimaryAliasGuid = @primaryAliasGuid
+WHERE Id = @personId",
+        new System.Data.SqlClient.SqlParameter( "@personId", personId ),
+        new System.Data.SqlClient.SqlParameter( "@primaryAliasId", primaryAliasId ),
+        new System.Data.SqlClient.SqlParameter( "@primaryAliasGuid", primaryAliasGuid ) );
         }
 
         /// <summary>

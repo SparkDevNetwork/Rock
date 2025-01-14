@@ -13,82 +13,84 @@
                         <b class="fa fa-caret-down"></b>
                     </a>
 
-                    <div v-if="showPopup" class="absolute-panel picker" @keydown.esc.stop="onCancel">
-                        <div class="action-header d-flex align-items-center justify-content-between">
-                            <h4>Person Search</h4>
-                            <div class="d-flex align-items-center">
-                                <RockButton class="btn-square mr-2" v-if="isSelfSelectionEnabled" @click.prevent="selectSelf" :btnSize="BtnSize.ExtraSmall" aria-label="Select Self" title="Select Self">
-                                    <i class="fa fa-user" aria-hidden></i>
-                                </RockButton>
-                                <RockButton class="btn-square mr-2" @click.prevent="isAdvancedSearch = !isAdvancedSearch" :btnSize="BtnSize.ExtraSmall" aria-label="Advanced Search" title="Advanced Search">
-                                    <i class="fa fa-gears" aria-hidden></i>
-                                </RockButton>
-                                <button class="action btn-link" @click.prevent.stop="onCancel" type="button" aria-label="Close" title="Close">
-                                    <i class="fa fa-times" aria-hidden></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="person-picker-body">
-                            <div tabindex="0">
-                                <div ref="nameSearchTextBox" class="personpicker-search-panel" :class="{ 'row form-row': isAdvancedSearch }">
-                                    <TextBox id="autoFocusInput" v-model="nameSearchText" :formGroupClasses="isAdvancedSearch ? 'col-sm-6' : ''" disableLabel :disableAutocomplete="true" type="search">
-                                        <template #inputGroupPrepend>
-                                            <span class="input-group-addon">Name</span>
-                                        </template>
-                                    </TextBox>
-                                    <TextBox v-if="isAdvancedSearch" v-model="phoneSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true" type="tel">
-                                        <template #inputGroupPrepend>
-                                            <span class="input-group-addon">Phone</span>
-                                        </template>
-                                    </TextBox>
-                                    <TextBox v-if="isAdvancedSearch" v-model="addressSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true">
-                                        <template #inputGroupPrepend>
-                                            <span class="input-group-addon">Address</span>
-                                        </template>
-                                    </TextBox>
-                                    <TextBox v-if="isAdvancedSearch" v-model="emailSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true" type="email">
-                                        <template #inputGroupPrepend>
-                                            <span class="input-group-addon">Email</span>
-                                        </template>
-                                    </TextBox>
+                    <div v-if="showPopup" class="backdrop" @keydown.esc.stop="onCancel">
+                        <div class="absolute-panel picker">
+                            <div class="action-header d-flex align-items-center justify-content-between">
+                                <h4>Person Search</h4>
+                                <div class="d-flex align-items-center">
+                                    <RockButton class="btn-square mr-2" v-if="isSelfSelectionEnabled" @click.prevent="selectSelf" :btnSize="BtnSize.ExtraSmall" aria-label="Select Self" title="Select Self">
+                                        <i class="fa fa-user" aria-hidden></i>
+                                    </RockButton>
+                                    <RockButton class="btn-square mr-2" @click.prevent="isAdvancedSearch = !isAdvancedSearch" :btnSize="BtnSize.ExtraSmall" aria-label="Advanced Search" title="Advanced Search">
+                                        <i class="fa fa-gears" aria-hidden></i>
+                                    </RockButton>
+                                    <button class="action btn-link" @click.prevent.stop="onCancel" type="button" aria-label="Close" title="Close">
+                                        <i class="fa fa-times" aria-hidden></i>
+                                    </button>
                                 </div>
+                            </div>
+                            <div class="person-picker-body">
+                                <div tabindex="0">
+                                    <div ref="nameSearchTextBox" class="personpicker-search-panel" :class="{ 'row form-row': isAdvancedSearch }">
+                                        <TextBox id="autoFocusInput" v-model="nameSearchText" :formGroupClasses="isAdvancedSearch ? 'col-sm-6' : ''" disableLabel :disableAutocomplete="true" type="search">
+                                            <template #inputGroupPrepend>
+                                                <span class="input-group-addon">Name</span>
+                                            </template>
+                                        </TextBox>
+                                        <TextBox v-if="isAdvancedSearch" v-model="phoneSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true" type="tel">
+                                            <template #inputGroupPrepend>
+                                                <span class="input-group-addon">Phone</span>
+                                            </template>
+                                        </TextBox>
+                                        <TextBox v-if="isAdvancedSearch" v-model="addressSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true">
+                                            <template #inputGroupPrepend>
+                                                <span class="input-group-addon">Address</span>
+                                            </template>
+                                        </TextBox>
+                                        <TextBox v-if="isAdvancedSearch" v-model="emailSearchText" formGroupClasses="col-sm-6" disableLabel :disableAutocomplete="true" type="email">
+                                            <template #inputGroupPrepend>
+                                                <span class="input-group-addon">Email</span>
+                                            </template>
+                                        </TextBox>
+                                    </div>
 
-                                <div class="personpicker-results">
-                                    <div v-for="result in searchResults"
-                                        :key="result.primaryAliasGuid!"
-                                        class="personpicker-item"
-                                        :style="{ borderColor: internalValue?.value == result.primaryAliasGuid ? 'var(--color-primary)' : undefined }"
-                                        tabindex="0"
-                                        @click="selectPerson(result)"
-                                        @keypress.enter="selectPerson(result)"
-                                        :class="{ 'o-60': !result.isActive }"
-                                        role="button">
-                                        <div class="main d-flex gap flex-fill flex-shrink-0">
-                                            <div class="person-image flex-shrink-0" :style="getPersonImageStyle(result)" :alt="'Profile image for ' + result.name"></div>
-                                            <div class="data flex-fill">
-                                                <div class="taglist pull-right">
+                                    <div class="personpicker-results">
+                                        <div v-for="result in searchResults"
+                                             :key="result.primaryAliasGuid!"
+                                             class="personpicker-item"
+                                             :style="{ borderColor: internalValue?.value == result.primaryAliasGuid ? 'var(--color-primary)' : undefined }"
+                                             tabindex="0"
+                                             @click="selectPerson(result)"
+                                             @keypress.enter="selectPerson(result)"
+                                             :class="{ 'o-60': !result.isActive }"
+                                             role="button">
+                                            <div class="main d-flex gap flex-fill flex-shrink-0">
+                                                <div class="person-image flex-shrink-0" :style="getPersonImageStyle(result)" :alt="'Profile image for ' + result.name"></div>
+                                                <div class="data flex-fill">
+                                                    <div class="taglist pull-right">
+                                                        <Tag v-for="tag in getTags(result)" :key="tag.name ?? undefined" :modelValue="tag" class="mb-0" disabled />
+                                                    </div>
+                                                    <div class="leading-snug"><span class="text-md font-weight-semibold">{{ result.name }}</span> <i class="fa fa-child text-primary" v-if="result.ageClassification == AgeClassification.Child" aria-label="Child" title="Child"></i> <span v-if="result.formattedAge" class="text-muted">{{ result.formattedAge }}</span></div>
+                                                    <div v-if="getSubInformation(result)" class="text-muted"><span v-html="getSubInformation(result)" /></div>
+                                                    <small><a :href="`/Person/${result.guid}`" @click.stop target="_blank" rel="noreferrer noopener" tabindex="-1">Profile</a></small>
+                                                </div>
+                                            </div>
+
+                                            <div class="item-meta">
+
+                                                <div class="address-email">
+                                                    <div v-html="result.address"></div>
+                                                    <div>{{ result.email }}</div>
+                                                </div>
+                                                <ul class="phones list-unstyled m-0">
+                                                    <li v-for="phone in result.phoneNumbers" :key="phone.type ?? '' + phone.number ?? ''">{{ phone.isUnlisted ? 'Unlisted' : phone.number }} <small v-if="phone.type" class="text-muted">{{ phone.type.charAt(0) }}</small></li>
+                                                </ul>
+                                                <div class="taglist justify-content-end">
                                                     <Tag v-for="tag in getTags(result)" :key="tag.name ?? undefined" :modelValue="tag" class="mb-0" disabled />
                                                 </div>
-                                                <div class="leading-snug"><span class="text-md font-weight-semibold">{{ result.name }}</span> <i class="fa fa-child text-primary" v-if="result.ageClassification == AgeClassification.Child" aria-label="Child" title="Child"></i> <span v-if="result.formattedAge" class="text-muted">{{ result.formattedAge }}</span></div>
-                                                <div v-if="getSubInformation(result)" class="text-muted"><span v-html="getSubInformation(result)" /></div>
-                                                <small><a :href="`/Person/${result.guid}`" @click.stop target="_blank" rel="noreferrer noopener" tabindex="-1">Profile</a></small>
                                             </div>
+
                                         </div>
-
-                                        <div class="item-meta">
-
-                                            <div class="address-email">
-                                                <div v-html="result.address"></div>
-                                                <div>{{ result.email }}</div>
-                                            </div>
-                                            <ul class="phones list-unstyled m-0">
-                                                <li v-for="phone in result.phoneNumbers" :key="phone.type ?? '' + phone.number ?? ''">{{ phone.isUnlisted ? 'Unlisted' : phone.number }} <small v-if="phone.type" class="text-muted">{{ phone.type.charAt(0) }}</small></li>
-                                            </ul>
-                                            <div class="taglist justify-content-end">
-                                                <Tag v-for="tag in getTags(result)" :key="tag.name ?? undefined" :modelValue="tag" class="mb-0" disabled />
-                                            </div>
-                                        </div>
-
                                     </div>
                                 </div>
                             </div>
@@ -102,6 +104,17 @@
 </template>
 
 <style scoped>
+.backdrop {
+    background: rgba(94, 94, 94, 0.6);
+    position: fixed;
+    z-index: 1060;
+
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+}
+
 .absolute-panel {
     position: fixed;
     left: 22.5%;
@@ -109,8 +122,8 @@
     width: 55%;
     height: 55%;
     overflow-y: auto;
-    z-index: 1060;
-    box-shadow:0 5px 15px rgba(0,0,0,0.5);
+    z-index: 1070;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
     border-radius: var(--rounded-small);
 }
 
@@ -118,7 +131,7 @@
     padding-left: 15px;
     padding-right: 15px;
     height: 10%;
-    background-color: var(--body-background, #fff);
+    background-color: var(--color-interface-softest);
     border-bottom: 1px solid var(--color-interface-soft);
 }
 
@@ -136,11 +149,11 @@
 }
 
 .person-picker-body {
-    background-color:#fff;
-    padding-top:15px;
-    padding-left:15px;
-    padding-right:15px;
-    height: 90%;
+    background-color: var(--color-interface-softest);
+    padding-top: 15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    min-height: 90%;
     width: 100%;
 }
 
@@ -148,7 +161,7 @@
     display: flex;
     justify-content: space-between;
     background-color: var(--body-background);
-    margin-bottom:8px;
+    margin-bottom: 8px;
     padding: 10px;
     border: 1px solid var(--color-interface-soft);
 }
@@ -160,14 +173,15 @@
         width: 100%;
         height: 100%;
     }
+
     .action-header {
         height: 7%;
     }
+
     .person-picker-body {
-        height: 93%;
+        min-height: 93%;
     }
 }
-
 </style>
 
 <script setup lang="ts">
@@ -529,11 +543,9 @@
 
         // When the modal popup, disable scrolling.
         if (showPopup.value) {
-            console.log("hidden");
             body.style.overflowY = "hidden";
         }
         else {
-            console.log("unhidden");
             body.style.overflowY = "";
         }
     });
@@ -552,7 +564,7 @@
     });
 
     watch(() => props.isSearchModeOpen, () => {
-        if(props.isSearchModeOpen !== showPopup.value) {
+        if (props.isSearchModeOpen !== showPopup.value) {
             togglePopup();
         }
     });

@@ -79,6 +79,7 @@ namespace Rock.Model
         /// The identifier for the entity type that handles this action's logic.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int SmsActionComponentEntityTypeId { get; set; }
 
         /// <summary>

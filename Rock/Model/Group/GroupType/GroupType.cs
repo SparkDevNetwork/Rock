@@ -39,6 +39,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupType" )]
     [DataContract]
+    [EnableAttributeQualification( nameof( Id ) )]
     [Rock.SystemGuid.EntityTypeGuid( "0DD30B04-01CF-4B38-8E83-BE661E2F7286" )]
     public partial class GroupType : Model<GroupType>, IOrdered, ICacheable
     {
@@ -317,6 +318,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_PURPOSE )]
+        [EnableAttributeQualification]
         public int? GroupTypePurposeValueId { get; set; }
 
         /// <summary>
@@ -778,6 +780,13 @@ namespace Rock.Model
         [DataMember]
         [DecimalPrecision( 8, 2 )]
         public decimal NonLeaderToLeaderRelationshipMultiplier { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that groups in this area should not be available
+        /// when a person already has a check-in for the same schedule.
+        /// </summary>
+        [DataMember]
+        public bool IsConcurrentCheckInPrevented { get; set; }
 
         #endregion Entity Properties
 

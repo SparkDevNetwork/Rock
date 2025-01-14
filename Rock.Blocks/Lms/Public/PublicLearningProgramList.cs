@@ -20,7 +20,6 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Lms.PublicLearningProgramList;
 using Rock.Web.UI.Controls;
@@ -30,22 +29,44 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of public learning programs.
     /// </summary>
-
     [DisplayName( "Public Learning Program List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of public learning programs." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
+    [TextField( "Page Title",
+        Description = "Provide a clear, welcoming title for the Learning Hub homepage. Example: 'Grow Together in Faith.'",
+        IsRequired = true,
+        Category = "",
+        Order = 1,
+        Key = AttributeKey.PageTitle,
+        DefaultValue = AttributeDefault.PageTitle )]
+
+    [TextField( "Page Description",
+        Description = "Enter a brief description for the homepage to introduce users to the LMS. Example: 'Explore resources to deepen your faith and connect with our community.'",
+        IsRequired = true,
+        Category = "",
+        Order = 2,
+        Key = AttributeKey.PageDescription,
+        DefaultValue = AttributeDefault.PageDescription )]
+
+    [ImageField(
+        "Banner Image",
+        Description = "Add a welcoming banner image to visually enhance the homepage. Ideal size: 1200x400 pixels; use high-quality images.",
+        Key = AttributeKey.BannerImage,
+        IsRequired = false,
+        DefaultValue = AttributeDefault.BannerImage )]
+
     [CodeEditorField( "Lava Template",
         Key = AttributeKey.LavaTemplate,
-        Description = "The lava template to use to render the page. Merge fields include: Programs, ShowCompletionStatus, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
+        Description = "The lava template to use to render the page. Merge fields include: Programs (a list of ProgramInfos), ShowCompletionStatus, BannerImageGuid, PageTitle, PageDescription, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
-        IsRequired = true,
+        IsRequired = false,
         DefaultValue = AttributeDefault.ProgramListTemplate,
-        Order = 1 )]
+        Order = 4 )]
 
     [LinkedPage( "Detail Page",
         Description = "Page to link to when the individual would like more details.",
@@ -79,15 +100,18 @@ namespace Rock.Blocks.Lms
         Order = 5 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "59d82730-e4a7-4aaf-bb1e-bec4b7aa8624" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2fc656da-7f5d-41b3-ad18-bfe692cfca57" )]
+    [Rock.SystemGuid.BlockTypeGuid( "DA1460D8-E895-4B23-8A8E-10EBBED3990F" )]
     public class PublicLearningProgramList : RockBlockType
     {
         #region Keys
 
         private static class AttributeKey
         {
+            public const string BannerImage = "BannerImage";
             public const string DetailPage = "DetailPage";
             public const string LavaTemplate = "LavaTemplate";
+            public const string PageDescription = "PageDescription";
+            public const string PageTitle = "PageTitle";
             public const string ProgramCategories = "ProgramCategories";
             public const string PublicOnly = "PublicOnly";
             public const string ShowCompletionStatus = "ShowCompletionStatus";
@@ -95,116 +119,126 @@ namespace Rock.Blocks.Lms
 
         private static class AttributeDefault
         {
+            public const string BannerImage = "605FD4B7-2DCA-4782-8826-95AAC6C6BAB6";
+            public const string PageDescription = "Explore courses and trainings designed to deepen your faith, help you grow in spiritual knowledge, and prepare you for serving and volunteering.";
+            public const string PageTitle = "Learning Hub";
             public const string ProgramListTemplate = @"
-//- Styles
-{% stylesheet %}
-    .page-container {
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .page-header-section {
-        height: 280px; 
-        align-items: center; 
-        border-radius: 12px; 
-        background-image: url('/GetImage.ashx?guid=4812baaf-a173-472c-a9a7-8ceb83c06f53'); 
-        background-size: cover;
-    }
-    
-    .programs-list-header-section {
-        margin-top: 100px;   
-    }
-    
-    .header-block {
-        display: flex;
-        flex-direction: column;
-        position: relative;
-        left: 10%;
-        bottom: -80%;
-        -webkit-transform: translateY(-30%);
-        transform: translateY(-30%);
-        background-color: white; 
-        border-radius: 12px; 
-        width: 80%; 
-    }
-    
-    .page-sub-header {
-        padding-left: 10%; 
-        padding-right: 10%; 
-        margin-bottom: 12px;
-        padding-bottom: 12px;
-    }
-    
-    .program-item-container {
-        background-color: white; 
-        border-radius: 12px;
-        margin: 8px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-{% endstylesheet %}
-<div class=""page-container"" >
-	<div class=""page-header-section"">
-		<div class=""header-block text-center"">
-			<div class=""h1 text-bold"">
-				Growth Through Learning
-			</div>
-			<div class=""page-sub-header"">
-				We believe that spiritual growth is deeply intertwined with continuous learning. 
-				""Growth Through Learning"" is our commitment to nurture your faith journey, providing resources and opportunies to deepen your understanding of God's Word and his purpose for your life.
-			</div>
-		</div>
-	</div>
-	
-	<div class=""programs-list-header-section center-block text-center mb-4"">
-		<span class=""program-list-header h5"">
-			Programs Available
-		</span>
+<style>
 
-		<div class=""program-list-sub-header text-muted"">
-			The following types of classes are available.
-		</div>
-	</div>
-	
-	<div class=""program-list-container d-flex flex-fill"">
-		{% for program in Programs %}
-		<div class=""program-item-container"">
-		
-			{% if program.ImageFileGuid and program.ImageFileGuid != '' %}
-			<div class=""program-image program-item-header"" >
-				<img style=""border-radius: 12px 12px 0 0;"" src=""/GetImage.ashx?guid={{program.ImageFileGuid}}&width=300&maxheight=150&mode=crop"" />
-			</div>
-			{% endif %}
-			
-			<div class=""program-item-middle p-3"">
-			
-				<h4 class=""program-name"">
-					{{ program.Entity.PublicName }}
-				</h4>
-				<div class=""program-category"">
-					<span class=""badge badge-info"">{{ program.Category }}</span>
-				</div>
-				<div class=""program-summary text-muted"">
-					{{ program.Entity.Summary }} 
-				</div>
-			</div>
-			
-			<div class=""program-item-footer d-flex justify-content-between mt-4 p-3"">
-				<a class=""btn btn-default"" href=""{{ program.CoursesLink }}"">Learn More</a>
+    .lms-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1.5rem;
+    }
 
-                {% if ShowCompletionStatus == True %} 
-				    {% if program.CompletionStatus == 'Completed' %}
-					    <span class=""badge badge-success p-2"" style=""line-height: normal;"">Completed</span>
-				    {% elseif program.CompletionStatus == 'Pending' %}
-					    <span class=""badge badge-info p-2"" style=""line-height: normal;"">Enrolled</span>
-				    {% endif %}
+    .card {
+        display: grid;
+        grid-row: auto / span 5;
+        grid-template-rows: subgrid;
+    }
+    
+    .card-img-h {
+        height: 180px;
+    }
+    
+
+    @media (max-width: 767px) {
+        .lms-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+        .lms-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+
+<div>
+    <div class=""hero-section"">
+        <div class=""hero-section-image"" style=""background-image: url('/GetImage.ashx?guid={{ BannerImageGuid }}')""></div>
+        <div class=""hero-section-content"">
+            <h1 class=""hero-section-title""> {{ PageTitle }} </h1>
+            <p class=""hero-section-description""> {{ PageDescription }} </p>
+        </div>
+    </div>
+    <div class=""center-block text-center mt-4 mb-4"">
+        <div class=""d-flex flex-column gap-2"">
+            <h3> Programs Available </h3>
+            <p class=""text-muted""> The following types of classes are available. </p>
+        </div>
+    </div>
+    <div> //- MAIN BODY - Container for course grid
+        
+        <div class=""lms-grid""> //- Grid for Cards
+
+            {% for program in Programs %}
+            
+            <div class=""card""> 
+                
+                //- 1 IMAGE
+                {% if program.ImageFileGuid %}
+                
+                    <img src=""/GetImage.ashx?guid={{ program.ImageFileGuid }}"" class=""card-img-top card-img-h object-cover""
+                    alt=""program image"" /> 
+                    
+                    {% else %} 
+                        <div class=""d-flex justify-content-center align-items-center card-img-h card-img-top""> 
+                        <i class=""fa fa-image fa-2x o-30""></i> </div>
                 {% endif %}
-			</div>
-		</div>
-		{% endfor %}
-	</div>
-</div>";
+                
+                //- 2 TITLE
+                <div class=""card-body pb-0 pt-0"">
+                    <h4 class=""card-title mb-0"">{{ program.PublicName }}</h4>
+                </div>
+                
+                //- 3 BODY TEXT
+                <div class=""card-body pt-0 pb-0"">
+                    <p class=""line-clamp-3"">{{ program.Summary }}</p>
+                </div>
+                
+                //- 4 CATEGORY
+                {% if program.Category %}
+                
+                    <div class=""card-body pt-0 pb-0"">
+                        <div class=""badge badge-default"">
+                            {{ program.Category }}
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <div class=""card-body pt-0 pb-0"">
+                        <div> <span> </span> </div>
+                    </div>
+                
+                {% endif %}
+                
+                //- 5 FOOTER
+                <div class=""card-footer d-flex justify-content-between"">
+                    <a href=""{{ program.CoursesLink }}"" class=""btn btn-default"">Learn More</a>
+                    
+                    {% if ShowCompletionStatus %}
+                    
+                        {% if program.CompletionStatus == 'Completed' %}
+                            <div class=""d-flex align-items-center"">
+                                <h4 class=""m-0""><span class=""label label-success"">Completed</span></h4>
+                            </div>
+                            
+                            {% elseif program.CompletionStatus == 'Pending' %}
+                            <div class=""d-flex align-items-center"">
+                                <h4 class=""m-0""><span class=""label label-warning"">Enrolled</span></h4>
+                            </div>
+                        
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+";
         }
 
         private static class PageParameterKey
@@ -238,7 +272,7 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Provide html to the block for it's initial rendering.
+        /// Provide HTML to the block for it's initial rendering.
         /// </summary>
         /// <returns>The HTML content to initially render.</returns>
         protected override string GetInitialHtmlContent()
@@ -249,12 +283,15 @@ namespace Rock.Blocks.Lms
 
             foreach ( var program in programs )
             {
-                program.CoursesLink = courseDetailUrlTemplate.Replace( "((Key))", program.Entity.IdKey );
+                program.CoursesLink = courseDetailUrlTemplate.Replace( "((Key))", program.IdKey );
             }
 
             var mergeFields = this.RequestContext.GetCommonMergeFields();
             mergeFields.Add( "Programs", programs );
             mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
+            mergeFields.Add( "BannerImageGuid", GetAttributeValue( AttributeKey.BannerImage ) );
+            mergeFields.Add( "PageDescription", GetAttributeValue( AttributeKey.PageDescription ) );
+            mergeFields.Add( "PageTitle", GetAttributeValue( AttributeKey.PageTitle ) );
 
             var template = GetAttributeValue( AttributeKey.LavaTemplate ) ?? string.Empty;
             return template.ResolveMergeFields( mergeFields );

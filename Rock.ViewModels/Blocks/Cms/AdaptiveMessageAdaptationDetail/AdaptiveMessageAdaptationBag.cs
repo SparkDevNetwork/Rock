@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using Rock.ViewModels.Utility;
 
@@ -55,6 +56,16 @@ namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageAdaptationDetail
         /// Gets or sets the view saturation in days.
         /// </summary>
         public int? ViewSaturationInDays { get; set; }
+
+        /// <summary>
+        /// Gets or sets the start date for this Adaptive Message Adaptation.
+        /// </summary>
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end date for this Adaptive Message Adaptation.
+        /// </summary>
+        public DateTime? EndDate { get; set; }
 
         /// <summary>
         /// Gets or sets the segment ids.

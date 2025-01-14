@@ -23,7 +23,7 @@ body.rock-modal {
 .rock-modal .modal-content {
   background:         transparent;
   border:             0;
-  box-shadow:         0 12px 24px 0 rgba(0,0,0,.1);
+  box-shadow:         var(--popup-box-shadow);
 
   .modal-header {
     min-height:       34px;
@@ -41,7 +41,7 @@ body.rock-modal {
     }
 
     h3 {
-      margin-right: 12px;
+      margin-right: var(--spacing-small);
     }
 
     a {
@@ -105,7 +105,7 @@ body.rock-modal {
 
   .modal-footer .btn {
     float:        right;
-    margin-left:  5px;
+    margin-left:  var(--spacing-tiny);
   }
 }
 
@@ -141,7 +141,7 @@ body.rock-modal {
 // hard code the opacity in their CSS we override it here.
 .modal-backdrop,
 .modal-backdrop.fade.in {
-  background:   var(--color-interface-strongest);
+  background:   var(--modal-backdrop);
   filter:       alpha(opacity=70);
   opacity:      .5;
 }
@@ -155,6 +155,20 @@ body.rock-modal {
 
 .modal-content {
   border:   none;
+}
+
+.modal.container.modal-content.rock-modal:has(.ant-select-dropdown) {
+    overflow: visible;
+
+    .modal-header {
+        border-top-left-radius: inherit;
+        border-top-right-radius: inherit;
+    }
+}
+
+.modal.container.modal-content.rock-modal form {
+    border-bottom-right-radius: inherit;
+    border-bottom-left-radius: inherit;
 }
 // ====================== END ALL MODALS ======================
 
@@ -186,7 +200,7 @@ dl:not(.dl-horizontal) {
   }
 
   .modal-content.rock-modal .modal-body {
-    padding:      12px var(--spacing-medium);
+    padding:      var(--spacing-small) var(--spacing-medium);
   }
 
   .modal-content.rock-modal .modal-header .close {
@@ -194,7 +208,7 @@ dl:not(.dl-horizontal) {
   }
 
   .modal-content.rock-modal .modal-header small {
-    margin-top:   5px;
+    margin-top:   var(--spacing-tiny);
     font-size:    100%;
   }
 

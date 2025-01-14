@@ -31,6 +31,7 @@ import DeleteColumn from "./Grid/Columns/deleteColumn.partial";
 import DynamicColumns from "./Grid/Columns/dynamicColumns.partial";
 import EditColumn from "./Grid/Columns/editColumn.partial";
 import HighlightDetailColumn from "./Grid/Columns/highlightDetailColumn.partial";
+import HtmlColumn from "./Grid/Columns/htmlColumn.partial";
 import LabelColumn from "./Grid/Columns/labelColumn.partial";
 import NumberBadgeColumn from "./Grid/Columns/numberBadgeColumn.partial";
 import NumberColumn from "./Grid/Columns/numberColumn.partial";
@@ -51,6 +52,7 @@ import DateTimeCell from "./Grid/Cells/dateTimeCell.partial.obs";
 import DeleteCell from "./Grid/Cells/deleteCell.partial.obs";
 import EditCell from "./Grid/Cells/editCell.partial.obs";
 import HighlightDetailCell from "./Grid/Cells/highlightDetailCell.partial.obs";
+import HtmlCell from "./Grid/Cells/htmlCell.partial.obs";
 import LabelCell from "./Grid/Cells/labelCell.partial.obs";
 import NumberBadgeCell from "./Grid/Cells/numberBadgeCell.partial.obs";
 import NumberCell from "./Grid/Cells/numberCell.partial.obs";
@@ -66,6 +68,7 @@ import TextCell from "./Grid/Cells/textCell.partial";
 import CurrencySkeletonCell from "./Grid/Cells/currencySkeletonCell.partial.obs";
 import DateSkeletonCell from "./Grid/Cells/dateSkeletonCell.partial.obs";
 import DateTimeSkeletonCell from "./Grid/Cells/dateTimeSkeletonCell.partial.obs";
+import HtmlSkeletonCell from "./Grid/Cells/htmlSkeletonCell.partial.obs";
 import NumberSkeletonCell from "./Grid/Cells/numberSkeletonCell.partial.obs";
 import PersonSkeletonCell from "./Grid/Cells/personSkeletonCell.partial.obs";
 import TextSkeletonCell from "./Grid/Cells/textSkeletonCell.partial.obs";
@@ -97,6 +100,7 @@ export {
     DynamicColumns,
     EditColumn,
     HighlightDetailColumn,
+    HtmlColumn,
     LabelColumn,
     NumberBadgeColumn,
     NumberColumn,
@@ -119,6 +123,7 @@ export {
     DeleteCell,
     EditCell,
     HighlightDetailCell,
+    HtmlCell,
     LabelCell,
     NumberBadgeCell,
     NumberCell,
@@ -136,6 +141,7 @@ export {
     CurrencySkeletonCell,
     DateSkeletonCell,
     DateTimeSkeletonCell,
+    HtmlSkeletonCell,
     NumberSkeletonCell,
     PersonSkeletonCell,
     TextSkeletonCell

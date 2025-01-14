@@ -5,14 +5,14 @@
         <div v-if="isMobile" class="custom-select-mobile-wrapper">
             <div :class="`custom-select-wrapper ${wrapperClass} ${openStateCssClass()}`">
                 <TransitionVerticalCollapse speed="fast">
-                    <div v-if="!internalValue && !showOverlay" :class="`custom-select-item ${itemClasses(null)}`" @click="onItemClick(null)">
+                    <div v-if="!internalValue && !isExpanded" :class="`custom-select-item ${itemClasses(null)}`" @click="onItemClick(null)">
                         <slot name="placeholder">
                             <p class="text-muted">Select an item</p>
                         </slot>
                     </div>
                 </TransitionVerticalCollapse>
                 <TransitionVerticalCollapse v-for="item in items" :key="(item[itemKey as keyof TItem] as string | number)">
-                    <div v-if="showOverlay || item == internalValue" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
+                    <div v-if="isExpanded || item[itemKey as keyof TItem] === internalValue?.[itemKey as keyof TItem]" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
                         <div class="custom-select-item-content">
                             <slot v-bind="{ item }">
                                 {{ item }}
@@ -22,7 +22,7 @@
                 </TransitionVerticalCollapse>
             </div>
             <Transition name="fade">
-                <div class="custom-select-expand-icon" v-if="!showOverlay" @click="onItemClick(null)">
+                <div class="custom-select-expand-icon" v-if="!isExpanded" @click="onItemClick(null)">
                     <i class="fa fa-angle-up"></i><br>
                     <i class="fa fa-angle-down"></i>
                 </div>
@@ -31,7 +31,7 @@
         <!-- DESKTOP VERSION -->
         <div v-else :class="`custom-select-wrapper ${wrapperClass}`">
             <template v-for="item in items" :key="(item[itemKey as keyof TItem] as string | number)">
-                <div v-if="!isMobile || showOverlay || item == internalValue" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
+                <div v-if="!isMobile || isExpanded || item[itemKey as keyof TItem] === internalValue?.[itemKey as keyof TItem]" :class="`custom-select-item ${itemClasses(item)}`" @click="onItemClick(item)">
                     <div class="custom-select-item-content">
                         <slot v-bind="{ item }">
                             {{ item }}
@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts" generic="TItem, TKey extends keyof TItem">
-    import { PropType, Ref, ref } from "vue";
+    import { PropType, Ref, ref, watch } from "vue";
     import { useViewportWidth } from "@Obsidian/Utility/screenSize";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
@@ -120,7 +120,7 @@
     const internalValue = useVModelPassthrough(props, "modelValue", emit) as Ref<TItem | null>;
     const fieldProps = useStandardRockFormFieldProps(props);
     const { isMobile } = useViewportWidth(props.mobileThreshold);
-    const showOverlay = ref(false);
+    const isExpanded = ref(false);
 
     // #endregion
 
@@ -173,7 +173,7 @@
     }
 
     function openStateCssClass(): string {
-        if (showOverlay.value == true) {
+        if (isExpanded.value == true) {
             return "is-open";
         }
 
@@ -181,22 +181,24 @@
     }
 
     function onItemClick(item: TItem | null): void {
-        if ((showOverlay.value || !isMobile.value) && item !== null && !isItemDisabled(item)) {
+        if ((isExpanded.value || !isMobile.value) && item !== null && !isItemDisabled(item)) {
             internalValue.value = item;
-            showOverlay.value = false;
+            isExpanded.value = false;
         }
         else if (isMobile.value) {
-            showOverlay.value = true;
+            isExpanded.value = true;
         }
     }
 
     // #endregion
 
-    // #region Event Handlers
+    // #region Watchers
 
-    // #endregion
-
-    // #region Lifecycle
+    watch(isMobile, () => {
+        // Whenever we switch back and forth between desktop and mobile, we
+        // want to make sure it isn't expanded.
+        isExpanded.value = false;
+    });
 
     // #endregion
 </script>

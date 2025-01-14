@@ -106,6 +106,7 @@ namespace RockWeb.Blocks.Reporting
 
             public const string ReportId = "ReportId";
             public const string GroupId = "GroupId";
+            public const string ExpandedIds = "ExpandedIds";
         }
 
         #endregion PageParameterKey
@@ -443,9 +444,14 @@ $(document).ready(function() {
             }
 
             var qryParams = new Dictionary<string, string>();
+            var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
             qryParams[PageParameterKey.DataViewId] = dataView.Id.ToString();
             qryParams[PageParameterKey.ParentCategoryId] = null;
-            NavigateToCurrentPageReference( qryParams );
+            if ( expandedIds.IsNotNullOrWhiteSpace() )
+            {
+                qryParams[PageParameterKey.ExpandedIds] = expandedIds;
+            }
+            NavigateToCurrentPage( qryParams );
         }
 
         /// <summary>
@@ -995,7 +1001,7 @@ $(document).ready(function() {
             var reports = reportService.Queryable().AsNoTracking().Where( r => r.DataViewId == dataView.Id ).OrderBy( r => r.Name );
             var reportDetailPage = GetAttributeValue( AttributeKey.ReportDetailPage );
 
-            foreach ( var report in reports )
+            foreach ( var report in reports.AsEnumerable().Where( r => r.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) )
             {
                 if ( !string.IsNullOrWhiteSpace( reportDetailPage ) )
                 {

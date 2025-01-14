@@ -244,7 +244,7 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <div>
-    <DropDownList v-model="definedTypeValue" label="Defined Type" :items="definedTypeOptions" :showBlankItem="false" />
+    <DropDownList v-model="definedTypeValue" label="Defined Type" :items="definedTypeOptions" rules="required" :showBlankItem="true" />
     <CheckBox v-model="displayDescriptions" label="Display Descriptions" help="When set, the defined value descriptions will be displayed instead of the values." />
 </div>
 `

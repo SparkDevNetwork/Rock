@@ -21,6 +21,7 @@
                 title="Program"
                 field="name"
                 :filter="textValueFilter"
+                :quickFilterValue="getProgramQuickFilterValue"
                 width="50%"
                 visiblePriority="xs">
             <template #format="{ row }">
@@ -36,6 +37,7 @@
         </Column>
         <Column name="category"
                 title="Category"
+                field="category"
                 :filter="pickExistingValueFilter"
                 width="20%"
                 visiblePriority="md">
@@ -47,9 +49,11 @@
         </Column>
         <Column name="configurationMode"
                 title="Configuration Mode"
+                field="configurationMode"
                 :filter="pickExistingValueFilter"
+                :quickFilterValue="getConfigurationModeQuickFilterValue"
                 width="20%"
-                visiblePriority="md">
+                visiblePriority="lg">
             <template #format="{ row }">
                 <div class="configuration-mode-container">
                     <span :class="getConfigurationModeLabelClass(row.configurationMode)">
@@ -63,14 +67,14 @@
                        field="isPublic"
                        :filter="booleanValueFilter"
                        width="5%"
-                       visiblePriority="lg" />
+                       visiblePriority="sm" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
                        :filter="booleanValueFilter"
                        width="5%"
-                       visiblePriority="lg" />
+                       visiblePriority="sm" />
 
         <template #skeleton>
             <div class="skeleton skeleton-text skeleton-rounded" />
@@ -78,14 +82,14 @@
 
         <SecurityColumn />
 
-        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" :disableConfirmation="true" />
     </Grid>
 </template>
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { textValueFilter, BooleanColumn, Column, DeleteColumn, SecurityColumn, booleanValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
-    import { alert } from "@Obsidian/Utility/dialogs";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningProgramListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningProgramList/learningProgramListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -93,6 +97,7 @@
     import { reactive, ref } from "vue";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { ConfigurationMode, ConfigurationModeDescription } from "@Obsidian/Enums/Lms/configurationMode";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<ListBlockBox<LearningProgramListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -106,6 +111,14 @@
     // #endregion
 
     // #region Functions
+
+    function getProgramQuickFilterValue(row: Record<string, unknown>): string {
+        return `${row.name} ${row.summary}`;
+    }
+
+    function getConfigurationModeQuickFilterValue(row: Record<string, unknown>): string {
+        return getConfigurationModeText(row["configurationMode"] as ConfigurationMode);
+    }
 
     function getConfigurationModeLabelClass(configurationMode: ConfigurationMode): string {
         return `label label-${configurationMode === ConfigurationMode.AcademicCalendar ? "success" : "info"}`;
@@ -162,6 +175,34 @@
      * happens only if they have confirmed the delete action.
      */
     async function onDeleteClick(key: string): Promise<void> {
+
+        const learningClass = gridData?.rows?.find(r => r.idKey === key);
+        const programName = learningClass?.["name"] as string ?? "";
+
+        const initialConfirmationMessage = programName.length > 0 ?
+            `Are you sure you wish to delete the ${programName} program?` :
+            "Are you sure you wish to delete the program?";
+
+        const confirmed = await confirm(initialConfirmationMessage);
+
+        if (!confirmed) {
+            return;
+        }
+
+        // If there are student completions - ensure the individual
+        // is aware that the delete will remove completed activities.
+        if (await getHasStudentCompletions(key)) {
+            const confirmationMessage = programName.length > 0 ?
+                `The ${programName} program has classes with students that have completed activities. Are you sure you want to delete this program and all its related information?` :
+                "The program has classes with students that have completed activities. Are you sure you want to delete this program and all its related information?";
+
+            const confirmedDelete = await confirm(confirmationMessage);
+
+            if (!confirmedDelete) {
+                return;
+            }
+        }
+
         const result = await invokeBlockAction<string>("Delete", {
             key
         });
@@ -178,6 +219,21 @@
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to delete learning program.");
         }
+    }
+
+    async function getHasStudentCompletions(key: string): Promise<boolean> {
+        const result = await invokeBlockAction<string>("HasStudentCompletions", {
+            key
+        });
+
+        if (result.isSuccess) {
+            return asBoolean(result.data);
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to check learning class student completions.");
+        }
+
+        return false;
     }
 
     /**

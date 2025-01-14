@@ -230,12 +230,12 @@
     <Compile Include="Modules\Core\OpenAI\AICompletionsUtility.cs" />
     <Compile Include="Modules\Core\Field.Types\PhoneNumberFieldTypeTests.cs" />
     <Compile Include="Modules\CheckIn\v2\FamilyRegistrationTests.cs" />
+    <Compile Include="Modules\CheckIn\v2\OpportunityCollectionTests.cs" />
     <Compile Include="Modules\Core\AttributeMatrixTests.cs" />
     <Compile Include="Modules\Core\Lava\Commands\WorkflowActivateTests.cs" />
     <Compile Include="Modules\Core\Lava\Engine\TypeConversionTests.cs" />
     <Compile Include="Modules\Core\Lava\Documentation\IfTagExamples.cs" />
     <Compile Include="Modules\Core\Lava\Filters\PersonalizationFilterTests.cs" />
-    <Compile Include="Modules\Core\Lava\Shortcodes\AiCompletionTests.cs" />
     <Compile Include="Modules\Core\Lava\Shortcodes\ScheduledContentTests.cs" />
     <Compile Include="Modules\Core\Lava\Shortcodes\KpiShortcodeTests.cs" />
     <Compile Include="Modules\Core\Lava\Shortcodes\GoogleMapShortcodeTests.cs" />

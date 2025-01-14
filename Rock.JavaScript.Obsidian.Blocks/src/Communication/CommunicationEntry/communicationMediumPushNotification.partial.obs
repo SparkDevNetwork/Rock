@@ -36,16 +36,16 @@
                                      :minimumRecipientCount="minimumRecipientCount" />
                     <template v-else>
                         <RockLabel>Recipients</RockLabel>
-                        <StaticFormControl :modelValue="`Communication List: ${config.communication.communicationListName} (${config.communication.communicationListRecipientCount} individuals)`">
+                        <StaticFormControl :modelValue="`Communication List: ${config.communication.communicationListName} (${recipients.length} individuals)`">
                             <template #default="{ value }">
-                                {{ value }} <RockButton btnType="link" btnSize="sm" @click="onConvertListToRecipients">Convert List to Recipients</RockButton>
+                                {{ value }} <RockButton btnType="link" btnSize="sm" :disabled="disabled" @click="onConvertListToRecipients">Convert List to Recipients</RockButton>
                             </template>
                         </StaticFormControl>
                     </template>
                 </div>
             </div>
 
-            <div class="row">
+            <div class="d-flex row align-items-center">
                 <div class="col-sm-6">
                     <DropDownList v-model="mobileApplicationGuidAsString"
                                   blankValue="All Applications"
@@ -66,17 +66,10 @@
                 </div>
             </div>
 
-            <div class="row">
+            <div class="row d-flex align-items-center">
                 <div class="col-sm-6">
                     <RockTextBox v-model="title" label="Title" :maxLength="100" />
 
-                    <SmsMessageEditor v-model="message"
-                                      :disabled="disabled"
-                                      :editorHeight="200"
-                                      :isCountDownShown="mediumOptions.characterLimit > 0"
-                                      :countDownMaxChars="mediumOptions.characterLimit"
-                                      :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
-                                      toolbarLabel="Message" />
                 </div>
 
                 <div class="col-sm-6">
@@ -85,6 +78,18 @@
                                      :horizontal="true"
                                      :items="openActions"
                                      label="Open Action" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <SmsMessageEditor v-model="message"
+                                      :disabled="disabled"
+                                      :editorHeight="200"
+                                      :isCountDownShown="mediumOptions.characterLimit > 0"
+                                      :countDownMaxChars="mediumOptions.characterLimit"
+                                      :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
+                                      toolbarLabel="Message" />
                 </div>
             </div>
 
@@ -145,6 +150,12 @@
     </template>
 </template>
 
+<style>
+.form-group.rock-radio-button-list {
+    margin-bottom: 0;
+}
+</style>
+
 <script setup lang="ts">
     import { computed, nextTick, onMounted, PropType, ref, watch } from "vue";
     import Delay from "./delay.partial.obs";
@@ -182,6 +193,7 @@
     import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";
     import { CommunicationEntryMediumOptionsBaseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryMediumOptionsBaseBag";
     import { CommunicationEntryPushMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryPushMediumOptionsBag";
+    import { CommunicationEntryPushNotificationOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryPushNotificationOptionsBag";
     import { CommunicationEntryTestResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryTestResponseBag";
     import { CommunicationEntrySendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySendResponseBag";
     import { CommunicationEntrySaveRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntrySaveRequestBag";
@@ -272,7 +284,7 @@
     const communicationGuid = ref<Guid>(template.value?.communicationGuid ?? emptyGuid);
     const message = ref<string>(template.value?.pushMessage ?? "");
     const disabledMessage = ref<string | null | undefined>();
-    const openAction = ref<string>(getOpenAction(template.value?.pushOpenAction));
+    const openAction = ref<string>(getOpenAction(template.value?.pushOpenAction, template.value?.pushData));
     const title = ref<string>(template.value?.pushTitle ?? "");
     const mobileApplicationGuidAsString = ref<string>(template.value?.pushData?.mobileApplicationGuid ?? "");
     const url = ref<string>(template.value?.pushData?.linkToPageUrl ?? "");
@@ -395,11 +407,16 @@
         }
     }
 
-    function getOpenAction(pushOpenAction: PushOpenActionType | null | undefined): OpenAction {
+    function getOpenAction(pushOpenAction: PushOpenActionType | null | undefined, pushData?: CommunicationEntryPushNotificationOptionsBag | null | undefined): OpenAction {
         if (pushOpenAction ?? null !== null) {
             switch (pushOpenAction) {
                 case PushOpenActionType.LinkToMobilePage:
-                    return OpenAction.SpecificPage;
+                    if (pushData?.mobilePage) {
+                        return OpenAction.SpecificPage;
+                    }
+                    else {
+                        return OpenAction.OpenHomepage;
+                    }
                 case PushOpenActionType.LinkToUrl:
                     return OpenAction.LinkToUrl;
                 case PushOpenActionType.ShowDetails:
@@ -733,7 +750,7 @@
         title.value = template.pushTitle ?? "";
         message.value = template.pushMessage ?? "";
         if ((template.pushOpenAction ?? null) !== null) {
-            openAction.value = getOpenAction(template.pushOpenAction);
+            openAction.value = getOpenAction(template.pushOpenAction, template.pushData);
         }
 
         mobileApplicationGuidAsString.value = "";

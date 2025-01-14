@@ -42,7 +42,7 @@
   min-height:               260px;
   overflow:                 hidden;
   text-align:               center;
-  border:                   1px solid var(--theme-light);
+  border:                   1px solid var(--color-interface-soft);
   -webkit-transform-style:  preserve-3d;
   -moz-transform-style:     preserve-3d;
   transform-style:          preserve-3d;
@@ -205,7 +205,7 @@
   left:         0;
   width:        100%;
   height:       100%;
-  font-size:    28px;
+  font-size:    var(--font-size-h3);
   background:   var(--color-interface-softest);
   -webkit-transform-style:  preserve-3d;
   -moz-transform-style:     preserve-3d;

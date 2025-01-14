@@ -28,7 +28,7 @@ export type CampusBag = {
     /** Gets or sets the identifier of this item. */
     id?: string | null;
 
-    /** Gets or sets a list of Kiosks */
+    /** List of associated kiosks. */
     kiosks?: WebKioskBag[] | null;
 
     /** Gets or sets the display name of this item. */

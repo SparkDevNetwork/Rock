@@ -104,8 +104,8 @@
     position:            sticky;
     left:                12px;
     display:             inline-block;
-    margin:              0 12px 12px;
-    font-size:           18px;
+    margin:              0 var(--spacing-small) var(--spacing-small);
+    font-size:           var(--font-size-h5);
     font-weight:         var(--font-weight-semibold);
   }
 
@@ -121,19 +121,19 @@
 
     @media (min-width: $screen-medium) {
       width:             360px;
-      padding:           0 12px 12px;
+      padding:           0 var(--spacing-small) var(--spacing-small);
     }
   }
 
   .card-sched {
-    margin-bottom:       12px;
+    margin-bottom:       var(--spacing-small);
 
     .location {
       margin-bottom:     var(--spacing-medium);
     }
 
     .card-body {
-      padding:           12px;
+      padding:           var(--spacing-small);
 
       .location:last-child {
         margin-bottom:   0;
@@ -182,7 +182,7 @@
       }
 
       .btn-overflow {
-        padding:         0 12px;
+        padding:         0 var(--spacing-small);
         color:           var(--color-interface-soft);
 
         &:hover {
@@ -249,7 +249,7 @@
     padding:             14px;
     margin-bottom:       var(--spacing-large);
     border:              1px solid var(--color-interface-soft);
-    border-radius:       4px;
+    border-radius:       var(--rounded-xsmall);
 
     &::before {
       position:          absolute;
@@ -283,7 +283,7 @@
     width:               26px;
     height:              26px;
     padding:             0;
-    margin-right:        12px;
+    margin-right:        var(--spacing-small);
     font-size:           var(--font-size-regular);
     color:               var(--color-interface-medium);
     background:          var(--color-interface-softest);

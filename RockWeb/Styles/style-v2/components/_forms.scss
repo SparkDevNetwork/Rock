@@ -124,8 +124,9 @@ output {
   background-color:   var(--color-interface-softest);
   background-image:   none; // Reset unusual Firefox-on-Android default style; see https://github.com/necolas/normalize.css/issues/214
   border:             1px solid var(--color-interface-soft);
-  border-radius:      var(--rounded-small); // Note: This has no effect on <select>s in some browsers, due to the limited stylability of <select>s in CSS.
-  box-shadow:         inset 0 1px 1px rgba(0, 0, 0, .075);
+  border-radius:      var(--rounded-xsmall); // Note: This has no effect on <select>s in some browsers, due to the limited stylability of <select>s in CSS.
+  // box-shadow:         inset 0 1px 1px rgba(0, 0, 0, .075); // Comment out because in rock the textbox have a box-shadow: none.
+  box-shadow:         var(--input-box-shadow);
   transition:         border-color ease-in-out .15s, box-shadow ease-in-out .15s;
 
   // Customize the `:focus` state to imitate native WebKit styles.
@@ -177,8 +178,10 @@ output {
     margin-right: var(--spacing-medium);
     align-items:  center;
   }
+  
   > .row,
-  > .form-row {
+  > .form-row,
+  > .form-group {
     width:        100%;
   }
 
@@ -313,6 +316,10 @@ output {
   }
 }
 
+.form-group.static-control .form-control-static {
+  padding-top: 0;
+}
+
 // Moved from _checkin-core.less 
 .form-group.required {
   .control-label::after {
@@ -336,7 +343,7 @@ select.form-control {
   background-repeat:      no-repeat;
   background-position:    right var(--spacing-medium) center;
   background-size:        var(--spacing-medium) 12px;
-  border-radius:          var(--rounded-small);
+  border-radius:          var(--rounded-xsmall);
   appearance:             none;
 
   &[multiple],
@@ -498,7 +505,7 @@ select.form-control {
   &.has-error {
     iframe {
       border:         1px solid var(--color-danger-strong);
-      border-radius:  var(--rounded-small);
+      border-radius:  var(--rounded-xsmall);
     }
   }
 }
@@ -591,7 +598,7 @@ a.warning {
   padding:        var(--spacing-xsmall) var(--spacing-medium);
   font-size:      var(--font-size-small);
   line-height:    16px; // Keep 16px to align with carot
-  border-radius:  var(--rounded-small);
+  border-radius:  var(--rounded-xsmall);
 
   select & {
     height:   34px;
@@ -605,14 +612,14 @@ a.warning {
 }
 
 .input-lg {
-  // .input-size(38px-large; var(--spacing-xsmall); var(--spacing-medium); var(--font-size-medium); var(--line-height-normal); var(--rounded-small));
+  // .input-size(38px-large; var(--spacing-xsmall); var(--spacing-medium); var(--font-size-medium); var(--line-height-normal); var(--rounded-xsmall));
   height:         38px;
   padding:        var(--spacing-xsmall) var(--spacing-medium);
   font-size:      var(--font-size-medium);
   line-height:    var(--line-height-normal);
   border-radius:  var(--rounded-normal);
 
-  selec t & {
+  select & {
     height: 38px;
     padding:      var(--spacing-xsmall) var(--spacing-medium) var(--spacing-xsmall) var(--spacing-medium); // Modified to BS5
   }
@@ -645,7 +652,7 @@ a.warning {
     padding:        var(--spacing-xsmall) var(--spacing-medium);
     font-size:      var(--font-size-small);
     line-height:    var(--line-height-normal);
-    border-radius:  var(--rounded-small);
+    border-radius:  var(--rounded-xsmall);
   }
   select.form-control {
     height: 34px;
@@ -670,7 +677,7 @@ a.warning {
     padding:        var(--spacing-xsmall) var(--spacing-medium);
     font-size:      var(--font-size-medium);
     line-height:    var(--line-height-normal);
-    border-radius:  var(--rounded-small);
+    border-radius:  var(--rounded-xsmall);
   }
   select.form-control {
     height:         var(--line-height-normal);

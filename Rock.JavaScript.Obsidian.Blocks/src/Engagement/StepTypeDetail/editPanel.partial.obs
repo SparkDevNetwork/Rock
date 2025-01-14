@@ -226,6 +226,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -435,24 +436,23 @@
 
     const onEditAttribute = async (key: string): Promise<void> => {
 
-        const selectedStepAttribute = stepAttributes.value.find(x => x.attribute?.key === key);
+        const selectedStepAttribute = stepAttributes.value.find(x => x.attribute?.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedStepAttribute?.attribute) {
             stepAttribute.value = selectedStepAttribute.attribute;
             isAttributeModalOpen.value = true;
         }
         else {
-            stepAttribute.value = {
-                fieldTypeGuid: FieldType.Text,
-            } as PublicEditableAttributeBag;
-            isAttributeModalOpen.value = true;
+            onAddAttribute();
         }
     };
 
     const onDeleteAttribute = async (key: string): Promise<void> => {
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
-        stepAttributes.value = stepAttributes.value.filter(s => s.attribute?.key !== key);
+        const deletedAttribute = stepAttributes.value.find(a => a.attribute?.guid == key);
+        stepAttributes.value = stepAttributes.value.filter(s => s.attribute?.guid !== key);
+        reservedKeyNames.value = reservedKeyNames.value.filter(r => r !== deletedAttribute?.attribute?.key);
 
         // Update the grid.
         if (attributesGridData.rows) {
@@ -467,12 +467,12 @@
     const onSaveAttribute = (): void => {
 
         if (stepAttribute.value && stepAttributes.value && attributesGridData.rows) {
-            const index = stepAttributes.value.findIndex(a => a.attribute?.guid === stepAttribute.value?.guid && a.attribute?.key === stepAttribute.value?.key);
+            const index = stepAttributes.value.findIndex(a => a.attribute?.guid === stepAttribute.value?.guid);
 
             if (index !== -1) {
                 // Get the updated attribute and rowItem.
                 let editedAttribute = stepAttributes.value.find(a => a.attribute?.guid == stepAttribute.value?.guid);
-                let rowItem = attributesGridData.rows.find(x => x["idKey"] == stepAttribute.value?.key);
+                let rowItem = attributesGridData.rows.find(x => x["idKey"] == stepAttribute.value?.guid);
 
                 if (editedAttribute && rowItem) {
                     // Replace old attribute with updated attribute.
@@ -480,13 +480,14 @@
                     stepAttributes.value.splice(index, 1, editedAttribute);
 
                     // Update GridRowItem so changes are reflected in the UI.
-                    const rowIndex = attributesGridData.rows.findIndex(r => r["idKey"] === stepAttribute.value?.key);
+                    const rowIndex = attributesGridData.rows.findIndex(r => r["idKey"] === stepAttribute.value?.guid);
                     rowItem = getAttributeGridRowItem(editedAttribute);
                     attributesGridData.rows?.splice(rowIndex, 1, rowItem);
                 }
             }
             else {
                 // Create new attribute if existing attribute with same key was not found.
+                stepAttribute.value.guid = newGuid();
                 const newStepAttribute: StepAttributeBag = {
                     attribute: stepAttribute.value,
                     fieldType: "",
@@ -498,19 +499,22 @@
                 attributesGridData.rows.push(newRowItem);
             }
 
-            reservedKeyNames.value.push(stepAttribute.value.key ?? "");
-            stepAttribute.value = null;
             isAttributeModalOpen.value = false;
+            stepAttribute.value = null;
         }
     };
 
     const getAttributeGridRowItem = (stepAttribute: StepAttributeBag): Record<string, unknown> => {
         const rowItem: Record<string, unknown> = {};
 
-        rowItem["idKey"] = stepAttribute.attribute?.key;
+        rowItem["idKey"] = stepAttribute.attribute?.guid;
         rowItem["attributeName"] = stepAttribute.attribute?.name;
         rowItem["fieldType"] = stepAttribute.fieldType;
         rowItem["allowSearch"] = stepAttribute.attribute?.isAllowSearch;
+
+        if (stepAttribute.attribute?.key && !reservedKeyNames.value.includes(stepAttribute.attribute?.key)) {
+            reservedKeyNames.value.push(stepAttribute.attribute.key);
+        }
 
         return rowItem;
     };
@@ -518,6 +522,17 @@
     const onStartSaveAttribute = (): void => {
         submitEditAttribute.value = true;
     };
+
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== stepAttribute.value?.key);
+        }
+        else {
+            if (stepAttribute.value?.key && !reservedKeyNames.value.some(k => k === stepAttribute.value?.key)) {
+                reservedKeyNames.value.push(stepAttribute.value.key);
+            }
+        }
+    });
 
     // #endregion
 

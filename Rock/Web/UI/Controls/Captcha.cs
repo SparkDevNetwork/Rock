@@ -371,7 +371,7 @@ namespace Rock.Web.UI.Controls
                 ? this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "TokenReceived" ), false ).Replace( '\'', '"' )
                 : "";
 
-            if ( SiteKey.IsNotNullOrWhiteSpace() && postBackScript.IsNotNullOrWhiteSpace() )
+            if ( SiteKey.IsNotNullOrWhiteSpace() )
             {
                 // Add the cloudflare script tag to head.
                 var additionalAttributes = new Dictionary<string, string> { { "defer", null } };
@@ -503,7 +503,7 @@ namespace Rock.Web.UI.Controls
         #region Support Classes
 
         /// <summary>
-        /// Support class to handle the response Cloudflares captcha reponse
+        /// Support class to handle the response Cloudflares captcha response
         /// </summary>
         private class CloudFlareCaptchaResponse
         {

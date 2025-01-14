@@ -33,7 +33,10 @@ export type CategoryBag = {
     attributeValues?: Record<string, string> | null;
 
     /** Gets or sets the CategoryId of the currently selected Category. */
-    categoryId?: number | null;
+    categoryId: number;
+
+    /** If true all AttributeValue records for the Category will be deleted. */
+    deleteAttributeValues: boolean;
 
     /** Gets or sets the description. */
     description?: string | null;

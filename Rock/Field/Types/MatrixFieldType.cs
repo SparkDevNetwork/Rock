@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     ///  Matrix Field Type
     ///  Value stored as AttributeMatrix.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.MATRIX )]
     public class MatrixFieldType : FieldType, IEntityFieldType
@@ -290,6 +291,7 @@ namespace Rock.Field.Types
                     {
                         var matrixItem = new AttributeMatrixItem();
                         matrixItem.AttributeMatrix = matrix;
+                        matrixItem.AttributeMatrixTemplateId = matrix.AttributeMatrixTemplateId;
                         matrixItemService.Add( matrixItem );
 
                         ApplyClientDataToAttributeMatrixItem( matrixItem, newItem, rockContext );
@@ -326,6 +328,7 @@ namespace Rock.Field.Types
                                 // New Matrix Item
                                 var matrixItem = new AttributeMatrixItem();
                                 matrixItem.AttributeMatrix = matrix;
+                                matrixItem.AttributeMatrixTemplateId = matrix.AttributeMatrixTemplateId;
                                 matrixItemService.Add( matrixItem );
 
                                 ApplyClientDataToAttributeMatrixItem( matrixItem, clientItem, rockContext );
@@ -340,6 +343,7 @@ namespace Rock.Field.Types
                                     // Doesn't exist? Odd... we'll have to recreate it then.
                                     matrixItem = new AttributeMatrixItem();
                                     matrixItem.AttributeMatrix = matrix;
+                                    matrixItem.AttributeMatrixTemplateId = matrix.AttributeMatrixTemplateId;
                                     matrixItemService.Add( matrixItem );
                                 }
 
@@ -386,6 +390,7 @@ namespace Rock.Field.Types
                     // make a temp attributeMatrixItem to see what Attributes they have
                     AttributeMatrixItem tempAttributeMatrixItem = new AttributeMatrixItem();
                     tempAttributeMatrixItem.AttributeMatrix = attributeMatrix;
+                    tempAttributeMatrixItem.AttributeMatrixTemplateId = attributeMatrix.AttributeMatrixTemplateId;
                     tempAttributeMatrixItem.LoadAttributes();
 
                     var lavaTemplate = attributeMatrix.AttributeMatrixTemplate.FormattedLava;

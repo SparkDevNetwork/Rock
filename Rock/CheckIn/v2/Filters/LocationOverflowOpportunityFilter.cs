@@ -18,6 +18,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using Rock.ViewModels.CheckIn;
+
 namespace Rock.CheckIn.v2.Filters
 {
     /// <summary>
@@ -50,8 +52,8 @@ namespace Rock.CheckIn.v2.Filters
         public override void FilterLocations( OpportunityCollection opportunities )
         {
             // Groups have already been filtered out at this point.
-            var normalLocationIds = opportunities.Groups.SelectMany( g => g.LocationIds ).ToList();
-            var overflowLocationIds = opportunities.Groups.SelectMany( g => g.OverflowLocationIds ).ToList();
+            var normalLocationIds = opportunities.Groups.SelectMany( g => g.Locations.Select( l => l.LocationId ) ).ToList();
+            var overflowLocationIds = opportunities.Groups.SelectMany( g => g.OverflowLocations.Select( l => l.LocationId ) ).ToList();
 
             // If we have no overflow locations defined then we don't
             // need to do anything.
@@ -72,9 +74,9 @@ namespace Rock.CheckIn.v2.Filters
 
                 foreach ( var group in opportunities.Groups )
                 {
-                    if ( group.OverflowLocationIds.Count > 0 )
+                    if ( group.OverflowLocations.Count > 0 )
                     {
-                        group.OverflowLocationIds = new List<string>();
+                        group.OverflowLocations = new List<LocationAndScheduleBag>();
                     }
                 }
             }
@@ -85,11 +87,11 @@ namespace Rock.CheckIn.v2.Filters
                 // groups to use their overflow locations instead.
                 foreach ( var group in opportunities.Groups )
                 {
-                    group.LocationIds = group.OverflowLocationIds;
+                    group.Locations = group.OverflowLocations;
 
-                    if ( group.OverflowLocationIds.Count > 0 )
+                    if ( group.OverflowLocations.Count > 0 )
                     {
-                        group.OverflowLocationIds = new List<string>();
+                        group.OverflowLocations = new List<LocationAndScheduleBag>();
                     }
                 }
             }

@@ -71,7 +71,7 @@
 
   .tooltip-inner {
     max-width:      300px;
-    padding:        12px;
+    padding:        var(--spacing-small);
   }
 
   .fa-stack {
@@ -235,17 +235,17 @@ $badge-count-width: 18px;
 
 .rockbadge-step {
   .metric-value {
-    position:       absolute;
-    top:            calc($badge-count-width / -3);
-    right:          calc($badge-count-width / -3);
-    width:          $badge-count-width;
-    height:         $badge-count-width;
-    font-size:      .266em;
-    font-weight:    var(--font-weight-regular);
-    line-height:    $badge-count-width;
-    color:          var(--color-interface-softest);
-    background-color: var(--color-danger-strong);
-    border-radius:  50%;
+    position:           absolute;
+    top:                calc($badge-count-width / -3);
+    right:              calc($badge-count-width / -3);
+    width:              $badge-count-width;
+    height:             $badge-count-width;
+    line-height:        $badge-count-width;
+    font-size:          .266em;
+    font-weight:        var(--font-weight-regular);
+    color:              var(--color-interface-softest);
+    background-color:   var(--color-danger-strong);
+    border-radius:      50%;
   }
 }
 
@@ -255,7 +255,7 @@ $badge-count-width: 18px;
     display:        block;
     font-family:    'FontAwesome';
     font-size:      .6em;
-    font-weight:    600;
+    font-weight:    var(--font-weight-semibold);
     color:          var(--color-danger-strong);
     content:        '\f715';
   }
@@ -378,7 +378,7 @@ $badge-count-width: 18px;
 
   .badge-content {
     font-size:  .888em;
-    color:      var(--color-info-soft);
+    color:      var(--color-info-strong);
 
     &.today {
       .metric-value {
@@ -442,7 +442,7 @@ $badge-count-width: 18px;
 
 .assessment-tooltip-item {
   display:        flex;
-  margin-bottom:  12px;
+  margin-bottom:  var(--spacing-small);
 
   &:last-child {
     margin-bottom: 0;
@@ -665,7 +665,7 @@ span.field-value {
   color:        var(--font-family-monospace);
   white-space:  nowrap;
   background-color: var(--color-interface-softer);
-  border-radius:    4px;
+  border-radius:    var(--rounded-xsmall);
 }
 
 /* white-space was nowrap but changed to inherit; see discussion at https://github.com/SparkDevNetwork/Rock/commit/e4230496c8a1dc199f1bbb26f95dfa025d64dd02#r28278277 */
@@ -677,7 +677,7 @@ span.field-value {
 
 // ======================== ADD GROUP ========================
 .row-duplicate {
-  padding-top:    12px;
+  padding-top:    var(--spacing-small);
   border-top:     1px solid var(--color-info-strong);
 }
 
@@ -708,7 +708,7 @@ span.field-value {
 // ======================== DECEASED / INACTIVE STYLES ========================
 .person-bio {
   div.deceased h1.title.name::after {
-    margin-left:  12px;
+    margin-left:  var(--spacing-small);
     font-size:    var(--font-size-small);
     color:        var(--color-danger-strong);
     content:      "Deceased";
@@ -762,7 +762,7 @@ tr.inactive {
   }
 
   .form-group.bulk-item-selected {
-    padding:            12px;
+    padding:            var(--spacing-small);
     background-color:   var(--color-interface-softer);
     border-radius:      var(--rounded-small);
   }
@@ -854,10 +854,10 @@ tr.inactive {
 
   .likert {
     .radio-inline {
-      padding:          5px var(--spacing-medium) 7px calc(20px + var(--spacing-medium) + 4px);
+      padding:          var(--spacing-tiny) var(--spacing-medium) 7px calc(20px + var(--spacing-medium) + 4px);
       cursor:           pointer;
       background-clip:  padding-box;
-      border-radius:    4px;
+      border-radius:    var(--rounded-xsmall);
 
       @media (min-width: $screen-medium) {
         margin-right:   var(--spacing-medium);

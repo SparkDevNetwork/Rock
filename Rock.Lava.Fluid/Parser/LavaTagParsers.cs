@@ -553,23 +553,6 @@ namespace Rock.Lava.Fluid
                     }
                 }
 
-                //  If this is a comment tag, ignore it if it is preceded by an unmatched quote.
-                if ( _format == LavaTagFormatSpecifier.BlockComment
-                    || _format == LavaTagFormatSpecifier.InlineComment )
-                {
-                    if ( p.PreviousTextSpanStatement != null )
-                    {
-                        var inQuote = TextContainsUnpairedQuote( p.PreviousTextSpanStatement.Text );
-                        if ( inQuote )
-                        {
-                            // This comment tag is enclosed in an open quote, and should therefore be ignored.
-                            // Return the scanner to the start position and exit.
-                            context.Scanner.Cursor.ResetPosition( start );
-                            return false;
-                        }
-                    }
-                }
-
                 var trim = false;
                 if ( parseTag )
                 {
@@ -606,29 +589,6 @@ namespace Rock.Lava.Fluid
                 result.Set( start.Offset, context.Scanner.Cursor.Offset, lavaTagResult );
                 return true;
             }
-        }
-
-        internal static bool TextContainsUnpairedQuote( TextSpan text )
-        {
-            int singleQuoteCount = 0;
-            int doubleQuoteCount = 0;
-
-            for ( var i = text.Offset; i < text.Length; i++ )
-            {
-                var c = text.Buffer[i];
-
-                if ( c == '\'' )
-                {
-                    singleQuoteCount++;
-                }
-                else if ( c == '\"' )
-                {
-                    doubleQuoteCount++;
-                }
-            }
-
-            var isQuoted = ( singleQuoteCount % 2 == 1 || doubleQuoteCount % 2 == 1 );
-            return isQuoted;
         }
 
         /// <summary>
@@ -740,23 +700,6 @@ namespace Rock.Lava.Fluid
                         context.Scanner.Cursor.ResetPosition( start );
                         return false;
 
-                    }
-
-                    //  If this is a comment tag, ignore it if it is preceded by an unmatched quote.
-                    if ( _format == LavaTagFormatSpecifier.BlockComment
-                            || _format == LavaTagFormatSpecifier.InlineComment )
-                    {
-                        if ( p.PreviousTextSpanStatement != null )
-                        {
-                            var inQuote = TextContainsUnpairedQuote( p.PreviousTextSpanStatement.Text );
-                            if ( inQuote )
-                            {
-                                // This comment tag is enclosed in an open quote, and should therefore be ignored.
-                                // Return the scanner to the start position and exit.
-                                context.Scanner.Cursor.ResetPosition( start );
-                                return false;
-                            }
-                        }
                     }
 
                     p.StripNextTextSpanStatement = trim;

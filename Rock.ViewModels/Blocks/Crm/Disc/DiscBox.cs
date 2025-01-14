@@ -165,52 +165,53 @@ namespace Rock.ViewModels.Blocks.Crm.Disc
     /// <summary>
     /// The bag containing the results of the assessment.
     /// </summary>
+    [Serializable]
     public class AssessmentResultsBag
     {
         /// <summary>
         /// Gets or sets the adaptive behavior score for the 'D' trait.
         /// </summary>
-        public int AdaptiveBehaviorD;
+        public int AdaptiveBehaviorD { get; set; }
 
         /// <summary>
         /// Gets or sets the adaptive behavior score for the 'I' trait.
         /// </summary>
-        public int AdaptiveBehaviorI;
+        public int AdaptiveBehaviorI { get; set; }
 
         /// <summary>
         /// Gets or sets the adaptive behavior score for the 'S' trait.
         /// </summary>
-        public int AdaptiveBehaviorC;
+        public int AdaptiveBehaviorC { get; set; }
 
         /// <summary>
         /// Gets or sets the adaptive behavior score for the 'C' trait.
         /// </summary>
-        public int AdaptiveBehaviorS;
+        public int AdaptiveBehaviorS { get; set; }
 
         /// <summary>
         /// Gets or sets the natural behavior score for the 'D' trait.
         /// </summary>
-        public int NaturalBehaviorD;
+        public int NaturalBehaviorD { get; set; }
 
         /// <summary>
         /// Gets or sets the natural behavior score for the 'I' trait.
         /// </summary>
-        public int NaturalBehaviorI;
+        public int NaturalBehaviorI { get; set; }
 
         /// <summary>
         /// Gets or sets the natural behavior score for the 'S' trait.
         /// </summary>
-        public int NaturalBehaviorS;
+        public int NaturalBehaviorS { get; set; }
 
         /// <summary>
         /// Gets or sets the natural behavior score for the 'C' trait.
         /// </summary>
-        public int NaturalBehaviorC;
+        public int NaturalBehaviorC { get; set; }
 
         /// <summary>
         /// Gets or sets the personality type code.
         /// </summary>
-        public string PersonalityType;
+        public string PersonalityType { get; set; }
     }
     #endregion
 }

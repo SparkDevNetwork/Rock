@@ -81,10 +81,11 @@
     padding: 6px 12px;
     border-radius: 4px;
     transition: background-color 0.25s ease, color 0.25s ease;
+    background-color: #f5f5f5;
 }
 
 .tabbed-bar.pills > .toolbar-nav > li:hover .title {
-    background-color: #f5f5f5;
+    background-color: #EBEBEB;
 }
 
 .tabbed-bar.pills > .toolbar-nav > li.active .title {

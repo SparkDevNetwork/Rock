@@ -110,7 +110,7 @@
                     </div>
                 </template>
 
-                <div v-else class="form-group static-control">
+                <div v-else-if="!registrationEntryState.viewModel.session?.activePaymentPlan" class="form-group static-control">
                     <label class="control-label">Amount Due</label>
                     <div class="control-wrapper">
                         <div class="form-control-static">
@@ -364,8 +364,8 @@
         }
 
         // excluding the grouping separators (or the thousands separators) as they were not compactible with the rules engine.
-        rules.push(`gte:${min.format({excludeGroupingSeparators: true})}`);
-        rules.push(`lte:${max.format({excludeGroupingSeparators: true})}`);
+        rules.push(`gte:${min.format({ excludeGroupingSeparators: true })}`);
+        rules.push(`lte:${max.format({ excludeGroupingSeparators: true })}`);
 
         return rules;
     });

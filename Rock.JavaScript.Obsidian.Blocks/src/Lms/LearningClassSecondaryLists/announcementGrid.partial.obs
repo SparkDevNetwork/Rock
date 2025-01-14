@@ -3,6 +3,7 @@
     <Grid :data="gridDataSource"
           keyField="idKey"
           title="Announcements"
+          itemTerm="Announcement"
           :entityTypeGuid="EntityType.LearningClassAnnouncement"
           :expectedRowCount="3"
           :isCountMessageVisible="false"
@@ -20,30 +21,30 @@
                     visiblePriority="xs" />
 
         <DateColumn
-                name="publishDateTime"
-                title="Publish Date"
-                field="publishDateTime"
-                :filter="dateValueFilter"
-                filterValue="publishDateTime"
-                visiblePriority="xs" />
+                    name="publishDateTime"
+                    title="Publish Date"
+                    field="publishDateTime"
+                    :filter="dateValueFilter"
+                    visiblePriority="sm" />
 
         <Column
                 name="communicationMode"
                 title="Communication Mode"
-                :filter="textValueFilter"
-                filterValue="communicationMode"
-                quickFilterValue="communicationMode"
+                field="communicationMode"
+                :filter="pickExistingValueFilter"
+                :filterValue="getCommunicationModeText"
+                :quickFilterValue="getCommunicationModeText"
                 visiblePriority="xs">
             <template #format="{ row }">
-               <span v-html="getCommunicationModeHtml(row.communicationMode)"></span>
+                <span v-html="getCommunicationModeHtml(row.communicationMode)"></span>
             </template>
         </Column>
 
         <BooleanColumn name="communicationSent"
-                    title="Sent"
-                    field="communicationSent"
-                    :filter="booleanValueFilter"
-                    visiblePriority="xs" />
+                       title="Sent"
+                       field="communicationSent"
+                       :filter="booleanValueFilter"
+                       visiblePriority="sm" />
 
         <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
     </Grid>
@@ -52,7 +53,7 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { Column, BooleanColumn, DateColumn, TextColumn, booleanValueFilter, dateValueFilter, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { Column, BooleanColumn, DateColumn, TextColumn, booleanValueFilter, dateValueFilter, pickExistingValueFilter, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { CommunicationMode, CommunicationModeDescription } from "@Obsidian/Enums/Lms/communicationMode";
@@ -100,6 +101,16 @@
             default:
                 return `<span class="label label-default">${CommunicationModeDescription[mode]}</span>`;
         }
+    }
+
+    /**
+     * Gets the filter value text to use for the name column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getCommunicationModeText(row: Record<string, unknown>): string {
+        const mode = row["communicationMode"] as CommunicationMode;
+        return CommunicationModeDescription[mode];
     }
 
     /**

@@ -127,6 +127,13 @@ namespace Rock.Blocks.Finance
         }
 
         /// <inheritdoc/>
+        protected override List<BenevolenceType> GetListItems( IQueryable<BenevolenceType> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+            return items.Where( bt => bt.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<BenevolenceType> GetGridBuilder()
         {
             return new GridBuilder<BenevolenceType>()

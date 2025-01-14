@@ -14,7 +14,7 @@
 //  + Panel toolbar
 //  + Panel widget
 //  + Panel persondetails
-//  + Penel block
+//  + Panel block
 //  + Panel waterfall
 //  + Panel columns
 //  + Panel analytics
@@ -29,10 +29,16 @@
   margin-bottom:      var(--spacing-large);
   background-color:   var(--color-interface-softest);
   border:             1px solid transparent;
-  border-radius:      4px; // Need to hard code because the inner content was leaking out.
-  box-shadow:         0 1px 1px rgba(0, 0, 0, .05);
-}
+  border-radius:      var(--rounded-medium);
+  box-shadow:         var(--box-shadow);
 
+  .panel-title {
+    i {
+      margin-right: var(--spacing-tiny);
+      color: var(--color-interface-soft);
+    }
+  }
+}
 
 // PANEL BODY
 .panel-body {
@@ -44,6 +50,9 @@
   }
   &:after {
     clear: both;
+  }
+  .actions:last-of-type .footer-secondary-actions > * {
+    margin-left:4px;
   }
 }
 

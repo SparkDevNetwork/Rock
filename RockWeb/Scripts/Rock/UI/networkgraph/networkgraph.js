@@ -169,6 +169,78 @@ var Rock;
                     isDragging = false;
                     dragNode = undefined;
                 });
+                this.overideZoomBehavior(renderer);
+            }
+            overideZoomBehavior(renderer) {
+                const overlayElement = document.createElement("div");
+                Object.assign(overlayElement.style, {
+                    zIndex: "1000",
+                    position: "absolute",
+                    top: "0",
+                    left: "0",
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                    opacity: "0",
+                    transition: "opacity 0.3s ease",
+                    pointerEvents: "none"
+                });
+                const instructionsElement = document.createElement("h2");
+                instructionsElement.textContent = "Use ctrl + scroll to zoom the map";
+                Object.assign(instructionsElement.style, {
+                    padding: "10px 20px",
+                    color: "#fff",
+                    textAlign: "center"
+                });
+                overlayElement.appendChild(instructionsElement);
+                this.element.appendChild(overlayElement);
+                let overlayTimer;
+                renderer.getMouseCaptor().on("wheel", (event) => {
+                    var _a;
+                    if (!event.original.ctrlKey) {
+                        event.sigmaDefaultPrevented = true;
+                        const deltaY = event.original.deltaY;
+                        const deltaX = event.original.deltaX;
+                        const scrollParent = (_a = getNearestScrollableAncestor(event.original.target)) !== null && _a !== void 0 ? _a : window;
+                        scrollParent.scrollBy({
+                            top: deltaY,
+                            left: deltaX,
+                            behavior: 'auto'
+                        });
+                        if (overlayTimer) {
+                            clearTimeout(overlayTimer);
+                        }
+                        overlayElement.style.opacity = "1";
+                        overlayTimer = setTimeout(() => {
+                            overlayElement.style.opacity = "0";
+                            overlayTimer = undefined;
+                        }, 2000);
+                    }
+                    else {
+                        overlayElement.style.opacity = "0";
+                        overlayTimer = undefined;
+                    }
+                });
+                function getNearestScrollableAncestor(element) {
+                    while (element && element !== document.body) {
+                        if (isScrollable(element)) {
+                            return element;
+                        }
+                        element = element.parentElement;
+                    }
+                    return window;
+                }
+                function isScrollable(element) {
+                    const style = getComputedStyle(element);
+                    const overflowY = style.overflowY;
+                    const overflowX = style.overflowX;
+                    const isScrollableY = (overflowY === 'auto' || overflowY === 'scroll') && element.scrollHeight > element.clientHeight;
+                    const isScrollableX = (overflowX === 'auto' || overflowX === 'scroll') && element.scrollWidth > element.clientWidth;
+                    return isScrollableY || isScrollableX;
+                }
             }
             getRelatedNodesAndEdgesToDepth(nodeId, depth) {
                 const nodes = [];
