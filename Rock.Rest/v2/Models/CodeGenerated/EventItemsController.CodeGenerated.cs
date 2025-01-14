@@ -49,6 +49,8 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Event Items.
     /// </summary>
     [RoutePrefix( "api/v2/models/eventitems" )]
+    [SecurityAction( Security.Authorization.EXECUTE_READ, "Allows execution of API endpoints in the context of reading data." )]
+    [SecurityAction( Security.Authorization.EXECUTE_WRITE, "Allows execution of API endpoints in the context of writing data." )]
     [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of reading data without performing per-entity security checks." )]
     [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of writing data without performing per-entity security checks." )]
     [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
@@ -62,7 +64,7 @@ namespace Rock.Rest.v2.Models
         /// <returns>The requested item.</returns>
         [HttpGet]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "{id}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Rock.Model.EventItem ) )]
@@ -74,33 +76,9 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.EventItem, Rock.Model.EventItemService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.Get( id );
-        }
-
-        /// <summary>
-        /// Creates a new item in the database.
-        /// </summary>
-        /// <param name="value">The item to be created.</param>
-        /// <returns>An object that contains the new identifier values.</returns>
-        [HttpPost]
-        [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_WRITE )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [Route( "" )]
-        [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
-        [SystemGuid.RestActionGuid( "1bb0244c-40f1-565d-8de4-7b0e3de2e742" )]
-        public IActionResult PostItem( [FromBody] Rock.Model.EventItem value )
-        {
-            var helper = new CrudEndpointHelper<Rock.Model.EventItem, Rock.Model.EventItemService>( this );
-
-            helper.IsSecurityIgnored = true;
-
-            return helper.Create( value );
         }
 
         /// <summary>
@@ -124,7 +102,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.EventItem, Rock.Model.EventItemService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
             return helper.Update( id, value );
         }
@@ -150,7 +128,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.EventItem, Rock.Model.EventItemService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
             return helper.Patch( id, values );
         }
@@ -174,7 +152,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.EventItem, Rock.Model.EventItemService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
             return helper.Delete( id );
         }
@@ -198,7 +176,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.EventItem, Rock.Model.EventItemService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.GetAttributeValues( id );
         }
@@ -224,7 +202,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.EventItem, Rock.Model.EventItemService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
 
             return helper.PatchAttributeValues( id, values );
         }
@@ -266,7 +244,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.EventItem, Rock.Model.EventItemService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.Search( searchKey, null );
         }
@@ -291,7 +269,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.EventItem, Rock.Model.EventItemService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.Search( searchKey, query );
         }

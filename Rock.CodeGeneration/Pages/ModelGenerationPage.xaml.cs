@@ -1542,6 +1542,7 @@ GO
         {
             var codeGeneratedDirectory = Path.Combine( rootFolder, "v2", "Models", "CodeGenerated" );
             var filesAdded = new List<string>();
+            var filesWritten = new List<string>();
             var filesRemoved = new List<string>();
             var generator = new FileGenerators.RestV2ApiGenerator();
             var solutionPath = SupportTools.GetSolutionPath();
@@ -1556,19 +1557,25 @@ GO
                 }
 
                 var filename = Path.Combine( codeGeneratedDirectory, $"{modelType.Name.Pluralize()}Controller.CodeGenerated.cs" );
-                var originalContent = File.Exists( filename ) ? File.ReadAllText( filename ) : null;
+                var exists = File.Exists( filename );
+                var originalContent = exists ? File.ReadAllText( filename ) : null;
 
                 var content = generator.GenerateStandardFileContent( modelType.Name, modelType.FullName, codeGenerateRestAttribute.Endpoints, codeGenerateRestAttribute.DisableEntitySecurity );
 
                 WriteFile( new FileInfo( filename ), new StringBuilder( content ) );
-                filesAdded.Add( filename );
+                filesWritten.Add( filename );
+
+                if ( !exists )
+                {
+                    filesAdded.Add( filename );
+                }
             }
 
             if ( removeOldFiles )
             {
                 foreach ( var filename in Directory.EnumerateFiles( codeGeneratedDirectory, "*.cs" ) )
                 {
-                    if ( !filesAdded.Any( f => Path.GetFileName( f ) == Path.GetFileName( filename ) ) )
+                    if ( !filesWritten.Any( f => Path.GetFileName( f ) == Path.GetFileName( filename ) ) )
                     {
                         filesRemoved.Add( filename );
                         File.Delete( filename );

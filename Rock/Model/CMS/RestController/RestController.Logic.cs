@@ -69,6 +69,24 @@ namespace Rock.Model
             }
         }
 
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                var metadata = GetMetadata();
+
+                // Version 2 endpoints are restricted by default. Explicit
+                // permissions must be granted to each controller or endpoint.
+                if ( metadata?.Version == 2 )
+                {
+                    return new GlobalRestrictedDefault();
+                }
+
+                return base.ParentAuthority;
+            }
+        }
+
         #endregion
 
         #region Methods

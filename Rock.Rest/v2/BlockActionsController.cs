@@ -36,6 +36,8 @@ using Rock.Rest.Filters;
 using Rock.Utility.CaptchaApi;
 using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
+using Rock.Security;
+
 
 #if WEBFORMS
 using BadRequestErrorMessageResult = System.Web.Http.Results.BadRequestErrorMessageResult;
@@ -98,6 +100,7 @@ namespace Rock.Rest.v2
         /// <returns></returns>
         [Authenticate]
         [HttpGet]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
         [Rock.SystemGuid.RestActionGuid( "CC3DE0C2-8703-4925-A16C-F47A31FE9C69" )]
         public async Task<IActionResult> BlockAction( Guid pageGuid, Guid blockGuid, string actionName )
@@ -115,6 +118,7 @@ namespace Rock.Rest.v2
         /// <returns></returns>
         [Authenticate]
         [HttpPost]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [System.Web.Http.Route( "{pageGuid:guid}/{blockGuid:guid}/{actionName}" )]
         [Rock.SystemGuid.RestActionGuid( "05EAF919-0D36-496E-8924-88DC50A9CD8E" )]
         public async Task<IActionResult> BlockActionAsPost( Guid pageGuid, Guid blockGuid, string actionName, [NakedBody] string parameters )

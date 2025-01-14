@@ -25,6 +25,7 @@ namespace Rock.Security
     /// <summary>
     /// A generic ISecured entity that restricts access by default.
     /// </summary>
+    [SystemGuid.EntityTypeGuid( "0a326a00-6f00-45b8-bb39-ec6ebe53ce88" )]
     public class GlobalRestrictedDefault : ISecured
     {
         /// <inheritdoc/>

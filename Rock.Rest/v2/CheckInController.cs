@@ -33,6 +33,8 @@ using Rock.Utility;
 using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
 using Rock.ViewModels.CheckIn.Labels;
+using Rock.Security;
+
 
 #if WEBFORMS
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
@@ -74,6 +76,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "Configuration" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ConfigurationResponseBag ) )]
         [SystemGuid.RestActionGuid( "200dd82f-6532-4437-9ba4-a289408b0eb8" )]
@@ -115,6 +118,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "KioskStatus" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( KioskStatusResponseBag ) )]
         [SystemGuid.RestActionGuid( "7fb87711-1ecf-49ca-90cb-3e2e1b02a933" )]
@@ -159,6 +163,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "SearchForFamilies" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( SearchForFamiliesResponseBag ) )]
         [SystemGuid.RestActionGuid( "2c587733-0e08-4e93-8f2b-3e2518362768" )]
@@ -216,6 +221,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "FamilyMembers" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( FamilyMembersResponseBag ) )]
         [SystemGuid.RestActionGuid( "2bd5afdf-da57-48bb-a6db-7dd9ad1ab8da" )]
@@ -276,6 +282,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "AttendeeOpportunities" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AttendeeOpportunitiesResponseBag ) )]
         [SystemGuid.RestActionGuid( "6e77e23d-cccb-46b7-a8e9-95706bbb269a" )]
@@ -338,6 +345,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "SaveAttendance" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( SaveAttendanceResponseBag ) )]
         [SystemGuid.RestActionGuid( "7ef059cb-99ba-4cf1-b7d5-3723eb320a99" )]
@@ -406,6 +414,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "ConfirmAttendance" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ConfirmAttendanceResponseBag ) )]
         [SystemGuid.RestActionGuid( "52070226-289b-442d-a8fe-a8323c0f922c" )]
@@ -469,6 +478,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "Checkout" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( CheckoutResponseBag ) )]
         [SystemGuid.RestActionGuid( "733be2ee-dec6-4f7f-92bd-df367c20543d" )]
@@ -519,6 +529,7 @@ namespace Rock.Rest.v2
         [HttpDelete]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Route( "PendingAttendance/{sessionGuid}" )]
         [ProducesResponseType( HttpStatusCode.OK )]
         [SystemGuid.RestActionGuid( "f914ffc3-8587-493b-9c8a-ae196b5fe028" )]
@@ -547,6 +558,7 @@ namespace Rock.Rest.v2
         /// <returns>The result of the operation.</returns>
         [HttpGet]
         [Route( "CloudPrint/{deviceId}" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.SwitchingProtocols )]
         [SystemGuid.RestActionGuid( "1b4b1d0d-a872-40f7-a49d-666092cf8816" )]
         public IActionResult GetPrinterProxy( string deviceId, [FromQuery] string name = null )

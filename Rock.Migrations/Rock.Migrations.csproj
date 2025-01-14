@@ -116,6 +116,10 @@
     <Compile Include="Migrations\202501082124369_TempUpdateRestV2SecurityActions.Designer.cs">
       <DependentUpon>202501082124369_TempUpdateRestV2SecurityActions.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202501141452454_TempAddDefaultRestrictedSecurity.cs" />
+    <Compile Include="Migrations\202501141452454_TempAddDefaultRestrictedSecurity.Designer.cs">
+      <DependentUpon>202501141452454_TempAddDefaultRestrictedSecurity.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2424,6 +2428,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202501082124369_TempUpdateRestV2SecurityActions.resx">
       <DependentUpon>202501082124369_TempUpdateRestV2SecurityActions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501141452454_TempAddDefaultRestrictedSecurity.resx">
+      <DependentUpon>202501141452454_TempAddDefaultRestrictedSecurity.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>

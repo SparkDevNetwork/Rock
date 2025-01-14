@@ -16,6 +16,7 @@
 //
 
 using Rock.Rest.Filters;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -42,6 +43,7 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GetImageFileExtensions" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "D0609BC8-CFDB-426C-A2A2-2685BEB63527" )]
         public IActionResult GetImageFileExtensions()
         {
