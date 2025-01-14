@@ -138,7 +138,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
         #region Properties
 
-        public bool IsAuthenticated
+        public bool IsAuthenticatedOrImpersonated
         {
             get
             {
@@ -218,12 +218,12 @@ namespace Rock.Blocks.Engagement.SignUp
 
             var mode = GetAttributeValue( AttributeKey.Mode ).ConvertToEnum<RegisterMode>( RegisterMode.Anonymous );
 
-            if ( mode == RegisterMode.Family && !IsAuthenticated )
+            if ( mode == RegisterMode.Family && !IsAuthenticatedOrImpersonated )
             {
                 mode = RegisterMode.Anonymous;
             }
 
-            if ( !IsAuthenticated && mode != RegisterMode.Anonymous )
+            if ( !IsAuthenticatedOrImpersonated && mode != RegisterMode.Anonymous )
             {
                 registrationData.ErrorMessage = MustBeLoggedInMessage;
                 return registrationData;
@@ -279,7 +279,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 registrationData.ProjectHasRequiredGroupRequirements = true;
 
                 // We can only determine if an Individual meets GroupRequirements if they're logged in.
-                if ( !IsAuthenticated )
+                if ( !IsAuthenticatedOrImpersonated )
                 {
                     registrationData.ErrorMessage = MustBeLoggedInMessage;
                     return registrationData;
@@ -851,7 +851,7 @@ namespace Rock.Blocks.Engagement.SignUp
             // We'll pass this Person instance to any workflow defined on the block, so we know who was responsible for registering
             // a given group of registrants.
             Person registrarPerson = null;
-            if ( IsAuthenticated )
+            if ( IsAuthenticatedOrImpersonated )
             {
                 registrarPerson = this.RequestContext.CurrentPerson;
             }
@@ -1144,7 +1144,7 @@ namespace Rock.Blocks.Engagement.SignUp
             }
             else // Family or Group mode.
             {
-                if ( !IsAuthenticated )
+                if ( !IsAuthenticatedOrImpersonated )
                 {
                     errorMessage = MustBeLoggedInMessage;
                     return null;
