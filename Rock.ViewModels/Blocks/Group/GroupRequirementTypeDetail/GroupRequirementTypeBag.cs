@@ -63,7 +63,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupRequirementTypeDetail
         /// <summary>
         /// Gets or sets the number of days before the requirement is due.
         /// </summary>
-        public string DueDateOffsetInDays { get; set; }
+        public int? DueDateOffsetInDays { get; set; }
 
         /// <summary>
         /// Gets or sets the type of due date.
@@ -73,7 +73,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupRequirementTypeDetail
         /// <summary>
         /// Gets or sets the number of days after the requirement is met before it expires (If CanExpire is true). NULL means never expires
         /// </summary>
-        public string ExpireInDays { get; set; }
+        public int? ExpireInDays { get; set; }
 
         /// <summary>
         /// Gets or sets the icon CSS class.

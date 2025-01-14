@@ -28,7 +28,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="groupRequirementTypeEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="groupRequirementTypeEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -42,16 +42,15 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./GroupRequirementTypeDetail/editPanel.partial.obs";
     import ViewPanel from "./GroupRequirementTypeDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./GroupRequirementTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { GroupRequirementTypeBag } from "@Obsidian/ViewModels/Blocks/Group/GroupRequirementTypeDetail/groupRequirementTypeBag";
     import { GroupRequirementTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupRequirementTypeDetail/groupRequirementTypeDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<GroupRequirementTypeBag, GroupRequirementTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -59,43 +58,18 @@
     const errorMessage = ref("");
 
     const groupRequirementTypeViewBag = ref(config.entity);
-    const groupRequirementTypeEditBag = ref<GroupRequirementTypeBag>({} as GroupRequirementTypeBag);
+    const groupRequirementTypeEditBag = ref<ValidPropertiesBox<GroupRequirementTypeBag>>({
+        bag: {} as GroupRequirementTypeBag
+    });
 
     const entityTypeGuid = EntityType.GroupRequirementType;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "canExpire",
-        "category",
-        "checkboxLabel",
-        "dataView",
-        "description",
-        "doesNotMeetWorkflowLinkText",
-        "doesNotMeetWorkflowType",
-        "dueDateOffsetInDays",
-        "dueDateType",
-        "expireInDays",
-        "iconCssClass",
-        "name",
-        "negativeLabel",
-        "positiveLabel",
-        "requirementCheckType",
-        "shouldAutoInitiateDoesNotMeetWorkflow",
-        "shouldAutoInitiateWarningWorkflow",
-        "sqlExpression",
-        "summary",
-        "warningDataView",
-        "warningLabel",
-        "warningSqlExpression",
-        "warningWorkflowLinkText",
-        "warningWorkflowType"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(groupRequirementTypeEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: groupRequirementTypeEditBag
+    });
 
     // #endregion
 
@@ -153,10 +127,6 @@
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
-
     // #region Event Handlers
 
     /**
@@ -166,7 +136,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!groupRequirementTypeEditBag.value?.idKey) {
+        if (!groupRequirementTypeEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -207,35 +177,21 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<GroupRequirementTypeBag, GroupRequirementTypeDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<GroupRequirementTypeBag>>("Edit", {
             key: groupRequirementTypeViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            groupRequirementTypeEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            groupRequirementTypeEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties
+            };
 
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -247,14 +203,8 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<GroupRequirementTypeBag, GroupRequirementTypeDetailOptionsBag> = {
-            entity: groupRequirementTypeEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<GroupRequirementTypeBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<GroupRequirementTypeBag> | string>("Save", {
+            box: groupRequirementTypeEditBag.value
         });
 
         if (result.isSuccess && result.data) {
@@ -270,8 +220,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -280,7 +228,9 @@
         blockError.value = "The specified group requirement type could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        groupRequirementTypeEditBag.value = config.entity;
+        groupRequirementTypeEditBag.value = {
+            bag: config.entity
+        };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>
