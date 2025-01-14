@@ -355,6 +355,7 @@ namespace Rock.Transactions
             {
                 // Ids do not exit for the interactions in the collection since they were bulk imported.
                 // Read their ids from their guids and append the id.
+                var insertedGuids = interactionsToInsert.Select( i => i.Guid ).ToList();
                 var interactionIds = new InteractionService( new RockContext() ).Queryable()
                                         .Where( i => insertedGuids.Contains( i.Guid ) )
                                         .Select( i => new { i.Id, i.Guid } )
