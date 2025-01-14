@@ -690,6 +690,11 @@ namespace Rock.SystemGuid
         public const string MOBILE_CHECKIN_CHECKIN = "BC0A4B6C-9F6D-4D39-8FFE-B6F9FA4B2F49";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Finances.ScheduledTransactionList.
+        /// </summary>
+        public const string MOBILE_FINANCE_SCHEDULED_TRANSACTION_LIST_BLOCK_TYPE = "7698E529-6834-46B0-BC5A-D466A6BCE4F6";
+
+        /// <summary>
         /// The obsidian event registration entry
         /// </summary>
         public const string OBSIDIAN_EVENT_REGISTRATION_ENTRY = "06AAC065-BF89-483D-B671-80F0F72779A6";
