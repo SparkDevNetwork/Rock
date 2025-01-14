@@ -30,7 +30,7 @@ using Rock.ViewModels.Blocks.Core.AuthClientDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Core
+namespace Rock.Blocks.Security.Oidc
 {
     /// <summary>
     /// Displays the details of a particular auth client.
@@ -259,7 +259,11 @@ namespace Rock.Blocks.Core
                 () => entity.ScopeApprovalExpiration = box.Bag.ScopeApprovalExpiration );
 
             box.IfValidProperty( nameof( box.Bag.ScopeClaims ),
-                () => entity.AllowedClaims = GetSelectedClaims( box.Bag.ScopeClaims ) );
+                () =>
+                {
+                    entity.AllowedClaims = GetSelectedClaims( box.Bag.ScopeClaims );
+                    entity.AllowedScopes = GetSelectedScopes( box.Bag.ScopeClaims );
+                } );
 
             box.IfValidProperty( nameof( box.Bag.ClientSecret ),
                 () => SetClientSecret( box.Bag, entity ) );
@@ -332,7 +336,7 @@ namespace Rock.Blocks.Core
         /// Gets the active claims.
         /// </summary>
         /// <returns></returns>
-        private  List<AuthClientScopeBag> GetActiveClaims()
+        private List<AuthClientScopeBag> GetActiveClaims()
         {
             var authClaimService = new AuthClaimService( RockContext );
 
@@ -366,6 +370,18 @@ namespace Rock.Blocks.Core
             var scopes = scopeClaims.SelectMany( sc => sc.Value ).ToList();
             var selectedClaims = scopes.Where( s => s.IsSelected ).Select( sc => sc.ClaimName ).ToList();
             return selectedClaims.ToJson();
+        }
+
+        /// <summary>
+        /// Gets the selected claims.
+        /// </summary>
+        /// <param name="scopeClaims"></param>
+        /// <returns></returns>
+        private string GetSelectedScopes( Dictionary<string, List<AuthClientScopeBag>> scopeClaims )
+        {
+            var scopes = scopeClaims.SelectMany( sc => sc.Value ).ToList();
+            var selectedScopes = scopes.Where( s => s.IsSelected ).Select( sc => sc.Name ).Distinct().ToList();
+            return selectedScopes.ToJson();
         }
 
         /// <summary>

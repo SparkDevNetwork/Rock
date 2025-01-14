@@ -28,7 +28,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Security.AuthScopeList;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Security
+namespace Rock.Blocks.Security.Oidc
 {
     /// <summary>
     /// Displays a list of auth scopes.
