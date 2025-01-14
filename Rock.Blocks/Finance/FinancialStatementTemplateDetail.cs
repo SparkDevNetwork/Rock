@@ -530,11 +530,17 @@ namespace Rock.Blocks.Finance
                 return ActionBadRequest( "Invalid data." );
             }
 
-            var selectedAccountGuids = box.Bag.SelectedAccounts.ConvertAll( lb => lb.Value.AsGuid() );
-            entity.ReportSettings.TransactionSettings.SelectedAccountIds = financialAccountService.Queryable().Where( fa => selectedAccountGuids.Contains( fa.Guid ) ).Select( fa => fa.Id ).ToList();
+            if ( box.Bag.SelectedAccounts != null )
+            {
+                var selectedAccountGuids = box.Bag.SelectedAccounts.ConvertAll( lb => lb.Value.AsGuid() );
+                entity.ReportSettings.TransactionSettings.SelectedAccountIds = financialAccountService.Queryable().Where( fa => selectedAccountGuids.Contains( fa.Guid ) ).Select( fa => fa.Id ).ToList();
+            }
 
-            var pledgeAccountGuids = box.Bag.PledgeAccounts.ConvertAll( lb => lb.Value.AsGuid() );
-            entity.ReportSettings.PledgeSettings.AccountIds = financialAccountService.Queryable().Where( fa => pledgeAccountGuids.Contains( fa.Guid ) ).Select( fa => fa.Id ).ToList();
+            if ( box.Bag.PledgeAccounts != null )
+            {
+                var pledgeAccountGuids = box.Bag.PledgeAccounts.ConvertAll( lb => lb.Value.AsGuid() );
+                entity.ReportSettings.PledgeSettings.AccountIds = financialAccountService.Queryable().Where( fa => pledgeAccountGuids.Contains( fa.Guid ) ).Select( fa => fa.Id ).ToList();
+            }
 
             if ( box.Bag.LogoBinaryFile != null )
             {
