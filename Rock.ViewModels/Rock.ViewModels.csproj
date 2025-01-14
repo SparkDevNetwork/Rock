@@ -157,6 +157,7 @@
     <Compile Include="Blocks\Lms\LearningClassAnnouncementDetail\LearningClassAnnouncementDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningClassDetail\LearningClassBag.cs" />
     <Compile Include="Blocks\Lms\LearningClassDetail\LearningClassDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\LearningClassDetail\LearningClassLocationBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemDetail\LearningGradingSystemBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemDetail\LearningGradingSystemDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemList\LearningGradingSystemListOptionsBag.cs" />

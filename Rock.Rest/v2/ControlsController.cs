@@ -524,6 +524,7 @@ namespace Rock.Rest.v2
             editedLocation.City = options.City;
             editedLocation.State = options.State;
             editedLocation.PostalCode = options.PostalCode;
+            editedLocation.County = options.Locality;
             editedLocation.Country = options.Country.IsNotNullOrWhiteSpace() ? options.Country : defaultCountryCode;
 
             var locationService = new LocationService( new RockContext() );
@@ -554,6 +555,7 @@ namespace Rock.Rest.v2
                     City = editedLocation.City,
                     State = editedLocation.State,
                     PostalCode = editedLocation.PostalCode,
+                    Locality = editedLocation.County,
                     Country = editedLocation.Country
                 }
             } );

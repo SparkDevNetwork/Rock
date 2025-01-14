@@ -7,7 +7,7 @@
                            :showClear="showClear"
                            :modelValue="internalValues"
                            :fullWidth="fullWidth"
-                           v-model:showPopup="showPopup">
+                           v-model:showPopup="internalShowPopup">
 
         <TreeList v-model="internalValues"
                   :multiple="multiple"
@@ -18,7 +18,7 @@
                   :disableFolderSelection="disableFolderSelection"
                   :autoExpand="autoExpand"
                   :showChildCount="showChildCount"
-                  :isVisible="showPopup" />
+                  :isVisible="internalShowPopup" />
 
         <template #innerLabel><span class="selected-names">{{ selectedNames || blankValue }}</span></template>
 
@@ -61,7 +61,7 @@
     import { ITreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { TreeItemBag } from "@Obsidian/ViewModels/Utility/treeItemBag";
     import TreeList from "./treeList.obs";
-    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { updateRefValue, useVModelPassthrough } from "@Obsidian/Utility/component";
     import ContentDropDownPicker from "./contentDropDownPicker.obs";
     import { forceToArray } from "@Obsidian/Utility/arrayUtils";
 
@@ -69,6 +69,13 @@
         modelValue: {
             type: Object as PropType<ListItemBag | ListItemBag[] | null>,
             required: false
+        },
+
+        /**
+         * V-Model of whether the popup area is opened.
+         */
+        showPopup: {
+            type: Boolean
         },
 
         multiple: {
@@ -128,6 +135,7 @@
 
     const emit = defineEmits<{
         (_e: "update:modelValue", _value: ListItemBag | ListItemBag[] | null): void,
+        (_e: "update:showPopup", _value: boolean): void,
         (_e: "valueSelected"): void
     }>();
 
@@ -146,7 +154,7 @@
     const flatItems = ref<TreeItemBag[]>(flatten(props.items ?? [], i => i.children ?? []));
 
     /** Will contain the value true if the popup tree list should be shown. */
-    const showPopup = ref(false);
+    const internalShowPopup = useVModelPassthrough(props, "showPopup", emit);
 
     /** Determines if the clear button should be shown. */
     const showClear = computed((): boolean => {
@@ -226,7 +234,7 @@
      * popup.
      */
     const onCancel = (): void => {
-        showPopup.value = false;
+        internalShowPopup.value = false;
     };
 
     /**
@@ -235,7 +243,7 @@
      */
     const onSelect = (): void => {
         updateModelValue();
-        showPopup.value = false;
+        internalShowPopup.value = false;
         emit("valueSelected"); // inform that a value was selected, even if it didn't change
     };
 
