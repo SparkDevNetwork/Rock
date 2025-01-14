@@ -49,11 +49,6 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Reminders.
     /// </summary>
     [RoutePrefix( "api/v2/models/reminders" )]
-    [SecurityAction( Security.Authorization.EXECUTE_READ, "Allows execution of API endpoints in the context of reading data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_WRITE, "Allows execution of API endpoints in the context of writing data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of reading data without performing per-entity security checks." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of writing data without performing per-entity security checks." )]
-    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "230fdb41-c317-51e3-88d7-17c35e3e8f3d" )]
     public partial class RemindersController : ApiControllerBase
     {

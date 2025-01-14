@@ -49,9 +49,6 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Followings.
     /// </summary>
     [RoutePrefix( "api/v2/models/followings" )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of reading data without performing per-entity security checks." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of writing data without performing per-entity security checks." )]
-    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "019c4772-8b5a-5391-8e9c-5a4a0db7d55d" )]
     public partial class FollowingsController : ApiControllerBase
     {
@@ -256,8 +253,8 @@ namespace Rock.Rest.v2.Models
         [HttpGet]
         [Route( "search/{searchKey}" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
@@ -266,7 +263,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.Search( searchKey, null );
         }
@@ -280,8 +277,8 @@ namespace Rock.Rest.v2.Models
         [HttpPost]
         [Route( "search/{searchKey}" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -291,7 +288,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.Following, Rock.Model.FollowingService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.Search( searchKey, query );
         }

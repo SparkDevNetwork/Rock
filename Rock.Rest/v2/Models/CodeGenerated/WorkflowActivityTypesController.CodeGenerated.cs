@@ -49,11 +49,6 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Workflow Activity Types.
     /// </summary>
     [RoutePrefix( "api/v2/models/workflowactivitytypes" )]
-    [SecurityAction( Security.Authorization.EXECUTE_READ, "Allows execution of API endpoints in the context of reading data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_WRITE, "Allows execution of API endpoints in the context of writing data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of reading data without performing per-entity security checks." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of writing data without performing per-entity security checks." )]
-    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "39c61c4c-527f-59fd-8598-d97567cba2b2" )]
     public partial class WorkflowActivityTypesController : ApiControllerBase
     {

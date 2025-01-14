@@ -49,11 +49,6 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Report Fields.
     /// </summary>
     [RoutePrefix( "api/v2/models/reportfields" )]
-    [SecurityAction( Security.Authorization.EXECUTE_READ, "Allows execution of API endpoints in the context of reading data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_WRITE, "Allows execution of API endpoints in the context of writing data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of reading data without performing per-entity security checks." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of writing data without performing per-entity security checks." )]
-    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "0c84acf2-b3c9-5fd5-a619-1f8bb8c07ee5" )]
     public partial class ReportFieldsController : ApiControllerBase
     {

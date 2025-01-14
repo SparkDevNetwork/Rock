@@ -49,11 +49,6 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Group Historicals.
     /// </summary>
     [RoutePrefix( "api/v2/models/grouphistoricals" )]
-    [SecurityAction( Security.Authorization.EXECUTE_READ, "Allows execution of API endpoints in the context of reading data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_WRITE, "Allows execution of API endpoints in the context of writing data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of reading data without performing per-entity security checks." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of writing data without performing per-entity security checks." )]
-    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "735eaac2-a1c9-5ad8-a8cd-7c7fe3aae87c" )]
     public partial class GroupHistoricalsController : ApiControllerBase
     {

@@ -49,11 +49,6 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Streak Types.
     /// </summary>
     [RoutePrefix( "api/v2/models/streaktypes" )]
-    [SecurityAction( Security.Authorization.EXECUTE_READ, "Allows execution of API endpoints in the context of reading data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_WRITE, "Allows execution of API endpoints in the context of writing data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of reading data without performing per-entity security checks." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of writing data without performing per-entity security checks." )]
-    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "07fa0f40-89cc-5de5-951f-51ae047590cb" )]
     public partial class StreakTypesController : ApiControllerBase
     {

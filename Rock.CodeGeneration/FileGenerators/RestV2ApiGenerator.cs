@@ -85,17 +85,6 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( $"/// Provides data API endpoints for {modelTypeName.Pluralize().SplitCase()}." );
             codeBuilder.AppendLine( "/// </summary>" );
             codeBuilder.AppendLine( $"[RoutePrefix( \"{routePrefix}\" )]" );
-
-            if ( !disableEntitySecurity )
-            {
-                codeBuilder.AppendLine( "[SecurityAction( Security.Authorization.EXECUTE_READ, \"Allows execution of API endpoints in the context of reading data.\" )]" );
-                codeBuilder.AppendLine( "[SecurityAction( Security.Authorization.EXECUTE_WRITE, \"Allows execution of API endpoints in the context of writing data.\" )]" );
-            }
-
-            codeBuilder.AppendLine( "[SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, \"Allows execution of API endpoints in the context of reading data without performing per-entity security checks.\" )]" );
-            codeBuilder.AppendLine( "[SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, \"Allows execution of API endpoints in the context of writing data without performing per-entity security checks.\" )]" );
-            codeBuilder.AppendLine( "[ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]" );
-
             codeBuilder.AppendLine( $"[Rock.SystemGuid.RestControllerGuid( \"{controllerGuid}\" )]" );
             codeBuilder.AppendLine( $"public partial class {modelTypeName.Pluralize()}Controller : ApiControllerBase" );
             codeBuilder.AppendLine( "{" );
@@ -175,17 +164,17 @@ namespace Rock.CodeGeneration.FileGenerators
                 var actionGuid = NewV5Guid( controllerGuid, "PostSearch" );
 
                 AppendLineIfNotFirstAction();
-                codeBuilder.Indent( () => GeneratePostSearchAction( codeBuilder, modelTypeFullName, actionGuid, disableEntitySecurity ) );
+                codeBuilder.Indent( () => GeneratePostSearchAction( codeBuilder, modelTypeFullName, actionGuid ) );
 
                 actionGuid = NewV5Guid( controllerGuid, "GetSearchByKey" );
 
                 AppendLineIfNotFirstAction();
-                codeBuilder.Indent( () => GenerateGetSearchByKeyAction( codeBuilder, modelTypeFullName, actionGuid, disableEntitySecurity ) );
+                codeBuilder.Indent( () => GenerateGetSearchByKeyAction( codeBuilder, modelTypeFullName, actionGuid ) );
 
                 actionGuid = NewV5Guid( controllerGuid, "PostSearchByKey" );
 
                 AppendLineIfNotFirstAction();
-                codeBuilder.Indent( () => GeneratePostSearchByKeyAction( codeBuilder, modelTypeFullName, actionGuid, disableEntitySecurity ) );
+                codeBuilder.Indent( () => GeneratePostSearchByKeyAction( codeBuilder, modelTypeFullName, actionGuid ) );
             }
 
             codeBuilder.AppendLine( "}" );
@@ -590,9 +579,10 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="codeBuilder">The builder to write the method declaration to.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
-        private static void GeneratePostSearchAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
+        private static void GeneratePostSearchAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid )
         {
+            // This is a pure user search, so we only use EXECUTE_UNRESTRICTED_READ
+            // to help imply that this is a full access search - which it is.
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a search of items using the specified user query." );
             codeBuilder.AppendLine( "/// </summary>" );
@@ -622,18 +612,10 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="codeBuilder">The builder to write the method declaration to.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
-        private static void GenerateGetSearchByKeyAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
+        private static void GenerateGetSearchByKeyAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid )
         {
-            var securityAction = "EXECUTE_READ";
-            var additionalExcludedActions = string.Empty;
-
-            if ( disableEntitySecurity )
-            {
-                securityAction = "EXECUTE_UNRESTRICTED_READ";
-                additionalExcludedActions = "Security.Authorization.EXECUTE_READ, ";
-            }
-
+            // SearchByKey should always enforce security on EntitySearch even
+            // when the target entity will have security bypassed.
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a search of items using the specified system query." );
             codeBuilder.AppendLine( "/// </summary>" );
@@ -642,8 +624,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[HttpGet]" );
             codeBuilder.AppendLine( "[Route( \"search/{searchKey}\" )]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
-            codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
+            codeBuilder.AppendLine( "[Secured( Security.Authorization.EXECUTE_READ )]" );
+            codeBuilder.AppendLine( $"[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.Unauthorized )]" );
@@ -654,16 +636,7 @@ namespace Rock.CodeGeneration.FileGenerators
             {
                 codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
-
-                if ( disableEntitySecurity )
-                {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = true;" );
-                }
-                else
-                {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );" );
-                }
-
+                codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );" );
                 codeBuilder.AppendLine();
                 codeBuilder.AppendLine( $"return helper.Search( searchKey, null );" );
             } );
@@ -676,18 +649,10 @@ namespace Rock.CodeGeneration.FileGenerators
         /// <param name="codeBuilder">The builder to write the method declaration to.</param>
         /// <param name="modelTypeFullName">The full namespace and name of the C# class.</param>
         /// <param name="actionGuid">The unique identifier to use for the action.</param>
-        /// <param name="disableEntitySecurity">If <c>true</c> then entity security will not be used for these endpoints.</param>
-        private static void GeneratePostSearchByKeyAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid, bool disableEntitySecurity )
+        private static void GeneratePostSearchByKeyAction( IndentedStringBuilder codeBuilder, string modelTypeFullName, Guid actionGuid )
         {
-            var securityAction = "EXECUTE_READ";
-            var additionalExcludedActions = string.Empty;
-
-            if ( disableEntitySecurity )
-            {
-                securityAction = "EXECUTE_UNRESTRICTED_READ";
-                additionalExcludedActions = "Security.Authorization.EXECUTE_READ, ";
-            }
-
+            // SearchByKey should always enforce security on EntitySearch even
+            // when the target entity will have security bypassed.
             codeBuilder.AppendLine( "/// <summary>" );
             codeBuilder.AppendLine( "/// Performs a search of items using the specified system query." );
             codeBuilder.AppendLine( "/// </summary>" );
@@ -697,8 +662,8 @@ namespace Rock.CodeGeneration.FileGenerators
             codeBuilder.AppendLine( "[HttpPost]" );
             codeBuilder.AppendLine( "[Route( \"search/{searchKey}\" )]" );
             codeBuilder.AppendLine( "[Authenticate]" );
-            codeBuilder.AppendLine( $"[Secured( Security.Authorization.{securityAction} )]" );
-            codeBuilder.AppendLine( $"[ExcludeSecurityActions( {additionalExcludedActions}Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
+            codeBuilder.AppendLine( $"[Secured( Security.Authorization.EXECUTE_READ )]" );
+            codeBuilder.AppendLine( $"[ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.BadRequest )]" );
             codeBuilder.AppendLine( "[ProducesResponseType( HttpStatusCode.NotFound )]" );
@@ -710,16 +675,7 @@ namespace Rock.CodeGeneration.FileGenerators
             {
                 codeBuilder.AppendLine( $"var helper = new CrudEndpointHelper<{modelTypeFullName}, {modelTypeFullName}Service>( this );" );
                 codeBuilder.AppendLine();
-
-                if ( disableEntitySecurity )
-                {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = true;" );
-                }
-                else
-                {
-                    codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );" );
-                }
-
+                codeBuilder.AppendLine( "helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );" );
                 codeBuilder.AppendLine();
                 codeBuilder.AppendLine( $"return helper.Search( searchKey, query );" );
             } );

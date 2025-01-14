@@ -49,9 +49,6 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Entity Sets.
     /// </summary>
     [RoutePrefix( "api/v2/models/entitysets" )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of reading data without performing per-entity security checks." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of writing data without performing per-entity security checks." )]
-    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "7ac84989-18ce-5d8e-a3ca-928454eed8ee" )]
     public partial class EntitySetsController : ApiControllerBase
     {
@@ -256,8 +253,8 @@ namespace Rock.Rest.v2.Models
         [HttpGet]
         [Route( "search/{searchKey}" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
@@ -266,7 +263,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.EntitySet, Rock.Model.EntitySetService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.Search( searchKey, null );
         }
@@ -280,8 +277,8 @@ namespace Rock.Rest.v2.Models
         [HttpPost]
         [Route( "search/{searchKey}" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -291,7 +288,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.EntitySet, Rock.Model.EntitySetService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.Search( searchKey, query );
         }

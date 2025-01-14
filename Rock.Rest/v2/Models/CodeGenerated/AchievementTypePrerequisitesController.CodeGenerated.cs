@@ -49,9 +49,6 @@ namespace Rock.Rest.v2.Models
     /// Provides data API endpoints for Achievement Type Prerequisites.
     /// </summary>
     [RoutePrefix( "api/v2/models/achievementtypeprerequisites" )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of reading data without performing per-entity security checks." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of writing data without performing per-entity security checks." )]
-    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "ccd20f2e-c8b0-565e-b9cc-184295aff786" )]
     public partial class AchievementTypePrerequisitesController : ApiControllerBase
     {
@@ -256,8 +253,8 @@ namespace Rock.Rest.v2.Models
         [HttpGet]
         [Route( "search/{searchKey}" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
@@ -266,7 +263,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.Search( searchKey, null );
         }
@@ -280,8 +277,8 @@ namespace Rock.Rest.v2.Models
         [HttpPost]
         [Route( "search/{searchKey}" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( object ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
@@ -291,7 +288,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.AchievementTypePrerequisite, Rock.Model.AchievementTypePrerequisiteService>( this );
 
-            helper.IsSecurityIgnored = true;
+            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             return helper.Search( searchKey, query );
         }

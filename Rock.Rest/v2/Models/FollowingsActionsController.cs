@@ -43,11 +43,6 @@ namespace Rock.Rest.v2.Models
     /// Provides action API endpoints for Followings.
     /// </summary>
     [RoutePrefix( "api/v2/models/followings/actions" )]
-    [SecurityAction( Security.Authorization.EXECUTE_READ, "Allows execution of API endpoints in the context of viewing data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_WRITE, "Allows execution of API endpoints in the context of editing data." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of viewing data without performing per-entity security checks." )]
-    [SecurityAction( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of editing data without performing per-entity security checks." )]
-    [ExcludeSecurityActions( Security.Authorization.VIEW, Security.Authorization.EDIT )]
     [Rock.SystemGuid.RestControllerGuid( "27c9a2aa-70a3-4afe-9599-aeda2db80794" )]
     public class FollowingsActionsController : ApiControllerBase
     {
