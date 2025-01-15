@@ -25,14 +25,15 @@
     import { PropType, ref, watch } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { MobileLayoutBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileLayoutDetail/mobileLayoutBag";
     import { MobileLayoutDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Mobile/MobileLayoutDetail/mobileLayoutDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<MobileLayoutBag>,
+            type: Object as PropType<ValidPropertiesBox<MobileLayoutBag>>,
             required: true
         },
 
@@ -43,18 +44,18 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: MobileLayoutBag): void;
+        (e: "update:modelValue", value: ValidPropertiesBox<MobileLayoutBag>): void;
         (e: "propertyChanged", value: string): void;
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const layoutMobilePhone = propertyRef(props.modelValue.layoutMobilePhone ?? "", "LayoutMobilePhone");
-    const layoutMobileTablet = propertyRef(props.modelValue.layoutMobileTablet ?? "", "LayoutMobileTablet");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const layoutMobilePhone = propertyRef(props.modelValue?.bag?.layoutMobilePhone ?? "", "LayoutMobilePhone");
+    const layoutMobileTablet = propertyRef(props.modelValue?.bag?.layoutMobileTablet ?? "", "LayoutMobileTablet");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -64,25 +65,26 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(layoutMobilePhone, props.modelValue.layoutMobilePhone ?? "");
-        updateRefValue(layoutMobileTablet, props.modelValue.layoutMobileTablet ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(layoutMobilePhone, props.modelValue?.bag?.layoutMobilePhone ?? "");
+        updateRefValue(layoutMobileTablet, props.modelValue?.bag?.layoutMobileTablet ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        const newValue: MobileLayoutBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            name: name.value,
-            layoutMobilePhone: layoutMobilePhone.value,
-            layoutMobileTablet: layoutMobileTablet.value,
+        const newValue: ValidPropertiesBox<MobileLayoutBag> = {
+            bag: { ...props.modelValue.bag } as MobileLayoutBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "layoutMobilePhone", layoutMobilePhone.value);
+        setPropertiesBoxValue(newValue, "layoutMobileTablet", layoutMobileTablet.value);
 
         emit("update:modelValue", newValue);
     });

@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 using Rock.Attribute;
 using Rock.Constants;
@@ -24,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Mobile.MobileLayoutDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Mobile
@@ -40,7 +42,7 @@ namespace Rock.Blocks.Mobile
 
     [SystemGuid.EntityTypeGuid( "e83c989b-5ecb-4de4-b5bf-11af7fc2cca3" )]
     [SystemGuid.BlockTypeGuid( "c64f92cc-38a6-4562-8eae-d4f30b4af017" )]
-    public class MobileLayoutDetail : RockDetailBlockType
+    public class MobileLayoutDetail : RockEntityDetailBlockType<Layout, MobileLayoutBag>
     {
         #region Keys
 
@@ -48,6 +50,7 @@ namespace Rock.Blocks.Mobile
         {
             public const string LayoutId = "LayoutId";
             public const string SiteId = "SiteId";
+            public const string Tab = "Tab";
         }
 
         private static class NavigationUrlKey
@@ -62,17 +65,13 @@ namespace Rock.Blocks.Mobile
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<MobileLayoutBag, MobileLayoutDetailOptionsBag>();
+            var box = new DetailBlockBox<MobileLayoutBag, MobileLayoutDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, true, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<Layout>();
+            box.NavigationUrls = GetBoxNavigationUrls();
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -80,11 +79,9 @@ namespace Rock.Blocks.Mobile
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="loadAttributes"><c>true</c> if attributes and values should be loaded; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<MobileLayoutBag, MobileLayoutDetailOptionsBag> box, bool loadAttributes, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<MobileLayoutBag, MobileLayoutDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity != null )
             {
@@ -100,10 +97,7 @@ namespace Rock.Blocks.Mobile
                 var isViewable = BlockCache.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
                 box.IsEditable = BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
-                if ( loadAttributes )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
+                entity.LoadAttributes( RockContext );
 
                 if ( entity.Id != 0 )
                 {
@@ -111,7 +105,6 @@ namespace Rock.Blocks.Mobile
                     if ( isViewable )
                     {
                         box.Entity = GetEntityBag( entity );
-                        box.SecurityGrantToken = GetSecurityGrantToken( entity );
                     }
                     else
                     {
@@ -124,7 +117,6 @@ namespace Rock.Blocks.Mobile
                     if ( box.IsEditable )
                     {
                         box.Entity = GetEntityBag( entity );
-                        box.SecurityGrantToken = GetSecurityGrantToken( entity );
                     }
                     else
                     {
@@ -136,6 +128,8 @@ namespace Rock.Blocks.Mobile
             {
                 box.ErrorMessage = $"The {Layout.FriendlyTypeName} was not found.";
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -160,47 +154,50 @@ namespace Rock.Blocks.Mobile
             };
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( Layout entity, DetailBlockBox<MobileLayoutBag, MobileLayoutDetailOptionsBag> box )
+        /// <inheritdoc/>
+        protected override MobileLayoutBag GetEntityBagForView( Layout entity )
+        {
+            return GetEntityBag( entity );
+        }
+
+        /// <inheritdoc/>
+        protected override MobileLayoutBag GetEntityBagForEdit( Layout entity )
+        {
+            return GetEntityBag( entity );
+        }
+
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( Layout entity, ValidPropertiesBox<MobileLayoutBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.LayoutMobilePhone ),
-                () => entity.LayoutMobilePhone = box.Entity.LayoutMobilePhone );
+            box.IfValidProperty( nameof( box.Bag.LayoutMobilePhone ),
+                () => entity.LayoutMobilePhone = box.Bag.LayoutMobilePhone );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.LayoutMobileTablet ),
-                () => entity.LayoutMobileTablet = box.Entity.LayoutMobileTablet );
+            box.IfValidProperty( nameof( box.Bag.LayoutMobileTablet ),
+                () => entity.LayoutMobileTablet = box.Bag.LayoutMobileTablet );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="Layout"/> to be viewed or edited on the page.</returns>
-        private Layout GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override Layout GetInitialEntity()
         {
-            var layout = GetInitialEntity<Layout, LayoutService>( rockContext, PageParameterKey.LayoutId );
+            var layout = GetInitialEntity<Layout, LayoutService>( RockContext, PageParameterKey.LayoutId );
 
             if ( layout?.Id == 0 )
             {
                 var siteId = RequestContext.GetPageParameter( PageParameterKey.SiteId )?.AsIntegerOrNull();
+
                 if ( siteId.HasValue )
                 {
                     layout.SiteId = siteId.Value;
@@ -220,52 +217,16 @@ namespace Rock.Blocks.Mobile
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
                 {
-                    { "SiteId", PageParameter( "SiteId" ) },
-                    { "Tab", "Layouts" }
+                    { PageParameterKey.SiteId, PageParameter( PageParameterKey.SiteId ) },
+                    { PageParameterKey.Tab, "Layouts" }
                 } )
             };
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out Layout entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <param name="entity">The entity being viewed or edited on this block.</param>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( IHasAttributes entity )
-        {
-            return new Rock.Security.SecurityGrant()
-                .AddRulesForAttributes( entity, RequestContext.CurrentPerson )
-                .ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out Layout entity, out BlockActionResult error )
-        {
-            var entityService = new LayoutService( rockContext );
+            var entityService = new LayoutService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -310,22 +271,20 @@ namespace Rock.Blocks.Mobile
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<MobileLayoutBag, MobileLayoutDetailOptionsBag>
-                {
-                    Entity = GetEntityBag( entity )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<MobileLayoutBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -334,37 +293,34 @@ namespace Rock.Blocks.Mobile
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<MobileLayoutBag, MobileLayoutDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<MobileLayoutBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                var isNew = entity.Id == 0;
-                entity.FileName = box.Entity.Name + ".xaml";
-
-                if ( isNew )
-                {
-                    entity.SiteId = PageParameter( PageParameterKey.SiteId ).AsInteger();
-                }
-
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
-                {
-                    { "SiteId", PageParameter( "SiteId" ) },
-                    { "Tab", "Layouts" }
-                } ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            var isNew = entity.Id == 0;
+            entity.FileName = box.Bag.Name + ".xaml";
+
+            if ( isNew )
+            {
+                entity.SiteId = PageParameter( PageParameterKey.SiteId ).AsInteger();
+            }
+
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
+            {
+                { PageParameterKey.SiteId, PageParameter( PageParameterKey.SiteId ) },
+                { PageParameterKey.Tab, "Layouts" }
+            } ) );
         }
 
         /// <summary>
@@ -375,29 +331,26 @@ namespace Rock.Blocks.Mobile
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new LayoutService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new LayoutService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
-                {
-                    { "SiteId", PageParameter( "SiteId" ) },
-                    { "Tab", "Layouts" }
-                } ) );
+                return actionError;
             }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
+            {
+                { PageParameterKey.SiteId, PageParameter( PageParameterKey.SiteId ) },
+                { PageParameterKey.Tab, "Layouts" }
+            } ) );
         }
 
         #endregion
