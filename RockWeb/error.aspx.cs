@@ -98,6 +98,13 @@ namespace RockWeb
             {
                 // intentionally ignore exception
             }
+            finally
+            {
+                // Tell the browsers to not cache.
+                Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
+                Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
+                Response.Cache.SetNoStore();
+            }
         }
 
         /// <summary>
