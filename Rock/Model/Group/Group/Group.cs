@@ -563,10 +563,62 @@ namespace Rock.Model
         /// </para>
         /// </summary>
         /// <value>
-        /// A value that indicates if this gorup is a special needs group.
+        /// A value that indicates if this group is a special needs group.
         /// </value>
         [DataMember]
         public bool IsSpecialNeeds { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether chat is enabled for this group. If set to <see langword="false"/>, then the group will
+        /// not have chat enabled. If set to <see langword="true"/>, then it will have chat enabled. If set to
+        /// <see langword="null"/>, then the value from <see cref="GroupType.IsChatEnabledForAllGroups"/> will be used.
+        /// This should only be used when editing the group. Call the <see cref="GetIsChatEnabled"/> method instead to
+        /// determine if the group is being used for chat, as that method will also check the
+        /// <see cref="GroupType.IsChatEnabledForAllGroups"/> property.
+        /// </summary>
+        [DataMember]
+        public bool? IsChatEnabledOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether individuals are allowed to leave this chat channel. If set to <see langword="false"/>,
+        /// then they will only be allowed to mute the channel. If set to <see langword="true"/>, then they will be
+        /// allowed to both leave and mute the channel. If set to <see langword="null"/>, then the value of
+        /// <see cref="GroupType.IsLeavingChatChannelAllowed"/> will be used. This should only be used when editing the
+        /// group. Call the <see cref="GetIsLeavingChatChannelAllowed"/> method instead to determine if leaving is
+        /// allowed, as that method will also check the <see cref="GroupType.IsLeavingChatChannelAllowed"/> property.
+        /// </summary>
+        [DataMember]
+        public bool? IsLeavingChatChannelAllowedOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this chat channel is public. A public channel is visible to everyone when performing a
+        /// search. This also implies that the channel may be joined by any person via the chat application. If set to
+        /// <see langword="null"/>, then the value of <see cref="GroupType.IsChatChannelPublic"/> will be used. This
+        /// should only be used when editing the group. Call the <see cref="GetIsChatChannelPublic"/> method instead to
+        /// determine if the chat channel is public, as that method will also check the
+        /// <see cref="GroupType.IsChatChannelPublic"/> property.
+        /// </summary>
+        [DataMember]
+        public bool? IsChatChannelPublicOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this chat channel is always shown in the channel list even if the person has not joined
+        /// the channel. This also implies that the channel may be joined by any person via the chat application. If set
+        /// to <see langword="null"/>, then the value of <see cref="GroupType.IsChatChannelAlwaysShown"/> will be used.
+        /// This should only be used when editing the group. Call the <see cref="GetIsChatChannelAlwaysShown"/> method
+        /// instead to determine if the chat channel is always shown, as that method will also check the
+        /// <see cref="GroupType.IsChatChannelAlwaysShown"/> property.
+        /// </summary>
+        [DataMember]
+        public bool? IsChatChannelAlwaysShownOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the chat channel in the external chat service. No assumptions should be made
+        /// that if this value is set the channel still exists in the external chat service.
+        /// </summary>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string ChatChannelKey { get; set; }
 
         #endregion
 

@@ -104,6 +104,7 @@
     <Compile Include="Cms\TagType.cs" />
     <Compile Include="Cms\ThemeFontAwesomeWeight.cs" />
     <Compile Include="Cms\ThemeIconSet.cs" />
+    <Compile Include="Communication\Chat\ChatRole.cs" />
     <Compile Include="Communication\CommunicationMessageFilter.cs" />
     <Compile Include="Communication\CommunicationRecipientStatus.cs" />
     <Compile Include="Communication\CommunicationStatus.cs" />
