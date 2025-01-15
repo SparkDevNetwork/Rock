@@ -13,7 +13,7 @@
                  :isDeleteVisible="false"
                  :isEditVisible="true"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  :entityTypeGuid="entityTypeGuid"
                  :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
@@ -113,7 +113,7 @@
      *
      * @returns true if the panel should enter edit mode; otherwise false.
      */
-     async function onEdit(): Promise<boolean> {
+    async function onEdit(): Promise<boolean> {
         const result = await invokeBlockAction<ValidPropertiesBox<LearningGradingSystemScaleBag>>("Edit", {
             key: learningGradingSystemScaleViewBag.value?.idKey
         });
