@@ -19,32 +19,23 @@ using Rock.Security;
 
 namespace Rock.Model
 {
-    public partial class GroupMemberRequirement
+    public partial class BackgroundCheck
     {
         #region ISecured
 
         /// <inheritdoc/>
-        public override ISecured ParentAuthority => GroupRequirement ?? base.ParentAuthority;
-
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
+        public override ISecured ParentAuthority
         {
-            if ( this.GroupMember != null && this.GroupRequirement != null )
+            get
             {
-                return string.Format( "{0}|{1}", this.GroupMember, this.GroupRequirement );
-            }
-            else
-            {
-                return base.ToString();
+                if ( this.Id == 0 )
+                {
+                    return new GlobalRestrictedDefault();
+                }
+                else
+                {
+                    return new PrayerRequest();
+                }
             }
         }
 

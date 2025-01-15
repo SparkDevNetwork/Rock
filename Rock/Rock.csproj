@@ -1284,6 +1284,7 @@
     <Compile Include="Jobs\UpdateProgramCompletions.cs" />
     <Compile Include="Model\Core\AttributeMatrixItem\AttributeMatrixItem.SaveHook.cs" />
     <Compile Include="Model\Core\Note\NoteExtensionMethods.cs" />
+    <Compile Include="Model\CRM\BackgroundCheck\BackgroundCheck.Logic.cs" />
     <Compile Include="Model\Event\Registration\Registration.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncementService.cs" />
