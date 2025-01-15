@@ -18,10 +18,11 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
-using Rock.Web.Cache;
-using Rock.Lava;
 using Rock.Enums.Communication.Chat;
+using Rock.Lava;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -33,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupTypeRole" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "D155C373-9E47-4C6A-BADD-792F31AF5FBA")]
     public partial class GroupTypeRole : Model<GroupTypeRole>, IOrdered, ICacheable
     {

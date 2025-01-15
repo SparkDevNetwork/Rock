@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "LMS" )]
     [Table( "LearningActivity" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_ACTIVITY )]
     public partial class LearningActivity : Model<LearningActivity>, IOrdered
     {

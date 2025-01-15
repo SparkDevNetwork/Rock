@@ -34,6 +34,8 @@ using Rock.Reporting;
 using Rock.Reporting.DataFilter;
 using Rock.Security;
 using Rock.Utility;
+using Rock.Utility.Settings;
+using Rock.ViewModels.Core;
 using Rock.Web.Cache;
 
 namespace Rock.Lava.Blocks
@@ -121,7 +123,16 @@ namespace Rock.Lava.Blocks
             if ( entityTypeCache != null )
             {
                 Type entityType = entityTypeCache.GetEntityType();
-                if ( entityType != null )
+
+                // Parse markup
+                var settings = GetAttributesFromMarkup( _markup, context, this.EntityName );
+                var parms = settings.Attributes;
+
+                if ( entityType != null && parms.Any( p => p.Key == "entitysearch" ) )
+                {
+                    SetMergeFieldsFromEntitySearch( entityTypeCache, parms, context );
+                }
+                else if ( entityType != null )
                 {
                     // Get the appropriate database context for this entity type.
                     // Note that this may be different from the standard RockContext if the entity is sourced from a plug-in.
@@ -141,10 +152,6 @@ namespace Rock.Lava.Blocks
 
                     ParameterExpression paramExpression = Expression.Parameter( entityType, "x" );
                     Expression queryExpression = null; // the base expression we'll use to build our query from
-
-                    // Parse markup
-                    var settings = GetAttributesFromMarkup( _markup, context, this.EntityName );
-                    var parms = settings.Attributes;
 
                     if ( parms.Any( p => p.Key == "id" ) )
                     {
@@ -792,6 +799,53 @@ namespace Rock.Lava.Blocks
             }
 
             return settings;
+        }
+
+        /// <summary>
+        /// Sets the merge fields for the child content block from an entity search.
+        /// </summary>
+        /// <param name="entityTypeCache">The entity type cache.</param>
+        /// <param name="parms">The parms to the rock entity command.</param>
+        /// <param name="context">The lava context.</param>
+        private void SetMergeFieldsFromEntitySearch( EntityTypeCache entityTypeCache, Dictionary<string, string> parms, ILavaRenderContext context )
+        {
+            var searchKey = parms["entitysearch"];
+            var entitySearchCache = EntitySearchCache.GetByEntityTypeAndKey( entityTypeCache, searchKey );
+            var userQuery = new EntitySearchQueryBag
+            {
+                Where = parms.GetValueOrNull( "expression" )
+            };
+
+            if ( parms.GetValueOrNull( "count" ).AsBoolean() )
+            {
+                userQuery.IsCountOnly = true;
+
+                var countResults = EntitySearchService.GetSearchResults( entitySearchCache, userQuery, GetCurrentPerson( context ) );
+
+                context.SetMergeField( "count", countResults.Count, LavaContextRelativeScopeSpecifier.Default );
+
+                return;
+            }
+
+            userQuery.GroupBy = parms.GetValueOrNull( "groupby" );
+            userQuery.Select = parms.GetValueOrNull( "select" );
+            userQuery.SelectMany = parms.GetValueOrNull( "selectmany" );
+            userQuery.Sort = parms.GetValueOrNull( "sort" );
+            userQuery.Offset = parms.GetValueOrNull( "offset" ).AsIntegerOrNull();
+            userQuery.Limit = parms.GetValueOrNull( "limit" ).AsIntegerOrNull() ?? 1_000;
+
+            // TODO: "selectmany" ??
+
+            var results = EntitySearchService.GetSearchResults( entitySearchCache, userQuery, GetCurrentPerson( context ) );
+
+            // Add the result to the current context.
+            context.SetMergeField( parms["iterator"], results.Items, LavaContextRelativeScopeSpecifier.Default );
+
+            if ( results.Items.Count == 1 )
+            {
+                // If there is only one item, set a singleton variable in addition to the result list.
+                context.SetMergeField( EntityName, results.Items[0], LavaContextRelativeScopeSpecifier.Default );
+            }
         }
 
         /// <summary>

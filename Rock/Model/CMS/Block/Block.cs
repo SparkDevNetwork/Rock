@@ -41,6 +41,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Block" )]
     [DataContract]
+    [CodeGenerateRest]
     [EnableAttributeQualification( nameof( Id ) )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.BLOCK )]
     public partial class Block : Model<Block>, IOrdered, ICacheable

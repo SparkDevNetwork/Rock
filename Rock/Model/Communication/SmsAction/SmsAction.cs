@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "SmsAction" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "1F5E26BE-0ED4-4250-8FFC-1DED5E9EACF0")]
     public partial class SmsAction : Model<SmsAction>, IOrdered, ICacheable
     {

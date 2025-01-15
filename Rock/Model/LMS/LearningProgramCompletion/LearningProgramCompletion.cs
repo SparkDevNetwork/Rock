@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "LMS" )]
     [Table( "LearningProgramCompletion" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_PROGRAM_COMPLETION )]
     public partial class LearningProgramCompletion : Model<LearningProgramCompletion>
     {

@@ -37,6 +37,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupLocation" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "26248EE7-09F3-4578-A1D6-47E01D91D6EF")]
     public partial class GroupLocation : Model<GroupLocation>, IOrdered
     {

@@ -208,6 +208,8 @@
     <Compile Include="Core\DefinedTypeDetail.cs" />
     <Compile Include="Core\DeviceDetail.cs" />
     <Compile Include="Core\DeviceList.cs" />
+    <Compile Include="Core\EntitySearchDetail.cs" />
+    <Compile Include="Core\EntitySearchList.cs" />
     <Compile Include="Core\EventList.cs" />
     <Compile Include="Core\FollowingSuggestionTypeList.cs" />
     <Compile Include="Core\LocationList.cs" />

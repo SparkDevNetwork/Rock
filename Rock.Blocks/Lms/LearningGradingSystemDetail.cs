@@ -119,7 +119,7 @@ namespace Rock.Blocks.Lms
                 return;
             }
 
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             // New entity is being created, prepare for edit mode by default.
             if ( box.IsEditable )

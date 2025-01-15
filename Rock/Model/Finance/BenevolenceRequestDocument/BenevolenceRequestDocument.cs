@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "BenevolenceRequestDocument" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "3D627F51-E262-454B-95A0-2EF97103BCE1")]
     public partial class BenevolenceRequestDocument : Model<BenevolenceRequestDocument>
     {

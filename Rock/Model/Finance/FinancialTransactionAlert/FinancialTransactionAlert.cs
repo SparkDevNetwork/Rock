@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialTransactionAlert" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "0E60F95E-70B5-4A06-9BEE-80ED9F12F25A")]
     public partial class FinancialTransactionAlert : Model<FinancialTransactionAlert>
     {

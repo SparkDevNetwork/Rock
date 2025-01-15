@@ -132,6 +132,10 @@
     <Compile Include="Migrations\202501132050349_AddMobileChatBackend.Designer.cs">
       <DependentUpon>202501132050349_AddMobileChatBackend.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202501152023534_AddNewRestV2CrudControllers.cs" />
+    <Compile Include="Migrations\202501152023534_AddNewRestV2CrudControllers.Designer.cs">
+      <DependentUpon>202501152023534_AddNewRestV2CrudControllers.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2452,6 +2456,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202501132050349_AddMobileChatBackend.resx">
       <DependentUpon>202501132050349_AddMobileChatBackend.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501152023534_AddNewRestV2CrudControllers.resx">
+      <DependentUpon>202501152023534_AddNewRestV2CrudControllers.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
