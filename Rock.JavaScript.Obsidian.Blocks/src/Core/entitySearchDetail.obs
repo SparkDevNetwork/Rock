@@ -330,7 +330,7 @@
 
         entityTypeName = entityTypeName.toLowerCase().replace(/ /g, "");
 
-        navigator.clipboard.writeText(`${window.location.origin}/api/v2/models/${pluralize(entityTypeName)}/data/search/${entitySearchViewBag.value?.key}`);
+        navigator.clipboard.writeText(`${window.location.origin}/api/v2/models/${pluralize(entityTypeName)}/search/${entitySearchViewBag.value?.key}`);
     }
 
     /**
