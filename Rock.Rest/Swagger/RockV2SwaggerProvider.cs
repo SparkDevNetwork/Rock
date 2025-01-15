@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Concurrent;
+using System;
 
 using Rock.Rest.Utility;
 
@@ -36,7 +36,7 @@ namespace Rock.Rest.Swagger
         /// <summary>
         /// The cached API documents.
         /// </summary>
-        private static readonly ConcurrentDictionary<string, SwaggerDocument> _cachedDocuments = new ConcurrentDictionary<string, SwaggerDocument>();
+        private static SwaggerDocument _cachedDocument;
 
         /// <summary>
         /// Creates a new instance of <see cref="RockV2SwaggerProvider"/> that
@@ -62,19 +62,34 @@ namespace Rock.Rest.Swagger
         /// <returns>The <see cref="SwaggerDocument"/> for this API version.</returns>
         public SwaggerDocument GetSwagger( string rootUrl, string apiVersion )
         {
-            var cacheKey = $"{rootUrl}+{apiVersion}";
+            var cachedDocument = _cachedDocument;
 
-            return _cachedDocuments.GetOrAdd( cacheKey, _ =>
+            if ( cachedDocument == null )
             {
-                var document = _baseProvider.GetSwagger( rootUrl, apiVersion );
+                cachedDocument = _baseProvider.GetSwagger( rootUrl, apiVersion );
+                _cachedDocument = cachedDocument;
+            }
 
-                if ( document.basePath == null )
-                {
-                    document.basePath = "/";
-                }
+            // The SwaggerDocument is built with the URL of the request. This is
+            // used by the UI to build the URLs in the "Try Now" feature. Because
+            // we are caching the document, we need to create a new document with
+            // all the same information, except the host and basePath should be
+            // calculated from the current request.
+            var rootUri = new Uri( rootUrl );
+            var port = !rootUri.IsDefaultPort
+                ? $":{rootUri.Port}"
+                : string.Empty;
 
-                return document;
-            } );
+            return new SwaggerDocument
+            {
+                info = cachedDocument.info,
+                host = rootUri.Host + port,
+                basePath = ( rootUri.AbsolutePath != "/" ) ? rootUri.AbsolutePath : null,
+                schemes = cachedDocument.schemes,
+                paths = cachedDocument.paths,
+                definitions = cachedDocument.definitions,
+                securityDefinitions = cachedDocument.securityDefinitions
+            };
         }
     }
 }

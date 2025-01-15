@@ -216,6 +216,7 @@
     <Compile Include="Swagger\RockV2SwaggerProvider.cs" />
     <Compile Include="Swagger\RockV2XmlCommentsTextHelper.cs" />
     <Compile Include="Swagger\SwaggerConfigV2.cs" />
+    <Compile Include="Swagger\SwaggerV2CacheBuilder.cs" />
     <Compile Include="Utility\ExcludeNavigationPropertiesContractResolver.cs" />
     <Compile Include="ProducesResponseTypeAttribute.cs" />
     <Compile Include="Utility\RockMessageResponseContext.cs" />
