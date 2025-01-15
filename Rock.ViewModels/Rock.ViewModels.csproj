@@ -118,6 +118,8 @@
     <Compile Include="Blocks\Cms\LavaShortcodeList\LavaShortcodeListBox.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationBag.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationInitializationBox.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushMediumOptionsBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushNotificationOptionsBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveMetricsReminderRequestBag.cs" />
