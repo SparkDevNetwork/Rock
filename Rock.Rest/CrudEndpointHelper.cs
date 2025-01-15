@@ -432,15 +432,31 @@ namespace Rock.Rest
 
                     attributedEntity.LoadAttributes( rockContext );
 
-                    foreach ( var attributeKey in attributedEntity.Attributes.Keys )
+                    foreach ( var attribute in attributedEntity.Attributes )
                     {
-                        values.TryAdd( attributeKey, new ModelAttributeValueBag
+                        if ( !IsSecurityIgnored )
                         {
-                            Value = attributedEntity.GetAttributeValue( attributeKey ),
-                            TextValue = attributedEntity.GetAttributeTextValue( attributeKey ),
-                            HtmlValue = attributedEntity.GetAttributeHtmlValue( attributeKey ),
-                            CondensedTextValue = attributedEntity.GetAttributeCondensedTextValue( attributeKey ),
-                            CondensedHtmlValue = attributedEntity.GetAttributeCondensedHtmlValue( attributeKey )
+                            // The AuthorizedForEntity method will check explicit
+                            // permissions on the entity. No inherited permissions
+                            // will be considered.
+                            var authorized = Security.Authorization.AuthorizedForEntity( attribute.Value, Security.Authorization.VIEW, _controller.RockRequestContext.CurrentPerson );
+
+                            // If this attribute explicitly denies the person access
+                            // then do not include the value. If it is explicitly
+                            // allowed or not set either way then include it.
+                            if ( authorized == false )
+                            {
+                                continue;
+                            }
+                        }
+
+                        values.TryAdd( attribute.Key, new ModelAttributeValueBag
+                        {
+                            Value = attributedEntity.GetAttributeValue( attribute.Key ),
+                            TextValue = attributedEntity.GetAttributeTextValue( attribute.Key ),
+                            HtmlValue = attributedEntity.GetAttributeHtmlValue( attribute.Key ),
+                            CondensedTextValue = attributedEntity.GetAttributeCondensedTextValue( attribute.Key ),
+                            CondensedHtmlValue = attributedEntity.GetAttributeCondensedHtmlValue( attribute.Key )
                         } );
                     }
 
@@ -492,11 +508,7 @@ namespace Rock.Rest
                         return NotFound( "The item was not found." );
                     }
 
-                    if ( !CheckAuthorized( Security.Authorization.EDIT, entity, out var authorizationResult ) )
-                    {
-                        return authorizationResult;
-                    }
-
+                    var entityAuthorized = CheckAuthorized( Security.Authorization.EDIT, entity, out _ );
                     var attributedEntity = ( IHasAttributes ) entity;
 
                     attributedEntity.LoadAttributes( rockContext );
@@ -505,17 +517,37 @@ namespace Rock.Rest
                     // for  matching attribute.
                     foreach ( var attrKey in values.Keys )
                     {
-                        if ( !attributedEntity.Attributes.ContainsKey( attrKey ) )
+                        if ( !attributedEntity.Attributes.TryGetValue( attrKey, out var attribute ) )
                         {
                             return BadRequest( $"{typeof( TEntity ).Name} does not have attribute {attrKey}" );
+                        }
 
+                        if ( !IsSecurityIgnored )
+                        {
+                            // The AuthorizedForEntity method will check explicit
+                            // permissions on the entity. No inherited permissions
+                            // will be considered.
+                            var authorized = Security.Authorization.AuthorizedForEntity( attribute, Security.Authorization.EDIT, _controller.RockRequestContext.CurrentPerson );
+
+                            // If the attribute explicitly denied them edit
+                            // permission then return an error.
+                            if ( authorized == false )
+                            {
+                                return Unauthorized( $"You are not authorized to Edit attribute '{attrKey}'." );
+                            }
+
+                            // If the attribute did not explicitly grant them
+                            // edit permission then check if they have edit
+                            // permission on the entity, and if not return an
+                            // error.
+                            if ( authorized != true && !entityAuthorized )
+                            {
+                                return Unauthorized( $"You are not authorized to Edit attribute '{attrKey}'." );
+                            }
                         }
 
                         attributedEntity.SetAttributeValue( attrKey, values[attrKey] ?? string.Empty );
                     }
-
-                    // TODO: Do something with this.
-                    // System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", GetPerson() );
 
                     attributedEntity.SaveAttributeValues( rockContext );
 
