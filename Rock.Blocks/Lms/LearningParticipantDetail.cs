@@ -97,10 +97,14 @@ namespace Rock.Blocks.Lms
             var options = new LearningParticipantDetailOptionsBag();
 
             var learningClass = new LearningClassService( RockContext )
-                .Get( PageParameter( PageParameterKey.LearningClassId ), !PageCache.Layout.Site.DisablePredictableIds );
+                .GetInclude(
+                    PageParameter( PageParameterKey.LearningClassId ),
+                    c => c.LearningCourse.LearningProgram,
+                    !PageCache.Layout.Site.DisablePredictableIds );
 
             options.ClassRoles = new LearningClassService( RockContext ).GetClassRoles( learningClass.Id )?.ToListItemBagList();
             options.CanViewGrades = learningClass.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
+            options.ConfigurationMode = learningClass.LearningCourse.LearningProgram.ConfigurationMode;
 
             return options;
         }

@@ -1148,6 +1148,8 @@ namespace RockWeb.Blocks.Finance
             var benevolenceTypeList = new BenevolenceTypeService( rockContext )
                 .Queryable()
                 .OrderBy( p => p.Name )
+                .AsEnumerable()
+                .Where( p => p.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 .ToList();
 
             // Load Benevolence Types and set the value from the Benevolence Request

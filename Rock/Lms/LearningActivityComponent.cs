@@ -26,26 +26,6 @@ namespace Rock.Lms
     /// </summary>
     public abstract class LearningActivityComponent : ObsidianComponent
     {
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LearningActivityComponent"/> class.
-        /// </summary>
-        /// <param name="componentFilePath">The path to the Obsidian component's .obs file.</param>
-        public LearningActivityComponent( string componentFilePath ) : base( componentFilePath )
-        {
-
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LearningActivityComponent" /> class.
-        /// </summary>
-        public LearningActivityComponent() : base()
-        {
-        }
-
-        #endregion
-
         /// <summary>
         /// Gets the completion JSON string that should be persisted to the database.
         /// </summary>
@@ -110,7 +90,7 @@ namespace Rock.Lms
         /// <value>
         /// The <see cref="System.String"/> CSS class for the icon.
         /// </value>
-        public virtual string IconCssClass { get; set; }
+        public virtual string IconCssClass => null;
 
         /// <summary>
         /// Gets or sets the highlight color of the icon for this component.
@@ -118,7 +98,7 @@ namespace Rock.Lms
         /// <value>
         /// The <see cref="System.String"/> hex highlight color of the icon.
         /// </value>
-        public virtual string HighlightColor { get; set; }
+        public virtual string HighlightColor => null;
 
         /// <summary>
         /// Gets or sets the name of this component.
@@ -126,7 +106,6 @@ namespace Rock.Lms
         /// <value>
         /// The <see cref="System.String"/> name of the component.
         /// </value>
-        public virtual string Name { get; set; }
-
+        public virtual string Name => null;
     }
 }

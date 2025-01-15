@@ -450,12 +450,17 @@ namespace Rock.Blocks.Lms
 
             var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
 
+            // Get the course details or a default value.
             var course = learningCourseService.GetPublicCourseDetails(
                 courseId,
                 currentPerson,
                 publicOnly,
                 semesterDateRange.Start,
-                semesterDateRange.End );
+                semesterDateRange.End ) ?? new LearningCourseService.PublicLearningCourseBag
+                {
+                    Semesters = new List<LearningCourseService.PublicLearningSemesterBag>(),
+                    ProgramInfo = new LearningProgramService.PublicLearningProgramBag(),
+                };
 
             course.DescriptionAsHtml = new StructuredContentHelper( course.Description ?? string.Empty ).Render();
 

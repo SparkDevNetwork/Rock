@@ -250,13 +250,37 @@ namespace Rock.Transactions
                 interactionsToInsert.Add( interaction );
             }
 
-            // cross checking to verify that Guids must not present in the interaction table.
-            var insertedGuids = interactionsToInsert.Select( i => i.Guid ).ToList();
-            var interactionGuids = new InteractionService( new RockContext() ).Queryable()
-                                    .Where( i => insertedGuids.Contains( i.Guid ) )
+            /*
+                1/14/2025 - KBH
+
+                Added code to check for duplicate Guids before inserting into the Interaction table.
+                    1. Check for any duplicate interaction Guids within our current list of interactions
+                       to insert.
+                    2. Check for any interaction guids in the database that match any of the interaction
+                       guids we are attempting to insert.
+
+                REASON FOR THE CODE:
+                    A malicious user can send multiple requests to the RegisterPageInteraction route. If
+                    the requests made by the malicious user contain duplicate interaction Guids, the
+                    attempt to Bulk Insert will fail and rollback. Any queued interactions (good or bad)
+                    will be lost.
+
+                    This added code may also prevent similar (duplicate guid) scenarios when a Web Farm
+                    is introduced. 
+             */
+
+            // Remove any duplicate interactions within the current list of interactions to insert.
+            interactionsToInsert = interactionsToInsert
+                .DistinctBy( i => i.Guid )
+                .ToList();
+
+            // Cross checking to verify that Guids aren't present in the interaction table.
+            var interactionGuidsToInsert = interactionsToInsert.Select( i => i.Guid ).ToList();
+            var duplicateInteractionGuidsFromDatabase = new InteractionService( new RockContext() ).Queryable()
+                                    .Where( i => interactionGuidsToInsert.Contains( i.Guid ) )
                                     .Select( i => i.Guid )
                                     .ToList();
-            interactionsToInsert.RemoveAll( a => interactionGuids.Contains( a.Guid ) );
+            interactionsToInsert.RemoveAll( a => duplicateInteractionGuidsFromDatabase.Contains( a.Guid ) );
 
             rockContext.BulkInsert( interactionsToInsert );
 
@@ -270,6 +294,7 @@ namespace Rock.Transactions
             {
                 // Ids do not exit for the interactions in the collection since they were bulk imported.
                 // Read their ids from their guids and append the id.
+                var insertedGuids = interactionsToInsert.Select( i => i.Guid ).ToList();
                 var interactionIds = new InteractionService( new RockContext() ).Queryable()
                                         .Where( i => insertedGuids.Contains( i.Guid ) )
                                         .Select( i => new { i.Id, i.Guid } )

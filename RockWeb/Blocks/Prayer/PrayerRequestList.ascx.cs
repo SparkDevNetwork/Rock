@@ -777,7 +777,7 @@ namespace RockWeb.Blocks.Prayer
                     lFullname.Text = prayerRequest.FirstName + " " + prayerRequest.LastName;
                 }
 
-                if ( ( ModerationFlags ) prayerRequest.ModerationFlags == ModerationFlags.SelfHarm )
+                if ( prayerRequest.ModerationFlags.HasFlag( ModerationFlags.SelfHarm ) )
                 {
                     // Ensure the column is visible.
                     rtfSelfHarmFlag.Visible = true;

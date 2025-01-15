@@ -87,7 +87,7 @@
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import Grid, { EditColumn, TextColumn, DeleteColumn, SecurityColumn, ReorderColumn } from "@Obsidian/Controls/grid";
-    import { useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AttributeMatrixTemplateBag } from "@Obsidian/ViewModels/Blocks/Core/AttributeMatrixTemplateDetail/attributeMatrixTemplateBag";
     import { AttributeMatrixTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AttributeMatrixTemplateDetail/attributeMatrixTemplateDetailOptionsBag";
@@ -96,10 +96,11 @@
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<AttributeMatrixTemplateBag>,
+            type: Object as PropType<ValidPropertiesBox<AttributeMatrixTemplateBag>>,
             required: true
         },
 
@@ -115,22 +116,22 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: AttributeMatrixTemplateBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<AttributeMatrixTemplateBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const minimumRows = propertyRef(props.modelValue.minimumRows ?? "", "MinimumRows");
-    const maximumRows = propertyRef(props.modelValue.maximumRows ?? "", "MaximumRows");
-    const formattedLava = propertyRef(props.modelValue.formattedLava ?? "", "FormattedLava");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const minimumRows = propertyRef(props.modelValue?.bag?.minimumRows ?? "", "MinimumRows");
+    const maximumRows = propertyRef(props.modelValue?.bag?.maximumRows ?? "", "MaximumRows");
+    const formattedLava = propertyRef(props.modelValue?.bag?.formattedLava ?? "", "FormattedLava");
 
-    const templateAttributes = ref(props.modelValue.templateAttributes ?? []);
+    const templateAttributes = ref(props.modelValue?.bag?.templateAttributes ?? []);
     const isAttributeModalOpen = ref(false);
     const templateAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
@@ -148,7 +149,7 @@
     });
 
     const showNotification = computed((): boolean => {
-        if (props.modelValue.idKey && templateAttributes.value.length == 0) {
+        if (props.modelValue?.bag?.idKey && templateAttributes.value.length == 0) {
             return true;
         }
         else {
@@ -293,7 +294,7 @@
     */
     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
         const data = {
-            idKey: props.modelValue?.idKey,
+            idKey: props.modelValue?.bag?.idKey,
             guid: item["guid"],
             beforeGuid: beforeItem?.["guid"] ?? null
         };
@@ -307,32 +308,32 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(minimumRows, props.modelValue.minimumRows ?? "");
-        updateRefValue(maximumRows, props.modelValue.maximumRows ?? "");
-        updateRefValue(formattedLava, props.modelValue.formattedLava ?? "");
-        updateRefValue(templateAttributes, props.modelValue.templateAttributes ?? []);
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(minimumRows, props.modelValue?.bag?.minimumRows ?? "");
+        updateRefValue(maximumRows, props.modelValue?.bag?.maximumRows ?? "");
+        updateRefValue(formattedLava, props.modelValue?.bag?.formattedLava ?? "");
+        updateRefValue(templateAttributes, props.modelValue?.bag?.templateAttributes ?? []);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, templateAttributes, ...propRefs], () => {
-        const newValue: AttributeMatrixTemplateBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            isActive: isActive.value,
-            name: name.value,
-            minimumRows: minimumRows.value,
-            maximumRows: maximumRows.value,
-            formattedLava: formattedLava.value,
-            templateAttributes: templateAttributes.value,
+        const newValue: ValidPropertiesBox<AttributeMatrixTemplateBag> = {
+            bag: { ...props.modelValue.bag } as AttributeMatrixTemplateBag
         };
 
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "minimumRows", minimumRows.value);
+        setPropertiesBoxValue(newValue, "maximumRows", maximumRows.value);
+        setPropertiesBoxValue(newValue, "formattedLava", formattedLava.value);
+        setPropertiesBoxValue(newValue, "templateAttributes", templateAttributes.value);
         emit("update:modelValue", newValue);
     });
 

@@ -16,6 +16,8 @@
 //
 
 using System.Data.Entity;
+
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -47,6 +49,13 @@ namespace Rock.Model
 
             GroupTypeRoleCache.UpdateCachedEntity( Id, entityState );
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => GroupType ?? base.ParentAuthority;
 
         #endregion
     }

@@ -604,6 +604,71 @@ namespace Rock.Model
             return this.GroupType?.ScheduleCoordinatorNotificationTypes?.HasFlag( notificationType ) == true;
         }
 
+        /// <summary>
+        /// Gets whether chat is enabled for this group. If <see cref="IsChatEnabledOverride"/> is set to
+        /// <see langword="null"/>, then the value from <see cref="GroupType.IsChatEnabledForAllGroups"/> will be used.
+        /// </summary>
+        /// <returns>Whether chat is enabled for this group.</returns>
+        internal bool GetIsChatEnabled()
+        {
+            if ( this.IsChatEnabledOverride.HasValue )
+            {
+                return this.IsChatEnabledOverride.Value;
+            }
+
+            return this.GroupType?.IsChatEnabledForAllGroups ?? false;
+        }
+
+        /// <summary>
+        /// Gets whether individuals are allowed to leave this chat channel. Otherwise, they will only be allowed to
+        /// mute the channel. If <see cref="IsLeavingChatChannelAllowedOverride"/> is set to <see langword="null"/>,
+        /// then the value of <see cref="GroupType.IsLeavingChatChannelAllowed"/> will be used.
+        /// </summary>
+        /// <returns>Whether individuals are allowed to leave this chat channel.</returns>
+        internal bool GetIsLeavingChatChannelAllowed()
+        {
+            if ( this.IsLeavingChatChannelAllowedOverride.HasValue )
+            {
+                return this.IsLeavingChatChannelAllowedOverride.Value;
+            }
+
+            return this.GroupType?.IsLeavingChatChannelAllowed ?? false;
+        }
+
+        /// <summary>
+        /// Gets whether this chat channel is public and visible to everyone when performing a search. This also implies
+        /// that the channel may be joined by any person via the chat application. If
+        /// <see cref="IsChatChannelPublicOverride"/> is set to <see langword="null"/>, then the value of
+        /// <see cref="GroupType.IsChatChannelPublic"/> will be used.
+        /// </summary>
+        /// <returns>Whether this chat channel is public, and may be joined by any person.</returns>
+        internal bool GetIsChatChannelPublic()
+        {
+            if ( this.IsChatChannelPublicOverride.HasValue )
+            {
+                return this.IsChatChannelPublicOverride.Value;
+            }
+
+            return this.GroupType?.IsChatChannelPublic ?? false;
+        }
+
+        /// <summary>
+        /// Gets whether this chat channel is always shown in the channel list even if the person has not joined
+        /// the channel. This also implies that the channel may be joined by any person via the chat application. If
+        /// <see cref="IsChatChannelAlwaysShownOverride"/> is set to <see langword="null"/>, then the value of
+        /// <see cref="GroupType.IsChatChannelAlwaysShown"/> will be used.
+        /// </summary>
+        /// <returns>Whether this chat channel is always shown in the channel list, and may be joined by any person.</returns>
+        internal bool GetIsChatChannelAlwaysShown()
+        {
+            if ( this.IsChatChannelAlwaysShownOverride.HasValue )
+            {
+                return this.IsChatChannelAlwaysShownOverride.Value;
+            }
+
+            return this.GroupType?.IsChatChannelAlwaysShown ?? false;
+        }
+
         #endregion
     }
 }

@@ -15384,7 +15384,7 @@ WHERE ([Guid]='1E6785C0-7D92-49A7-9E15-68E113399152')
         private void MigrationRollupsForV17_0_19_ChopBlocksUp()
         {
             MigrationRollupsForV17_0_19_RegisterBlockAttributesForChop();
-            MigrationRollupsForV17_0_19_ChopBlockTypesv17();
+            //MigrationRollupsForV17_0_19_ChopBlockTypesv17();
         }
 
         private void MigrationRollupsForV17_0_19_RegisterBlockAttributesForChop()

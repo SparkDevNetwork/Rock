@@ -215,7 +215,8 @@ namespace Rock.Blocks.Core
                 Description = entity.Description,
                 IdKey = entity.IdKey,
                 IsActive = entity.IsActive,
-                Value = entity.Value
+                Value = entity.Value,
+                Id = entity.Id,
             };
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );

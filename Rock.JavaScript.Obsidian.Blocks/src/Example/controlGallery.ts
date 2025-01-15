@@ -6930,6 +6930,7 @@ const mergeFieldPickerGallery = defineComponent({
 
         return {
             multiple: ref(true),
+            enhanceForLongLists: ref(false),
             value,
             additionalFields: ref("GlobalAttribute,Rock.Model.Person,Rock.Model.Group"),
             importCode: getSfcControlImportPath("mergeFieldPicker"),
@@ -6942,12 +6943,15 @@ const mergeFieldPickerGallery = defineComponent({
     :importCode="importCode"
     :exampleCode="exampleCode"
     enableReflection >
-    <MergeFieldPicker label="Merge Field" v-model="value" :multiple="multiple" :additionalFields="additionalFields" />
+    <MergeFieldPicker label="Merge Field" v-model="value" :multiple="multiple" :enhanceForLongLists="enhanceForLongLists" :additionalFields="additionalFields" />
 
     <template #settings>
         <div class="row">
             <div class="col-md-4">
                 <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+            <div class="col-md-4">
+                <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
             </div>
             <div class="col-md-4">
                 <TextBox label="Root Merge Fields" v-model="additionalFields" />

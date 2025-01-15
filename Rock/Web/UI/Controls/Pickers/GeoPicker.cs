@@ -801,13 +801,19 @@ namespace Rock.Web.UI.Controls
         {
             string mapStyle = "null";
             string markerColor = "";
+            string mapId = string.Empty;
 
             try
             {
                 DefinedValueCache dvcMapStyle = DefinedValueCache.Get( this.MapStyleValueGuid );
                 if ( dvcMapStyle != null )
                 {
-                    mapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                    var dynamicMapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                    if ( dynamicMapStyle.IsNotNullOrWhiteSpace() )
+                    {
+                        mapStyle = dynamicMapStyle;
+                    }
+                    mapId = dvcMapStyle.GetAttributeValue( "core_GoogleMapId" );
                     var colors = dvcMapStyle.GetAttributeValue( "Colors" ).Split( new char[] {'|'}, StringSplitOptions.RemoveEmptyEntries).ToList();
                     if ( colors.Any() )
                     {
@@ -817,10 +823,9 @@ namespace Rock.Web.UI.Controls
             }
             catch { } // oh well...
 
-            var mapId = GlobalAttributesCache.Get().GetValue( "core_GoogleMapId" );
             string options = string.Format( "controlId: '{0}', drawingMode: '{1}', strokeColor: '{2}', fillColor: '{2}', mapStyle: {3}", this.ClientID, this.DrawingMode, markerColor, mapStyle );
 
-            if ( !mapId.IsNullOrWhiteSpace() && mapId != "DEFAULT_MAP_ID" )
+            if ( mapId.IsNotNullOrWhiteSpace() )
             {
                 options += $", mapId: '{mapId}'";
             }

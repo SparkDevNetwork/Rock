@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 
+using Rock.Enums.Lms;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningParticipantDetail
@@ -35,5 +36,10 @@ namespace Rock.ViewModels.Blocks.Lms.LearningParticipantDetail
         /// Gets or sets whether the current person is authorized to view grades.
         /// </summary>
         public bool CanViewGrades { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration mode of the Program.
+        /// </summary>
+        public ConfigurationMode ConfigurationMode { get; set; }
     }
 }

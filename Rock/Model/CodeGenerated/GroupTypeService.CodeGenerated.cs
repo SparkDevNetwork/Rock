@@ -219,8 +219,13 @@ namespace Rock.Model
             target.IgnorePersonInactivated = source.IgnorePersonInactivated;
             target.InheritedGroupTypeId = source.InheritedGroupTypeId;
             target.IsCapacityRequired = source.IsCapacityRequired;
+            target.IsChatAllowed = source.IsChatAllowed;
+            target.IsChatChannelAlwaysShown = source.IsChatChannelAlwaysShown;
+            target.IsChatChannelPublic = source.IsChatChannelPublic;
+            target.IsChatEnabledForAllGroups = source.IsChatEnabledForAllGroups;
             target.IsConcurrentCheckInPrevented = source.IsConcurrentCheckInPrevented;
             target.IsIndexEnabled = source.IsIndexEnabled;
+            target.IsLeavingChatChannelAllowed = source.IsLeavingChatChannelAllowed;
             target.IsPeerNetworkEnabled = source.IsPeerNetworkEnabled;
             target.IsSchedulingEnabled = source.IsSchedulingEnabled;
             target.IsSystem = source.IsSystem;

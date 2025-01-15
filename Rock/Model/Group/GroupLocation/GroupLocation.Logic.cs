@@ -16,9 +16,8 @@
 //
 
 using System.Data.Entity;
-using System.Linq;
 
-using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -40,5 +39,12 @@ namespace Rock.Model
         }
 
         #endregion ICacheable
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => Group ?? base.ParentAuthority;
+
+        #endregion
     }
 }

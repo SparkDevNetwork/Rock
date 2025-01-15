@@ -77,6 +77,15 @@ namespace Rock.Model
         [DataMember]
         public virtual AttributeMatrix AttributeMatrix { get; set; }
 
+        /// <summary>
+        /// Gets or sets the attribute matrix template.
+        /// </summary>
+        /// <value>
+        /// The attribute matrix template.
+        /// </value>
+        [DataMember]
+        public virtual AttributeMatrixTemplate AttributeMatrixTemplate { get; set; }
+
         #endregion Navigation Properties
     }
 
@@ -92,6 +101,7 @@ namespace Rock.Model
         /// </summary>
         public AttributeMatrixItemConfiguration()
         {
+            this.HasRequired( p => p.AttributeMatrixTemplate ).WithMany().HasForeignKey( p => p.AttributeMatrixTemplateId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.AttributeMatrix ).WithMany( p => p.AttributeMatrixItems ).HasForeignKey( p => p.AttributeMatrixId ).WillCascadeOnDelete( false );
         }
     }

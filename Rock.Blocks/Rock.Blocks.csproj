@@ -112,6 +112,7 @@
     <Compile Include="Cms\MediaAccountList.cs" />
     <Compile Include="Cms\MediaFolderList.cs" />
     <Compile Include="Cms\ThemeDetail.cs" />
+    <Compile Include="Communication\Chat\ChatConfiguration.cs" />
     <Compile Include="Communication\CommunicationEntry\ValidationContext.cs" />
     <Compile Include="Communication\CommunicationEntry\ValidationContextExtensions.cs" />
     <Compile Include="Cms\LogSettings.cs" />
@@ -144,6 +145,7 @@
     <Compile Include="Lms\Public\PublicLearningCourseList.cs" />
     <Compile Include="Lms\Public\PublicLearningProgramList.cs" />
     <Compile Include="Mobile\CheckIn\CheckIn.cs" />
+    <Compile Include="Security\Oidc\AuthClientDetail.cs" />
     <Compile Include="Tv\AppleTvPageList.cs" />
     <Compile Include="Cms\PageList.cs" />
     <Compile Include="Cms\PageShortLinkClickList.cs" />
@@ -163,7 +165,6 @@
     <Compile Include="Tv\RokuPageDetail.cs" />
     <Compile Include="Tv\TvPageList.cs" />
     <Compile Include="Communication\NcoaProcess.cs" />
-    <Compile Include="Core\AuthClientDetail.cs" />
     <Compile Include="Core\LogViewer.cs" />
     <Compile Include="Crm\PhotoVerify.cs" />
     <Compile Include="Finance\FundraisingList.cs" />
@@ -171,8 +172,8 @@
     <Compile Include="Engagement\StreakTypeExclusionList.cs" />
     <Compile Include="Engagement\StreakMapEditor.cs" />
     <Compile Include="Reporting\PageParameterFilter.cs" />
-    <Compile Include="Security\AuthScopeList.cs" />
-    <Compile Include="Security\AuthClientList.cs" />
+    <Compile Include="Security\Oidc\AuthScopeList.cs" />
+    <Compile Include="Security\Oidc\AuthClientList.cs" />
     <Compile Include="Security\SecurityChangeAuditList.cs" />
     <Compile Include="Core\PersonSignalList.cs" />
     <Compile Include="CheckIn\Configuration\CheckInLabelDetail.cs" />

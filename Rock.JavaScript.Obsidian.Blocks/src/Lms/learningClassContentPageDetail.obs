@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -77,7 +77,7 @@
     });
 
     const options = computed((): LearningClassContentPageDetailOptionsBag => {
-        return config.options ?? { };
+        return config.options ?? {};
     });
 
     // #endregion

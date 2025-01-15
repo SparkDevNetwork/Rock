@@ -20,8 +20,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Lava;
-using Rock.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -170,6 +170,12 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public bool IsCheckInAllowed { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the role of the chat individual, to be synchronized with the external chat system.
+        /// </summary>
+        [DataMember]
+        public ChatRole ChatRole { get; set; }
 
         #endregion
 

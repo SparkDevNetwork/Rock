@@ -99,7 +99,8 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_170_CHOP_OBSIDIAN_BLOCKS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_170_SWAP_OBSIDIAN_BLOCKS.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_170_SWAP_WEBFORMS_BLOCKS.AsGuid(),
-            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_ADD_AND_UPDATE_PEER_NETWORK_INDEXES.AsGuid()
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_ADD_AND_UPDATE_PEER_NETWORK_INDEXES.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_170_UPDATE_PERSON_PRIMARY_PERSON_ALIAS_GUID.AsGuid()
         };
 
 

@@ -560,6 +560,15 @@ namespace Rock.Model
         public virtual Layout Layout { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.Site"/> that the pages uses.
+        /// </summary>
+        /// <value>
+        /// The <see cref="Rock.Model.Site"/> entity that the Page is using
+        /// </value>
+        [LavaVisible]
+        public virtual Site Site { get; set; }
+
+        /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.Block">Blocks</see> that are used on the page.
         /// </summary>
         /// <value>
@@ -650,6 +659,7 @@ namespace Rock.Model
         public PageConfiguration()
         {
             this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.Site ).WithMany().HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( false );
             this.HasRequired( p => p.Layout ).WithMany( p => p.Pages ).HasForeignKey( p => p.LayoutId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.IconBinaryFile ).WithMany().HasForeignKey( p => p.IconBinaryFileId ).WillCascadeOnDelete( false );
         }

@@ -43,7 +43,7 @@ public partial class Http404Error : System.Web.UI.Page
         {
             ExceptionLogService.LogException( new Exception( string.Format( "404 Error: {0} - Referred from: {1}", proxySafeUri.AbsoluteUri, Request.UrlReferrer != null ? Request.UrlReferrer.ToString() : "Direct Link" ) ), Context );
         }
-        
+
         // If this is an API call, set status code and exit
         if ( proxySafeUri.Query.Contains( proxySafeUri.Authority + ResolveUrl( "~/api/" ) ) )
         {
@@ -83,6 +83,13 @@ public partial class Http404Error : System.Web.UI.Page
         {
             Response.StatusCode = 404;
             lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
+        }
+        finally
+        {
+            // Tell the browsers to not cache.
+            Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
+            Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
+            Response.Cache.SetNoStore();
         }
     }
 }

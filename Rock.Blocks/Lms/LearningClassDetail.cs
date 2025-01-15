@@ -247,6 +247,25 @@ namespace Rock.Blocks.Lms
             }
 
             var locationItem = entity.GroupLocations.Select( gl => gl.Location )?.FirstOrDefault();
+            var locationBag = new LearningClassLocationBag();
+
+            if ( locationItem == null || locationItem.Name != null )
+            {
+                locationBag.NamedLocation = locationItem?.ToListItemBag();
+            }
+            else
+            {
+                locationBag.Address = new ViewModels.Controls.AddressControlBag
+                {
+                    Street1 = locationItem.Street1,
+                    Street2 = locationItem.Street2,
+                    City = locationItem.City,
+                    State = locationItem.State,
+                    Locality = locationItem.County,
+                    PostalCode = locationItem.PostalCode,
+                    Country = locationItem.Country
+                };
+            }
 
             return new LearningClassBag
             {
@@ -256,7 +275,7 @@ namespace Rock.Blocks.Lms
                 DefaultGradingSystem = entity.LearningCourse?.LearningProgram?.DefaultLearningGradingSystem?.ToListItemBag(),
                 Description = entity.Description,
                 GroupCapacity = entity.GroupCapacity,
-                Location = locationItem?.ToListItemBag() ?? new ListItemBag(),
+                Location = locationBag,
                 IsActive = entity.IsActive,
                 IsPublic = entity.IsPublic,
                 CourseCode = entity.LearningCourse?.CourseCode,
@@ -340,7 +359,20 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.Location ),
                 () =>
                 {
-                    var locationId = box.Bag.Location.GetEntityId<Location>( RockContext ).ToIntSafe();
+                    var locationId = 0;
+
+                    if ( box.Bag.Location?.NamedLocation != null )
+                    {
+                        locationId = box.Bag.Location.NamedLocation.GetEntityId<Location>( RockContext ).ToIntSafe();
+                    }
+                    else if ( box.Bag.Location?.Address != null )
+                    {
+                        var locationService = new LocationService( new RockContext() );
+                        var address = box.Bag.Location.Address;
+                        var location = locationService.Get( address.Street1, address.Street2, address.City, address.State, address.Locality, address.PostalCode, address.Country, null );
+                        locationId = location?.Id ?? 0;
+                    }
+
                     var currentLocation = new GroupService( RockContext ).GetSelect( entity.Id, g => g.GroupLocations.FirstOrDefault() );
 
                     if ( currentLocation?.LocationId.ToIntSafe() != locationId )
@@ -419,9 +451,9 @@ namespace Rock.Blocks.Lms
                 var isOnDemandLearning = program.ConfigurationMode == ConfigurationMode.OnDemandLearning;
                 var defaultLearningSemester = isOnDemandLearning ? learningProgramService.GetDefaultSemester( program.Id ) : null;
                 var defaultLearningGradingSystem = program.DefaultLearningGradingSystemId.HasValue ?
-                    new LearningGradingSystemService( RockContext ).Get( (int) program.DefaultLearningGradingSystemId ) :
+                    new LearningGradingSystemService( RockContext ).Get( ( int ) program.DefaultLearningGradingSystemId ) :
                     null;
-                
+
                 /*
                     12/12/2024 - JC
 
@@ -926,7 +958,7 @@ namespace Rock.Blocks.Lms
         }
 
         /// <summary>
-        /// Gets a list of activities for the current course.
+        /// Gets a list of facilitators for the current course.
         /// </summary>
         /// <returns>A list of Courses</returns>
         [BlockAction]
@@ -949,6 +981,7 @@ namespace Rock.Blocks.Lms
             var gridBuilder = new GridBuilder<LearningParticipant>()
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddPersonField( "name", a => a.Person )
+                .AddField( "isActive", a => a.GroupMemberStatus != GroupMemberStatus.Inactive )
                 .AddTextField( "note", a => a.Note );
 
             return ActionOk( gridBuilder.Build( facilitators ) );
@@ -1063,6 +1096,7 @@ namespace Rock.Blocks.Lms
                 .AddPersonField( "name", p => p.Person )
                 .AddField( "currentGradePercent", p => canViewGrades ? ( decimal? ) Math.Round( p.LearningGradePercent, 1 ) : null )
                 .AddField( "currentGrade", p => canViewGrades ? p.LearningGradingSystemScale?.Name : null )
+                .AddField( "isActive", a => a.GroupMemberStatus != GroupMemberStatus.Inactive )
                 .AddTextField( "note", p => p.Note )
                 .AddTextField( "role", p => p.GroupRole.Name )
                 .AddField( "hasCompletions", p => p.LearningActivities.Any() )

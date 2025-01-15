@@ -63,7 +63,11 @@ export const EditComponent = defineComponent({
         };
     },
 
-    template: `<GroupTypeGroupPicker v-model="group" v-model:groupType="groupType" :isGroupTypeSortedByName="true" :groupLabel="groupPickerLabel"/>`
+    template: `<GroupTypeGroupPicker v-model="group"
+                                     v-model:groupType="groupType"
+                                     :isGroupTypeSortedByName="true"
+                                     :groupLabel="groupPickerLabel"
+                                     :enhanceForLongLists="true" />`
 });
 
 export const ConfigurationComponent = defineComponent({

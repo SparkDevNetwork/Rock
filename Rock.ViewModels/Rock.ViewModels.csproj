@@ -118,6 +118,8 @@
     <Compile Include="Blocks\Cms\LavaShortcodeList\LavaShortcodeListBox.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationBag.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationInitializationBox.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushMediumOptionsBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushNotificationOptionsBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveMetricsReminderRequestBag.cs" />
@@ -143,6 +145,7 @@
     <Compile Include="Blocks\Event\RegistrationInstanceActiveList\RegistrationInstanceListOptionsBag.cs" />
     <Compile Include="Blocks\Core\ScheduledJobHistoryList\ScheduledJobHistoryListOptionsBag.cs" />
     <Compile Include="Blocks\Example\ControlGallery\ControlGalleryInitializationBox.cs" />
+    <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningActivityCompletionDetail\LearningActivityCompletionBag.cs" />
     <Compile Include="Blocks\Lms\LearningActivityCompletionDetail\LearningActivityCompletionDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningActivityCompletionList\LearningActivityCompletionListOptionsBag.cs" />
@@ -156,6 +159,7 @@
     <Compile Include="Blocks\Lms\LearningClassAnnouncementDetail\LearningClassAnnouncementDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningClassDetail\LearningClassBag.cs" />
     <Compile Include="Blocks\Lms\LearningClassDetail\LearningClassDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\LearningClassDetail\LearningClassLocationBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemDetail\LearningGradingSystemBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemDetail\LearningGradingSystemDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemList\LearningGradingSystemListOptionsBag.cs" />
@@ -399,7 +403,6 @@
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutBag.cs" />
     <Compile Include="Blocks\Mobile\MobileLayoutDetail\MobileLayoutDetailOptionsBag.cs" />
     <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateBag.cs" />
-    <Compile Include="Blocks\Group\GroupMemberScheduleTemplateDetail\GroupMemberScheduleTemplateBox.cs" />
     <Compile Include="Blocks\Group\GroupRequirementTypeDetail\GroupRequirementTypeBag.cs" />
     <Compile Include="Blocks\Group\GroupRequirementTypeDetail\GroupRequirementTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\PersistedDataViewList\PersistedDataViewListOptionsBag.cs" />
@@ -749,6 +752,7 @@
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormFieldShowHide.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerBag.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerDetailBox.cs" />
+    <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerDetailOptionsBag.cs" />
     <Compile Include="CheckIn\AbilityLevelOpportunityBag.cs" />
     <Compile Include="CheckIn\AchievementBag.cs" />
     <Compile Include="CheckIn\AttendanceRequestBag.cs" />
@@ -809,6 +813,7 @@
     <Compile Include="Controls\NoteMentionItemBag.cs" />
     <Compile Include="Rest\Controls\AIProviderPickerGetAIProviderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerExtractFileOptionsBag.cs" />
+    <Compile Include="Rest\Controls\MergeFieldPickerGetSearchedMergedFieldsOptionsBag.cs" />
     <Compile Include="Rest\Controls\PageNavButtonsGetLinksOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerMoveFolderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerGetListOfAllFoldersOptionsBag.cs" />

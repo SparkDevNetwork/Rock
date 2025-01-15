@@ -168,6 +168,7 @@
     <Compile Include="ApiControllerBase.cs" />
     <Compile Include="Controllers\CodeGenerated\AdaptiveMessageAdaptationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AdaptiveMessageAdaptationSegmentsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\AdaptiveMessageCategoriesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AdaptiveMessagesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AIProvidersController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\AuthAuditLogsController.CodeGenerated.cs" />

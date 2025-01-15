@@ -88,6 +88,12 @@ namespace Rock.Blocks.Finance
             return box;
         }
 
+        /// <inheritdoc/>
+        protected override string GetInitialHtmlContent()
+        {
+            return GetBlockContent();
+        }
+
         /// <summary>
         /// Gets the content of the block.
         /// </summary>
