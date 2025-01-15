@@ -108,26 +108,6 @@
     <Compile Include="Migrations\202412221138199_AddStartAndEndDateToAdaptiveModule.Designer.cs">
       <DependentUpon>202412221138199_AddStartAndEndDateToAdaptiveModule.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202501082033192_TempAddRestMetadata.cs" />
-    <Compile Include="Migrations\202501082033192_TempAddRestMetadata.Designer.cs">
-      <DependentUpon>202501082033192_TempAddRestMetadata.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202501082124369_TempUpdateRestV2SecurityActions.cs" />
-    <Compile Include="Migrations\202501082124369_TempUpdateRestV2SecurityActions.Designer.cs">
-      <DependentUpon>202501082124369_TempUpdateRestV2SecurityActions.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202501141452454_TempAddDefaultRestrictedSecurity.cs" />
-    <Compile Include="Migrations\202501141452454_TempAddDefaultRestrictedSecurity.Designer.cs">
-      <DependentUpon>202501141452454_TempAddDefaultRestrictedSecurity.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202501151638572_TempAddEntitySearchPages.cs" />
-    <Compile Include="Migrations\202501151638572_TempAddEntitySearchPages.Designer.cs">
-      <DependentUpon>202501151638572_TempAddEntitySearchPages.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\202501151807072_TempAddDefaultSecurityToFinance.cs" />
-    <Compile Include="Migrations\202501151807072_TempAddDefaultSecurityToFinance.Designer.cs">
-      <DependentUpon>202501151807072_TempAddDefaultSecurityToFinance.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2430,21 +2410,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202412221138199_AddStartAndEndDateToAdaptiveModule.resx">
       <DependentUpon>202412221138199_AddStartAndEndDateToAdaptiveModule.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202501082033192_TempAddRestMetadata.resx">
-      <DependentUpon>202501082033192_TempAddRestMetadata.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202501082124369_TempUpdateRestV2SecurityActions.resx">
-      <DependentUpon>202501082124369_TempUpdateRestV2SecurityActions.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202501141452454_TempAddDefaultRestrictedSecurity.resx">
-      <DependentUpon>202501141452454_TempAddDefaultRestrictedSecurity.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202501151638572_TempAddEntitySearchPages.resx">
-      <DependentUpon>202501151638572_TempAddEntitySearchPages.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202501151807072_TempAddDefaultSecurityToFinance.resx">
-      <DependentUpon>202501151807072_TempAddDefaultSecurityToFinance.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
