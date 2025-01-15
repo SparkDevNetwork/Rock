@@ -120,6 +120,10 @@
     <Compile Include="Migrations\202501141452454_TempAddDefaultRestrictedSecurity.Designer.cs">
       <DependentUpon>202501141452454_TempAddDefaultRestrictedSecurity.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202501151638572_TempAddEntitySearchPages.cs" />
+    <Compile Include="Migrations\202501151638572_TempAddEntitySearchPages.Designer.cs">
+      <DependentUpon>202501151638572_TempAddEntitySearchPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2431,6 +2435,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202501141452454_TempAddDefaultRestrictedSecurity.resx">
       <DependentUpon>202501141452454_TempAddDefaultRestrictedSecurity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501151638572_TempAddEntitySearchPages.resx">
+      <DependentUpon>202501151638572_TempAddEntitySearchPages.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
