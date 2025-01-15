@@ -96,7 +96,7 @@ namespace Rock.Model
         public virtual History.HistoryChangeList HistoryChangeList { get; set; }
 
         /// <summary>
-        /// Gets whether this group is overriding its parent group type's relationship strength configuration.
+        /// Gets whether this group is overriding its parent group type's peer network configuration in any way.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -107,16 +107,54 @@ namespace Rock.Model
         ///     </para>
         /// </remarks>
         [RockInternal( "1.17.0" )]
-        public bool IsOverridingGroupTypeRelationshipStrength =>
-            GroupType?.IsPeerNetworkEnabled == true
-            && (
-                RelationshipStrengthOverride != null
-                || RelationshipGrowthEnabledOverride != null
-                || LeaderToLeaderRelationshipMultiplierOverride != null
-                || LeaderToNonLeaderRelationshipMultiplierOverride != null
-                || NonLeaderToLeaderRelationshipMultiplierOverride != null
-                || NonLeaderToNonLeaderRelationshipMultiplierOverride != null
-            );
+        public bool IsOverridingGroupTypePeerNetworkConfiguration
+        {
+            get
+            {
+                if ( this.GroupType?.IsPeerNetworkEnabled != true )
+                {
+                    return false;
+                }
+
+                if ( this.RelationshipGrowthEnabledOverride.HasValue
+                    && this.RelationshipGrowthEnabledOverride.Value != this.GroupType.RelationshipGrowthEnabled )
+                {
+                    return true;
+                }
+
+                if ( this.RelationshipStrengthOverride.HasValue
+                    && this.RelationshipStrengthOverride.Value != this.GroupType.RelationshipStrength )
+                {
+                    return true;
+                }
+
+                if ( this.LeaderToLeaderRelationshipMultiplierOverride.HasValue
+                    && this.LeaderToLeaderRelationshipMultiplierOverride.Value != this.GroupType.LeaderToLeaderRelationshipMultiplier )
+                {
+                    return true;
+                }
+
+                if ( this.LeaderToNonLeaderRelationshipMultiplierOverride.HasValue
+                    && this.LeaderToNonLeaderRelationshipMultiplierOverride.Value != this.GroupType.LeaderToNonLeaderRelationshipMultiplier )
+                {
+                    return true;
+                }
+
+                if ( this.NonLeaderToLeaderRelationshipMultiplierOverride.HasValue
+                    && this.NonLeaderToLeaderRelationshipMultiplierOverride.Value != this.GroupType.NonLeaderToLeaderRelationshipMultiplier )
+                {
+                    return true;
+                }
+
+                if ( this.NonLeaderToNonLeaderRelationshipMultiplierOverride.HasValue
+                    && this.NonLeaderToNonLeaderRelationshipMultiplierOverride.Value != this.GroupType.NonLeaderToNonLeaderRelationshipMultiplier )
+                {
+                    return true;
+                }
+
+                return false;
+            }
+        }
 
         /// <summary>
         /// Gets whether any relationship multipliers have been customized for this group or its parent group type.
