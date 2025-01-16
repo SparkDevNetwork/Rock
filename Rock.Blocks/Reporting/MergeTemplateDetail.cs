@@ -246,7 +246,7 @@ namespace Rock.Blocks.Reporting
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -296,7 +296,7 @@ namespace Rock.Blocks.Reporting
                 bag.IsPersonRequired = false;
             }
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -338,7 +338,7 @@ namespace Rock.Blocks.Reporting
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             if ( entity.CategoryId == 0 && entity.PersonAliasId.HasValue )

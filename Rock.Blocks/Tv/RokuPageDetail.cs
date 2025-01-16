@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -28,12 +27,9 @@ using Rock.Security;
 using Rock.Tv;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Tv.AppleTvPageDetail;
 using Rock.ViewModels.Blocks.Tv.RokuPageDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Rock.Blocks.Tv
 {
@@ -196,7 +192,7 @@ namespace Rock.Blocks.Tv
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -211,7 +207,7 @@ namespace Rock.Blocks.Tv
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -260,7 +256,7 @@ namespace Rock.Blocks.Tv
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
 

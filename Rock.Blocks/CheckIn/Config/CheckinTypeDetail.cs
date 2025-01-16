@@ -326,7 +326,7 @@ namespace Rock.Blocks.CheckIn.Config
                 }
             }
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, attributeFilter: IsAttributeIncluded );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true, attributeFilter: IsAttributeIncluded );
 
             return bag;
         }
@@ -378,7 +378,7 @@ namespace Rock.Blocks.CheckIn.Config
             bag.RegistrationSettings = GetRegistrationSettings( entity, rockContext );
             bag.SearchSettings = GetSearchSettings( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, false, attributeFilter: IsAttributeIncluded );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true, attributeFilter: IsAttributeIncluded );
 
             return bag;
         }
@@ -821,7 +821,7 @@ namespace Rock.Blocks.CheckIn.Config
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>
                 {
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, attributeFilter: IsAttributeIncluded );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true, attributeFilter: IsAttributeIncluded );
                 } );
 
             return true;

@@ -254,7 +254,7 @@ namespace Rock.Blocks.Cms
             } ).OrderBy( a => a.AdaptiveMessageAdaptation.Order ).ThenBy( a => a.AdaptiveMessageAdaptation.Name );
             bag.AdaptationsGridData = GetAdaptationsGridBuilder().Build( adaptations );
             bag.AdaptationsGridDefinition = GetAdaptationsGridBuilder().BuildDefinition();
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -319,7 +319,7 @@ namespace Rock.Blocks.Cms
             bag.AdaptationAttributes = new List<PublicEditableAttributeBag>();
             bag.AdaptationAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -392,7 +392,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;

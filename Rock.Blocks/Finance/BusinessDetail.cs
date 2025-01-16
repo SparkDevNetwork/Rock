@@ -346,7 +346,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( attributeGuidList.Any() )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag  )  );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag  )  );
             }
 
             return bag;
@@ -433,7 +433,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( attributeGuidList.Any() )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) );
             }
 
             return bag;
@@ -464,7 +464,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;

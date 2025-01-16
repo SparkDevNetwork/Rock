@@ -222,7 +222,7 @@ namespace Rock.Blocks.Group
                 WarningWorkflowType = entity.WarningWorkflowType.ToListItemBag()
             };
 
-            bag.LoadAttributesAndValuesForPublicView( entity, GetCurrentPerson() );
+            bag.LoadAttributesAndValuesForPublicView( entity, GetCurrentPerson(), enforceSecurity: false );
 
             return bag;
         }
@@ -365,7 +365,7 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;

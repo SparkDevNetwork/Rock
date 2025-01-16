@@ -214,7 +214,7 @@ namespace Rock.Blocks.Cms
                 .Select( b => $"<a href='/admin/cms/sites/{b.SiteId}'>{b.Site.Name}</a> (Site), {b.Zone} (Zone)" )
                 .OrderBy( s => s )
                 .ToList();
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -235,7 +235,7 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -277,7 +277,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;

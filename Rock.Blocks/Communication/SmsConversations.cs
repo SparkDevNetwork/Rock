@@ -267,7 +267,7 @@ namespace Rock.Blocks.Communication
                 MaxReplyDepth = noteType.MaxReplyDepth ?? -1,
                 AllowsWatching = noteType.AllowsWatching,
                 IsMentionEnabled = noteType.FormatType != NoteFormatType.Unstructured && noteType.IsMentionEnabled,
-                Attributes = note.GetPublicAttributesForEdit( currentPerson )
+                Attributes = note.GetPublicAttributesForEdit( currentPerson, enforceSecurity: true )
             };
         }
 
@@ -890,7 +890,7 @@ namespace Rock.Blocks.Communication
                 note.NoteUrl = this.GetCurrentPageUrl();
 
                 note.LoadAttributes( rockContext );
-                note.SetPublicAttributeValues( request.Bag.AttributeValues, RequestContext.CurrentPerson );
+                note.SetPublicAttributeValues( request.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
 
                 if ( note.Id == 0 && !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {

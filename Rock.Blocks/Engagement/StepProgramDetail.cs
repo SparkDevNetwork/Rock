@@ -303,7 +303,7 @@ namespace Rock.Blocks.Engagement
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             var defaultDateRange = GetAttributeValue( AttributeKey.SlidingDateRange );
 
@@ -345,7 +345,7 @@ namespace Rock.Blocks.Engagement
             var bag = GetCommonEntityBag( entity );
             var rockContext = GetRockContext();
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             bag.StepProgramAttributes = GetStepTypeAttributes( rockContext, entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttributeViewModel( e ) );
 
@@ -469,7 +469,7 @@ namespace Rock.Blocks.Engagement
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;

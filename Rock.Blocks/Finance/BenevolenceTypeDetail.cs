@@ -225,7 +225,7 @@ namespace Rock.Blocks.Finance
 
             if ( attributeGuidList.Any() )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) );
             }
 
             return bag;
@@ -330,7 +330,7 @@ namespace Rock.Blocks.Finance
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;

@@ -383,7 +383,7 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -408,7 +408,7 @@ namespace Rock.Blocks.Cms
             bag.AuthorAttributeGuid = entity.ContentLibraryConfiguration?.AuthorAttributeGuid;
             bag.ImageAttributeGuid = entity.ContentLibraryConfiguration?.ImageAttributeGuid;
             bag.ItemAttributes = GetItemAttributes( entity.Id, rockContext ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -596,7 +596,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;

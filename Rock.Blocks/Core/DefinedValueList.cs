@@ -219,7 +219,7 @@ namespace Rock.Blocks.Core
                 Id = entity.Id,
             };
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -370,7 +370,7 @@ namespace Rock.Blocks.Core
 
             if ( bag.AttributeValues != null )
             {
-                entity.SetPublicAttributeValues( bag.AttributeValues, RequestContext.CurrentPerson );
+                entity.SetPublicAttributeValues( bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
             }
 
             if ( !entity.IsValid )
