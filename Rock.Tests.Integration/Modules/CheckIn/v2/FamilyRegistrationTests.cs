@@ -2482,6 +2482,7 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
         [TestMethod]
         public void UpdatePersonAlternateId_WithExistingPersonAndSameSearchValue_DoesNotCreateNewRecord()
         {
+            var searchTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_SEARCH_KEYS_ALTERNATE_ID.AsGuid() ).Id;
             var rockContextMock = CreateRockContextWithoutSaveChanges();
 
             var templateConfigurationDataMock = GetTemplateConfigurationDataMock();
@@ -2489,6 +2490,17 @@ namespace Rock.Tests.Integration.Modules.CheckIn.v2
 
             var tedDecker = new PersonService( rockContextMock.Object )
                 .Get( TestGuids.TestPeople.TedDecker );
+            var existingSearchKey = new PersonSearchKey
+            {
+                Id = 2823,
+                PersonAliasId = tedDecker.PrimaryAliasId,
+                PersonAlias = tedDecker.PrimaryAlias,
+                SearchTypeValueId = searchTypeValueId,
+                SearchValue = "mock-test"
+            };
+            var personSearchKeySource = new List<PersonSearchKey> { existingSearchKey };
+
+            rockContextMock.SetupDbSet( personSearchKeySource );
 
             // Get the current database object so we can know if it changed.
             var personSearchKey = tedDecker.GetPersonSearchKeys( rockContextMock.Object ).First();
