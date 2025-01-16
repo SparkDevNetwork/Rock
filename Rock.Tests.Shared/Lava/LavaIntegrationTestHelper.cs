@@ -816,6 +816,15 @@ namespace Rock.Tests.Shared.Lava
                 options );
         }
 
+        public void Execute( string inputTemplate, LavaTestRenderOptions options, Action<string> callback )
+        {
+            var requirement = new LavaTestOutputMatchRequirement( callback );
+
+            AssertTemplateOutput( new List<LavaTestOutputMatchRequirement> { requirement },
+                inputTemplate,
+                options );
+        }
+
         /// <summary>
         /// Process the specified input template and verify against the expected output.
         /// </summary>
@@ -957,6 +966,12 @@ namespace Rock.Tests.Shared.Lava
                          && matchType == LavaTestOutputMatchTypeSpecifier.Equal )
                     {
                         matchType = LavaTestOutputMatchTypeSpecifier.Contains;
+                    }
+
+                    if ( matchType == LavaTestOutputMatchTypeSpecifier.Callback )
+                    {
+                        matchRequirement.Callback( outputText );
+                        return;
                     }
 
                     var expectedOutputText = matchRequirement.MatchValue ?? string.Empty;
@@ -1606,8 +1621,16 @@ namespace Rock.Tests.Shared.Lava
             MatchType = match;
         }
 
+        public LavaTestOutputMatchRequirement( Action<string> callback )
+        {
+            MatchType = LavaTestOutputMatchTypeSpecifier.Callback;
+            Callback = callback;
+        }
+
         public string MatchValue { get; set; }
         public LavaTestOutputMatchTypeSpecifier MatchType { get; set; }
+
+        public Action<string> Callback { get; }
     }
 
     /// <summary>
