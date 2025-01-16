@@ -194,7 +194,7 @@ namespace Rock.Jobs
         /// running from inside a unit test. This includes things like network
         /// operations or steps which modify on-disk content.
         /// </summary>
-        internal bool IsRunningFromUnitTest { get; set; }
+        static internal bool IsRunningFromUnitTest { get; set; }
 
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
