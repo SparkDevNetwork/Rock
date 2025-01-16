@@ -239,6 +239,8 @@ export const EntityType = {
     EntityCampusFilter: "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78",
     /** The EntityType Guid for Rock.Model.EntityIntent  */
     EntityIntent: "15CE39A3-193F-44E5-80C7-DE47DA3EAF97",
+    /** The guid for Rock.Model.EntitySearch entity. */
+    EntitySearch: "080374B4-C765-4F90-8B85-BC2635164275",
     /** The EntityType Guid for Rock.Model.EntitySet  */
     EntitySet: "50E3F9C8-4010-41AF-8F61-08308DC44640",
     /** The EntityType Guid for Rock.Model.EntitySetItem  */

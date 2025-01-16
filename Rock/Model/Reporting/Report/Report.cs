@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "Report" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "F1F22D3E-FEFA-4C84-9FFA-9E8ACE60FCE7")]
     public partial class Report : Model<Report>, ICategorized
     {

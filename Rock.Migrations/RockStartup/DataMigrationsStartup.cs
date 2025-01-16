@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Runtime.Serialization.Formatters;
 using System.Threading.Tasks;
 
 using Rock.Model;
@@ -143,7 +144,23 @@ namespace Rock.Migrations.RockStartup
             }
 
             // run any of the above jobs if they still exist (they haven't run and deleted themselves)
-            var runOnceJobIds = new Model.ServiceJobService( new Rock.Data.RockContext() ).Queryable()
+            var runOnceJobIds = GetRunOnceJobIds();
+
+            // start a task that will run any incomplete RunOneJobs (one at a time)
+            Task.Run( () =>
+             {
+                 ExecuteRunOnceJobs( runOnceJobIds );
+             } );
+        }
+
+        /// <summary>
+        /// Gets all <see cref="ServiceJob"/> identifiers for data migration
+        /// jobs that still need to be run.
+        /// </summary>
+        /// <returns>A list of <see cref="ServiceJob"/> identifiers.</returns>
+        internal static List<int> GetRunOnceJobIds()
+        {
+            return new Model.ServiceJobService( new Rock.Data.RockContext() ).Queryable()
                 .Where( a => startupRunOnceJobGuids.Contains( a.Guid ) )
                 .Select( a => new
                 {
@@ -154,26 +171,29 @@ namespace Rock.Migrations.RockStartup
                 .OrderBy( j => startupRunOnceJobGuids.IndexOf( j.Guid ) )
                 .Select( j => j.Id )
                 .ToList();
+        }
 
-            // start a task that will run any incomplete RunOneJobs (one at a time)
-            Task.Run( () =>
-             {
-                 var rockContext = new Rock.Data.RockContext();
-                 var jobService = new Rock.Model.ServiceJobService( rockContext );
-                 foreach ( var runOnceJobId in runOnceJobIds )
-                 {
-                     try
-                     {
-                         var job = jobService.Get( runOnceJobId );
-                         jobService.RunNow( job );
-                     }
-                     catch ( Exception ex )
-                     {
-                         // this shouldn't happen since the jobService.RunNow catches and logs errors, but just in case
-                         ExceptionLogService.LogException( ex );
-                     }
-                 }
-             } );
+        /// <summary>
+        /// Executes each of the run once data migration jobs in order.
+        /// </summary>
+        /// <param name="runOnceJobIds">The <see cref="ServiceJob"/> identifiers to be executed.</param>
+        internal static void ExecuteRunOnceJobs( List<int> runOnceJobIds )
+        {
+            var rockContext = new Rock.Data.RockContext();
+            var jobService = new Rock.Model.ServiceJobService( rockContext );
+            foreach ( var runOnceJobId in runOnceJobIds )
+            {
+                try
+                {
+                    var job = jobService.Get( runOnceJobId );
+                    jobService.RunNow( job );
+                }
+                catch ( Exception ex )
+                {
+                    // this shouldn't happen since the jobService.RunNow catches and logs errors, but just in case
+                    ExceptionLogService.LogException( ex );
+                }
+            }
         }
     }
 }

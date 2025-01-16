@@ -26,9 +26,6 @@ using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
-using System.Web.Http;
-using System.Web.Http.Results;
 
 using Rock.Attribute;
 using Rock.Badge;
@@ -61,12 +58,21 @@ using Rock.Web.Cache.Entities;
 using Rock.Web.UI.Controls;
 using Rock.Workflow;
 
+#if WEBFORMS
+using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
+using FromUriAttribute = System.Web.Http.FromUriAttribute;
+using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
+using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
+using IActionResult = System.Web.Http.IHttpActionResult;
+using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
+#endif
+
 namespace Rock.Rest.v2
 {
     /// <summary>
     /// Provides API endpoints for the Controls controller.
     /// </summary>
-    [RoutePrefix( "api/v2/Controls" )]
+    [RoutePrefix( "api/v2/controls" )]
     [Rock.SystemGuid.RestControllerGuid( "815B51F0-B552-47FD-8915-C653EEDD5B67" )]
     public class ControlsController : ApiControllerBase
     {
@@ -80,8 +86,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AccountPickerGetChildren" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "5052e4a9-8cc3-4937-a2d3-9cfec07ed070" )]
-        public IHttpActionResult AccountPickerGetChildren( [FromBody] AccountPickerGetChildrenOptionsBag options )
+        public IActionResult AccountPickerGetChildren( [FromBody] AccountPickerGetChildrenOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -200,8 +207,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AccountPickerGetParentGuids" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "007512c6-0147-4683-a3fe-3fdd1da275c2" )]
-        public IHttpActionResult AccountPickerGetParentGuids( [FromBody] AccountPickerGetParentGuidsOptionsBag options )
+        public IActionResult AccountPickerGetParentGuids( [FromBody] AccountPickerGetParentGuidsOptionsBag options )
         {
             var results = new HashSet<Guid>();
 
@@ -230,8 +238,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AccountPickerGetSearchedAccounts" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "69fd94cc-f049-4cee-85d1-13e573e30586" )]
-        public IHttpActionResult AccountPickerGetSearchedAccounts( [FromBody] AccountPickerGetSearchedAccountsOptionsBag options )
+        public IActionResult AccountPickerGetSearchedAccounts( [FromBody] AccountPickerGetSearchedAccountsOptionsBag options )
         {
             IQueryable<FinancialAccount> qry;
 
@@ -274,8 +283,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AccountPickerGetPreviewItems" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "b080e9d6-207a-412d-acf5-d811fdec30a3" )]
-        public IHttpActionResult AccountPickerGetPreviewItems( [FromBody] AccountPickerGetPreviewItemsOptionsBag options )
+        public IActionResult AccountPickerGetPreviewItems( [FromBody] AccountPickerGetPreviewItemsOptionsBag options )
         {
             IQueryable<FinancialAccount> qry;
 
@@ -313,8 +323,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AccountPickerGetAllowSelectAll" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "4a13b6ea-3031-48c2-9cdb-be183ccad9a2" )]
-        public IHttpActionResult AccountPickerGetAllowSelectAll()
+        public IActionResult AccountPickerGetAllowSelectAll()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -337,8 +348,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AchievementTypePickerGetAchievementTypes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "F98E3033-C652-4031-94B3-E7C44ECA51AA" )]
-        public IHttpActionResult AchievementTypePickerGetAchievementTypes( [FromBody] AchievementTypePickerGetAchievementTypesOptionsBag options )
+        public IActionResult AchievementTypePickerGetAchievementTypes( [FromBody] AchievementTypePickerGetAchievementTypesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -366,8 +378,9 @@ namespace Rock.Rest.v2
         /// <returns>Validation information and a single string representation of the address</returns>
         [HttpPost]
         [System.Web.Http.Route( "AddressControlGetConfiguration" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "b477fb6d-4a35-45ec-ac98-b6b5c3727375" )]
-        public IHttpActionResult AddressControlGetConfiguration( [FromBody] AddressControlGetConfigurationOptionsBag options )
+        public IActionResult AddressControlGetConfiguration( [FromBody] AddressControlGetConfigurationOptionsBag options )
         {
             var globalAttributesCache = GlobalAttributesCache.Get();
             var showCountrySelection = globalAttributesCache.GetValue( "SupportInternationalAddresses" ).AsBooleanOrNull() ?? false;
@@ -508,8 +521,9 @@ namespace Rock.Rest.v2
         /// <returns>Validation information and a single string representation of the address</returns>
         [HttpPost]
         [System.Web.Http.Route( "AddressControlValidateAddress" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "ff879ea7-07dd-43ec-a5de-26f55e9f073a" )]
-        public IHttpActionResult AddressControlValidateAddress( [FromBody] AddressControlValidateAddressOptionsBag options )
+        public IActionResult AddressControlValidateAddress( [FromBody] AddressControlValidateAddressOptionsBag options )
         {
             var editedLocation = new Location();
             string errorMessage = null;
@@ -524,6 +538,7 @@ namespace Rock.Rest.v2
             editedLocation.City = options.City;
             editedLocation.State = options.State;
             editedLocation.PostalCode = options.PostalCode;
+            editedLocation.County = options.Locality;
             editedLocation.Country = options.Country.IsNotNullOrWhiteSpace() ? options.Country : defaultCountryCode;
 
             var locationService = new LocationService( new RockContext() );
@@ -554,6 +569,7 @@ namespace Rock.Rest.v2
                     City = editedLocation.City,
                     State = editedLocation.State,
                     PostalCode = editedLocation.PostalCode,
+                    Locality = editedLocation.County,
                     Country = editedLocation.Country
                 }
             } );
@@ -566,8 +582,9 @@ namespace Rock.Rest.v2
         /// <returns>Validation information and a single string representation of the address</returns>
         [HttpPost]
         [System.Web.Http.Route( "AddressControlGetStreetAddressString" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "9258BA75-F922-4607-A2C0-036141621F0E" )]
-        public IHttpActionResult AddressControlGetStreetAddressString( [FromBody] AddressControlBag address )
+        public IActionResult AddressControlGetStreetAddressString( [FromBody] AddressControlBag address )
         {
             Location editedLocation;
             var globalAttributesCache = GlobalAttributesCache.Get();
@@ -606,8 +623,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AIProviderPickerGetAIProviders" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "A9403C3A-E66F-4051-B857-30B89C3A65B3" )]
-        public IHttpActionResult AIProviderPickerGetAIProviders( [FromBody] AIProviderPickerGetAIProviderOptionsBag options )
+        public IActionResult AIProviderPickerGetAIProviders( [FromBody] AIProviderPickerGetAIProviderOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -632,8 +650,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssessmentTypePickerGetAssessmentTypes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "B47DCE1B-89D7-4DD5-88A7-B3C393D49A7C" )]
-        public IHttpActionResult AssessmentTypePickerGetEntityTypes( [FromBody] AssessmentTypePickerGetAssessmentTypesOptionsBag options )
+        public IActionResult AssessmentTypePickerGetEntityTypes( [FromBody] AssessmentTypePickerGetAssessmentTypesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -664,8 +683,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssetManagerGetRootFolders" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "9A96E14F-99DB-4F9A-95EB-DF17D3B5EE25" )]
-        public IHttpActionResult AssetManagerGetRootFolders( [FromBody] AssetManagerGetRootFoldersOptionsBag options )
+        public IActionResult AssetManagerGetRootFolders( [FromBody] AssetManagerGetRootFoldersOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -741,8 +761,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssetManagerGetChildren" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "68C50BAE-C50C-4143-B37F-58C80BF5E1BF" )]
-        public IHttpActionResult AssetManagerGetChildren( [FromBody] AssetManagerBaseOptionsBag options )
+        public IActionResult AssetManagerGetChildren( [FromBody] AssetManagerBaseOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -780,8 +801,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssetManagerGetFiles" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "D45422C0-5FCA-44C4-B9E1-4BA05E8D534D" )]
-        public IHttpActionResult AssetManagerGetFiles( [FromBody] AssetManagerGetFilesOptionsBag options )
+        public IActionResult AssetManagerGetFiles( [FromBody] AssetManagerGetFilesOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -835,8 +857,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssetManagerDeleteFolder" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "7625091B-D70A-4564-97C8-ED77AE5DB738" )]
-        public IHttpActionResult AssetManagerDeleteFolder( [FromBody] AssetManagerBaseOptionsBag options )
+        public IActionResult AssetManagerDeleteFolder( [FromBody] AssetManagerBaseOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -889,8 +912,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssetManagerAddFolder" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "B90D9215-57A4-45D3-9B70-A44AA2C9FE7B" )]
-        public IHttpActionResult AssetManagerAddFolder( [FromBody] AssetManagerAddFolderOptionsBag options )
+        public IActionResult AssetManagerAddFolder( [FromBody] AssetManagerAddFolderOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -972,8 +996,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssetManagerRenameFolder" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "8DF6054E-6F52-4A08-A7F5-C11F44B8465C" )]
-        public IHttpActionResult AssetManagerRenameFolder( [FromBody] AssetManagerRenameFolderOptionsBag options )
+        public IActionResult AssetManagerRenameFolder( [FromBody] AssetManagerRenameFolderOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -1007,8 +1032,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssetManagerMoveFolder" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "87A139A7-78B8-4CC9-8A3B-146A338A291F" )]
-        public IHttpActionResult AssetManagerMoveFolder( [FromBody] AssetManagerMoveFolderOptionsBag options )
+        public IActionResult AssetManagerMoveFolder( [FromBody] AssetManagerMoveFolderOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -1052,8 +1078,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssetManagerDeleteFiles" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "55ADD16B-0FC1-4F33-BB0A-03C29018866F" )]
-        public IHttpActionResult AssetManagerDeleteFiles( [FromBody] AssetManagerDeleteFilesOptionsBag options )
+        public IActionResult AssetManagerDeleteFiles( [FromBody] AssetManagerDeleteFilesOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -1103,8 +1130,9 @@ namespace Rock.Rest.v2
         [HttpGet]
         [System.Web.Http.Route( "AssetManagerDownloadFile" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "C810774B-8B15-42D0-BAC2-85503AB23BC0" )]
-        public IHttpActionResult AssetManagerDownloadFile( [FromUri] AssetManagerDownloadFileOptionsBag options )
+        public IActionResult AssetManagerDownloadFile( [FromUri] AssetManagerDownloadFileOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -1144,15 +1172,22 @@ namespace Rock.Rest.v2
                 return InternalServerError( ex );
             }
 
+#if WEBFORMS
             var result = new System.Net.Http.HttpResponseMessage( System.Net.HttpStatusCode.OK )
             {
                 Content = new System.Net.Http.StreamContent( stream )
             };
 
             result.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/octet-stream" );
-            result.Content.Headers.Add( "content-disposition", "attachment; filename=" + HttpUtility.UrlEncode( fileName ) );
+            result.Content.Headers.Add( "content-disposition", "attachment; filename=" + System.Web.HttpUtility.UrlEncode( fileName ) );
 
-            return new ResponseMessageResult( result );
+            return new System.Web.Http.Results.ResponseMessageResult( result );
+#else
+            return new Microsoft.AspNetCore.Mvc.FileStreamResult( stream, "application/octet-stream" )
+            {
+                FileDownloadName = fileName
+            };
+#endif
         }
 
         /// <summary>
@@ -1163,8 +1198,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssetManagerRenameFile" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "150AAF48-33C5-47F8-BD53-2CF3A75F88FB" )]
-        public IHttpActionResult AssetManagerRenameFile( [FromBody] AssetManagerRenameFileOptionsBag options )
+        public IActionResult AssetManagerRenameFile( [FromBody] AssetManagerRenameFileOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -1209,8 +1245,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssetManagerExtractFile" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "07CECA87-B9F9-4130-AC09-584AC9DBBE8C" )]
-        public IHttpActionResult AssetManagerExtractFile( [FromBody] AssetManagerExtractFileOptionsBag options )
+        public IActionResult AssetManagerExtractFile( [FromBody] AssetManagerExtractFileOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -1281,8 +1318,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssetManagerGetListOfAllFolders" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "1008C9C5-E33E-43F6-BB02-D1BDF2CCE205" )]
-        public IHttpActionResult AssetManagerGetListOfAllFolders( [FromBody] AssetManagerGetListOfAllFoldersOptionsBag options )
+        public IActionResult AssetManagerGetListOfAllFolders( [FromBody] AssetManagerGetListOfAllFoldersOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -1324,11 +1362,6 @@ namespace Rock.Rest.v2
                 return InternalServerError( ex );
             }
         }
-
-
-
-
-
 
         /// <summary>
         /// Gets the asset storage provider [cache] and associated asset storage component using the ID stored in the hidden field.
@@ -1620,7 +1653,7 @@ namespace Rock.Rest.v2
                 string fileName = Path.GetFileName( filePath ).Replace( "'", "&#39;" );
                 string relativeFilePath = filePath.Replace( physicalRootFolder, string.Empty );
                 string rootRelativePath = asset.Root.TrimEnd( '/', '\\' ) + "/" + relativeFilePath.TrimStart( '/', '\\' ).Replace( "\\", "/" );
-                string thumbUrl = RockApp.Current.ResolveRockUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + HttpUtility.UrlEncode( rootRelativePath ) );
+                string thumbUrl = RockApp.Current.ResolveRockUrl( "~/api/FileBrowser/GetFileThumbnail?relativeFilePath=" + System.Web.HttpUtility.UrlEncode( rootRelativePath ) );
                 string downloadUrl = RockApp.Current.ResolveRockUrl( rootRelativePath );
 
                 file = new Asset
@@ -1895,8 +1928,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AssetStorageProviderPickerGetAssetStorageProviders" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "665EDE0C-1FEA-4421-B355-4D4F72B7E26E" )]
-        public IHttpActionResult AssetStorageProviderPickerGetAssetStorageProviders( [FromBody] AssetStorageProviderPickerGetAssetStorageProvidersOptionsBag options )
+        public IActionResult AssetStorageProviderPickerGetAssetStorageProviders( [FromBody] AssetStorageProviderPickerGetAssetStorageProvidersOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1921,8 +1955,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "AttributeMatrixEditorNormalizeEditValue" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "1B7BA1CB-6D3F-4DE7-AC02-EAAADF89C7ED" )]
-        public IHttpActionResult AttributeMatrixEditorNormalizeEditValue( [FromBody] AttributeMatrixEditorNormalizeEditValueOptionsBag options )
+        public IActionResult AttributeMatrixEditorNormalizeEditValue( [FromBody] AttributeMatrixEditorNormalizeEditValueOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -1954,9 +1989,10 @@ namespace Rock.Rest.v2
         /// <returns>A <see cref="EntityAuditBag"/> that contains the requested information.</returns>
         [HttpPost]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [System.Web.Http.Route( "AuditDetailGetAuditDetails" )]
         [Rock.SystemGuid.RestActionGuid( "714D83C9-96E4-49D7-81AF-2EED7D5CCD56" )]
-        public IHttpActionResult AuditDetailGetAuditDetails( [FromBody] AuditDetailGetAuditDetailsOptionsBag options )
+        public IActionResult AuditDetailGetAuditDetails( [FromBody] AuditDetailGetAuditDetailsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -2005,8 +2041,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "BadgeComponentPickerGetBadgeComponents" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "ABDFC10F-BCCC-4AF1-8DB3-88A26862485D" )]
-        public IHttpActionResult BadgeComponentPickerGetEntityTypes( [FromBody] BadgeComponentPickerGetBadgeComponentsOptionsBag options )
+        public IActionResult BadgeComponentPickerGetEntityTypes( [FromBody] BadgeComponentPickerGetBadgeComponentsOptionsBag options )
         {
             var componentsList = GetComponentListItems( "Rock.Badge.BadgeContainer, Rock", ( Component component ) =>
             {
@@ -2031,8 +2068,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "BadgeControlGetBadge" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "D9840506-7251-4F41-A1B2-D3168FB3AFDA" )]
-        public IHttpActionResult BadgeControlGetBadge( [FromBody] BadgeControlGetBadgeOptionsBag options )
+        public IActionResult BadgeControlGetBadge( [FromBody] BadgeControlGetBadgeOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -2096,8 +2134,9 @@ namespace Rock.Rest.v2
         /// <returns>A collection of <see cref="ViewModels.Crm.RenderedBadgeBag"/> objects.</returns>
         [HttpPost]
         [System.Web.Http.Route( "BadgeListGetBadges" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "34387B98-BF7E-4000-A28A-24EA08605285" )]
-        public IHttpActionResult BadgeListGetBadges( [FromBody] BadgeListGetBadgesOptionsBag options )
+        public IActionResult BadgeListGetBadges( [FromBody] BadgeListGetBadgesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -2174,8 +2213,9 @@ namespace Rock.Rest.v2
         /// <returns>A list of badge types.</returns>
         [HttpPost]
         [System.Web.Http.Route( "BadgePickerGetBadges" )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "6D50B8E4-985E-4AC6-B491-74B827108882" )]
-        public IHttpActionResult BadgePickerGetBadges( [FromBody] BadgePickerGetBadgesOptionsBag options )
+        public IActionResult BadgePickerGetBadges( [FromBody] BadgePickerGetBadgesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -2205,8 +2245,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "BinaryFilePickerGetBinaryFiles" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "9E5F190E-91FD-4E50-9F00-8B4F9DBD874C" )]
-        public IHttpActionResult BinaryFilePickerGetBinaryFiles( [FromBody] BinaryFilePickerGetBinaryFilesOptionsBag options )
+        public IActionResult BinaryFilePickerGetBinaryFiles( [FromBody] BinaryFilePickerGetBinaryFilesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -2237,8 +2278,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "BinaryFileTypePickerGetBinaryFileTypes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "C93E5A06-82DE-4475-88B8-B173C03BFB50" )]
-        public IHttpActionResult BinaryFileTypePickerGetBinaryFileTypes( [FromBody] BinaryFileTypePickerGetBinaryFileTypesOptionsBag options )
+        public IActionResult BinaryFileTypePickerGetBinaryFileTypes( [FromBody] BinaryFileTypePickerGetBinaryFileTypesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -2268,8 +2310,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "BlockTemplatePickerGetBlockTemplates" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "f52a9356-9f05-42f4-a568-a2fc4baef2de" )]
-        public IHttpActionResult BlockTemplatePickerGetBlockTemplates( [FromBody] BlockTemplatePickerGetBlockTemplatesOptionsBag options )
+        public IActionResult BlockTemplatePickerGetBlockTemplates( [FromBody] BlockTemplatePickerGetBlockTemplatesOptionsBag options )
         {
             if ( !options.TemplateBlockValueGuid.HasValue )
             {
@@ -2313,8 +2356,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "CampusPickerGetCampuses" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "3D2E0AF9-9E1A-47BD-A1C5-008B6D2A5B22" )]
-        public IHttpActionResult CampusPickerGetCampuses( [FromBody] CampusPickerGetCampusesOptionsBag options )
+        public IActionResult CampusPickerGetCampuses( [FromBody] CampusPickerGetCampusesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -2353,8 +2397,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "CampusAccountAmountPickerGetAccounts" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "9833fcd3-30cf-4bab-840a-27ee497ebfb8" )]
-        public IHttpActionResult CampusAccountAmountPickerGetAccounts( [FromBody] CampusAccountAmountPickerGetAccountsOptionsBag options )
+        public IActionResult CampusAccountAmountPickerGetAccounts( [FromBody] CampusAccountAmountPickerGetAccountsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -2466,8 +2511,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "CaptchaControlGetConfiguration" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "9e066058-13d9-4b4d-8457-07ba8e2cacd3" )]
-        public IHttpActionResult CaptchaControlGetConfiguration()
+        public IActionResult CaptchaControlGetConfiguration()
         {
             var bag = new CaptchaControlConfigurationBag()
             {
@@ -2483,8 +2529,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "CaptchaControlValidateToken" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "8f373592-d745-4d69-944a-729e15c3f941" )]
-        public IHttpActionResult CaptchaControlValidateToken( [FromBody] CaptchaControlValidateTokenOptionsBag options )
+        public IActionResult CaptchaControlValidateToken( [FromBody] CaptchaControlValidateTokenOptionsBag options )
         {
             var api = new CloudflareApi();
 
@@ -2511,8 +2558,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "CategorizedValuePickerGetTree" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "9294f070-e8c8-48da-bd50-076f26200d75" )]
-        public IHttpActionResult CategorizedValuePickerGetTree( [FromBody] CategorizedValuePickerGetTreeOptionsBag options )
+        public IActionResult CategorizedValuePickerGetTree( [FromBody] CategorizedValuePickerGetTreeOptionsBag options )
         {
             // NO Parent -> get roots using DefinedTypeGuid
             // Parent -> get children of ParentGuid
@@ -2690,8 +2738,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "CategoryPickerChildTreeItems" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "A1D07211-6C50-463B-98ED-1622DC4D73DD" )]
-        public IHttpActionResult CategoryPickerChildTreeItems( [FromBody] CategoryPickerChildTreeItemsOptionsBag options )
+        public IActionResult CategoryPickerChildTreeItems( [FromBody] CategoryPickerChildTreeItemsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -2769,8 +2818,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ComponentPickerGetComponents" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "75DA0671-38E2-4FF9-B334-CC0C88B559D0" )]
-        public IHttpActionResult ComponentPickerGetEntityTypes( [FromBody] ComponentPickerGetComponentsOptionsBag options )
+        public IActionResult ComponentPickerGetEntityTypes( [FromBody] ComponentPickerGetComponentsOptionsBag options )
         {
             var componentsList = GetComponentListItems( options.ContainerType );
 
@@ -2790,8 +2840,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ConnectionRequestPickerGetChildren" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "5316914b-cf47-4dac-9e10-71767fdf1eb9" )]
-        public IHttpActionResult ConnectionRequestPickerGetChildren( [FromBody] ConnectionRequestPickerGetChildrenOptionsBag options )
+        public IActionResult ConnectionRequestPickerGetChildren( [FromBody] ConnectionRequestPickerGetChildrenOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
@@ -2928,8 +2979,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ContentChannelItemPickerGetContentChannels" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "2182388d-ccae-44df-a0de-597b8d123666" )]
-        public IHttpActionResult ContentChannelItemPickerGetContentChannels()
+        public IActionResult ContentChannelItemPickerGetContentChannels()
         {
             var contentChannels = ContentChannelCache.All()
                 .OrderBy( cc => cc.Name )
@@ -2947,8 +2999,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ContentChannelItemPickerGetContentChannelItems" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "e1f6ad6b-c3f5-4a1a-abc2-46726732daee" )]
-        public IHttpActionResult ContentChannelItemPickerGetContentChannelItems( [FromBody] ContentChannelItemPickerGetContentChannelItemsOptionsBag options )
+        public IActionResult ContentChannelItemPickerGetContentChannelItems( [FromBody] ContentChannelItemPickerGetContentChannelItemsOptionsBag options )
         {
             return Ok( ContentChannelItemPickerGetContentChannelItemsForContentChannel( options.ContentChannelGuid, options.ExcludeContentChannelItems ) );
         }
@@ -2961,8 +3014,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ContentChannelItemPickerGetAllForContentChannelItem" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "ef6d055f-38b1-4225-b95f-cfe703f4d425" )]
-        public IHttpActionResult ContentChannelItemPickerGetAllForContentChannelItem( [FromBody] ContentChannelItemPickerGetAllForContentChannelItemOptionsBag options )
+        public IActionResult ContentChannelItemPickerGetAllForContentChannelItem( [FromBody] ContentChannelItemPickerGetAllForContentChannelItemOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -3033,8 +3087,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "CurrencyBoxGetCurrencyInfo" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "6E8D0B48-EB88-4028-B03F-064A690902D4" )]
-        public IHttpActionResult CurrencyBoxGetCurrencyInfo( [FromBody] CurrencyBoxGetCurrencyInfoOptionsBag options )
+        public IActionResult CurrencyBoxGetCurrencyInfo( [FromBody] CurrencyBoxGetCurrencyInfoOptionsBag options )
         {
             Guid currencyCodeGuid = options.CurrencyCodeGuid;
             RockCurrencyCodeInfo currencyInfo = null;
@@ -3073,8 +3128,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "DataViewPickerGetDataViews" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "1E079A57-9B44-4365-9C9C-2383A9A3F45B" )]
-        public IHttpActionResult DataViewPickerGetDataViews( [FromBody] DataViewPickerGetDataViewsOptionsBag options )
+        public IActionResult DataViewPickerGetDataViews( [FromBody] DataViewPickerGetDataViewsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -3116,8 +3172,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "DefinedValueEditorGetAttributes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "E2601583-94D5-4C21-96FA-309B9FB7E11F" )]
-        public IHttpActionResult DefinedValueEditorGetAttributes( DefinedValueEditorGetAttributesOptionsBag options )
+        public IActionResult DefinedValueEditorGetAttributes( DefinedValueEditorGetAttributesOptionsBag options )
         {
             if ( RockRequestContext.CurrentPerson == null )
             {
@@ -3160,8 +3217,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "DefinedValueEditorSaveNewValue" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "E1AB17E0-CF28-4032-97A8-2A4279C5815A" )]
-        public IHttpActionResult DefinedValueEditorSaveNewValue( DefinedValueEditorSaveNewValueOptionsBag options )
+        public IActionResult DefinedValueEditorSaveNewValue( DefinedValueEditorSaveNewValueOptionsBag options )
         {
             if ( RockRequestContext.CurrentPerson == null )
             {
@@ -3246,8 +3304,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "DefinedValuePickerGetDefinedValues" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "1E4A1812-8A2C-4266-8F39-3004C1DEBC9F" )]
-        public IHttpActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptionsBag options )
+        public IActionResult DefinedValuePickerGetDefinedValues( DefinedValuePickerGetDefinedValuesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -3287,8 +3346,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTagListGetEntityTags" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "7542D4B3-17DC-4640-ACBD-F02784130401" )]
-        public IHttpActionResult EntityTagListGetEntityTags( [FromBody] EntityTagListGetEntityTagsOptionsBag options )
+        public IActionResult EntityTagListGetEntityTags( [FromBody] EntityTagListGetEntityTagsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -3322,8 +3382,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTagListGetAvailableTags" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "91890D39-6E3E-4623-AAD7-F32E686C784E" )]
-        public IHttpActionResult EntityTagListGetAvailableTags( [FromBody] EntityTagListGetAvailableTagsOptionsBag options )
+        public IActionResult EntityTagListGetAvailableTags( [FromBody] EntityTagListGetAvailableTagsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -3357,8 +3418,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTagListCreatePersonalTag" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "8CCB7B8D-5D5C-4AA6-A12C-ED062C7AFA05" )]
-        public IHttpActionResult EntityTagListCreatePersonalTag( [FromBody] EntityTagListCreatePersonalTagOptionsBag options )
+        public IActionResult EntityTagListCreatePersonalTag( [FromBody] EntityTagListCreatePersonalTagOptionsBag options )
         {
             if ( RockRequestContext.CurrentPerson == null )
             {
@@ -3433,8 +3495,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTagListAddEntityTag" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "C9CACC7F-68DE-4765-8967-B50EE2949062" )]
-        public IHttpActionResult EntityTagListAddEntityTag( [FromBody] EntityTagListAddEntityTagOptionsBag options )
+        public IActionResult EntityTagListAddEntityTag( [FromBody] EntityTagListAddEntityTagOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -3485,8 +3548,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTagListRemoveEntityTag" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "6A78D538-87DB-43FE-9150-4E9A3F276AFE" )]
-        public IHttpActionResult EntityTagListRemoveEntityTag( [FromBody] EntityTagListRemoveEntityTagOptionsBag options )
+        public IActionResult EntityTagListRemoveEntityTag( [FromBody] EntityTagListRemoveEntityTagOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -3532,8 +3596,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTagListSaveTagValues" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "02886e54-6088-40ea-98be-9157ec2a3369" )]
-        public IHttpActionResult EntityTagListSaveTagValues( [FromBody] EntityTagListSaveTagValuesOptionsBag options )
+        public IActionResult EntityTagListSaveTagValues( [FromBody] EntityTagListSaveTagValuesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -3669,8 +3734,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityPickerGetEntityTypeGuids" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "8E92F72E-235A-4192-9C09-742F94849D62" )]
-        public IHttpActionResult EntityPickerGetEntityTypeGuids( [FromBody] EntityPickerGetEntityTypeGuidsOptionsBag options )
+        public IActionResult EntityPickerGetEntityTypeGuids( [FromBody] EntityPickerGetEntityTypeGuidsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -3692,8 +3758,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityPickerGetFieldTypeConfiguration" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "6BDA28C3-E6D7-42EB-9011-0C076455D4A7" )]
-        public IHttpActionResult EntityPickerGetFieldTypeConfiguration( [FromBody] EntityPickerGetFieldTypeConfigurationOptionsBag options )
+        public IActionResult EntityPickerGetFieldTypeConfiguration( [FromBody] EntityPickerGetFieldTypeConfigurationOptionsBag options )
         {
             if ( options.EntityTypeGuid == null )
             {
@@ -3742,8 +3809,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EntityTypePickerGetEntityTypes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "AFDD3D40-5856-478B-A41A-0539127F0631" )]
-        public IHttpActionResult EntityTypePickerGetEntityTypes( [FromBody] EntityTypePickerGetEntityTypesOptionsBag options )
+        public IActionResult EntityTypePickerGetEntityTypes( [FromBody] EntityTypePickerGetEntityTypesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -3781,8 +3849,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EthnicityPickerGetEthnicities" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "a04bddf8-4169-47f8-8b03-ee8e2f110b35" )]
-        public IHttpActionResult EthnicityPickerGetEthnicities()
+        public IActionResult EthnicityPickerGetEthnicities()
         {
             var ethnicities = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_ETHNICITY ).DefinedValues
                 .Select( e => new ListItemBag { Text = e.Value, Value = e.Guid.ToString() } )
@@ -3806,8 +3875,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EventCalendarPickerGetEventCalendars" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "92d88be0-2971-441a-b582-eec304ce4bc9" )]
-        public IHttpActionResult EventCalendarPickerGetEventCalendars()
+        public IActionResult EventCalendarPickerGetEventCalendars()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -3835,8 +3905,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "EventItemPickerGetEventItems" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "1D558F8A-08C9-4B62-A3A9-853C9F66B748" )]
-        public IHttpActionResult EventItemPickerGetEventItems( [FromBody] EventItemPickerGetEventItemsOptionsBag options )
+        public IActionResult EventItemPickerGetEventItems( [FromBody] EventItemPickerGetEventItemsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -3868,8 +3939,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "FieldTypeEditorGetAvailableFieldTypes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "FEDEF3F7-FCB0-4538-9629-177C7D2AE06F" )]
-        public IHttpActionResult FieldTypeEditorGetAvailableFieldTypes( [FromBody] FieldTypeEditorGetAvailableFieldTypesOptionsBag options )
+        public IActionResult FieldTypeEditorGetAvailableFieldTypes( [FromBody] FieldTypeEditorGetAvailableFieldTypesOptionsBag options )
         {
             var fieldTypes = FieldTypeCache.All()
                 .Where( f => f.Platform.HasFlag( Rock.Utility.RockPlatform.Obsidian ) )
@@ -3898,8 +3970,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "FieldTypeEditorUpdateAttributeConfiguration" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "AFDF0EC4-5D17-4278-9FA6-3F859F38E3B5" )]
-        public IHttpActionResult FieldTypeEditorUpdateAttributeConfiguration( [FromBody] FieldTypeEditorUpdateAttributeConfigurationOptionsBag options )
+        public IActionResult FieldTypeEditorUpdateAttributeConfiguration( [FromBody] FieldTypeEditorUpdateAttributeConfigurationOptionsBag options )
         {
             var fieldType = Rock.Web.Cache.FieldTypeCache.Get( options.FieldTypeGuid )?.Field;
 
@@ -3946,8 +4019,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "FieldTypePickerGetFieldTypes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "AB53509A-C8A9-481B-839F-DA53232A698A" )]
-        public IHttpActionResult FieldTypePickerGetFieldTypes()
+        public IActionResult FieldTypePickerGetFieldTypes()
         {
             List<ListItemBag> items = new List<ListItemBag> { };
 
@@ -3970,8 +4044,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "FinancialGatewayPickerGetFinancialGateways" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "DBF12D3D-09BF-419F-A315-E3B6C0206344" )]
-        public IHttpActionResult FinancialGatewayPickerGetFinancialGateways( [FromBody] FinancialGatewayPickerGetFinancialGatewaysOptionsBag options )
+        public IActionResult FinancialGatewayPickerGetFinancialGateways( [FromBody] FinancialGatewayPickerGetFinancialGatewaysOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -4026,8 +4101,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "FinancialStatementTemplatePickerGetFinancialStatementTemplates" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "4E10F2DC-BD7C-4F75-919C-B3F71868ED24" )]
-        public IHttpActionResult FinancialStatementTemplatePickerGetFinancialStatementTemplates()
+        public IActionResult FinancialStatementTemplatePickerGetFinancialStatementTemplates()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -4057,9 +4133,10 @@ namespace Rock.Rest.v2
         /// <returns>A <see cref="FollowingGetFollowingResponseBag"/> that contains the followed state of the entity.</returns>
         [HttpPost]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [System.Web.Http.Route( "FollowingGetFollowing" )]
         [Rock.SystemGuid.RestActionGuid( "FA1CC136-A994-4870-9507-818EA7A70F01" )]
-        public IHttpActionResult FollowingGetFollowing( [FromBody] FollowingGetFollowingOptionsBag options )
+        public IActionResult FollowingGetFollowing( [FromBody] FollowingGetFollowingOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -4120,9 +4197,10 @@ namespace Rock.Rest.v2
         /// <returns>An HTTP status code that indicates if the request was successful.</returns>
         [HttpPost]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [System.Web.Http.Route( "FollowingSetFollowing" )]
         [Rock.SystemGuid.RestActionGuid( "8CA2EAFB-E577-4F65-8D96-F42D8D5AAE7A" )]
-        public IHttpActionResult FollowingSetFollowing( [FromBody] FollowingSetFollowingOptionsBag options )
+        public IActionResult FollowingSetFollowing( [FromBody] FollowingSetFollowingOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -4222,9 +4300,10 @@ namespace Rock.Rest.v2
         /// <returns>The Google API key as a string</returns>
         [HttpPost]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [System.Web.Http.Route( "GeoPickerGetGoogleMapSettings" )]
         [Rock.SystemGuid.RestActionGuid( "a3e0af9b-36d3-4ec8-a983-0087488c553d" )]
-        public IHttpActionResult GeoPickerGetGoogleMapSettings( [FromBody] GeoPickerGetGoogleMapSettingsOptionsBag options )
+        public IActionResult GeoPickerGetGoogleMapSettings( [FromBody] GeoPickerGetGoogleMapSettingsOptionsBag options )
         {
             // Map Styles
             Guid MapStyleValueGuid = options.MapStyleValueGuid == null || options.MapStyleValueGuid.IsEmpty() ? Rock.SystemGuid.DefinedValue.MAP_STYLE_ROCK.AsGuid() : options.MapStyleValueGuid;
@@ -4293,8 +4372,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GradePickerGetGrades" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "2C8F0B8E-F54D-460D-91DB-97B34A9AA174" )]
-        public IHttpActionResult GradePickerGetGrades( GradePickerGetGradesOptionsBag options )
+        public IActionResult GradePickerGetGrades( GradePickerGetGradesOptionsBag options )
         {
             var schoolGrades = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.SCHOOL_GRADES.AsGuid() );
 
@@ -4338,8 +4418,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupAndRolePickerGetRoles" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "285de6f4-0bf0-47e4-bda5-bcaa5a18b990" )]
-        public IHttpActionResult GroupAndRolePickerGetRoles( [FromBody] GroupAndRolePickerGetRolesOptionsBag options )
+        public IActionResult GroupAndRolePickerGetRoles( [FromBody] GroupAndRolePickerGetRolesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -4371,8 +4452,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberPickerGetGroupMembers" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "E0A893FD-0275-4251-BA6E-F669F110D179" )]
-        public IHttpActionResult GroupMemberPickerGetGroupMembers( [FromBody] GroupMemberPickerGetGroupMembersOptionsBag options )
+        public IActionResult GroupMemberPickerGetGroupMembers( [FromBody] GroupMemberPickerGetGroupMembersOptionsBag options )
         {
             Rock.Model.Group group;
 
@@ -4416,8 +4498,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberRequirementCardGetConfig" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "E3981034-6A58-48CB-85ED-F9900AA99934" )]
-        public IHttpActionResult GroupMemberRequirementCardGetConfig( [FromBody] GroupMemberRequirementCardGetConfigOptionsBag options )
+        public IActionResult GroupMemberRequirementCardGetConfig( [FromBody] GroupMemberRequirementCardGetConfigOptionsBag options )
         {
             if ( options.GroupRequirementGuid.IsEmpty() || options.GroupMemberRequirementGuid.IsEmpty() )
             {
@@ -4536,8 +4619,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberRequirementCardMarkMetManually" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "AE5A418A-645C-4EA5-A870-AA74F7109354" )]
-        public IHttpActionResult GroupMemberRequirementCardMarkMetManually( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
+        public IActionResult GroupMemberRequirementCardMarkMetManually( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -4581,8 +4665,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberRequirementCardOverrideMarkMet" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "DA54A9CE-840F-4629-B270-7FCBAC86312C" )]
-        public IHttpActionResult GroupMemberRequirementCardOverrideMarkMet( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
+        public IActionResult GroupMemberRequirementCardOverrideMarkMet( [FromBody] GroupMemberRequirementCardMarkMetManuallyOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -4647,8 +4732,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberRequirementCardRunNotMetWorkflow" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "A9202026-CAF8-4B68-BE95-263FAE77F92D" )]
-        public IHttpActionResult GroupMemberRequirementCardRunNotMetWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
+        public IActionResult GroupMemberRequirementCardRunNotMetWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -4765,8 +4851,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberRequirementCardRunWarningWorkflow" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "CD7F3FAF-975D-4BDA-8A2D-5E236E7942DD" )]
-        public IHttpActionResult GroupMemberRequirementCardRunWarningWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
+        public IActionResult GroupMemberRequirementCardRunWarningWorkflow( [FromBody] GroupMemberRequirementCardRunWorkflowOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -4888,8 +4975,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupMemberRequirementContainerGetData" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "B1F29337-BD8B-4F62-A68E-F67C32E8CFDE" )]
-        public IHttpActionResult GroupMemberRequirementContainerGetData( [FromBody] GroupMemberRequirementContainerGetDataOptionsBag options )
+        public IActionResult GroupMemberRequirementContainerGetData( [FromBody] GroupMemberRequirementContainerGetDataOptionsBag options )
         {
             var results = new GroupMemberRequirementContainerGetDataResultsBag
             {
@@ -4989,8 +5077,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupTypeGroupPickerGetGroups" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "f07ac6f8-128c-4881-a4ec-c245b8f10f9e" )]
-        public IHttpActionResult GroupTypeGroupPickerGetGroups( [FromBody] GroupTypeGroupPickerGetGroupsOptionsBag options )
+        public IActionResult GroupTypeGroupPickerGetGroups( [FromBody] GroupTypeGroupPickerGetGroupsOptionsBag options )
         {
             var groups = new List<ListItemBag>();
             if ( options.GroupTypeGuid != Guid.Empty )
@@ -5014,8 +5103,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupTypeGroupPickerGetGroupTypeOfGroup" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "984ce064-6073-4b8d-b670-338a3049e13b" )]
-        public IHttpActionResult GroupTypeGroupPickerGetGroupTypeOfGroup( [FromBody] GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag options )
+        public IActionResult GroupTypeGroupPickerGetGroupTypeOfGroup( [FromBody] GroupTypeGroupPickerGetGroupTypeOfGroupOptionsBag options )
         {
             if ( options.GroupGuid != Guid.Empty )
             {
@@ -5045,8 +5135,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupTypePickerGetGroupTypes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "b0e07419-0e3c-4235-b5d4-4262fd63e050" )]
-        public IHttpActionResult GroupTypePickerGetGroupTypes( [FromBody] GroupTypePickerGetGroupTypesOptionsBag options )
+        public IActionResult GroupTypePickerGetGroupTypes( [FromBody] GroupTypePickerGetGroupTypesOptionsBag options )
         {
             var groupTypes = new List<GroupTypeCache>();
             var results = new List<ListItemBag>();
@@ -5099,8 +5190,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupPickerGetChildren" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "c4f5432a-eb1e-4235-a5cd-bde37cc324f7" )]
-        public IHttpActionResult GroupPickerGetChildren( GroupPickerGetChildrenOptionsBag options )
+        public IActionResult GroupPickerGetChildren( GroupPickerGetChildrenOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -5281,8 +5373,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupRolePickerGetGroupTypes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "56891c9b-f714-4083-8252-4c73b358aa02" )]
-        public IHttpActionResult GroupRolePickerGetGroupTypes()
+        public IActionResult GroupRolePickerGetGroupTypes()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -5307,8 +5400,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupRolePickerGetGroupRoles" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "968033ab-2596-4b0c-b06e-2c9cf59949c5" )]
-        public IHttpActionResult GroupRolePickerGetGroupRoles( [FromBody] GroupRolePickerGetGroupRolesOptionsBag options )
+        public IActionResult GroupRolePickerGetGroupRoles( [FromBody] GroupRolePickerGetGroupRolesOptionsBag options )
         {
             return Ok( GroupRolePickerGetGroupRolesForGroupType( options.GroupTypeGuid, options.ExcludeGroupRoles ) );
         }
@@ -5321,8 +5415,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "GroupRolePickerGetAllForGroupRole" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "e55374dd-7715-4392-a162-c40f09d25fc9" )]
-        public IHttpActionResult GroupRolePickerGetAllForGroupRole( [FromBody] GroupRolePickerGetAllForGroupRoleOptionsBag options )
+        public IActionResult GroupRolePickerGetAllForGroupRole( [FromBody] GroupRolePickerGetAllForGroupRoleOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -5393,8 +5488,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "InteractionChannelInteractionComponentPickerGetChannelFromComponent" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "ebef7cb7-f20d-40d9-9f70-1f30aff1cd8f" )]
-        public IHttpActionResult InteractionChannelInteractionComponentPickerGetChannelFromComponent( [FromBody] InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag options )
+        public IActionResult InteractionChannelInteractionComponentPickerGetChannelFromComponent( [FromBody] InteractionChannelInteractionComponentPickerGetChannelFromComponentOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -5423,8 +5519,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "InteractionChannelPickerGetInteractionChannels" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "2F855DC7-7C20-4C09-9CB1-FFC1E022385B" )]
-        public IHttpActionResult InteractionChannelPickerGetInteractionChannels()
+        public IActionResult InteractionChannelPickerGetInteractionChannels()
         {
             var items = new List<ListItemBag>();
             var rockContext = new RockContext();
@@ -5472,8 +5569,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "InteractionComponentPickerGetInteractionComponents" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "BD61A390-39F9-4FDE-B9AD-02E53B5F2073" )]
-        public IHttpActionResult InteractionComponentPickerGetInteractionComponents( [FromBody] InteractionComponentPickerGetInteractionComponentsOptionsBag options )
+        public IActionResult InteractionComponentPickerGetInteractionComponents( [FromBody] InteractionComponentPickerGetInteractionComponentsOptionsBag options )
         {
             if ( !options.InteractionChannelGuid.HasValue )
             {
@@ -5508,8 +5606,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "LavaCommandPickerGetLavaCommands" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "9FD03EE7-49E8-4C64-AC25-648422579F28" )]
-        public IHttpActionResult LavaCommandPickerGetLavaCommands()
+        public IActionResult LavaCommandPickerGetLavaCommands()
         {
             var items = new List<ListItemBag>();
 
@@ -5532,11 +5631,13 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="options">The options that describe which child locations to retrieve.</param>
         /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the child locations.</returns>
-        [Authenticate, Secured]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
         [HttpPost]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [System.Web.Http.Route( "LocationItemPickerGetActiveChildren" )]
         [Rock.SystemGuid.RestActionGuid( "E57312EC-92A7-464C-AA7E-5320DDFAEF3D" )]
-        public IHttpActionResult LocationItemPickerGetActiveChildren( [FromBody] LocationItemPickerGetActiveChildrenOptionsBag options )
+        public IActionResult LocationItemPickerGetActiveChildren( [FromBody] LocationItemPickerGetActiveChildrenOptionsBag options )
         {
             IQueryable<Location> qry;
 
@@ -5616,11 +5717,13 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="options">The options that describe which child locations to retrieve.</param>
         /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the child locations.</returns>
-        [Authenticate, Secured]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [HttpPost]
         [System.Web.Http.Route( "LocationListGetLocations" )]
         [Rock.SystemGuid.RestActionGuid( "DA17BFF5-B9B8-4CD1-AAB4-2F703EDBEF46" )]
-        public IHttpActionResult LocationListGetLocations( [FromBody] LocationListGetLocationsOptionsBag options )
+        public IActionResult LocationListGetLocations( [FromBody] LocationListGetLocationsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -5682,8 +5785,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "LocationListGetAttributes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "e2b28b2f-a46d-40cd-a48d-7e5351383de5" )]
-        public IHttpActionResult LocationListGetAttributes( /*LocationListGetAttributesOptionsBag options*/ )
+        public IActionResult LocationListGetAttributes( /*LocationListGetAttributesOptionsBag options*/ )
         {
             if ( RockRequestContext.CurrentPerson == null )
             {
@@ -5701,8 +5805,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "LocationListSaveNewLocation" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "f8342fdb-3e19-4f17-804c-c14fdee87a2b" )]
-        public IHttpActionResult LocationListSaveNewLocation( LocationListSaveNewLocationOptionsBag options )
+        public IActionResult LocationListSaveNewLocation( LocationListSaveNewLocationOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -5784,8 +5889,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "MediaElementPickerGetMediaAccounts" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "849e3ac3-f1e1-4efa-b0c8-1a79c4a666c7" )]
-        public IHttpActionResult MediaElementPickerGetMediaAccounts()
+        public IActionResult MediaElementPickerGetMediaAccounts()
         {
             using ( var rockContext = new RockContext() )
             {
@@ -5802,8 +5908,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "MediaElementPickerGetMediaFolders" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "a68493aa-8f41-404f-90dd-fbb2df0309a0" )]
-        public IHttpActionResult MediaElementPickerGetMediaFolders( [FromBody] MediaElementPickerGetMediaFoldersOptionsBag options )
+        public IActionResult MediaElementPickerGetMediaFolders( [FromBody] MediaElementPickerGetMediaFoldersOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -5827,8 +5934,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "MediaElementPickerGetMediaElements" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "9b922b7e-95b4-4ecf-a6ec-f61b45f5e210" )]
-        public IHttpActionResult MediaElementPickerGetMediaElements( [FromBody] MediaElementPickerGetMediaElementsOptionsBag options )
+        public IActionResult MediaElementPickerGetMediaElements( [FromBody] MediaElementPickerGetMediaElementsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -5851,8 +5959,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "MediaElementPickerGetMediaTree" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "2cc15018-201e-4f22-b116-06846c70ad0b" )]
-        public IHttpActionResult MediaElementPickerGetMediaTree( [FromBody] MediaElementPickerGetMediaTreeOptionsBag options )
+        public IActionResult MediaElementPickerGetMediaTree( [FromBody] MediaElementPickerGetMediaTreeOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -6048,8 +6157,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "MediaPlayerGetPlayerOptions" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "85EF9540-0B5E-4816-9A13-9B09BF1ECA4F" )]
-        public IHttpActionResult MediaPlayerGetPlayerOptions( [FromBody] MediaPlayerGetPlayerOptionsOptionsBag options )
+        public IActionResult MediaPlayerGetPlayerOptions( [FromBody] MediaPlayerGetPlayerOptionsOptionsBag options )
         {
             if ( options.PlayerOptions == null || options.MediaElementGuid == null )
             {
@@ -6094,8 +6204,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "MergeFieldPickerGetChildren" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "f6722f7a-64ed-401a-9dea-c64fa9738b75" )]
-        public IHttpActionResult MergeFieldPickerGetChildren( [FromBody] MergeFieldPickerGetChildrenOptionsBag options )
+        public IActionResult MergeFieldPickerGetChildren( [FromBody] MergeFieldPickerGetChildrenOptionsBag options )
         {
             var children = MergeFieldPickerGetChildren( options.Id, options.AdditionalFields, RockRequestContext.CurrentPerson );
 
@@ -6113,7 +6224,7 @@ namespace Rock.Rest.v2
         [System.Web.Http.Route( "MergeFieldPickerGetSearchedMergeFields" )]
         [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "f7dd9588-9eff-4f08-ae0e-674de8dcb592" )]
-        public IHttpActionResult MergePickerGetSearchedMergeFields( [FromBody] MergeFieldPickerGetSearchedMergedFieldsOptionsBag options )
+        public IActionResult MergePickerGetSearchedMergeFields( [FromBody] MergeFieldPickerGetSearchedMergedFieldsOptionsBag options )
         {
             if ( options.SearchTerm.IsNullOrWhiteSpace() )
             {
@@ -6138,8 +6249,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "MergeFieldPickerFormatSelectedValue" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "ffe018c4-c088-4057-b28b-4980541f16d5" )]
-        public IHttpActionResult MergeFieldPickerFormatSelectedValue( [FromBody] MergeFieldPickerFormatSelectedValueOptionsBag options )
+        public IActionResult MergeFieldPickerFormatSelectedValue( [FromBody] MergeFieldPickerFormatSelectedValueOptionsBag options )
         {
             if ( options.SelectedValue == null )
             {
@@ -6787,8 +6899,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "MergeTemplatePickerGetMergeTemplates" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "2e486da8-927f-4474-8ba8-00a68d261403" )]
-        public IHttpActionResult MergeTemplatePickerGetMergeTemplates( [FromBody] MergeTemplatePickerGetMergeTemplatesOptionsBag options )
+        public IActionResult MergeTemplatePickerGetMergeTemplates( [FromBody] MergeTemplatePickerGetMergeTemplatesOptionsBag options )
         {
             List<Guid> include = null;
             List<Guid> exclude = null;
@@ -6843,8 +6956,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "MetricCategoryPickerGetChildren" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "92a11376-6bcd-4299-a54d-946cbde7566b" )]
-        public IHttpActionResult MetricCategoryPickerGetChildren( [FromBody] MetricCategoryPickerGetChildrenOptionsBag options )
+        public IActionResult MetricCategoryPickerGetChildren( [FromBody] MetricCategoryPickerGetChildrenOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -6883,8 +6997,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "MetricItemPickerGetChildren" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "c8e8f26e-a7cd-445a-8d72-6d4484a8ee59" )]
-        public IHttpActionResult MetricItemPickerGetChildren( [FromBody] MetricItemPickerGetChildrenOptionsBag options )
+        public IActionResult MetricItemPickerGetChildren( [FromBody] MetricItemPickerGetChildrenOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -6970,12 +7085,11 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "NoteEditorMentionSearch" )]
         [Authenticate]
-        [SecurityAction( "FullSearch", "Allows individuals to perform a full search of all individuals in the database." )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "dca338b6-9749-427e-8238-1686c9587d16" )]
-        public IHttpActionResult NoteEditorMentionSearch( [FromBody] NoteEditorMentionSearchOptionsBag options )
+        public IActionResult NoteEditorMentionSearch( [FromBody] NoteEditorMentionSearchOptionsBag options )
         {
-            var restAction = RestActionCache.Get( new Guid( "dca338b6-9749-427e-8238-1686c9587d16" ) );
-            var isFullSearchAllowed = restAction.IsAuthorized( "FullSearch", RockRequestContext.CurrentPerson );
+            var isFullSearchAllowed = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
 
             using ( var rockContext = new RockContext() )
             {
@@ -7077,11 +7191,13 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="options">The options that describe which pages to retrieve.</param>
         /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the pages.</returns>
-        [Authenticate, Secured]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [HttpPost]
         [System.Web.Http.Route( "PagePickerGetChildren" )]
         [Rock.SystemGuid.RestActionGuid( "EE9AB2EA-EE01-4D0F-B626-02D1C8D1ABF4" )]
-        public IHttpActionResult PagePickerGetChildren( [FromBody] PagePickerGetChildrenOptionsBag options )
+        public IActionResult PagePickerGetChildren( [FromBody] PagePickerGetChildrenOptionsBag options )
         {
             var service = new Service<Page>( new RockContext() ).Queryable().AsNoTracking();
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
@@ -7147,11 +7263,13 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="options">The options that describe which pages to retrieve.</param>
         /// <returns>A collection of <see cref="Guid"/> that represent the pages.</returns>
-        [Authenticate, Secured]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [HttpPost]
         [System.Web.Http.Route( "PagePickerGetSelectedPageHierarchy" )]
         [Rock.SystemGuid.RestActionGuid( "e74611a0-1711-4a0b-b3bd-df242d344679" )]
-        public IHttpActionResult PagePickerGetSelectedPageHierarchy( [FromBody] PagePickerGetSelectedPageHierarchyOptionsBag options )
+        public IActionResult PagePickerGetSelectedPageHierarchy( [FromBody] PagePickerGetSelectedPageHierarchyOptionsBag options )
         {
             var parentPageGuids = new List<string>();
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
@@ -7191,11 +7309,13 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="options">The options that contains the Guid of the page</param>
         /// <returns>A string internal name of the page with the given Guid.</returns>
-        [Authenticate, Secured]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [HttpPost]
         [System.Web.Http.Route( "PagePickerGetPageName" )]
         [Rock.SystemGuid.RestActionGuid( "20d219bd-3635-4cbc-b79f-250972ae6b97" )]
-        public IHttpActionResult PagePickerGetPageName( [FromBody] PagePickerGetPageNameOptionsBag options )
+        public IActionResult PagePickerGetPageName( [FromBody] PagePickerGetPageNameOptionsBag options )
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
             var page = PageCache.Get( options.PageGuid );
@@ -7220,11 +7340,13 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="options">The options that describe which routes to retrieve.</param>
         /// <returns>A collection of <see cref="ListItemBag"/> that represent the routes.</returns>
-        [Authenticate, Secured]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [HttpPost]
         [System.Web.Http.Route( "PagePickerGetPageRoutes" )]
         [Rock.SystemGuid.RestActionGuid( "858209a4-7715-43e6-aff5-00b82773f241" )]
-        public IHttpActionResult PagePickerGetPageRoutes( [FromBody] PagePickerGetPageRoutesOptionsBag options )
+        public IActionResult PagePickerGetPageRoutes( [FromBody] PagePickerGetPageRoutesOptionsBag options )
         {
             var page = PageCache.Get( options.PageGuid );
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
@@ -7261,11 +7383,13 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="options">The options that describe which pages to retrieve.</param>
         /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent the pages.</returns>
-        [Authenticate, Secured]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [HttpPost]
         [System.Web.Http.Route( "PageNavButtonsGetLinks" )]
         [Rock.SystemGuid.RestActionGuid( "49F4C35C-5528-44F3-9057-DCD3C387C8A5" )]
-        public IHttpActionResult PageNavButtonsGetLinks( [FromBody] PageNavButtonsGetLinksOptionsBag options )
+        public IActionResult PageNavButtonsGetLinks( [FromBody] PageNavButtonsGetLinksOptionsBag options )
         {
             if ( options.RootPageGuid == null || options.RootPageGuid.IsEmpty() )
             {
@@ -7360,11 +7484,13 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="options">The data needed to get the person's popup HTML</param>
         /// <returns>A string containing the popup markups</returns>
-        [Authenticate, Secured]
+        [Authenticate]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [HttpPost]
         [System.Web.Http.Route( "PersonLinkGetPopupHtml" )]
         [Rock.SystemGuid.RestActionGuid( "39f44203-9944-4dbd-87ca-d23657e0daa5" )]
-        public IHttpActionResult PersonLinkGetPopupHtml( [FromBody] PersonLinkGetPopupHtmlOptionsBag options )
+        public IActionResult PersonLinkGetPopupHtml( [FromBody] PersonLinkGetPopupHtmlOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -7416,7 +7542,7 @@ namespace Rock.Rest.v2
 
                     if ( !string.IsNullOrWhiteSpace( person.Email ) )
                     {
-                        html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.GetEmailTag( VirtualPathUtility.ToAbsolute( "~/" ) ) );
+                        html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.GetEmailTag( RockRequestContext.ResolveRockUrl( "~/" ) ) );
                     }
 
                     foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false && n.NumberTypeValueId.HasValue ).OrderBy( n => n.NumberTypeValue.Order ) )
@@ -7444,7 +7570,8 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe how the search should be performed.</param>
         /// <returns>A collection of <see cref="Rock.Rest.Controllers.PersonSearchResult"/> objects.</returns>
         [Authenticate]
-        [Secured]
+        [Secured( Security.Authorization.EXECUTE_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [HttpPost]
         [System.Web.Http.Route( "PersonPickerSearch" )]
         [Rock.SystemGuid.RestActionGuid( "1947578D-B28F-4956-8666-DCC8C0F2B945" )]
@@ -7466,10 +7593,11 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <returns>The configurations in the form of <see cref="ViewModels.Rest.Controls.PhoneNumberBoxGetConfigurationResultsBag"/>.</returns>
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [HttpPost]
         [System.Web.Http.Route( "PhoneNumberBoxGetConfiguration" )]
         [Rock.SystemGuid.RestActionGuid( "2f15c4a2-92c7-4bd3-bf48-7eb11a644142" )]
-        public IHttpActionResult PhoneNumberBoxGetConfiguration( [FromBody] PhoneNumberBoxGetConfigurationOptionsBag options )
+        public IActionResult PhoneNumberBoxGetConfiguration( [FromBody] PhoneNumberBoxGetConfigurationOptionsBag options )
         {
             var countryCodeRules = new Dictionary<string, List<PhoneNumberCountryCodeRulesConfigurationBag>>();
             var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.COMMUNICATION_PHONE_COUNTRY_CODE.AsGuid() );
@@ -7534,8 +7662,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "RacePickerGetRaces" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "126eec10-7a19-49af-9646-909bd92ea516" )]
-        public IHttpActionResult RacePickerGetRaces()
+        public IActionResult RacePickerGetRaces()
         {
             var races = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_RACE ).DefinedValues
                 .Select( e => new ListItemBag { Text = e.Value, Value = e.Guid.ToString() } )
@@ -7559,8 +7688,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "RegistrationInstancePickerGetRegistrationInstances" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "26ecd3a7-9c55-4052-afc9-b59e84ab890b" )]
-        public IHttpActionResult RegistrationInstancePickerGetRegistrationInstances( [FromBody] RegistrationInstancePickerGetRegistrationInstancesOptionsBag options )
+        public IActionResult RegistrationInstancePickerGetRegistrationInstances( [FromBody] RegistrationInstancePickerGetRegistrationInstancesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -7582,8 +7712,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "RegistrationInstancePickerGetRegistrationTemplateForInstance" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "acbccf4f-54d6-4c7c-8201-07fdefe87352" )]
-        public IHttpActionResult RegistrationInstancePickerGetRegistrationTemplateForInstance( [FromBody] RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag options )
+        public IActionResult RegistrationInstancePickerGetRegistrationTemplateForInstance( [FromBody] RegistrationInstancePickerGetRegistrationTemplateForInstanceOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -7610,8 +7741,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "RegistrationTemplatePickerGetChildren" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "41eac873-20f3-4456-9fb4-746a1363807e" )]
-        public IHttpActionResult RegistrationTemplatePickerGetChildren( [FromBody] RegistrationTemplatePickerGetChildrenOptionsBag options )
+        public IActionResult RegistrationTemplatePickerGetChildren( [FromBody] RegistrationTemplatePickerGetChildrenOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -7647,8 +7779,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ReminderButtonGetReminders" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "4D015951-9B44-4E70-99AD-8D52728ADF3E" )]
-        public IHttpActionResult ReminderButtonGetReminders( [FromBody] ReminderButtonGetRemindersOptionsBag options )
+        public IActionResult ReminderButtonGetReminders( [FromBody] ReminderButtonGetRemindersOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -7711,8 +7844,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ReminderButtonAddReminder" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "58DC4454-ED33-4871-9BD1-2AC9118340E2" )]
-        public IHttpActionResult ReminderButtonAddReminder( [FromBody] ReminderButtonAddReminderOptionsBag options )
+        public IActionResult ReminderButtonAddReminder( [FromBody] ReminderButtonAddReminderOptionsBag options )
         {
             if ( options.EntityTypeGuid.IsEmpty() || options.EntityGuid.IsEmpty() || options.ReminderTypeGuid.IsEmpty() )
             {
@@ -7783,8 +7917,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ReminderButtonCompleteReminder" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "D0720DE1-8417-4E01-8163-A17AB5D7F0BF" )]
-        public IHttpActionResult ReminderButtonCompleteReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
+        public IActionResult ReminderButtonCompleteReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -7807,8 +7942,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ReminderButtonDeleteReminder" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "52CF7D4D-E604-4B2E-B64E-DE865E2E0DF9" )]
-        public IHttpActionResult ReminderButtonDeleteReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
+        public IActionResult ReminderButtonDeleteReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -7831,8 +7967,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ReminderButtonCancelReminder" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "2B3F7D40-2AD2-432E-8B77-C9F40AC45D2D" )]
-        public IHttpActionResult ReminderButtonCancelReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
+        public IActionResult ReminderButtonCancelReminder( [FromBody] ReminderButtonReminderActionOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -7929,8 +8066,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ReminderTypePickerGetReminderTypes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "c1c338d2-6364-4217-81ec-7fc34e9218b6" )]
-        public IHttpActionResult ReminderTypePickerGetReminderTypes( [FromBody] ReminderTypePickerGetReminderTypesOptionsBag options )
+        public IActionResult ReminderTypePickerGetReminderTypes( [FromBody] ReminderTypePickerGetReminderTypesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -7966,8 +8104,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "RemoteAuthsPickerGetRemoteAuths" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "844D17E3-45FF-4A63-8BC7-32956A11CC94" )]
-        public IHttpActionResult RemoteAuthsPickerGetRemoteAuths()
+        public IActionResult RemoteAuthsPickerGetRemoteAuths()
         {
             var items = new List<ListItemBag>();
 
@@ -8001,8 +8140,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "ReportPickerGetChildren" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "59545f7f-a27b-497c-8376-c85dfc360c11" )]
-        public IHttpActionResult ReportPickerGetChildren( [FromBody] ReportPickerGetChildrenOptionsBag options )
+        public IActionResult ReportPickerGetChildren( [FromBody] ReportPickerGetChildrenOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -8039,6 +8179,7 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe what account should be saved.</param>
         /// <returns></returns>
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [HttpPost]
         [System.Web.Http.Route( "SaveFinancialAccountFormSaveAccount" )]
         [Rock.SystemGuid.RestActionGuid( "544B6302-A9E0-430E-A1C1-7BCBC4A6230C" )]
@@ -8210,8 +8351,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "SchedulePickerGetChildren" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "60447abf-18f5-4ad1-a191-3a614408653b" )]
-        public IHttpActionResult SchedulePickerGetChildren( [FromBody] SchedulePickerGetChildrenOptionsBag options )
+        public IActionResult SchedulePickerGetChildren( [FromBody] SchedulePickerGetChildrenOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -8253,8 +8395,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "SearchFieldGetSearchFilters" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "6FF52C9E-985B-46C3-B5A5-E69312D189CB" )]
-        public IHttpActionResult SearchFieldGetSearchFilters()
+        public IActionResult SearchFieldGetSearchFilters()
         {
             var searchExtensions = new Dictionary<string, ListItemBag>();
 
@@ -8294,8 +8437,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "StepProgramPickerGetStepPrograms" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "6C7816B0-D41D-4081-B998-0B42B542111F" )]
-        public IHttpActionResult StepProgramPickerGetStepPrograms()
+        public IActionResult StepProgramPickerGetStepPrograms()
         {
             var items = new List<ListItemBag>();
 
@@ -8327,8 +8471,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "StepStatusPickerGetStepStatuses" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "5B4E7419-266C-4235-93B7-8D0DE0E80D2B" )]
-        public IHttpActionResult StepStatusPickerGetStepStatuses( [FromBody] StepStatusPickerGetStepStatusesOptionsBag options )
+        public IActionResult StepStatusPickerGetStepStatuses( [FromBody] StepStatusPickerGetStepStatusesOptionsBag options )
         {
             if ( !options.StepProgramGuid.HasValue )
             {
@@ -8368,8 +8513,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "StepTypePickerGetStepTypes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "9BC4C3BA-573E-4FB4-A4FC-938D40BED2BE" )]
-        public IHttpActionResult StepTypePickerGetStepTypes( [FromBody] StepTypePickerGetStepTypesOptionsBag options )
+        public IActionResult StepTypePickerGetStepTypes( [FromBody] StepTypePickerGetStepTypesOptionsBag options )
         {
             if ( !options.StepProgramGuid.HasValue )
             {
@@ -8408,8 +8554,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "StreakTypePickerGetStreakTypes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "78D0A6D1-317E-4CB7-98BB-AF9194AD3C94" )]
-        public IHttpActionResult StreakTypePickerGetStreakTypes()
+        public IActionResult StreakTypePickerGetStreakTypes()
         {
             var items = new List<ListItemBag>();
 
@@ -8440,8 +8587,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "StructuredContentEditorGetConfiguration" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "71AD8E7A-3B38-4FC0-A4C7-95DB77F070F6" )]
-        public IHttpActionResult StructuredContentEditorGetConfiguration( [FromBody] StructuredContentEditorGetConfigurationOptionsBag options )
+        public IActionResult StructuredContentEditorGetConfiguration( [FromBody] StructuredContentEditorGetConfigurationOptionsBag options )
         {
             var structuredContentToolsConfiguration = string.Empty;
             if ( options.StructuredContentToolsValueGuid.HasValue )
@@ -8476,8 +8624,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "StructuredContentAsHtml" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "aec4bf60-bdcc-44e6-b7c5-8c019612deb6" )]
-        public IHttpActionResult StructuredContentAsHtml( [FromBody] object content )
+        public IActionResult StructuredContentAsHtml( [FromBody] object content )
         {
             var contentAsHtml = new StructuredContentHelper( content.ToString() ).Render();
             return Ok( contentAsHtml );
@@ -8496,8 +8645,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "WorkflowActionTypePickerGetChildren" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "4275ae7f-16ab-4720-a79f-bf7b5ca979e8" )]
-        public IHttpActionResult WorkflowActionTypePickerGetChildren( [FromBody] WorkflowActionTypePickerGetChildrenOptionsBag options )
+        public IActionResult WorkflowActionTypePickerGetChildren( [FromBody] WorkflowActionTypePickerGetChildrenOptionsBag options )
         {
             var list = new List<TreeItemBag>();
 
@@ -8585,8 +8735,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "WorkflowPickerGetWorkflows" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "93024bbe-4941-4f84-a5e7-754cf30c03d3" )]
-        public IHttpActionResult WorkflowPickerGetWorkflows( [FromBody] WorkflowPickerGetWorkflowsOptionsBag options )
+        public IActionResult WorkflowPickerGetWorkflows( [FromBody] WorkflowPickerGetWorkflowsOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -8616,8 +8767,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "WorkflowPickerGetWorkflowTypeForWorkflow" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "a41c755c-ffcb-459c-a67a-f0311158976a" )]
-        public IHttpActionResult WorkflowPickerGetWorkflowTypeForWorkflow( [FromBody] WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag options )
+        public IActionResult WorkflowPickerGetWorkflowTypeForWorkflow( [FromBody] WorkflowPickerGetWorkflowTypeForWorkflowOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -8644,8 +8796,9 @@ namespace Rock.Rest.v2
         [HttpPost]
         [System.Web.Http.Route( "WorkflowTypePickerGetWorkflowTypes" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "622EE929-7A18-46BE-9AEA-9E0725293612" )]
-        public IHttpActionResult WorkflowTypePickerGetWorkflowTypes( [FromBody] WorkflowTypePickerGetWorkflowTypesOptionsBag options )
+        public IActionResult WorkflowTypePickerGetWorkflowTypes( [FromBody] WorkflowTypePickerGetWorkflowTypesOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {

@@ -31,6 +31,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "BinaryFileData" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.None, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "EA647542-1E0F-4DAE-9537-65E3FFEE8792")]
     public partial class BinaryFileData : Model<BinaryFileData>
     {

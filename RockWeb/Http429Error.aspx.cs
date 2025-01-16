@@ -76,5 +76,12 @@ public partial class Http429Error : System.Web.UI.Page
             Response.StatusCode = 429;
             lLogoSvg.Text = System.IO.File.ReadAllText( HttpContext.Current.Request.MapPath( "~/Assets/Images/rock-logo-sm.svg" ) );
         }
+        finally
+        {
+            // Tell the browsers to not cache.
+            Response.Cache.SetCacheability( System.Web.HttpCacheability.NoCache );
+            Response.Cache.SetExpires( DateTime.UtcNow.AddHours( -1 ) );
+            Response.Cache.SetNoStore();
+        }
     }
 }

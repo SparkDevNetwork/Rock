@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AttributeMatrixItem" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "3C9D5021-0484-4846-AEF6-B6216D26C3C8")]
     public partial class AttributeMatrixItem : Model<AttributeMatrixItem>, IOrdered
     {

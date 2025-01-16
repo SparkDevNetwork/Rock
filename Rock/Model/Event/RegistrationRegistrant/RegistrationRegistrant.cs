@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "RegistrationRegistrant" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "8A25E5CE-1B4F-4825-BCEA-216167836305" )]
     public partial class RegistrationRegistrant : Model<RegistrationRegistrant>
     {

@@ -2582,6 +2582,12 @@ Sys.Application.add_load(function () {
             }
         }
 
+        /// <inheritdoc/>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            base.Render( writer );
+        }
+
         /// <summary>
         /// Process page view interactions if they are enabled for this website.
         /// </summary>
@@ -2602,7 +2608,7 @@ Sys.Application.add_load(function () {
             // Attempt to retrieve geolocation data.
             var geolocation = this.RequestContext?.ClientInformation?.Geolocation;
 
-            // If we have identified a logged-in user, record the page interaction immediately and return.
+            // If we have identified a logged-in user, record the page interaction immediately and return. (Does not include anonymous visitors)
             if ( CurrentPerson != null )
             {
                 var interactionInfo = new InteractionTransactionInfo
@@ -2686,6 +2692,12 @@ Sys.Application.add_load(function () {
             // If the user is logged in, they are identified by the supplied UserIdKey representing their current PersonAlias.
             // If the user is a visitor, the ROCK_VISITOR_KEY cookie is read from the client browser to obtain the
             // UserIdKey supplied to them. For a first visit, the cookie is set in this response.
+            // Additionally, this script now stores a list of interaction GUIDs in sessionStorage to prevent duplicate interactions.
+            // Each time a new interaction is recorded, the GUID is checked against the stored list in sessionStorage.
+            // If the GUID has already been recorded in the current session, the interaction will not be sent again, ensuring
+            // that only unique interactions are tracked during the session. This additional change was needed to prevent the
+            // scenario where a duplicate interaction would be sent whenever an individual used a browser's back arrow to navigate
+            // back to a page that had already sent an interaction. 
             string script = @"
 Sys.Application.add_load(function () {
     const getCookieValue = (name) => {
@@ -2693,19 +2705,29 @@ Sys.Application.add_load(function () {
 
         return !match ? '' : match.pop();
     };
-    var interactionArgs = <jsonData>;
-    if (!interactionArgs.<userIdProperty>) {
-        interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+
+    var interactionGuid = '<interactionGuid>';
+    var interactionGuids = JSON.parse(sessionStorage.getItem('interactionGuids')) || [];
+
+    if (!interactionGuids.includes(interactionGuid)) {
+        interactionGuids.push(interactionGuid);
+        sessionStorage.setItem('interactionGuids', JSON.stringify(interactionGuids));
+
+        var interactionArgs = <jsonData>;
+        if (!interactionArgs.<userIdProperty>) {
+            interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+        }
+        $.ajax({
+            url: '/api/Interactions/RegisterPageInteraction',
+            type: 'POST',
+            data: interactionArgs
+            });
     }
-    $.ajax({
-        url: '/api/Interactions/RegisterPageInteraction',
-        type: 'POST',
-        data: interactionArgs
-        });
 });
 ";
 
             script = script.Replace( "<rockVisitorCookieName>", Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
+            script = script.Replace( "<interactionGuid>", pageInteraction.Guid.ToString() );
             script = script.Replace( "<jsonData>", pageInteraction.ToJson() );
             script = script.Replace( "<userIdProperty>", nameof( pageInteraction.UserIdKey ) );
 

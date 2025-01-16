@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "AchievementType" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ACHIEVEMENT_TYPE )]
     public partial class AchievementType : Model<AchievementType>, IHasActiveFlag, ICacheable
     {

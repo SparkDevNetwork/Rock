@@ -253,6 +253,7 @@
     <Compile Include="Rock\Cms\ThemeFieldTests.cs" />
     <Compile Include="Rock\Cms\ThemeOverrideBuilderTests.cs" />
     <Compile Include="Rock\Configuration\RockAppExtensionsTests.cs" />
+    <Compile Include="Rock\Core\EntitySearch\EntitySearchTests.cs" />
     <Compile Include="Rock\Field\Types\BooleanFieldTypeTests.cs" />
     <Compile Include="Rock\Field\Types\StructureContentEditorFieldTypeTests.cs" />
     <Compile Include="Rock\Lava\Filters\ConversionFilterTests.cs" />

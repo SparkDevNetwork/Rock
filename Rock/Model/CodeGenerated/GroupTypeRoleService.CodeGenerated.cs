@@ -163,6 +163,7 @@ namespace Rock.Model
             target.CanEdit = source.CanEdit;
             target.CanManageMembers = source.CanManageMembers;
             target.CanView = source.CanView;
+            target.ChatRole = source.ChatRole;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

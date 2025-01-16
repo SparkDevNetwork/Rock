@@ -56,6 +56,7 @@ BEGIN
             , t.[LastUpdateDateTime] = GETDATE()
             , t.[RelationshipScore] = @FollowingScore
             , t.[RelationshipScoreLastUpdateValue] = @FollowingScore
+            , t.[RelationshipTrend] = 0
     WHEN NOT MATCHED BY TARGET THEN
         -- Add new [PeerNetwork] records for following relationships not yet reflected in this table.
         INSERT (
@@ -72,8 +73,8 @@ BEGIN
             @FollowingConnectionTypeValueId     -- [RelationshipTypeValueId]
             , s.[RelationshipStartDate]         -- [RelationshipStartDate]
             , @FollowingScore                   -- [RelationshipScore]
-            , @FollowingScore                   -- [RelationshipScoreLastUpdateValue]
-            , 0                                 -- [RelationshipTrend]
+            , 0                                 -- [RelationshipScoreLastUpdateValue]
+            , 1                                 -- [RelationshipTrend]
             , GETDATE()                         -- [LastUpdateDateTime]
             , s.[FollowerPersonId]              -- [SourcePersonId]
             , s.[FollowingPersonId]             -- [TargetPersonId]

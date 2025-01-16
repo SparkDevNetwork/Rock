@@ -15,10 +15,28 @@
 // </copyright>
 //
 
+using Rock.Security;
+
 namespace Rock.Model
 {
     public partial class PrayerRequest
     {
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority
+        {
+            // This intentionally just calls the base ParentAuthority. It was
+            // discussed if this should inherit from Category so that security
+            // "works". However, the decision was made not to because
+            // PrayerRequests weren't really meant to have security. Meaning,
+            // there was no intent to be able to say "Ted is allowed to see
+            // prayer requests except those from this category".
+            get => base.ParentAuthority;
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets  full name of the person for who the prayer request is about.
         /// </summary>

@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Attribute" )]
     [DataContract]
+    [CodeGenerateRest( ~( Enums.CodeGenerateRestEndpoint.ReadAttributeValues | Enums.CodeGenerateRestEndpoint.UpdateAttributeValues ) )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ATTRIBUTE )]
     public partial class Attribute : Model<Attribute>, IOrdered, ICacheable
     {

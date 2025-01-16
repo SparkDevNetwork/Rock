@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "PageShortLink" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "83D8C6DF-1D53-438B-93B2-75A2038BBEE6" )]
     public partial class PageShortLink : Model<PageShortLink>, IHasAdditionalSettings
     {

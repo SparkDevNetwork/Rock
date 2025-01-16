@@ -29,6 +29,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// EntityCampusFilters REST API
     /// </summary>
+    [RockObsolete( "17.0" )]
+    [System.Obsolete( "This model is no longer used and will be removed in the future." )]
     [RestControllerGuid( "DE62F24F-8668-4A78-A6F6-8C8BEFFDA80C" )]
     public partial class EntityCampusFiltersController : Rock.Rest.ApiController<Rock.Model.EntityCampusFilter>
     {

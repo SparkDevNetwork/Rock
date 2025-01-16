@@ -43,6 +43,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Page" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PAGE )]
     public partial class Page : Model<Page>, IOrdered, ICacheable, IHasAdditionalSettings
     {

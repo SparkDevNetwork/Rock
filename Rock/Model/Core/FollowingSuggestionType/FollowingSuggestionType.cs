@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "FollowingSuggestionType" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "CC7DF118-86A1-4F90-82D8-0DAE9CD37343")]
     public partial class FollowingSuggestionType : Model<FollowingSuggestionType>, IOrdered, IHasActiveFlag
     {

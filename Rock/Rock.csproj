@@ -717,6 +717,15 @@
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
+    <Compile Include="Cms\RestActionMetadata.cs" />
+    <Compile Include="Cms\RestControllerMetadata.cs" />
+    <Compile Include="Core\EntitySearch\CustomExtensionMethodsExpressionVisitor.cs" />
+    <Compile Include="Core\EntitySearch\DynamicLinqCustomTypeProvider.cs" />
+    <Compile Include="Core\EntitySearch\DynamicLinqQueryExtensionMethods.cs" />
+    <Compile Include="Core\EntitySearch\EntitySearchHelper.cs" />
+    <Compile Include="Core\EntitySearch\EntitySearchSystemQuery.cs" />
+    <Compile Include="Core\EntitySearch\IdKeyExpressionVisitor.cs" />
+    <Compile Include="Communication\Chat\ChatConfiguration.cs" />
     <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
     <Compile Include="Data\EnableAttributeQualificationAttribute.cs" />
     <Compile Include="Attribute\GroupMemberRequirementFieldAttribute.cs" />
@@ -891,6 +900,7 @@
     <Compile Include="Blocks\Types\Mobile\Crm\PersonProfile.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\LiveExperienceOccurrences.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\LiveExperience.cs" />
+    <Compile Include="Blocks\Types\Mobile\Finance\ScheduledTransactionList.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupSchedulePreference.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleSignUp.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupFinder.cs" />
@@ -1297,11 +1307,13 @@
     <Compile Include="Model\Core\AttributeMatrixItem\AttributeMatrixItem.SaveHook.cs" />
     <Compile Include="Model\Core\AttributeMatrix\AttributeMatrix.Logic.cs" />
     <Compile Include="Model\Core\CampusTopic\CampusTopic.Logic.cs" />
+    <Compile Include="Model\Core\EntityCampusFilter\EntityCampusFilterService.cs" />
     <Compile Include="Model\Core\FollowingEventNotification\FollowingEventNotification.Logic.cs" />
     <Compile Include="Model\Core\FollowingEventSubscription\FollowingEventSubscription.Logic.cs" />
     <Compile Include="Model\Core\FollowingSuggested\FollowingSuggested.Logic.cs" />
     <Compile Include="Model\Core\NoteAttachment\NoteAttachment.Logic.cs" />
     <Compile Include="Model\Core\Note\NoteExtensionMethods.cs" />
+    <Compile Include="Model\CRM\BackgroundCheck\BackgroundCheck.Logic.cs" />
     <Compile Include="Model\CRM\Assessment\Assessment.Logic.cs" />
     <Compile Include="Model\Engagement\StepProgramCompletion\StepProgramCompletion.Logic.cs" />
     <Compile Include="Model\Engagement\StepTypePrerequisite\StepTypePrerequisite.Logic.cs" />
@@ -1458,6 +1470,7 @@
     <Compile Include="Model\CodeGenerated\ContentTopicDomainService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\ContentTopicService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\EntityIntentService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\EntitySearchService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceActionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceAnswerService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\InteractiveExperienceOccurrenceService.CodeGenerated.cs" />
@@ -1495,6 +1508,9 @@
     <Compile Include="Model\Core\EntityIntent\EntityIntent.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntent.Logic.cs" />
     <Compile Include="Model\Core\EntityIntent\EntityIntentService.cs" />
+    <Compile Include="Model\Core\EntitySearch\EntitySearch.cs" />
+    <Compile Include="Model\Core\EntitySearch\EntitySearch.Logic.cs" />
+    <Compile Include="Model\Core\EntitySearch\EntitySearchService.cs" />
     <Compile Include="Model\Core\EntitySet\Options\AddEntitySetActionOptions.cs" />
     <Compile Include="Model\Core\InteractionEntity\InteractionEntity.cs" />
     <Compile Include="Model\Core\InteractionEntity\InteractionEntityService.cs" />
@@ -1789,6 +1805,8 @@
     <Compile Include="Security\Authentication\OneTimePasscode\OneTimePasscodeAuthenticationResult.cs" />
     <Compile Include="Security\Authentication\PasswordlessAuthentication.cs" />
     <Compile Include="Security\Authentication\Passwordless\PasswordlessAuthenticationState.cs" />
+    <Compile Include="Security\ExcludeSecurityActionsAttribute.cs" />
+    <Compile Include="Security\GlobalRestrictedDefault.cs" />
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
@@ -2657,6 +2675,7 @@
     <Compile Include="Web\Cache\Entities\DeviceCache.cs" />
     <Compile Include="Web\Cache\Entities\DataViewCache.cs" />
     <Compile Include="Web\Cache\Entities\DataViewFilterCache.cs" />
+    <Compile Include="Web\Cache\Entities\EntitySearchCache.cs" />
     <Compile Include="Web\Cache\Entities\FinancialAccountCache.cs" />
     <Compile Include="Web\Cache\Entities\GroupTypeRoleCache.cs" />
     <Compile Include="Web\Cache\Entities\InteractiveExperienceCache.cs" />

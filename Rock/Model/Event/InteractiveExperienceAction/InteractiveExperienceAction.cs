@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "InteractiveExperienceAction" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "8635E7E7-3576-47FF-92DE-30A69EB5D011" )]
     public partial class InteractiveExperienceAction : Model<InteractiveExperienceAction>, IOrdered
     {

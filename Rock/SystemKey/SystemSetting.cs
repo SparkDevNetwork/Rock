@@ -410,5 +410,10 @@ namespace Rock.SystemKey
         /// Whether the Organization's state should be selected by default.
         /// </summary>
         public const string ENABLE_DEFAULT_ADDRESS_STATE_SELECTION = "core_EnableDefaultAddressStateSelection";
+
+        /// <summary>
+        /// The chat configuration.
+        /// </summary>
+        public const string CHAT_CONFIGURATION = "core_ChatConfiguration";
     }
 }

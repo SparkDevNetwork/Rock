@@ -164,6 +164,8 @@ namespace Rock.Model
             target.GivingLeaderId = source.GivingLeaderId;
             target.GraduationYear = source.GraduationYear;
             target.InactiveReasonNote = source.InactiveReasonNote;
+            target.IsChatOpenDirectMessageAllowed = source.IsChatOpenDirectMessageAllowed;
+            target.IsChatProfilePublic = source.IsChatProfilePublic;
             target.IsDeceased = source.IsDeceased;
             target.IsEmailActive = source.IsEmailActive;
             target.IsLockedAsChild = source.IsLockedAsChild;
