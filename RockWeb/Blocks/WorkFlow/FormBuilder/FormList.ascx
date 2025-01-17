@@ -223,6 +223,7 @@
                                                 <asp:LinkButton ID="lbSubmissions" runat="server" ToolTip="Submissions" CssClass="btn btn-default btn-sm btn-square ml-2" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-list'></i>" />
                                                 <asp:LinkButton ID="lbBuilder" runat="server" ToolTip="Builder" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Builder" Text="<i class='fa fa-edit'></i>" CommandArgument='<%# Eval( "Id" ) %>' />
                                                 <asp:LinkButton ID="lbAnalytics" runat="server" ToolTip="Analytics" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-chart-bar'></i>" />
+                                                <asp:LinkButton ID="lbLinkToForm" runat="server" ToolTip="Link To Form" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="LinkToForm" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-link'></i>" />
                                                 <div class="dropdown js-group-actions hide-dragging">
                                                     <button type="button" class="btn btn-default btn-sm btn-square dropdown-toggle ml-1" data-toggle="dropdown">
                                                         <i class="fa fa-ellipsis-v"></i>
@@ -278,6 +279,33 @@
                             </div>
                         </asp:Panel>
                     </div>
+                    <Rock:ModalDialog ID="mdLinkToFormModal" runat="server" Title="Link To Form" CancelLinkVisible="false" OnSaveClick="mdLinkToFormModal_SaveClick" SaveButtonText="Close" >
+                        <Content>
+                            <h3>Select a Page for Form Link</h3>
+                            <p>Choose a page from the list below to generate a link for the form. Once selected, you can copy and use the link as needed.</p>
+                            <Rock:Grid ID="gPages" runat="server" DisplayType="Light" RowItemText="Page">
+                                <Columns>
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Page Name" />
+                                    <Rock:RockBoundField DataField="Site" HeaderText="Site" />
+                                    <Rock:RockBoundField DataField="Route" HeaderText="Route" />
+                                    <Rock:RockTemplateFieldUnselected>
+                                        <ItemTemplate>
+                                            <button class="btn btn-default js-copy-clipboard"
+                                                    data-toggle="tooltip"
+                                                    data-placement="top"
+                                                    data-trigger="hover"
+                                                    data-delay="250"
+                                                    title="Copy to Clipboard"
+                                                    data-clipboard-text='<%# Eval( "RouteURL" ) %>'
+                                                    onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy to Clipboard');return false;">
+                                                <i class='fa fa-clipboard'></i> Copy Link
+                                            </button>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateFieldUnselected>
+                                </Columns>
+                            </Rock:Grid>
+                        </Content>
+                    </Rock:ModalDialog>
                 </ContentTemplate>
             </asp:UpdatePanel>
         </div>
