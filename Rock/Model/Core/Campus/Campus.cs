@@ -32,7 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Campus" )]
     [DataContract]
-    [CodeGenerateRest(DisableEntitySecurity = true )]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Analytics( false, true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CAMPUS )]
     public partial class Campus : Model<Campus>, IOrdered, ICacheable

@@ -40,10 +40,10 @@ namespace Rock.Rest.v2.Models
         /// <param name="value">The item to be created.</param>
         /// <returns>An object that contains the new identifier values.</returns>
         [HttpPost]
+        [Route( "" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [Route( "" )]
         [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]
