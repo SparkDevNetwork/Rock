@@ -900,6 +900,7 @@
     <Compile Include="Blocks\Types\Mobile\Crm\PersonProfile.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\LiveExperienceOccurrences.cs" />
     <Compile Include="Blocks\Types\Mobile\Events\LiveExperience.cs" />
+    <Compile Include="Blocks\Types\Mobile\Finance\TransactionDetail.cs" />
     <Compile Include="Blocks\Types\Mobile\Finance\ScheduledTransactionList.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupSchedulePreference.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleSignUp.cs" />

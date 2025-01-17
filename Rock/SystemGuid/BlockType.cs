@@ -395,9 +395,14 @@ namespace Rock.SystemGuid
         public const string MOBILE_CRM_GROUP_MEMBERS  = "1F1E7598-8D51-4750-8D61-E5791A226FDB";
 
         /// <summary>
-        /// The mobile scheduled transaction list &gt; <see cref="Rock.Blocks.Types.Mobile.Finances.ScheduledTransactionList">Group Members</see> block type.
+        /// The mobile scheduled transaction list &gt; <see cref="Rock.Blocks.Types.Mobile.Finance.ScheduledTransactionList">Group Members</see> block type.
         /// </summary>
         public const string MOBILE_FINANCE_SCHEDULED_TRANSACTION_LIST = "CAFF9FD9-A5DD-472B-B303-A53D94183568";
+
+        /// <summary>
+        /// The mobile transaction detail &gt; <see cref="Rock.Blocks.Types.Mobile.Finance.TransactionDetail">Group Members</see> block type.
+        /// </summary>
+        public const string MOBILE_FINANCE_TRANSACTION_DETAIL = "01A68151-30CC-4FBC-9FE5-2F20A2C1BB4F";
 
         #endregion
 
