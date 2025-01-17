@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Finance
@@ -38,5 +40,15 @@ namespace Rock.ViewModels.Finance
         /// </summary>
         /// <value>The image to be displayed to help identify the card.</value>
         public string Image { get; set; }
+
+        /// <summary>
+        /// Gets or sets the masked account number.
+        /// </summary>
+        public string AccountNumberMasked { get; set; }
+
+        /// <summary>
+        /// The Guid for the currency type of this account.
+        /// </summary>
+        public Guid? CurrencyTypeGuid { get; set; }
     }
 }

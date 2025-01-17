@@ -865,6 +865,7 @@
     <Compile Include="Blocks\Types\Mobile\Events\LiveExperience.cs" />
     <Compile Include="Blocks\Types\Mobile\Finance\TransactionDetail.cs" />
     <Compile Include="Blocks\Types\Mobile\Finance\ScheduledTransactionList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Finance\Giving.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupSchedulePreference.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleSignUp.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupFinder.cs" />
