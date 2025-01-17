@@ -45,6 +45,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
         "Enable Credit Card",
         Description = "Determines if adding a credit card payment method and processing a transaction with a credit card payment method is enabled.",
         Key = AttributeKey.EnableCreditCard,
+        DefaultBooleanValue = true,
         Order = 1 )]
 
     [BooleanField(
