@@ -74,11 +74,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>A bag that contains all the configuration items.</returns>
         [HttpPost]
+        [Route( "Configuration" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "Configuration" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ConfigurationResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "200dd82f-6532-4437-9ba4-a289408b0eb8" )]
         public IActionResult PostConfiguration( [FromBody] ConfigurationOptionsBag options )
         {
@@ -116,11 +117,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>A bag that contains the status.</returns>
         [HttpPost]
+        [Route( "KioskStatus" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "KioskStatus" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( KioskStatusResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "7fb87711-1ecf-49ca-90cb-3e2e1b02a933" )]
         public IActionResult PostKioskStatus( [FromBody] KioskStatusOptionsBag options )
         {
@@ -161,11 +163,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>A bag that contains all the matched families.</returns>
         [HttpPost]
+        [Route( "SearchForFamilies" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "SearchForFamilies" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( SearchForFamiliesResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "2c587733-0e08-4e93-8f2b-3e2518362768" )]
         public IActionResult PostSearchForFamilies( [FromBody] SearchForFamiliesOptionsBag options )
         {
@@ -219,11 +222,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>A bag that contains all the matched families.</returns>
         [HttpPost]
+        [Route( "FamilyMembers" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "FamilyMembers" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( FamilyMembersResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "2bd5afdf-da57-48bb-a6db-7dd9ad1ab8da" )]
         public IActionResult PostFamilyMembers( [FromBody] FamilyMembersOptionsBag options )
         {
@@ -280,11 +284,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>A bag that contains all the opportunities.</returns>
         [HttpPost]
+        [Route( "AttendeeOpportunities" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "AttendeeOpportunities" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AttendeeOpportunitiesResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "6e77e23d-cccb-46b7-a8e9-95706bbb269a" )]
         public IActionResult PostAttendeeOpportunities( [FromBody] AttendeeOpportunitiesOptionsBag options )
         {
@@ -343,11 +348,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>The results from the save operation.</returns>
         [HttpPost]
+        [Route( "SaveAttendance" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "SaveAttendance" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( SaveAttendanceResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "7ef059cb-99ba-4cf1-b7d5-3723eb320a99" )]
         public async Task<IActionResult> PostSaveAttendance( [FromBody] SaveAttendanceOptionsBag options )
         {
@@ -412,11 +418,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>The results from the confirm operation.</returns>
         [HttpPost]
+        [Route( "ConfirmAttendance" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "ConfirmAttendance" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ConfirmAttendanceResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "52070226-289b-442d-a8fe-a8323c0f922c" )]
         public async Task<IActionResult> PostConfirmAttendance( [FromBody] ConfirmAttendanceOptionsBag options )
         {
@@ -476,11 +483,12 @@ namespace Rock.Rest.v2
         /// <param name="options">The options that describe the request.</param>
         /// <returns>The results from the save operation.</returns>
         [HttpPost]
+        [Route( "Checkout" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "Checkout" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( CheckoutResponseBag ) )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "733be2ee-dec6-4f7f-92bd-df367c20543d" )]
         public async Task<IActionResult> PostCheckout( [FromBody] CheckoutOptionsBag options )
         {
@@ -527,11 +535,12 @@ namespace Rock.Rest.v2
         /// <param name="sessionGuid">The unique identifier of the session to delete attendance records for.</param>
         /// <returns>The results from the delete operation.</returns>
         [HttpDelete]
+        [Route( "PendingAttendance/{sessionGuid}" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "PendingAttendance/{sessionGuid}" )]
         [ProducesResponseType( HttpStatusCode.OK )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "f914ffc3-8587-493b-9c8a-ae196b5fe028" )]
         public IActionResult DeletePendingAttendance( Guid sessionGuid )
         {
@@ -560,6 +569,7 @@ namespace Rock.Rest.v2
         [Route( "CloudPrint/{deviceId}" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.SwitchingProtocols )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [SystemGuid.RestActionGuid( "1b4b1d0d-a872-40f7-a49d-666092cf8816" )]
         public IActionResult GetPrinterProxy( string deviceId, [FromQuery] string name = null )
         {

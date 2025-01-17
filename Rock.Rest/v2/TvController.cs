@@ -29,6 +29,8 @@ using System.Web;
 using System.Web.Http;
 #endif
 
+using Microsoft.AspNetCore.Mvc;
+
 using Newtonsoft.Json;
 
 using Rock;
@@ -42,14 +44,13 @@ using Rock.Tv.Classes;
 using Rock.Utility;
 using Rock.Web.Cache;
 
-using AppleTvPageSettings = Rock.Tv.AppleTvPageSettings;
-
 #if WEBFORMS
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
 using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
+using RouteAttribute = System.Web.Http.RouteAttribute;
 #endif
 
 namespace Rock.Rest.v2.Controllers
@@ -72,20 +73,22 @@ namespace Rock.Rest.v2.Controllers
         /// <summary>
         /// Get's the launch packet for the application
         /// </summary>
-        /// <seealso cref="Rock.Rest.ApiControllerBase" />
+        /// <returns>The data that describes the application launch details.</returns>
         [HttpGet]
+        [Route( "apple/GetLaunchPacket" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "apple/GetLaunchPacket" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AppleLaunchPacket ) )]
         [Rock.SystemGuid.RestActionGuid( "55D648CD-0533-4FE6-99B1-CE301728DB73" )]
         public IActionResult GetAppleLaunchPacket() => GetCommonLaunchPacket();
 
         /// <summary>
         /// Get's the launch packet for the application
         /// </summary>
-        /// <seealso cref="Rock.Rest.ApiControllerBase" />
+        /// <returns>The data that describes the application launch details.</returns>
         [HttpGet]
+        [Route( "roku/GetLaunchPacket" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "roku/GetLaunchPacket" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AppleLaunchPacket ) )]
         [Rock.SystemGuid.RestActionGuid( "1E8C3F94-98F0-4D2D-A2B3-FA304C77C7C0" )]
         public IActionResult GetRokuLaunchPacket() => GetCommonLaunchPacket();
 
@@ -94,10 +97,11 @@ namespace Rock.Rest.v2.Controllers
         /// querystring as this is not being called by the default HttpClient in the shell;
         /// </summary>
         /// <param name="applicationId">The application is (site id).</param>
-        /// <returns></returns>
+        /// <returns>The JavaScript that will drive the application.</returns>
         [HttpGet]
+        [Route( "apple/GetApplicationJavaScript/{applicationId}" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "apple/GetApplicationJavaScript/{applicationId}" )]
+        [ProducesResponseType( HttpStatusCode.OK, Description = "A raw string with the application JavaScript." )]
         [Rock.SystemGuid.RestActionGuid( "A3792A52-0F64-4F55-9C9C-7E02AA96D0F9" )]
         public HttpResponseMessage GetApplicationScript( int applicationId )
         {
@@ -133,10 +137,11 @@ namespace Rock.Rest.v2.Controllers
         /// Gets the TVML for the provided page.
         /// </summary>
         /// <param name="pageGuid">The page unique identifier.</param>
-        /// <returns></returns>
+        /// <returns>The TV Markup Language content for the requested page.</returns>
         [HttpGet]
+        [Route( "apple/GetTvmlForPage/{pageGuid}" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "apple/GetTvmlForPage/{pageGuid}" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AppleTvPageSettings ) )]
         [Rock.SystemGuid.RestActionGuid( "AE76F738-7380-48EB-85BD-C42102E2A4A0" )]
         public HttpResponseMessage GetTvmlForPage( Guid pageGuid )
         {
@@ -263,13 +268,14 @@ namespace Rock.Rest.v2.Controllers
         /// <summary>
         /// Posts the interactions.
         /// </summary>
-        /// <param name="sessions">The sessions.</param>
+        /// <param name="sessions">The sessions that need to be recorded as interactions..</param>
         /// <param name="personalDeviceGuid">The personal device unique identifier.</param>
-        /// <returns></returns>
-        [System.Web.Http.Route( "SaveInteractions/{personalDeviceGuid}" )]
+        /// <returns>An empty response.</returns>
         [HttpPost]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [Route( "SaveInteractions/{personalDeviceGuid}" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Description = "An empty response indicates the interactions were recorded." )]
         [Rock.SystemGuid.RestActionGuid( "624CDFBB-4688-4312-BCCD-4AEAABB49523" )]
         public IActionResult PostInteractions( [FromBody] List<TvInteractionSession> sessions, Guid? personalDeviceGuid = null )
         {
@@ -465,10 +471,12 @@ namespace Rock.Rest.v2.Controllers
         /// <summary>
         /// Starts the authentication session.
         /// </summary>
-        /// <returns></returns>
+        /// <param name="siteId">The identifier of the site/application that the authentication will be completed on.</param>
+        /// <returns>An object that can be used to start an authentication session.</returns>
         [HttpGet]
+        [Route( "StartAuthenticationSession/{siteId}" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "StartAuthenticationSession/{siteId}" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AuthCodeResponse ) )]
         [Rock.SystemGuid.RestActionGuid( "0747D3BF-8BCF-4C4D-A022-4158694DDB1B" )]
         public HttpResponseMessage StartAuthenicationSession( int siteId )
         {
@@ -562,11 +570,15 @@ namespace Rock.Rest.v2.Controllers
         /// Gets the Scenegraph Component Library that represents a page.
         /// </summary>
         /// <param name="pageGuid">The Guid of the page to load.</param>
+        /// <returns>A compressed ZIP file that contains the component library.</returns>
         [HttpGet]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "GetRokuPageComponent/{pageGuid}" )]
-        [Rock.SystemGuid.RestActionGuid( "103BA971-E7BB-41DE-A12A-1C8B8BF85AD7" )]
+        [Route( "GetRokuPageComponent/{pageGuid}" )]
         [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Description = "A zip-file that contains the components required for the page to load." )]
+        [ProducesResponseType( HttpStatusCode.NotFound, Description = "The requested page was not found." )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized, Description = "Authenticated user does not have access tot he requested page." )]
+        [Rock.SystemGuid.RestActionGuid( "103BA971-E7BB-41DE-A12A-1C8B8BF85AD7" )]
         public HttpResponseMessage GetRokuPageComponent( Guid pageGuid )
         {
             var response = new HttpResponseMessage();
@@ -714,10 +726,11 @@ namespace Rock.Rest.v2.Controllers
         /// </summary>
         /// <param name="siteId">The site identifier.</param>
         /// <param name="code">The code.</param>
-        /// <returns></returns>
+        /// <returns>An object that describes if the authentication was successful or not.</returns>
         [HttpGet]
+        [Route( "CheckAuthenticationSession/{siteId}/{code}" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "CheckAuthenticationSession/{siteId}/{code}" )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( AuthCodeCheckResponse ) )]
         [Rock.SystemGuid.RestActionGuid( "35C60489-936F-42F9-8617-18C959ABDB0C" )]
         public HttpResponseMessage CheckAuthenticationSession( int siteId, string code )
         {

@@ -54,9 +54,9 @@ namespace Rock.Rest.v2.Models.Actions
         /// </summary>
         /// <param name="id">The data view identifier as either an Id, Guid or IdKey value.</param>
         /// <param name="entityId">The entity identifier as either an Id, Guid or IdKey value.</param>
-        /// <returns>The action result.</returns>
-        [Route( "contains/{id}/{entityId}" )]
+        /// <returns>A response that indicates if the entity exists in the dataview.</returns>
         [HttpGet]
+        [Route( "contains/{id}/{entityId}" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE,  Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
@@ -110,9 +110,9 @@ namespace Rock.Rest.v2.Models.Actions
         /// </summary>
         /// <param name="id">The data view identifier as either an Id, Guid or IdKey value.</param>
         /// <param name="fullObjects">If <c>true</c> then the full objects will be returned instead of just identifiers.</param>
-        /// <returns>The action result.</returns>
-        [Route( "contents/{id}" )]
+        /// <returns>A response that contains the identifiers of the data view items.</returns>
         [HttpGet]
+        [Route( "contents/{id}" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
