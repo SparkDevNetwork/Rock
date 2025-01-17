@@ -225,8 +225,8 @@
                                                             <asp:LinkButton ID="lbBuilder" runat="server" Text="Builder" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' /> |
                                                             <asp:LinkButton ID="lbCommunications" runat="server" Text="Communications" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Communications" CommandArgument='<%# Eval( "Id" ) %>' /> |
                                                             <asp:LinkButton ID="lbSettings" runat="server" Text="Settings" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Settings" CommandArgument='<%# Eval( "Id" ) %>' /> |
-                                                            <asp:LinkButton ID="lbAnalytics" runat="server" Text="Analytics" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' />
-
+                                                            <asp:LinkButton ID="lbAnalytics" runat="server" Text="Analytics" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' /> |
+                                                            <asp:LinkButton ID="lbLinkToForm" runat="server" Text="Link To Form" CssClass="btn btn-link btn-sm btn-link-spaced" CommandName="LinkToForm" CommandArgument='<%# Eval( "Id" ) %>' />
                                                         </div>
                                                         <div class="text-nowrap">
                                                             <asp:LinkButton ID="lbDelete" runat="server" CssClass="btn btn-sm py-0 btn-link text-muted" data-toggle="tooltip" data-trigger="hover" data-delay="250" title="Delete form and all submissions." OnClientClick="return Rock.dialogs.confirmDelete(event, 'Form');" CommandName="Delete" CommandArgument='<%# Eval( "Id" ) %>' ><i class="fa fa-trash-alt"></i></asp:LinkButton>
@@ -280,6 +280,33 @@
                             </div>
                         </asp:Panel>
                     </div>
+                    <Rock:ModalDialog ID="mdLinkToFormModal" runat="server" Title="Link To Form" CancelLinkVisible="false" OnSaveClick="mdLinkToFormModal_SaveClick" SaveButtonText="Close" >
+                        <Content>
+                            <h3>Select a Page for Form Link</h3>
+                            <p>Choose a page from the list below to generate a link for the form. Once selected, you can copy and use the link as needed.</p>
+                            <Rock:Grid ID="gPages" runat="server" DisplayType="Light" RowItemText="Page">
+                                <Columns>
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Page Name" />
+                                    <Rock:RockBoundField DataField="Site" HeaderText="Site" />
+                                    <Rock:RockBoundField DataField="Route" HeaderText="Route" />
+                                    <Rock:RockTemplateFieldUnselected>
+                                        <ItemTemplate>
+                                            <button class="btn btn-default js-copy-clipboard"
+                                                    data-toggle="tooltip"
+                                                    data-placement="top"
+                                                    data-trigger="hover"
+                                                    data-delay="250"
+                                                    title="Copy to Clipboard"
+                                                    data-clipboard-text='<%# Eval( "RouteURL" ) %>'
+                                                    onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy to Clipboard');return false;">
+                                                <i class='fa fa-clipboard'></i> Copy Link
+                                            </button>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateFieldUnselected>
+                                </Columns>
+                            </Rock:Grid>
+                        </Content>
+                    </Rock:ModalDialog>
                 </ContentTemplate>
             </asp:UpdatePanel>
         </div>
