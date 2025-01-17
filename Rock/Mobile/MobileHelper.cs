@@ -555,6 +555,18 @@ namespace Rock.Mobile
                 package.AppearanceSettings.PaletteColors.Add( "app-primary-strong", applicationColors.PrimaryStrong );
                 package.AppearanceSettings.PaletteColors.Add( "app-secondary-soft", applicationColors.SecondarySoft );
                 package.AppearanceSettings.PaletteColors.Add( "app-secondary-strong", applicationColors.SecondaryStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-brand-soft", applicationColors.BrandSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-brand-strong", applicationColors.BrandStrong );
+
+                // Functional Colors
+                package.AppearanceSettings.PaletteColors.Add( "app-success-soft", applicationColors.SuccessSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-success-strong", applicationColors.SuccessStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-info-soft", applicationColors.InfoSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-info-strong", applicationColors.InfoStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-danger-soft", applicationColors.DangerSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-danger-strong", applicationColors.DangerStrong );
+                package.AppearanceSettings.PaletteColors.Add( "app-warning-soft", applicationColors.WarningSoft );
+                package.AppearanceSettings.PaletteColors.Add( "app-warning-strong", applicationColors.WarningStrong );
 
                 // This helps maintain backward compatibility.
                 // If someone uses a palette color that no longer exists,
