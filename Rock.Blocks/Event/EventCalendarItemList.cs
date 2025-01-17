@@ -194,6 +194,7 @@ namespace Rock.Blocks.Event
             return new GridBuilder<EventCalendarItem>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "eventItemIdKey", a => a.EventItem.IdKey )
                 .AddDateTimeField( "date", a => a.EventItem?.NextStartDateTime )
                 .AddTextField( "name", a => a.EventItem?.Name )
                 .AddField( "occurrences", a => GetOccurrences( a.EventItem ) )
