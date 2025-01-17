@@ -23,15 +23,15 @@ using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.ViewModels.Rest.Models;
 
-namespace Rock.Rest.v2.Models
-{
 #if WEBFORMS
-    using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
-    using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
-    using IActionResult = System.Web.Http.IHttpActionResult;
-    using RouteAttribute = System.Web.Http.RouteAttribute;
+using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
+using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
+using IActionResult = System.Web.Http.IHttpActionResult;
+using RouteAttribute = System.Web.Http.RouteAttribute;
 #endif
 
+namespace Rock.Rest.v2.Models
+{
     public partial class EventItemsController : ApiControllerBase
     {
         /// <summary>
