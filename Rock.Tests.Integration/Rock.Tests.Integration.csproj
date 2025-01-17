@@ -54,8 +54,8 @@
     <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\packages\Castle.Core.4.4.0\lib\net45\Castle.Core.dll</HintPath>
     </Reference>
-    <Reference Include="CsvHelper">
-      <HintPath>..\RockWeb\Bin\CsvHelper.dll</HintPath>
+    <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsvHelper.2.16.3.0\lib\net45\CsvHelper.dll</HintPath>
     </Reference>
     <Reference Include="Docker.DotNet, Version=3.125.0.0, Culture=neutral, PublicKeyToken=e628c633e2cf4146, processorArchitecture=MSIL">
       <HintPath>..\packages\Docker.DotNet.3.125.15\lib\netstandard2.0\Docker.DotNet.dll</HintPath>
