@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Reflection;
 
 using Rock.Attribute;
 using Rock.CheckIn;
@@ -53,7 +54,7 @@ namespace Rock.Blocks.CheckIn.Config
 
     [SystemGuid.EntityTypeGuid( "7d1dec32-3a94-45b4-b567-48d9478041b9" )]
     [SystemGuid.BlockTypeGuid( "7ea2e093-2f33-4213-a33e-9e9a7a760181" )]
-    public class CheckinTypeDetail : RockDetailBlockType
+    public class CheckinTypeDetail : RockEntityDetailBlockType<GroupType, CheckinTypeBag>
     {
         #region Keys
 
@@ -80,18 +81,14 @@ namespace Rock.Blocks.CheckIn.Config
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<CheckinTypeBag, CheckinTypeDetailOptionsBag>();
+            var box = new DetailBlockBox<CheckinTypeBag, CheckinTypeDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.Options = GetBoxOptions();
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<GroupType>();
+            box.Options = GetBoxOptions();
+            box.NavigationUrls = GetBoxNavigationUrls();
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -112,6 +109,7 @@ namespace Rock.Blocks.CheckIn.Config
                 TemplateDisplayOptions = typeof( SuccessLavaTemplateDisplayMode ).ToEnumListItemBag(),
                 HidePanel = string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.CheckinTypeId ) ),
                 NameSearch = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() ).ToListItemBag(),
+                ValidProperties = GetValidProperties( new CheckinTypeBag() )
             };
 
             return options;
@@ -212,10 +210,9 @@ namespace Rock.Blocks.CheckIn.Config
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="groupType">The GroupType to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the GroupType is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateGroupType( GroupType groupType, RockContext rockContext, out string errorMessage )
+        private bool ValidateGroupType( GroupType groupType, out string errorMessage )
         {
             errorMessage = null;
 
@@ -227,10 +224,9 @@ namespace Rock.Blocks.CheckIn.Config
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<CheckinTypeBag, CheckinTypeDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<CheckinTypeBag, CheckinTypeDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -240,15 +236,14 @@ namespace Rock.Blocks.CheckIn.Config
 
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
-                    box.Entity = GetEntityBagForView( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity = GetEntityBagForView( entity );
                 }
                 else
                 {
@@ -260,14 +255,15 @@ namespace Rock.Blocks.CheckIn.Config
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity = GetEntityBagForEdit( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( GroupType.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -291,13 +287,8 @@ namespace Rock.Blocks.CheckIn.Config
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <param name="rockContext">The rockContext.</param>
-        /// <returns>A <see cref="CheckinTypeBag"/> that represents the entity.</returns>
-        private CheckinTypeBag GetEntityBagForView( GroupType entity, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override CheckinTypeBag GetEntityBagForView( GroupType entity )
         {
             if ( entity == null )
             {
@@ -306,7 +297,7 @@ namespace Rock.Blocks.CheckIn.Config
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.ScheduledTimes = GetScheduleTimes( entity, rockContext );
+            bag.ScheduledTimes = GetScheduleTimes( entity );
 
             if ( entity.AttributeValues.ContainsKey( "core_checkin_CheckInType" ) )
             {
@@ -335,13 +326,12 @@ namespace Rock.Blocks.CheckIn.Config
         /// Gets the schedule times.
         /// </summary>
         /// <param name="groupType">The GroupType entity.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        private string GetScheduleTimes( GroupType groupType, RockContext rockContext )
+        private string GetScheduleTimes( GroupType groupType )
         {
-            var descendantGroupTypeIds = new GroupTypeService( rockContext ).GetCheckinAreaDescendants( groupType.Id ).Select( a => a.Id );
-            return new GroupLocationService( rockContext )
+            var descendantGroupTypeIds = new GroupTypeService( RockContext ).GetCheckinAreaDescendants( groupType.Id ).Select( a => a.Id );
+            return new GroupLocationService( RockContext )
                 .Queryable().AsNoTracking()
                 .Where( a =>
                     a.Group.GroupType.Id == groupType.Id ||
@@ -355,13 +345,8 @@ namespace Rock.Blocks.CheckIn.Config
                 .AsDelimited( ", " );
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>A <see cref="CheckinTypeBag"/> that represents the entity.</returns>
-        private CheckinTypeBag GetEntityBagForEdit( GroupType entity, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override CheckinTypeBag GetEntityBagForEdit( GroupType entity )
         {
             if ( entity == null )
             {
@@ -375,7 +360,7 @@ namespace Rock.Blocks.CheckIn.Config
             bag.DisplaySettings = GetDisplaySettings( entity );
             bag.GeneralSettings = GetGeneralSettings( entity );
             bag.HeaderText = GetHeaderText( entity );
-            bag.RegistrationSettings = GetRegistrationSettings( entity, rockContext );
+            bag.RegistrationSettings = GetRegistrationSettings( entity );
             bag.SearchSettings = GetSearchSettings( entity );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, false, attributeFilter: IsAttributeIncluded );
@@ -404,11 +389,10 @@ namespace Rock.Blocks.CheckIn.Config
         /// Gets the registration settings.
         /// </summary>
         /// <param name="groupType">The GroupType entity.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private CheckInRegistrationSettingsBag GetRegistrationSettings( GroupType groupType, RockContext rockContext )
+        private CheckInRegistrationSettingsBag GetRegistrationSettings( GroupType groupType )
         {
-            var workflowTypeService = new WorkflowTypeService( rockContext );
+            var workflowTypeService = new WorkflowTypeService( RockContext );
 
             var bag = new CheckInRegistrationSettingsBag()
             {
@@ -573,14 +557,8 @@ namespace Rock.Blocks.CheckIn.Config
             return !excludeList.Contains( attribute.Key );
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( GroupType entity, DetailBlockBox<CheckinTypeBag, CheckinTypeDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( GroupType entity, ValidPropertiesBox<CheckinTypeBag> box )
         {
             if ( box.ValidProperties == null )
             {
@@ -593,251 +571,246 @@ namespace Rock.Blocks.CheckIn.Config
             // However, because this block is rather complex/specific, it would not be a supported configuration to have a non-Obsidian
             // implementation talk to the server so the risk for this specific block is minimal.
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.IconCssClass ),
-                () => entity.IconCssClass = box.Entity.IconCssClass );
+            box.IfValidProperty( nameof( box.Bag.IconCssClass ),
+                () => entity.IconCssClass = box.Bag.IconCssClass );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
             // Advanced Settings
-            box.IfValidProperty( nameof( box.Entity.AdvancedSettings.AbilityLevelDetermination ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION, box.Entity.AdvancedSettings.AbilityLevelDetermination ) );
+            box.IfValidProperty( nameof( box.Bag.AdvancedSettings.AbilityLevelDetermination ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION, box.Bag.AdvancedSettings.AbilityLevelDetermination ) );
 
-            box.IfValidProperty( nameof( box.Entity.AdvancedSettings.AgeRequired ),
-                () => entity.SetAttributeValue( "core_checkin_AgeRequired", box.Entity.AdvancedSettings.AgeRequired.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.AdvancedSettings.AgeRequired ),
+                () => entity.SetAttributeValue( "core_checkin_AgeRequired", box.Bag.AdvancedSettings.AgeRequired.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.AdvancedSettings.DisplayLocCount ),
-                () => entity.SetAttributeValue( "core_checkin_DisplayLocationCount", box.Entity.AdvancedSettings.DisplayLocCount.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.AdvancedSettings.DisplayLocCount ),
+                () => entity.SetAttributeValue( "core_checkin_DisplayLocationCount", box.Bag.AdvancedSettings.DisplayLocCount.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.AdvancedSettings.GradeRequired ),
-                () => entity.SetAttributeValue( "core_checkin_GradeRequired", box.Entity.AdvancedSettings.GradeRequired.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.AdvancedSettings.GradeRequired ),
+                () => entity.SetAttributeValue( "core_checkin_GradeRequired", box.Bag.AdvancedSettings.GradeRequired.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.AdvancedSettings.RefreshInterval ),
-                () => entity.SetAttributeValue( "core_checkin_RefreshInterval", box.Entity.AdvancedSettings.RefreshInterval.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.AdvancedSettings.RefreshInterval ),
+                () => entity.SetAttributeValue( "core_checkin_RefreshInterval", box.Bag.AdvancedSettings.RefreshInterval.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.AdvancedSettings.SearchRegex ),
-                () => entity.SetAttributeValue( "core_checkin_RegularExpressionFilter", box.Entity.AdvancedSettings.SearchRegex ) );
+            box.IfValidProperty( nameof( box.Bag.AdvancedSettings.SearchRegex ),
+                () => entity.SetAttributeValue( "core_checkin_RegularExpressionFilter", box.Bag.AdvancedSettings.SearchRegex ) );
 
-            box.IfValidProperty( nameof( box.Entity.AdvancedSettings.SpecialNeedsValues ),
+            box.IfValidProperty( nameof( box.Bag.AdvancedSettings.SpecialNeedsValues ),
                 () =>
                 {
-                    var specialNeedsValues = box.Entity.AdvancedSettings.SpecialNeedsValues ?? new List<string>();
+                    var specialNeedsValues = box.Bag.AdvancedSettings.SpecialNeedsValues ?? new List<string>();
                     entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_SPECIAL_NEEDS_GROUPS, specialNeedsValues.Contains( "special-needs" ).ToString() );
                     entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS, specialNeedsValues.Contains( "non-special-needs" ).ToString() );
                 } );
 
             // Barcode Settings
-            box.IfValidProperty( nameof( box.Entity.BarcodeSettings.CodeAlphaLength ),
-                () => entity.SetAttributeValue( "core_checkin_SecurityCodeAlphaLength", box.Entity.BarcodeSettings.CodeAlphaLength.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.BarcodeSettings.CodeAlphaLength ),
+                () => entity.SetAttributeValue( "core_checkin_SecurityCodeAlphaLength", box.Bag.BarcodeSettings.CodeAlphaLength.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.BarcodeSettings.CodeAlphaNumericLength ),
-                () => entity.SetAttributeValue( "core_checkin_SecurityCodeLength", box.Entity.BarcodeSettings.CodeAlphaNumericLength.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.BarcodeSettings.CodeAlphaNumericLength ),
+                () => entity.SetAttributeValue( "core_checkin_SecurityCodeLength", box.Bag.BarcodeSettings.CodeAlphaNumericLength.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.BarcodeSettings.CodeNumericLength ),
-                () => entity.SetAttributeValue( "core_checkin_SecurityCodeNumericLength", box.Entity.BarcodeSettings.CodeNumericLength.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.BarcodeSettings.CodeNumericLength ),
+                () => entity.SetAttributeValue( "core_checkin_SecurityCodeNumericLength", box.Bag.BarcodeSettings.CodeNumericLength.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.BarcodeSettings.CodeRandom ),
-                () => entity.SetAttributeValue( "core_checkin_SecurityCodeNumericRandom", box.Entity.BarcodeSettings.CodeRandom.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.BarcodeSettings.CodeRandom ),
+                () => entity.SetAttributeValue( "core_checkin_SecurityCodeNumericRandom", box.Bag.BarcodeSettings.CodeRandom.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.BarcodeSettings.ReuseCode ),
-                () => entity.SetAttributeValue( "core_checkin_ReuseSameCode", box.Entity.BarcodeSettings.ReuseCode.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.BarcodeSettings.ReuseCode ),
+                () => entity.SetAttributeValue( "core_checkin_ReuseSameCode", box.Bag.BarcodeSettings.ReuseCode.ToString() ) );
 
             // Display Settings
-            box.IfValidProperty( nameof( box.Entity.DisplaySettings.FamilySelectTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE, box.Entity.DisplaySettings.FamilySelectTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.DisplaySettings.FamilySelectTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_FAMILYSELECT_LAVA_TEMPLATE, box.Bag.DisplaySettings.FamilySelectTemplate ) );
 
-            box.IfValidProperty( nameof( box.Entity.DisplaySettings.HidePhotos ),
-                () => entity.SetAttributeValue( "core_checkin_HidePhotos", box.Entity.DisplaySettings.HidePhotos.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.DisplaySettings.HidePhotos ),
+                () => entity.SetAttributeValue( "core_checkin_HidePhotos", box.Bag.DisplaySettings.HidePhotos.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.DisplaySettings.PersonSelectTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE, box.Entity.DisplaySettings.PersonSelectTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.DisplaySettings.PersonSelectTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_ADDITIONAL_INFORMATION_LAVA_TEMPLATE, box.Bag.DisplaySettings.PersonSelectTemplate ) );
 
-            box.IfValidProperty( nameof( box.Entity.DisplaySettings.StartTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_START_LAVA_TEMPLATE, box.Entity.DisplaySettings.StartTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.DisplaySettings.StartTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_START_LAVA_TEMPLATE, box.Bag.DisplaySettings.StartTemplate ) );
 
-            box.IfValidProperty( nameof( box.Entity.DisplaySettings.SuccessTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE, box.Entity.DisplaySettings.SuccessTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.DisplaySettings.SuccessTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE, box.Bag.DisplaySettings.SuccessTemplate ) );
 
-            box.IfValidProperty( nameof( box.Entity.DisplaySettings.SuccessTemplateOverrideDisplayMode ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE, box.Entity.DisplaySettings.SuccessTemplateOverrideDisplayMode ) );
+            box.IfValidProperty( nameof( box.Bag.DisplaySettings.SuccessTemplateOverrideDisplayMode ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE, box.Bag.DisplaySettings.SuccessTemplateOverrideDisplayMode ) );
 
             // General Settings
-            box.IfValidProperty( nameof( box.Entity.GeneralSettings.AchievementTypes ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES, box.Entity.GeneralSettings.AchievementTypes.AsDelimited( "," ) ) );
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.AchievementTypes ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES, box.Bag.GeneralSettings.AchievementTypes.AsDelimited( "," ) ) );
 
-            box.IfValidProperty( nameof( box.Entity.GeneralSettings.AllowCheckoutAtKiosk ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK, box.Entity.GeneralSettings.AllowCheckoutAtKiosk.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.AllowCheckoutAtKiosk ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK, box.Bag.GeneralSettings.AllowCheckoutAtKiosk.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.GeneralSettings.AllowCheckoutInManager ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER, box.Entity.GeneralSettings.AllowCheckoutInManager.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.AllowCheckoutInManager ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER, box.Bag.GeneralSettings.AllowCheckoutInManager.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.GeneralSettings.AutoSelectDaysBack ),
-                () => entity.SetAttributeValue( "core_checkin_AutoSelectDaysBack", box.Entity.GeneralSettings.AutoSelectDaysBack ) );
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.AutoSelectDaysBack ),
+                () => entity.SetAttributeValue( "core_checkin_AutoSelectDaysBack", box.Bag.GeneralSettings.AutoSelectDaysBack ) );
 
-            box.IfValidProperty( nameof( box.Entity.GeneralSettings.AutoSelectOptions ),
-                () => entity.SetAttributeValue( "core_checkin_AutoSelectOptions", box.Entity.GeneralSettings.AutoSelectOptions ) );
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.AutoSelectOptions ),
+                () => entity.SetAttributeValue( "core_checkin_AutoSelectOptions", box.Bag.GeneralSettings.AutoSelectOptions ) );
 
-            box.IfValidProperty( nameof( box.Entity.GeneralSettings.CheckInType ),
-                () => entity.SetAttributeValue( "core_checkin_CheckInType", box.Entity.GeneralSettings.CheckInType ) );
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.CheckInType ),
+                () => entity.SetAttributeValue( "core_checkin_CheckInType", box.Bag.GeneralSettings.CheckInType ) );
 
-            box.IfValidProperty( nameof( box.Entity.GeneralSettings.EnableManager ),
-                () => entity.SetAttributeValue( "core_checkin_EnableManagerOption", box.Entity.GeneralSettings.EnableManager.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.EnableManager ),
+                () => entity.SetAttributeValue( "core_checkin_EnableManagerOption", box.Bag.GeneralSettings.EnableManager.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.GeneralSettings.EnableOverride ),
-                () => entity.SetAttributeValue( "core_checkin_EnableOverride", box.Entity.GeneralSettings.EnableOverride.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.EnableOverride ),
+                () => entity.SetAttributeValue( "core_checkin_EnableOverride", box.Bag.GeneralSettings.EnableOverride.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.GeneralSettings.EnablePresence ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE, box.Entity.GeneralSettings.EnablePresence.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.EnablePresence ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE, box.Bag.GeneralSettings.EnablePresence.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.GeneralSettings.PreventDuplicateCheckin ),
-                () => entity.SetAttributeValue( "core_checkin_PreventDuplicateCheckin", box.Entity.GeneralSettings.PreventDuplicateCheckin.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.PreventDuplicateCheckin ),
+                () => entity.SetAttributeValue( "core_checkin_PreventDuplicateCheckin", box.Bag.GeneralSettings.PreventDuplicateCheckin.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.GeneralSettings.PreventInactivePeople ),
-                () => entity.SetAttributeValue( "core_checkin_PreventInactivePeople", box.Entity.GeneralSettings.PreventInactivePeople.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.PreventInactivePeople ),
+                () => entity.SetAttributeValue( "core_checkin_PreventInactivePeople", box.Bag.GeneralSettings.PreventInactivePeople.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.GeneralSettings.UseSameOptions ),
-                () => entity.SetAttributeValue( "core_checkin_UseSameOptions", box.Entity.GeneralSettings.UseSameOptions.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.UseSameOptions ),
+                () => entity.SetAttributeValue( "core_checkin_UseSameOptions", box.Bag.GeneralSettings.UseSameOptions.ToString() ) );
 
             // Header Text
-            box.IfValidProperty( nameof( box.Entity.HeaderText.AbilityLevelSelectHeaderTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ABILITY_LEVEL_SELECT_HEADER_LAVA_TEMPLATE, box.Entity.HeaderText.AbilityLevelSelectHeaderTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.HeaderText.AbilityLevelSelectHeaderTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ABILITY_LEVEL_SELECT_HEADER_LAVA_TEMPLATE, box.Bag.HeaderText.AbilityLevelSelectHeaderTemplate ) );
 
-            box.IfValidProperty( nameof( box.Entity.HeaderText.ActionSelectHeaderTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ACTION_SELECT_HEADER_LAVA_TEMPLATE, box.Entity.HeaderText.ActionSelectHeaderTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.HeaderText.ActionSelectHeaderTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_ACTION_SELECT_HEADER_LAVA_TEMPLATE, box.Bag.HeaderText.ActionSelectHeaderTemplate ) );
 
-            box.IfValidProperty( nameof( box.Entity.HeaderText.CheckoutPersonSelectHeaderTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_CHECKOUT_PERSON_SELECT_HEADER_LAVA_TEMPLATE, box.Entity.HeaderText.CheckoutPersonSelectHeaderTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.HeaderText.CheckoutPersonSelectHeaderTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_CHECKOUT_PERSON_SELECT_HEADER_LAVA_TEMPLATE, box.Bag.HeaderText.CheckoutPersonSelectHeaderTemplate ) );
 
-            box.IfValidProperty( nameof( box.Entity.HeaderText.GroupSelectHeaderTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_SELECT_HEADER_LAVA_TEMPLATE, box.Entity.HeaderText.GroupSelectHeaderTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.HeaderText.GroupSelectHeaderTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_SELECT_HEADER_LAVA_TEMPLATE, box.Bag.HeaderText.GroupSelectHeaderTemplate ) );
 
-            box.IfValidProperty( nameof( box.Entity.HeaderText.GroupTypeSelectHeaderTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_TYPE_SELECT_HEADER_LAVA_TEMPLATE, box.Entity.HeaderText.GroupTypeSelectHeaderTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.HeaderText.GroupTypeSelectHeaderTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUP_TYPE_SELECT_HEADER_LAVA_TEMPLATE, box.Bag.HeaderText.GroupTypeSelectHeaderTemplate ) );
 
-            box.IfValidProperty( nameof( box.Entity.HeaderText.LocationSelectHeaderTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_LOCATION_SELECT_HEADER_LAVA_TEMPLATE, box.Entity.HeaderText.LocationSelectHeaderTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.HeaderText.LocationSelectHeaderTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_LOCATION_SELECT_HEADER_LAVA_TEMPLATE, box.Bag.HeaderText.LocationSelectHeaderTemplate ) );
 
-            box.IfValidProperty( nameof( box.Entity.HeaderText.MultiPersonSelectHeaderTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_MULTI_PERSON_SELECT_HEADER_LAVA_TEMPLATE, box.Entity.HeaderText.MultiPersonSelectHeaderTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.HeaderText.MultiPersonSelectHeaderTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_MULTI_PERSON_SELECT_HEADER_LAVA_TEMPLATE, box.Bag.HeaderText.MultiPersonSelectHeaderTemplate ) );
 
-            box.IfValidProperty( nameof( box.Entity.HeaderText.PersonSelectHeaderTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_HEADER_LAVA_TEMPLATE, box.Entity.HeaderText.PersonSelectHeaderTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.HeaderText.PersonSelectHeaderTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_PERSON_SELECT_HEADER_LAVA_TEMPLATE, box.Bag.HeaderText.PersonSelectHeaderTemplate ) );
 
-            box.IfValidProperty( nameof( box.Entity.HeaderText.TimeSelectHeaderTemplate ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_TIME_SELECT_HEADER_LAVA_TEMPLATE, box.Entity.HeaderText.TimeSelectHeaderTemplate ) );
+            box.IfValidProperty( nameof( box.Bag.HeaderText.TimeSelectHeaderTemplate ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_TIME_SELECT_HEADER_LAVA_TEMPLATE, box.Bag.HeaderText.TimeSelectHeaderTemplate ) );
 
             // Registration Settings
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.CanCheckInKnownRelationshipTypes ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES, box.Entity.RegistrationSettings.CanCheckInKnownRelationshipTypes.AsDelimited( "," ) ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.CanCheckInKnownRelationshipTypes ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES, box.Bag.RegistrationSettings.CanCheckInKnownRelationshipTypes.AsDelimited( "," ) ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.EnableCheckInAfterRegistration ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ENABLECHECKINAFTERREGISTRATION, box.Entity.RegistrationSettings.EnableCheckInAfterRegistration.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.EnableCheckInAfterRegistration ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ENABLECHECKINAFTERREGISTRATION, box.Bag.RegistrationSettings.EnableCheckInAfterRegistration.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.KnownRelationshipTypes ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_KNOWNRELATIONSHIPTYPES, box.Entity.RegistrationSettings.KnownRelationshipTypes.AsDelimited( "," ) ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.KnownRelationshipTypes ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_KNOWNRELATIONSHIPTYPES, box.Bag.RegistrationSettings.KnownRelationshipTypes.AsDelimited( "," ) ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationAddFamilyWorkflowTypes ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDFAMILYWORKFLOWTYPES, box.Entity.RegistrationSettings.RegistrationAddFamilyWorkflowTypes.ConvertAll( wft => wft.Value ).AsDelimited( "," ) ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationAddFamilyWorkflowTypes ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDFAMILYWORKFLOWTYPES, box.Bag.RegistrationSettings.RegistrationAddFamilyWorkflowTypes.ConvertAll( wft => wft.Value ).AsDelimited( "," ) ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationAddPersonWorkflowTypes ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDPERSONWORKFLOWTYPES, box.Entity.RegistrationSettings.RegistrationAddPersonWorkflowTypes.ConvertAll( wft => wft.Value ).AsDelimited( "," ) ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationAddPersonWorkflowTypes ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_ADDPERSONWORKFLOWTYPES, box.Bag.RegistrationSettings.RegistrationAddPersonWorkflowTypes.ConvertAll( wft => wft.Value ).AsDelimited( "," ) ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationDisplayAlternateIdFieldForAdults ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS, box.Entity.RegistrationSettings.RegistrationDisplayAlternateIdFieldForAdults.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDisplayAlternateIdFieldForAdults ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORADULTS, box.Bag.RegistrationSettings.RegistrationDisplayAlternateIdFieldForAdults.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationDisplayAlternateIdFieldForChildren ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN, box.Entity.RegistrationSettings.RegistrationDisplayAlternateIdFieldForChildren.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDisplayAlternateIdFieldForChildren ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYALTERNATEIDFIELDFORCHILDREN, box.Bag.RegistrationSettings.RegistrationDisplayAlternateIdFieldForChildren.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationDisplayBirthdateOnAdults ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS, box.Entity.RegistrationSettings.RegistrationDisplayBirthdateOnAdults ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDisplayBirthdateOnAdults ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS, box.Bag.RegistrationSettings.RegistrationDisplayBirthdateOnAdults ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationDisplayBirthdateOnChildren ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN, box.Entity.RegistrationSettings.RegistrationDisplayBirthdateOnChildren ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDisplayBirthdateOnChildren ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONCHILDREN, box.Bag.RegistrationSettings.RegistrationDisplayBirthdateOnChildren ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationDisplayEthnicityOnAdults ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONADULTS, box.Entity.RegistrationSettings.RegistrationDisplayEthnicityOnAdults ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDisplayEthnicityOnAdults ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONADULTS, box.Bag.RegistrationSettings.RegistrationDisplayEthnicityOnAdults ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationDisplayEthnicityOnChildren ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONCHILDREN, box.Entity.RegistrationSettings.RegistrationDisplayEthnicityOnChildren ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDisplayEthnicityOnChildren ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYETHNICITYONCHILDREN, box.Bag.RegistrationSettings.RegistrationDisplayEthnicityOnChildren ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationDisplayGradeOnChildren ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN, box.Entity.RegistrationSettings.RegistrationDisplayGradeOnChildren ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDisplayGradeOnChildren ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYGRADEONCHILDREN, box.Bag.RegistrationSettings.RegistrationDisplayGradeOnChildren ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationDisplayRaceOnAdults ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONADULTS, box.Entity.RegistrationSettings.RegistrationDisplayRaceOnAdults ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDisplayRaceOnAdults ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONADULTS, box.Bag.RegistrationSettings.RegistrationDisplayRaceOnAdults ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationDisplayRaceOnChildren ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONCHILDREN, box.Entity.RegistrationSettings.RegistrationDisplayRaceOnChildren ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDisplayRaceOnChildren ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYRACEONCHILDREN, box.Bag.RegistrationSettings.RegistrationDisplayRaceOnChildren ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationDisplaySmsEnabled ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYSMSBUTTON, box.Entity.RegistrationSettings.RegistrationDisplaySmsEnabled.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDisplaySmsEnabled ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYSMSBUTTON, box.Bag.RegistrationSettings.RegistrationDisplaySmsEnabled.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationOptionalAttributesForAdults ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORADULTS, box.Entity.RegistrationSettings.RegistrationOptionalAttributesForAdults.AsDelimited( "," ) ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationOptionalAttributesForAdults ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORADULTS, box.Bag.RegistrationSettings.RegistrationOptionalAttributesForAdults.AsDelimited( "," ) ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationOptionalAttributesForChildren ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORCHILDREN, box.Entity.RegistrationSettings.RegistrationOptionalAttributesForChildren.AsDelimited( "," ) ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationOptionalAttributesForChildren ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORCHILDREN, box.Bag.RegistrationSettings.RegistrationOptionalAttributesForChildren.AsDelimited( "," ) ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationOptionalAttributesForFamilies ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORFAMILIES, box.Entity.RegistrationSettings.RegistrationOptionalAttributesForFamilies.AsDelimited( "," ) ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationOptionalAttributesForFamilies ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_OPTIONALATTRIBUTESFORFAMILIES, box.Bag.RegistrationSettings.RegistrationOptionalAttributesForFamilies.AsDelimited( "," ) ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationRequiredAttributesForAdults ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORADULTS, box.Entity.RegistrationSettings.RegistrationRequiredAttributesForAdults.AsDelimited( "," ) ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationRequiredAttributesForAdults ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORADULTS, box.Bag.RegistrationSettings.RegistrationRequiredAttributesForAdults.AsDelimited( "," ) ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationRequiredAttributesForChildren ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORCHILDREN, box.Entity.RegistrationSettings.RegistrationRequiredAttributesForChildren.AsDelimited( "," ) ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationRequiredAttributesForChildren ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORCHILDREN, box.Bag.RegistrationSettings.RegistrationRequiredAttributesForChildren.AsDelimited( "," ) ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationRequiredAttributesForFamilies ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORFAMILIES, box.Entity.RegistrationSettings.RegistrationRequiredAttributesForFamilies.AsDelimited( "," ) ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationRequiredAttributesForFamilies ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_REQUIREDATTRIBUTESFORFAMILIES, box.Bag.RegistrationSettings.RegistrationRequiredAttributesForFamilies.AsDelimited( "," ) ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationSmsEnabledByDefault ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTSMSENABLED, box.Entity.RegistrationSettings.RegistrationSmsEnabledByDefault.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationSmsEnabledByDefault ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTSMSENABLED, box.Bag.RegistrationSettings.RegistrationSmsEnabledByDefault.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.SameFamilyKnownRelationshipTypes ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_SAMEFAMILYKNOWNRELATIONSHIPTYPES, box.Entity.RegistrationSettings.SameFamilyKnownRelationshipTypes.AsDelimited( "," ) ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.SameFamilyKnownRelationshipTypes ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_SAMEFAMILYKNOWNRELATIONSHIPTYPES, box.Bag.RegistrationSettings.SameFamilyKnownRelationshipTypes.AsDelimited( "," ) ) );
 
-            box.IfValidProperty( nameof( box.Entity.RegistrationSettings.RegistrationDefaultPersonConnectionStatus ),
-                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS, box.Entity.RegistrationSettings.RegistrationDefaultPersonConnectionStatus.Value ) );
+            box.IfValidProperty( nameof( box.Bag.RegistrationSettings.RegistrationDefaultPersonConnectionStatus ),
+                () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_DEFAULTPERSONCONNECTIONSTATUS, box.Bag.RegistrationSettings.RegistrationDefaultPersonConnectionStatus.Value ) );
 
             // Search Settings
-            box.IfValidProperty( nameof( box.Entity.SearchSettings.MaxPhoneLength ),
-                () => entity.SetAttributeValue( "core_checkin_MaximumPhoneSearchLength", box.Entity.SearchSettings.MaxPhoneLength.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.SearchSettings.MaxPhoneLength ),
+                () => entity.SetAttributeValue( "core_checkin_MaximumPhoneSearchLength", box.Bag.SearchSettings.MaxPhoneLength.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.SearchSettings.MaxResults ),
-                () => entity.SetAttributeValue( "core_checkin_MaxSearchResults", box.Entity.SearchSettings.MaxResults.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.SearchSettings.MaxResults ),
+                () => entity.SetAttributeValue( "core_checkin_MaxSearchResults", box.Bag.SearchSettings.MaxResults.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.SearchSettings.MinPhoneLength ),
-                () => entity.SetAttributeValue( "core_checkin_MinimumPhoneSearchLength", box.Entity.SearchSettings.MinPhoneLength.ToString() ) );
+            box.IfValidProperty( nameof( box.Bag.SearchSettings.MinPhoneLength ),
+                () => entity.SetAttributeValue( "core_checkin_MinimumPhoneSearchLength", box.Bag.SearchSettings.MinPhoneLength.ToString() ) );
 
-            box.IfValidProperty( nameof( box.Entity.SearchSettings.PhoneSearchType ),
-                () => entity.SetAttributeValue( "core_checkin_PhoneSearchType", box.Entity.SearchSettings.PhoneSearchType ) );
+            box.IfValidProperty( nameof( box.Bag.SearchSettings.PhoneSearchType ),
+                () => entity.SetAttributeValue( "core_checkin_PhoneSearchType", box.Bag.SearchSettings.PhoneSearchType ) );
 
-            box.IfValidProperty( nameof( box.Entity.SearchSettings.SearchType ),
-                () => entity.SetAttributeValue( "core_checkin_SearchType", box.Entity.SearchSettings.SearchType ) );
+            box.IfValidProperty( nameof( box.Bag.SearchSettings.SearchType ),
+                () => entity.SetAttributeValue( "core_checkin_SearchType", box.Bag.SearchSettings.SearchType ) );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, attributeFilter: IsAttributeIncluded );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, attributeFilter: IsAttributeIncluded );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="GroupType"/> to be viewed or edited on the page.</returns>
-        private GroupType GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override GroupType GetInitialEntity()
         {
-            var entity = GetInitialEntity<GroupType, GroupTypeService>( rockContext, PageParameterKey.CheckinTypeId );
+            var entity = GetInitialEntity<GroupType, GroupTypeService>( RockContext, PageParameterKey.CheckinTypeId );
 
-            if ( entity != null && entity.Id == 0 )
+            if ( entity?.Id == 0 )
             {
                 var templatePurpose = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
                 entity.GroupTypePurposeValueId = templatePurpose?.Id;
@@ -865,46 +838,9 @@ namespace Rock.Blocks.CheckIn.Config
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out GroupType entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( GroupType entity )
-        {
-            var securityGrant = new SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out GroupType entity, out BlockActionResult error )
-        {
-            var entityService = new GroupTypeService( rockContext );
+            var entityService = new GroupTypeService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -1018,6 +954,42 @@ namespace Rock.Blocks.CheckIn.Config
             return excludeList;
         }
 
+        /// <summary>
+        /// Searchs the bag's properties and nested properties for values that can be updated.
+        /// </summary>
+        /// <param name="bag">The CheckinTypeBag</param>
+        /// <returns></returns>
+        private List<string> GetValidProperties( CheckinTypeBag bag )
+        {
+            var validProperties = new List<string>();
+
+            var properties = bag.GetType().GetProperties();
+
+            AddValidProperties( validProperties, properties );
+
+            return validProperties;
+        }
+
+        /// <summary>
+        /// Adds the property names of the selected properties, if any if them is a nested class its property names are added.
+        /// </summary>
+        /// <param name="validProperties">The current selection of valid properties</param>
+        /// <param name="properties">The properties to be evaluated</param>
+        /// <returns></returns>
+        private static void AddValidProperties( List<string> validProperties, PropertyInfo[] properties )
+        {
+            foreach ( var propertyInfo in properties )
+            {
+                var propertyType = propertyInfo.PropertyType;
+                if ( propertyType.IsClass && !propertyType.IsGenericType && propertyType != typeof( string ) && propertyType != typeof( ListItemBag ) )
+                {
+                    AddValidProperties( validProperties, propertyInfo.PropertyType.GetProperties() );
+                }
+
+                validProperties.Add( propertyInfo.Name );
+            }
+        }
+
         #endregion
 
         #region Block Actions
@@ -1031,22 +1003,20 @@ namespace Rock.Blocks.CheckIn.Config
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<CheckinTypeBag, CheckinTypeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<CheckinTypeBag>()
+            {
+                Bag = bag,
+                ValidProperties = GetValidProperties( bag )
+            } );
         }
 
         /// <summary>
@@ -1055,62 +1025,65 @@ namespace Rock.Blocks.CheckIn.Config
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<CheckinTypeBag, CheckinTypeDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<CheckinTypeBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new GroupTypeService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new GroupTypeService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                var isNew = entity.Id == 0;
-
-                if ( isNew )
-                {
-                    var templatePurpose = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
-                    if ( templatePurpose != null )
-                    {
-                        entity.GroupTypePurposeValueId = templatePurpose.Id;
-                    }
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateGroupType( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.CheckinTypeId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity, rockContext ) );
+                return actionError;
             }
+
+            var isNew = entity.Id == 0;
+
+            if ( isNew )
+            {
+                var templatePurpose = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid() );
+                if ( templatePurpose != null )
+                {
+                    entity.GroupTypePurposeValueId = templatePurpose.Id;
+                }
+            }
+
+            entity.LoadAttributes( RockContext );
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateGroupType( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.CheckinTypeId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForView( entity );
+
+            return ActionOk( new ValidPropertiesBox<CheckinTypeBag>()
+            {
+                Bag = bag,
+                ValidProperties = GetValidProperties( bag )
+            } );
         }
 
         /// <summary>
@@ -1121,87 +1094,30 @@ namespace Rock.Blocks.CheckIn.Config
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new GroupTypeService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new GroupTypeService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                var pageRef = new Rock.Web.PageReference( PageCache.Id );
-                var routeId = PageCache.PageRoutes.FirstOrDefault()?.Id;
-
-                if ( routeId.HasValue )
-                {
-                   pageRef.RouteId = routeId.Value;
-                }
-
-                return ActionOk( pageRef.BuildUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<CheckinTypeBag, CheckinTypeDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<CheckinTypeBag, CheckinTypeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            var pageRef = new Rock.Web.PageReference( PageCache.Id );
+            var routeId = PageCache.PageRoutes.FirstOrDefault()?.Id;
+
+            if ( routeId.HasValue )
+            {
+                pageRef.RouteId = routeId.Value;
+            }
+
+            return ActionOk( pageRef.BuildUrl() );
         }
 
         #endregion
