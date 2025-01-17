@@ -128,7 +128,11 @@ namespace Rock.UniversalSearch.Crawler
                 CrawlPage( url );
             }
 
-            return _previouslyCrawledPages.Count;
+            // Return the count of page hashes as these are the pages that we're actually indexed. The
+            // "Previously Crawled Pages" includes pages that were not indexed as they were not in the
+            // same domain or were discovered more than once.
+            
+            return _pageHashes.Count;
         }
 
         /// <summary>
