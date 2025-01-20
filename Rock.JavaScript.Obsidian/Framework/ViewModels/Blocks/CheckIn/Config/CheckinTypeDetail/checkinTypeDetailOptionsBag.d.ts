@@ -51,4 +51,10 @@ export type CheckinTypeDetailOptionsBag = {
 
     /** Gets or sets the template display options. */
     templateDisplayOptions?: ListItemBag[] | null;
+
+    /**
+     * Gets or sets the valid properties. Due to the nested nature of the CheckInTypeBag valid properties from the server is added here
+     * to be used when adding a new configuration is being created since a request to the Edit endpoint won't be made.
+     */
+    validProperties?: string[] | null;
 };
