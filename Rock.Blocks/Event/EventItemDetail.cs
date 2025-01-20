@@ -346,7 +346,7 @@ namespace Rock.Blocks.Event
         {
             var entity = GetInitialEntity<EventItem, EventItemService>( rockContext, PageParameterKey.EventItemId );
 
-            if ( entity.Id == 0 )
+            if ( entity?.Id == 0 )
             {
                 var idParam = PageParameter( PageParameterKey.EventCalendarId );
                 var calendarId = IdHasher.Instance.GetId( idParam ) ?? PageParameter( PageParameterKey.EventCalendarId ).AsIntegerOrNull();
