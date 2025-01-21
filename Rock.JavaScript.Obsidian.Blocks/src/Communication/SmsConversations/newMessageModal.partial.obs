@@ -3,7 +3,8 @@
            title="New Message"
            cancelText="Cancel"
            saveText="Send"
-           @save="onSave">
+           @save="onSave"
+           @closeModal="resetForm">
         <NotificationBox v-if="errorMessage"
                          alertType="warning"
                          :dismissible="true"
@@ -83,10 +84,17 @@
             recipientPersonAliasIdKey: newRecipient.value?.value
         };
 
+        resetForm();
         emit("save", bag);
     }
 
     function onMessageDismissed(): void {
         emit("dismissMessage");
+    }
+
+    function resetForm(): void {
+        newRecipient.value = undefined;
+        newMessageText.value = "";
+        image.value = undefined;
     }
 </script>
