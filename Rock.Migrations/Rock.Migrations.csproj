@@ -144,6 +144,10 @@
     <Compile Include="Migrations\202501171949509_FixAdaptiveMessagesAttributeKey.designer.cs">
       <DependentUpon>202501171949509_FixAdaptiveMessagesAttributeKey.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202501211620250_TvApplicationPages.cs" />
+    <Compile Include="Migrations\202501211620250_TvApplicationPages.Designer.cs">
+      <DependentUpon>202501211620250_TvApplicationPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2473,6 +2477,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202501171949509_FixAdaptiveMessagesAttributeKey.resx">
       <DependentUpon>202501171949509_FixAdaptiveMessagesAttributeKey.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501211620250_TvApplicationPages.resx">
+      <DependentUpon>202501211620250_TvApplicationPages.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
