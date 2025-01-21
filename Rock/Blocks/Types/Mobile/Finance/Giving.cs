@@ -1520,6 +1520,11 @@ namespace Rock.Blocks.Types.Mobile.Finance
         [BlockAction]
         public BlockActionResult GetInitialData()
         {
+            if( FinancialGateway == null )
+            {
+                return ActionBadRequest( "The Giving block is only compatible with the MyWell gateway." );
+            }
+
             return ActionOk( GetGivingData() );
         }
 
