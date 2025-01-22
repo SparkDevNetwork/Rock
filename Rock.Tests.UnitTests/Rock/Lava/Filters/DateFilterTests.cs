@@ -24,7 +24,6 @@ using Ical.Net.CalendarComponents;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.UnitTests.Lava
@@ -1143,12 +1142,6 @@ namespace Rock.Tests.UnitTests.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                // The RockLiquid engine cannot process the DateTimeOffset variable type.
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    return;
-                }
-
                 // First, verify that the Lava filter returns "tomorrow" for a DateTimeOffset that resolves to Rock time 1:00am tomorrow.
                 var datetimeInput = LavaDateTime.ConvertToRockOffset( tomorrow );
 
@@ -1489,7 +1482,6 @@ namespace Rock.Tests.UnitTests.Lava
 
         /// <summary>
         /// Using a DateTimeOffset type as the filter input should return a result that accounts for the input time offset.
-        /// This test only applies to the Fluid engine. The RockLiquid engine does not process DataTimeOffset values correctly.
         /// </summary>
         [TestMethod]
         public void HumanizeDateTime_WithDateTimeOffsetAsInput_AdjustsResultForOffset()
@@ -1617,12 +1609,6 @@ namespace Rock.Tests.UnitTests.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                // The RockLiquid engine cannot process the DateTimeOffset variable type.
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    return;
-                }
-
                 // First, verify that the Lava filter returns a predictable result for input expressed in local server time.
                 var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
 
@@ -1757,12 +1743,6 @@ namespace Rock.Tests.UnitTests.Lava
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                // The RockLiquid engine cannot process the DateTimeOffset variable type.
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    return;
-                }
-
                 // First, verify that the Lava filter returns a predictable result for input expressed in local server time.
                 var datetimeInput = new DateTimeOffset( 2020, 5, 15, 1, 0, 0, localOffset );
 

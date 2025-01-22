@@ -314,7 +314,6 @@
     <Compile Include="Modules\Core\Lava\Blocks\KioskTests.cs" />
     <Compile Include="Modules\Core\Lava\Blocks\PersonalizationTests.cs" />
     <Compile Include="Modules\Core\Lava\Commands\RockEntityTests.cs" />
-    <Compile Include="Modules\Core\Lava\DotLiquid\RockLiquidTests.cs" />
     <Compile Include="Modules\Core\Lava\Engine\EntityPropertyAccessTests.cs" />
     <Compile Include="Modules\Core\Lava\Engine\ConfigurationTests.cs" />
     <Compile Include="Modules\Core\Lava\Engine\InMemoryTemplateCacheService.cs" />
@@ -444,10 +443,6 @@
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
       <Project>{61dece2b-0434-435e-8d65-49a4fdf98365}</Project>
       <Name>Rock.Enums</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
-      <Project>{79AA470A-DC63-4CB4-B0B6-77285F60C69B}</Project>
-      <Name>Rock.Lava.DotLiquid</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj">
       <Project>{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}</Project>

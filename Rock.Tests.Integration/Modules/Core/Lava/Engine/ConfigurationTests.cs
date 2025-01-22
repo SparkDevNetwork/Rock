@@ -25,9 +25,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Lava;
-using Rock.Lava.DotLiquid;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Tests.Shared;
 
@@ -197,12 +195,6 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 
             TestHelper.ExecuteForActiveEngines( ( defaultEngineInstance ) =>
             {
-                if ( defaultEngineInstance.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    Debug.Write( "Template caching cannot be tested by this methodology for the RockLiquid implementation." );
-                    return;
-                }
-
                 // Remove all existing items from the cache.
                 cacheService.ClearCache();
 
@@ -260,13 +252,6 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 
             TestHelper.ExecuteForActiveEngines( ( defaultEngineInstance ) =>
             {
-                if ( defaultEngineInstance.GetType() == typeof( DotLiquidEngine )
-                     || defaultEngineInstance.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    Debug.Write( "Shortcode caching is not currently implemented for RockLiquid/DotLiquid." );
-                    return;
-                }
-
                 var engine = LavaService.NewEngineInstance( defaultEngineInstance.GetType(), options );
 
                 var shortcodeProvider = new TestLavaDynamicShortcodeProvider();

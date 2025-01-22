@@ -134,8 +134,6 @@ Property Filter: 1
              * 
              * Resolution: This issue is caused by the inadequacy of Regex to encapsulate the complex logic required to identify comments vs literal text.
              * This issue has been fixed for the Fluid Engine by implementing shorthand comments in the custom parser.
-             * A fix for DotLiquid would require additional work to replace Regex with a custom parser to strip comments from the source template,
-             * which is not justified because the DotLiquid engine will be removed in v17.
              */
 
             var template = @"

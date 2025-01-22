@@ -21,7 +21,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
-using Rock.Lava.RockLiquid;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
@@ -449,12 +448,6 @@ Iteration: {{ iteration }}
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    TestHelper.DebugWriteRenderResult( engine, "(Ignored)", "(Ignored)" );
-                    return;
-                }
-
                 Action<int, string> renderAction = ( x, input ) =>
                        {
                            var context = new LavaDataDictionary();

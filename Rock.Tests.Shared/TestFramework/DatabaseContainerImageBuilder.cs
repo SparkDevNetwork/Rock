@@ -250,9 +250,8 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
 
             // Initialize the Lava Engine first, because it is needed by
             // the sample data loader.
-            LavaIntegrationTestHelper.Initialize( testRockLiquidEngine: false, testDotLiquidEngine: false, testFluidEngine: true, loadShortcodes: false );
+            LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: false );
             LavaIntegrationTestHelper.GetEngineInstance( typeof( Rock.Lava.Fluid.FluidEngine ) );
-            Rock.Lava.LavaService.RockLiquidIsEnabled = false;
 
             // Make sure all Entity Types are registered.
             // This is necessary because some components are only registered at runtime,

@@ -250,8 +250,6 @@ namespace Rock.Tests.Shared
         /// </summary>
         public static class LavaEngines
         {
-            public const string RockLiquid = "7CE5A54A-54DC-464A-83EE-659658134239";
-            public const string DotLiquid = "165E5E74-4923-4E25-B330-A27DB3A59CE7";
             public const string Fluid = "605445FE-6ECC-4E67-9A95-98F7173F7389";
 
         }

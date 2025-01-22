@@ -42,13 +42,13 @@ namespace Rock.Tests.UnitTests.Lava
 
         }
 
-        public new static void Initialize( bool testRockLiquidEngine, bool testDotLiquidEngine, bool testFluidEngine )
+        public new static void Initialize( bool testFluidEngine )
         {
             _instance = new LavaUnitTestHelper();
 
             var helper = ( LavaTestHelper ) _instance;
 
-            helper.Initialize( testRockLiquidEngine, testDotLiquidEngine, testFluidEngine );
+            helper.Initialize( testFluidEngine );
         }
 
         #region Test Data
@@ -188,70 +188,6 @@ namespace Rock.Tests.UnitTests.Lava
             public override string ToString()
             {
                 return $"{NickName} {LastName}";
-            }
-        }
-
-        #endregion
-
-        #region RockLiquid Data Objects
-
-        /// <summary>
-        /// Return a collection of initialized Person objects for the Decker family.
-        /// </summary>
-        /// <returns></returns>
-        public List<TestPersonRockLiquid> GetTestPersonCollectionForDeckerRockLiquid()
-        {
-            var personList = new List<TestPersonRockLiquid>();
-
-            personList.Add( GetTestPersonTedDeckerRockLiquid() );
-            personList.Add( new TestPersonRockLiquid { FirstName = "Cindy", NickName = "Cindy", LastName = "Decker", Id = 2 } );
-            personList.Add( new TestPersonRockLiquid { FirstName = "Noah", NickName = "Noah", LastName = "Decker", Id = 3 } );
-            personList.Add( new TestPersonRockLiquid { FirstName = "Alex", NickName = "Alex", LastName = "Decker", Id = 4 } );
-
-            return personList;
-        }
-
-
-        /// <summary>
-        /// Return an initialized Person object for test subject Ted Decker.
-        /// </summary>
-        /// <returns></returns>
-        public TestPersonRockLiquid GetTestPersonTedDeckerRockLiquid()
-        {
-            var campus = new TestCampusRockLiquid { Name = "North Campus", Id = 1 };
-            var person = new TestPersonRockLiquid { FirstName = "Edward", NickName = "Ted", LastName = "Decker", Campus = campus, Id = 1 };
-
-            return person;
-        }
-
-        /// <summary>
-        /// A representation of a Person used for testing purposes.
-        /// </summary>
-        public class TestPersonRockLiquid : RockDynamic
-        {
-            public int Id { get; set; }
-            public string NickName { get; set; }
-            public string FirstName { get; set; }
-            public string LastName { get; set; }
-            public TestCampusRockLiquid Campus { get; set; }
-
-            public override string ToString()
-            {
-                return $"{NickName} {LastName}";
-            }
-        }
-
-        /// <summary>
-        /// A representation of a Campus used for testing purposes.
-        /// </summary>
-        public class TestCampusRockLiquid : RockDynamic
-        {
-            public int Id { get; set; }
-            public string Name { get; set; }
-
-            public override string ToString()
-            {
-                return Name;
             }
         }
 

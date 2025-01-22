@@ -1260,25 +1260,5 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         #endregion
-
-        #region Lava Test helper methods
-
-        private static ILavaEngine _lavaEngine = null;
-
-        private static void AssertTemplateResult( string expected, string template )
-        {
-            // Tests in this class are only compatible with the DotLiquid engine.
-            // If/when these tests are reworked for the Fluid engine, they should be moved to the Rock.Tests.UnitTests.Lava namespace.
-            if ( _lavaEngine == null )
-            {
-                _lavaEngine = LavaService.NewEngineInstance( typeof( global::Rock.Lava.DotLiquid.DotLiquidEngine ), new LavaEngineConfigurationOptions() );
-            }
-
-            var result = _lavaEngine.RenderTemplate( template );
-
-            Assert.That.AreEqual( expected, result.Text );
-        }
-
-        #endregion
     }
 }
