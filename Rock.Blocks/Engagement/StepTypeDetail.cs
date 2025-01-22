@@ -333,7 +333,7 @@ namespace Rock.Blocks.Engagement
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             var defaultDateRange = GetDefaultDateRange();
 
@@ -426,7 +426,7 @@ namespace Rock.Blocks.Engagement
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             bag.PreRequisites = entity.StepTypePrerequisites.Select( p => p.PrerequisiteStepType.Guid.ToString() ).ToList();
             bag.AvailablePreRequisites = GetPrerequisiteStepsList();
@@ -516,7 +516,7 @@ namespace Rock.Blocks.Engagement
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;

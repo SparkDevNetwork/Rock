@@ -206,7 +206,7 @@ namespace Rock.Core
             this.InteractionDateTime = info.InteractionDateTime;
             this.Operation = info.InteractionOperation;
             this.InteractionComponentId = info.InteractionComponentId ?? 0;
-            this.EntityId = info.ComponentEntityId;
+            this.EntityId = info.InteractionEntityId;
             this.RelatedEntityTypeId = info.InteractionRelatedEntityTypeId;
             this.RelatedEntityId = info.InteractionRelatedEntityId;
             this.PersonAliasId = info.PersonAliasId;

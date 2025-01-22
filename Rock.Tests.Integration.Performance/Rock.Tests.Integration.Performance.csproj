@@ -324,10 +324,6 @@
       <Project>{61DECE2B-0434-435E-8D65-49A4FDF98365}</Project>
       <Name>Rock.Enums</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
-      <Project>{79AA470A-DC63-4CB4-B0B6-77285F60C69B}</Project>
-      <Name>Rock.Lava.DotLiquid</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj">
       <Project>{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}</Project>
       <Name>Rock.Lava.Fluid</Name>

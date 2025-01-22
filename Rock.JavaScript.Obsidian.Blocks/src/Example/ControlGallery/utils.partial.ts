@@ -81,10 +81,11 @@ export function convertComponentName(name: string | undefined | null): string {
  *
  * @param elementName The name of the element to use in the example code.
  * @param attributes The attribute names and values to append to the element name.
+ * @param allFalseByDefault If true then all attributes will be considered false by default, so they'll only show up as 'flag' props if they are set to true.
  *
  * @returns A string of valid HTML content for how to use the component.
  */
-export function buildExampleCode(elementName: string, attributes: Record<string, Ref<unknown> | unknown>): string {
+export function buildExampleCode(elementName: string, attributes: Record<string, Ref<unknown> | unknown>, allFalseByDefault: boolean = false): string {
     const attrs: string[] = [];
 
     for (const attr in attributes) {
@@ -101,7 +102,12 @@ export function buildExampleCode(elementName: string, attributes: Record<string,
             attrs.push(`:${attr}="${value}"`);
         }
         else if (typeof value === "boolean") {
-            attrs.push(`:${attr}="${value ? "true" : "false"}"`);
+            if (allFalseByDefault && value === true) {
+                attrs.push(attr);
+            }
+            else if (!allFalseByDefault) {
+                attrs.push(`:${attr}="${value ? "true" : "false"}"`);
+            }
         }
         else if (value === undefined || value === null) {
             /* Do nothing */

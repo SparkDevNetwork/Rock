@@ -16,11 +16,9 @@
 //
 using System;
 using System.Linq;
-using DotLiquid;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Tests.Integration.TestData;
 using Rock.Web.Cache;
@@ -118,24 +116,7 @@ namespace Rock.Tests.Integration.Shortcode
         public void RegisterDynamicShortcodeForLavaEngine( ILavaEngine engine, LavaShortcode shortcode )
         {
             // Register the new shortcode definition.
-            if ( engine.GetType() == typeof( RockLiquidEngine ) )
-            {
-                // Register the new shortcode definition. Note that RockLiquid shortcode tags are case-sensitive.
-                if ( shortcode.TagType == TagType.Block )
-                {
-                    Template.RegisterShortcode<Rock.Lava.Shortcodes.DynamicShortcodeBlock>( shortcode.TagName );
-                }
-                else
-                {
-                    Template.RegisterShortcode<Rock.Lava.Shortcodes.DynamicShortcodeInline>( shortcode.TagName );
-                }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-                // This obsolete code can be deleted when support for the DotLiquid Lava implementation is removed.
-                LavaTemplateCache.Clear();
-#pragma warning restore CS0618 // Type or member is obsolete
-            }
-            else if ( engine.GetType() == typeof( FluidEngine ) )
+            if ( engine.GetType() == typeof( FluidEngine ) )
             {
                 // Register the new shortcode definition.
                 engine.RegisterShortcode( shortcode.TagName, ( shortcodeName ) => WebsiteLavaShortcodeProvider.GetShortcodeDefinition( shortcodeName ) );

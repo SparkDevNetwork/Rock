@@ -1098,8 +1098,8 @@ namespace Rock.Blocks.Security
                 currentPerson.LoadAttributes( rockContext );
 
                 accountEntryPersonInfoBag = accountEntryPersonInfoBag ?? new AccountEntryPersonInfoBag();
-                accountEntryPersonInfoBag.Attributes = currentPerson.GetPublicAttributesForEdit( currentPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ), enforceSecurity: false );
-                accountEntryPersonInfoBag.AttributeValues = currentPerson.GetPublicAttributeValuesForEdit( currentPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ), enforceSecurity: false );
+                accountEntryPersonInfoBag.Attributes = currentPerson.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) );
+                accountEntryPersonInfoBag.AttributeValues = currentPerson.GetPublicAttributeValuesForEdit( currentPerson, enforceSecurity: false, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) );
             }
 
             return new AccountEntryInitializationBox

@@ -234,7 +234,7 @@ namespace Rock.Blocks.Event
                 bag.PhotoUrl = string.Empty;
             }
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -254,7 +254,7 @@ namespace Rock.Blocks.Event
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             var eventAttributes = GetEventAttributes( rockContext, entity.Id.ToString() );
             bag.EventOccurenceAttributes = eventAttributes.ConvertAll( e => new EventItemOccurenceAttributeBag()
@@ -330,7 +330,7 @@ namespace Rock.Blocks.Event
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -593,7 +593,7 @@ namespace Rock.Blocks.Event
                         EventCalendarGuid = eventCalendarItem.EventCalendar?.Guid ?? eventCalendarService.Get( eventCalendarItem.EventCalendarId ).Guid,
                         EventCalendarName = eventCalendarItem.EventCalendar?.Name ?? eventCalendarService.Get( eventCalendarItem.EventCalendarId ).Name,
                         Attributes = eventCalendarItem.GetPublicAttributesForView( GetCurrentPerson(), true ),
-                        AttributeValues = eventCalendarItem.GetPublicAttributeValuesForEdit( GetCurrentPerson(), true )
+                        AttributeValues = eventCalendarItem.GetPublicAttributeValuesForEdit( GetCurrentPerson(), enforceSecurity: true )
                     };
 
                     attributeBags.Add( attributeBag );

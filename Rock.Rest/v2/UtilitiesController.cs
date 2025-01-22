@@ -23,6 +23,7 @@ using Rock.Web.Cache;
 #if WEBFORMS
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
+using RouteAttribute = System.Web.Http.RouteAttribute;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
 #endif
 
@@ -41,7 +42,7 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <returns>A List of <see cref="ListItemBag"/> objects that represent all the folders.</returns>
         [HttpPost]
-        [System.Web.Http.Route( "GetImageFileExtensions" )]
+        [Route( "GetImageFileExtensions" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "D0609BC8-CFDB-426C-A2A2-2685BEB63527" )]

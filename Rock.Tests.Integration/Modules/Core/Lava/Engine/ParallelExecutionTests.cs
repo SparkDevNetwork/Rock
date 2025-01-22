@@ -21,7 +21,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
-using Rock.Lava.RockLiquid;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
@@ -42,12 +41,6 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                // This test is not applicable to the RockLiquid engine implementation.
-                if ( engine.GetType() == typeof ( RockLiquidEngine ) )
-                {
-                    return;
-                }
-
                 var methodInfo = this.GetType().GetMethod( "ThreadAbortFilter" );
 
                 engine.RegisterFilter( methodInfo, "Abort" );
@@ -112,12 +105,6 @@ Font Bold: true
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    TestHelper.DebugWriteRenderResult( engine, "(Ignored)", "(Ignored)" );
-                    return;
-                }
-
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 100 };
@@ -194,12 +181,6 @@ Panel 3 - Panel 3 content.
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    TestHelper.DebugWriteRenderResult( engine, "(Ignored)", "(Ignored)" );
-                    return;
-                }
-
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 10 };

@@ -67,9 +67,9 @@ namespace Rock.Rest.v2.Models.Actions
         /// </remarks>
         /// <param name="workflowTypeId">The workflow type identifier as either an Id, Guid or IdKey value.</param>
         /// <param name="request">The details describing how the workflow should be launched.</param>
-        /// <returns>The action result.</returns>
-        [Route( "launch/{workflowTypeId}" )]
+        /// <returns>A response that indicates if the workflow was launched.</returns>
         [HttpPost]
+        [Route( "launch/{workflowTypeId}" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]

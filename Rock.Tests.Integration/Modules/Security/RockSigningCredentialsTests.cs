@@ -32,6 +32,7 @@ namespace Rock.Tests.Integration.Modules.Security
     public class RockSigningCredentialsTests : DatabaseTestsBase
     {
         [TestMethod]
+        [IsolatedTestDatabase]
         public void RockSigningCredentials_CreatingANewObjectShouldAlwaysHaveASigningKey()
         {
             var rockContext = new RockContext();
@@ -48,6 +49,7 @@ namespace Rock.Tests.Integration.Modules.Security
         }
 
         [TestMethod]
+        [IsolatedTestDatabase]
         public void RockSigningCredentials_ShouldReturnTheActiveSigningKey()
         {
             var keyCreatedDate = DateTime.UtcNow.AddDays( -15 );
@@ -75,6 +77,7 @@ namespace Rock.Tests.Integration.Modules.Security
         }
 
         [TestMethod]
+        [IsolatedTestDatabase]
         public void RockSigningCredentials_AddANewKeyWhenTheOldKeyHasExpired()
         {
             var keyCreatedDate = DateTime.UtcNow.AddHours( -26 );
@@ -106,6 +109,7 @@ namespace Rock.Tests.Integration.Modules.Security
         }
 
         [TestMethod]
+        [IsolatedTestDatabase]
         public void RockSigningCredentials_RemoveKeyWhenTheOldKeyHasExpiredAndPassedMaxLifetime()
         {
             var rockOidcSettings = RockOidcSettings.GetDefaultSettings();

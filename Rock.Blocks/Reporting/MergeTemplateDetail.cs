@@ -31,6 +31,7 @@ using Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Reporting
 {
@@ -246,7 +247,7 @@ namespace Rock.Blocks.Reporting
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -296,7 +297,7 @@ namespace Rock.Blocks.Reporting
                 bag.IsPersonRequired = false;
             }
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -338,7 +339,7 @@ namespace Rock.Blocks.Reporting
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             if ( entity.CategoryId == 0 && entity.PersonAliasId.HasValue )
@@ -369,9 +370,32 @@ namespace Rock.Blocks.Reporting
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            string url;
+            var categoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+
+            if ( categoryId.HasValue )
+            {
+                // Cancelling on Add, and we know the categoryId, so we are probably in treeview mode, so navigate to the current page
+                var qryParams = new Dictionary<string, string>();
+                if ( categoryId != 0 )
+                {
+                    qryParams[PageParameterKey.CategoryId] = categoryId.ToString();
+                }
+
+                qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+
+                var pageReference = new PageReference( PageCache.Id, 0, qryParams );
+
+                url = pageReference.BuildUrl();
+            }
+            else
+            {
+                url = this.GetParentPageUrl();
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = url
             };
         }
 

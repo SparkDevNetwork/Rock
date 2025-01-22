@@ -1199,7 +1199,7 @@ namespace Rock.Blocks.Lms
                 entity.LoadAttributes( RockContext );
 
                 // Set the attribute values from the bag.
-                entity.SetPublicAttributeValues( participantBag.AttributeValues, RequestContext.CurrentPerson );
+                entity.SetPublicAttributeValues( participantBag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
             }
 
             RockContext.SaveChanges();

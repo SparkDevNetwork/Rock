@@ -44,7 +44,7 @@ namespace Rock.DownhillCss
         private static CssUtilitiesInternal Instance { get; set; }
 
         /// <summary>
-        /// Builds the Downhill CSS framework.\
+        /// Builds the Downhill CSS framework.
         /// </summary>
         /// <param name="settings"></param>
         /// <returns></returns>
@@ -787,6 +787,12 @@ icon {
 
 .link {
     color: ?color-primary-strong;
+}
+
+/*** Switch ***/
+^switch {
+    color: ?color-primary-strong;
+    /* maui-thumb-color: ?color-primary-soft; */
 }
 
 /*** Buttons ***/

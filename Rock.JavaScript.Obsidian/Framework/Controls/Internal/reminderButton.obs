@@ -2,7 +2,7 @@
 <template>
     <RockButton type="button" isSquare @click="showModal" title="Add Reminder" :btnSize="btnSize"><i class="fa fa-bell"></i></RockButton>
 
-    <Modal v-model="isModalShown" :title="reminderTitle" :saveText="hasFetchError ? '' : saveText" @save="saveForm" :isSaveButtonDisabled="isSaving">
+    <Modal v-model="isModalShown" :title="reminderTitle" :saveText="hasFetchError ? '' : saveText" @save="saveForm" @closeModal="resetForm" :isSaveButtonDisabled="isSaving">
         <Loading :isLoading="isLoading">
             <NotificationBox v-if="hasFetchError" alertType="danger" :heading="`Error Getting Reminders`">
                 <p class="d-flex align-items-center">
@@ -405,6 +405,7 @@
             value: pageState.currentPerson?.guid,
             text: pageState.currentPerson?.fullName
         } : {};
+        areAdditionalOptionsShown.value = false;
     }
 
     // #endregion

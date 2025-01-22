@@ -29,6 +29,9 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The SMS Conversations Initialization Box */
 export type SmsConversationsInitializationBox = {
+    /** Gets or sets the value indicating whether the logged in person can Edit or Administrate. */
+    canEditOrAdministrate: boolean;
+
     /** Gets or sets the list of Conversations */
     conversations?: ConversationBag[] | null;
 

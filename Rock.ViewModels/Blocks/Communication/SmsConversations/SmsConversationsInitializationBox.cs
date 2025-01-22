@@ -61,5 +61,10 @@ namespace Rock.ViewModels.Blocks.Communication.SmsConversations
         /// Gets or sets the error message, if any.
         /// </summary>
         public string ErrorMessage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value indicating whether the logged in person can Edit or Administrate.
+        /// </summary>
+        public bool CanEditOrAdministrate { get; set; }
     }
 }

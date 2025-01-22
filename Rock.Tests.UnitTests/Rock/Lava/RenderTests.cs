@@ -17,7 +17,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Tests.Shared;
 
@@ -96,18 +95,6 @@ Lava Error: Unknown tag 'assignnnnn' at (1:14)
             var result = fluidEngine.RenderTemplate( template );
             Assert.IsTrue( result.HasErrors );
             Assert.That.AreEqualIgnoreWhitespace( expectedOutputFluid, result.Text );
-
-            // DotLiquid Engine
-            var expectedOutputRockLiquid = @"
-Lava Error: Unknown tag 'assignnnnn'
-";
-
-            var rockLiquidEngine = TestHelper.GetEngineInstance( typeof( RockLiquidEngine ) );
-
-            var result2 = rockLiquidEngine.RenderTemplate( template );
-            Assert.IsTrue( result2.HasErrors );
-            Assert.That.AreEqualIgnoreWhitespace( expectedOutputRockLiquid, result2.Text );
         }
-
     }
 }

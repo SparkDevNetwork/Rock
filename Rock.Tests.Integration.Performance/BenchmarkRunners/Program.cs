@@ -90,7 +90,7 @@ namespace Rock.Tests.Integration.Performance.BenchmarkRunners
 
         private static void RunLavaTemplateParse()
         {
-            LavaUnitTestHelper.Initialize( testRockLiquidEngine: false, testDotLiquidEngine: false, testFluidEngine: true );
+            LavaUnitTestHelper.Initialize( testFluidEngine: true );
 
             var tests = new CollectionFilterTests();
             tests.AddToArray_AddToStringCollection_AppendsNewItem();
@@ -98,7 +98,7 @@ namespace Rock.Tests.Integration.Performance.BenchmarkRunners
 
         private static void RunLavaTemplateParse( string[] args )
         {
-            LavaIntegrationTestHelper.Initialize( testRockLiquidEngine:false, testDotLiquidEngine:false, testFluidEngine: true, loadShortcodes: false );
+            LavaIntegrationTestHelper.Initialize( testFluidEngine: true, loadShortcodes: false );
 
             var lavaHelper = LavaIntegrationTestHelper.CurrentInstance;
 

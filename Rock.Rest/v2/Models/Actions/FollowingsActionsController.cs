@@ -51,12 +51,12 @@ namespace Rock.Rest.v2.Models.Actions
         /// person for the specified entity type.
         /// </summary>
         /// <param name="entityTypeId">The entity type identifier as either an Id, Guid, IdKey value or name.</param>
-        /// <returns>The action result.</returns>
+        /// <returns>The identifiers of the items being followed.</returns>
         [HttpGet]
+        [Route( "followed/{entityTypeId}" )]
         [Authenticate]
         [Secured( Security.Authorization.VIEW )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [Route( "followed/{entityTypeId}" )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ItemIdentifierBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [ProducesResponseType( HttpStatusCode.NotFound )]

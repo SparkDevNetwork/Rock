@@ -197,7 +197,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             box.IfValidProperty( nameof( box.Bag.UtmSettings ), () =>

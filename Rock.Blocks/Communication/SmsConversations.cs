@@ -85,13 +85,12 @@ namespace Rock.Blocks.Communication
         Order = 7
          )]
 
-    [NoteTypeField( "Note Types",
-        Description = "Optional list of note types to limit the note editor to.",
-        AllowMultiple = true,
+    [CustomCheckboxListField("Note Types",
+        Description = @"Optional list of note types to limit the note editor to. Note types must have the ""User Selectable"" property enabled and Person Entity Type selected.",
+        ListSource = ListSource.SQL_SELECTABLE_PERSON_NOTE_TYPES,
         IsRequired = false,
-        EntityType = typeof( Rock.Model.Person ),
         Order = 8,
-        Key = AttributeKey.NoteTypes )]
+        Key = AttributeKey.NoteTypes)]
 
     [IntegerField(
         "Database Timeout",
@@ -107,7 +106,7 @@ namespace Rock.Blocks.Communication
     [Rock.SystemGuid.BlockTypeGuid( "3B052AC5-60DB-4490-BC47-C3471A2CA515" )]
     public class SmsConversations : RockBlockType
     {
-        #region Keys
+        #region Keys and Values
 
         private static class AttributeKey
         {
@@ -128,9 +127,40 @@ namespace Rock.Blocks.Communication
             public const string SelectedMessageFilter = "selected-message-filter";
         }
 
+        private static class ListSource
+        {
+            public const string SQL_SELECTABLE_PERSON_NOTE_TYPES = @"
+            SELECT 
+                nt.[Guid] AS [Value],
+                nt.[Name] AS [Text]
+            FROM [NoteType] nt
+            INNER JOIN [EntityType] et ON et.[Id] = nt.[EntityTypeId]
+            WHERE nt.[UserSelectable] = 1
+            AND et.[Guid] = '72657ED8-D16E-492E-AC12-144C5E7567E7'";
+        }
+
+        #endregion
+
+        #region Fields
+
+        private PersonPreferenceCollection _personPreferences;
+
         #endregion
 
         #region Properties
+
+        public PersonPreferenceCollection PersonPreferences
+        {
+            get
+            {
+                if ( _personPreferences == null )
+                {
+                    _personPreferences = this.GetBlockPersonPreferences();
+                }
+
+                return _personPreferences;
+            }
+        }
 
         protected Guid? SelectedSystemPhoneNumber => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.SelectedSystemPhoneNumber )
@@ -156,6 +186,7 @@ namespace Rock.Blocks.Communication
             box.NoteTypes = noteTypes.Select( nt => GetNoteTypeBag( nt, RequestContext.CurrentPerson ) ).ToList();
             box.Snippets = GetSnippetBags();
             box.IsNewMessageButtonVisible = GetAttributeValue( AttributeKey.EnableSmsSend ).AsBoolean();
+            box.CanEditOrAdministrate = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
 
             if ( box.SystemPhoneNumbers.Count == 0 )
             {
@@ -208,6 +239,15 @@ namespace Rock.Blocks.Communication
                 smsNumbers = smsNumbers.Where( spn => RequestContext.CurrentPerson.Aliases.Any( a => a.Id == spn.AssignedToPersonAliasId ) ).ToList();
             }
 
+            // If the available SMS numbers do not contain the SelectedSystemPhoneNumber preference then reset the preference
+            if ( !smsNumbers.Any( spn => spn.Guid == SelectedSystemPhoneNumber ) )
+            {
+                // Retrieve the Guid of the first SMS number if available, else set it to null
+                var selectedSystemPhoneNumber = smsNumbers.FirstOrDefault()?.Guid.ToString();
+                this.PersonPreferences.SetValue( PreferenceKey.SelectedSystemPhoneNumber, selectedSystemPhoneNumber );
+                this.PersonPreferences.Save();
+            }
+
             foreach ( var smsNumber in smsNumbers )
             {
                 systemPhoneNumbers.Add( new ListItemBag
@@ -226,17 +266,16 @@ namespace Rock.Blocks.Communication
         /// <returns>A list of <see cref="NoteTypeCache"/> objects that represent the configured note types.</returns>
         private List<NoteTypeCache> GetConfiguredNoteTypes()
         {
-            var noteTypes = NoteTypeCache.GetByEntity( EntityTypeCache.GetId<Rock.Model.Person>(), string.Empty, string.Empty, true );
+            var noteTypes = NoteTypeCache.GetByEntity( EntityTypeCache.GetId<Rock.Model.Person>(), string.Empty, string.Empty, false );
 
             // If block is configured to only allow certain note types, limit notes to those types.
             var configuredNoteTypes = GetAttributeValue( AttributeKey.NoteTypes ).SplitDelimitedValues().AsGuidList();
             if ( configuredNoteTypes.Any() )
             {
-                noteTypes = noteTypes.Where( n => configuredNoteTypes.Contains( n.Guid ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name )
-                    .ToList();
+                noteTypes = noteTypes.Where( n => configuredNoteTypes.Contains( n.Guid ) ).ToList();
             }
+
+            noteTypes = noteTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
 
             return noteTypes;
         }
@@ -267,7 +306,7 @@ namespace Rock.Blocks.Communication
                 MaxReplyDepth = noteType.MaxReplyDepth ?? -1,
                 AllowsWatching = noteType.AllowsWatching,
                 IsMentionEnabled = noteType.FormatType != NoteFormatType.Unstructured && noteType.IsMentionEnabled,
-                Attributes = note.GetPublicAttributesForEdit( currentPerson )
+                Attributes = note.GetPublicAttributesForEdit( currentPerson, enforceSecurity: true )
             };
         }
 
@@ -283,6 +322,7 @@ namespace Rock.Blocks.Communication
             return new SnippetService( RockContext )
                 .GetAuthorizedSnippets( RequestContext.CurrentPerson,
                     s => s.SnippetType.Guid == snippetTypeGuid )
+                .Where( s => s.IsActive )
                 .OrderBy( s => s.Order )
                 .ThenBy( s => s.Name )
                 .Select( s => new SnippetBag
@@ -713,6 +753,11 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult SendMessageToNewRecipient( SendMessageBag bag )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to send a message." );
+            }
+
             var recipientPerson = FindRecipientFromPersonKey( bag.RecipientPersonAliasIdKey );
             if ( recipientPerson == null )
             {
@@ -743,6 +788,11 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult SendMessageToExistingRecipient( SendMessageBag bag )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to send a message." );
+            }
+
             var recipientPerson = FindRecipientFromPersonKey( bag.RecipientPersonAliasIdKey );
             if ( recipientPerson == null )
             {
@@ -766,6 +816,11 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult ToggleConversationReadStatus( ConversationBag bag )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to change the read status of a conversation." );
+            }
+
             var smsSystemPhoneNumber = SelectedSystemPhoneNumber.HasValue
                 ? SystemPhoneNumberCache.Get( SelectedSystemPhoneNumber.Value )
                 : null;
@@ -890,7 +945,7 @@ namespace Rock.Blocks.Communication
                 note.NoteUrl = this.GetCurrentPageUrl();
 
                 note.LoadAttributes( rockContext );
-                note.SetPublicAttributeValues( request.Bag.AttributeValues, RequestContext.CurrentPerson );
+                note.SetPublicAttributeValues( request.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
 
                 if ( note.Id == 0 && !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
@@ -927,6 +982,11 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult LinkToExistingPerson( string existingPersonAliasGuid, string recipientPersonAliasIdKey )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to link to an existing person." );
+            }
+
             var personAliasService = new PersonAliasService( RockContext );
             var personService = new PersonService( RockContext );
 
@@ -971,6 +1031,11 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult SaveNewPerson( PersonBasicEditorBag personBag, string recipientPersonAliasIdKey )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to save a new person." );
+            }
+
             var personService = new PersonService( RockContext );
             var cleanMobilePhone = PhoneNumber.CleanNumber( personBag.MobilePhoneNumber );
 
@@ -1033,6 +1098,11 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult InsertSnippet( Guid snippetGuid, string recipientPersonAliasIdKey )
         {
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to insert a Snippet." );
+            }
+
             var snippetTypeGuid = Rock.SystemGuid.SnippetType.SMS.AsGuid();
             var currentPersonId = RequestContext.CurrentPerson?.Id;
 

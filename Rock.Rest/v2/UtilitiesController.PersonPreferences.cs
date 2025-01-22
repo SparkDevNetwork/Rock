@@ -32,6 +32,7 @@ using HttpGetAttribute = System.Web.Http.HttpGetAttribute;
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
+using RouteAttribute = System.Web.Http.RouteAttribute;
 #endif
 
 namespace Rock.Rest.v2
@@ -45,9 +46,9 @@ namespace Rock.Rest.v2
         /// attached to any specified entity.
         /// </summary>
         /// <returns>A collection of preference values.</returns>
-        [Authenticate]
         [HttpGet]
-        [System.Web.Http.Route( "PersonPreferences" )]
+        [Route( "PersonPreferences" )]
+        [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "DCE21AB4-5A17-4C16-949B-4977265D48F0" )]
         public IActionResult GetPersonPreferences()
         {
@@ -57,20 +58,18 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
-        /// <para>
         /// Creates or updates a set of preferences for the current person
         /// that are not attached to a specific entity.
-        /// </para>
-        /// <para>
-        /// Setting a value to an empty string will cause it to be deleted.
-        /// </para>
         /// </summary>
+        /// <remarks>
+        /// Setting a value to an empty string will cause it to be deleted.
+        /// </remarks>
         /// <param name="options">The options containing the preferences to be set.</param>
         /// <returns>A response that indicates if the preferences were set.</returns>
-        [Authenticate]
         [HttpPost]
+        [Route( "PersonPreferences" )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "PersonPreferences" )]
+        [Authenticate]
         [Rock.SystemGuid.RestActionGuid( "9117FB2B-C07C-4FB2-8409-37F596D6887F" )]
         public IActionResult PostPersonPreferences( [FromBody] UpdatePersonPreferencesOptionsBag options )
         {
@@ -88,15 +87,17 @@ namespace Rock.Rest.v2
 
         /// <summary>
         /// Updates the LastAccessedDateTime property for the specified keys.
+        /// </summary>
+        /// <remarks>
         /// This will apply to the preferences for the current person that
         /// are not attached to a specific entity.
-        /// </summary>
+        /// </remarks>
         /// <param name="options">The options describing which preferences were accessed.</param>
         /// <returns>A response that indicates if the request was successful.</returns>
-        [Authenticate]
         [HttpPost]
+        [Route( "PersonPreferencesAccessed" )]
+        [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "PersonPreferencesAccessed" )]
         [Rock.SystemGuid.RestActionGuid( "B2E6543E-FDE8-43B4-A563-162FB334800A" )]
         public IActionResult PostPersonPreferencesAccessed( [FromBody] UpdatePersonPreferencesAccessedOptionsBag options )
         {
@@ -119,10 +120,10 @@ namespace Rock.Rest.v2
         /// <param name="entityTypeKey">The identifier of the attached entity type. Can be a Guid, Id or IdKey value.</param>
         /// <param name="entityKey">The identifier of the attached entity. Can be a Guid, Id or IdKey value.</param>
         /// <returns>A collection of preference values.</returns>
-        [Authenticate]
         [HttpGet]
+        [Route( "PersonPreferences/{entityTypeKey}/{entityKey}" )]
+        [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "PersonPreferences/{entityTypeKey}/{entityKey}" )]
         [Rock.SystemGuid.RestActionGuid( "A533319F-75A8-470F-95BD-691119F6B5F5" )]
         public IActionResult GetPersonPreferences( string entityTypeKey, string entityKey )
         {
@@ -162,22 +163,20 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
-        /// <para>
         /// Creates or updates a set of preferences for the current person
         /// attached to the specified entity.
-        /// </para>
-        /// <para>
-        /// Setting a value to an empty string will cause it to be deleted.
-        /// </para>
         /// </summary>
+        /// <remarks>
+        /// Setting a value to an empty string will cause it to be deleted.
+        /// </remarks>
         /// <param name="entityTypeKey">The identifier of the attached entity type. Can be a Guid, Id or IdKey value.</param>
         /// <param name="entityKey">The identifier of the attached entity. Can be a Guid, Id or IdKey value.</param>
         /// <param name="options">The options containing the preferences to be set.</param>
         /// <returns>A response that indicates if the preferences were set.</returns>
-        [Authenticate]
         [HttpPost]
+        [Route( "PersonPreferences/{entityTypeKey}/{entityKey}" )]
+        [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "PersonPreferences/{entityTypeKey}/{entityKey}" )]
         [Rock.SystemGuid.RestActionGuid( "99BCED4F-5804-4E51-A88F-CD82B2FF5D18" )]
         public IActionResult PostPersonPreferences( string entityTypeKey, string entityKey, [FromBody] UpdatePersonPreferencesOptionsBag options )
         {
@@ -225,17 +224,19 @@ namespace Rock.Rest.v2
 
         /// <summary>
         /// Updates the LastAccessedDateTime property for the specified keys.
+        /// </summary>
+        /// <remarks>
         /// This will apply to the preferences for the current person that
         /// are attached to the specified entity.
-        /// </summary>
+        /// </remarks>
         /// <param name="entityTypeKey">The identifier of the attached entity type. Can be a Guid, Id or IdKey value.</param>
         /// <param name="entityKey">The identifier of the attached entity. Can be a Guid, Id or IdKey value.</param>
         /// <param name="options">The options describing which preferences were accessed.</param>
         /// <returns>A response that indicates if the request was successful.</returns>
-        [Authenticate]
         [HttpPost]
+        [Route( "PersonPreferencesAccessed/{entityTypeKey}/{entityKey}" )]
+        [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "PersonPreferencesAccessed/{entityTypeKey}/{entityKey}" )]
         [Rock.SystemGuid.RestActionGuid( "511F4E1B-B583-4B3E-9E84-7E7B797C38D8" )]
         public IActionResult PostPersonPreferencesAccessed( string entityTypeKey, string entityKey, [FromBody] UpdatePersonPreferencesAccessedOptionsBag options )
         {
@@ -287,10 +288,10 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="blockKey">The identifier of the block. Can be a Guid, Id or IdKey value.</param>
         /// <returns>A collection of preference values.</returns>
-        [Authenticate]
         [HttpGet]
+        [Route( "PersonBlockPreferences/{blockKey}" )]
+        [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "PersonBlockPreferences/{blockKey}" )]
         [Rock.SystemGuid.RestActionGuid( "6CC39A4D-784F-4E07-A943-1FEC145387CF" )]
         public IActionResult GetPersonBlockPreferences( string blockKey )
         {
@@ -307,21 +308,19 @@ namespace Rock.Rest.v2
         }
 
         /// <summary>
-        /// <para>
         /// Creates or updates a set of preferences for the current person
         /// attached to the specified block.
-        /// </para>
-        /// <para>
-        /// Setting a value to an empty string will cause it to be deleted.
-        /// </para>
         /// </summary>
+        /// <remarks>
+        /// Setting a value to an empty string will cause it to be deleted.
+        /// </remarks>
         /// <param name="blockKey">The identifier of the block. Can be a Guid, Id or IdKey value.</param>
         /// <param name="options">The options containing the preferences to be set.</param>
         /// <returns>A response that indicates if the preferences were set.</returns>
-        [Authenticate]
         [HttpPost]
+        [Route( "PersonBlockPreferences/{blockKey}" )]
+        [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "PersonBlockPreferences/{blockKey}" )]
         [Rock.SystemGuid.RestActionGuid( "9354C523-8632-4AEC-8917-3FDE432967ED" )]
         public IActionResult PostPersonBlockPreferences( string blockKey, [FromBody] UpdatePersonPreferencesOptionsBag options )
         {
@@ -346,16 +345,18 @@ namespace Rock.Rest.v2
 
         /// <summary>
         /// Updates the LastAccessedDateTime property for the specified keys.
+        /// </summary>
+        /// <remarks>
         /// This will apply to the preferences for the current person that
         /// are attached to the specified block.
-        /// </summary>
+        /// </remarks>
         /// <param name="blockKey">The identifier of the block. Can be a Guid, Id or IdKey value.</param>
         /// <param name="options">The options describing which preferences were accessed.</param>
         /// <returns>A response that indicates if the request was successful.</returns>
-        [Authenticate]
         [HttpPost]
+        [Route( "PersonBlockPreferencesAccessed/{blockKey}" )]
+        [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [System.Web.Http.Route( "PersonBlockPreferencesAccessed/{blockKey}" )]
         [Rock.SystemGuid.RestActionGuid( "6681241B-F882-4334-B6DF-C04E931E7E02" )]
         public IActionResult PostPersonBlockPreferencesAccessed( string blockKey, [FromBody] UpdatePersonPreferencesAccessedOptionsBag options )
         {

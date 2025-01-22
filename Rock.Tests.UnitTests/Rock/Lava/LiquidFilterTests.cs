@@ -62,9 +62,7 @@ namespace Rock.Tests.UnitTests.Lava
 <li>5</li>
 ";
 
-            // The Slice filter partitions an array when using the Fluid framework,
-            // but this behavior is not supported in DotLiquid.
-            TestHelper.AssertTemplateOutput( typeof( FluidEngine ), expectedOutput, template, ignoreWhitespace: true );
+            TestHelper.AssertTemplateOutput( expectedOutput, template, ignoreWhitespace: true );
         }
 
         #endregion

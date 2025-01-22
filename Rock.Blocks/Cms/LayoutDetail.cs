@@ -259,7 +259,7 @@ namespace Rock.Blocks.Cms
 
             if ( loadAttributes )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
             }
 
             return bag;
@@ -282,7 +282,7 @@ namespace Rock.Blocks.Cms
 
             if ( loadAttributes )
             {
-                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+                bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
             }
 
             return bag;
@@ -326,7 +326,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;
