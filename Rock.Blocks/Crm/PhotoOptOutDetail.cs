@@ -15,14 +15,12 @@
 // </copyright>
 //
 
-using System;
 using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.PhotoOptOut;
 
 namespace Rock.Blocks.Crm
@@ -31,7 +29,6 @@ namespace Rock.Blocks.Crm
     /// Allows a person to opt-out of future photo requests.
     /// </summary>
     /// <seealso cref="Rock.Blocks.RockBlockType" />
-
     [DisplayName( "Photo Opt-Out" )]
     [Category( "CRM" )]
     [Description( "Allows a person to opt-out of future photo requests." )]
@@ -70,7 +67,6 @@ namespace Rock.Blocks.Crm
             public const string NotFoundMessage = "NotFoundMessage";
         }
 
-
         private static class PageParameterKey
         {
             public const string Person = "Person";
@@ -83,31 +79,23 @@ namespace Rock.Blocks.Crm
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                return GetPhotoOptOutBag( rockContext );
-            }
+            return GetPhotoOptOutBag();
         }
 
         /// <summary>
         /// Sets the initial entity state of the box. Populates the Entity or
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
-        /// <param name="entityBag">The entityBag to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private PhotoOptOutBag GetPhotoOptOutBag( RockContext rockContext )
+        private PhotoOptOutBag GetPhotoOptOutBag()
         {
             Person entity = null;
             var entityBag = new PhotoOptOutBag();
             string personKey = PageParameter( PageParameterKey.Person );
+            var personService = new PersonService( RockContext );
 
             try
             {
-                entity = new PersonService( rockContext ).GetByPersonActionIdentifier( personKey, "OptOut" );
-                if ( entity == null )
-                {
-                    entity = new PersonService( rockContext ).GetByUrlEncodedKey( personKey );
-                }
+                entity = personService.GetByPersonActionIdentifier( personKey, "OptOut" ) ?? personService.GetByUrlEncodedKey( personKey );
             }
             catch
             {
@@ -126,21 +114,23 @@ namespace Rock.Blocks.Crm
             {
                 try
                 {
-                    GroupService service = new GroupService( rockContext );
-                    Rock.Model.Group photoRequestGroup = service.GetByGuid( Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid() );
-                    var groupMember = photoRequestGroup.Members.Where( m => m.PersonId == entity.Id ).FirstOrDefault();
+                    GroupService groupService = new GroupService( RockContext );
+                    Rock.Model.Group photoRequestGroup = groupService.GetByGuid( Rock.SystemGuid.Group.GROUP_PHOTO_REQUEST.AsGuid() );
+                    var groupMember = photoRequestGroup.Members.FirstOrDefault( m => m.PersonId == entity.Id );
                     if ( groupMember == null )
                     {
-                        groupMember = new GroupMember();
-                        groupMember.GroupId = photoRequestGroup.Id;
-                        groupMember.PersonId = entity.Id;
-                        groupMember.GroupRoleId = photoRequestGroup.GroupType.DefaultGroupRoleId ?? 0;
+                        groupMember = new GroupMember
+                        {
+                            GroupId = photoRequestGroup.Id,
+                            PersonId = entity.Id,
+                            GroupRoleId = photoRequestGroup.GroupType.DefaultGroupRoleId ?? 0
+                        };
                         photoRequestGroup.Members.Add( groupMember );
                     }
 
                     groupMember.GroupMemberStatus = GroupMemberStatus.Inactive;
 
-                    rockContext.SaveChanges();
+                    RockContext.SaveChanges();
                     entityBag.IsOptOutSuccessful = true;
                     entityBag.SuccessMessage = GetAttributeValue( AttributeKey.SuccessMessage );
                 }
