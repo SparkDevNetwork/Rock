@@ -145,9 +145,27 @@ namespace RockWeb.Blocks.Administration
                     {
                         if ( iSecured.SupportedActions.Any() )
                         {
+                            // If we the selected action doesn't exist in the
+                            // set of supported actions then select the first
+                            // one.
                             if ( !iSecured.SupportedActions.ContainsKey( CurrentAction ) )
                             {
-                                CurrentAction = iSecured.SupportedActions.FirstOrDefault().Key;
+                                // Convert the dictionary of actions into something we
+                                // can have a concrete order to.
+                                var supportedActions = iSecured.SupportedActions
+                                    .Select( a => a.Key )
+                                    .ToList();
+
+                                // If there is an Administrate action, move it to the end.
+                                var administrateIndex = supportedActions.FindIndex( a => a == "Administrate" );
+                                if ( administrateIndex != -1 )
+                                {
+                                    var administrateAction = supportedActions[administrateIndex];
+                                    supportedActions.RemoveAt( administrateIndex );
+                                    supportedActions.Add( administrateAction );
+                                }
+
+                                CurrentAction = supportedActions.FirstOrDefault();
                             }
 
                             lActionDescription.Text = iSecured.SupportedActions[CurrentAction];
