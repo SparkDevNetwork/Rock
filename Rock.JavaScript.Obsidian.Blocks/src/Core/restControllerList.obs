@@ -9,30 +9,41 @@
           liveUpdates
           @selectItem="onSelectItem">
 
-        <TextColumn name="name"
-                    title="Controller Name"
-                    field="name"
-                    :filter="textValueFilter"
-                    visiblePriority="xs"
-                    width="25%" />
+        <HighlightDetailColumn name="className"
+                               title="Controller Name"
+                               field="name"
+                               detailField="routePrefix"
+                               :filter="textValueFilter"
+                               visiblePriority="xs"
+                               width="40%" />
 
-        <TextColumn name="className"
+        <LabelColumn name="version"
+                     title="Version"
+                     field="version"
+                     :textSource="versionTextSource"
+                     :classSource="versionLabelClass"
+                     :filter="pickExistingValueFilter"
+                     visiblePriority="md"
+                     width="1%" />
+
+        <TextColumn name="name"
                     title="Controller Type"
                     field="className"
                     :filter="textValueFilter"
-                    visiblePriority="xs"
+                    visiblePriority="lg"
                     width="50%" />
 
         <NumberColumn name="actions"
                       title="Actions"
                       field="actions"
                       :filter="numberValueFilter"
-                      visiblePriority="xs"
+                      visiblePriority="sm"
                       width="1%" />
 
         <Column name="actionsWithPublicCachingHeaders"
                 title=""
                 field="actionsWithPublicCachingHeaders"
+                visiblePriority="md"
                 width="1%">
             <template #format="{ row }">
                 <i v-if="row.actionsWithPublicCachingHeaders > 0"
@@ -54,7 +65,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, numberValueFilter, SecurityColumn, NumberColumn, Column } from "@Obsidian/Controls/grid";
+    import Grid, { HighlightDetailColumn, LabelColumn, TextColumn, textValueFilter, numberValueFilter, pickExistingValueFilter, SecurityColumn, NumberColumn, Column } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { RestControllerListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/RestControllerList/restControllerListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
@@ -68,6 +79,16 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    const versionTextSource: Record<number, string> = {
+        1: "v1",
+        2: "v2"
+    };
+
+    const versionLabelClass: Record<string, string> = {
+        "v1": "info",
+        "v2": "success"
+    };
 
     // #endregion
 
