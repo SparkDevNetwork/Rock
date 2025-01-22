@@ -17,7 +17,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
-using Rock.Lava.DotLiquid;
 using Rock.Lava.Fluid;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
@@ -82,19 +81,6 @@ Outer 'a' = {{ a }}
 {% include '_assign.lava' %}
 Outer 'a' =  {{ a }}
 ";
-
-            if ( LavaIntegrationTestHelper.DotLiquidEngineIsEnabled )
-            {
-                var expectedOutputLiquid = @"
-Outer 'a' = a
-Included 'a' = b
-Outer 'a' = b
-";
-
-	            var testEngineDotLiquid = LavaService.NewEngineInstance( typeof( DotLiquidEngine ), new LavaEngineConfigurationOptions { FileSystem = fileSystem } );
-
-                TestHelper.AssertTemplateOutput( testEngineDotLiquid, expectedOutputLiquid, input );
-            }
 
             if ( LavaIntegrationTestHelper.FluidEngineIsEnabled )
             {

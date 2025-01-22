@@ -2279,8 +2279,8 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            cbOverrideRelationshipStrength.Checked = group.IsOverridingGroupTypeRelationshipStrength;
-            pnlPeerNetwork.Visible = group.IsOverridingGroupTypeRelationshipStrength;
+            cbOverrideRelationshipStrength.Checked = group.IsOverridingGroupTypePeerNetworkConfiguration;
+            pnlPeerNetwork.Visible = group.IsOverridingGroupTypePeerNetworkConfiguration;
 
             // For relationship strength and growth settings, start by checking if a value is defined for this group,
             // and fall back to the values defined at the group type level.
@@ -2435,17 +2435,6 @@ namespace RockWeb.Blocks.Groups
                     var groupTypeRelationshipStrength = groupType.RelationshipStrength;
                     var groupRelationshipStrength = group.RelationshipStrengthOverride;
 
-                    // Technically, the group type's peer network calculations can be overridden at multiple, individual
-                    // levels (strength, growth enabled, multiplier values), but this highlight label is only indicating
-                    // whether the group is overriding the group type if the relationship strength value itself is
-                    // different than that of its parent group type.
-                    //
-                    // Note that when editing the group, ALL of the possible peer network calculation values will be
-                    // considered when indicating whether the group is overriding its parent group type, in order to
-                    // provide full transparency to the Rock admin. We might want to likewise factor in all possible
-                    // override values within this highlight label in the future. If so, simply check the group's
-                    // `IsOverridingGroupTypeRelationshipStrength` property to make this determination, and modify the
-                    // highlight label tooltip accordingly.
                     var isRelationshipStrengthOverridden = groupRelationshipStrength.HasValue
                         && groupRelationshipStrength.Value != groupTypeRelationshipStrength;
 
@@ -2472,11 +2461,15 @@ namespace RockWeb.Blocks.Groups
                         relationshipGrowthTooltip = " The relationship is also set to strengthen over time.";
                     }
 
-                    // Only show the overridden icon and tooltip if the group type's config has been overridden.
-                    if ( isRelationshipStrengthOverridden )
+                    // Show the overridden icon if this group is overriding its parent group type's peer network configuration in any way.
+                    if ( group.IsOverridingGroupTypePeerNetworkConfiguration )
                     {
                         relationshipLabelIconsSb.Append( $@" <i class=""fa fa-star-of-life""></i>" );
+                    }
 
+                    // Only show the overridden tooltip if the relationship strength itself has been overridden.
+                    if ( isRelationshipStrengthOverridden )
+                    {
                         var overriddenStrengthLabel = GetRelationshipStrengthLabel( groupTypeRelationshipStrength );
 
                         relationshipOverrideTooltip = $", overriding the group type's default setting of{( overriddenStrengthLabel.Article.IsNotNullOrWhiteSpace() ? $" {overriddenStrengthLabel.Article}" : string.Empty )} {overriddenStrengthLabel.Relationship} relationship";

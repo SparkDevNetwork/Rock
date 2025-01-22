@@ -179,7 +179,7 @@ GROUP BY
         private void ChopBlocksUp()
         {
             RegisterBlockAttributesForChop();
-            ChopBlockTypesv17();
+            // ChopBlockTypesv17();
         }
 
         /// <summary>

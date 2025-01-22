@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "LMS" )]
     [Table( "LearningGradingSystemScale" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_GRADING_SYSTEM_SCALE )]
     public partial class LearningGradingSystemScale : Model<LearningGradingSystemScale>, IOrdered
     {

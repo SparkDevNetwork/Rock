@@ -34,6 +34,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionSession" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "338025DE-C16F-47BB-BA31-6DE0C59E59AA")]
     public partial class InteractionSession : Model<InteractionSession>
     {

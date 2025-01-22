@@ -13,7 +13,7 @@
                  :isDeleteVisible="false"
                  :isEditVisible="true"
                  :isFollowVisible="false"
-                 :isSecurityHidden="false"
+                 :isSecurityHidden="true"
                  :entityTypeGuid="entityTypeGuid"
                  :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"

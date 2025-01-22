@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "FollowingEventNotification" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "21BA6002-1FB0-45C7-BCA6-D6629EC8AB52")]
     public partial class FollowingEventNotification : Model<FollowingEventNotification>
     {

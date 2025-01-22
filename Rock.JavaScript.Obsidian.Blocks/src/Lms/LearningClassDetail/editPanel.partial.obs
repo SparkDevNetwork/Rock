@@ -98,6 +98,7 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import numberUtils from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps({
@@ -129,12 +130,31 @@
     const groupCapacity = propertyRef(props.modelValue.bag?.groupCapacity, "GroupCapacity");
     const semester = propertyRef(props.modelValue.bag?.semester?.value ?? "", "Semester");
     const schedule = propertyRef(props.modelValue.bag?.schedule, "Schedule");
-    const location = propertyRef<ListItemBag | undefined>(props.modelValue.bag?.location ?? undefined, "Location");
+    const locationBag = propertyRef(props.modelValue.bag?.location ?? undefined, "Location");
     const campus = propertyRef(props.modelValue.bag?.campus, "Campus");
     const gradingSystem = propertyRef(props.modelValue.bag?.gradingSystem?.value ?? "", "GradingSystem");
 
     const semesters = props.options.semesters ?? [];
     const gradingSystems = props.options.gradingSystems ?? [];
+
+    const location = computed<ListItemBag | AddressControlBag | undefined>({
+        get: () => locationBag.value?.namedLocation ?? locationBag.value?.address ?? undefined,
+        set: (newValue) => {
+            if (newValue && "value" in newValue) {
+                locationBag.value = {
+                    namedLocation: newValue
+                };
+            }
+            else if (newValue && "street1" in newValue) {
+                locationBag.value = {
+                    address: newValue
+                };
+            }
+            else {
+                locationBag.value = undefined;
+            }
+        }
+    });
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -146,7 +166,7 @@
         , groupCapacity
         , semester
         , schedule
-        , location
+        , locationBag
         , campus
         , gradingSystem
     ];
@@ -182,7 +202,7 @@
         updateRefValue(groupCapacity, props.modelValue.bag?.groupCapacity);
         updateRefValue(semester, props.modelValue.bag?.semester?.value ?? "");
         updateRefValue(schedule, props.modelValue.bag?.schedule ?? {});
-        updateRefValue(location, props.modelValue.bag?.location ?? undefined);
+        updateRefValue(locationBag, props.modelValue.bag?.location ?? undefined);
         updateRefValue(campus, props.modelValue.bag?.campus ?? {});
         updateRefValue(gradingSystem, props.modelValue.bag?.gradingSystem?.value ?? "");
     });
@@ -201,7 +221,7 @@
         setPropertiesBoxValue(newValue, "groupCapacity", groupCapacity.value);
         setPropertiesBoxValue(newValue, "semester", { value: semester.value });
         setPropertiesBoxValue(newValue, "schedule", schedule.value);
-        setPropertiesBoxValue(newValue, "location", location.value);
+        setPropertiesBoxValue(newValue, "location", locationBag.value);
         setPropertiesBoxValue(newValue, "campus", campus.value);
         setPropertiesBoxValue(newValue, "gradingSystem", { value: gradingSystem.value });
 

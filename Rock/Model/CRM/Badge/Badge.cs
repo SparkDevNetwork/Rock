@@ -29,6 +29,7 @@ namespace Rock.Model
     /// </summary>
     [RockDomain( "CRM" )]
     [Table( "Badge" )]
+    [CodeGenerateRest]
     [DataContract]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.BADGE )]
     public partial class Badge : Model<Badge>, IOrdered, ICacheable, IHasActiveFlag

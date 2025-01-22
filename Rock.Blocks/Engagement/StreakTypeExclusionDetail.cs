@@ -193,7 +193,7 @@ namespace Rock.Blocks.Engagement
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -208,7 +208,7 @@ namespace Rock.Blocks.Engagement
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -232,7 +232,7 @@ namespace Rock.Blocks.Engagement
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -260,9 +260,17 @@ namespace Rock.Blocks.Engagement
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var streakType = StreakTypeCache.Get( PageParameter( PageParameterKey.StreakTypeId ), true );
+            var queryParams = new Dictionary<string, string>();
+
+            if ( streakType != null )
+            {
+                queryParams.Add( PageParameterKey.StreakTypeId, streakType.Id.ToString() );
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( queryParams )
             };
         }
 
@@ -461,7 +469,7 @@ namespace Rock.Blocks.Engagement
 
             return ActionOk( this.GetParentPageUrl( new Dictionary<string, string> {
                     { PageParameterKey.StreakTypeId, entity.StreakTypeId.ToString() }
-                } ) );
+            } ) );
         }
 
         #endregion

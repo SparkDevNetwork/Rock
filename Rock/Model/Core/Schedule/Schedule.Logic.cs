@@ -27,6 +27,7 @@ using Rock.Web.Cache;
 using Ical.Net.CalendarComponents;
 using System.ComponentModel.DataAnnotations;
 using Rock.Attribute;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -360,6 +361,13 @@ namespace Rock.Model
         }
 
         #endregion ICacheable
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => Category ?? base.ParentAuthority;
+
+        #endregion
 
         #region Public Methods
 

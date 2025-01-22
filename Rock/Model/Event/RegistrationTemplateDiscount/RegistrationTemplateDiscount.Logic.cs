@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 using Rock.Lava;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -90,5 +91,12 @@ namespace Rock.Model
                 return limits.AsDelimited( "; " );
             }
         }
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => RegistrationTemplate ?? base.ParentAuthority;
+
+        #endregion
     }
 }

@@ -1084,17 +1084,21 @@ namespace Rock.Model
                 return false;
             }
 
+            #pragma warning disable 612, 618 // EntityCampusFilter is obsolete, but we still need this code generated
             if ( new Service<EntityCampusFilter>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EntityCampusFilter.FriendlyTypeName );
                 return false;
             }
+            #pragma warning restore 612, 618
 
+            #pragma warning disable 612, 618 // EntityCampusFilter is obsolete, but we still need this code generated
             if ( new Service<EntityCampusFilter>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EntityCampusFilter.FriendlyTypeName );
                 return false;
             }
+            #pragma warning restore 612, 618
 
             if ( new Service<EntityIntent>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {
@@ -1105,6 +1109,18 @@ namespace Rock.Model
             if ( new Service<EntityIntent>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EntityIntent.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<EntitySearch>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EntitySearch.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<EntitySearch>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EntitySearch.FriendlyTypeName );
                 return false;
             }
 

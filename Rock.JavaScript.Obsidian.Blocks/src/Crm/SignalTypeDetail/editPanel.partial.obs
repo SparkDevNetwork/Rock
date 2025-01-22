@@ -9,6 +9,7 @@
                 <TextBox v-model="name"
                          label="Name"
                          rules="required"
+                         :maxLength="100"
                          :disabled="!isEditable" />
             </div>
 
@@ -25,11 +26,13 @@
                              help="The color that will be used when displaying this signal."
                              rules="required"
                              v-model="signalColor"
+                             :maxLength="100"
                              :disabled="!isEditable" />
             </div>
             <div class="col-md-6">
                 <TextBox v-model="signalIconCssClass"
                          label="Icon CSS Class"
+                         :maxLength="100"
                          :disabled="!isEditable" />
             </div>
         </div>

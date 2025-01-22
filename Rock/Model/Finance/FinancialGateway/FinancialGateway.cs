@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialGateway" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "122EFE60-84A6-4C7A-A852-30E4BD89A662")]
     public partial class FinancialGateway : Model<FinancialGateway>, IHasActiveFlag
     {

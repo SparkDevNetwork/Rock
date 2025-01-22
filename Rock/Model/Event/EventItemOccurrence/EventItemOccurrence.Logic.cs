@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -120,6 +121,13 @@ namespace Rock.Model
 
             return base.ToString();
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => EventItem ?? base.ParentAuthority;
 
         #endregion
     }

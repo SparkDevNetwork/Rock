@@ -48,7 +48,7 @@ namespace Rock.Blocks.Group
 
     [Rock.SystemGuid.EntityTypeGuid( "8a95bcf0-63cb-4cd6-99c9-e812d9afae99" )]
     [Rock.SystemGuid.BlockTypeGuid( "c17b6d03-fdf3-4dd7-b9a9-3d6159a838f5" )]
-    public class GroupRequirementTypeDetail : RockDetailBlockType
+    public class GroupRequirementTypeDetail : RockEntityDetailBlockType<GroupRequirementType, GroupRequirementTypeBag>
     {
         #region Keys
 
@@ -69,18 +69,14 @@ namespace Rock.Blocks.Group
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<GroupRequirementTypeBag, GroupRequirementTypeDetailOptionsBag>();
+            var box = new DetailBlockBox<GroupRequirementTypeBag, GroupRequirementTypeDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<GroupRequirementType>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -88,12 +84,12 @@ namespace Rock.Blocks.Group
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private GroupRequirementTypeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private GroupRequirementTypeDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new GroupRequirementTypeDetailOptionsBag();
 
+            var see = typeof( DueDateType ).ToEnumListItemBag();
             options.DueDateOptions = ToEnumListItemBag( typeof( DueDateType ) );
             options.RequirementTypeOptions = new List<ListItemBag>()
             {
@@ -105,6 +101,11 @@ namespace Rock.Blocks.Group
             return options;
         }
 
+        /// <summary>
+        /// Converts to the enum to a ListItemBag.
+        /// </summary>
+        /// <param name="enumType">Type of the enum.</param>
+        /// <returns></returns>
         private static List<ListItemBag> ToEnumListItemBag( Type enumType )
         {
             var listItemBag = new List<ListItemBag>();
@@ -122,10 +123,9 @@ namespace Rock.Blocks.Group
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="groupRequirementType">The GroupRequirementType to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the GroupRequirementType is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateGroupRequirementType( GroupRequirementType groupRequirementType, RockContext rockContext, out string errorMessage )
+        private bool ValidateGroupRequirementType( GroupRequirementType groupRequirementType, out string errorMessage )
         {
             errorMessage = null;
 
@@ -137,10 +137,9 @@ namespace Rock.Blocks.Group
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<GroupRequirementTypeBag, GroupRequirementTypeDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<GroupRequirementTypeBag, GroupRequirementTypeDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -151,7 +150,7 @@ namespace Rock.Blocks.Group
             var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -160,7 +159,6 @@ namespace Rock.Blocks.Group
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.Entity.CanAdministrate = BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -173,13 +171,14 @@ namespace Rock.Blocks.Group
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( GroupRequirementType.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -194,7 +193,7 @@ namespace Rock.Blocks.Group
                 return null;
             }
 
-            return new GroupRequirementTypeBag
+            var bag = new GroupRequirementTypeBag
             {
                 IdKey = entity.IdKey,
                 CanExpire = entity.CanExpire,
@@ -204,9 +203,9 @@ namespace Rock.Blocks.Group
                 Description = entity.Description,
                 DoesNotMeetWorkflowLinkText = entity.DoesNotMeetWorkflowLinkText,
                 DoesNotMeetWorkflowType = entity.DoesNotMeetWorkflowType.ToListItemBag(),
-                DueDateOffsetInDays = entity.DueDateOffsetInDays?.ToString(),
+                DueDateOffsetInDays = entity.DueDateOffsetInDays,
                 DueDateType = entity.DueDateType.ToString(),
-                ExpireInDays = entity.ExpireInDays?.ToString(),
+                ExpireInDays = entity.ExpireInDays,
                 IconCssClass = entity.IconCssClass,
                 Name = entity.Name,
                 NegativeLabel = entity.NegativeLabel,
@@ -222,14 +221,14 @@ namespace Rock.Blocks.Group
                 WarningWorkflowLinkText = entity.WarningWorkflowLinkText,
                 WarningWorkflowType = entity.WarningWorkflowType.ToListItemBag()
             };
+
+            bag.LoadAttributesAndValuesForPublicView( entity, GetCurrentPerson(), enforceSecurity: false );
+
+            return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="GroupRequirementTypeBag"/> that represents the entity.</returns>
-        private GroupRequirementTypeBag GetEntityBagForView( GroupRequirementType entity )
+        /// <inheritdoc/>
+        protected override GroupRequirementTypeBag GetEntityBagForView( GroupRequirementType entity )
         {
             if ( entity == null )
             {
@@ -241,12 +240,8 @@ namespace Rock.Blocks.Group
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="GroupRequirementTypeBag"/> that represents the entity.</returns>
-        private GroupRequirementTypeBag GetEntityBagForEdit( GroupRequirementType entity )
+        /// <inheritdoc/>
+        protected override GroupRequirementTypeBag GetEntityBagForEdit( GroupRequirementType entity )
         {
             if ( entity == null )
             {
@@ -283,114 +278,103 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( GroupRequirementType entity, DetailBlockBox<GroupRequirementTypeBag, GroupRequirementTypeDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( GroupRequirementType entity, ValidPropertiesBox<GroupRequirementTypeBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.CanExpire ),
-                () => entity.CanExpire = box.Entity.CanExpire );
+            box.IfValidProperty( nameof( box.Bag.CanExpire ),
+                () => entity.CanExpire = box.Bag.CanExpire );
 
-            box.IfValidProperty( nameof( box.Entity.Category ),
-                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Category ),
+                () => entity.CategoryId = box.Bag.Category.GetEntityId<Category>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.CheckboxLabel ),
-                () => entity.CheckboxLabel = box.Entity.CheckboxLabel );
+            box.IfValidProperty( nameof( box.Bag.CheckboxLabel ),
+                () => entity.CheckboxLabel = box.Bag.CheckboxLabel );
 
-            box.IfValidProperty( nameof( box.Entity.DataView ),
-                () => entity.DataViewId = box.Entity.RequirementCheckType == RequirementCheckType.Dataview.ToString() ? box.Entity.DataView.GetEntityId<DataView>( rockContext ) : null );
+            box.IfValidProperty( nameof( box.Bag.DataView ),
+                () => entity.DataViewId = box.Bag.RequirementCheckType == RequirementCheckType.Dataview.ToString() ? box.Bag.DataView.GetEntityId<DataView>( RockContext ) : null );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.DoesNotMeetWorkflowLinkText ),
-                () => entity.DoesNotMeetWorkflowLinkText = box.Entity.DoesNotMeetWorkflowLinkText );
+            box.IfValidProperty( nameof( box.Bag.DoesNotMeetWorkflowLinkText ),
+                () => entity.DoesNotMeetWorkflowLinkText = box.Bag.DoesNotMeetWorkflowLinkText );
 
-            box.IfValidProperty( nameof( box.Entity.DoesNotMeetWorkflowType ),
-                () => entity.DoesNotMeetWorkflowTypeId = box.Entity.DoesNotMeetWorkflowType.GetEntityId<WorkflowType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.DoesNotMeetWorkflowType ),
+                () => entity.DoesNotMeetWorkflowTypeId = box.Bag.DoesNotMeetWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.DueDateType ),
-                () => entity.DueDateType = box.Entity.DueDateType.ConvertToEnum<DueDateType>() );
+            box.IfValidProperty( nameof( box.Bag.DueDateType ),
+                () => entity.DueDateType = box.Bag.DueDateType.ConvertToEnum<DueDateType>() );
 
-            box.IfValidProperty( nameof( box.Entity.DueDateOffsetInDays ),
-                () => entity.DueDateOffsetInDays = box.Entity.DueDateType == nameof( DueDateType.DaysAfterJoining ) || box.Entity.DueDateType == nameof( DueDateType.GroupAttribute )
-                ? box.Entity.DueDateOffsetInDays.AsIntegerOrNull()
+            box.IfValidProperty( nameof( box.Bag.DueDateOffsetInDays ),
+                () => entity.DueDateOffsetInDays = box.Bag.DueDateType == nameof( DueDateType.DaysAfterJoining ) || box.Bag.DueDateType == nameof( DueDateType.GroupAttribute )
+                ? box.Bag.DueDateOffsetInDays
                 : null );
 
-            box.IfValidProperty( nameof( box.Entity.ExpireInDays ),
-                () => entity.ExpireInDays = entity.CanExpire ? box.Entity.ExpireInDays.AsIntegerOrNull() : null );
+            box.IfValidProperty( nameof( box.Bag.ExpireInDays ),
+                () => entity.ExpireInDays = entity.CanExpire ? box.Bag.ExpireInDays : null );
 
-            box.IfValidProperty( nameof( box.Entity.IconCssClass ),
-                () => entity.IconCssClass = box.Entity.IconCssClass );
+            box.IfValidProperty( nameof( box.Bag.IconCssClass ),
+                () => entity.IconCssClass = box.Bag.IconCssClass );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.NegativeLabel ),
-                () => entity.NegativeLabel = box.Entity.NegativeLabel );
+            box.IfValidProperty( nameof( box.Bag.NegativeLabel ),
+                () => entity.NegativeLabel = box.Bag.NegativeLabel );
 
-            box.IfValidProperty( nameof( box.Entity.PositiveLabel ),
-                () => entity.PositiveLabel = box.Entity.PositiveLabel );
+            box.IfValidProperty( nameof( box.Bag.PositiveLabel ),
+                () => entity.PositiveLabel = box.Bag.PositiveLabel );
 
-            box.IfValidProperty( nameof( box.Entity.RequirementCheckType ),
-                () => entity.RequirementCheckType = box.Entity.RequirementCheckType.ConvertToEnum<RequirementCheckType>() );
+            box.IfValidProperty( nameof( box.Bag.RequirementCheckType ),
+                () => entity.RequirementCheckType = box.Bag.RequirementCheckType.ConvertToEnum<RequirementCheckType>() );
 
-            box.IfValidProperty( nameof( box.Entity.ShouldAutoInitiateDoesNotMeetWorkflow ),
-                () => entity.ShouldAutoInitiateDoesNotMeetWorkflow = box.Entity.ShouldAutoInitiateDoesNotMeetWorkflow );
+            box.IfValidProperty( nameof( box.Bag.ShouldAutoInitiateDoesNotMeetWorkflow ),
+                () => entity.ShouldAutoInitiateDoesNotMeetWorkflow = box.Bag.ShouldAutoInitiateDoesNotMeetWorkflow );
 
-            box.IfValidProperty( nameof( box.Entity.ShouldAutoInitiateWarningWorkflow ),
-                () => entity.ShouldAutoInitiateWarningWorkflow = box.Entity.ShouldAutoInitiateWarningWorkflow );
+            box.IfValidProperty( nameof( box.Bag.ShouldAutoInitiateWarningWorkflow ),
+                () => entity.ShouldAutoInitiateWarningWorkflow = box.Bag.ShouldAutoInitiateWarningWorkflow );
 
-            box.IfValidProperty( nameof( box.Entity.SqlExpression ),
-                () => entity.SqlExpression = box.Entity.RequirementCheckType == RequirementCheckType.Sql.ToString() ? box.Entity.SqlExpression : null );
+            box.IfValidProperty( nameof( box.Bag.SqlExpression ),
+                () => entity.SqlExpression = box.Bag.RequirementCheckType == RequirementCheckType.Sql.ToString() ? box.Bag.SqlExpression : null );
 
-            box.IfValidProperty( nameof( box.Entity.Summary ),
-                () => entity.Summary = box.Entity.Summary );
+            box.IfValidProperty( nameof( box.Bag.Summary ),
+                () => entity.Summary = box.Bag.Summary );
 
-            box.IfValidProperty( nameof( box.Entity.WarningDataView ),
-                () => entity.WarningDataViewId = box.Entity.RequirementCheckType == RequirementCheckType.Dataview.ToString() ? box.Entity.WarningDataView.GetEntityId<DataView>( rockContext ) : null );
+            box.IfValidProperty( nameof( box.Bag.WarningDataView ),
+                () => entity.WarningDataViewId = box.Bag.RequirementCheckType == RequirementCheckType.Dataview.ToString() ? box.Bag.WarningDataView.GetEntityId<DataView>( RockContext ) : null );
 
-            box.IfValidProperty( nameof( box.Entity.WarningLabel ),
-                () => entity.WarningLabel = box.Entity.WarningLabel );
+            box.IfValidProperty( nameof( box.Bag.WarningLabel ),
+                () => entity.WarningLabel = box.Bag.WarningLabel );
 
-            box.IfValidProperty( nameof( box.Entity.WarningSqlExpression ),
-                () => entity.WarningSqlExpression = box.Entity.RequirementCheckType == RequirementCheckType.Sql.ToString() ? box.Entity.WarningSqlExpression : null );
+            box.IfValidProperty( nameof( box.Bag.WarningSqlExpression ),
+                () => entity.WarningSqlExpression = box.Bag.RequirementCheckType == RequirementCheckType.Sql.ToString() ? box.Bag.WarningSqlExpression : null );
 
-            box.IfValidProperty( nameof( box.Entity.WarningWorkflowLinkText ),
-                () => entity.WarningWorkflowLinkText = box.Entity.WarningWorkflowLinkText );
+            box.IfValidProperty( nameof( box.Bag.WarningWorkflowLinkText ),
+                () => entity.WarningWorkflowLinkText = box.Bag.WarningWorkflowLinkText );
 
-            box.IfValidProperty( nameof( box.Entity.WarningWorkflowType ),
-                () => entity.WarningWorkflowTypeId = box.Entity.WarningWorkflowType.GetEntityId<WorkflowType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.WarningWorkflowType ),
+                () => entity.WarningWorkflowTypeId = box.Bag.WarningWorkflowType.GetEntityId<WorkflowType>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="GroupRequirementType"/> to be viewed or edited on the page.</returns>
-        private GroupRequirementType GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override GroupRequirementType GetInitialEntity()
         {
-            return GetInitialEntity<GroupRequirementType, GroupRequirementTypeService>( rockContext, PageParameterKey.GroupRequirementTypeId );
+            return GetInitialEntity<GroupRequirementType, GroupRequirementTypeService>( RockContext, PageParameterKey.GroupRequirementTypeId );
         }
 
         /// <summary>
@@ -406,46 +390,9 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out GroupRequirementType entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( GroupRequirementType entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out GroupRequirementType entity, out BlockActionResult error )
-        {
-            var entityService = new GroupRequirementTypeService( rockContext );
+            var entityService = new GroupRequirementTypeService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -490,22 +437,20 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<GroupRequirementTypeBag, GroupRequirementTypeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<GroupRequirementTypeBag>()
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -514,31 +459,30 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<GroupRequirementTypeBag, GroupRequirementTypeDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<GroupRequirementTypeBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateGroupRequirementType( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateGroupRequirementType( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            RockContext.SaveChanges();
+
+            var bag = GetEntityBagForView( entity );
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -549,79 +493,22 @@ TIP: When calculating for a specific Person, a <strong>Person</strong> merge fie
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new GroupRequirementTypeService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new GroupRequirementTypeService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<GroupRequirementTypeBag, GroupRequirementTypeDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<GroupRequirementTypeBag, GroupRequirementTypeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         #endregion

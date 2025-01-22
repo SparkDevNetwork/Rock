@@ -215,10 +215,11 @@ namespace Rock.Blocks.Core
                 Description = entity.Description,
                 IdKey = entity.IdKey,
                 IsActive = entity.IsActive,
-                Value = entity.Value
+                Value = entity.Value,
+                Id = entity.Id,
             };
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -369,7 +370,7 @@ namespace Rock.Blocks.Core
 
             if ( bag.AttributeValues != null )
             {
-                entity.SetPublicAttributeValues( bag.AttributeValues, RequestContext.CurrentPerson );
+                entity.SetPublicAttributeValues( bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
             }
 
             if ( !entity.IsValid )

@@ -194,7 +194,7 @@ namespace Rock.Jobs
         /// running from inside a unit test. This includes things like network
         /// operations or steps which modify on-disk content.
         /// </summary>
-        internal bool IsRunningFromUnitTest { get; set; }
+        static internal bool IsRunningFromUnitTest { get; set; }
 
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
@@ -1242,7 +1242,7 @@ namespace Rock.Jobs
             {
                 // Verify that the workflow is not being used by something important by letting CanDelete tell
                 // us if it's OK to delete.
-                if ( workflowService.CanDelete( workflow, out _ ) )
+                if ( workflowService.IsEligibleForDelete( workflow, out _ ) )
                 {
                     workflowIdsSafeToDelete.Add( workflow.Id );
                 }
@@ -1366,7 +1366,7 @@ namespace Rock.Jobs
             var avatarCachePath = args.AvatarCachePath;
             var validationMessages = new List<string>();
 
-            if ( System.Web.Hosting.HostingEnvironment.IsHosted || args.HostName == "RockSchedulerIIS" )
+            if ( ( System.Web.Hosting.HostingEnvironment.IsHosted || args.HostName == "RockSchedulerIIS" ) && !args.IsUnitTest )
             {
                 if ( !string.IsNullOrEmpty( cacheDirectoryPath ) )
                 {
@@ -3664,6 +3664,13 @@ SET @UpdatedCampusCount = @CampusCount;
             /// If set to null, all expired files are removed.
             /// </summary>
             public int? CacheMaximumFilesToRemove;
+
+            /// <summary>
+            /// <c>true</c> if the action is being executed from a unit test. This
+            /// disables a few features that are only valid under a full running
+            /// Rock instance (such as mapping IIS paths).
+            /// </summary>
+            public bool IsUnitTest { get; set; }
         }
     }
 }

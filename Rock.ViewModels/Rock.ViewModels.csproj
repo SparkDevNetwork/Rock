@@ -118,6 +118,8 @@
     <Compile Include="Blocks\Cms\LavaShortcodeList\LavaShortcodeListBox.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationBag.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationInitializationBox.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushMediumOptionsBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntryPushNotificationOptionsBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\CommunicationEntrySaveMetricsReminderRequestBag.cs" />
@@ -157,6 +159,7 @@
     <Compile Include="Blocks\Lms\LearningClassAnnouncementDetail\LearningClassAnnouncementDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningClassDetail\LearningClassBag.cs" />
     <Compile Include="Blocks\Lms\LearningClassDetail\LearningClassDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Lms\LearningClassDetail\LearningClassLocationBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemDetail\LearningGradingSystemBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemDetail\LearningGradingSystemDetailOptionsBag.cs" />
     <Compile Include="Blocks\Lms\LearningGradingSystemList\LearningGradingSystemListOptionsBag.cs" />
@@ -290,6 +293,10 @@
     <Compile Include="Blocks\Core\DeviceDetail\DeviceBag.cs" />
     <Compile Include="Blocks\Core\DeviceDetail\DeviceDetailOptionsBag.cs" />
     <Compile Include="Blocks\Core\DeviceList\DeviceListOptionsBag.cs" />
+    <Compile Include="Blocks\Core\EntitySearchDetail\EntitySearchBag.cs" />
+    <Compile Include="Blocks\Core\EntitySearchDetail\EntitySearchDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\EntitySearchDetail\PreviewResultsBag.cs" />
+    <Compile Include="Blocks\Core\EntitySearchList\EntitySearchListOptionsBag.cs" />
     <Compile Include="Blocks\Core\EventList\EventListOptionsBag.cs" />
     <Compile Include="Blocks\Core\LocationList\LocationListOptionsBag.cs" />
     <Compile Include="Blocks\Core\NoteTypeList\NoteTypeListOptionsBag.cs" />
@@ -796,6 +803,8 @@
     <Compile Include="Cms\ObsidianBlockPreferencesBag.cs" />
     <Compile Include="Communication\ConversationAttachmentBag.cs" />
     <Compile Include="Communication\ConversationMessageBag.cs" />
+    <Compile Include="Core\EntitySearchQueryBag.cs" />
+    <Compile Include="Core\EntitySearchResultsBag.cs" />
     <Compile Include="Controls\FieldPropertyItemBag.cs" />
     <Compile Include="Controls\FieldSettingBag.cs" />
     <Compile Include="Controls\DatePartsPickerValueBag.cs" />
@@ -854,6 +863,10 @@
     <Compile Include="Rest\CheckIn\SaveAttendanceResponseBag.cs" />
     <Compile Include="Rest\CheckIn\SearchForFamiliesOptionsBag.cs" />
     <Compile Include="Rest\CheckIn\SearchForFamiliesResponseBag.cs" />
+    <Compile Include="Rest\Models\CreatedAtResponseBag.cs" />
+    <Compile Include="Rest\Models\ItemIdentifierBag.cs" />
+    <Compile Include="Rest\Models\ModelAttributeValueBag.cs" />
+    <Compile Include="Rest\Models\Workflows\LaunchWorkflowOptionsBag.cs" />
     <Compile Include="Blocks\Finance\VolunteerGenerosityAnalysis\VolunteerGenerosityAnalysisBag.cs" />
     <Compile Include="Controls\UniversalItemSearchPickerItemBag.cs" />
     <Compile Include="Core\Grid\DynamicFieldDefinitionBag.cs" />
@@ -869,6 +882,7 @@
     <Compile Include="Rest\Controls\ReminderButtonGetRemindersOptionsBag.cs" />
     <Compile Include="Rest\Controls\UniversalItemSearchPickerOptionsBag.cs" />
     <Compile Include="Rest\Controls\UniversalItemTreePickerOptionsBag.cs" />
+    <Compile Include="Rest\Models\Workflows\LaunchWorkflowResponseBag.cs" />
     <Compile Include="Utility\TimeIntervalBag.cs" />
     <Compile Include="Core\Grid\CustomActionBag.cs" />
     <Compile Include="Core\Grid\CustomColumnDefinitionBag.cs" />

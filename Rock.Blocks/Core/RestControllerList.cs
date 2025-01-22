@@ -123,10 +123,13 @@ namespace Rock.Blocks.Core
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "className", a => a.ClassName )
+                .AddTextField( "routePrefix", a => a.GetMetadata()?.RoutePrefix )
+                .AddField( "version", a => a.GetMetadata()?.Version ?? 1 )
                 .AddField( "actions", a => a.Actions.Count() )
-                .AddField( "actionsWithPublicCachingHeaders", a => a.Actions.Count( x => x.CacheControlHeaderSettings != null
-                                                                                        && x.CacheControlHeaderSettings != ""
-                                                                                        && x.CacheControlHeaderSettings.Contains( "\"RockCacheablityType\":0" ) ) )
+                .AddField( "actionsWithPublicCachingHeaders", a => a
+                    .Actions.Count( x => x.CacheControlHeaderSettings != null
+                        && x.CacheControlHeaderSettings != ""
+                        && x.CacheControlHeaderSettings.Contains( "\"RockCacheablityType\":0" ) ) )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );
         }

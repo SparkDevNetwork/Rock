@@ -107,7 +107,7 @@
 
                 var mapStyle = <%=this.StyleCode%>;
                 var mapId = '<%=this.MapId%>';
-                var isDefaultMapId = mapId === 'DEFAULT_MAP_ID';
+                var isMapIdEmpty = !mapId;
                 var polygonColorIndex = 0;
                 var polygonColors;
 
@@ -130,7 +130,7 @@
                         , streetViewControl: false
                     }
 
-                    if (!isDefaultMapId) {
+                    if (!isMapIdEmpty) {
                         mapOptions.mapId = mapId;
                     }
 
@@ -177,7 +177,7 @@
                     var campusMarkersData = [
 <%=this.CampusMarkersData%>]
 
-                    if (isDefaultMapId) {
+                    if (isMapIdEmpty) {
                         var pinImage = {
                             path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
                             fillColor: '#FE7569',

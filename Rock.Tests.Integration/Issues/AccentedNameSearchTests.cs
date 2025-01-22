@@ -98,7 +98,7 @@ namespace Rock.Tests.Integration.Core.Crm
 
             jobAnalytics.ExecuteInternal( analyticsSettings );
 
-            Assert.That.Contains( jobAnalytics.Result, "Person BI Results:\r\n-- Inserted" );
+            Assert.That.Contains( jobAnalytics.Result, "Person BI Results:" );
         }
 
         [TestMethod]

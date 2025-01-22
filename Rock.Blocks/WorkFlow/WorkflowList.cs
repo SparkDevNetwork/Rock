@@ -362,7 +362,7 @@ namespace Rock.Blocks.Workflow
                 return ActionBadRequest( $"Not authorized to delete {Rock.Model.Workflow.FriendlyTypeName}." );
             }
 
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            if ( !entityService.IsEligibleForDelete( entity, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
             }

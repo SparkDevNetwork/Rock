@@ -15,7 +15,13 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
 using System.Data.Entity;
+using System.Linq;
+using System.Reflection;
+
+using Rock.Cms;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -41,6 +47,112 @@ namespace Rock.Model
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
             RestControllerCache.UpdateCachedEntity( this.Id, entityState );
+        }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> SupportedActions
+        {
+            get
+            {
+                var metadata = GetMetadata();
+
+                if ( metadata?.SupportedActions != null )
+                {
+                    return new Dictionary<string, string>( metadata.SupportedActions );
+                }
+
+                return CalculateSupportedActions( metadata, out _ );
+            }
+        }
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority
+        {
+            get
+            {
+                var metadata = GetMetadata();
+
+                // Version 2 endpoints are restricted by default. Explicit
+                // permissions must be granted to each controller or endpoint.
+                if ( metadata?.Version == 2 )
+                {
+                    return new GlobalRestrictedDefault();
+                }
+
+                return base.ParentAuthority;
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Calculates the support actions of this controller.
+        /// </summary>
+        /// <param name="metadata">The existing metadata that has been calculated on this controller.</param>
+        /// <param name="controllerType">On return this will contain the controller type if one was found.</param>
+        /// <returns>A dictionary of the supported actions.</returns>
+        internal Dictionary<string, string> CalculateSupportedActions( RestControllerMetadata metadata, out System.Type controllerType )
+        {
+            var actions = new Dictionary<string, string>( base.SupportedActions );
+
+            if ( metadata?.Version == 2 )
+            {
+                // We need to add new items before we remove the old ones
+                // otherwise the order gets screwed up.
+                actions.TryAdd( Authorization.EXECUTE_READ, "Allows execution of API endpoints in the context of viewing data." );
+                actions.TryAdd( Authorization.EXECUTE_WRITE, "Allows execution of API endpoints in the context of editing data." );
+                actions.TryAdd( Authorization.EXECUTE_UNRESTRICTED_READ, "Allows execution of API endpoints in the context of viewing data without performing per-entity security checks." );
+                actions.TryAdd( Authorization.EXECUTE_UNRESTRICTED_WRITE, "Allows execution of API endpoints in the context of editing data without performing per-entity security checks." );
+
+                actions.Remove( Authorization.VIEW );
+                actions.Remove( Authorization.EDIT );
+
+                // Use a new dictionary to force remove the holes left behind
+                // after we removed the VIEW and EDIt permissions so any Adds
+                // below go in the right place.
+                actions = new Dictionary<string, string>( actions );
+            }
+
+            controllerType = Reflection.FindType( typeof( object ), ClassName );
+
+            if ( controllerType != null )
+            {
+                foreach ( var sa in controllerType.GetCustomAttributes<SecurityActionAttribute>() )
+                {
+                    actions.TryAdd( sa.Action, sa.Description );
+                }
+
+                foreach ( var action in controllerType.GetCustomAttributes<ExcludeSecurityActionsAttribute>().SelectMany( esa => esa.Actions ) )
+                {
+                    actions.Remove( action );
+                }
+            }
+
+            return actions;
+        }
+
+        /// <summary>
+        /// Gets the metadata for this instance.
+        /// </summary>
+        /// <returns>An instance of <see cref="RestControllerMetadata"/> or <c>null</c>.</returns>
+        internal RestControllerMetadata GetMetadata()
+        {
+            return this.GetAdditionalSettings<RestControllerMetadata>();
+        }
+
+        /// <summary>
+        /// Updates this instance to use the specified metadata.
+        /// </summary>
+        /// <param name="data">The metadata or <c>null</c>.</param>
+        internal void SetMetadata( RestControllerMetadata data )
+        {
+            this.SetAdditionalSettings( data );
         }
 
         #endregion

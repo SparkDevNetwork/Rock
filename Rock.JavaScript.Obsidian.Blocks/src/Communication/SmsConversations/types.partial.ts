@@ -25,4 +25,5 @@ export const enum PreferenceKey {
 
 export interface IConversationParticipantTopic {
     joinSmsNumber(rockPhoneNumber: Guid): Promise<void>;
+    leaveSmsNumber(rockPhoneNumber: Guid): Promise<void>;
 }

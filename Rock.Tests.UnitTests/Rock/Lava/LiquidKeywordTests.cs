@@ -20,7 +20,6 @@ using Rock.Lava;
 using Rock.Data;
 using System.Collections.Generic;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
 using Rock.Enums.Blocks.Crm.FamilyPreRegistration;
 using Rock.Tests.Shared;
 
@@ -133,36 +132,6 @@ Ted, your communication preference is: Email
             var template = @"
 {{ person.NickName }}, your communication preference is:
 {% case person.CommunicationPreference %} {% when 'Email' %}Email{% else %}Not Email!{% endcase %}
-";
-
-            var expectedOutput = @"
-Ted, your communication preference is: Email
-";
-
-            var mergeDictionary = new LavaDataDictionary { { "person", person } };
-
-            TestHelper.AssertTemplateOutput( expectedOutput, template, mergeDictionary, ignoreWhitespace: true );
-        }
-
-        /// <summary>
-        /// This test case reproduces the inverse of Issue #4910 (Part 2).
-        /// This is not a reported use case, and is not currently supported in Fluid.
-        /// </summary>
-        [TestMethod]
-        [Ignore( "The Fluid framework does not natively support using an Enum name in a case statement." )]
-        public void LiquidCaseBlock_WithEnumWhen_MatchesEquivalentNameInCase()
-        {
-            var person = new
-            {
-                NickName = "Ted",
-                CommunicationPreference = CommunicationPreference.Email
-            };
-
-            Assert.That.AreEqual( 1, ( int ) CommunicationPreference.Email );
-
-            var template = @"
-{{ person.NickName }}, your communication preference is:
-{% case 'Email' %} {% when person.CommunicationPreference %}Email{% else %}Not Email!{% endcase %}
 ";
 
             var expectedOutput = @"
@@ -538,12 +507,6 @@ The answer is {{ x }}.
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                // The RockLiquid engine does not support this tag.
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    return;
-                }
-
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, input, ignoreWhitespace: true );

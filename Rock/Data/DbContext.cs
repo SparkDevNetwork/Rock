@@ -430,6 +430,11 @@ namespace Rock.Data
                 }
             }
 
+            if ( Net.RockRequestContextAccessor.Current != null )
+            {
+                return Net.RockRequestContextAccessor.Current.CurrentPerson?.PrimaryAlias;
+            }
+
             return null;
         }
 

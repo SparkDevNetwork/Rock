@@ -145,11 +145,33 @@ namespace RockWeb.Blocks.Administration
                     {
                         if ( iSecured.SupportedActions.Any() )
                         {
-                            lActionDescription.Text = iSecured.SupportedActions.FirstOrDefault().Value;
+                            // If we the selected action doesn't exist in the
+                            // set of supported actions then select the first
+                            // one.
+                            if ( !iSecured.SupportedActions.ContainsKey( CurrentAction ) )
+                            {
+                                // Convert the dictionary of actions into something we
+                                // can have a concrete order to.
+                                var supportedActions = iSecured.SupportedActions
+                                    .Select( a => a.Key )
+                                    .ToList();
+
+                                // If there is an Administrate action, move it to the end.
+                                var administrateIndex = supportedActions.FindIndex( a => a == "Administrate" );
+                                if ( administrateIndex != -1 )
+                                {
+                                    var administrateAction = supportedActions[administrateIndex];
+                                    supportedActions.RemoveAt( administrateIndex );
+                                    supportedActions.Add( administrateAction );
+                                }
+
+                                CurrentAction = supportedActions.FirstOrDefault();
+                            }
+
+                            lActionDescription.Text = iSecured.SupportedActions[CurrentAction];
                         }
 
-                        rptActions.DataSource = iSecured.SupportedActions;
-                        rptActions.DataBind();
+                        BindActions();
 
                         rGrid.DataKeyNames = new string[] { "Id" };
                         rGrid.GridReorder += new GridReorderEventHandler( rGrid_GridReorder );
@@ -302,8 +324,7 @@ namespace RockWeb.Blocks.Administration
             {
                 CurrentAction = lb.Text.Replace( " ", "" );
 
-                rptActions.DataSource = iSecured.SupportedActions;
-                rptActions.DataBind();
+                BindActions();
 
                 SetRoleActions();
             }
@@ -525,6 +546,23 @@ namespace RockWeb.Blocks.Administration
                 AddParentRules( authService, itemRules, parentRules, iSecured.ParentAuthority, CurrentAction, true );
                 rGridParentRules.DataSource = parentRules;
                 rGridParentRules.DataBind();
+
+                var hasAllUsersEntry = itemRules.Any( r => r.SpecialRole == SpecialRole.AllUsers )
+                    || parentRules.Any( r => r.AuthRule.SpecialRole == SpecialRole.AllUsers );
+
+                if ( hasAllUsersEntry )
+                {
+                    nbNoMatchSecurityMessage.Visible = false;
+                }
+                else
+                {
+                    var allowedOrDenied = iSecured.IsAllowedByDefault( CurrentAction )
+                        ? "allowed"
+                        : "denied";
+
+                    nbNoMatchSecurityMessage.Text = string.Format( "The permission list does not include an \"All Users\" entry. Non-matching people will be {0} access.", allowedOrDenied );
+                    nbNoMatchSecurityMessage.Visible = true;
+                }
             }
         }
 
@@ -566,6 +604,31 @@ namespace RockWeb.Blocks.Administration
                     AddParentRules( authService, itemRules, parentRules, parent.ParentAuthority, action, true );
                 }
             }
+        }
+
+        private void BindActions()
+        {
+            // Convert the dictionary of actions into something we
+            // can have a concrete order to.
+            var supportedActions = iSecured.SupportedActions
+                .Select( a => new
+                {
+                    a.Key,
+                    a.Value
+                } )
+                .ToList();
+
+            // If there is an Administrate action, move it to the end.
+            var administrateIndex = supportedActions.FindIndex( a => a.Key == "Administrate" );
+            if ( administrateIndex != -1 )
+            {
+                var administrateAction = supportedActions[administrateIndex];
+                supportedActions.RemoveAt( administrateIndex );
+                supportedActions.Add( administrateAction );
+            }
+
+            rptActions.DataSource = supportedActions;
+            rptActions.DataBind();
         }
 
         /// <summary>

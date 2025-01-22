@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "SmsPipeline" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "64DA3A06-FD39-4E5B-8126-38404FB0092A")]
     public partial class SmsPipeline : Model<SmsPipeline>
     {

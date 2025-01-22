@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "MediaFolder" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "B28FC79F-9FEE-4BE4-801D-96B9246E6043")]
     public partial class MediaFolder : Model<MediaFolder>
     {

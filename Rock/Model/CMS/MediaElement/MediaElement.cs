@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "MediaElement" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "F4506B5D-F22C-4D3F-8205-FE48A9B7584B")]
     public partial class MediaElement : Model<MediaElement>
     {

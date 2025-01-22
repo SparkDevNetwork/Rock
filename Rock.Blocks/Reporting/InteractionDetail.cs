@@ -141,15 +141,39 @@ namespace Rock.Blocks.Reporting
             return box;
         }
 
+        /// <inheritdoc/>
+        protected override string GetInitialHtmlContent()
+        {
+            return GetInteractionContent();
+        }
+
         /// <summary>
         /// Gets the initialization box.
         /// </summary>
         /// <returns></returns>
         private InteractionDetailInitializationBox GetInitializationBox()
         {
+            var box = new InteractionDetailInitializationBox
+            {
+                Content = GetInteractionContent()
+            };
+
+            if ( box.Content.IsNullOrWhiteSpace() )
+            {
+                box.ErrorMessage = "<strong>Missing Interaction Information</strong> <span> <p> Make sure you have navigated to this page correctly. </p> </span>";
+            }
+
+            return box;
+        }
+
+        /// <summary>
+        /// Gets the Interaction HTML Content
+        /// </summary>
+        /// <returns>A string of the Interaction HTML Content</returns>
+        private string GetInteractionContent()
+        {
             var interactionId = PageParameter( PageParameterKey.InteractionId ).AsInteger();
             var interaction = new InteractionService( RockContext ).Get( interactionId );
-            var box = new InteractionDetailInitializationBox();
 
             if ( interaction != null )
             {
@@ -163,7 +187,7 @@ namespace Rock.Blocks.Reporting
                 {
                     var mergeFields = RequestContext.GetCommonMergeFields( GetCurrentPerson() );
                     mergeFields.TryAdd( MergeFieldKeys.Person, GetCurrentPerson() );
-                    mergeFields.Add( MergeFieldKeys.InteractionDetailPage,  LinkedPageRoute( MergeFieldKeys.InteractionDetailPage ) );
+                    mergeFields.Add( MergeFieldKeys.InteractionDetailPage, LinkedPageRoute( MergeFieldKeys.InteractionDetailPage ) );
                     mergeFields.Add( MergeFieldKeys.InteractionChannel, interaction.InteractionComponent.InteractionChannel );
                     mergeFields.Add( MergeFieldKeys.InteractionComponent, interaction.InteractionComponent );
                     mergeFields.Add( MergeFieldKeys.InteractionEntity, interactionEntity );
@@ -179,17 +203,12 @@ namespace Rock.Blocks.Reporting
 
                     mergeFields.Add( MergeFieldKeys.Interaction, interaction );
 
-                    box.Content = interaction.InteractionComponent.InteractionChannel.InteractionDetailTemplate.IsNotNullOrWhiteSpace() ?
+                    return interaction.InteractionComponent.InteractionChannel.InteractionDetailTemplate.IsNotNullOrWhiteSpace() ?
                         interaction.InteractionComponent.InteractionChannel.InteractionDetailTemplate.ResolveMergeFields( mergeFields ) :
                         GetAttributeValue( AttributeKey.DefaultTemplate ).ResolveMergeFields( mergeFields );
                 }
             }
-            else
-            {
-                box.ErrorMessage = "<strong>Missing Interaction Information</strong> <span> <p> Make sure you have navigated to this page correctly. </p> </span>";
-            }
-
-            return box;
+            return string.Empty;
         }
 
         /// <summary>

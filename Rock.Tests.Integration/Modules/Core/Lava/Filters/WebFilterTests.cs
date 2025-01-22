@@ -689,9 +689,6 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
                 "MyRockInstance/Themes/MyTheme/page/999",
                 @"{{ '~~/page/999' | ResolveRockUrl }}",
                 new LavaTestRenderOptions() );
-
-            // RockLiquid Engine.
-            // There is no simple means of mocking the RockPage request handler required to test this scenario.
         }
 
         [TestMethod]
@@ -705,15 +702,6 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
                 @"{{ '~/Person/1' | ResolveRockUrl }}" );
             TestHelper.AssertTemplateOutput( fluidEngine, $"{rootUrl}Themes/MyTheme/Person/1",
                 @"{{ '~~/Person/1' | ResolveRockUrl }}" );
-
-            // RockLiquid Engine.
-            // Note that there is no way to mock the theme setting in RockLiquid, so the default "Rock" theme is expected.
-            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.RockLiquid.RockLiquidEngine ),
-                $"{rootUrl}Person/1",
-                @"{{ '~/Person/1' | ResolveRockUrl }}" );
-            TestHelper.AssertTemplateOutput( typeof( Rock.Lava.RockLiquid.RockLiquidEngine ),
-                $"{rootUrl}Themes/Rock/Person/1",
-                @"{{ '~~/Person/1' | ResolveRockUrl }}" );
         }
 
         [TestMethod]
@@ -724,15 +712,6 @@ Ted Decker<br/>Cindy Decker<br/>Noah Decker<br/>Alex Decker<br/>
             TestHelper.AssertTemplateOutput( fluidEngine,
             $"http://www.microsoft.com/",
             @"{{ 'http://www.microsoft.com/' | ResolveRockUrl }}" );
-
-            // RockLiquid Engine.
-            var simulator = new Http.TestLibrary.HttpSimulator();
-            using ( simulator.SimulateRequest() )
-            {
-                TestHelper.AssertTemplateOutput( typeof( Rock.Lava.RockLiquid.RockLiquidEngine ),
-                $"http://www.microsoft.com/",
-                @"{{ 'http://www.microsoft.com/' | ResolveRockUrl }}" );
-            }
         }
 
         private ILavaEngine GetFluidEngineWithMockHost( bool hasHttpRequest )

@@ -98,6 +98,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="FileGenerators\RestV2ApiGenerator.cs" />
     <Compile Include="Pages\ObsidianListBlockPage.xaml.cs">
       <DependentUpon>ObsidianListBlockPage.xaml</DependentUpon>
     </Compile>
@@ -147,6 +148,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utility\EntityColumn.cs" />
     <Compile Include="Utility\GeneratedFileSaveState.cs" />
+    <Compile Include="Utility\IndentedStringBuilder.cs" />
     <Compile Include="Utility\RockGuidCodeGenerator.cs" />
     <Compile Include="Utility\AlertType.cs" />
     <Compile Include="Utility\BindingBase.cs" />

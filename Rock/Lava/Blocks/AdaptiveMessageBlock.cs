@@ -22,17 +22,8 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 
-using DocumentFormat.OpenXml.Bibliography;
-
-using Lucene.Net.Search.Similarities;
-
-using Nest;
-
-using PuppeteerSharp.Media;
-
 using Rock.Data;
 using Rock.Model;
-using Rock.Reporting.DataFilter.ContentChannelItem;
 using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -242,9 +233,9 @@ namespace Rock.Lava.Blocks
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
             foreach ( var adaptation in adaptations )
             {
-                if ( adaptation.AttributeValues.ContainsKey( "CallToActionText" ) )
+                if ( adaptation.AttributeValues.ContainsKey( "CallToAction" ) )
                 {
-                    adaptation.AttributeValues["CallToActionText"].Value = adaptation.AttributeValues["CallToActionText"].Value.ResolveMergeFields( mergeFields );
+                    adaptation.AttributeValues["CallToAction"].Value = adaptation.AttributeValues["CallToAction"].Value.ResolveMergeFields( mergeFields );
                 }
             }
 

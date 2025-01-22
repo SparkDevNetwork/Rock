@@ -22,6 +22,7 @@
 //
 
 import { LearningClassFacilitatorBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassFacilitatorBag";
+import { LearningClassLocationBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassLocationBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -67,7 +68,7 @@ export type LearningClassBag = {
     isPublic: boolean;
 
     /** Gets or Sets the Location that is associated with the LearningClass. */
-    location?: ListItemBag | null;
+    location?: LearningClassLocationBag | null;
 
     /** Gets or sets the Name of the Group. This property is required. */
     name?: string | null;

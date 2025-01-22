@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplatePlacement" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "CCE05820-5854-47A4-ACE3-05DF48479939")]
     public partial class RegistrationTemplatePlacement : Model<RegistrationTemplatePlacement>, IOrdered
     {

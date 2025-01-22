@@ -46,7 +46,7 @@
  * - timeIntervalPicker
  */
 
-import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch } from "vue";
+import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
 import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath, displayStyleItems } from "./ControlGallery/utils.partial";
 import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
 import { ControlGalleryInitializationBox } from "@Obsidian/ViewModels/Blocks/Example/ControlGallery/controlGalleryInitializationBox";
@@ -5476,10 +5476,11 @@ const codeEditorGallery = defineComponent({
         GalleryAndResult,
         CodeEditor,
         DropDownList,
-        NumberBox
+        NumberBox,
+        CheckBox
     },
     setup() {
-        const themeItems: ListItemBag[] = [
+        const aceThemeItems: ListItemBag[] = [
             { value: "rock", text: "rock" },
             { value: "chrome", text: "chrome" },
             { value: "crimson_editor", text: "crimson_editor" },
@@ -5509,8 +5510,16 @@ const codeEditorGallery = defineComponent({
             { value: "tomorrow_night_bright", text: "tomorrow_night_bright" },
             { value: "tomorrow_night_eighties", text: "tomorrow_night_eighties" },
             { value: "twilight", text: "twilight" },
-            { value: "vibrant_ink", text: "vibrant_ink" }
+            { value: "vibrant_ink", text: "vibrant_ink" },
+            { value: "vs-dark", text: "vs-dark" },
         ].sort((a, b) => a.text.localeCompare(b.text));
+
+        const monacoThemeItems: ListItemBag[] = [
+            { value: "vs", text: "vs" },
+            { value: "vs-dark", text: "vs-dark" },
+            { value: "hc-light", text: "hc-light" },
+            { value: "hc-black", text: "hc-black" }
+        ];
 
         const modeItems: ListItemBag[] = [
             { value: "text", text: "text" },
@@ -5527,46 +5536,90 @@ const codeEditorGallery = defineComponent({
             { value: "xml", text: "xml" },
         ].sort((a, b) => a.text.localeCompare(b.text));
 
+        const editorTypeItems: ListItemBag[] = [
+            { value: "ace", text: "Ace" },
+            { value: "monaco", text: "Monaco" }
+        ];
+
         const theme = ref("rock");
         const mode = ref("text");
-        const editorHeight = ref(200);
+        const editorHeight = ref(500);
+        const editorType = ref<"ace" | "monaco">("ace");
+
+        const lineWrap = ref(true);
+        const disabled = ref(false);
+
+        watchEffect(() => {
+            if (editorType.value === "ace") {
+                theme.value = "rock";
+            }
+            else {
+                theme.value = "vs-dark";
+            }
+        });
+
+        const value = ref("");
 
         const exampleCode = computed((): string => {
-            return buildExampleCode("CodeEditor", {
+            const attrs: Record<string, unknown> = {
                 theme,
                 mode,
-                editorHeight
-            });
+                editorHeight,
+                editor: editorType.value == "monaco" ? "monaco" : undefined,
+                noLineWrap: !lineWrap.value,
+                disabled: disabled.value
+            };
+
+            return buildExampleCode("CodeEditor", attrs, true);
         });
 
         return {
             theme,
-            themeItems,
+            aceThemeItems,
+            monacoThemeItems,
             mode,
             modeItems,
             editorHeight,
-            importCode: getControlImportPath("codeEditor"),
+            editorType,
+            value,
+            editorTypeItems,
+            lineWrap,
+            disabled,
+            importCode: getSfcControlImportPath("codeEditor"),
             exampleCode
         };
     },
     template: `
 <GalleryAndResult
+    :value="value"
     :importCode="importCode"
     :exampleCode="exampleCode">
-    <CodeEditor :theme="theme" :mode="mode" :editorHeight="editorHeight" />
+    <CodeEditor v-model="value" :theme="theme" :mode="mode" :editorHeight="editorHeight" :editor="editorType" :noLineWrap="!lineWrap" :disabled="disabled" />
 
     <template #settings>
         <div class="row">
-            <div class="col-md-4">
-                <DropDownList label="Theme" v-model="theme" :items="themeItems" />
+            <div class="col-md-3">
+                <DropDownList label="Theme" v-model="theme" :items="editorType == 'ace' ? aceThemeItems : monacoThemeItems" />
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <DropDownList label="Mode" v-model="mode" :items="modeItems" />
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
+                <DropDownList label="Editor Library" v-model="editorType" :items="editorTypeItems" />
+            </div>
+
+            <div class="col-md-3">
                 <NumberBox label="Editor Height" v-model="editorHeight" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox label="Line Wrap" v-model="lineWrap" />
+            </div>
+            <div class="col-md-3">
+                <CheckBox label="Read Only" v-model="disabled" />
             </div>
         </div>
     </template>

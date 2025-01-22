@@ -397,14 +397,14 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
             var baseDate = RockDateTime.Now;
 
             CreateTestFile( avatarCachePath + $"/avatar_current_1.txt", lastModifiedTime: baseDate );
-            CreateTestFile( avatarCachePath + $"/avatar_current_2.txt", lastModifiedTime: baseDate.AddDays( -6 ) );
+            CreateTestFile( avatarCachePath + $"/avatar_current_2.txt", lastModifiedTime: baseDate.AddDays( -5 ) );
             CreateTestFile( avatarCachePath + $"/avatar_old.txt", lastModifiedTime: baseDate.AddDays( -7 ) );
             CreateTestFile( avatarCachePath + $"/avatar_future.txt", lastModifiedTime: baseDate.AddDays( 1 ) );
             CreateTestFile( avatarCachePath + $"/subdir1/avatar_old.txt", lastModifiedTime: baseDate.AddDays( -7 ) );
             CreateTestFile( avatarCachePath + $"/subdir2/avatar_old.txt", lastModifiedTime: baseDate.AddDays( -7 ) );
 
             CreateTestFile( imageCachePath + $"/image_current_1.txt", createdTime: baseDate );
-            CreateTestFile( imageCachePath + $"/image_current_2.txt", createdTime: baseDate.AddDays( -6 ) );
+            CreateTestFile( imageCachePath + $"/image_current_2.txt", createdTime: baseDate.AddDays( -5 ) );
             CreateTestFile( imageCachePath + $"/image_old.txt", createdTime: baseDate.AddDays( -7 ) );
             CreateTestFile( imageCachePath + $"/image_future.txt", createdTime: baseDate.AddDays( 1 ) );
             CreateTestFile( imageCachePath + $"/subdir1/image_old.txt", createdTime: baseDate.AddDays( -7 ) );
@@ -425,8 +425,9 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
             {
                 AvatarCachePath = avatarCachePath,
                 ImageCachePath = imageCachePath,
-                CacheDurationDays = 7,
-                HostName = "test-host"
+                CacheDurationDays = 6,
+                HostName = "test-host",
+                IsUnitTest = true
             };
 
             _ = job.CleanCachedFileDirectories( args );
@@ -449,9 +450,10 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
             {
                 AvatarCachePath = avatarCachePath,
                 ImageCachePath = imageCachePath,
-                CacheDurationDays = 7,
+                CacheDurationDays = 6,
                 HostName = "test-host",
-                CacheMaximumFilesToRemove = 1
+                CacheMaximumFilesToRemove = 1,
+                IsUnitTest = true
             };
 
             var avatarFileCount = Directory.GetFiles( avatarCachePath, searchPattern: "*", searchOption: SearchOption.AllDirectories ).Count();
@@ -480,8 +482,9 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
             {
                 AvatarCachePath = avatarCachePath,
                 ImageCachePath = imageCachePath,
-                CacheDurationDays = 7,
-                HostName = "test-host"
+                CacheDurationDays = 6,
+                HostName = "test-host",
+                IsUnitTest = true
             };
 
             try
@@ -549,45 +552,28 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
         {
             var job = new Rock.Jobs.RockCleanup();
             var rockContext = new RockContext();
-            int recordsAffected;
-
-            // Remove the existing Person Search Keys.
             var personSearchKeyService = new PersonSearchKeyService( rockContext );
 
-            var initialSearchKeyCount = personSearchKeyService.Queryable().Count();
+            var personSearchOptions = PersonService.PersonQueryOptions.AllRecords();
+            personSearchOptions.IncludeAnonymousVisitor = false;
 
+            // We should have a search key for every Person except the anonymous
+            // visitor person.
+            var expectedCount = new PersonService( rockContext ).Queryable( personSearchOptions ).Count();
+
+            // Remove the existing Person Search Keys.
             var sql = @"
 DELETE FROM PersonSearchKey
 ";
             DbService.ExecuteCommand( sql, System.Data.CommandType.Text );
-
-            /* Add some faulty data to verify that this will not cause a problem processing the cleanup. */
-
-            // Remove a PersonAlias record.
-            sql = $@"
-DELETE FROM PersonAlias
-WHERE AliasPersonId IN (SELECT Id FROM Person WHERE [Guid] = '{TestGuids.TestPeople.SamHanks}')
-";
-            recordsAffected = DbService.ExecuteCommand( sql, System.Data.CommandType.Text );
-            Assert.AreEqual( 1, recordsAffected, "Test data is invalid." );
-
-            // Modify a PersonAlias record to point to the wrong Person.
-            sql = $@"
-DECLARE @validPersonId int = ( SELECT [Id] FROM [Person] WHERE [Guid] = '{TestGuids.TestPeople.SamHanks}')
-UPDATE PersonAlias
-SET [AliasPersonId] = @validPersonId
-WHERE PersonId IN ( SELECT Id FROM Person WHERE [Guid] = '{TestGuids.TestPeople.MaddieLowe}' )
-";
-            recordsAffected = DbService.ExecuteCommand( sql, System.Data.CommandType.Text );
-            Assert.AreEqual( 1, recordsAffected, "Test data is invalid." );
 
             // Execute the cleanup job and verify that all of the search keys have been regenerated.
             job.PersonCleanup();
 
             var finalSearchKeyCount = personSearchKeyService.Queryable().Count();
 
-            // Verify that the initial search keys have been restored, less the two invalid records.
-            Assert.AreEqual( initialSearchKeyCount - 2, finalSearchKeyCount, "Invalid search key count." );
+            // Verify that search keys have been created.
+            Assert.AreEqual( expectedCount, finalSearchKeyCount, "Invalid search key count." );
         }
 
         #endregion

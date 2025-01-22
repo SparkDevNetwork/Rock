@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "NoteType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "337EED57-D4AB-4EED-BBDB-0CB3A467DBCC" )]
     public partial class NoteType : Model<NoteType>, IOrdered, ICacheable, IHasAdditionalSettings
     {

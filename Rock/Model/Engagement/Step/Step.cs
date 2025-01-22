@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "Step" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.STEP )]
     public partial class Step : Model<Step>, IOrdered
     {

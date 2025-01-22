@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "LMS" )]
     [Table( "LearningProgram" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_PROGRAM )]
     public partial class LearningProgram : Model<LearningProgram>, IHasActiveFlag, ICategorized
     {

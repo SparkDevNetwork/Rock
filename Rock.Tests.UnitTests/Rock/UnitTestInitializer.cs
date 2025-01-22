@@ -29,7 +29,7 @@ namespace Rock.Tests.UnitTests
         [AssemblyInitialize]
         public static void AssemblyInitialize( TestContext context )
         {
-            LavaUnitTestHelper.Initialize( testRockLiquidEngine:true, testDotLiquidEngine:false, testFluidEngine:true );
+            LavaUnitTestHelper.Initialize( testFluidEngine:true );
         }
 
         /// <summary>

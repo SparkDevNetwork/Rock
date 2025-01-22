@@ -17,14 +17,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.UnitTests.Lava
@@ -57,7 +55,6 @@ namespace Rock.Tests.UnitTests.Lava
 
         /// <summary>
         /// Verify the "less than" comparison operator extensions for Fluid.
-        /// These tests represents Liquid-compatible expressions that are not supported in RockLiquid.
         /// </summary>
         [DataTestMethod]
         [DataRow( "1 < 1.1", true )]
@@ -159,7 +156,6 @@ namespace Rock.Tests.UnitTests.Lava
 
         /// <summary>
         /// Verify the "less than" comparison operator extensions for Fluid.
-        /// These tests represents Liquid-compatible expressions that are not supported in RockLiquid.
         /// </summary>
         [DataTestMethod]
         [DataRow( "1.1 <= 1.1", true )]
@@ -271,7 +267,6 @@ namespace Rock.Tests.UnitTests.Lava
 
         /// <summary>
         /// Verify the "Greater than" comparison operator extensions for Fluid.
-        /// These tests represents Liquid-compatible expressions that are not supported in RockLiquid.
         /// </summary>
         [DataTestMethod]
         [DataRow( "1.1 > 1", true )]
@@ -373,7 +368,6 @@ namespace Rock.Tests.UnitTests.Lava
 
         /// <summary>
         /// Verify the "Greater than" comparison operator extensions for Fluid.
-        /// These tests represents Liquid-compatible expressions that are not supported in RockLiquid.
         /// </summary>
         [DataTestMethod]
         [DataRow( "1.1 >= 1.1", true )]
@@ -492,34 +486,7 @@ namespace Rock.Tests.UnitTests.Lava
         }
 
         /// <summary>
-        /// Verify the "equals" comparison operator for boolean values using the DotLiquid framework.
-        /// </summary>
-        [DataTestMethod]
-        [DataRow( "'False' == true", false )]
-        [DataRow( "'False' == false", true )]
-        [DataRow( "true == 'False'", false )]
-        [DataRow( "false == 'False'", true )]
-        [DataRow( "true == true", true )]
-        [DataRow( "false == false", true )]
-        [DataRow( "true == false", false )]
-        public void RockLiquidEqual_BooleanAndOtherOperandType_PerformsImplicitConversionToBoolean( string expression, bool expectedResult )
-        {
-            var template = "{% if " + expression + " %}True{% else %}False{% endif %}";
-
-            /* [2024-03-24] DJL
-
-               This test only applies to the RockLiquid Engine.
-               Implementations of Lava using the DotLiquid framework support duck-typing and implicit conversion
-               of operands when comparing values, so string values such as 'True' and 'False' are interpreted as
-               boolean values, and the expression {% 'False' == false %} evaluates as true.
-               This does not align with the Shopify Liquid standard, but the rule is preserved for consistency.
-            */
-            TestHelper.AssertTemplateOutput( typeof( RockLiquidEngine ), expectedResult.ToString(), template, ignoreWhitespace: true );
-        }
-
-        /// <summary>
         /// Verify the "equals" comparison operator extensions for Fluid.
-        /// These tests represents Liquid-compatible expressions that are not supported in RockLiquid.
         /// </summary>
         [DataTestMethod]
         [DataRow( "1.0 == 1.0", true )]
@@ -644,7 +611,6 @@ namespace Rock.Tests.UnitTests.Lava
 
         /// <summary>
         /// Verify the "not equals" comparison operator extensions for Fluid.
-        /// These tests represents Liquid-compatible expressions that are not supported in RockLiquid.
         /// </summary>
         [DataTestMethod]
         [DataRow( "1.0 != 2.0", true )]
@@ -754,11 +720,6 @@ namespace Rock.Tests.UnitTests.Lava
 
             WriteLavaExpressionTestTableToDebugOutput( tests );
 
-            /// This test documents the truth table for boolean equality comparisons in the RockLiquid Lava Engine v16.
-            /// Changes to these results should be clearly documented, because they may break compatibility
-            /// with templates created in previous versions of Rock.
-            AssertExpressionsForEngine( tests, typeof( RockLiquidEngine ) );
-
             // This test applies to the current implementation of Lava with the Fluid engine.
             // The Fluid framework natively aligns with the Shopify equality rules, and the Lava implementation
             // modified to be compatible with previous versions of Lava.
@@ -771,7 +732,7 @@ namespace Rock.Tests.UnitTests.Lava
         private class PredicateTruthTest
         {
             /// <summary>
-            /// A truth test that has the same result for both the DotLiquid and Fluid implementations of Lava.
+            /// A truth test for the Fluid implementations of Lava.
             /// </summary>
             /// <param name="expression"></param>
             /// <param name="lavaResult"></param>
@@ -781,26 +742,23 @@ namespace Rock.Tests.UnitTests.Lava
                 var test = new PredicateTruthTest
                 {
                     ConditionalExpression = expression,
-                    RockLiquidLavaResult = lavaResult,
                     FluidLavaResult = lavaResult
                 };
                 return test;
             }
 
             /// <summary>
-            /// A truth test that has a different result for the DotLiquid and Fluid implementations of Lava.
+            /// A truth test for the Fluid implementations of Lava.
             /// </summary>
             /// <param name="expression">A Lava predicate; an expression that evaluates to a true/false result.</param>
-            /// <param name="rockLiquidResult">The expected result when this expression is processed by Lava using the RockLiquid engine.</param>
             /// <param name="fluidResult">The expected result when this expression is processed by Lava using the Fluid engine.</param>
             /// <param name="note">An optional note explaining the reason for the variation.</param>
             /// <returns></returns>
-            public static PredicateTruthTest NewDifferentialTest( string expression, bool rockLiquidResult, bool fluidResult, string note = null )
+            public static PredicateTruthTest NewDifferentialTest( string expression, bool fluidResult, string note = null )
             {
                 var test = new PredicateTruthTest
                 {
                     ConditionalExpression = expression,
-                    RockLiquidLavaResult = rockLiquidResult,
                     FluidLavaResult = fluidResult,
                     Note = note
                 };
@@ -809,7 +767,6 @@ namespace Rock.Tests.UnitTests.Lava
 
             public string ConditionalExpression;
             public bool FluidLavaResult;
-            public bool RockLiquidLavaResult;
             public string Note;
         }
 
@@ -889,18 +846,11 @@ namespace Rock.Tests.UnitTests.Lava
             tests.Add( PredicateTruthTest.NewLavaTest( "'' != true", true ) );
             tests.Add( PredicateTruthTest.NewLavaTest( "'' != false", true ) );
 
-            /* 
-               2024-19-04 - DJL
-
-               These comparisons yield the opposite result from RockLiquid.
-               However, the outcomes are logically consistent with the preceding String/Boolean comparisons
-               and fix an inconsistency in the RockLiquid implementation.
-            */
             var comment1 = "DotLiquid has an inconsistency caused by RHS Boolean->String conversion.";
-            tests.Add( PredicateTruthTest.NewDifferentialTest( "'true' == true", false, true, comment1 ) );
-            tests.Add( PredicateTruthTest.NewDifferentialTest( "'true' == True", false, true, comment1 ) );
-            tests.Add( PredicateTruthTest.NewDifferentialTest( "'false' == false", false, true, comment1 ) );
-            tests.Add( PredicateTruthTest.NewDifferentialTest( "'false' == False", false, true, comment1 ) );
+            tests.Add( PredicateTruthTest.NewDifferentialTest( "'true' == true", true, comment1 ) );
+            tests.Add( PredicateTruthTest.NewDifferentialTest( "'true' == True", true, comment1 ) );
+            tests.Add( PredicateTruthTest.NewDifferentialTest( "'false' == false", true, comment1 ) );
+            tests.Add( PredicateTruthTest.NewDifferentialTest( "'false' == False", true, comment1 ) );
 
             return tests;
         }
@@ -916,11 +866,7 @@ namespace Rock.Tests.UnitTests.Lava
                 input += "{% if " + testEntry.ConditionalExpression + " %}true{% else %}false{% endif %}";
 
                 bool expectedResult;
-                if ( engineType == typeof( RockLiquidEngine ) )
-                {
-                    expectedResult = testEntry.RockLiquidLavaResult;
-                }
-                else if ( engineType == typeof( FluidEngine ) )
+                if ( engineType == typeof( FluidEngine ) )
                 {
                     expectedResult = testEntry.FluidLavaResult;
                 }
@@ -975,7 +921,6 @@ namespace Rock.Tests.UnitTests.Lava
     <tr>
         <td>#</td>
         <td>Expression</td>
-        <td>Expected (DotLiquid)</td>
         <td>Expected (Fluid)</td>
         <td>Actual ({{ currentEngine }})</td>
         <td>Result</td>
@@ -993,16 +938,14 @@ namespace Rock.Tests.UnitTests.Lava
     <tr>
         <td>$i</td>
         <td>$expression</td>
-        <td>$expectedDotLiquid</td>
         <td>$expectedFluid</td>
         <td>{% capture result %}{% if $expression %}true{% else %}false{% endif %}{% endcapture %}{{ result }}</td>
-{% if currentEngine == 'Fluid' %}{% assign expected = '$expectedFluid' | ToBoolean %}{% else %}{% assign expected = '$expectedDotLiquid' | ToBoolean %}{% endif %}
+{% if currentEngine == 'Fluid' %}{% assign expected = '$expectedFluid' | ToBoolean %{% endif %}
         <td>{% assign result = result | ToBoolean %}{% if result == expected %}<span class='successtext'>Pass</span>{% else %}<span class='failtext'>Fail</span>{% endif %}</td>
         <td>$notes</td>
     </tr>"
                     .Replace( "$i", i.ToString() )
                     .Replace( "$expression", testEntry.ConditionalExpression )
-                    .Replace( "$expectedDotLiquid", testEntry.RockLiquidLavaResult.ToString().ToLower() )
                     .Replace( "$expectedFluid", testEntry.FluidLavaResult.ToString().ToLower() )
                     .Replace( "$notes", testEntry.Note );
 

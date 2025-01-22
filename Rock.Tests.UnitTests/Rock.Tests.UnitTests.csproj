@@ -253,6 +253,7 @@
     <Compile Include="Rock\Cms\ThemeFieldTests.cs" />
     <Compile Include="Rock\Cms\ThemeOverrideBuilderTests.cs" />
     <Compile Include="Rock\Configuration\RockAppExtensionsTests.cs" />
+    <Compile Include="Rock\Core\EntitySearch\EntitySearchTests.cs" />
     <Compile Include="Rock\Field\Types\BooleanFieldTypeTests.cs" />
     <Compile Include="Rock\Field\Types\StructureContentEditorFieldTypeTests.cs" />
     <Compile Include="Rock\Lava\Filters\ConversionFilterTests.cs" />
@@ -329,7 +330,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="lava-dotliquid-engine.runsettings" />
     <None Include="packages.config" />
     <None Include="Rock\Lava.RockLiquid\readme.md" />
     <None Include="Rock\Lava\readme.md" />
@@ -346,10 +346,6 @@
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
       <Project>{61dece2b-0434-435e-8d65-49a4fdf98365}</Project>
       <Name>Rock.Enums</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
-      <Project>{79AA470A-DC63-4CB4-B0B6-77285F60C69B}</Project>
-      <Name>Rock.Lava.DotLiquid</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj">
       <Project>{AFCE6F84-BF3A-4182-A816-8FB47AFC0305}</Project>

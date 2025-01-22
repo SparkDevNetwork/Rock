@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
 using Rock.Data;
@@ -40,7 +41,7 @@ using Authorization = Rock.Security.Authorization;
 namespace Rock.Mobile
 {
     /// <summary>
-    /// 
+    /// A helper class for mobile applications.
     /// </summary>
     public static class MobileHelper
     {
@@ -485,6 +486,8 @@ namespace Rock.Mobile
                 ?? timeZoneMapping.GetValueOrNull( TimeZoneInfo.Local.Id )
                 ?? "GMT";
 
+            var organizationName = GlobalAttributesCache.Value( "OrganizationName" );
+
             // Initialize the base update package settings.
             var package = new UpdatePackage
             {
@@ -506,6 +509,7 @@ namespace Rock.Mobile
                 Auth0ClientDomain = additionalSettings.Auth0Domain,
                 EntraTenantId = additionalSettings.EntraTenantId,
                 EntraClientId = additionalSettings.EntraClientId,
+                OrganizationName = organizationName
             };
 
             var useLegacyStyles = additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Legacy || additionalSettings.DownhillSettings.MobileStyleFramework == MobileStyleFramework.Blended;
@@ -524,8 +528,9 @@ namespace Rock.Mobile
             package.AppearanceSettings.LockedTabletOrientation = additionalSettings.LockedTabletOrientation;
 
             var applicationColors = additionalSettings.DownhillSettings.ApplicationColors;
+            var darkModeColors = FlipColors( applicationColors );
 
-            if( useStandardStyles )
+            if ( useStandardStyles )
             {
                 // Interface Colors
                 package.AppearanceSettings.PaletteColors.Add( "interface-strongest", applicationColors.InterfaceStrongest );
@@ -535,6 +540,15 @@ namespace Rock.Mobile
                 package.AppearanceSettings.PaletteColors.Add( "interface-soft", applicationColors.InterfaceSoft );
                 package.AppearanceSettings.PaletteColors.Add( "interface-softer", applicationColors.InterfaceSofter );
                 package.AppearanceSettings.PaletteColors.Add( "interface-softest", applicationColors.InterfaceSoftest );
+
+                // Dark Interface Colors
+                package.AppearanceSettings.PaletteColors.Add( "interface-strongest-dark", darkModeColors.InterfaceStrongest );
+                package.AppearanceSettings.PaletteColors.Add( "interface-stronger-dark", darkModeColors.InterfaceStronger );
+                package.AppearanceSettings.PaletteColors.Add( "interface-strong-dark", darkModeColors.InterfaceStrong );
+                package.AppearanceSettings.PaletteColors.Add( "interface-medium-dark", darkModeColors.InterfaceMedium );
+                package.AppearanceSettings.PaletteColors.Add( "interface-soft-dark", darkModeColors.InterfaceSoft );
+                package.AppearanceSettings.PaletteColors.Add( "interface-softer-dark", darkModeColors.InterfaceSofter );
+                package.AppearanceSettings.PaletteColors.Add( "interface-softest-dark", darkModeColors.InterfaceSoftest );
 
                 // Accent Colors
                 package.AppearanceSettings.PaletteColors.Add( "app-primary-soft", applicationColors.PrimarySoft );
@@ -558,7 +572,7 @@ namespace Rock.Mobile
                 // If someone uses a palette color that no longer exists,
                 // the page will break. So we map our new colors to the
                 // legacy ones.
-                if( !useLegacyStyles )
+                if ( !useLegacyStyles )
                 {
                     package.AppearanceSettings.PaletteColors.Add( "text-color", applicationColors.InterfaceStronger );
                     package.AppearanceSettings.PaletteColors.Add( "heading-color", applicationColors.InterfaceStrongest );
@@ -566,7 +580,7 @@ namespace Rock.Mobile
                     package.AppearanceSettings.PaletteColors.Add( "app-primary", applicationColors.PrimaryStrong );
                     package.AppearanceSettings.PaletteColors.Add( "app-secondary", applicationColors.SecondaryStrong );
                     package.AppearanceSettings.PaletteColors.Add( "app-success", applicationColors.SuccessStrong );
-                    package.AppearanceSettings.PaletteColors.Add( "app-info", applicationColors.InfoStrong);
+                    package.AppearanceSettings.PaletteColors.Add( "app-info", applicationColors.InfoStrong );
                     package.AppearanceSettings.PaletteColors.Add( "app-danger", applicationColors.DangerStrong );
                     package.AppearanceSettings.PaletteColors.Add( "app-warning", applicationColors.WarningStrong );
                     package.AppearanceSettings.PaletteColors.Add( "app-light", applicationColors.InterfaceSofter );
@@ -651,6 +665,13 @@ namespace Rock.Mobile
                     mobileBlockEntity.PageCache = block.Page;
                     mobileBlockEntity.RequestContext = new Net.RockRequestContext();
 
+                    // Set the blocks RockContext here so we have access to it
+                    // when we get the block configuration values.
+                    if ( mobileBlockEntity is RockBlockType rockBlockType )
+                    {
+                        rockBlockType.RockContext = new RockContext();
+                    }
+
                     var mobileBlockTypeGuid = mobileBlockEntity.MobileBlockTypeGuid;
 
                     if ( !mobileBlockTypeGuid.HasValue )
@@ -734,6 +755,53 @@ namespace Rock.Mobile
             }
 
             return package;
+        }
+
+        /// <summary>
+        /// Flips the application colors to the other theme.
+        /// </summary>
+        /// <param name="colors"></param>
+        /// <returns></returns>
+        private static ApplicationColors FlipColors( ApplicationColors colors )
+        {
+            var flippedColors = new ApplicationColors
+            {
+                // Soft = Strong & Strong = Soft
+                BrandSoft = colors.BrandStrong,
+                BrandStrong = colors.BrandSoft,
+
+                SuccessSoft = colors.SuccessStrong,
+                SuccessStrong = colors.SuccessSoft,
+
+                WarningSoft = colors.WarningStrong,
+                WarningStrong = colors.WarningSoft,
+
+                DangerSoft = colors.DangerStrong,
+                DangerStrong = colors.DangerSoft,
+
+                PrimaryStrong = colors.PrimarySoft,
+                PrimarySoft = colors.PrimaryStrong,
+
+                InfoStrong = colors.InfoSoft,
+                InfoSoft = colors.InfoStrong,
+
+                SecondarySoft = colors.SecondaryStrong,
+                SecondaryStrong = colors.SecondarySoft,
+
+                InterfaceStrongest = colors.InterfaceSoftest,
+                InterfaceStronger = colors.InterfaceSofter,
+                InterfaceStrong = colors.InterfaceSoft,
+                InterfaceMedium = colors.InterfaceMedium,
+                InterfaceSoft = colors.InterfaceStrong,
+
+                // These two are an exception
+                // to the traditional swap, we want
+                // the background to be pure black on dark mode.
+                InterfaceSofter = colors.InterfaceStrongest,
+                InterfaceSoftest = colors.InterfaceStronger
+            };
+
+            return flippedColors;
         }
 
         /// <summary>

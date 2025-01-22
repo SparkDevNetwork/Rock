@@ -162,7 +162,7 @@ namespace Rock.Blocks.Core
                 ReminderDays = followingSuggestion.ReminderDays
             };
 
-            bag.LoadAttributesAndValuesForPublicEdit( followingSuggestion, RequestContext.CurrentPerson, true, attributeFilter: IsAttributeIncluded );
+            bag.LoadAttributesAndValuesForPublicEdit( followingSuggestion, RequestContext.CurrentPerson, enforceSecurity: true, attributeFilter: IsAttributeIncluded );
 
             return bag;
         }
@@ -192,7 +192,7 @@ namespace Rock.Blocks.Core
 
             entity.LoadAttributes( rockContext );
 
-            entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+            entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return true;
         }

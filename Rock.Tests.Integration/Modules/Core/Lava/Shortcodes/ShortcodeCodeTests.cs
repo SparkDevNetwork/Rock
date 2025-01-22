@@ -21,7 +21,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
@@ -68,12 +67,6 @@ Font Bold: true
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                // RockLiquid uses a different mechanism for registering shortcodes that cannot be tested here.
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    return;
-                }
-
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
@@ -112,12 +105,6 @@ ValueInShortcodeScope = 99
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                // RockLiquid uses a different mechanism for registering shortcodes that cannot be tested here.
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    return;
-                }
-
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
@@ -166,12 +153,6 @@ Main Output: Main!<br>
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                // RockLiquid uses a different mechanism for registering shortcodes that cannot be tested here.
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    return;
-                }
-
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );
@@ -221,12 +202,6 @@ Main Output: The Lava command 'execute' is not configured for this template.<br>
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                // RockLiquid uses a different mechanism for registering shortcodes that cannot be tested here.
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    return;
-                }
-
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, input, options );

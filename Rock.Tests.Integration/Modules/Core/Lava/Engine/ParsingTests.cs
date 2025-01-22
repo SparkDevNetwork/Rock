@@ -161,105 +161,6 @@ Slow
             TestHelper.AssertTemplateOutput( "false", input, options  );
         }
 
-        /// <summary>
-        /// The double-ampersand (&&) boolean comparison syntax for "and" is not recognized Liquid syntax.
-        /// It is also not part of the documented Lava syntax, but it is supported by the DotLiquid framework and has been found in some existing core templates.
-        /// This test is designed to document the expected behavior.
-        /// </summary>
-        [TestMethod]
-
-        [Ignore("Supported in DotLiquid, but not in Fluid. This syntax is not officially supported in Liquid or Lava.")]
-        public void Operators_ConditionalExpressionUsingDoubleAmpersand_EmitsErrorMessage()
-        {
-            var input = @"
-{% assign speed = 50 %}
-{% if speed > 40 && speed < 60 -%}
-Illegal Boolean Operator!
-{% endif -%}
-";
-
-            // This test does not apply to the DotLiquid framework.
-            if ( LavaIntegrationTestHelper.FluidEngineIsEnabled )
-            {
-                TestHelper.AssertTemplateIsInvalid( typeof( FluidEngine ), input );
-            }
-        }
-
-        /// <summary>
-        /// Comment tags containing nested comment tags do not parse correctly in Shopify Liquid.
-        /// DotLiquid correctly parses these tags, but Fluid does not.
-        /// </summary>
-        [TestMethod]
-        [Ignore( "Supported in DotLiquid, but not in Fluid. This tag structure is not officially supported in Liquid or Lava." )]
-        public void Tags_NestedCommentTags_AreProcessedAsCommentContent()
-        {
-            var input = @"
-{%comment%}Outer Comment{%comment%}Inner Comment{%endcomment%}{%endcomment%}
-";
-
-            TestHelper.AssertTemplateOutput( string.Empty, input );
-        }
-
-        /// <summary>
-        /// In Lava, the ">" operator returns true for a string comparison if the left value would be sorted after the right value.
-        /// Default Liquid syntax does not support string comparison using this operator.
-        /// Therefore, the condition "{% if mystring > '' %}" returns false, even if "mystring" is assigned a value.
-        /// This operator is supported by the DotLiquid framework.
-        /// </summary>
-        [TestMethod]
-        [Ignore( "Supported in DotLiquid, but not in Fluid. This syntax is not officially supported in Liquid or Lava." )]
-        public void Operators_GreaterThanStringComparison_IsProcessedCorrectly()
-        {
-            var input = @"
-{% if 'abc' > 'aba' -%}
-abc > aba.
-{% endif -%}
-{% if 'abc' >= 'abc' -%}
-abc >= abc.
-{% endif -%}
-{% if 'abc' > 'abd' -%}
-abc > abd (!!!)
-{% endif -%}
-";
-
-            var expectedOutput = @"
-abc > aba.
-abc >= abc.
-";
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
-        }
-
-        /// <summary>
-        /// In Lava, the "<" operator returns true for a string comparison if the left value would be sorted before the right value.
-        /// Default Liquid syntax does not support string comparison using this operator.
-        /// Therefore, the condition "{% if 'a' < 'b' %}" returns false.
-        /// This operator is supported natively by the DotLiquid framework.
-        /// </summary>
-        [TestMethod]
-        [Ignore( "Supported in DotLiquid, but not in Fluid. This syntax is not officially supported in Liquid or Lava." )]
-        public void Operators_LessThanStringComparison_IsProcessedCorrectly()
-        {
-            var input = @"
-{% if 'abc' < 'abd' -%}
-abc < abd.
-{% endif -%}
-{% if 'abc' <= 'abc' -%}
-abc <= abc.
-{% endif -%}
-{% if 'abc' < 'abb' -%}
-abc < abb (!!!)
-{% endif -%}
-";
-
-            var expectedOutput = @"
-abc < abd.
-abc <= abc.
-";
-
-            TestHelper.AssertTemplateOutput( expectedOutput, input );
-        }
-
         [TestMethod]
         public void Tags_RawTagWithEmbeddedTag_ReturnsLiteralTagText()
         {
@@ -273,9 +174,6 @@ abc <= abc.
         /// <summary>
         /// Verify that a comment tag correctly ignores any other tags that are contained within it.
         /// </summary>
-        /// <remarks>
-        /// Fluid only. The DotLiquid framework does not support this behaviour.
-        /// </remarks>
         [TestMethod]
         public void Tags_CommentTagContainingInvalidRawTag_IsParsedCorrectly()
         {
@@ -285,7 +183,7 @@ Comment-->
 <--Comment
 ";
 
-            TestHelper.AssertTemplateOutput( typeof(FluidEngine), "Comment--><--Comment", inputTemplate );
+            TestHelper.AssertTemplateOutput( "Comment--><--Comment", inputTemplate );
         }
 
         [TestMethod]

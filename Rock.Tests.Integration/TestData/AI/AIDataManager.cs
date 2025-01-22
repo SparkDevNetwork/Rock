@@ -148,48 +148,7 @@ namespace Rock.Tests.Integration.TestData.AI
                 openAIProviderEntityTypeId.Value );
 
             AIDataManager.Instance.SaveAiProvider( compatibleProvider, CreateExistingItemStrategySpecifier.Replace );
-
-            // Add 
         }
-    //}
-
-
-
-
-//
-//      public void RegisterDynamicShortcodeForLavaEngine( ILavaEngine engine, LavaShortcode shortcode )
-//        {
-//            // Register the new shortcode definition.
-//            if ( engine.GetType() == typeof( RockLiquidEngine ) )
-//            {
-//                // Register the new shortcode definition. Note that RockLiquid shortcode tags are case-sensitive.
-//                if ( shortcode.TagType == TagType.Block )
-//                {
-//                    Template.RegisterShortcode<Rock.Lava.Shortcodes.DynamicShortcodeBlock>( shortcode.TagName );
-//                }
-//                else
-//                {
-//                    Template.RegisterShortcode<Rock.Lava.Shortcodes.DynamicShortcodeInline>( shortcode.TagName );
-//                }
-
-//#pragma warning disable CS0618 // Type or member is obsolete
-//                // This obsolete code can be deleted when support for the DotLiquid Lava implementation is removed.
-//                LavaTemplateCache.Clear();
-//#pragma warning restore CS0618 // Type or member is obsolete
-//            }
-//            else if ( engine.GetType() == typeof( FluidEngine ) )
-//            {
-//                // Register the new shortcode definition.
-//                engine.RegisterShortcode( shortcode.TagName, ( shortcodeName ) => WebsiteLavaShortcodeProvider.GetShortcodeDefinition( shortcodeName ) );
-//            }
-//            else
-//            {
-//                throw new Exception( $"Invalid Lava Engine Type. [Type={engine.EngineName}]" );
-//            }
-
-//            LavaService.ClearTemplateCache();
-//            LavaShortcodeCache.Clear();
-//        }
     }
 
     #region Extension Methods

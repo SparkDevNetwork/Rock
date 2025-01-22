@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "LMS" )]
     [Table( "LearningClassAnnouncement" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_CLASS_ANNOUNCEMENT )]
     public partial class LearningClassAnnouncement : Model<LearningClassAnnouncement>
     {

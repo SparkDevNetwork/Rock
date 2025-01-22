@@ -16,6 +16,8 @@
 //
 
 using System.Data.Entity;
+
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -44,6 +46,13 @@ namespace Rock.Model
             // CampusCache may get stale a if CampusSchedule is modified
             CampusCache.UpdateCachedEntity( this.CampusId, EntityState.Modified );
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => Campus ?? base.ParentAuthority;
 
         #endregion
     }

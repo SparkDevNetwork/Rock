@@ -23,18 +23,14 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
-using Rock.ClientService.Core.Campus;
-using Rock.ClientService.Core.Campus.Options;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Enums.Blocks.Crm.FamilyPreRegistration;
-using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks.Crm.FamilyPreRegistration;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
-using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -2002,8 +1998,8 @@ namespace Rock.Blocks.Crm
 
                 box.FamilyGuid = family.Guid;
                 var familyAttributes = GetFamilyAttributes( currentPerson );
-                box.FamilyAttributes = family.GetPublicAttributesForEdit( currentPerson, attributeFilter: f => familyAttributes.Any( a => a.Guid == f.Guid ) );
-                box.FamilyAttributeValues = family.GetPublicAttributeValuesForEdit( currentPerson, attributeFilter: f => familyAttributes.Any( a => a.Guid == f.Guid ) );
+                box.FamilyAttributes = family.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false, attributeFilter: f => familyAttributes.Any( a => a.Guid == f.Guid ) );
+                box.FamilyAttributeValues = family.GetPublicAttributeValuesForEdit( currentPerson, enforceSecurity: false, attributeFilter: f => familyAttributes.Any( a => a.Guid == f.Guid ) );
 
                 var mockChild = new Person
                 {
@@ -2579,8 +2575,8 @@ namespace Rock.Blocks.Crm
 
             var bag = new FamilyPreRegistrationPersonBag
             {
-                Attributes = person.GetPublicAttributesForEdit( currentPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) ),
-                AttributeValues = person.GetPublicAttributeValuesForEdit( currentPerson, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) ),
+                Attributes = person.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) ),
+                AttributeValues = person.GetPublicAttributeValuesForEdit( currentPerson, enforceSecurity: false, attributeFilter: a1 => personAttributes.Any( a => a.Guid == a1.Guid ) ),
                 BirthDate = person.BirthDate != null ?
                     new BirthdayPickerBag
                     {

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -46,6 +46,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StepProgramCompletion" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "B7A9C37D-2B04-4FD3-91BD-DFCA50B3CC8C")]
     public partial class StepProgramCompletion : Model<StepProgramCompletion>
     {

@@ -219,6 +219,11 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE = "53D4BF38-C49E-4A52-8B0E-5E016FB9574E";
 
         /// <summary>
+        /// The guid for Rock.Model.EntitySearch entity.
+        /// </summary>
+        public const string ENTITY_SEARCH = "080374B4-C765-4F90-8B85-BC2635164275";
+
+        /// <summary>
         /// The guid for Rock.Model.EntityType entity.
         /// </summary>
         public const string ENTITY_TYPE = "A2277FBA-D09F-4D07-B0AB-1C650C25A7A7";
@@ -688,6 +693,16 @@ namespace Rock.SystemGuid
         /// The GUID for the entity Rock.Blocks.Types.Mobile.CheckIn.CheckIn.
         /// </summary>
         public const string MOBILE_CHECKIN_CHECKIN = "BC0A4B6C-9F6D-4D39-8FFE-B6F9FA4B2F49";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Finances.ScheduledTransactionList.
+        /// </summary>
+        public const string MOBILE_FINANCE_SCHEDULED_TRANSACTION_LIST_BLOCK_TYPE = "7698E529-6834-46B0-BC5A-D466A6BCE4F6";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Finances.TransactionDetail.
+        /// </summary>
+        public const string MOBILE_FINANCE_TRANSACTION_DETAIL_BLOCK_TYPE = "3355006B-4C1F-4F85-8390-7C83C26D5C4A";
 
         /// <summary>
         /// The obsidian event registration entry

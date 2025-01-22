@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "AttendanceOccurrence" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Analytics( false, false )]
     [Rock.SystemGuid.EntityTypeGuid( "0F6FD7F1-7AF5-4135-843F-E34948D4EA28")]
     public partial class AttendanceOccurrence : Model<AttendanceOccurrence>

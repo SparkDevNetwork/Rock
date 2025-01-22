@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "RequestFilter" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "97FAC672-37A4-4185-B1D4-C68426C625B1")]
     public partial class RequestFilter : Model<RequestFilter>, ICacheable
     {

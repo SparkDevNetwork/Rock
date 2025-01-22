@@ -20,13 +20,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-using DotLiquid;
-
 using Rock;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
 using Rock.Model;
 using Rock.Tests.Shared.Lava;
 using Rock.Utility;
@@ -44,8 +41,6 @@ namespace Rock.Tests.Integration.Performance.Modules.Lava
         private const bool _showFirstRenderResult = false;
 
         // Enable/disable template caching for Fluid.
-        // Template caching should always be enabled if comparing benchmarks with the RockLiquid engine,
-        // because caching cannot be disabled for the RockLiquid engine.
         private const bool _templateCachingEnabled = true;
 
         public static void Execute( string[] args )
@@ -138,7 +133,6 @@ namespace Rock.Tests.Integration.Performance.Modules.Lava
             var testTemplates = TestData.GetLavaTemplates();
 
             RunParseAndRenderPerformanceTest( typeof( FluidEngine ), testTemplates, totalSets );
-            RunParseAndRenderPerformanceTest( typeof( RockLiquidEngine ), testTemplates, totalSets );
         }
 
         private static void RunParseAndRenderPerformanceTest( Type engineType, List<TestDataTemplateItem> testTemplates, int totalSets )
@@ -277,27 +271,10 @@ namespace Rock.Tests.Integration.Performance.Modules.Lava
         private static void InitializeLava()
         {
             InitializeLavaEngines();
-
-            InitializeRockLiquidLibrary();
         }
 
         private static void InitializeLavaEngines()
         {
-            // Register the RockLiquid Engine (pre-v13).
-            LavaService.RegisterEngine( ( engineServiceType, options ) =>
-            {
-                var engineOptions = new LavaEngineConfigurationOptions
-                {
-                    DefaultEnabledCommands = new List<string> { "all" }
-                };
-
-                var rockLiquidEngine = new RockLiquidEngine();
-
-                InitializeLavaEngineInstance( rockLiquidEngine, engineOptions );
-
-                return rockLiquidEngine;
-            } );
-
             // Register the Fluid Engine.
             LavaService.RegisterEngine( ( engineServiceType, options ) =>
             {
@@ -321,35 +298,6 @@ namespace Rock.Tests.Integration.Performance.Modules.Lava
             } );
         }
 
-        private static void InitializeRockLiquidLibrary()
-        {
-            _ = LavaService.NewEngineInstance( typeof( RockLiquidEngine ) );
-
-            // Register the set of filters that are compatible with RockLiquid.
-            Template.RegisterFilter( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
-            Template.RegisterFilter( typeof( global::Rock.Lava.RockFilters ) );
-
-            // Initialize the RockLiquid file system.
-            Template.FileSystem = new LavaFileSystem();
-
-            // Execute Startups to allow RockLiquid Blocks to register.
-            var startups = new Dictionary<int, List<IRockStartup>>();
-            foreach ( var startupType in Reflection.FindTypes( typeof( IRockStartup ) ).Select( a => a.Value ).ToList() )
-            {
-                var startup = Activator.CreateInstance( startupType ) as IRockStartup;
-                startups.TryAdd( startup.StartupOrder, new List<IRockStartup>() );
-                startups[startup.StartupOrder].Add( startup );
-            }
-
-            foreach ( var startupList in startups.OrderBy( s => s.Key ).Select( s => s.Value ) )
-            {
-                foreach ( var startup in startupList )
-                {
-                    startup.OnStartup();
-                }
-            }
-        }
-
         private static void InitializeLavaEngineInstance( ILavaEngine engine, LavaEngineConfigurationOptions options )
         {
             // Initialize the Lava engine.
@@ -364,11 +312,6 @@ namespace Rock.Tests.Integration.Performance.Modules.Lava
 
         private static void InitializeLavaFilters( ILavaEngine engine )
         {
-            if ( engine.GetType() == typeof( RockLiquidEngine ) )
-            {
-                return;
-            }
-
             // Register the common Rock.Lava filters first, then overwrite with the engine-specific filters.
             engine.RegisterFilters( typeof( global::Rock.Lava.Filters.TemplateFilters ) );
             engine.RegisterFilters( typeof( global::Rock.Lava.LavaFilters ) );
@@ -413,11 +356,6 @@ namespace Rock.Tests.Integration.Performance.Modules.Lava
 
         private static void InitializeLavaTags( ILavaEngine engine )
         {
-            if ( engine.GetType() == typeof( RockLiquidEngine ) )
-            {
-                return;
-            }
-
             // Get all tags and call OnStartup methods
             var elementTypes = Reflection.FindTypes( typeof( ILavaTag ) ).Select( a => a.Value ).ToList();
 
@@ -454,11 +392,6 @@ namespace Rock.Tests.Integration.Performance.Modules.Lava
 
         private static void InitializeLavaBlocks( ILavaEngine engine )
         {
-            if ( engine.GetType() == typeof( RockLiquidEngine ) )
-            {
-                return;
-            }
-
             // Get all blocks and call OnStartup methods
             var blockTypes = Reflection.FindTypes( typeof( ILavaBlock ) ).Select( a => a.Value ).ToList();
 

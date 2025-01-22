@@ -5,7 +5,8 @@
                  title="Insert Snippet"
                  saveText="Insert"
                  :isSaveButtonDisabled="!selectedSnippet"
-                 @save="onSave">
+                 @save="onSave"
+                 @closeModal="resetForm">
         <template #prepend>
             <NotificationBox v-if="!isNullOrWhiteSpace(errorMessage)" alertType="danger">
                 {{ errorMessage }}
@@ -128,8 +129,13 @@
     function onSave(): void {
         if (selectedSnippet.value) {
             emit("insertSnippet", selectedSnippet.value);
-            selectedSnippet.value = "";
+            resetForm();
         }
+    }
+
+    function resetForm(): void {
+        selectedCategory.value = undefined;
+        selectedSnippet.value = "";
     }
 
     watch(filteredSnippetBags, () => {

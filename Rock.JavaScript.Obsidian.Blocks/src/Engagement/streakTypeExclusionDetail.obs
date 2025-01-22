@@ -43,7 +43,6 @@
     import EditPanel from "./StreakTypeExclusionDetail/editPanel.partial.obs";
     import ViewPanel from "./StreakTypeExclusionDetail/viewPanel.partial.obs";
     import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./StreakTypeExclusionDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { StreakTypeExclusionBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakTypeExclusionDetail/streakTypeExclusionBag";
@@ -236,7 +235,10 @@
         blockError.value = "The specified streak type exclusion could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        streakTypeExclusionEditBag.value = { bag: config.entity };
+        streakTypeExclusionEditBag.value = {
+            bag: config.entity,
+            validProperties: config.entity ? Object.keys(config.entity) : null
+        };
         panelMode.value = DetailPanelMode.Add;
     }
 

@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "DataView" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.DATAVIEW )]
     public partial class DataView : Model<DataView>, ICategorized, IDataViewDefinition
     {

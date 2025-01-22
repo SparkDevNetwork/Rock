@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Lava;
-using Rock.Lava.RockLiquid;
 
 using Rock.Tests.Integration.Shortcode;
 
@@ -86,12 +85,6 @@ Panel 3 - Panel 3 content.
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                // The RockLiquid engine does not support dynamic shortcode definitions.
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    return;
-                }
-
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, input );
@@ -146,12 +139,6 @@ Potty Trained --- Id: 141 - Guid: e6905502-4c23-4879-a60f-8c4ceb3ee2e9
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    TestHelper.DebugWriteRenderResult( engine, "(Not Implemented)", "(Not Implemented)" );
-                    return;
-                }
-
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, input );
@@ -204,12 +191,6 @@ Font Bold: true
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    TestHelper.DebugWriteRenderResult( engine, "(Not Implemented)", "(Not Implemented)" );
-                    return;
-                }
-
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 TestHelper.AssertTemplateOutput( engine, expectedOutput, input );
@@ -248,13 +229,6 @@ Parameter 1: Testing 'single' quotes...
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    // Unfortunately, there is no way of testing dynamically-defined shortcodes with RockLiquid.
-                    TestHelper.DebugWriteRenderResult( engine, "(Not Implemented)", "(Not Implemented)" );
-                    return;
-                }
-
                 engine.RegisterShortcode( shortcodeDefinition.Name, ( shortcodeName ) => { return shortcodeDefinition; } );
 
                 var options = new LavaTestRenderOptions { MergeFields = mergeFields };
@@ -300,12 +274,6 @@ Font Bold: true
 
             TestHelper.ExecuteForActiveEngines( ( engine ) =>
             {
-                // The RockLiquid engine does not support dynamic shortcode definitions.
-                if ( engine.GetType() == typeof( RockLiquidEngine ) )
-                {
-                    return;
-                }
-
                 engine.RegisterShortcode( shortcode1.Name, ( shortcodeName ) => { return shortcode1; } );
                 engine.RegisterShortcode( shortcode2.Name, ( shortcodeName ) => { return shortcode2; } );
 

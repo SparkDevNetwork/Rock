@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
 using Rock.Lava.Fluid;
+using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 
 namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
@@ -168,8 +169,16 @@ Line 3<br>
         }
 
         [TestMethod]
-        public void ShorthandComment_CommentInStringLiteral_IsNotRemoved()
+        public void ShorthandComment_CommentsAnywhereInLine_AreRemoved()
         {
+            // It was discussed on 2025/01/20 how shorthand comments should
+            // work. The decision was that they should work "like a programming
+            // language works". So just like "//" anywhere in C# code will
+            // comment out the remainder of the line, so should the shorthand
+            // comments. This does have the side affect that somebody cannot
+            // use "/- " or "//- " as legitimate output without workarounds.
+            // This is intentional.
+
             var input = @"
 -- Begin Example --
 Lava Comments can be added as follows:
@@ -184,18 +193,19 @@ or '/- Block Comment 2...
             var expectedOutput = @"
 -- Begin Example --
 Lava Comments can be added as follows:
-For a single line comment, use ""//- Single Line Comment 1"" or '//- Single Line Comment 2'.
-For a block comment, use ""/- Block Comment 1...
-... like this! -/""
-or '/- Block Comment 2...
-... like this! -/'
+For a single line comment, use ""
+For a block comment, use """"
+or ''
 -- End Example --
 ";
 
             input = input.Trim();
-            expectedOutput = expectedOutput.Trim();
+            expectedOutput = expectedOutput.Trim().Replace( "\r\n", "\n" );
 
-            TestHelper.AssertTemplateOutput( expectedOutput, input, new LavaTestRenderOptions { IgnoreWhiteSpace = false } );
+            TestHelper.Execute( input, new LavaTestRenderOptions { IgnoreWhiteSpace = false }, output =>
+            {
+                Assert.That.AreEqual( expectedOutput, output.Replace( "\r\n", "\n" ) );
+            } );
         }
 
         [TestMethod]
