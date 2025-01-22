@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -39,7 +40,16 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "List of a person's saved accounts that can be used to delete an account." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web, SiteType.Mobile  )]
+
+    #region Block Attributes
+
+    [LinkedPage( "Detail Page",
+        Description = "Page used to view details of a saved account.",
+        IsRequired = false,
+        Key = AttributeKey.DetailPage )]
+
+    #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "ad9c4aac-54bb-498d-9bd3-47d8f21b9549" )]
     [Rock.SystemGuid.BlockTypeGuid( "e20b2fe2-2708-4e9a-b9fb-b370e8b0e702" )]
@@ -47,6 +57,27 @@ namespace Rock.Blocks.Finance
     [ContextAware( typeof( Person ) )]
     public class SavedAccountList : RockEntityListBlockType<FinancialPersonSavedAccount>
     {
+        #region Keys
+
+        /// <summary>
+        /// The attribute keys for the block.
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the detail page GUID.
+        /// </summary>
+        protected Guid? DetailPageGuid => GetAttributeValue( AttributeKey.DetailPage ).AsGuidOrNull();
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
@@ -98,6 +129,7 @@ namespace Rock.Blocks.Finance
             return savedAccounts.AsQueryable();
         }
 
+        /// <inheritdoc />
         protected override IQueryable<FinancialPersonSavedAccount> GetOrderedListQueryable( IQueryable<FinancialPersonSavedAccount> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( a => a.Name );
@@ -111,6 +143,9 @@ namespace Rock.Blocks.Finance
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "accountNumber", a => a.FinancialPaymentDetail?.AccountNumberMasked )
+                .AddTextField( "imageSource", a => a.FinancialPaymentDetail?.GetCreditCardImageSource() )
+                .AddTextField( "description", a => a.FinancialPaymentDetail?.GetDescription() )
+                .AddTextField( "expirationDate", a => a.FinancialPaymentDetail?.ExpirationDate )
                 .AddTextField( "accountType", a => a.FinancialPaymentDetail?.CurrencyAndCreditCardType );
         }
 
@@ -148,6 +183,19 @@ namespace Rock.Blocks.Finance
             RockContext.SaveChanges();
 
             return ActionOk();
+        }
+
+        #endregion
+
+        #region IRockMobileBlockType
+
+        /// <inheritdoc />
+        public override object GetMobileConfigurationValues()
+        {
+            return new
+            {
+                DetailPage = DetailPageGuid
+            };
         }
 
         #endregion
