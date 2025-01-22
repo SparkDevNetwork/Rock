@@ -23,35 +23,17 @@
 
 import { Guid } from "@Obsidian/Types";
 
-/**
- * A list item that describes an payment account the individual has
- * previously setup that can be used again.
- */
-export type SavedFinancialAccountListItemBag = {
-    /** Gets or sets the masked account number. */
-    accountNumberMasked?: string | null;
+/** The response to be sent for a newly created item via the REST v2 API. */
+export type CreatedAtResponseBag = {
+    /** The unique identifier. */
+    guid: Guid;
 
-    /** Gets or sets the category for this item. */
-    category?: string | null;
+    /** The integer identifier. */
+    id: number;
 
-    /** The Guid for the currency type of this account. */
-    currencyTypeGuid?: Guid | null;
+    /** The identifier key. */
+    idKey?: string | null;
 
-    /**
-     * Gets or sets the description of the card to help identify it to the
-     * individual.
-     */
-    description?: string | null;
-
-    /** Gets or sets disabled for this item. */
-    disabled?: boolean | null;
-
-    /** Gets or sets the image to be displayed to help identify the card. */
-    image?: string | null;
-
-    /** Gets or sets the text. */
-    text?: string | null;
-
-    /** Gets or sets the value. */
-    value?: string | null;
+    /** The location URI that can be used to retrieve the new item from. */
+    location?: string | null;
 };

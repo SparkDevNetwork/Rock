@@ -21,37 +21,20 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
+/** The object that contains a single attribute value of a model. */
+export type ModelAttributeValueBag = {
+    /** The formatted condensed HTML value. */
+    condensedHtmlValue?: string | null;
 
-/**
- * A list item that describes an payment account the individual has
- * previously setup that can be used again.
- */
-export type SavedFinancialAccountListItemBag = {
-    /** Gets or sets the masked account number. */
-    accountNumberMasked?: string | null;
+    /** The formatted condensed text value. */
+    condensedTextValue?: string | null;
 
-    /** Gets or sets the category for this item. */
-    category?: string | null;
+    /** The formatted HTML value. */
+    htmlValue?: string | null;
 
-    /** The Guid for the currency type of this account. */
-    currencyTypeGuid?: Guid | null;
+    /** The formatted text value. */
+    textValue?: string | null;
 
-    /**
-     * Gets or sets the description of the card to help identify it to the
-     * individual.
-     */
-    description?: string | null;
-
-    /** Gets or sets disabled for this item. */
-    disabled?: boolean | null;
-
-    /** Gets or sets the image to be displayed to help identify the card. */
-    image?: string | null;
-
-    /** Gets or sets the text. */
-    text?: string | null;
-
-    /** Gets or sets the value. */
+    /** The raw attribute value. */
     value?: string | null;
 };
