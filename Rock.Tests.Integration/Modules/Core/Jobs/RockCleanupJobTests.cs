@@ -397,14 +397,14 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
             var baseDate = RockDateTime.Now;
 
             CreateTestFile( avatarCachePath + $"/avatar_current_1.txt", lastModifiedTime: baseDate );
-            CreateTestFile( avatarCachePath + $"/avatar_current_2.txt", lastModifiedTime: baseDate.AddDays( -6 ) );
+            CreateTestFile( avatarCachePath + $"/avatar_current_2.txt", lastModifiedTime: baseDate.AddDays( -5 ) );
             CreateTestFile( avatarCachePath + $"/avatar_old.txt", lastModifiedTime: baseDate.AddDays( -7 ) );
             CreateTestFile( avatarCachePath + $"/avatar_future.txt", lastModifiedTime: baseDate.AddDays( 1 ) );
             CreateTestFile( avatarCachePath + $"/subdir1/avatar_old.txt", lastModifiedTime: baseDate.AddDays( -7 ) );
             CreateTestFile( avatarCachePath + $"/subdir2/avatar_old.txt", lastModifiedTime: baseDate.AddDays( -7 ) );
 
             CreateTestFile( imageCachePath + $"/image_current_1.txt", createdTime: baseDate );
-            CreateTestFile( imageCachePath + $"/image_current_2.txt", createdTime: baseDate.AddDays( -6 ) );
+            CreateTestFile( imageCachePath + $"/image_current_2.txt", createdTime: baseDate.AddDays( -5 ) );
             CreateTestFile( imageCachePath + $"/image_old.txt", createdTime: baseDate.AddDays( -7 ) );
             CreateTestFile( imageCachePath + $"/image_future.txt", createdTime: baseDate.AddDays( 1 ) );
             CreateTestFile( imageCachePath + $"/subdir1/image_old.txt", createdTime: baseDate.AddDays( -7 ) );
@@ -425,8 +425,9 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
             {
                 AvatarCachePath = avatarCachePath,
                 ImageCachePath = imageCachePath,
-                CacheDurationDays = 7,
-                HostName = "test-host"
+                CacheDurationDays = 6,
+                HostName = "test-host",
+                IsUnitTest = true
             };
 
             _ = job.CleanCachedFileDirectories( args );
@@ -449,9 +450,10 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
             {
                 AvatarCachePath = avatarCachePath,
                 ImageCachePath = imageCachePath,
-                CacheDurationDays = 7,
+                CacheDurationDays = 6,
                 HostName = "test-host",
-                CacheMaximumFilesToRemove = 1
+                CacheMaximumFilesToRemove = 1,
+                IsUnitTest = true
             };
 
             var avatarFileCount = Directory.GetFiles( avatarCachePath, searchPattern: "*", searchOption: SearchOption.AllDirectories ).Count();
@@ -480,8 +482,9 @@ namespace Rock.Tests.Integration.Modules.Core.Jobs
             {
                 AvatarCachePath = avatarCachePath,
                 ImageCachePath = imageCachePath,
-                CacheDurationDays = 7,
-                HostName = "test-host"
+                CacheDurationDays = 6,
+                HostName = "test-host",
+                IsUnitTest = true
             };
 
             try

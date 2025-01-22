@@ -118,7 +118,17 @@ namespace Rock.Tests.Integration.Modules.Core.Lava.Engine
             LogHelper.Log( $"Expected Filter Configuration List:\n{expectedFilterNames.AsDelimited( "|" )}" );
 
             // Read the ACE editor configuration file and extract the list of Lava Filter keywords.
-            var webSitePath = Path.GetFullPath( Directory.GetCurrentDirectory() + "..\\..\\..\\..\\RockWeb" );
+            var solutionPath = Directory.GetCurrentDirectory();
+            while ( !Directory.Exists( Path.Combine( solutionPath, "RockWeb" ) ) )
+            {
+                var newPath = Path.GetDirectoryName( solutionPath );
+                if ( newPath.IsNullOrWhiteSpace() )
+                {
+                    Assert.Fail( "Unable to find path to RockWeb directory." );
+                }
+                solutionPath = newPath;
+            }
+            var webSitePath = Path.Combine( solutionPath, "RockWeb" );
             var configFilePath = Path.GetFullPath( webSitePath + @"/Scripts/ace/mode-lava.js" );
 
             LogHelper.Log( $"Reading configuration file...\n{configFilePath}" );
