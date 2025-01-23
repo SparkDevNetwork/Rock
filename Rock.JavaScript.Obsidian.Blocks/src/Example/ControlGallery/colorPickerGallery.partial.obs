@@ -1,0 +1,24 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <ColorPicker label="Color" v-model="value" />
+
+        <template #settings>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref("#ee7725");
+    const importCode = getSfcControlImportPath("colorPicker");
+    const exampleCode = `<ColorPicker label="Color" v-model="value" />`;
+</script>

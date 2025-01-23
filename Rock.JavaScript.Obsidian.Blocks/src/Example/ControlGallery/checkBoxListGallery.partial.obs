@@ -1,0 +1,38 @@
+<template>
+    <GalleryAndResult :value="{ 'output:modelValue': items, 'input:items': options }"
+                      hasMultipleValues
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <CheckBoxList label="CheckBoxList" v-model="items" :items="options" :horizontal="isHorizontal" :repeatColumns="repeatColumns" />
+
+        <template #settings>
+            <div class="row">
+                <NumberUpDown formGroupClasses="col-sm-6" label="Horizontal Columns" v-model="repeatColumns" :min="0" />
+                <Toggle formGroupClasses="col-sm-6" label="Horizontal" v-model="isHorizontal" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const items = ref(["green"]);
+    const options = [
+        { value: "red", text: "Red" },
+        { value: "green", text: "Green" },
+        { value: "blue", text: "Blue" }
+    ] as ListItemBag[];
+    const isHorizontal = ref(false);
+    const repeatColumns = ref(0);
+    const importCode = getSfcControlImportPath("checkBoxList");
+    const exampleCode = `<CheckBoxList label="CheckBoxList" v-model="value" :items="options" :horizontal="false" :repeatColumns="0" />`;
+</script>

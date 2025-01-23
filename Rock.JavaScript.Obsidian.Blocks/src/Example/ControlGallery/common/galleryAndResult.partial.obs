@@ -49,23 +49,6 @@
         <h4 class="mt-0 mb-3">Props</h4>
         <slot name="props" />
     </div>
-
-    <div v-if="$slots.header">
-        <p class="text-semibold font-italic">The <code>header</code> slot is no longer supported.</p>
-    </div>
-
-    <div v-if="$attrs.splitWidth !== void 0">
-        <p class="text-semibold font-italic">The <code>splitWidth</code> prop is no longer supported.</p>
-    </div>
-
-    <div v-if="$slots.gallery">
-        <p class="text-semibold font-italic">The <code>gallery</code> slot is deprecated. Please update to the newest Control Gallery template.</p>
-        <slot name="gallery" />
-    </div>
-    <div v-if="$slots.result">
-        <p class="text-semibold font-italic">The <code>result</code> slot is deprecated. Please update to the newest Control Gallery template.</p>
-        <slot name="result" />
-    </div>
 </template>
 
 <style scoped>

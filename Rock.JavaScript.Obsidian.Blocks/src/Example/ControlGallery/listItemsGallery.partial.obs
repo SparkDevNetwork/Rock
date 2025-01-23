@@ -1,0 +1,25 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <ListItems label="List Items" v-model="value" :valuePrompt="valuePrompt" />
+
+        <template #settings>
+            <TextBox label="Value Prompt" v-model="valuePrompt" />
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ListItems from "@Obsidian/Controls/listItems.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref("");
+    const valuePrompt = ref("");
+    const importCode = getSfcControlImportPath("listItems");
+    const exampleCode = `<ListItems label="List Items" v-model="value" :valuePrompt="valuePrompt" />`;
+</script>

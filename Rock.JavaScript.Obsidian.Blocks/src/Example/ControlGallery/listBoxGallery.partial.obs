@@ -1,0 +1,33 @@
+<template>
+    <GalleryAndResult :value="{ 'output:modelValue': value, 'input:items': options }"
+                      hasMultipleValues
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <ListBox label="Select" v-model="value" :items="options" :enhanceForLongLists="enhanced" />
+
+        <template #settings>
+            <InlineCheckBox v-model="enhanced" label="Use Enhanced Functionality" />
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ListBox from "@Obsidian/Controls/listBox.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const value = ref(["a"]);
+    const options = [
+        { text: "A Text", value: "a" },
+        { text: "B Text", value: "b" },
+        { text: "C Text", value: "c" },
+        { text: "D Text", value: "d" }
+    ] as ListItemBag[];
+    const enhanced = ref(false);
+    const importCode = getSfcControlImportPath("listBox");
+    const exampleCode = `<ListBox label="Select" v-model="value" :items="options" :enhanceForLongLists="false" />`;
+</script>

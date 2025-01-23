@@ -1,0 +1,61 @@
+<template>
+    <GalleryAndResult :value="isDialogVisible"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode">
+
+        <RockButton @click="isDialogVisible = true">Show</RockButton>
+
+        <Dialog v-model="isDialogVisible" :dismissible="isDismissible">
+            <template #header>
+                <h4>Romans 11:33-36</h4>
+            </template>
+            <template #default>
+                <p>
+                    Oh, the depth of the riches<br />
+                    and the wisdom and the knowledge of God!<br />
+                    How unsearchable his judgments<br />
+                    and untraceable his ways!<br />
+                    For who has known the mind of the Lord?<br />
+                    Or who has been his counselor?<br />
+                    And who has ever given to God,<br />
+                    that he should be repaid?<br />
+                    For from him and through him<br />
+                    and to him are all things.<br />
+                    To him be the glory forever. Amen.
+                </p>
+            </template>
+            <template #footer>
+                <RockButton @click="isDialogVisible = false" btnType="primary">OK</RockButton>
+                <RockButton @click="isDialogVisible = false" btnType="default">Cancel</RockButton>
+            </template>
+        </Dialog>
+
+        <template #settings>
+            <CheckBox label="Dismissible" text="Show the close button" v-model="isDismissible" />
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Dialog from "@Obsidian/Controls/dialog.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const isDialogVisible = ref(false);
+    const isDismissible = ref(true);
+    const importCode = getSfcControlImportPath("dialog");
+    const exampleCode = `<Dialog v-model="isDialogVisible" :dismissible="true">
+    <template #header>
+        <h4>Dialog Header</h4>
+    </template>
+    <template #default>
+        <p>Dialog Main Content</p>
+    </template>
+    <template #footer>
+        <p>Dialog Footer (usually for buttons)</p>
+    </template>
+</Dialog>`;
+</script>

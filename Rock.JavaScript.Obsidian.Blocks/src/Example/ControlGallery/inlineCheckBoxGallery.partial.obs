@@ -1,0 +1,20 @@
+<template>
+    <GalleryAndResult :value="isChecked"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      description="Check Box with label that is displayed beside it instead of above it"
+                      enableReflection>
+        <InlineCheckBox label="Inline Label" v-model="isChecked" />
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const isChecked = ref(false);
+    const importCode = getSfcControlImportPath("checkBox");
+    const exampleCode = `<CheckBox label="Check Box" text="Enable" v-model="value" />`;
+</script>

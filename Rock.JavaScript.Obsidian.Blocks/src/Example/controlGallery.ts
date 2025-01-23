@@ -47,27 +47,19 @@
  */
 
 import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
-import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath, displayStyleItems } from "./ControlGallery/common/utils.partial";
+import { buildExampleCode, convertComponentName, getSfcControlImportPath, getTemplateImportPath, displayStyleItems } from "./ControlGallery/common/utils.partial";
 import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
 import { ControlGalleryInitializationBox } from "@Obsidian/ViewModels/Blocks/Example/ControlGallery/controlGalleryInitializationBox";
 import GalleryAndResult from "./ControlGallery/common/galleryAndResult.partial.obs";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";
-import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+import { Guid } from "@Obsidian/Types";
 import TextBox from "@Obsidian/Controls/textBox.obs";
-import EmailBox from "@Obsidian/Controls/emailBox.obs";
 import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-import DatePicker from "@Obsidian/Controls/datePicker.obs";
-import DateRangePicker from "@Obsidian/Controls/dateRangePicker.obs";
-import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
-import ListBox from "@Obsidian/Controls/listBox.obs";
-import ListItems from "@Obsidian/Controls/listItems.obs";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
 import AddressControl from "@Obsidian/Controls/addressControl.obs";
 import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
-import Switch from "@Obsidian/Controls/switch.obs";
 import Toggle from "@Obsidian/Controls/toggle.obs";
 import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
 import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
@@ -76,23 +68,13 @@ import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
 import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
 import RockForm from "@Obsidian/Controls/rockForm.obs";
 import RockButton from "@Obsidian/Controls/rockButton.obs";
-import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-import Dialog from "@Obsidian/Controls/dialog.obs";
 import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
-import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
-import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
 import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
-import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
-import NumberRangeBox from "@Obsidian/Controls/numberRangeBox.obs";
-import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
-import SocialSecurityNumberBox from "@Obsidian/Controls/socialSecurityNumberBox.obs";
-import TimePicker from "@Obsidian/Controls/timePicker.obs";
 import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
-import Rating from "@Obsidian/Controls/rating.obs";
 import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
@@ -113,11 +95,8 @@ import Following from "@Obsidian/Controls/following.obs";
 import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
 import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
 import DetailBlock from "@Obsidian/Templates/detailBlock";
-import { toNumber } from "@Obsidian/Utility/numberUtils";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
-import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
-import { FieldFilterGroupBag } from "@Obsidian/ViewModels/Reporting/fieldFilterGroupBag";
+import { toGuidOrNull } from "@Obsidian/Utility/guid";
 import { AssessmentType } from "@Obsidian/SystemGuids/assessmentType";
 import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
 import { DefinedType } from "@Obsidian/SystemGuids/definedType";
@@ -131,7 +110,6 @@ import { upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
 import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
 import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
 import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
-import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
 import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 import { useStore } from "@Obsidian/PageState";
 import BadgeComponentPicker from "@Obsidian/Controls/badgeComponentPicker.obs";
@@ -162,14 +140,12 @@ import BadgeList from "@Obsidian/Controls/badgeList.obs";
 import BadgePicker from "@Obsidian/Controls/badgePicker.obs";
 import BasicTimePicker from "@Obsidian/Controls/basicTimePicker.obs";
 import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
-import MediaSelector from "@Obsidian/Controls/mediaSelector.obs";
 import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
 import { FieldTypeEditorUpdateAttributeConfigurationOptionsBag } from "@Obsidian/ViewModels/Controls/fieldTypeEditorUpdateAttributeConfigurationOptionsBag";
 import FieldTypeEditor from "@Obsidian/Controls/fieldTypeEditor.obs";
 import InlineRangeSlider from "@Obsidian/Controls/inlineRangeSlider.obs";
 import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
 import JavaScriptAnchor from "@Obsidian/Controls/javaScriptAnchor.obs";
-import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
 import Loading from "@Obsidian/Controls/loading.obs";
 import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
 import NumberUpDownGroup from "@Obsidian/Controls/numberUpDownGroup.obs";
@@ -237,8 +213,6 @@ import CampusAccountAmountPickerGallery from "./ControlGallery/campusAccountAmou
 import PersonPickerGallery from "./ControlGallery/personPickerGallery.partial.obs";
 import ImageEditorGallery from "./ControlGallery/imageEditorGallery.partial.obs";
 import HighlightLabelGallery from "./ControlGallery/highlightLabelGallery.partial.obs";
-import { MediaSelectorMode } from "@Obsidian/Enums/Controls/mediaSelectorMode";
-import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
 import LightGridGallery from "./ControlGallery/lightGridGallery.partial.obs";
 import PdfViewerGallery from "./ControlGallery/pdfViewerGallery.partial.obs";
 import ChartGallery from "./ControlGallery/chartGallery.partial.obs";
@@ -271,1348 +245,33 @@ import TabbedModalGallery from "./ControlGallery/tabbedModalGallery.partial.obs"
 import CategoryTreeGallery from "./ControlGallery/categoryTreeGallery.partial.obs";
 import PageNavButtonsGallery from "./ControlGallery/pageNavButtonsGallery.partial.obs";
 import SearchFieldGallery from "./ControlGallery/searchFieldGallery.partial.obs";
-import { Guid } from "@Obsidian/Types";
-
-
-// #region Control Gallery
-
-/** Demonstrates an attribute values container. */
-const attributeValuesContainerGallery = defineComponent({
-    name: "AttributeValuesContainerGallery",
-    components: {
-        GalleryAndResult,
-        AttributeValuesContainer,
-        CheckBox,
-        NumberBox,
-        TextBox
-    },
-    setup() {
-        const isEditMode = ref(false);
-        const showAbbreviatedName = ref(false);
-        const showEmptyValues = ref(true);
-        const displayAsTabs = ref(false);
-        const showCategoryLabel = ref(true);
-        const numberOfColumns = ref(2);
-        const entityName = ref("Foo Entity");
-
-        const categories = [{
-            guid: newGuid(),
-            name: "Cat A",
-            order: 1
-        },
-        {
-            guid: newGuid(),
-            name: "Cat B",
-            order: 2
-        },
-        {
-            guid: newGuid(),
-            name: "Cat C",
-            order: 3
-        }];
-
-        const attributes = ref<Record<string, PublicAttributeBag>>({
-            text: {
-                attributeGuid: newGuid(),
-                categories: [categories[0]],
-                description: "A text attribute.",
-                fieldTypeGuid: FieldType.Text,
-                isRequired: false,
-                key: "text",
-                name: "Text Attribute",
-                order: 2,
-                configurationValues: {},
-                preHtml: "<div class='bg-primary p-3'>"
-            },
-            color: {
-                attributeGuid: newGuid(),
-                categories: [categories[0], categories[2]],
-                description: "Favorite color? Or just a good one?",
-                fieldTypeGuid: FieldType.Color,
-                isRequired: true,
-                key: "color",
-                name: "Random Color",
-                order: 4,
-                configurationValues: {},
-                postHtml: "</div>"
-            },
-            bool: {
-                attributeGuid: newGuid(),
-                categories: [categories[2]],
-                description: "Are you foo?",
-                fieldTypeGuid: FieldType.Boolean,
-                isRequired: false,
-                key: "bool",
-                name: "Boolean Attribute",
-                order: 3,
-                configurationValues: {}
-            },
-            textagain: {
-                attributeGuid: newGuid(),
-                categories: [categories[1]],
-                description: "Another text attribute.",
-                fieldTypeGuid: FieldType.Text,
-                isRequired: false,
-                key: "textAgain",
-                name: "Some Text",
-                order: 5,
-                configurationValues: {},
-                preHtml: "<h5>PRE HTML!</h5>"
-            },
-            single: {
-                attributeGuid: newGuid(),
-                categories: [],
-                description: "A single select attribute.",
-                fieldTypeGuid: FieldType.SingleSelect,
-                isRequired: false,
-                key: "single",
-                name: "Single Select",
-                order: 1,
-                configurationValues: {
-                    values: JSON.stringify([{ value: "1", text: "One" }, { value: "2", text: "Two" }, { value: "3", text: "Three" }])
-                }
-            }
-        });
-
-        const attributeValues = ref<Record<string, string>>({
-            "text": "Default text value",
-            "color": "#336699",
-            "bool": "N",
-            "textAgain": "",
-            single: "1"
-        });
-
-        return {
-            attributes,
-            attributeValues,
-            isEditMode,
-            showAbbreviatedName,
-            showEmptyValues,
-            displayAsTabs,
-            showCategoryLabel,
-            numberOfColumns,
-            entityName,
-            showPrePost: ref(false),
-            importCode: getControlImportPath("attributeValuesContainer"),
-            exampleCode: `<AttributeValuesContainer v-model="attributeValues" :attributes="attributes" :isEditMode="false" :showAbbreviatedName="false" :showEmptyValues="true" :displayAsTabs="false" :showCategoryLabel="true" :numberOfColumns="1" :entityTypeName="entityName" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="{ attributes, modelValue: attributeValues }"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-
-    <AttributeValuesContainer
-        v-model="attributeValues"
-        :attributes="attributes"
-        :isEditMode="isEditMode"
-        :showAbbreviatedName="showAbbreviatedName"
-        :showEmptyValues="showEmptyValues"
-        :displayAsTabs="displayAsTabs"
-        :showCategoryLabel="showCategoryLabel"
-        :numberOfColumns="numberOfColumns"
-        :entityTypeName="entityName"
-        :showPrePostHtml="showPrePost" />
-
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-sm-4" v-model="isEditMode" label="Edit Mode" text="Enable" help="Default: false" />
-            <CheckBox formGroupClasses="col-sm-4" v-model="showAbbreviatedName" label="Abbreviated Name" text="Show" help="Default: false" />
-            <CheckBox formGroupClasses="col-sm-4" v-model="showEmptyValues" label="Empty Values" text="Show" help="Default: true; Only applies if not in edit mode" />
-        </div>
-        <div class="row">
-            <CheckBox formGroupClasses="col-sm-4" v-model="displayAsTabs" label="Category Tabs" text="Show" help="Default: false; If any attributes are in a category, display each category as a tab. Not applicable while editing." />
-            <CheckBox formGroupClasses="col-sm-4" v-model="showCategoryLabel" label="Category Labels" text="Show" help="Default: false; Only applies when not displaying tabs." />
-            <CheckBox formGroupClasses="col-sm-4" v-model="showPrePost" label="Render Pre/Post HTML" text="Show" help="Default: true" />
-        </div>
-        <div class="row">
-            <NumberBox formGroupClasses="col-sm-6" v-model="numberOfColumns" label="Number of Columns" help="Default: 1; Only applies when not displaying tabs." />
-            <TextBox formGroupClasses="col-sm-6" v-model="entityName" label="Entity Type" help="Default: ''; Appears in the heading when category labels are showing." />
-        </div>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a field visibility rules editor. */
-const fieldFilterEditorGallery = defineComponent({
-    name: "FieldFilterEditorGallery",
-    components: {
-        GalleryAndResult,
-        FieldFilterEditor,
-        CheckBox,
-        TextBox
-    },
-    setup() {
-
-        const sources: FieldFilterSourceBag[] = [
-            {
-                guid: "2a50d342-3a0b-4da3-83c1-25839c75615c",
-                type: 0,
-                attribute: {
-                    attributeGuid: "4eb1eb34-988b-4212-8c93-844fae61b43c",
-                    fieldTypeGuid: "9C204CD0-1233-41C5-818A-C5DA439445AA",
-                    name: "Text Field",
-                    description: "",
-                    order: 0,
-                    isRequired: false,
-                    configurationValues: {
-                        maxcharacters: "10"
-                    }
-                }
-            },
-            {
-                guid: "6dbb47c4-5816-4110-8a52-92880d4d05c0",
-                type: 0,
-                attribute: {
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b0",
-                    fieldTypeGuid: "A75DFC58-7A1B-4799-BF31-451B2BBE38FF",
-                    name: "Integer Field",
-                    description: "",
-                    order: 0,
-                    isRequired: false,
-                    configurationValues: {}
-                }
-            },
-            {
-                guid: "6dbb47c4-5816-4110-8a52-92880d4d05c1",
-                type: 0,
-                attribute: {
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b1",
-                    fieldTypeGuid: "D747E6AE-C383-4E22-8846-71518E3DD06F",
-                    name: "Color",
-                    description: "",
-                    order: 0,
-                    isRequired: false,
-                    configurationValues: {
-                        selectiontype: "Color Picker"
-                    }
-                }
-            },
-            {
-                guid: "6dbb47c4-5816-4110-8a52-92880d4d05c2",
-                type: 0,
-                attribute: {
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b2",
-                    fieldTypeGuid: "3EE69CBC-35CE-4496-88CC-8327A447603F",
-                    name: "Currency",
-                    description: "",
-                    order: 0,
-                    isRequired: false,
-                    configurationValues: {}
-                }
-            },
-            {
-                guid: "6dbb47c4-5816-4110-8a52-92880d4d05c3",
-                type: 0,
-                attribute: {
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b3",
-                    fieldTypeGuid: "9C7D431C-875C-4792-9E76-93F3A32BB850",
-                    name: "Date Range",
-                    description: "",
-                    order: 0,
-                    isRequired: false,
-                    configurationValues: {}
-                }
-            },
-            {
-                guid: "6dbb47c4-5816-4110-8a52-92880d4d05c4",
-                type: 0,
-                attribute: {
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b4",
-                    fieldTypeGuid: "7EDFA2DE-FDD3-4AC1-B356-1F5BFC231DAE",
-                    name: "Day of Week",
-                    description: "",
-                    order: 0,
-                    isRequired: false,
-                    configurationValues: {}
-                }
-            },
-            {
-                guid: "6dbb47c4-5816-4110-8a52-92880d4d05c5",
-                type: 0,
-                attribute: {
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b5",
-                    fieldTypeGuid: "3D045CAE-EA72-4A04-B7BE-7FD1D6214217",
-                    name: "Email",
-                    description: "",
-                    order: 0,
-                    isRequired: false,
-                    configurationValues: {}
-                }
-            },
-            {
-                guid: "6dbb47c4-5816-4110-8a52-92880d4d05c6",
-                type: 0,
-                attribute: {
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b6",
-                    fieldTypeGuid: "2E28779B-4C76-4142-AE8D-49EA31DDB503",
-                    name: "Gender",
-                    description: "",
-                    order: 0,
-                    isRequired: false,
-                    configurationValues: {
-                        hideUnknownGender: "True"
-                    }
-                }
-            },
-            {
-                guid: "6dbb47c4-5816-4110-8a52-92880d4d05c7",
-                type: 0,
-                attribute: {
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b7",
-                    fieldTypeGuid: "C28C7BF3-A552-4D77-9408-DEDCF760CED0",
-                    name: "Memo",
-                    description: "",
-                    order: 0,
-                    isRequired: false,
-                    configurationValues: {
-                        numberofrows: "4",
-                        allowhtml: "True",
-                        maxcharacters: "5",
-                        showcountdown: "True"
-                    }
-                }
-            }
-        ];
-
-        const prefilled = (): FieldFilterGroupBag => ({
-            guid: newGuid(),
-            expressionType: 4,
-            rules: [
-                {
-                    guid: "a81c3ef9-72a9-476b-8b88-b52f513d92e6",
-                    comparisonType: 128,
-                    sourceType: 0,
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b0",
-                    value: "50"
-                },
-                {
-                    guid: "74d34117-4cc6-4cea-92c5-8297aa693ba5",
-                    comparisonType: 2,
-                    sourceType: 0,
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b1",
-                    value: "BlanchedAlmond"
-                },
-                {
-                    guid: "0fa2b6ea-bc86-4fae-b0da-02e48fed8d96",
-                    comparisonType: 8,
-                    sourceType: 0,
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b5",
-                    value: "@gmail.com"
-                },
-                {
-                    guid: "434107e6-6c0c-4698-90ef-d615b1c2de4b",
-                    comparisonType: 2,
-                    sourceType: 0,
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b6",
-                    value: "2"
-                },
-                {
-                    guid: "706179b9-7518-4a74-8e0f-8a48016aec04",
-                    comparisonType: 16,
-                    sourceType: 0,
-                    attributeGuid: "4eb1eb34-988b-4212-8c93-844fae61b43c",
-                    value: "text"
-                },
-                {
-                    guid: "4564eac2-15d9-48d9-b618-563523285af0",
-                    comparisonType: 512,
-                    sourceType: 0,
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b2",
-                    value: "999"
-                },
-                {
-                    guid: "e6c56d4c-7f63-44f9-8f07-1ea0860b605d",
-                    comparisonType: 1,
-                    sourceType: 0,
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b3",
-                    value: "2022-02-01,2022-02-28"
-                },
-                {
-                    guid: "0c27507f-9fb7-4f37-8026-70933bbf1398",
-                    comparisonType: 0,
-                    sourceType: 0,
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b4",
-                    value: "3"
-                },
-                {
-                    guid: "4f68fa2c-0942-4084-bb4d-3c045cef4551",
-                    comparisonType: 8,
-                    sourceType: 0,
-                    attributeGuid: "c41817d8-be26-460c-9f89-a7059ae6a9b7",
-                    value: "more text than I want to deal with...."
-                }
-            ]
-        });
-
-        const clean = (): FieldFilterGroupBag => ({
-            guid: newGuid(),
-            expressionType: 1,
-            rules: []
-        });
-
-        const usePrefilled = ref(false);
-        const value = ref(clean());
-
-        watch(usePrefilled, () => {
-            value.value = usePrefilled.value ? prefilled() : clean();
-        });
-
-        const title = ref("TEST PROPERTY");
-
-        return {
-            sources,
-            value,
-            title,
-            usePrefilled,
-            importCode: getControlImportPath("fieldFilterEditor"),
-            exampleCode: `<FieldFilterEditor :sources="sources" v-model="value" :title="title" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="{ 'output:modelValue':value, 'input:sources':sources }"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <FieldFilterEditor :sources="sources" v-model="value" :title="title" />
-
-    <template #settings>
-        <TextBox v-model="title" label="Attribute Name" />
-        <CheckBox v-model="usePrefilled" text="Use prefilled data" />
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a phone number box */
-const phoneNumberBoxGallery = defineComponent({
-    name: "PhoneNumberBoxGallery",
-    components: {
-        GalleryAndResult,
-        PhoneNumberBox,
-        RockForm,
-        RockButton
-    },
-    setup() {
-        return {
-            phoneNumber: ref(null),
-            submit: ref(false),
-            importCode: getSfcControlImportPath("phoneNumberBox"),
-            exampleCode: `<PhoneNumberBox label="Phone Number" v-model="phoneNumber" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="phoneNumber"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-
-    <RockForm v-model:submit="submit">
-        <PhoneNumberBox label="Phone Number" v-model="phoneNumber" />
-        <RockButton @click="submit=true">Validate</RockButton>
-    </RockForm>
-
-    <template #settings>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a help block */
-const helpBlockGallery = defineComponent({
-    name: "HelpBlockGallery",
-    components: {
-        GalleryAndResult,
-        HelpBlock,
-        TextBox
-    },
-    setup() {
-        return {
-            text: ref("This is some helpful text that explains something."),
-            importCode: getControlImportPath("helpBlock"),
-            exampleCode: `<HelpBlock text="text" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <HelpBlock :text="text" />
-    Hover over the symbol to the left to view HelpBlock in action
-
-    <template #settings>
-        <TextBox label="Text" v-model="text" help="The text for the help tooltip to display" rules="required" />
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a drop down list */
-const dropDownListGallery = defineComponent({
-    name: "DropDownListGallery",
-    components: {
-        GalleryAndResult,
-        CheckBox,
-        DropDownList
-    },
-    setup() {
-        const options: ListItemBag[] = [
-            { text: "A Text", value: "a", category: "First" },
-            { text: "B Text", value: "b", category: "First" },
-            { text: "C Text", value: "c", category: "Second" },
-            { text: "D Text", value: "d", category: "Second", disabled: true }
-        ];
-
-        // This function can be used to demonstrate lazy loading of items.
-        const loadOptionsAsync = async (): Promise<ListItemBag[]> => {
-            await sleep(5000);
-
-            return options;
-        };
-
-        return {
-            enhanceForLongLists: ref(false),
-            loadOptionsAsync,
-            showBlankItem: ref(true),
-            grouped: ref(false),
-            multiple: ref(false),
-            value: ref(null),
-            options,
-            importCode: getControlImportPath("dropDownList"),
-            exampleCode: `<DropDownList label="Select" v-model="value" :items="options" :showBlankItem="true" :enhanceForLongLists="false" :grouped="false" :multiple="false" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="{'output:modelValue': value, 'input:items': options}"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-
-    <DropDownList label="Select" v-model="value" :items="options" :showBlankItem="showBlankItem" :enhanceForLongLists="enhanceForLongLists" :grouped="grouped" :multiple="multiple" />
-
-    <template #settings>
-        <div class="row">
-            <CheckBox formGroupClasses="col-sm-4" label="Show Blank Item" v-model="showBlankItem" />
-            <CheckBox formGroupClasses="col-sm-4" label="Enhance For Long Lists" v-model="enhanceForLongLists" />
-            <CheckBox formGroupClasses="col-sm-4" label="Grouped" v-model="grouped" />
-            <CheckBox formGroupClasses="col-sm-4" label="Multiple" v-model="multiple" />
-        </div>
-
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a radio button list */
-const radioButtonListGallery = defineComponent({
-    name: "RadioButtonListGallery",
-    components: {
-        GalleryAndResult,
-        RadioButtonList,
-        Toggle,
-        NumberUpDown
-    },
-    setup() {
-        return {
-            value: ref("a"),
-            isHorizontal: ref(false),
-            repeatColumns: ref(0),
-            options: [
-                { text: "A Text", value: "a" },
-                { text: "B Text", value: "b" },
-                { text: "C Text", value: "c" },
-                { text: "D Text", value: "d" },
-                { text: "E Text", value: "e" },
-                { text: "F Text", value: "f" },
-                { text: "G Text", value: "g" }
-            ] as ListItemBag[],
-            importCode: getControlImportPath("radioButtonList"),
-            exampleCode: `<RadioButtonList label="Radio List" v-model="value" :items="options" :horizontal="false" :repeatColumns="0" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="{'output:modelValue': value, 'input:items': options}"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <RadioButtonList label="Radio List" v-model="value" :items="options" :horizontal="isHorizontal" :repeatColumns="repeatColumns" />
-
-    <template #settings>
-        <div class="row">
-            <NumberUpDown formGroupClasses="col-sm-6" label="Horizontal Columns" v-model="repeatColumns" :min="0" />
-            <Toggle formGroupClasses="col-sm-6" label="Horizontal" v-model="isHorizontal" />
-        </div>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a checkbox */
-const checkBoxGallery = defineComponent({
-    name: "CheckBoxGallery",
-    components: {
-        GalleryAndResult,
-        CheckBox,
-        TextBox
-    },
-    setup() {
-        return {
-            isChecked: ref(false),
-            importCode: getControlImportPath("checkBox"),
-            exampleCode: `<CheckBox label="Check Box" text="Enable" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="isChecked"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <CheckBox label="Check Box" text="Enable" v-model="isChecked" />
-
-    <template #settings>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates an inline checkbox */
-const inlineCheckBoxGallery = defineComponent({
-    name: "InlineCheckBoxGallery",
-    components: {
-        GalleryAndResult,
-        InlineCheckBox
-    },
-    data() {
-        return {
-            isChecked: false,
-            inline: true,
-            importCode: getControlImportPath("checkBox"),
-            exampleCode: `<CheckBox label="Check Box" text="Enable" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="isChecked"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    description="Check Box with label that is displayed beside it instead of above it"
-    enableReflection >
-    <InlineCheckBox label="Inline Label" v-model="isChecked" />
-</GalleryAndResult>`
-});
-
-/** Demonstrates a modal / dialog / pop-up */
-const dialogGallery = defineComponent({
-    name: "DialogGallery",
-    components: {
-        GalleryAndResult,
-        RockButton,
-        Dialog,
-        CheckBox
-    },
-    setup() {
-        return {
-            isDialogVisible: ref(false),
-            isDismissible: ref(true),
-            importCode: getControlImportPath("dialog"),
-            exampleCode: `<Dialog v-model="isDialogVisible" :dismissible="true">
-    <template #header>
-        <h4>Dialog Header</h4>
-    </template>
-    <template #default>
-        <p>Dialog Main Content</p>
-    </template>
-    <template #footer>
-        <p>Dialog Footer (usually for buttons)</p>
-    </template>
-</Dialog>`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="isDialogVisible"
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <RockButton @click="isDialogVisible = true">Show</RockButton>
-
-    <Dialog v-model="isDialogVisible" :dismissible="isDismissible">
-        <template #header>
-            <h4>Romans 11:33-36</h4>
-        </template>
-        <template #default>
-            <p>
-                Oh, the depth of the riches<br />
-                and the wisdom and the knowledge of God!<br />
-                How unsearchable his judgments<br />
-                and untraceable his ways!<br />
-                For who has known the mind of the Lord?<br />
-                Or who has been his counselor?<br />
-                And who has ever given to God,<br />
-                that he should be repaid?<br />
-                For from him and through him<br />
-                and to him are all things.<br />
-                To him be the glory forever. Amen.
-            </p>
-        </template>
-        <template #footer>
-            <RockButton @click="isDialogVisible = false" btnType="primary">OK</RockButton>
-            <RockButton @click="isDialogVisible = false" btnType="default">Cancel</RockButton>
-        </template>
-    </Dialog>
-
-    <template #settings>
-        <CheckBox label="Dismissible" text="Show the close button" v-model="isDismissible" />
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates check box list */
-const checkBoxListGallery = defineComponent({
-    name: "CheckBoxListGallery",
-    components: {
-        GalleryAndResult,
-        CheckBoxList,
-        NumberUpDown,
-        Toggle
-    },
-    setup() {
-        return {
-            items: ref(["green"]),
-            options: [
-                { value: "red", text: "Red" },
-                { value: "green", text: "Green" },
-                { value: "blue", text: "Blue" }
-            ] as ListItemBag[],
-            isHorizontal: ref(false),
-            repeatColumns: ref(0),
-            importCode: getControlImportPath("checkBoxList"),
-            exampleCode: `<CheckBoxList label="CheckBoxList" v-model="value" :items="options" :horizontal="false" :repeatColumns="0" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="{'output:modelValue': items, 'input:items': options}"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <CheckBoxList label="CheckBoxList" v-model="items" :items="options" :horizontal="isHorizontal" :repeatColumns="repeatColumns" />
-
-    <template #settings>
-        <div class="row">
-            <NumberUpDown formGroupClasses="col-sm-6" label="Horizontal Columns" v-model="repeatColumns" :min="0" />
-            <Toggle formGroupClasses="col-sm-6" label="Horizontal" v-model="isHorizontal" />
-        </div>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates media selector list */
-const mediaSelectorGallery = defineComponent({
-    name: "mediaSelectorGallery",
-    components: {
-        GalleryAndResult,
-        MediaSelector,
-        KeyValueList,
-        DropDownList
-    },
-    setup() {
-        return {
-            items: ref([""]),
-            mediaItems: [
-            ] as KeyValueItem[],
-            modeOptions: [
-                {
-                    text: "Image",
-                    value: "0"
-                },
-                {
-                    text: "Audio",
-                    value: "1"
-                }
-            ] as ListItemBag[],
-            mode: ref(MediaSelectorMode.Image),
-            itemWidth: "100px",
-            importCode: getControlImportPath("mediaSelector"),
-            exampleCode: `<MediaSelector label="MediaSelector" v-model="value" :mediaItems="mediaItems" :itemWidth="itemWidth" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="{'output:modelValue': items, 'input:items': mediaItems}"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <MediaSelector label="MediaSelector" v-model="items" :mediaItems="mediaItems" :mode="mode"/>
-
-    <template #settings>
-        <div class="row">
-            <KeyValueList label="Media Items" v-model="mediaItems" />
-            <DropDownList label="Mode" v-model="mode" :items="modeOptions" />
-        </div>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a list box */
-const listItemsGallery = defineComponent({
-    name: "ListItemsGallery",
-    components: {
-        GalleryAndResult,
-        ListItems,
-        TextBox
-    },
-    setup() {
-        return {
-            value: ref([]),
-            valuePrompt: ref(""),
-            importCode: getControlImportPath("listItems"),
-            exampleCode: `<ListItems label="List Items" v-model="value" :valuePrompt="valuePrompt" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="{'output:modelValue': value, 'input:items': options}"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <ListItems label="List Items" v-model="value" :valuePrompt="valuePrompt" />
-
-    <template #settings>
-        <TextBox label="Value Prompt" v-model="valuePrompt" />
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a list box */
-const listBoxGallery = defineComponent({
-    name: "ListBoxGallery",
-    components: {
-        GalleryAndResult,
-        ListBox,
-        InlineCheckBox
-    },
-    setup() {
-        return {
-            value: ref(["a"]),
-            options: [
-                { text: "A Text", value: "a" },
-                { text: "B Text", value: "b" },
-                { text: "C Text", value: "c" },
-                { text: "D Text", value: "d" }
-            ] as ListItemBag[],
-            enhanced: ref(false),
-            importCode: getControlImportPath("listBox"),
-            exampleCode: `<ListBox label="Select" v-model="value" :items="options" :enhanceForLongLists="false" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="{'output:modelValue': value, 'input:items': options}"
-    hasMultipleValues
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <ListBox label="Select" v-model="value" :items="options" :enhanceForLongLists="enhanced" />
-
-    <template #settings>
-        <InlineCheckBox v-model="enhanced" label="Use Enhanced Functionality" />
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates date pickers */
-const datePickerGallery = defineComponent({
-    name: "DatePickerGallery",
-    components: {
-        GalleryAndResult,
-        DatePicker,
-        InlineCheckBox
-    },
-    setup() {
-        return {
-            date: ref<string | null>(null),
-            displayCurrentOption: ref(false),
-            isCurrentDateOffset: ref(false),
-            disableForceParse: ref(false),
-            disableShowOnFocus: ref(false),
-            disableHighlightToday: ref(false),
-            disallowFutureDateSelection: ref(false),
-            disallowPastDateSelection: ref(false),
-            isDisabled: ref(false),
-            startView: ref(0),
-            viewOptions: [{ value: 0, text: "Month" }, { value: 1, text: "Year" }, { value: 2, text: "Decade" }],
-            importCode: getControlImportPath("datePicker"),
-            exampleCode: `<DatePicker label="Date" v-model="date"
-    :displayCurrentOption="false"
-    :isCurrentDateOffset="false"
-    :disableForceParse="false"
-    :disableShowOnFocus="false"
-    :disableHighlightToday="false"
-    :disallowFutureDateSelection="false"
-    :disallowPastDateSelection="false"
-    :startView="startView"
-/>`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="date"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <DatePicker label="Date" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" :disabled="isDisabled" />
-
-    <template #settings>
-        <div class="row">
-            <div class="col-sm-4">
-                <InlineCheckBox v-model="displayCurrentOption" label="Display Current Option" />
-            </div>
-            <div class="col-sm-4">
-                <InlineCheckBox v-model="isCurrentDateOffset" label="Is Current Date Offset" />
-            </div>
-            <div class="col-sm-4">
-                <InlineCheckBox v-model="isDisabled" label="Disable" />
-            </div>
-        </div>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates date range pickers */
-const dateRangePickerGallery = defineComponent({
-    name: "DateRangePickerGallery",
-    components: {
-        GalleryAndResult,
-        DateRangePicker
-    },
-    setup() {
-        return {
-            date: ref({}),
-            disallowPastDateSelection: ref(false),
-            importCode: getControlImportPath("dateRangePicker"),
-            exampleCode: `<DateRangePicker label="Date Range" v-model="date"
-    :disallowPastDateSelection="false"
-/>`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="date"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <DateRangePicker label="Date Range" v-model="date" />
-
-    <template #settings>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates date time pickers */
-const dateTimePickerGallery = defineComponent({
-    name: "DateTimePickerGallery",
-    components: {
-        GalleryAndResult,
-        DateTimePicker,
-        InlineCheckBox
-    },
-    setup() {
-        return {
-            date: ref<string | null>(null),
-            displayCurrentOption: ref(false),
-            isCurrentDateOffset: ref(false),
-            disabled: ref(false),
-            importCode: getControlImportPath("dateTimePicker"),
-            exampleCode: `<DateTimePicker label="Date and Time" v-model="date" :displayCurrentOption="false" :isCurrentDateOffset="false" :disabled="disabled" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="date"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-
-    <DateTimePicker label="Date and Time" v-model="date" :displayCurrentOption="displayCurrentOption" :isCurrentDateOffset="isCurrentDateOffset" :disabled="disabled" />
-
-    <template #settings>
-        <div class="row">
-            <div class="col-sm-4">
-                <InlineCheckBox v-model="displayCurrentOption" label="Display Current Option" />
-            </div>
-            <div class="col-sm-4">
-                <InlineCheckBox v-model="isCurrentDateOffset" label="Is Current Date Offset" />
-            </div>
-            <div class="col-sm-4">
-                <InlineCheckBox v-model="disabled" label="Is Disabled" />
-            </div>
-        </div>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a color picker */
-const colorPickerGallery = defineComponent({
-    name: "ColorPickerGallery",
-    components: {
-        GalleryAndResult,
-        ColorPicker
-    },
-    setup() {
-        return {
-            value: ref("#ee7725"),
-            importCode: getControlImportPath("colorPicker"),
-            exampleCode: `<ColorPicker label="Color" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <ColorPicker label="Color" v-model="value" />
-
-    <template #settings>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a number box */
-const numberBoxGallery = defineComponent({
-    name: "NumberBoxGallery",
-    components: {
-        GalleryAndResult,
-        RockForm,
-        RockButton,
-        TextBox,
-        NumberBox
-    },
-    setup() {
-        const minimumValue = ref("0");
-        const maximumValue = ref("1");
-        const value = ref(42);
-
-        const numericMinimumValue = computed((): number => toNumber(minimumValue.value));
-        const numericMaximumValue = computed((): number => toNumber(maximumValue.value));
-
-        return {
-            minimumValue,
-            maximumValue,
-            numericMinimumValue,
-            numericMaximumValue,
-            value,
-            importCode: getControlImportPath("numberBox"),
-            exampleCode: `<NumberBox label="Number" v-model="value" :minimumValue="minimumValue" :maximumValue="maximumValue" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <RockForm>
-        <NumberBox label="Number" v-model="value" :minimumValue="numericMinimumValue" :maximumValue="numericMaximumValue" />
-        <RockButton btnType="primary" type="submit">Test Validation</RockButton>
-    </RockForm>
-
-    <template #settings>
-        <TextBox label="Minimum Value" v-model="minimumValue" />
-        <TextBox label="Maximum Value" v-model="maximumValue" />
-
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a number box */
-const numberRangeBoxGallery = defineComponent({
-    name: "NumberRangeBoxGallery",
-    components: {
-        GalleryAndResult,
-        NumberRangeBox
-    },
-    setup() {
-        return {
-            value: ref({ lower: 0, upper: 100 }),
-            importCode: getControlImportPath("numberRangeBox"),
-            exampleCode: `<NumberRangeBox label="Number Range" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <NumberRangeBox label="Number Range" v-model="value" />
-
-    <template #settings>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a gender picker */
-const genderPickerGallery = defineComponent({
-    name: "GenderPickerGallery",
-    components: {
-        GalleryAndResult,
-        GenderPicker
-    },
-    setup() {
-        return {
-            value: ref("1"),
-            importCode: getControlImportPath("genderPicker"),
-            exampleCode: `<GenderPicker label="Your Gender" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <GenderPicker  v-model="value" />
-
-    <template #settings>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a social security number box */
-const socialSecurityNumberBoxGallery = defineComponent({
-    name: "SocialSecurityNumberBoxGallery",
-    components: {
-        GalleryAndResult,
-        SocialSecurityNumberBox
-    },
-    setup() {
-        return {
-            value: ref("123456789"),
-            importCode: getControlImportPath("socialSecurityNumberBox"),
-            exampleCode: `<SocialSecurityNumberBox label="SSN" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <SocialSecurityNumberBox label="SSN" v-model="value" />
-
-    <template #settings>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a time picker */
-const timePickerGallery = defineComponent({
-    name: "TimePickerGallery",
-    components: {
-        GalleryAndResult,
-        TimePicker,
-        CheckBox
-    },
-    setup() {
-        return {
-            value: ref({ hour: 14, minute: 15 }),
-            disabled: ref(false),
-            importCode: getSfcControlImportPath("timePicker"),
-            exampleCode: `<TimePicker label="Time" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <TimePicker label="Time" v-model="value" :disabled="disabled" />
-
-    <template #settings>
-        <div>
-            <CheckBox v-model="disabled" label="Disabled" />
-        </div>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a rating picker */
-const ratingGallery = defineComponent({
-    name: "RatingGallery",
-    components: {
-        GalleryAndResult,
-        NumberBox,
-        Rating
-    },
-    setup() {
-        return {
-            value: ref(3),
-            maximumValue: ref(5),
-            importCode: getControlImportPath("rating"),
-            exampleCode: `<Rating label="Rating" v-model="value" :maxRating="5" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <Rating label="How Would You Rate God?" v-model="value" :maxRating="maximumValue || 5" />
-
-    <template #settings>
-        <NumberBox label="Maximum Rating" v-model="maximumValue" />
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a switch */
-const switchGallery = defineComponent({
-    name: "SwitchGallery",
-    components: {
-        GalleryAndResult,
-        Switch
-    },
-    setup() {
-        return {
-            isChecked: ref(false),
-            importCode: getControlImportPath("switch"),
-            exampleCode: `<Switch text="Switch" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="isChecked"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <Switch text="Switch" v-model="isChecked" />
-
-    <template #settings>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates an inline switch */
-const inlineSwitchGallery = defineComponent({
-    name: "InlineSwitchGallery",
-    components: {
-        GalleryAndResult,
-        CheckBox,
-        InlineSwitch
-    },
-    setup() {
-        return {
-            isBold: ref(false),
-            isChecked: ref(false),
-            importCode: getControlImportPath("inlineSwitch"),
-            exampleCode: `<InlineSwitch label="Inline Switch" v-model="value" :isBold="false" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="isChecked"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <InlineSwitch label="Inline Switch" v-model="isChecked" :isBold="isBold" />
-
-    <template #settings>
-        <CheckBox label="Is Bold" v-model="isBold" />
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates an email box */
-const emailBoxGallery = defineComponent({
-    name: "EmailBoxGallery",
-    components: {
-        GalleryAndResult,
-        EmailBox
-    },
-    setup() {
-        return {
-            value: ref("ted@rocksolidchurchdemo.com"),
-            importCode: getControlImportPath("emailBox"),
-            exampleCode: `<EmailBox label="Email" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <EmailBox label="Email" v-model="value" />
-
-    <template #settings>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
-
-/** Demonstrates a number up down control */
-const numberUpDownGallery = defineComponent({
-    name: "NumberUpDownGallery",
-    components: {
-        GalleryAndResult,
-        NumberUpDown
-    },
-    setup() {
-        return {
-            value: ref(1),
-            importCode: getControlImportPath("numberUpDown"),
-            exampleCode: `<NumberUpDown label="Number" v-model="value" />`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :value="value"
-    :importCode="importCode"
-    :exampleCode="exampleCode"
-    enableReflection >
-    <NumberUpDown label="Number" v-model="value" />
-
-    <template #settings>
-        <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
-        <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
-    </template>
-</GalleryAndResult>`
-});
+import attributeValuesContainerGallery from "./ControlGallery/attributeValuesContainerGallery.partial.obs";
+import socialSecurityNumberBoxGallery from "./ControlGallery/socialSecurityNumberBoxGallery.partial.obs";
+import fieldFilterEditorGallery from "./ControlGallery/fieldFilterEditorGallery.partial.obs";
+import phoneNumberBoxGallery from "./ControlGallery/phoneNumberBoxGallery.partial.obs";
+import helpBlockGallery from "./ControlGallery/helpBlockGallery.partial.obs";
+import dropDownListGallery from "./ControlGallery/dropDownListGallery.partial.obs";
+import radioButtonListGallery from "./ControlGallery/radioButtonListGallery.partial.obs";
+import checkBoxGallery from "./ControlGallery/checkBoxGallery.partial.obs";
+import inlineCheckBoxGallery from "./ControlGallery/inlineCheckBoxGallery.partial.obs";
+import dialogGallery from "./ControlGallery/dialogGallery.partial.obs";
+import checkBoxListGallery from "./ControlGallery/checkBoxListGallery.partial.obs";
+import mediaSelectorGallery from "./ControlGallery/mediaSelectorGallery.partial.obs";
+import listItemsGallery from "./ControlGallery/listItemsGallery.partial.obs";
+import listBoxGallery from "./ControlGallery/listBoxGallery.partial.obs";
+import datePickerGallery from "./ControlGallery/datePickerGallery.partial.obs";
+import dateRangePickerGallery from "./ControlGallery/dateRangePickerGallery.partial.obs";
+import dateTimePickerGallery from "./ControlGallery/dateTimePickerGallery.partial.obs";
+import colorPickerGallery from "./ControlGallery/colorPickerGallery.partial.obs";
+import numberBoxGallery from "./ControlGallery/numberBoxGallery.partial.obs";
+import numberRangeBoxGallery from "./ControlGallery/numberRangeBoxGallery.partial.obs";
+import genderPickerGallery from "./ControlGallery/genderPickerGallery.partial.obs";
+import timePickerGallery from "./ControlGallery/timePickerGallery.partial.obs";
+import ratingGallery from "./ControlGallery/ratingGallery.partial.obs";
+import switchGallery from "./ControlGallery/switchGallery.partial.obs";
+import inlineSwitchGallery from "./ControlGallery/inlineSwitchGallery.partial.obs";
+import emailBoxGallery from "./ControlGallery/emailBoxGallery.partial.obs";
+import numberUpDownGallery from "./ControlGallery/numberUpDownGallery.partial.obs";
 
 /** Demonstrates a static form control */
 const staticFormControlGallery = defineComponent({
@@ -1624,7 +283,7 @@ const staticFormControlGallery = defineComponent({
     setup() {
         return {
             value: ref("This is a static value"),
-            importCode: getControlImportPath("staticFormControl"),
+            importCode: getSfcControlImportPath("staticFormControl"),
             exampleCode: `<StaticFormControl label="Static Value" v-model="value" />`
         };
     },
@@ -1721,7 +380,7 @@ const toggleGallery = defineComponent({
                 { value: "xs", text: "Extra Small" },
             ],
             value: ref(false),
-            importCode: getControlImportPath("toggle"),
+            importCode: getSfcControlImportPath("toggle"),
             exampleCode: `<Toggle label="Toggle" v-model="value" trueText="On" falseText="Off" :btnSize="btnSize" />`
         };
     },
@@ -1766,7 +425,7 @@ const progressTrackerGallery = defineComponent({
                 { key: "8", title: "Step 8", subtitle: "The eighth step" },
                 { key: "F", title: "Finish", subtitle: "The finish" }
             ] as ProgressTrackerItem[],
-            importCode: getControlImportPath("progressTracker"),
+            importCode: getSfcControlImportPath("progressTracker"),
             exampleCode: `<ProgressTracker :items="items" :currentIndex="0" />`
         };
     },
@@ -1796,7 +455,7 @@ const itemsWithPreAndPostHtmlGallery = defineComponent({
                 { preHtml: '<div class="row"><div class="col-sm-6">', postHtml: "</div>", slotName: "item1" },
                 { preHtml: '<div class="col-sm-6">', postHtml: "</div></div>", slotName: "item2" }
             ]),
-            importCode: getControlImportPath("itemsWithPreAndPostHtml"),
+            importCode: getSfcControlImportPath("itemsWithPreAndPostHtml"),
             exampleCode: `<ItemsWithPreAndPostHtml :items="value">
     <template #item1>
         <div>This is item 1</div>
@@ -1840,7 +499,7 @@ const urlLinkBoxGallery = defineComponent({
     setup() {
         return {
             value: ref("/home/"),
-            importCode: getControlImportPath("urlLinkBox"),
+            importCode: getSfcControlImportPath("urlLinkBox"),
             exampleCode: `<UrlLinkBox label="URL" v-model="value" />`
         };
     },
@@ -1873,7 +532,7 @@ const fullscreenGallery = defineComponent({
         return {
             pageOnly: ref(true),
             value: ref(false),
-            importCode: getControlImportPath("fullscreen"),
+            importCode: getSfcControlImportPath("fullscreen"),
             exampleCode: `<Fullscreen v-model="value" :isPageOnly="true">
     <p>Content to make full screen</p>
 </Fullscreen>`
@@ -2101,7 +760,7 @@ const fileUploaderGallery = defineComponent({
             uploadAsTemporary: ref(true),
             uploadButtonText: ref("Upload"),
             value: ref(null),
-            importCode: getControlImportPath("fileUploader"),
+            importCode: getSfcControlImportPath("fileUploader"),
             exampleCode: `<FileUploader v-model="value" label="File Uploader" :uploadAsTemporary="true" :binaryFileTypeGuid="BinaryFiletype.Default" uploadButtonText="Upload" :showDeleteButton="true" />`
         };
     },
@@ -2235,7 +894,7 @@ const definedValuePickerGallery = defineComponent({
             multiple,
             displayStyle,
             value: ref(null),
-            importCode: getControlImportPath("definedValuePicker"),
+            importCode: getSfcControlImportPath("definedValuePicker"),
             exampleCode: `<DefinedValuePicker label="Defined Value" v-model="value" :definedTypeGuid="definedTypeGuid" :multiple="false" :enhanceForLongLists="false" />`
         };
     },
@@ -2280,7 +939,7 @@ const entityTypePickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({ value: EntityType.Person, text: "Person" }),
-            importCode: getControlImportPath("entityTypePicker"),
+            importCode: getSfcControlImportPath("entityTypePicker"),
             exampleCode: `<EntityTypePicker label="Entity Type" v-model="value" :multiple="false" :includeGlobalOption="false" />`
         };
     },
@@ -2354,7 +1013,7 @@ const achievementTypePickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("achievementTypePicker"),
+            importCode: getSfcControlImportPath("achievementTypePicker"),
             exampleCode: `<AchievementTypePicker label="Achievement Type" v-model="value" :multiple="false" />`
         };
     },
@@ -2421,7 +1080,7 @@ const badgeComponentPickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("badgeComponentPicker"),
+            importCode: getSfcControlImportPath("badgeComponentPicker"),
             exampleCode: `<BadgeComponentPicker label="Badge Component" v-model="value" />`
         };
     },
@@ -2492,7 +1151,7 @@ const sectionHeaderGallery = defineComponent({
             showActionBar,
             showContent,
             description,
-            importCode: getControlImportPath("sectionHeader"),
+            importCode: getSfcControlImportPath("sectionHeader"),
             exampleCode: `<SectionHeader title="This is a SectionHeader" description="A Description" :isSeparatorHidden="false">
     <template #actions>Action Buttons</template>
 </SectionHeader>`
@@ -2550,7 +1209,7 @@ const sectionContainerGallery = defineComponent({
             showContentToggle,
             showContent,
             description,
-            importCode: getControlImportPath("sectionContainer"),
+            importCode: getSfcControlImportPath("sectionContainer"),
             exampleCode: `<SectionContainer title="This is a Section Container" description="A Description" v-model="showContent" toggleText="Show">
     <template #actions>Action Buttons</template>
     Main Content
@@ -2607,7 +1266,7 @@ const categoryPickerGallery = defineComponent({
             entityTypeGuid,
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("categoryPicker"),
+            importCode: getSfcControlImportPath("categoryPicker"),
             exampleCode: `<CategoryPicker label="Category Picker" v-model="value" :multiple="false" :entityTypeGuid="entityTypeGuid" />`
         };
     },
@@ -2648,7 +1307,7 @@ const locationItemPickerGallery = defineComponent({
         return {
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("locationItemPicker"),
+            importCode: getSfcControlImportPath("locationItemPicker"),
             exampleCode: `<LocationItemPicker label="Location" v-model="value" :multiple="false" />`
         };
     },
@@ -2680,7 +1339,7 @@ const connectionRequestPickerGallery = defineComponent({
         return {
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("connectionRequestPicker"),
+            importCode: getSfcControlImportPath("connectionRequestPicker"),
             exampleCode: `<ConnectionRequestPicker label="ConnectionRequest" v-model="value" :multiple="false" />`
         };
     },
@@ -2720,7 +1379,7 @@ const copyButtonGallery = defineComponent({
                 { value: "sm", text: "Small" },
                 { value: "xs", text: "Extra Small" },
             ],
-            importCode: getControlImportPath("copyButton"),
+            importCode: getSfcControlImportPath("copyButton"),
             exampleCode: `<CopyButton :value="value" tooltip="Copy" />`
         };
     },
@@ -2853,7 +1512,7 @@ const followingGallery = defineComponent({
             disabled: ref(false),
             entityTypeGuid: ref<Guid>(EntityType.Person),
             entityKey: ref(store.state.currentPerson?.idKey ?? ""),
-            importCode: getControlImportPath("following"),
+            importCode: getSfcControlImportPath("following"),
             exampleCode: `<Following :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
         };
     },
@@ -2901,7 +1560,7 @@ const assessmentTypePickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({ value: AssessmentType.Disc, text: "DISC" }),
-            importCode: getControlImportPath("assessmentTypePicker"),
+            importCode: getSfcControlImportPath("assessmentTypePicker"),
             exampleCode: `<AssessmentTypePicker label="Assessment Type" v-model="value" :isInactiveIncluded="false" />`
         };
     },
@@ -2975,7 +1634,7 @@ const assetStorageProviderPickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("assetStorageProviderPicker"),
+            importCode: getSfcControlImportPath("assetStorageProviderPicker"),
             exampleCode: `<AssetStorageProviderPicker label="Asset Storage Provider" v-model="value" />`
         };
     },
@@ -3044,7 +1703,7 @@ const binaryFileTypePickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("binaryFileTypePicker"),
+            importCode: getSfcControlImportPath("binaryFileTypePicker"),
             exampleCode: `<BinaryFileTypePicker label="Binary File Type" v-model="value" />`
         };
     },
@@ -3118,7 +1777,7 @@ const campusPickerGallery = defineComponent({
             campusTypeFilter: ref(null),
             campusStatusDefinedTypeGuid: DefinedType.CampusStatus,
             campusTypeDefinedTypeGuid: DefinedType.CampusType,
-            importCode: getControlImportPath("campusPicker"),
+            importCode: getSfcControlImportPath("campusPicker"),
             exampleCode: `<CampusPicker label="Campus" v-model="value" />`
         };
     },
@@ -3202,7 +1861,7 @@ const scheduleBuilderGallery = defineComponent({
             value: ref(""),
             hideStartDateTime: ref(false),
             hideDuration: ref(false),
-            importCode: getControlImportPath("scheduleBuilder"),
+            importCode: getSfcControlImportPath("scheduleBuilder"),
             exampleCode: `<ScheduleBuilder label="Schedule Builder" v-model="value" :hideStartDateTime="false" :hideDuration="false" />`
         };
     },
@@ -3255,7 +1914,7 @@ const binaryFilePickerGallery = defineComponent({
                 "value": BinaryFiletype.Default
             }),
             value: ref({}),
-            importCode: getControlImportPath("binaryFilePicker"),
+            importCode: getSfcControlImportPath("binaryFilePicker"),
             exampleCode: `<BinaryFilePicker label="Binary File" v-model="value" />`
         };
     },
@@ -3326,7 +1985,7 @@ const eventItemPickerGallery = defineComponent({
             showBlankItem: ref(false),
             includeInactive: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("eventItemPicker"),
+            importCode: getSfcControlImportPath("eventItemPicker"),
             exampleCode: `<EventItemPicker label="Event Item" v-model="value" :multiple="false" />`
         };
     },
@@ -3395,7 +2054,7 @@ const dataViewPickerGallery = defineComponent({
             multiple: ref(false),
             value: ref(null),
             displayPersistedOnly: ref(false),
-            importCode: getControlImportPath("dataViewPicker"),
+            importCode: getSfcControlImportPath("dataViewPicker"),
             exampleCode: `<DataViewPicker label="Data View" v-model="value" :displayOnlyPersisted="true"/>`
         };
     },
@@ -3494,7 +2153,7 @@ const financialGatewayPickerGallery = defineComponent({
             includeInactive: ref(false),
             showAllGatewayComponents: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("financialGatewayPicker"),
+            importCode: getSfcControlImportPath("financialGatewayPicker"),
             exampleCode: `<FinancialGatewayPicker label="Financial Gateway" v-model="value" :multiple="false" />`
         };
     },
@@ -3569,7 +2228,7 @@ const financialStatementTemplatePickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("financialStatementTemplatePicker"),
+            importCode: getSfcControlImportPath("financialStatementTemplatePicker"),
             exampleCode: `<FinancialStatementTemplatePicker label="Financial Statement Template" v-model="value" :multiple="false" />`
         };
     },
@@ -3634,7 +2293,7 @@ const fieldTypePickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("fieldTypePicker"),
+            importCode: getSfcControlImportPath("fieldTypePicker"),
             exampleCode: `<FieldTypePicker label="Field Type" v-model="value" :multiple="false" />`
         };
     },
@@ -3694,7 +2353,7 @@ const auditDetailGallery = defineComponent({
         return {
             entityTypeGuid: ref<Guid>(EntityType.Person),
             entityKey: ref(store.state.currentPerson?.idKey ?? ""),
-            importCode: getControlImportPath("auditDetail"),
+            importCode: getSfcControlImportPath("auditDetail"),
             exampleCode: `<AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`
         };
     },
@@ -3737,7 +2396,7 @@ const modalGallery = defineComponent({
             isCloseButtonHidden: ref(false),
             clickBackdropToClose: ref(false),
             value: "",
-            importCode: getControlImportPath("modal"),
+            importCode: getSfcControlImportPath("modal"),
             exampleCode: `<Modal v-model="isOpen" title="Modal Dialog Title" saveText="Save" @save="isOpen = false">
     <TextBox label="Required Value" v-model="value" rules="required" />
 </Modal>`
@@ -3810,7 +2469,7 @@ const componentPickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("componentPicker"),
+            importCode: getSfcControlImportPath("componentPicker"),
             exampleCode: `<ComponentPicker label="Component" v-model="value" />`
         };
     },
@@ -3877,7 +2536,7 @@ const gradePickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("gradePicker"),
+            importCode: getSfcControlImportPath("gradePicker"),
             exampleCode: `<GradePicker label="Grade" v-model="value" />`
         };
     },
@@ -3947,7 +2606,7 @@ const groupMemberPickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("groupMemberPicker"),
+            importCode: getSfcControlImportPath("groupMemberPicker"),
             exampleCode: `<GroupMemberPicker label="Group Member" v-model="value" />`
         };
     },
@@ -4143,7 +2802,7 @@ const lavaCommandPickerGallery = defineComponent({
             multiple: ref(true),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("lavaCommandPicker"),
+            importCode: getSfcControlImportPath("lavaCommandPicker"),
             exampleCode: `<LavaCommandPicker label="Lava Command" v-model="value" />`
         };
     },
@@ -4205,7 +2864,7 @@ const remoteAuthsPickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("remoteAuthsPicker"),
+            importCode: getSfcControlImportPath("remoteAuthsPicker"),
             exampleCode: `<RemoteAuthsPicker label="Remote Auths" v-model="value" />`
         };
     },
@@ -4583,7 +3242,7 @@ const streakTypePickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("streakTypePicker"),
+            importCode: getSfcControlImportPath("streakTypePicker"),
             exampleCode: `<StreakTypePicker label="Streak Type" v-model="value" />`
         };
     },
@@ -4645,7 +3304,7 @@ const badgePickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("badgePicker"),
+            importCode: getSfcControlImportPath("badgePicker"),
             exampleCode: `<BadgePicker label="Badge" v-model="value" />`
         };
     },
@@ -4772,7 +3431,7 @@ const badgeListGallery = defineComponent({
             badgeTypes,
             badgeTypeGuids,
             entityKey: ref(store.state.currentPerson?.idKey ?? ""),
-            importCode: getControlImportPath("badgeList"),
+            importCode: getSfcControlImportPath("badgeList"),
             exampleCode: `<BadgeList :entityTypeGuid="entityTypeGuid?.value" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />`
         };
     },
@@ -4806,7 +3465,7 @@ const basicTimePickerGallery = defineComponent({
         return {
             value: ref({}),
             disabled: ref(false),
-            importCode: getControlImportPath("basicTimePicker"),
+            importCode: getSfcControlImportPath("basicTimePicker"),
             exampleCode: `<BasicTimePicker label="Time" v-model="value" />`
         };
     },
@@ -4844,7 +3503,7 @@ const birthdayPickerGallery = defineComponent({
                 day: 1,
                 year: 1970
             }),
-            importCode: getControlImportPath("birthdayPicker"),
+            importCode: getSfcControlImportPath("birthdayPicker"),
             exampleCode: `<BirthdayPicker label="Birthday" v-model="date" />`
         };
     },
@@ -4883,7 +3542,7 @@ const countdownTimerGallery = defineComponent({
             reset: () => seconds.value = setToSeconds.value,
             setToSeconds,
             seconds,
-            importCode: getControlImportPath("countdownTimer"),
+            importCode: getSfcControlImportPath("countdownTimer"),
             exampleCode: `<CountdownTimer v-model="seconds" />`
         };
     },
@@ -4919,7 +3578,7 @@ const electronicSignatureGallery = defineComponent({
             signature: ref(null),
             isDrawn: ref(false),
             term: ref("document"),
-            importCode: getControlImportPath("electronicSignature"),
+            importCode: getSfcControlImportPath("electronicSignature"),
             exampleCode: `<ElectronicSignature v-model="signature" :isDrawn="isDrawn" documentTerm="document" />`
         };
     },
@@ -4961,7 +3620,7 @@ const fieldTypeEditorGallery = defineComponent({
                 fieldTypeGuid: FieldType.Boolean
             }),
             readOnly: ref(false),
-            importCode: getControlImportPath("fieldTypeEditor"),
+            importCode: getSfcControlImportPath("fieldTypeEditor"),
             exampleCode: `<FieldTypeEditor v-model="value" :isFieldTypeReadOnly="readOnly" />`
         };
     },
@@ -5034,7 +3693,7 @@ const javaScriptAnchorGallery = defineComponent({
     setup() {
         return {
             onClick: () => alert("Link Clicked"),
-            importCode: getControlImportPath("javaScriptAnchor"),
+            importCode: getSfcControlImportPath("javaScriptAnchor"),
             exampleCode: `<JavaScriptAnchor @click="onClick">Link Text</JavaScriptAnchor>`
         };
     },
@@ -5058,7 +3717,7 @@ const loadingGallery = defineComponent({
     setup() {
         return {
             isLoading: ref(false),
-            importCode: getControlImportPath("loading"),
+            importCode: getSfcControlImportPath("loading"),
             exampleCode: `<Loading :isLoading="isLoading">Content to show when not loading</Loading>`
         };
     },
@@ -5087,7 +3746,7 @@ const loadingIndicatorGallery = defineComponent({
     },
     setup() {
         return {
-            importCode: getControlImportPath("loadingIndicator"),
+            importCode: getSfcControlImportPath("loadingIndicator"),
             exampleCode: `<LoadingIndicator />`
         };
     },
@@ -5121,7 +3780,7 @@ const numberUpDownGroupGallery = defineComponent({
                 { key: "prop2", label: "Prop 2", min: 10, max: 60 },
                 { key: "prop3", label: "Prop 3", min: 20, max: 70 }
             ] as NumberUpDownGroupOption[],
-            importCode: getControlImportPath("numberUpDownGroup"),
+            importCode: getSfcControlImportPath("numberUpDownGroup"),
             exampleCode: `<NumberUpDownGroup v-model="value" :options="options" />`
         };
     },
@@ -5148,7 +3807,7 @@ const progressBarGallery = defineComponent({
     setup() {
         return {
             value: ref(10),
-            importCode: getControlImportPath("progressBar"),
+            importCode: getSfcControlImportPath("progressBar"),
             exampleCode: `<ProgressBar :percent="value" />`
         };
     },
@@ -5261,7 +3920,7 @@ const rockLabelGallery = defineComponent({
     },
     setup() {
         return {
-            importCode: getControlImportPath("rockLabel"),
+            importCode: getSfcControlImportPath("rockLabel"),
             exampleCode: `<RockLabel help="More Info">A Label</RockLabel>`
         };
     },
@@ -5288,7 +3947,7 @@ const rockValidationGallery = defineComponent({
                 { name: "Not Good", text: "This is invalid because it is sinful." },
                 { name: "Trust God", text: "Didn't trust God. Turn to Him." }
             ],
-            importCode: getControlImportPath("rockValidation"),
+            importCode: getSfcControlImportPath("rockValidation"),
             exampleCode: `<RockValidation :errors="[{ name:'Error Name', text:'Error Description' }]" />`
         };
     },
@@ -5424,7 +4083,7 @@ const transitionVerticalCollapseGallery = defineComponent({
     setup() {
         return {
             showContent: ref(false),
-            importCode: getControlImportPath("transitionVerticalCollapse"),
+            importCode: getSfcControlImportPath("transitionVerticalCollapse"),
             exampleCode: `<TransitionVerticalCollapse>
     <div v-if="showContent">Content to transition in</div>
 </TransitionVerticalCollapse>`
@@ -5452,7 +4111,7 @@ const valueDetailListGallery = defineComponent({
                 { title: "Title", textValue: "A text description of this item." },
                 { title: "Something", htmlValue: "This description has <i>some</i> <code>HTML</code> mixed in." }
             ],
-            importCode: getControlImportPath("valueDetailList"),
+            importCode: getSfcControlImportPath("valueDetailList"),
             exampleCode: `<ValueDetailList :modelValue="[{ name:'Error Name', text:'Error Description' }]" />`
         };
     },
@@ -5690,7 +4349,7 @@ const groupPickerGallery = defineComponent({
             limitToSchedulingEnabled: ref(false),
             limitToRSVPEnabled: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("groupPicker"),
+            importCode: getSfcControlImportPath("groupPicker"),
             exampleCode: `<GroupPicker label="Group" v-model="value" :multiple="false" />`
         };
     },
@@ -5747,7 +4406,7 @@ const mergeTemplatePickerGallery = defineComponent({
             ownership: ref(MergeTemplateOwnership.Global),
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("mergeTemplatePicker"),
+            importCode: getSfcControlImportPath("mergeTemplatePicker"),
             exampleCode: `<MergeTemplatePicker label="Merge Template" v-model="value" :multiple="false" />`
         };
     },
@@ -5792,7 +4451,7 @@ const metricCategoryPickerGallery = defineComponent({
         return {
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("metricCategoryPicker"),
+            importCode: getSfcControlImportPath("metricCategoryPicker"),
             exampleCode: `<MetricCategoryPicker label="Metric Category" v-model="value" :multiple="false" />`
         };
     },
@@ -5828,7 +4487,7 @@ const metricItemPickerGallery = defineComponent({
         return {
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("metricItemPicker"),
+            importCode: getSfcControlImportPath("metricItemPicker"),
             exampleCode: `<MetricItemPicker label="Metric Item" v-model="value" :multiple="false" />`
         };
     },
@@ -5864,7 +4523,7 @@ const registrationTemplatePickerGallery = defineComponent({
         return {
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("registrationTemplatePicker"),
+            importCode: getSfcControlImportPath("registrationTemplatePicker"),
             exampleCode: `<RegistrationTemplatePicker label="Registration Template" v-model="value" :multiple="false" />`
         };
     },
@@ -5902,7 +4561,7 @@ const reportPickerGallery = defineComponent({
         return {
             multiple: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("reportPicker"),
+            importCode: getSfcControlImportPath("reportPicker"),
             exampleCode: `<ReportPicker label="Report" v-model="value" :multiple="false" />`
         };
     },
@@ -5940,7 +4599,7 @@ const schedulePickerGallery = defineComponent({
             multiple: ref(false),
             showOnlyPublic: ref(false),
             value: ref(null),
-            importCode: getControlImportPath("schedulePicker"),
+            importCode: getSfcControlImportPath("schedulePicker"),
             exampleCode: `<SchedulePicker label="Schedule" v-model="value" :multiple="false" />`
         };
     },
@@ -6435,7 +5094,7 @@ const wordCloudGallery = defineComponent({
             wordPadding: ref(5),
             words,
             wordsText,
-            importCode: getControlImportPath("wordCloud"),
+            importCode: getSfcControlImportPath("wordCloud"),
             exampleCode: `<WordCloud :words="['Hello', 'Hello', 'Goodbye']" />`
         };
     },
@@ -6771,7 +5430,7 @@ const ethnicityPickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("ethnicityPicker"),
+            importCode: getSfcControlImportPath("ethnicityPicker"),
             exampleCode: `<EthnicityPicker v-model="value" :multiple="false" :showBlankItem="false" />`
         };
     },
@@ -6838,7 +5497,7 @@ const racePickerGallery = defineComponent({
             multiple: ref(false),
             showBlankItem: ref(false),
             value: ref({}),
-            importCode: getControlImportPath("racePicker"),
+            importCode: getSfcControlImportPath("racePicker"),
             exampleCode: `<RacePicker v-model="value" :multiple="false" :showBlankItem="false" />`
         };
     },
@@ -7624,8 +6283,8 @@ const accountPickerGallery = defineComponent({
     components: {
         GalleryAndResult,
         CheckBox,
-        AccountPicker, https://configurelaptop.eu/cat/custom-laptop/
-            TextBox,
+        AccountPicker,
+        TextBox,
         RockButton
     },
     setup() {
