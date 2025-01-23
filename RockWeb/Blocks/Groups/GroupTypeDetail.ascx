@@ -588,8 +588,8 @@
                         <Rock:RockCheckBox ID="cbCanView" runat="server" Label="Can View" Help="Should individuals with this role be able to view this group regardless of the security settings on the group?" />
                         <Rock:RockCheckBox ID="cbCanEdit" runat="server" Label="Can Edit" Help="Should individuals with this role be able to edit the details and members of this group regardless of the security settings on the group?" />
                         <Rock:RockCheckBox ID="cbCanManageMembers" runat="server" Label="Can Manage Members" Help="Should individuals with this role be able to manage the members of this group regardless of the security settings on the group?" />
-                        <Rock:RockCheckBox ID="cbIsCheckInAllowed" runat="server" Label="Is Check-in Allowed" Help="Used with the &quot;already belongs&quot; check-in filter to only allow certain roles to check into a group." />
-                        <Rock:RockCheckBox ID="cbIsExcludedFromPeerNetwork" runat="server" Label="Is Excluded From Peer Network" Help="Should individuals with this role be excluded from the group's peer network?" />
+                        <Rock:RockCheckBox ID="cbIsCheckInAllowed" runat="server" Label="Can Check In to Group" Help="Should individuals with this role be allowed to check in to this group? This is used with the &quot;Already Belongs&quot; check-in filter to limit check-ins to specific roles." />
+                        <Rock:RockCheckBox ID="cbIsExcludedFromPeerNetwork" runat="server" Label="Exclude from Peer Network" Help="Should individuals with this role be excluded from the group's peer network?" />
                     </div>
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" Help="The minimum number of people with this role that group should allow." />
