@@ -28,9 +28,9 @@
     import { ref } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
     const isOpen = ref(false);
     const showArrow = ref(false);

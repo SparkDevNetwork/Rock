@@ -32,12 +32,12 @@
 <script setup lang="ts">
     import { computed, ref } from "vue";
     import ImageEditor from "@Obsidian/Controls/imageEditor.obs";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
     import { Guid } from "@Obsidian/Types";
 
     const binaryFileTypeGuid = ref<Guid>(BinaryFiletype.Default);

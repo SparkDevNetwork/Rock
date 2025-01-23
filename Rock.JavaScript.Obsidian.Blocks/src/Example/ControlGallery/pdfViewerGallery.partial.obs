@@ -24,10 +24,10 @@
 
 <script setup lang="ts">
     import PdfViewer from "@Obsidian/Controls/pdfViewer.obs";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
     import { computed, ref } from "vue";
 
     const sourceUrl = ref("https://ccel.org/ccel/m/murray/waiting/cache/waiting.pdf");

@@ -21,11 +21,11 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import BulletedList from "@Obsidian/Controls/bulletedList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import ValueList from "@Obsidian/Controls/valueList.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
     const items = ref(["Matthew", "Mark", "Luke", "John"]);
     const label = ref("");

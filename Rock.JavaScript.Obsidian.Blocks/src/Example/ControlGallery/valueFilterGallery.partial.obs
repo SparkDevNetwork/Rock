@@ -16,10 +16,10 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import ValueFilter from "@Obsidian/Controls/valueFilter.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
     import { CompoundFilterExpression } from "@Obsidian/ViewModels/Controls/valueFilter.d";
 
     const value = ref<CompoundFilterExpression>();

@@ -21,11 +21,11 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import AttributeMatrixEditor from "@Obsidian/Controls/Internal/attributeMatrixEditor.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
     const minRows = ref(0);
     const maxRows = ref(999);

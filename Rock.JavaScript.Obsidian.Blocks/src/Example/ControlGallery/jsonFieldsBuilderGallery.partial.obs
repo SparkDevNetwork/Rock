@@ -25,9 +25,9 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import JsonFieldsBuilder from "@Obsidian/Controls/jsonFieldsBuilder.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
     import { FullFieldSettingBag } from "@Obsidian/ViewModels/Controls/fullFieldSettingBag";
     import { FieldPropertyItemBag } from "@Obsidian/ViewModels/Controls/fieldPropertyItemBag";
 

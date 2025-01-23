@@ -27,11 +27,11 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import ValueList from "@Obsidian/Controls/valueList.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
     const value = ref("");
     const disabled = ref(false);

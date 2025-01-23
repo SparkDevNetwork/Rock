@@ -47,10 +47,10 @@
  */
 
 import { Component, computed, defineComponent, onMounted, onUnmounted, ref, watch, watchEffect } from "vue";
-import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath, displayStyleItems } from "./ControlGallery/utils.partial";
+import { buildExampleCode, convertComponentName, getControlImportPath, getSfcControlImportPath, getTemplateImportPath, displayStyleItems } from "./ControlGallery/common/utils.partial";
 import { getSecurityGrant, provideSecurityGrant, useConfigurationValues, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
 import { ControlGalleryInitializationBox } from "@Obsidian/ViewModels/Blocks/Example/ControlGallery/controlGalleryInitializationBox";
-import GalleryAndResult from "./ControlGallery/galleryAndResult.partial.obs";
+import GalleryAndResult from "./ControlGallery/common/galleryAndResult.partial.obs";
 import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 import FieldFilterEditor from "@Obsidian/Controls/fieldFilterEditor.obs";

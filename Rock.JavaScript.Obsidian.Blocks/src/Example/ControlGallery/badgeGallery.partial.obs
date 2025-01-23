@@ -19,13 +19,13 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import Badge from "@Obsidian/Controls/badge.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
     const content = ref("Badge");
     const tooltip = ref("Hover Me");

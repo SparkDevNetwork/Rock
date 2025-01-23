@@ -19,10 +19,10 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import TermDescription from "@Obsidian/Controls/termDescription.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
     const term = ref("Bible");
     const description = ref("The holy book given to us by God so we can know Him and have faith in Him.");

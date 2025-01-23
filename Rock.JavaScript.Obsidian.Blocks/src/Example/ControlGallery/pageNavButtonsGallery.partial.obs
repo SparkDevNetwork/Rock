@@ -83,11 +83,11 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import PageNavButtons from "@Obsidian/Controls/pageNavButtons.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
     const rootPageGuid = ref("b4a24ab7-9369-4055-883f-4f4892c39ae3");
     const includeCurrentQueryString = ref(false);
