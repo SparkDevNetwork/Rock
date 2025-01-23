@@ -58,14 +58,7 @@ import TextBox from "@Obsidian/Controls/textBox.obs";
 import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
 import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
 import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
-import AddressControl from "@Obsidian/Controls/addressControl.obs";
-import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
 import Toggle from "@Obsidian/Controls/toggle.obs";
-import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
-import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
-import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
-import ProgressTracker from "@Obsidian/Controls/progressTracker.obs";
-import { ProgressTrackerItem } from "@Obsidian/Types/Controls/progressTracker";
 import RockForm from "@Obsidian/Controls/rockForm.obs";
 import RockButton from "@Obsidian/Controls/rockButton.obs";
 import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -73,9 +66,7 @@ import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
 import CheckBox from "@Obsidian/Controls/checkBox.obs";
 import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
 import NumberBox from "@Obsidian/Controls/numberBox.obs";
-import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
 import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
-import Fullscreen from "@Obsidian/Controls/fullscreen.obs";
 import Panel from "@Obsidian/Controls/panel.obs";
 import FileUploader from "@Obsidian/Controls/fileUploader.obs";
 import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
@@ -205,7 +196,6 @@ import InteractionChannelInteractionComponentPicker from "@Obsidian/Controls/int
 import WorkflowPicker from "@Obsidian/Controls/workflowPicker.obs";
 import ValueList from "@Obsidian/Controls/valueList.obs";
 import BlockTemplatePicker from "@Obsidian/Controls/blockTemplatePicker.obs";
-import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
 import DropDownMenuGallery from "./ControlGallery/dropDownMenuGallery.partial.obs";
 import DropDownContentGallery from "./ControlGallery/dropDownContentGallery.partial.obs";
 import ButtonDropDownListGallery from "./ControlGallery/buttonDropDownListGallery.partial.obs";
@@ -273,47 +263,12 @@ import inlineSwitchGallery from "./ControlGallery/inlineSwitchGallery.partial.ob
 import emailBoxGallery from "./ControlGallery/emailBoxGallery.partial.obs";
 import numberUpDownGallery from "./ControlGallery/numberUpDownGallery.partial.obs";
 import addressControlGallery from "./ControlGallery/addressControlGallery.partial.obs";
+import staticFormControlGallery from "./ControlGallery/staticFormControlGallery.partial.obs";
 import toggleGallery from "./ControlGallery/toggleGallery.partial.obs";
 import progressTrackerGallery from "./ControlGallery/progressTrackerGallery.partial.obs";
 import itemsWithPreAndPostHtmlGallery from "./ControlGallery/itemsWithPreAndPostHtmlGallery.partial.obs";
 import urlLinkBoxGallery from "./ControlGallery/urlLinkBoxGallery.partial.obs";
 import fullscreenGallery from "./ControlGallery/fullscreenGallery.partial.obs";
-
-
-/** Demonstrates the fullscreen component. */
-const fullscreenGallery = defineComponent({
-    name: "FullscreenGallery",
-    components: {
-        GalleryAndResult,
-        InlineSwitch,
-        CheckBox,
-        Fullscreen
-    },
-    setup() {
-        return {
-            pageOnly: ref(true),
-            value: ref(false),
-            importCode: getSfcControlImportPath("fullscreen"),
-            exampleCode: `<Fullscreen v-model="value" :isPageOnly="true">
-    <p>Content to make full screen</p>
-</Fullscreen>`
-        };
-    },
-    template: `
-<GalleryAndResult
-    :importCode="importCode"
-    :exampleCode="exampleCode" >
-    <Fullscreen v-model="value" :isPageOnly="pageOnly">
-        <div class="bg-info padding-all-md" style="width:100%; height: 100%; min-height: 300px; display: grid; place-content: center;">
-            <InlineSwitch v-model="value" label="Fullscreen" :isBold="true" />
-        </div>
-    </Fullscreen>
-
-    <template #settings>
-        <CheckBox v-model="pageOnly" label="Is Page Only" help="If true, fills content window. If false, hides the browser chrome and fills entire screen." />
-    </template>
-</GalleryAndResult>`
-});
 
 /** Demonstrates the panel component. */
 const panelGallery = defineComponent({
