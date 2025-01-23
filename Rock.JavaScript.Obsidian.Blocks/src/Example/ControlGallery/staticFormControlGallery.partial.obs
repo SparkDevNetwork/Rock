@@ -1,0 +1,18 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode">
+        <StaticFormControl label="Static Value" v-model="value" />
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref("This is a static value");
+    const importCode = getSfcControlImportPath("staticFormControl");
+    const exampleCode = `<StaticFormControl label="Static Value" v-model="value" />`;
+</script>

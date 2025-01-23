@@ -1,0 +1,44 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode">
+        <ItemsWithPreAndPostHtml :items="value">
+            <template #item1>
+                <div class="padding-all-sm text-center bg-primary">This is item 1</div>
+            </template>
+            <template #item2>
+                <div class="padding-all-sm text-center bg-primary">This is item 2</div>
+            </template>
+        </ItemsWithPreAndPostHtml>
+
+        <template #settings>
+            <TextBox label="Item 1 - Pre Html" v-model="value[0].preHtml" />
+            <TextBox label="Item 1 - Post Html" v-model="value[0].postHtml" />
+            <TextBox label="Item 2 - Pre Html" v-model="value[1].preHtml" />
+            <TextBox label="Item 2 - Post Html" v-model="value[1].postHtml" />
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ItemsWithPreAndPostHtml from "@Obsidian/Controls/itemsWithPreAndPostHtml.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { ItemWithPreAndPostHtml } from "@Obsidian/Types/Controls/itemsWithPreAndPostHtml";
+
+    const value = ref<ItemWithPreAndPostHtml[]>([
+        { preHtml: '<div class="row"><div class="col-sm-6">', postHtml: "</div>", slotName: "item1" },
+        { preHtml: '<div class="col-sm-6">', postHtml: "</div></div>", slotName: "item2" }
+    ]);
+    const importCode = getSfcControlImportPath("itemsWithPreAndPostHtml");
+    const exampleCode = `<ItemsWithPreAndPostHtml :items="value">
+    <template #item1>
+        <div>This is item 1</div>
+    </template>
+    <template #item2>
+        <div>This is item 2</div>
+    </template>
+</ItemsWithPreAndPostHtml>`;
+</script>
