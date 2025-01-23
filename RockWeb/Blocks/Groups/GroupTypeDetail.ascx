@@ -293,7 +293,7 @@
                                     </div>
                                 </Rock:RockControlWrapper>
                                 <Rock:RockDropDownList ID="ddlAttendanceRule" runat="server" Label="Check-in Rule"
-                                    Help="The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in." />
+                                    Help="The rule that decides what happens when someone tries to check in to a group of this type.  If 'None' is selected, the individual will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, the individual will be added to group if they do not already belong.  If 'Already Enrolled in Group' is selected, the individual must already be a member of the group to check in." />
                                 <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print Using"
                                     Help="When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similar setting which takes precedence over this setting.">
                                     <asp:ListItem Text="Device Printer" Value="1" />
@@ -588,7 +588,7 @@
                         <Rock:RockCheckBox ID="cbCanView" runat="server" Label="Can View" Help="Should individuals with this role be able to view this group regardless of the security settings on the group?" />
                         <Rock:RockCheckBox ID="cbCanEdit" runat="server" Label="Can Edit" Help="Should individuals with this role be able to edit the details and members of this group regardless of the security settings on the group?" />
                         <Rock:RockCheckBox ID="cbCanManageMembers" runat="server" Label="Can Manage Members" Help="Should individuals with this role be able to manage the members of this group regardless of the security settings on the group?" />
-                        <Rock:RockCheckBox ID="cbIsCheckInAllowed" runat="server" Label="Can Check In to Group" Help="Should individuals with this role be allowed to check in to this group? This is used with the &quot;Already Belongs&quot; check-in filter to limit check-ins to specific roles." />
+                        <Rock:RockCheckBox ID="cbIsCheckInAllowed" runat="server" Label="Can Check In to Group" Help="Should individuals with this role be allowed to check in to this group? Note that this only applies if the 'Check-in Rule' is set to &quot;Already Enrolled In Group&quot; in your check-in configuration." />
                         <Rock:RockCheckBox ID="cbIsExcludedFromPeerNetwork" runat="server" Label="Exclude from Peer Network" Help="Should individuals with this role be excluded from the group's peer network?" />
                     </div>
                     <div class="col-md-6">
