@@ -22,10 +22,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.BugFixes
+namespace Rock.Tests.Integration.Issues
 {
     /// <summary>
     /// Tests that verify correct functionality after fixing github issue #1808.

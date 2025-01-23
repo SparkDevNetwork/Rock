@@ -2,7 +2,7 @@ import { RockColor } from "../../../Framework/Core/Utilities/rockColor";
 import { ColorRecipe } from "../../../Framework/Enums/Core/colorRecipe";
 
 // NOTICE!!!
-// This file has a C# version in the Rock.Tests.UnitTests project. If changes
+// This file has a C# version in the Rock.Tests project. If changes
 // are made to one the same changes must be made to the other.
 // NOTICE!!!
 

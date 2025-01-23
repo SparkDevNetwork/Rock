@@ -21,7 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Integration.Organization;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Crm;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;

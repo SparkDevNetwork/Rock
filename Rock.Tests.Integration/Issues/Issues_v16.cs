@@ -15,17 +15,17 @@
 // </copyright>
 //
 using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Field.Types;
-using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Integration.Modules.Crm;
+using Rock.Tests.Integration.Crm;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Tests.Integration.BugFixes
+namespace Rock.Tests.Integration.Issues
 {
     /// <summary>
     /// Tests that verify specific bug fixes for a Rock version.

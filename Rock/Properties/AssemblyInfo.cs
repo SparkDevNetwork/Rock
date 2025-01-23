@@ -37,7 +37,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock.RealTime.Dynamic" )]
 [assembly: InternalsVisibleTo( "Rock.Rest" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
-[assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]
+[assembly: InternalsVisibleTo( "Rock.Tests" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration.Performance" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Performance" )]
