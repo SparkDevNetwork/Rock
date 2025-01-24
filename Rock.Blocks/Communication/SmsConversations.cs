@@ -720,11 +720,11 @@ namespace Rock.Blocks.Communication
                         } );
                     }
 
-                    if ( isConversationUnread )
+                    if ( isConversationUnread && ( BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) ) )
                     {
                         communicationResponseService.UpdateReadPropertyByFromPersonId( recipientPerson.Id, smsSystemPhoneNumber );
+                        bag.IsConversationRead = true;
                     }
-                    bag.IsConversationRead = true;
 
                     return ActionOk( bag );
                 }
