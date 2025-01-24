@@ -43,6 +43,11 @@ namespace RockWeb
         protected delegate void AsyncProcessorDelegate( HttpContext context );
 
         /// <summary>
+        /// The maximum allowed height or width for a generated avatar.
+        /// </summary>
+        private const int MAX_AVATAR_SIZE = 1024;
+
+        /// <summary>
         /// Called to initialize an asynchronous call to the HTTP handler. 
         /// </summary>
         /// <param name="context">An HttpContext that provides references to intrinsic server objects used to service HTTP requests.</param>
@@ -245,41 +250,41 @@ namespace RockWeb
 
             settings.AvatarColors.BackgroundColor = backgroundColor;
             settings.AvatarColors.ForegroundColor = foregroundColor;
-            
+
             // Size
             if ( request.QueryString["Size"] != null )
             {
-                settings.Size = request.QueryString["Size"].AsInteger();
+                settings.Size = GetSize( request.QueryString["Size"].AsInteger() );
             }
 
             if ( request.QueryString["w"] != null )
             {
-                settings.Size = request.QueryString["w"].AsInteger();
+                settings.Size = GetSize( request.QueryString["w"].AsInteger() );
             }
 
             if ( request.QueryString["h"] != null )
             {
-                settings.Size = request.QueryString["h"].AsInteger();
+                settings.Size = GetSize( request.QueryString["h"].AsInteger() );
             }
 
             if ( request.QueryString["width"] != null )
             {
-                settings.Size = request.QueryString["width"].AsInteger();
+                settings.Size = GetSize( request.QueryString["width"].AsInteger() );
             }
 
             if ( request.QueryString["height"] != null )
             {
-                settings.Size = request.QueryString["height"].AsInteger();
+                settings.Size = GetSize( request.QueryString["height"].AsInteger() );
             }
 
             if ( request.QueryString["maxwidth"] != null )
             {
-                settings.Size = request.QueryString["maxwidth"].AsInteger();
+                settings.Size = GetSize( request.QueryString["maxwidth"].AsInteger() );
             }
 
             if ( request.QueryString["maxheight"] != null )
             {
-                settings.Size = request.QueryString["maxheight"].AsInteger();
+                settings.Size = GetSize( request.QueryString["maxheight"].AsInteger() );
             }
 
             // Style
@@ -413,6 +418,16 @@ namespace RockWeb
             }
         }
 
+        /// <summary>
+        /// Gets the requested size unless it exceeds the maximum allowed;
+        /// in which case the maximum is returned.
+        /// </summary>
+        /// <param name="requestedSize">The width or height.</param>
+        /// <returns>The requested size or a maximum allowed value.</returns>
+        private int GetSize( int requestedSize )
+        {
+            return requestedSize > MAX_AVATAR_SIZE ? MAX_AVATAR_SIZE : requestedSize;
+        }
 
         /// <summary>
         /// Determines whether the current user is authorized to view the Person Image.
