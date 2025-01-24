@@ -147,25 +147,26 @@ namespace Rock.Lava.Blocks
                     person = LavaHelper.GetCurrentVisitorInContext( context )?.Person;
                 }
 
+                var currentDate = RockDateTime.Now;
+
                 var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPersonFromContextCookie( context, System.Web.HttpContext.Current, person );
                 List<AdaptiveMessageCache> adaptiveMessages = new List<AdaptiveMessageCache>();
                 if ( commandMode == CommandMode.Message )
                 {
-                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.Key == messageKey && a.IsActive ).ToList();
+                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.Key == messageKey && a.IsActive && ( a.StartDate == null || a.StartDate <= currentDate ) && ( a.EndDate == null || a.EndDate >= currentDate ) ).ToList();
                 }
                 else
                 {
                     var categoryService = new CategoryService( rockContext );
                     var categoryGuid = categoryService.GetGuid( categoryId.Value );
 
-                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.CategoryIds.Contains( categoryId.Value ) && a.IsActive ).ToList();
+                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.CategoryIds.Contains( categoryId.Value ) && a.IsActive && ( a.StartDate == null || a.StartDate <= currentDate ) && ( a.EndDate == null || a.EndDate >= currentDate ) ).ToList();
                     GetAaptiveMessageForChildCategories( rockContext, adaptiveMessages, categoryGuid );
                 }
 
-
                 var adaptationQry = adaptiveMessages
                        .SelectMany( a => a.Adaptations.OrderBy( b => b.Order ).ThenBy( b => b.Name ).Take( adaptationPerMessage.Value ) )
-                       .Where( a => a.IsActive && ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) );
+                       .Where( a => a.IsActive && ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) && ( a.StartDate == null || a.StartDate <= currentDate ) && ( a.EndDate == null || a.EndDate >= currentDate ) );
 
                 if ( commandMode == CommandMode.Category )
                 {

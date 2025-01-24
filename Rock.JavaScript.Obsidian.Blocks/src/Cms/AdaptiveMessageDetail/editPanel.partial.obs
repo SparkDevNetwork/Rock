@@ -36,10 +36,10 @@
         </div>
         <div class="row">
             <div class="col-md-6">
-                <DatePicker v-model="startDate" label="Start Date" />
+                <DatePicker v-model="startDate" label="Start Date" help="The date when this adaptive message becomes eligible to be shown." />
             </div>
             <div class="col-md-6">
-                <DatePicker v-model="endDate" label="End Date" />
+                <DatePicker v-model="endDate" label="End Date" help="The date when this adaptive message stops being shown." />
             </div>
         </div>
 
