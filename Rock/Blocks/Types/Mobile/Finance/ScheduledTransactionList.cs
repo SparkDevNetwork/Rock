@@ -17,7 +17,6 @@
 using Rock.Attribute;
 using Rock.Model;
 using Rock.ViewModels.Blocks.Crm.PersonDetail.GivingConfiguration;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Data.Entity;
@@ -25,6 +24,7 @@ using Rock;
 using Rock.Common.Mobile.Blocks.Finance.ScheduledTransactionList;
 using Rock.Common.Mobile.ViewModel;
 using System;
+using System.Collections.Generic;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {
@@ -122,27 +122,16 @@ namespace Rock.Blocks.Types.Mobile.Finance
         [BlockAction( "GetScheduledTransactions" )]
         public BlockActionResult GetScheduledTransactions( GetScheduledTransactionOptions options )
         {
-            int? personId = GetCurrentPerson().Id;
-
-            if ( !personId.HasValue )
+            var person = GetCurrentPerson();
+            if ( person == null )
             {
                 return ActionOk( new { Transactions = new List<FinancialScheduledTransactionBag>(), HasInactiveTransactions = false } );
             }
 
-            var personService = new PersonService( RockContext );
-            var person = personService.Get( personId.Value );
             var givingGroupId = person.GivingGroupId;
 
             var financialScheduledTransactionService = new FinancialScheduledTransactionService( RockContext );
-            var qry = financialScheduledTransactionService
-                .Queryable( "ScheduledTransactionDetails,FinancialPaymentDetail.CurrencyTypeValue,FinancialPaymentDetail.CreditCardTypeValue" )
-                .AsNoTracking();
-
-            var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
-            if ( accountGuids.Any() )
-            {
-                qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
-            }
+            var qry = financialScheduledTransactionService.Queryable();
 
             if ( givingGroupId.HasValue )
             {
@@ -152,73 +141,31 @@ namespace Rock.Blocks.Types.Mobile.Finance
             else
             {
                 // Person contributes individually
-                qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == personId.Value );
+                qry = qry.Where( t => t.AuthorizedPersonAlias.PersonId == person.Id );
             }
 
-            var hasInactiveTransactions = qry.Any( t => !t.IsActive );
-
-            qry = qry
-                .OrderBy( t => t.AuthorizedPersonAlias.Person.LastName )
-                .ThenBy( t => t.AuthorizedPersonAlias.Person.NickName )
-                .ThenByDescending( t => t.IsActive )
-                .ThenByDescending( t => t.StartDate );
-
-            var scheduledTransactions = qry.ToList();
-            financialScheduledTransactionService.GetStatus( scheduledTransactions, true );
+            var accountGuids = GetAttributeValue( AttributeKey.Accounts ).SplitDelimitedValues().AsGuidList();
+            if ( accountGuids.Any() )
+            {
+                qry = qry.Where( t => t.ScheduledTransactionDetails.Any( d => accountGuids.Contains( d.Account.Guid ) ) );
+            }
 
             if ( !options.IncludeInactive )
             {
-                scheduledTransactions = scheduledTransactions.Where( t => t.IsActive ).ToList();
+                qry = qry.Where( t => t.IsActive );
             }
+
+            qry = qry.OrderByDescending( t => t.NextPaymentDate );
+            var scheduledTransactions = qry.ToList();
+
+            financialScheduledTransactionService.GetStatus( scheduledTransactions, true );
 
             var transactionBags = scheduledTransactions.Select( st => new FinancialScheduledTransactionBag
             {
-                Id = st.Id,
-                Guid = st.Guid,
-                IsActive = st.IsActive,
-                StartDate = st.StartDate,
-                AuthorizedPersonAlias = new PersonAliasBag
-                {
-                    Id = st.AuthorizedPersonAlias.Id,
-                    PersonId = st.AuthorizedPersonAlias.PersonId,
-                    Person = new PersonBag
-                    {
-                        Id = st.AuthorizedPersonAlias.Person.Id,
-                        LastName = st.AuthorizedPersonAlias.Person.LastName,
-                        NickName = st.AuthorizedPersonAlias.Person.NickName
-                    }
-                },
-                ScheduledTransactionDetails = st.ScheduledTransactionDetails.Select( std => new FinancialScheduledTransactionDetailBag
-                {
-                    Account = new FinancialAccountBag
-                    {
-                        Id = std.Account.Id,
-                        PublicName = std.Account.PublicName
-                    }
-                } ).ToList(),
-                AccountSummary = st.ScheduledTransactionDetails
-        .Select( d => new AccountSummaryBag
-        {
-            IsOther = accountGuids.Any() && !accountGuids.Contains( d.Account.Guid ),
-            Order = d.Account.Order,
-            Name = d.Account.Name
-        } )
-        .OrderBy( d => d.IsOther )
-        .ThenBy( d => d.Order )
-        .Select( d => d.IsOther ? "Other" : d.Name )
-        .ToList(),
-                NextPaymentDate = st.NextPaymentDate,
                 TotalAmount = st.TotalAmount,
-                ForeignCurrencyCodeValueId = st.ForeignCurrencyCodeValueId,
+                NextPaymentDate = st.NextPaymentDate,
                 FrequencyText = st.TransactionFrequencyValue?.Value,
-                FinancialPaymentDetail = new FinancialPaymentDetailBag
-                {
-                    CurrencyType = st.FinancialPaymentDetail?.CurrencyTypeValue?.Value,
-                    CreditCardType = st.FinancialPaymentDetail?.CreditCardTypeValue?.Value,
-                    AccountNumberMasked = st.FinancialPaymentDetail?.AccountNumberMasked,
-                    ExpirationDate = st.FinancialPaymentDetail?.ExpirationDate
-                },
-                SavedAccountName = st.FinancialPaymentDetail?.FinancialPersonSavedAccount?.Name
+                IsActive = st.IsActive,
             } ).ToList();
 
             var templates = transactionBags.Select( ( bag ) =>
