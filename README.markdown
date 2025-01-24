@@ -36,10 +36,10 @@ If you run into build issues, try these steps to resolve common scenarios:
 
 1. Clean the Visual Studio solution by right-clicking and choosing "Clean Solution". 
     * Using "Rebuild Solution" will not perform the same level of cleaning due to custom tasks added only to "Clean Solution"; therefore it's recommended that you use "Clean Solution" first.
-2. Run the `branch_cleanup.bat` script at the root of the repo.
-    * In Visual Studio open the Terminal (Developer PowerShell) ( ``CTRL + ` ``) and type `branch_cleanup.bat` then press enter (You can use tab completion after typing just a few characters).
+2. Run the `BranchCleanup.bat` script at the root of the repo.
+    * In Visual Studio open the Terminal (Developer PowerShell) ( ``CTRL + ` ``) and type `BranchCleanup.bat` then press enter (You can use tab completion after typing just a few characters).
     
-### What does the branch_cleanup script do?
+### What does the BranchCleanup script do?
 The script checks the last successfully built version and compares it with the current MAJOR.MINOR version. If they differ, it will:
 1. Removes all files from project bin and obj directories.
 2. Cleans the RockWeb bin directory:
@@ -53,7 +53,7 @@ The script checks the last successfully built version and compares it with the c
 5. Runs `npm ci` for the **Rock.JavaScript.Obsidian** project.
 6. Runs `npm ci` for the **Rock.JavaScript.Obsidian.Blocks** project.
  
-### When is the branch_cleanup script triggered?
+### When is the BranchCleanup script triggered?
 This script runs automatically when you clean the solution in Visual Studio, but only if the last build version differs from the current one. This helps avoid unnecessary cleanup when switching between branches with the same major and minor version.
 
 You can also manually run the script as described above if needed.
