@@ -123,7 +123,7 @@ namespace Rock.ClientService.Finance.FinancialPersonSavedAccount
                         Description = description,
                         Image = image,
                         AccountNumberMasked = a.AccountNumberMasked,
-                        CurrencyTypeGuid = currencyTypeGuid
+                        CurrencyTypeGuid = currencyTypeGuid,
                     };
                 } )
                 .OrderBy( a => a.Text )
