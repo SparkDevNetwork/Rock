@@ -1,0 +1,27 @@
+<template>
+    <GalleryAndResult :value="{ 'output:modelValue': value, 'input:options': options }"
+                      hasMultipleValues
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <NumberUpDownGroup v-model="value" :options="options" />
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import NumberUpDownGroup from "@Obsidian/Controls/numberUpDownGroup.obs";
+
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref({ prop1: 30, prop2: 30, prop3: 30 });
+    const options = [
+        { key: "prop1", label: "Prop 1", min: 0, max: 50 },
+        { key: "prop2", label: "Prop 2", min: 10, max: 60 },
+        { key: "prop3", label: "Prop 3", min: 20, max: 70 }
+    ] as NumberUpDownGroupOption[];
+    const importCode = getSfcControlImportPath("numberUpDownGroup");
+    const exampleCode = `<NumberUpDownGroup v-model="value" :options="options" />`;
+</script>

@@ -1,0 +1,24 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <RockValidation :errors="errors" />
+
+        <template #settings>
+            <p>The <code>errors</code> parameter takes an array of <code>FormError</code> objects. <code>FormError</code> type is defined in <code>@Obsidian/Utility/form</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import RockValidation from "@Obsidian/Controls/rockValidation.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const errors = [
+        { name: "Error Name", text: "Error text describing the validation error." },
+        { name: "Not Good", text: "This is invalid because it is sinful." },
+        { name: "Trust God", text: "Didn't trust God. Turn to Him." }
+    ];
+    const importCode = getSfcControlImportPath("rockValidation");
+    const exampleCode = `<RockValidation :errors="[{ name:'Error Name', text:'Error Description' }]" />`;
+</script>

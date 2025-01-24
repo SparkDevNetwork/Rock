@@ -1,0 +1,29 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <TabbedBar v-model="selectedTab" :tabs="list" :type="type" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <DropDownList label="Type" v-model="type" :items="typeItems" :showBlankItem="false" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const list = ["Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians"];
+    const selectedTab = ref("");
+    const type = ref<"tabs" | "pills">("tabs");
+    const typeItems = [{ value: "tabs", text: "Tabs" }, { value: "pills", text: "Pills" }];
+    const importCode = getSfcControlImportPath("tabbedBar");
+    const exampleCode = `<TabbedBar v-model="selectedTab" :tabs="arrayOfItems" :type="type" />`;
+</script>

@@ -1,0 +1,56 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode">
+
+        <NotificationBox :dismissible="isDismissible" :alertType="alertType" @dismiss="onDismiss" :heading="heading">
+            This is an alert!
+            <template #details v-if="details">
+                {{ details }}
+            </template>
+        </NotificationBox>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <DropDownList label="Alert Type" v-model="alertType" :items="options" :showBlankItem="false" />
+                </div>
+                <div class="col-md-3">
+                    <TextBox v-model="heading" label="Heading Text" />
+                </div>
+                <div class="col-md-3">
+                    <TextBox v-model="details" label="Details Text" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Dismissible" v-model="isDismissible" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { upperCaseFirstCharacter } from "@Obsidian/Utility/stringUtils";
+
+    const options: ListItemBag[] = ["default", "success", "info", "danger", "warning", "primary", "validation"].map(key => ({ text: upperCaseFirstCharacter(key), value: key }));
+    const isDismissible = ref(false);
+    const heading = ref("");
+    const details = ref("Here's a place where you can place details that show up when you click \"Show Details\".");
+    const onDismiss = (): void => alert('"dismiss" event fired. Parents are responsible for hiding the component.');
+    const alertType = ref(AlertType.Default);
+    const importCode = getSfcControlImportPath("notificationBox");
+    const exampleCode = `<NotificationBox dismissible :alertType="AlertType.Info" @dismiss="onDismiss" heading="Heading Text">
+    This is an alert!
+    <template #details>
+        Here's a place where you can place details that show up when you click "Show Details".
+    </template>
+</NotificationBox>`;
+</script>

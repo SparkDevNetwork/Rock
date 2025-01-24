@@ -1,0 +1,23 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <ValueDetailList :modelValue="modelValue" />
+
+        <template #settings>
+            <p>The <code>modelValue</code> parameter takes an array of <code>ValueDetailListItem</code> objects. <code>ValueDetailListItem</code> type is defined in <code>@Obsidian/Types/Controls/valueDetailListItem</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const modelValue = [
+        { title: "Title", textValue: "A text description of this item." },
+        { title: "Something", htmlValue: "This description has <i>some</i> <code>HTML</code> mixed in." }
+    ];
+    const importCode = getSfcControlImportPath("valueDetailList");
+    const exampleCode = `<ValueDetailList :modelValue="[{ name:'Error Name', text:'Error Description' }]" />`;
+</script>

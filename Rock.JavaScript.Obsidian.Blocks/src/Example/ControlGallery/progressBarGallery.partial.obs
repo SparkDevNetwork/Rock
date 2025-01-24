@@ -1,0 +1,29 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <ProgressBar :percent="value" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <RangeSlider label="Percent Done" v-model="value" showValueBar :step="1" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+    import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref(10);
+    const importCode = getSfcControlImportPath("progressBar");
+    const exampleCode = `<ProgressBar :percent="value" />`;
+</script>

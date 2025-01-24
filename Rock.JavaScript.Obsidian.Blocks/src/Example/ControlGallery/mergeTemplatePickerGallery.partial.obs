@@ -1,0 +1,48 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <MergeTemplatePicker label="Merge Template"
+                             v-model="value"
+                             :multiple="multiple"
+                             :mergeTemplateOwnership="(parseInt(ownership, 10) as MergeTemplateOwnership)" />
+
+        <template #settings>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+                <div class="col-md-4">
+                    <DropDownList label="Ownership" v-model="ownership" :items="ownershipOptions" />
+                </div>
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import MergeTemplatePicker from "@Obsidian/Controls/mergeTemplatePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { MergeTemplateOwnership } from "@Obsidian/Enums/Controls/mergeTemplateOwnership";
+
+    const ownershipOptions = [
+        { text: "Global", value: MergeTemplateOwnership.Global.toString() },
+        { text: "Personal", value: MergeTemplateOwnership.Personal.toString() },
+        { text: "Both", value: MergeTemplateOwnership.PersonalAndGlobal.toString() },
+    ];
+
+    const ownership = ref(MergeTemplateOwnership.Global.toString());
+    const multiple = ref(false);
+    const value = ref(null);
+    const importCode = getSfcControlImportPath("mergeTemplatePicker");
+    const exampleCode = `<MergeTemplatePicker label="Merge Template" v-model="value" :multiple="false" />`;
+</script>

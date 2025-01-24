@@ -1,0 +1,57 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <LavaCommandPicker label="Lava Command"
+                           v-model="value"
+                           :multiple="multiple"
+                           :columnCount="columnCount"
+                           :enhanceForLongLists="enhanceForLongLists"
+                           :displayStyle="displayStyle"
+                           :showBlankItem="showBlankItem" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+                </div>
+                <div class="col-md-4">
+                    <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import LavaCommandPicker from "@Obsidian/Controls/lavaCommandPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { getSfcControlImportPath, displayStyleItems } from "./common/utils.partial";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+
+    const columnCount = ref(3);
+    const displayStyle = ref(PickerDisplayStyle.List);
+    const enhanceForLongLists = ref(false);
+    const multiple = ref(true);
+    const showBlankItem = ref(false);
+    const value = ref({});
+    const importCode = getSfcControlImportPath("lavaCommandPicker");
+    const exampleCode = `<LavaCommandPicker label="Lava Command" v-model="value" />`;
+</script>
