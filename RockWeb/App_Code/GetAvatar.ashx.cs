@@ -46,6 +46,11 @@ namespace RockWeb
         private SecuritySettingsService _securitySettingsService = new SecuritySettingsService();
 
         /// <summary>
+        /// The maximum allowed height or width for a generated avatar.
+        /// </summary>
+        private const int MAX_AVATAR_SIZE = 1024;
+
+        /// <summary>
         /// Called to initialize an asynchronous call to the HTTP handler. 
         /// </summary>
         /// <param name="context">An HttpContext that provides references to intrinsic server objects used to service HTTP requests.</param>
