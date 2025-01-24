@@ -3350,12 +3350,22 @@ namespace Rock.Blocks.Event
                 }
                 else
                 {
+                    var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
+
+                    // Get the signed document data and encode any string data that was sent by the front-end.
                     var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
+                    signedData.SignatureData = signedData.SignatureData.EncodeHtml();
+                    signedData.SignedByName = signedData.SignedByName.EncodeHtml();
+                    signedData.SignedByEmail = signedData.SignedByEmail.EncodeHtml();
+                    signedData.IpAddress = signedData.IpAddress.EncodeHtml();
+                    signedData.UserAgent = signedData.UserAgent.EncodeHtml();
+
+                    // Don't trust that the DocumentHtml sent to the user hasn't been altered - recreate it for safety.
+                    signedData.DocumentHtml = GetDocumentHtml( rockContext, context, registrantInfo, person, campusId, location, documentTemplate );
+
                     var signedBy = RequestContext.CurrentPerson ?? registrar;
 
-                    var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
                     var document = CreateSignatureDocument( documentTemplate, signedData, signedBy, registrar, person, registrant.PersonAlias?.Person?.FullName ?? person.FullName, context.RegistrationSettings.Name );
-
 
                     signatureDocumentService.Add( document );
                     registrant.SignatureDocument = document;
@@ -3391,6 +3401,44 @@ namespace Rock.Blocks.Event
             // Clear this registrant's family guid so it's not updated again
             registrantInfo.FamilyGuid = Guid.Empty;
             registrantInfo.PersonGuid = person.Guid;
+        }
+
+        /// <summary>
+        /// Gets the Document HTML for a SignatureDocumentTemplate.
+        /// </summary>
+        /// <param name="rockContext">The <see cref="RockContext"/> to use for data access.</param>
+        /// <param name="context">The <see cref="RegistrationContext"/> to use for merge fields.</param>
+        /// <param name="registrantInfo">The <see cref="RegistrantBag"/> to use for merge fields.</param>
+        /// <param name="person">The <see cref="Person"/> to use for merge fields.</param>
+        /// <param name="campusId">The identifier of the <see cref="Campus"/> to use for merge fields.</param>
+        /// <param name="location">The <see cref="Location"/> to use for merge fields.</param>
+        /// <param name="documentTemplate">The <see cref="SignatureDocumentTemplate"/> to get the LavaTemplate from.</param>
+        /// <returns>The Lava resolved document HTML to be signed.</returns>
+        private string GetDocumentHtml( RockContext rockContext, RegistrationContext context, RegistrantBag registrantInfo, Person person, int? campusId, Location location, SignatureDocumentTemplate documentTemplate )
+        {
+            // Process the GroupMember so we have data for the Lava merge.
+            GroupMember groupMember = null;
+            var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId );
+
+            if ( groupId.HasValue )
+            {
+                var group = new GroupService( rockContext ).Get( groupId.Value );
+
+                groupMember = BuildGroupMember( person, group, context.RegistrationSettings );
+                groupMember.LoadAttributes( rockContext );
+                UpdateGroupMemberAttributes( groupMember, registrantInfo, context.RegistrationSettings );
+            }
+
+            // Prepare the merge fields.
+            var campusCache = campusId.HasValue ? CampusCache.Get( campusId.Value ) : null;
+
+            var mergeFields = new Dictionary<string, object>
+            {
+                { "Registration", new LavaSignatureRegistration( context.Registration.RegistrationInstance, context.Registration.GroupId, context.Registration.Registrants.Count() ) },
+                { "Registrant", new LavaSignatureRegistrant( person, location, campusCache, groupMember, registrantInfo, context.Registration.RegistrationInstance ) }
+            };
+
+            return ElectronicSignatureHelper.GetSignatureDocumentHtml( documentTemplate.LavaTemplate, mergeFields );
         }
 
         private static (Dictionary<string, AttributeCache>, Dictionary<string, AttributeValueCache>) GetRegistrantAttributesFromRegistration( ViewModels.Blocks.Event.RegistrationEntry.RegistrantBag registrantInfo, RegistrationTemplate template )
