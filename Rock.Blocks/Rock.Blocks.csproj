@@ -291,40 +291,6 @@
     <EmbeddedResource Include="DefaultTvApplication.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- 
-    A Custom task to run a cleanup process when detecting a switch from one minor branch to another. 
-    This should not be executed during a Rebuild because other projects potentially start their
-    build process before this task kicks off. Any .dlls deployed to RockWeb\bin would be removed
-    and not re-created.
-  -->
-  <Target Name="VersionCheck" BeforeTargets="Clean" Condition="$(IsRebuild) != 'True'">
-    <PropertyGroup>
-      <VersionFilePath>$(MSBuildStartupDirectory)\last_built_version.txt</VersionFilePath>
-      <VersionCheckScriptPath>$(MSBuildStartupDirectory)\Dev Tools\Scripts\version_check.ps1</VersionCheckScriptPath>
-    </PropertyGroup>
-
-    <Message Text="Version Check" Importance="high" />
-    <Exec Command="cd $(MSBuildStartupDirectory)" />
-    <Exec Command="powershell.exe -ExecutionPolicy Bypass -File &quot;$(VersionCheckScriptPath)&quot; -RepoRoot &quot;$(MSBuildStartupDirectory)&quot; -VersionFilePath &quot;$(VersionFilePath)&quot;" />
-  </Target>
-
-  <!-- Capture a property to indicate this is a rebuild -->
-  <Target Name="BeforeRebuild" BeforeTargets="Rebuild" >
-    <PropertyGroup>
-      <IsRebuild>True</IsRebuild>
-    </PropertyGroup>
-  </Target>
-
-  <!-- A custom task for writing the current version to a file. -->
-  <Target Name="WriteVersion" AfterTargets="Build" Condition="'$(MSBuildLastTaskResult)' == 'True'">
-    <PropertyGroup>
-      <VersionFilePath>$(MSBuildStartupDirectory)\last_built_version.txt</VersionFilePath>
-      <WriteVersionScriptPath>$(MSBuildStartupDirectory)\Dev Tools\Scripts\write_version.ps1</WriteVersionScriptPath>
-    </PropertyGroup>
-
-    <Exec Command="cd $(MSBuildStartupDirectory)" />
-    <Exec Command="powershell.exe -ExecutionPolicy Bypass -File &quot;$(WriteVersionScriptPath)&quot; -RepoRoot &quot;$(MSBuildStartupDirectory)&quot; -VersionFilePath &quot;$(VersionFilePath)&quot;" />
-  </Target>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>

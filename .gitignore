@@ -18,9 +18,6 @@ Rock.XML
 Quartz.xml
 StyleCop.Cache
 
-#the file for tracking the last built version.
-last_built_version.txt
-
 #build artifacts
 **/[Bb]in/[Dd]ebug
 **/[Bb]in/[Rr]elease
