@@ -807,7 +807,7 @@
             return messageDateTime?.localDateTime.toLocaleString(DateTimeFormat.TimeShort) ?? "";
         }
 
-        return messageDateTime?.localDateTime?.humanizeElapsed() ?? "";
+        return messageDateTime?.localDateTime?.toElapsedString() ?? "";
     };
 
     /**

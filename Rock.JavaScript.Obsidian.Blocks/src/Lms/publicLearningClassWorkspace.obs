@@ -533,7 +533,7 @@
 
     /** The time elapsed since the specified date in a human-readable format. */
     function getElapsedTime(date: string | null | undefined): string {
-        return RockDateTime.parseISO(date ?? "")?.localDateTime.humanizeElapsed() ?? "";
+        return RockDateTime.parseISO(date ?? "")?.localDateTime.toElapsedString() ?? "";
     }
 
     function isActivityUnavailable(activity: LearningActivityCompletionBag | null): boolean {
