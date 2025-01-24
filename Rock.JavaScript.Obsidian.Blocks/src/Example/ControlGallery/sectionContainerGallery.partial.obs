@@ -1,0 +1,51 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode">
+
+        <SectionContainer title="This is a Section Container"
+                          :description="description"
+                          v-model="showContent"
+                          :toggleText="showContentToggle ? 'Show' : ''">
+            <template v-if="showActionBar" #actions>
+                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-lock"></i></a>
+                <a class="btn btn-default btn-xs btn-square"><i class="fa fa-pencil"></i></a>
+                <a class="btn btn-danger btn-xs btn-square"><i class="fa fa-trash-alt"></i></a>
+            </template>
+            Here's some content to put in here.
+        </SectionContainer>
+
+        <template #settings>
+            <div class="row">
+                <CheckBox formGroupClasses="col-xs-4" v-model="showDescription" label="Show Description" />
+                <CheckBox formGroupClasses="col-xs-4" v-model="showActionBar" label="Show Action Bar" />
+                <CheckBox formGroupClasses="col-xs-4" v-model="showContentToggle" label="Show Content Toggle" />
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import SectionContainer from "@Obsidian/Controls/sectionContainer.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+
+    const showDescription = ref(true);
+    const showActionBar = ref(true);
+    const showContentToggle = ref(false);
+    const showContent = ref(true);
+
+    const description = computed(() => {
+        return showDescription.value
+            ? "The Section Container has a Section Header and a collapsible content section below it."
+            : "";
+    });
+    const importCode = getSfcControlImportPath("sectionContainer");
+    const exampleCode = `<SectionContainer title="This is a Section Container" description="A Description" v-model="showContent" toggleText="Show">
+    <template #actions>Action Buttons</template>
+    Main Content
+</SectionContainer>`;
+</script>

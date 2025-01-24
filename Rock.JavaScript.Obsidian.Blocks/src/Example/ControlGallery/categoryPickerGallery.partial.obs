@@ -1,0 +1,45 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <CategoryPicker label="Category Picker" v-model="value" :multiple="multiple" :entityTypeGuid="entityTypeGuid" />
+
+        <template #settings>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+                <div class="col-md-6">
+                    <EntityTypePicker label="For Entity Type" v-model="entityType" enhanceForLongLists showBlankItem />
+                </div>
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+
+
+    const entityType = ref<ListItemBag | null>(null);
+    const entityTypeGuid = computed<Guid | undefined>(() => {
+        return toGuidOrNull(entityType?.value?.value) ?? undefined;
+    });
+    const multiple = ref(false);
+    const value = ref(null);
+    const importCode = getSfcControlImportPath("categoryPicker");
+    const exampleCode = `<CategoryPicker label="Category Picker" v-model="value" :multiple="false" :entityTypeGuid="entityTypeGuid" />`;
+</script>

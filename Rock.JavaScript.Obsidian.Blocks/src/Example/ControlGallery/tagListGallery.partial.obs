@@ -1,0 +1,90 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode">
+
+        <TagList :entityTypeGuid="entityTypeGuid"
+                 :entityKey="entityKey"
+                 :disabled="disabled"
+                 :showInactiveTags="showInactive"
+                 :disallowNewTags="disallowNewTags"
+                 :delaySave="delaySave"
+                 ref="control" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox label="Disabled" v-model="disabled" help="Makes it read-only. You can't add or remove tags if it's disabled." />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Delay Saving Value" v-model="delaySave" help="If checked, creating new tags, adding tags and removing tags is not saved to the server until the component's <code>saveTagValues</code> method is called." />
+                    <RockButton v-if="delaySave" :btnType="btnType" type="button" @click="control?.saveTagValues()"><i class="fa fa-save" /> Save Values</RockButton>
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Disallow New Tags" v-model="disallowNewTags" help="If checked, no new tags can be created, though you can still add existing tags" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Show Inactive Tags" v-model="showInactive" />
+                </div>
+            </div>
+            <p>
+                This control takes multiple props for filtering the tags to show and giving specifiers about what it tags. Below is a list of those props:
+            </p>
+            <table class="table" style="max-width:450px;">
+                <tr>
+                    <th scope="col">Prop</th>
+                    <th scope="col">Type</th>
+                    <th scope="col" class="text-center">Required</th>
+                </tr>
+                <tr>
+                    <th scope="row"><code>entityTypeGuid</code></th>
+                    <td>GUID String</td>
+                    <td class="text-center"><i class="fa fa-check text-success"></i></td>
+                </tr>
+                <tr>
+                    <th scope="row"><code>entityKey</code></th>
+                    <td>String</td>
+                    <td class="text-center"><i class="fa fa-check text-success"></i></td>
+                </tr>
+                <tr>
+                    <th scope="row"><code>categoryGuid</code></th>
+                    <td>GUID String</td>
+                    <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+                </tr>
+                <tr>
+                    <th scope="row"><code>entityQualifierColumn</code></th>
+                    <td>String</td>
+                    <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+                </tr>
+                <tr>
+                    <th scope="row"><code>entityQualifierValue</code></th>
+                    <td>String</td>
+                    <td class="text-center"><i class="fa fa-ban text-danger"></i></td>
+                </tr>
+            </table>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import TagList from "@Obsidian/Controls/tagList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { useStore } from "@Obsidian/PageState";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+
+    const store = useStore();
+    const control = ref<typeof TagList>();
+    const disabled = ref(false);
+    const delaySave = ref(false);
+    const showInactive = ref(false);
+    const disallowNewTags = ref(false);
+    const entityTypeGuid = EntityType.Person;
+    const entityKey = store.state.currentPerson?.idKey ?? "";
+    const btnType = BtnType.Primary;
+    const importCode = getSfcControlImportPath("tagList");
+    const exampleCode = `<TagList :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />`;
+</script>

@@ -1,0 +1,38 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection
+                      displayAsRaw>
+
+        <ScheduleBuilder label="Schedule Builder"
+                         v-model="value"
+                         :hideStartDateTime="hideStartDateTime"
+                         :hideDuration="hideDuration" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Hide Start Date / Time" v-model="hideStartDateTime" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Hide Duration" v-model="hideDuration" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref("");
+    const hideStartDateTime = ref(false);
+    const hideDuration = ref(false);
+    const importCode = getSfcControlImportPath("scheduleBuilder");
+    const exampleCode = `<ScheduleBuilder label="Schedule Builder" v-model="value" :hideStartDateTime="false" :hideDuration="false" />`;
+</script>
