@@ -815,7 +815,7 @@ background: currentColor;
   }
 
   &.is-hovered {
-    background: var(--color-danger-soft);
+    background: color-mix(in srgb, var(--base-danger) 25%, #FFF 100%);
 
     .profile-label {
       opacity: 1;
@@ -823,3 +823,31 @@ background: currentColor;
   }
 }
 
+.horizontal-dl {
+  dl {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    margin: 0;
+    font-size: 14px;
+  }
+
+  dt {
+    padding: 16px 0;
+    margin-right: auto;
+
+    &,
+    a {
+      color: #212529 !important;
+    }
+
+    strong {
+      font-weight: 400;
+    }
+  }
+
+  dd {
+    color: #adb5bd;
+  }
+}

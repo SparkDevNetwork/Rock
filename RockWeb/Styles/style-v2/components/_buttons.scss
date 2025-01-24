@@ -159,6 +159,15 @@
   }
 }
 
+[theme = "dark"] .btn-authentication {
+  &.twitter {
+    &::before{
+      background-image:     url("/Assets/Icons/X_Logo_White.svg");
+      content: "";
+    }
+  }
+}
+
 .btn-authentication-v2 {
   display:          inline-flex;
   align-items:      center;

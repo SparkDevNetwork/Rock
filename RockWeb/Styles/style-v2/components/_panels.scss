@@ -56,12 +56,16 @@
   }
 }
 
+.panel-body.drag-container {
+  padding: var(--spacing-medium);
+}
+
 // PANEL HEADING
 .panel-heading {
   padding:                  14px 18px; 
   border-bottom:            1px solid transparent;
-  border-top-left-radius:   3px;  
-  border-top-right-radius:  3px;
+  border-top-left-radius:   var(--rounded-medium);  
+  border-top-right-radius:  var(--rounded-medium);
   > .dropdown .dropdown-toggle {
     color: inherit;
   }

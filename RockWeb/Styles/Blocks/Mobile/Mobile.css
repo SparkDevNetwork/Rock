@@ -1,14 +1,22 @@
 .mobile-pages-container .component {
     display: none;
-  }
-  .mobile-pages-container .component.gu-transit {
-    display: block;
-    padding: 14px 18px;
-    margin-bottom: 24px;
-    background-color: #f5f5f5;
-    border: 1px solid #eeeeee;
-  }
-  .mobile-block-types .form-control {
-    border-color: transparent;
-    border-radius: 0;
-  }
+}
+
+.mobile-pages-container .component.gu-transit {
+  display: block;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  background-color: #f5f5f5;
+  border: 1px solid #eeeeee;
+}
+
+.mobile-block-types .form-control {
+  border-color: transparent;
+  border-radius: 0;
+}
+
+.mobile-block-types {
+  background: var(--color-interface-softer);
+  border-right: 1px solid var(--color-interface-soft); 
+  border-bottom-left-radius: var(--rounded-medium) ;
+}

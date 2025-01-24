@@ -173,7 +173,7 @@
 
             <div class="panel-body padding-all-none">
                 <div class="row row-eq-height row-no-gutters">
-                    <div class="col-lg-3 col-sm-4 hidden-xs mobile-block-types js-mobile-block-types" style="background: #f3f3f3;">
+                    <div class="col-lg-3 col-sm-4 hidden-xs mobile-block-types js-mobile-block-types">
                         <Rock:RockDropDownList ID="ddlBlockTypeCategory" runat="server" OnSelectedIndexChanged="ddlBlockTypeCategory_SelectedIndexChanged" AutoPostBack="true" CausesValidation="false" />
                         <ul class="components-list list-unstyled">
                             <li>
