@@ -59,7 +59,7 @@ namespace Rock.ElectronicSignature
         }
 
         /// <summary>
-        /// Gets the signature information HTML. This would be the HTML of the drawn or typed signature data
+        /// Gets the signature information HTML. This would be the HTML of the drawn or typed signature data.
         /// </summary>
         /// <param name="signatureInformationHtmlArgs">The signature information HTML arguments.</param>
         /// <returns>System.String.</returns>
@@ -84,7 +84,7 @@ namespace Rock.ElectronicSignature
                 signatureInfoName = signatureInformationHtmlArgs.SignedName;
             }
 
-            // NOTE that the Signature Document will be rendered as a PDF without any external styles, so we'll but the styles here.
+            // NOTE that the Signature Document will be rendered as a PDF without any external styles, so we'll put the styles here.
             var signatureCss = @"
 <style>
     .signature-container {
