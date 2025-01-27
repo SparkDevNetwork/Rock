@@ -1,0 +1,28 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <GroupRolePicker label="Group Type and Role" v-model="value" :rules="required ? 'required' : ''" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Required" v-model="required" />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import GroupRolePicker from "@Obsidian/Controls/groupRolePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref(null);
+    const required = ref(false);
+    const importCode = getSfcControlImportPath("groupRolePicker");
+    const exampleCode = `<GroupRolePicker label="Group Type and Role" v-model="value" />`;
+</script>

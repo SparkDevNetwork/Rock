@@ -1,0 +1,33 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <GroupTypePicker label="Group Type" v-model="value" :isSortedByName="isSortedByName" :multiple="multiple" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox v-model="isSortedByName" label="Sort by Name" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox v-model="multiple" label="Multiple" />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref(null);
+    const isSortedByName = ref(false);
+    const multiple = ref(false);
+    const importCode = getSfcControlImportPath("groupTypePicker");
+    const exampleCode = `<GroupTypePicker label="Group Type" v-model="value" :groupTypes="[...groupTypeGuids]" />`;
+</script>

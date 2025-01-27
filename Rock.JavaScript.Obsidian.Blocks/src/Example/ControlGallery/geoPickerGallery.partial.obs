@@ -1,0 +1,33 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <GeoPicker label="Geo Picker" :drawingMode="drawingMode" v-model="value" />
+
+        <template #settings>
+            <div class="row">
+                <Toggle formGroupClasses="col-md-3" v-model="toggleValue" label="Drawing Mode" trueText="Point" falseText="Polygon" help="This will not update while the picker is open. Re-open picker to see change. You may also need to clear the value" />
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import GeoPicker from "@Obsidian/Controls/geoPicker.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const toggleValue = ref(false);
+    const drawingMode = computed(() => toggleValue.value ? "Point" : "Polygon");
+
+    const value = ref("POLYGON((35.1945 31.813, 35.2345 31.813, 35.2345 31.783, 35.2745 31.783, 35.2745 31.753, 35.2345 31.753, 35.2345 31.693, 35.1945 31.693, 35.1945 31.753, 35.1545 31.753, 35.1545 31.783, 35.1945 31.783, 35.1945 31.813))");
+    const importCode = getSfcControlImportPath("geoPicker");
+    const exampleCode = `<GeoPicker :drawingMode="drawingMode" v-model="value" />`;
+</script>

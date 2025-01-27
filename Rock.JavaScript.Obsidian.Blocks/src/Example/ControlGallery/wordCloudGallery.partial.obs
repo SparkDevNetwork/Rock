@@ -1,0 +1,97 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <WordCloud width="100%"
+                   :words="words"
+                   :animationDuration="animationDuration"
+                   :angleCount="angleCount"
+                   :autoClear="autoClear"
+                   :colors="colors"
+                   :fontName="fontName"
+                   :minimumAngle="minimumAngle"
+                   :minimumFontSize="minimumFontSize"
+                   :maximumAngle="maximumAngle"
+                   :maximumFontSize="maximumFontSize"
+                   :wordPadding="wordPadding" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <TextBox v-model="wordsText" label="Words" />
+                </div>
+                <div class="col-md-4">
+                    <TextBox v-model="colorsText" label="Colors" />
+                </div>
+                <div class="col-md-4">
+                    <NumberBox v-model="wordPadding" label="Word Padding" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <TextBox v-model="fontName" label="Font Name" />
+                </div>
+                <div class="col-md-4">
+                    <NumberBox v-model="minimumFontSize" label="Minimum Font Size" />
+                </div>
+                <div class="col-md-4">
+                    <NumberBox v-model="maximumFontSize" label="Maximum Font Size" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <NumberBox v-model="angleCount" label="Angle Count" />
+                </div>
+                <div class="col-md-4">
+                    <NumberBox v-model="minimumAngle" label="Minimum Angle" />
+                </div>
+                <div class="col-md-4">
+                    <NumberBox v-model="maximumAngle" label="Maximum Angle" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox v-model="autoClear" label="Auto Clear" />
+                </div>
+                <div class="col-md-4">
+                    <NumberBox v-model="animationDuration" label="Animation Duration" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import WordCloud from "@Obsidian/Controls/wordCloud.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const wordsText = ref("Hello, Hello, Hello, from, from, Chip");
+    const colorsText = ref("#0193B9, #F2C852, #1DB82B, #2B515D, #ED3223");
+
+    const words = computed((): string[] => {
+        return wordsText.value.split(",").map(v => v.trim()).filter(v => v.length > 0);
+    });
+
+    const colors = computed((): string[] => {
+        return colorsText.value.split(",").map(v => v.trim()).filter(v => v.length > 0);
+    });
+
+    const animationDuration = ref(350);
+    const angleCount = ref(5);
+    const autoClear = ref(false);
+    const fontName = ref("Impact");
+    const minimumAngle = ref(-90);
+    const minimumFontSize = ref(10);
+    const maximumAngle = ref(90);
+    const maximumFontSize = ref(96);
+    const wordPadding = ref(5);
+    const importCode = getSfcControlImportPath("wordCloud");
+    const exampleCode = `<WordCloud :words="['Hello', 'Hello', 'Goodbye']" />`;
+</script>

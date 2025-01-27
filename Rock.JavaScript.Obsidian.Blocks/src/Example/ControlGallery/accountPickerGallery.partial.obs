@@ -1,0 +1,52 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <AccountPicker label="Financial Account"
+                       v-model="value"
+                       :enhanceForLongLists="enhance"
+                       :activeOnly="activeOnly"
+                       :displayPublicName="displayPublic"
+                       :multiple="multiple"
+                       :displayChildItemCountLabel="displayChildItemCountLabel" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Enhance For Long Lists" v-model="enhance" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Active Only" v-model="activeOnly" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Display Public Names" v-model="displayPublic" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Select Multiple" v-model="multiple" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Display Child Count" v-model="displayChildItemCountLabel" />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const value = ref<ListItemBag>({});
+    const activeOnly = ref(false);
+    const displayPublic = ref(false);
+    const multiple = ref(false);
+    const enhance = ref(false);
+    const displayChildItemCountLabel = ref(false);
+    const importCode = getSfcControlImportPath("accountPicker");
+    const exampleCode = `<AccountPicker label="Financial Account" v-model="value" enhanceForLongLists activeOnly displayPublicName multiple displayChildItemCountLabel />`;
+</script>

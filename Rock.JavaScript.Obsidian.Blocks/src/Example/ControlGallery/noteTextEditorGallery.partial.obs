@@ -1,0 +1,18 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <NoteTextEditor v-model="value" label="Leave a Note" />
+
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import NoteTextEditor from "@Obsidian/Controls/noteTextEditor.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref("");
+    const importCode = getSfcControlImportPath("noteTextEditor");
+    const exampleCode = `<NoteTextEditor v-model="value" />`;
+</script>
