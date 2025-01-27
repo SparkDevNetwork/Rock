@@ -32,7 +32,8 @@
     </DetailBlock>
 
     <LearningClassSecondaryLists
-                                 v-if="panelMode === DetailPanelMode.View"
+                                 v-if="panelMode === DetailPanelMode.View && hasLoadedDefinition"
+                                 :gridDefinitionBag="secondaryGridsDefinitionBag"
                                  :isEditable="isEditable"
                                  :canViewGrades="canViewGrades"
                                  :navigationUrls="config.navigationUrls"
@@ -60,6 +61,7 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { isValidGuid } from "@Obsidian/Utility/guid";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const config = useConfigurationValues<DetailBlockBox<LearningClassBag, LearningClassDetailOptionsBag>>();
@@ -94,6 +96,13 @@
     const courseAllowsAnnouncements = ref(config.options?.courseAllowsAnnouncements ?? false);
     const includeAnnouncementsTab = isAcademicCalendarMode && courseAllowsAnnouncements.value === true;
     const includeContentTab = ref(isAcademicCalendarMode);
+
+    // Get the grid definition bag for the secondary grids.
+    // Use the hasLoadedDefinition ref to prevent initialization
+    // of grids until the definition has been returned.
+    const hasLoadedDefinition = ref(false);
+    let secondaryGridsDefinitionBag: GridDefinitionBag;
+    getSecondaryGridsDefinitionBag();
 
     // #endregion
 
@@ -213,6 +222,18 @@
     // #endregion
 
     // #region Functions
+
+    async function getSecondaryGridsDefinitionBag(): Promise<void> {
+        var result = await invokeBlockAction<GridDefinitionBag>("GetSecondaryGridDefinitionBag");
+        if (result.isSuccess && result.data && typeof result.data === "object") {
+            secondaryGridsDefinitionBag = result.data;
+        }
+
+        // Always set hasLoadedDefinition even when unsuccessful.
+        // it's better to show the grids without the additional functionality
+        // than not to show them at all.
+        hasLoadedDefinition.value = true;
+    }
 
     // #endregion
 

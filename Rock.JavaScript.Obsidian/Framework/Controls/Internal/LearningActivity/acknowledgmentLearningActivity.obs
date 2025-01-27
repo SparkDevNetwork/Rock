@@ -109,7 +109,7 @@
 
     /** The time elapsed since the specified date in a human-readable format. */
     const humanizedCompletionDate = computed((): string =>
-        RockDateTime.parseISO(completedDate.value)?.localDateTime.humanizeElapsed() ?? ""
+        RockDateTime.parseISO(completedDate.value)?.localDateTime.toElapsedString() ?? ""
     );
 
     const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");

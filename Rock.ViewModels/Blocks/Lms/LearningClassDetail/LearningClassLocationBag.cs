@@ -25,8 +25,14 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
     /// </summary>
     public class LearningClassLocationBag
     {
+        /// <summary>
+        /// 
+        /// </summary>
         public ListItemBag NamedLocation { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public AddressControlBag Address { get; set; }
     }
 }

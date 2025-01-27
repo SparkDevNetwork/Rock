@@ -97,7 +97,7 @@
                                               :enhanceForLongLists="true"
                                               v-model="systemCommunicationValue"
                                               label="Activity Available Communication Template"
-                                              help="The template to use when sending available activity emails for this program and its courses."
+                                              help="The template to use when sending available activity emails for this program and its courses. Merge fields include: ActivityCount and Courses (a list of CourseInfo)."
                                               rules="required"
                                               :items="systemCommunications" />
                             </div>

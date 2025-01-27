@@ -148,6 +148,22 @@
     <Compile Include="Migrations\202501211620250_TvApplicationPages.Designer.cs">
       <DependentUpon>202501211620250_TvApplicationPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202501221847578_Rollup_20250122.cs" />
+    <Compile Include="Migrations\202501221847578_Rollup_20250122.designer.cs">
+      <DependentUpon>202501221847578_Rollup_20250122.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202501221932491_CodeGenerated_20250122.cs" />
+    <Compile Include="Migrations\202501221932491_CodeGenerated_20250122.designer.cs">
+      <DependentUpon>202501221932491_CodeGenerated_20250122.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202501222321272_LMSAnnouncements.cs" />
+    <Compile Include="Migrations\202501222321272_LMSAnnouncements.Designer.cs">
+      <DependentUpon>202501222321272_LMSAnnouncements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202501231528264_AddPrinterDpiAttributeToDevice.cs" />
+    <Compile Include="Migrations\202501231528264_AddPrinterDpiAttributeToDevice.Designer.cs">
+      <DependentUpon>202501231528264_AddPrinterDpiAttributeToDevice.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2480,6 +2496,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202501211620250_TvApplicationPages.resx">
       <DependentUpon>202501211620250_TvApplicationPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501221847578_Rollup_20250122.resx">
+      <DependentUpon>202501221847578_Rollup_20250122.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501221932491_CodeGenerated_20250122.resx">
+      <DependentUpon>202501221932491_CodeGenerated_20250122.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501222321272_LMSAnnouncements.resx">
+      <DependentUpon>202501222321272_LMSAnnouncements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202501231528264_AddPrinterDpiAttributeToDevice.resx">
+      <DependentUpon>202501231528264_AddPrinterDpiAttributeToDevice.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>

@@ -30,18 +30,30 @@
 
         <div class="row">
             <div class="col-md-12">
-                <StructuredContentEditor v-model="description" label="Announcement Text" />
+                <SmsMessageEditor
+                                  v-if="isSmsModeSelected"
+                                  v-model="smsDescription"
+                                  :editorHeight="200"
+                                  :isCountDownShown="smsCharacterLimit > 0"
+                                  :countDownMaxChars="smsCharacterLimit"
+                                  toolbarLabel="Message"
+                                  rules="required" />
+                <StructuredContentEditor
+                                         v-if="!isSmsModeSelected"
+                                         v-model="structuredContentDescription"
+                                         label="Announcement Text" />
             </div>
         </div>
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { PropType, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { LearningClassAnnouncementBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassAnnouncementDetail/learningClassAnnouncementBag";
@@ -88,7 +100,14 @@
 
     // #region Computed Values
 
+    const isSmsModeSelected = computed<boolean>(() => communicationMode.value === CommunicationMode.SMS.toString());
+
+    const smsCharacterLimit = computed<number>(() => props.options.smsCharacterLimit);
+
     // #endregion
+
+    const smsDescription = ref(isSmsModeSelected.value === true ? description.value : "");
+    const structuredContentDescription = ref(isSmsModeSelected.value === false ? description.value : "");
 
     // #region Functions
 
@@ -97,6 +116,15 @@
     // #region Event Handlers
 
     // #endregion
+
+    watch([smsDescription, structuredContentDescription, communicationMode], () => {
+        if (isSmsModeSelected.value === true) {
+            description.value = smsDescription.value;
+        }
+        else {
+            description.value = structuredContentDescription.value;
+        }
+    });
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {

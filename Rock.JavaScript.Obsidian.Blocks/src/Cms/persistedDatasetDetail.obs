@@ -140,7 +140,7 @@
             });
 
             // Add the Last Refresh Date Time Label
-            if(persistedDatasetViewBag.value.lastRefreshDateTime) {
+            if (persistedDatasetViewBag.value.lastRefreshDateTime) {
                 labels.push({
                     iconCssClass: "fa fa-refresh",
                     title: `Last Run : ${RockDateTime.parseISO(persistedDatasetViewBag.value.lastRefreshDateTime)?.toString()}`,
@@ -156,7 +156,7 @@
             }
 
             const timeToRunLabel = persistedDatasetViewBag.value.timeToBuildMS
-                ? `${persistedDatasetViewBag.value.timeToBuildMS.toFixed(4)}ms`
+                ? `${persistedDatasetViewBag.value.timeToBuildMS.toFixed(0)}ms`
                 : "Never";
 
             labels.push({

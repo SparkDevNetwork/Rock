@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 using Docker.DotNet;
 using Docker.DotNet.Models;
+
 using Rock.Tests.Shared.Lava;
-using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
 using Testcontainers.MsSql;
@@ -18,19 +18,22 @@ namespace Rock.Tests.Shared.TestFramework
     /// for unit tests. It will automatically build a new docker image if required
     /// before starting up the first time.
     /// </summary>
-    public class TestDatabaseContainer : ITestDatabaseContainer
+    public partial class TestDatabaseContainer : ITestDatabaseContainer
     {
         private static bool? _hasValidImage;
 
+        private readonly MsSqlContainerPool _containerPool;
         private MsSqlContainer _databaseContainer;
         private bool _containerIsInitialized = false;
 
-        public bool HasCurrentInstance
+        public bool HasCurrentInstance => _hasValidImage.GetValueOrDefault();
+
+        /// <summary>
+        /// Creates a new instance of <see cref="TestDatabaseContainer"/>.
+        /// </summary>
+        public TestDatabaseContainer()
         {
-            get
-            {
-                return _hasValidImage.GetValueOrDefault();
-            }
+            _containerPool = new MsSqlContainerPool( DatabaseContainerImageBuilder.GetRepositoryAndTag() );
         }
 
         /// <summary>
@@ -49,11 +52,7 @@ namespace Rock.Tests.Shared.TestFramework
                 _hasValidImage = true;
             }
 
-            var container = new MsSqlBuilder()
-                .WithImage( DatabaseContainerImageBuilder.GetRepositoryAndTag() )
-                .Build();
-
-            await container.StartAsync();
+            var container = await _containerPool.TakeAsync();
 
             var csb = new SqlConnectionStringBuilder( container.GetConnectionString() )
             {

@@ -71,8 +71,9 @@ namespace Rock.Model
         /// Gets or sets the url where more details can be found (if any).
         /// </summary>
         /// <value>
-        /// The image binary file id.
+        /// The url where more details can be found.
         /// </value>
+        [MaxLength( 200 )]
         [DataMember]
         public string DetailsUrl { get; set; }
 
@@ -100,7 +101,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets a value indicating whether the communication has been sent.
         /// <remarks>
-        /// This will alsways be false when the 'None' CommunicationMode is specified.
+        /// This will always be false when the 'None' CommunicationMode is specified.
         /// </remarks>
         /// </summary>
         [DataMember]

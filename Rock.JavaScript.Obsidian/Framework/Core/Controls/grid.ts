@@ -608,7 +608,7 @@ export function dateFilterMatches(needle: unknown, haystack: unknown): boolean {
 // #region Entity Sets
 
 /**
- * Gets the entity set bag that can be send to the server to create an entity
+ * Gets the entity set bag that can be sent to the server to create an entity
  * set representing the selected items in the grid.
  *
  * @param grid The grid state that will be used as the source data.

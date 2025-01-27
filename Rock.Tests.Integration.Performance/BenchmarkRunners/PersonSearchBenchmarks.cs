@@ -21,7 +21,7 @@ using BenchmarkDotNet.Running;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Integration.Performance.Modules.Crm.Person;
+using Rock.Tests.Integration.Performance.Crm.Person;
 
 namespace Rock.Tests.Performance.BenchmarkRunners
 {
