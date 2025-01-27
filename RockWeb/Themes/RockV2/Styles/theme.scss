@@ -585,6 +585,7 @@ $navbar-element-height: 40px;
         align-items: center;
         margin: var(--spacing-xsmall) 0;
         color: var(--color-interface-strong);
+        transition: all ease 0.05s;
 
         &:last-child{
             margin-bottom: 0;
@@ -924,6 +925,7 @@ $hamburger-spacing: 4px;
   font-size: calc(var(--size) * 0.5);
   color: var(--color-interface-medium);
   background-color: var(--color-interface-softer);
+  border: 1px solid var(--color-interface-soft);
   border-radius: var(--rounded-small);
 
   &:hover {
@@ -975,8 +977,8 @@ $hamburger-spacing: 4px;
 }
 
 .list-group-item {
-  padding-right:  var(--spacing-large);
-  padding-left:   var(--spacing-large);
+  padding-right:  var(--spacing-medium);
+  padding-left:   var(--spacing-medium);
 }
 
 .list-group-item:hover {
