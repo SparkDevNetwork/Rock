@@ -130,6 +130,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this RestController target, RestController source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.ClassName = source.ClassName;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

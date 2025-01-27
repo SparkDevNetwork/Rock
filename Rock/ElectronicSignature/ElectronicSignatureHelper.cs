@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-
+using System.Text.RegularExpressions;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -35,6 +35,11 @@ namespace Rock.ElectronicSignature
         /// Sample Ted Decker signature data URL
         /// </summary>
         public const string SampleSignatureDataURL = SampleDrawnSignatures.SampleSignatureTedDeckerDataURL;
+
+        /// <summary>
+        /// Regular Expression for inserting multiple signature blocks into a document.
+        /// </summary>
+        private const string SIGNATURE_INSERTION_EXPRESSION = "<!--\\s*\\[\\[\\s*SignatureDetails\\s*\\]\\]\\s*-->";
 
         /// <summary>
         /// Gets the signature document HTML (prior to signing)
@@ -55,11 +60,16 @@ namespace Rock.ElectronicSignature
         /// <returns>System.String.</returns>
         public static string GetSignedDocumentHtml( string signatureDocumentHtml, string signatureInformation )
         {
+            if ( Regex.IsMatch( signatureDocumentHtml, SIGNATURE_INSERTION_EXPRESSION, RegexOptions.IgnoreCase ) )
+            {
+                return Regex.Replace( signatureDocumentHtml, SIGNATURE_INSERTION_EXPRESSION, signatureInformation );
+            }
+
             return signatureDocumentHtml + signatureInformation;
         }
 
         /// <summary>
-        /// Gets the signature information HTML. This would be the HTML of the drawn or typed signature data
+        /// Gets the signature information HTML. This would be the HTML of the drawn or typed signature data.
         /// </summary>
         /// <param name="signatureInformationHtmlArgs">The signature information HTML arguments.</param>
         /// <returns>System.String.</returns>
@@ -84,7 +94,7 @@ namespace Rock.ElectronicSignature
                 signatureInfoName = signatureInformationHtmlArgs.SignedName;
             }
 
-            // NOTE that the Signature Document will be rendered as a PDF without any external styles, so we'll but the styles here.
+            // NOTE that the Signature Document will be rendered as a PDF without any external styles, so we'll put the styles here.
             var signatureCss = @"
 <style>
     .signature-container {

@@ -379,7 +379,7 @@
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { CheckinTypeBag } from "@Obsidian/ViewModels/Blocks/Checkin/Config/CheckinTypeDetail/checkinTypeBag";
     import { CheckinTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Checkin/Config/CheckinTypeDetail/checkinTypeDetailOptionsBag";
@@ -391,10 +391,11 @@
     import { CheckInDisplaySettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInDisplaySettingsBag";
     import { CheckInRegistrationSettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInRegistrationSettingsBag";
     import { CheckInAdvancedSettingsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/Config/CheckinTypeDetail/checkInAdvancedSettingsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<CheckinTypeBag>,
+            type: Object as PropType<ValidPropertiesBox<CheckinTypeBag>>,
             required: true
         },
 
@@ -405,99 +406,99 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: CheckinTypeBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<CheckinTypeBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "iconCssClass");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const iconCssClass = propertyRef(props.modelValue?.bag?.iconCssClass ?? "", "iconCssClass");
 
     // General Settings
-    const checkInType = ref(props.modelValue.generalSettings?.checkInType ?? "");
-    const allowCheckoutAtKiosk = ref(props.modelValue.generalSettings?.allowCheckoutAtKiosk ?? false);
-    const allowCheckoutInManager = ref(props.modelValue.generalSettings?.allowCheckoutInManager ?? false);
-    const enablePresence = ref(props.modelValue.generalSettings?.enablePresence ?? false);
-    const enableManager = ref(props.modelValue.generalSettings?.enableManager ?? false);
-    const enableOverride = ref(props.modelValue.generalSettings?.enableOverride ?? false);
-    const achievementTypes = ref(props.modelValue.generalSettings?.achievementTypes ?? []);
-    const autoSelectDaysBack = ref(props.modelValue.generalSettings?.autoSelectDaysBack ?? "");
-    const autoSelectOptions = ref(props.modelValue.generalSettings?.autoSelectOptions ?? "");
-    const useSameOptions = ref(props.modelValue.generalSettings?.useSameOptions ?? false);
-    const preventInactivePeople = ref(props.modelValue.generalSettings?.preventInactivePeople ?? false);
-    const preventDuplicateCheckin = ref(props.modelValue.generalSettings?.preventDuplicateCheckin ?? false);
+    const checkInType = ref(props.modelValue?.bag?.generalSettings?.checkInType ?? "");
+    const allowCheckoutAtKiosk = ref(props.modelValue?.bag?.generalSettings?.allowCheckoutAtKiosk ?? false);
+    const allowCheckoutInManager = ref(props.modelValue?.bag?.generalSettings?.allowCheckoutInManager ?? false);
+    const enablePresence = ref(props.modelValue?.bag?.generalSettings?.enablePresence ?? false);
+    const enableManager = ref(props.modelValue?.bag?.generalSettings?.enableManager ?? false);
+    const enableOverride = ref(props.modelValue?.bag?.generalSettings?.enableOverride ?? false);
+    const achievementTypes = ref(props.modelValue?.bag?.generalSettings?.achievementTypes ?? []);
+    const autoSelectDaysBack = ref(props.modelValue?.bag?.generalSettings?.autoSelectDaysBack ?? "");
+    const autoSelectOptions = ref(props.modelValue?.bag?.generalSettings?.autoSelectOptions ?? "");
+    const useSameOptions = ref(props.modelValue?.bag?.generalSettings?.useSameOptions ?? false);
+    const preventInactivePeople = ref(props.modelValue?.bag?.generalSettings?.preventInactivePeople ?? false);
+    const preventDuplicateCheckin = ref(props.modelValue?.bag?.generalSettings?.preventDuplicateCheckin ?? false);
 
     // Barcode Settings
-    const codeAlphaLength = ref(props.modelValue.barcodeSettings?.codeAlphaLength ?? "");
-    const codeAlphaNumericLength = ref(props.modelValue.barcodeSettings?.codeAlphaNumericLength ?? "");
-    const codeNumericLength = ref(props.modelValue.barcodeSettings?.codeNumericLength ?? "");
-    const codeRandom = ref(props.modelValue.barcodeSettings?.codeRandom ?? false);
-    const reuseCode = ref(props.modelValue.barcodeSettings?.reuseCode ?? false);
+    const codeAlphaLength = ref(props.modelValue?.bag?.barcodeSettings?.codeAlphaLength ?? "");
+    const codeAlphaNumericLength = ref(props.modelValue?.bag?.barcodeSettings?.codeAlphaNumericLength ?? "");
+    const codeNumericLength = ref(props.modelValue?.bag?.barcodeSettings?.codeNumericLength ?? "");
+    const codeRandom = ref(props.modelValue?.bag?.barcodeSettings?.codeRandom ?? false);
+    const reuseCode = ref(props.modelValue?.bag?.barcodeSettings?.reuseCode ?? false);
 
     // Search Settings
-    const searchType = ref(props.modelValue.searchSettings?.searchType ?? "");
-    const maxResults = ref(props.modelValue.searchSettings?.maxResults ?? "");
-    const minPhoneLength = ref(props.modelValue.searchSettings?.minPhoneLength ?? "");
-    const maxPhoneLength = ref(props.modelValue.searchSettings?.maxPhoneLength ?? "");
-    const phoneSearchType = ref(props.modelValue.searchSettings?.phoneSearchType ?? "");
+    const searchType = ref(props.modelValue?.bag?.searchSettings?.searchType ?? "");
+    const maxResults = ref(props.modelValue?.bag?.searchSettings?.maxResults ?? "");
+    const minPhoneLength = ref(props.modelValue?.bag?.searchSettings?.minPhoneLength ?? "");
+    const maxPhoneLength = ref(props.modelValue?.bag?.searchSettings?.maxPhoneLength ?? "");
+    const phoneSearchType = ref(props.modelValue?.bag?.searchSettings?.phoneSearchType ?? "");
 
     // Header Text
-    const actionSelectHeaderTemplate = ref(props.modelValue.headerText?.actionSelectHeaderTemplate ?? "");
-    const checkoutPersonSelectHeaderTemplate = ref(props.modelValue.headerText?.checkoutPersonSelectHeaderTemplate ?? "");
-    const personSelectHeaderTemplate = ref(props.modelValue.headerText?.personSelectHeaderTemplate ?? "");
-    const multiPersonSelectHeaderTemplate = ref(props.modelValue.headerText?.multiPersonSelectHeaderTemplate ?? "");
-    const groupTypeSelectHeaderTemplate = ref(props.modelValue.headerText?.groupTypeSelectHeaderTemplate ?? "");
-    const timeSelectHeaderTemplate = ref(props.modelValue.headerText?.timeSelectHeaderTemplate ?? "");
-    const abilityLevelSelectHeaderTemplate = ref(props.modelValue.headerText?.abilityLevelSelectHeaderTemplate ?? "");
-    const locationSelectHeaderTemplate = ref(props.modelValue.headerText?.locationSelectHeaderTemplate ?? "");
-    const groupSelectHeaderTemplate = ref(props.modelValue.headerText?.groupSelectHeaderTemplate ?? "");
+    const actionSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.actionSelectHeaderTemplate ?? "");
+    const checkoutPersonSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.checkoutPersonSelectHeaderTemplate ?? "");
+    const personSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.personSelectHeaderTemplate ?? "");
+    const multiPersonSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.multiPersonSelectHeaderTemplate ?? "");
+    const groupTypeSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.groupTypeSelectHeaderTemplate ?? "");
+    const timeSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.timeSelectHeaderTemplate ?? "");
+    const abilityLevelSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.abilityLevelSelectHeaderTemplate ?? "");
+    const locationSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.locationSelectHeaderTemplate ?? "");
+    const groupSelectHeaderTemplate = ref(props.modelValue?.bag?.headerText?.groupSelectHeaderTemplate ?? "");
 
     // Display Settings
-    const hidePhotos = ref(props.modelValue.displaySettings?.hidePhotos ?? false);
-    const startTemplate = ref(props.modelValue.displaySettings?.startTemplate ?? "");
-    const familySelectTemplate = ref(props.modelValue.displaySettings?.familySelectTemplate ?? "");
-    const personSelectTemplate = ref(props.modelValue.displaySettings?.personSelectTemplate ?? "");
-    const successTemplateOverrideDisplayMode = ref(props.modelValue.displaySettings?.successTemplateOverrideDisplayMode ?? "");
-    const successTemplate = ref(props.modelValue.displaySettings?.successTemplate ?? "");
+    const hidePhotos = ref(props.modelValue?.bag?.displaySettings?.hidePhotos ?? false);
+    const startTemplate = ref(props.modelValue?.bag?.displaySettings?.startTemplate ?? "");
+    const familySelectTemplate = ref(props.modelValue?.bag?.displaySettings?.familySelectTemplate ?? "");
+    const personSelectTemplate = ref(props.modelValue?.bag?.displaySettings?.personSelectTemplate ?? "");
+    const successTemplateOverrideDisplayMode = ref(props.modelValue?.bag?.displaySettings?.successTemplateOverrideDisplayMode ?? "");
+    const successTemplate = ref(props.modelValue?.bag?.displaySettings?.successTemplate ?? "");
 
     // Registration Settings
-    const registrationDefaultPersonConnectionStatus = ref(props.modelValue.registrationSettings?.registrationDefaultPersonConnectionStatus ?? {});
-    const registrationDisplayAlternateIdFieldForAdults = ref(props.modelValue.registrationSettings?.registrationDisplayAlternateIdFieldForAdults ?? false);
-    const registrationDisplayAlternateIdFieldForChildren = ref(props.modelValue.registrationSettings?.registrationDisplayAlternateIdFieldForChildren ?? false);
-    const registrationDisplaySmsEnabled = ref(props.modelValue.registrationSettings?.registrationDisplaySmsEnabled ?? false);
-    const registrationSmsEnabledByDefault = ref(props.modelValue.registrationSettings?.registrationSmsEnabledByDefault ?? false);
-    const enableCheckInAfterRegistration = ref(props.modelValue.registrationSettings?.enableCheckInAfterRegistration ?? false);
-    const knownRelationshipTypes = ref(props.modelValue.registrationSettings?.knownRelationshipTypes ?? []);
-    const sameFamilyKnownRelationshipTypes = ref(props.modelValue.registrationSettings?.sameFamilyKnownRelationshipTypes ?? []);
-    const canCheckInKnownRelationshipTypes = ref(props.modelValue.registrationSettings?.canCheckInKnownRelationshipTypes ?? []);
-    const registrationAddFamilyWorkflowTypes = ref(props.modelValue.registrationSettings?.registrationAddFamilyWorkflowTypes ?? []);
-    const registrationAddPersonWorkflowTypes = ref(props.modelValue.registrationSettings?.registrationAddPersonWorkflowTypes ?? []);
-    const registrationRequiredAttributesForAdults = ref(props.modelValue.registrationSettings?.registrationRequiredAttributesForAdults ?? []);
-    const registrationOptionalAttributesForAdults = ref(props.modelValue.registrationSettings?.registrationOptionalAttributesForAdults ?? []);
-    const registrationRequiredAttributesForChildren = ref(props.modelValue.registrationSettings?.registrationRequiredAttributesForChildren ?? []);
-    const registrationOptionalAttributesForChildren = ref(props.modelValue.registrationSettings?.registrationOptionalAttributesForChildren ?? []);
-    const registrationRequiredAttributesForFamilies = ref(props.modelValue.registrationSettings?.registrationRequiredAttributesForFamilies ?? []);
-    const registrationOptionalAttributesForFamilies = ref(props.modelValue.registrationSettings?.registrationOptionalAttributesForFamilies ?? []);
-    const registrationDisplayBirthdateOnAdults = ref(props.modelValue.registrationSettings?.registrationDisplayBirthdateOnAdults ?? "");
-    const registrationDisplayBirthdateOnChildren = ref(props.modelValue.registrationSettings?.registrationDisplayBirthdateOnChildren ?? "");
-    const registrationDisplayGradeOnChildren = ref(props.modelValue.registrationSettings?.registrationDisplayGradeOnChildren ?? "");
-    const registrationDisplayRaceOnAdults = ref(props.modelValue.registrationSettings?.registrationDisplayRaceOnAdults ?? "");
-    const registrationDisplayEthnicityOnAdults = ref(props.modelValue.registrationSettings?.registrationDisplayEthnicityOnAdults ?? "");
-    const registrationDisplayRaceOnChildren = ref(props.modelValue.registrationSettings?.registrationDisplayRaceOnChildren ?? "");
-    const registrationDisplayEthnicityOnChildren = ref(props.modelValue.registrationSettings?.registrationDisplayEthnicityOnChildren ?? "");
+    const registrationDefaultPersonConnectionStatus = ref(props.modelValue?.bag?.registrationSettings?.registrationDefaultPersonConnectionStatus ?? {});
+    const registrationDisplayAlternateIdFieldForAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayAlternateIdFieldForAdults ?? false);
+    const registrationDisplayAlternateIdFieldForChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayAlternateIdFieldForChildren ?? false);
+    const registrationDisplaySmsEnabled = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplaySmsEnabled ?? false);
+    const registrationSmsEnabledByDefault = ref(props.modelValue?.bag?.registrationSettings?.registrationSmsEnabledByDefault ?? false);
+    const enableCheckInAfterRegistration = ref(props.modelValue?.bag?.registrationSettings?.enableCheckInAfterRegistration ?? false);
+    const knownRelationshipTypes = ref(props.modelValue?.bag?.registrationSettings?.knownRelationshipTypes ?? []);
+    const sameFamilyKnownRelationshipTypes = ref(props.modelValue?.bag?.registrationSettings?.sameFamilyKnownRelationshipTypes ?? []);
+    const canCheckInKnownRelationshipTypes = ref(props.modelValue?.bag?.registrationSettings?.canCheckInKnownRelationshipTypes ?? []);
+    const registrationAddFamilyWorkflowTypes = ref(props.modelValue?.bag?.registrationSettings?.registrationAddFamilyWorkflowTypes ?? []);
+    const registrationAddPersonWorkflowTypes = ref(props.modelValue?.bag?.registrationSettings?.registrationAddPersonWorkflowTypes ?? []);
+    const registrationRequiredAttributesForAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationRequiredAttributesForAdults ?? []);
+    const registrationOptionalAttributesForAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationOptionalAttributesForAdults ?? []);
+    const registrationRequiredAttributesForChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationRequiredAttributesForChildren ?? []);
+    const registrationOptionalAttributesForChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationOptionalAttributesForChildren ?? []);
+    const registrationRequiredAttributesForFamilies = ref(props.modelValue?.bag?.registrationSettings?.registrationRequiredAttributesForFamilies ?? []);
+    const registrationOptionalAttributesForFamilies = ref(props.modelValue?.bag?.registrationSettings?.registrationOptionalAttributesForFamilies ?? []);
+    const registrationDisplayBirthdateOnAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayBirthdateOnAdults ?? "");
+    const registrationDisplayBirthdateOnChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayBirthdateOnChildren ?? "");
+    const registrationDisplayGradeOnChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayGradeOnChildren ?? "");
+    const registrationDisplayRaceOnAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayRaceOnAdults ?? "");
+    const registrationDisplayEthnicityOnAdults = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayEthnicityOnAdults ?? "");
+    const registrationDisplayRaceOnChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayRaceOnChildren ?? "");
+    const registrationDisplayEthnicityOnChildren = ref(props.modelValue?.bag?.registrationSettings?.registrationDisplayEthnicityOnChildren ?? "");
 
     // Advanced Settings
-    const searchRegex = ref(props.modelValue.advancedSettings?.searchRegex ?? "");
-    const refreshInterval = ref(props.modelValue.advancedSettings?.refreshInterval ?? "");
-    const ageRequired = ref(props.modelValue.advancedSettings?.ageRequired ?? false);
-    const gradeRequired = ref(props.modelValue.advancedSettings?.gradeRequired ?? false);
-    const abilityLevelDetermination = ref(props.modelValue.advancedSettings?.abilityLevelDetermination ?? "");
-    const displayLocCount = ref(props.modelValue.advancedSettings?.displayLocCount ?? false);
-    const specialNeedsValues = ref(props.modelValue.advancedSettings?.specialNeedsValues ?? []);
+    const searchRegex = ref(props.modelValue?.bag?.advancedSettings?.searchRegex ?? "");
+    const refreshInterval = ref(props.modelValue?.bag?.advancedSettings?.refreshInterval ?? "");
+    const ageRequired = ref(props.modelValue?.bag?.advancedSettings?.ageRequired ?? false);
+    const gradeRequired = ref(props.modelValue?.bag?.advancedSettings?.gradeRequired ?? false);
+    const abilityLevelDetermination = ref(props.modelValue?.bag?.advancedSettings?.abilityLevelDetermination ?? "");
+    const displayLocCount = ref(props.modelValue?.bag?.advancedSettings?.displayLocCount ?? false);
+    const specialNeedsValues = ref(props.modelValue?.bag?.advancedSettings?.specialNeedsValues ?? []);
 
     // Dropdown Options
     const nameSearch = ref(props.options.nameSearch ?? null);
@@ -677,99 +678,104 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(iconCssClass, props.modelValue?.bag?.iconCssClass ?? "");
 
         // Advavnced Settings
-        updateRefValue(searchRegex, props.modelValue.advancedSettings?.searchRegex ?? "");
-        updateRefValue(refreshInterval, props.modelValue.advancedSettings?.refreshInterval ?? "");
-        updateRefValue(ageRequired, props.modelValue.advancedSettings?.ageRequired ?? false);
-        updateRefValue(gradeRequired, props.modelValue.advancedSettings?.gradeRequired ?? false);
-        updateRefValue(abilityLevelDetermination, props.modelValue.advancedSettings?.abilityLevelDetermination ?? "");
-        updateRefValue(displayLocCount, props.modelValue.advancedSettings?.displayLocCount ?? false);
-        updateRefValue(specialNeedsValues, props.modelValue.advancedSettings?.specialNeedsValues ?? []);
+        updateRefValue(searchRegex, props.modelValue?.bag?.advancedSettings?.searchRegex ?? "");
+        updateRefValue(refreshInterval, props.modelValue?.bag?.advancedSettings?.refreshInterval ?? "");
+        updateRefValue(ageRequired, props.modelValue?.bag?.advancedSettings?.ageRequired ?? false);
+        updateRefValue(gradeRequired, props.modelValue?.bag?.advancedSettings?.gradeRequired ?? false);
+        updateRefValue(abilityLevelDetermination, props.modelValue?.bag?.advancedSettings?.abilityLevelDetermination ?? "");
+        updateRefValue(displayLocCount, props.modelValue?.bag?.advancedSettings?.displayLocCount ?? false);
+        updateRefValue(specialNeedsValues, props.modelValue?.bag?.advancedSettings?.specialNeedsValues ?? []);
 
         // General Settings
-        updateRefValue(checkInType, props.modelValue.generalSettings?.checkInType ?? "");
-        updateRefValue(allowCheckoutAtKiosk, props.modelValue.generalSettings?.allowCheckoutAtKiosk ?? false);
-        updateRefValue(allowCheckoutInManager, props.modelValue.generalSettings?.allowCheckoutInManager ?? false);
-        updateRefValue(enablePresence, props.modelValue.generalSettings?.enablePresence ?? false);
-        updateRefValue(enableManager, props.modelValue.generalSettings?.enableManager ?? false);
-        updateRefValue(enableOverride, props.modelValue.generalSettings?.enableOverride ?? false);
-        updateRefValue(achievementTypes, props.modelValue.generalSettings?.achievementTypes ?? []);
-        updateRefValue(autoSelectDaysBack, props.modelValue.generalSettings?.autoSelectDaysBack ?? "");
-        updateRefValue(autoSelectOptions, props.modelValue.generalSettings?.autoSelectOptions ?? "");
-        updateRefValue(useSameOptions, props.modelValue.generalSettings?.useSameOptions ?? false);
-        updateRefValue(preventInactivePeople, props.modelValue.generalSettings?.preventInactivePeople ?? false);
-        updateRefValue(preventDuplicateCheckin, props.modelValue.generalSettings?.preventDuplicateCheckin ?? false);
+        updateRefValue(checkInType, props.modelValue?.bag?.generalSettings?.checkInType ?? "");
+        updateRefValue(allowCheckoutAtKiosk, props.modelValue?.bag?.generalSettings?.allowCheckoutAtKiosk ?? false);
+        updateRefValue(allowCheckoutInManager, props.modelValue?.bag?.generalSettings?.allowCheckoutInManager ?? false);
+        updateRefValue(enablePresence, props.modelValue?.bag?.generalSettings?.enablePresence ?? false);
+        updateRefValue(enableManager, props.modelValue?.bag?.generalSettings?.enableManager ?? false);
+        updateRefValue(enableOverride, props.modelValue?.bag?.generalSettings?.enableOverride ?? false);
+        updateRefValue(achievementTypes, props.modelValue?.bag?.generalSettings?.achievementTypes ?? []);
+        updateRefValue(autoSelectDaysBack, props.modelValue?.bag?.generalSettings?.autoSelectDaysBack ?? "");
+        updateRefValue(autoSelectOptions, props.modelValue?.bag?.generalSettings?.autoSelectOptions ?? "");
+        updateRefValue(useSameOptions, props.modelValue?.bag?.generalSettings?.useSameOptions ?? false);
+        updateRefValue(preventInactivePeople, props.modelValue?.bag?.generalSettings?.preventInactivePeople ?? false);
+        updateRefValue(preventDuplicateCheckin, props.modelValue?.bag?.generalSettings?.preventDuplicateCheckin ?? false);
 
         // Barcode Settings
-        updateRefValue(codeAlphaLength, props.modelValue.barcodeSettings?.codeAlphaLength ?? "");
-        updateRefValue(codeAlphaNumericLength, props.modelValue.barcodeSettings?.codeAlphaNumericLength ?? "");
-        updateRefValue(codeNumericLength, props.modelValue.barcodeSettings?.codeNumericLength ?? "");
-        updateRefValue(codeRandom, props.modelValue.barcodeSettings?.codeRandom ?? false);
-        updateRefValue(reuseCode, props.modelValue.barcodeSettings?.reuseCode ?? false);
+        updateRefValue(codeAlphaLength, props.modelValue?.bag?.barcodeSettings?.codeAlphaLength ?? "");
+        updateRefValue(codeAlphaNumericLength, props.modelValue?.bag?.barcodeSettings?.codeAlphaNumericLength ?? "");
+        updateRefValue(codeNumericLength, props.modelValue?.bag?.barcodeSettings?.codeNumericLength ?? "");
+        updateRefValue(codeRandom, props.modelValue?.bag?.barcodeSettings?.codeRandom ?? false);
+        updateRefValue(reuseCode, props.modelValue?.bag?.barcodeSettings?.reuseCode ?? false);
 
         // Search Settings
-        updateRefValue(searchType, props.modelValue.searchSettings?.searchType ?? "");
-        updateRefValue(maxResults, props.modelValue.searchSettings?.maxResults ?? "");
-        updateRefValue(minPhoneLength, props.modelValue.searchSettings?.minPhoneLength ?? "");
-        updateRefValue(maxPhoneLength, props.modelValue.searchSettings?.maxPhoneLength ?? "");
-        updateRefValue(phoneSearchType, props.modelValue.searchSettings?.phoneSearchType ?? "");
+        updateRefValue(searchType, props.modelValue?.bag?.searchSettings?.searchType ?? "");
+        updateRefValue(maxResults, props.modelValue?.bag?.searchSettings?.maxResults ?? "");
+        updateRefValue(minPhoneLength, props.modelValue?.bag?.searchSettings?.minPhoneLength ?? "");
+        updateRefValue(maxPhoneLength, props.modelValue?.bag?.searchSettings?.maxPhoneLength ?? "");
+        updateRefValue(phoneSearchType, props.modelValue?.bag?.searchSettings?.phoneSearchType ?? "");
 
         // Header Text
-        updateRefValue(actionSelectHeaderTemplate, props.modelValue.headerText?.actionSelectHeaderTemplate ?? "");
-        updateRefValue(checkoutPersonSelectHeaderTemplate, props.modelValue.headerText?.checkoutPersonSelectHeaderTemplate ?? "");
-        updateRefValue(personSelectHeaderTemplate, props.modelValue.headerText?.personSelectHeaderTemplate ?? "");
-        updateRefValue(multiPersonSelectHeaderTemplate, props.modelValue.headerText?.multiPersonSelectHeaderTemplate ?? "");
-        updateRefValue(groupTypeSelectHeaderTemplate, props.modelValue.headerText?.groupTypeSelectHeaderTemplate ?? "");
-        updateRefValue(timeSelectHeaderTemplate, props.modelValue.headerText?.timeSelectHeaderTemplate ?? "");
-        updateRefValue(abilityLevelSelectHeaderTemplate, props.modelValue.headerText?.abilityLevelSelectHeaderTemplate ?? "");
-        updateRefValue(locationSelectHeaderTemplate, props.modelValue.headerText?.locationSelectHeaderTemplate ?? "");
-        updateRefValue(groupSelectHeaderTemplate, props.modelValue.headerText?.groupSelectHeaderTemplate ?? "");
+        updateRefValue(actionSelectHeaderTemplate, props.modelValue?.bag?.headerText?.actionSelectHeaderTemplate ?? "");
+        updateRefValue(checkoutPersonSelectHeaderTemplate, props.modelValue?.bag?.headerText?.checkoutPersonSelectHeaderTemplate ?? "");
+        updateRefValue(personSelectHeaderTemplate, props.modelValue?.bag?.headerText?.personSelectHeaderTemplate ?? "");
+        updateRefValue(multiPersonSelectHeaderTemplate, props.modelValue?.bag?.headerText?.multiPersonSelectHeaderTemplate ?? "");
+        updateRefValue(groupTypeSelectHeaderTemplate, props.modelValue?.bag?.headerText?.groupTypeSelectHeaderTemplate ?? "");
+        updateRefValue(timeSelectHeaderTemplate, props.modelValue?.bag?.headerText?.timeSelectHeaderTemplate ?? "");
+        updateRefValue(abilityLevelSelectHeaderTemplate, props.modelValue?.bag?.headerText?.abilityLevelSelectHeaderTemplate ?? "");
+        updateRefValue(locationSelectHeaderTemplate, props.modelValue?.bag?.headerText?.locationSelectHeaderTemplate ?? "");
+        updateRefValue(groupSelectHeaderTemplate, props.modelValue?.bag?.headerText?.groupSelectHeaderTemplate ?? "");
 
         // Display Settings
-        updateRefValue(hidePhotos, props.modelValue.displaySettings?.hidePhotos ?? false);
-        updateRefValue(startTemplate, props.modelValue.displaySettings?.startTemplate ?? "");
-        updateRefValue(familySelectTemplate, props.modelValue.displaySettings?.familySelectTemplate ?? "");
-        updateRefValue(personSelectTemplate, props.modelValue.displaySettings?.personSelectTemplate ?? "");
-        updateRefValue(successTemplateOverrideDisplayMode, props.modelValue.displaySettings?.successTemplateOverrideDisplayMode ?? "");
-        updateRefValue(successTemplate, props.modelValue.displaySettings?.successTemplate ?? "");
+        updateRefValue(hidePhotos, props.modelValue?.bag?.displaySettings?.hidePhotos ?? false);
+        updateRefValue(startTemplate, props.modelValue?.bag?.displaySettings?.startTemplate ?? "");
+        updateRefValue(familySelectTemplate, props.modelValue?.bag?.displaySettings?.familySelectTemplate ?? "");
+        updateRefValue(personSelectTemplate, props.modelValue?.bag?.displaySettings?.personSelectTemplate ?? "");
+        updateRefValue(successTemplateOverrideDisplayMode, props.modelValue?.bag?.displaySettings?.successTemplateOverrideDisplayMode ?? "");
+        updateRefValue(successTemplate, props.modelValue?.bag?.displaySettings?.successTemplate ?? "");
 
         // Registration Settings
-        updateRefValue(registrationDefaultPersonConnectionStatus, props.modelValue.registrationSettings?.registrationDefaultPersonConnectionStatus ?? {});
-        updateRefValue(registrationDisplayAlternateIdFieldForAdults, props.modelValue.registrationSettings?.registrationDisplayAlternateIdFieldForAdults ?? false);
-        updateRefValue(registrationDisplayAlternateIdFieldForChildren, props.modelValue.registrationSettings?.registrationDisplayAlternateIdFieldForChildren ?? false);
-        updateRefValue(registrationDisplaySmsEnabled, props.modelValue.registrationSettings?.registrationDisplaySmsEnabled ?? false);
-        updateRefValue(registrationSmsEnabledByDefault, props.modelValue.registrationSettings?.registrationSmsEnabledByDefault ?? false);
-        updateRefValue(enableCheckInAfterRegistration, props.modelValue.registrationSettings?.enableCheckInAfterRegistration ?? false);
-        updateRefValue(knownRelationshipTypes, props.modelValue.registrationSettings?.knownRelationshipTypes ?? []);
-        updateRefValue(sameFamilyKnownRelationshipTypes, props.modelValue.registrationSettings?.sameFamilyKnownRelationshipTypes ?? []);
-        updateRefValue(canCheckInKnownRelationshipTypes, props.modelValue.registrationSettings?.canCheckInKnownRelationshipTypes ?? []);
-        updateRefValue(registrationAddFamilyWorkflowTypes, props.modelValue.registrationSettings?.registrationAddFamilyWorkflowTypes ?? []);
-        updateRefValue(registrationAddPersonWorkflowTypes, props.modelValue.registrationSettings?.registrationAddPersonWorkflowTypes ?? []);
-        updateRefValue(registrationRequiredAttributesForAdults, props.modelValue.registrationSettings?.registrationRequiredAttributesForAdults ?? []);
-        updateRefValue(registrationOptionalAttributesForAdults, props.modelValue.registrationSettings?.registrationOptionalAttributesForAdults ?? []);
-        updateRefValue(registrationRequiredAttributesForChildren, props.modelValue.registrationSettings?.registrationRequiredAttributesForChildren ?? []);
-        updateRefValue(registrationOptionalAttributesForChildren, props.modelValue.registrationSettings?.registrationOptionalAttributesForChildren ?? []);
-        updateRefValue(registrationRequiredAttributesForFamilies, props.modelValue.registrationSettings?.registrationRequiredAttributesForFamilies ?? []);
-        updateRefValue(registrationOptionalAttributesForFamilies, props.modelValue.registrationSettings?.registrationOptionalAttributesForFamilies ?? []);
-        updateRefValue(registrationDisplayBirthdateOnAdults, props.modelValue.registrationSettings?.registrationDisplayBirthdateOnAdults ?? "");
-        updateRefValue(registrationDisplayBirthdateOnChildren, props.modelValue.registrationSettings?.registrationDisplayBirthdateOnChildren ?? "");
-        updateRefValue(registrationDisplayGradeOnChildren, props.modelValue.registrationSettings?.registrationDisplayGradeOnChildren ?? "");
-        updateRefValue(registrationDisplayRaceOnAdults, props.modelValue.registrationSettings?.registrationDisplayRaceOnAdults ?? "");
-        updateRefValue(registrationDisplayEthnicityOnAdults, props.modelValue.registrationSettings?.registrationDisplayEthnicityOnAdults ?? "");
-        updateRefValue(registrationDisplayRaceOnChildren, props.modelValue.registrationSettings?.registrationDisplayRaceOnChildren ?? "");
-        updateRefValue(registrationDisplayEthnicityOnChildren, props.modelValue.registrationSettings?.registrationDisplayEthnicityOnChildren ?? "");
+        updateRefValue(registrationDefaultPersonConnectionStatus, props.modelValue?.bag?.registrationSettings?.registrationDefaultPersonConnectionStatus ?? {});
+        updateRefValue(registrationDisplayAlternateIdFieldForAdults, props.modelValue?.bag?.registrationSettings?.registrationDisplayAlternateIdFieldForAdults ?? false);
+        updateRefValue(registrationDisplayAlternateIdFieldForChildren, props.modelValue?.bag?.registrationSettings?.registrationDisplayAlternateIdFieldForChildren ?? false);
+        updateRefValue(registrationDisplaySmsEnabled, props.modelValue?.bag?.registrationSettings?.registrationDisplaySmsEnabled ?? false);
+        updateRefValue(registrationSmsEnabledByDefault, props.modelValue?.bag?.registrationSettings?.registrationSmsEnabledByDefault ?? false);
+        updateRefValue(enableCheckInAfterRegistration, props.modelValue?.bag?.registrationSettings?.enableCheckInAfterRegistration ?? false);
+        updateRefValue(knownRelationshipTypes, props.modelValue?.bag?.registrationSettings?.knownRelationshipTypes ?? []);
+        updateRefValue(sameFamilyKnownRelationshipTypes, props.modelValue?.bag?.registrationSettings?.sameFamilyKnownRelationshipTypes ?? []);
+        updateRefValue(canCheckInKnownRelationshipTypes, props.modelValue?.bag?.registrationSettings?.canCheckInKnownRelationshipTypes ?? []);
+        updateRefValue(registrationAddFamilyWorkflowTypes, props.modelValue?.bag?.registrationSettings?.registrationAddFamilyWorkflowTypes ?? []);
+        updateRefValue(registrationAddPersonWorkflowTypes, props.modelValue?.bag?.registrationSettings?.registrationAddPersonWorkflowTypes ?? []);
+        updateRefValue(registrationRequiredAttributesForAdults, props.modelValue?.bag?.registrationSettings?.registrationRequiredAttributesForAdults ?? []);
+        updateRefValue(registrationOptionalAttributesForAdults, props.modelValue?.bag?.registrationSettings?.registrationOptionalAttributesForAdults ?? []);
+        updateRefValue(registrationRequiredAttributesForChildren, props.modelValue?.bag?.registrationSettings?.registrationRequiredAttributesForChildren ?? []);
+        updateRefValue(registrationOptionalAttributesForChildren, props.modelValue?.bag?.registrationSettings?.registrationOptionalAttributesForChildren ?? []);
+        updateRefValue(registrationRequiredAttributesForFamilies, props.modelValue?.bag?.registrationSettings?.registrationRequiredAttributesForFamilies ?? []);
+        updateRefValue(registrationOptionalAttributesForFamilies, props.modelValue?.bag?.registrationSettings?.registrationOptionalAttributesForFamilies ?? []);
+        updateRefValue(registrationDisplayBirthdateOnAdults, props.modelValue?.bag?.registrationSettings?.registrationDisplayBirthdateOnAdults ?? "");
+        updateRefValue(registrationDisplayBirthdateOnChildren, props.modelValue?.bag?.registrationSettings?.registrationDisplayBirthdateOnChildren ?? "");
+        updateRefValue(registrationDisplayGradeOnChildren, props.modelValue?.bag?.registrationSettings?.registrationDisplayGradeOnChildren ?? "");
+        updateRefValue(registrationDisplayRaceOnAdults, props.modelValue?.bag?.registrationSettings?.registrationDisplayRaceOnAdults ?? "");
+        updateRefValue(registrationDisplayEthnicityOnAdults, props.modelValue?.bag?.registrationSettings?.registrationDisplayEthnicityOnAdults ?? "");
+        updateRefValue(registrationDisplayRaceOnChildren, props.modelValue?.bag?.registrationSettings?.registrationDisplayRaceOnChildren ?? "");
+        updateRefValue(registrationDisplayEthnicityOnChildren, props.modelValue?.bag?.registrationSettings?.registrationDisplayEthnicityOnChildren ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...generalSettingsRefs, ...barcodeSettingsRefs, ...searchSettingsRefs, ...headerTextRefs,
         ...displaySettingsRefs, ...registrationSettingsRefs, ...advancedSettingsRefs, ...propRefs], () => {
+
+            const newValue: ValidPropertiesBox<CheckinTypeBag> = {
+                bag: { ...props.modelValue.bag } as CheckinTypeBag,
+                validProperties: props.modelValue.validProperties
+            };
 
             const advancedSettings: CheckInAdvancedSettingsBag = {
                 searchRegex: searchRegex.value,
@@ -860,20 +866,19 @@
                 groupSelectHeaderTemplate: groupSelectHeaderTemplate.value,
             };
 
-            const newValue: CheckinTypeBag = {
-                ...props.modelValue,
-                attributeValues: attributeValues.value,
-                description: description.value,
-                name: name.value,
-                iconCssClass: iconCssClass.value,
-                generalSettings: generalSettings,
-                barcodeSettings: barcodeSettings,
-                searchSettings: searchSettings,
-                displaySettings: displaySettings,
-                registrationSettings: registrationSettings,
-                headerText: headerText,
-                advancedSettings: advancedSettings
-            };
+            // This should suffice for now, but if a conclusion is reached on how to handle bags with nested properties
+            // this will warrant a second look.
+            setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+            setPropertiesBoxValue(newValue, "description", description.value);
+            setPropertiesBoxValue(newValue, "name", name.value);
+            setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+            setPropertiesBoxValue(newValue, "generalSettings", generalSettings);
+            setPropertiesBoxValue(newValue, "barcodeSettings", barcodeSettings);
+            setPropertiesBoxValue(newValue, "searchSettings", searchSettings);
+            setPropertiesBoxValue(newValue, "displaySettings", displaySettings);
+            setPropertiesBoxValue(newValue, "registrationSettings", registrationSettings);
+            setPropertiesBoxValue(newValue, "headerText", headerText);
+            setPropertiesBoxValue(newValue, "advancedSettings", advancedSettings);
 
             emit("update:modelValue", newValue);
         });

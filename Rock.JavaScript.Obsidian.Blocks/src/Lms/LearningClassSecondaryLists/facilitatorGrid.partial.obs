@@ -1,6 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :data="gridDataSource"
+    <Grid
+          :definition="gridDefinitionBag"
+          :data="gridDataSource"
           keyField="idKey"
           title="Facilitators"
           :entityTypeGuid="EntityType.LearningParticipant"
@@ -8,6 +10,7 @@
           :expectedRowCount="3"
           stickyHeader
           liveUpdates
+          :markInactiveRows="true"
           itemTerm="Facilitator"
           :selectItem="onSelectItem"
           :onAddItem="isAddEnabled ? onAddItemClicked : undefined">
@@ -60,6 +63,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -70,6 +74,10 @@
     }>();
 
     const props = defineProps({
+        gridDefinitionBag: {
+            type: Object as PropType<GridDefinitionBag>,
+            required: true
+        },
         isAddEnabled: {
             type: Object as PropType<boolean>,
             required: true,

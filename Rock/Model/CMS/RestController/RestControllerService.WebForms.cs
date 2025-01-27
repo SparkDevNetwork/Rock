@@ -36,6 +36,7 @@ namespace Rock.Model
         {
             public string Name { get; set; }
             public string ClassName { get; set; }
+            public Type Type { get; set; }
             public Guid? ReflectedGuid { get; set; }
             public List<DiscoveredRestAction> DiscoveredRestActions { get; set; } = new List<DiscoveredRestAction>();
             public override string ToString()
@@ -148,7 +149,8 @@ namespace Rock.Model
                     controller = new DiscoveredControllerFromReflection
                     {
                         Name = name,
-                        ClassName = fullClassName
+                        ClassName = fullClassName,
+                        Type = action.ControllerDescriptor.ControllerType
                     };
 
                     if ( controllerRockGuid.HasValue )
@@ -283,6 +285,17 @@ namespace Rock.Model
                         controller.Guid = discoveredController.ReflectedGuid.Value;
                     }
                 }
+
+                var metadata = controller.GetMetadata();
+
+                metadata.RoutePrefix = discoveredController.Type.GetCustomAttributesData()
+                    .Where( a => a.AttributeType.FullName == "System.Web.Http.RoutePrefixAttribute" && a.ConstructorArguments.Count == 1 )
+                    .Select( a => a.ConstructorArguments[0].Value as string )
+                    .FirstOrDefault();
+                metadata.Version = metadata.RoutePrefix?.StartsWith( "api/v2", StringComparison.OrdinalIgnoreCase ) == true ? 2 : 1;
+                metadata.SupportedActions = controller.CalculateSupportedActions( metadata, out _ );
+
+                controller.SetMetadata( metadata );
             }
 
             // Save all changes to the REST controllers.
@@ -338,7 +351,8 @@ namespace Rock.Model
                         action = new RestAction
                         {
                             ApiId = newFormatId,
-                            ControllerId = controller.Id
+                            ControllerId = controller.Id,
+                            Controller = controller
                         };
                         controller.Actions.Add( action );
                     }
@@ -368,6 +382,16 @@ namespace Rock.Model
                             action.Guid = discoveredAction.ReflectedGuid.Value;
                         }
                     }
+
+                    var metadata = action.GetMetadata();
+
+                    metadata.SecuredAction = discoveredAction.MethodInfo.GetCustomAttributesData()
+                        .Where( a => a.AttributeType.FullName == "Rock.Rest.Filters.SecuredAttribute" && a.ConstructorArguments.Count == 1 )
+                        .Select( a => a.ConstructorArguments[0].Value as string )
+                        .FirstOrDefault();
+                    metadata.SupportedActions = action.CalculateSupportedActions();
+
+                    action.SetMetadata( metadata );
                 }
             }
 

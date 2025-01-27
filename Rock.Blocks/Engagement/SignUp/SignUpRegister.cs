@@ -160,11 +160,11 @@ namespace Rock.Blocks.Engagement.SignUp
 
         #region Properties
 
-        public bool IsAuthenticated
+        public bool IsAuthenticatedOrImpersonated
         {
             get
             {
-                return this.RequestContext.CurrentUser?.IsAuthenticated == true;
+                return this.RequestContext.CurrentPerson != null;
             }
         }
 
@@ -240,12 +240,12 @@ namespace Rock.Blocks.Engagement.SignUp
 
             var mode = GetAttributeValue( AttributeKey.Mode ).ConvertToEnum<RegisterMode>( RegisterMode.Anonymous );
 
-            if ( mode == RegisterMode.Family && !IsAuthenticated )
+            if ( mode == RegisterMode.Family && !IsAuthenticatedOrImpersonated )
             {
                 mode = RegisterMode.Anonymous;
             }
 
-            if ( !IsAuthenticated && mode != RegisterMode.Anonymous )
+            if ( !IsAuthenticatedOrImpersonated && mode != RegisterMode.Anonymous )
             {
                 registrationData.ErrorMessage = MustBeLoggedInMessage;
                 return registrationData;
@@ -301,7 +301,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 registrationData.ProjectHasRequiredGroupRequirements = true;
 
                 // We can only determine if an Individual meets GroupRequirements if they're logged in.
-                if ( !IsAuthenticated )
+                if ( !IsAuthenticatedOrImpersonated )
                 {
                     registrationData.ErrorMessage = MustBeLoggedInMessage;
                     return registrationData;
@@ -761,12 +761,12 @@ namespace Rock.Blocks.Engagement.SignUp
             // Load all member attributes for this project.
             var groupMember = new GroupMember { GroupId = registrationData.Project.Id };
             groupMember.LoadAttributes( rockContext );
-            registrationData.MemberAttributes = groupMember.GetPublicAttributesForEdit( this.CurrentPerson, attributeFilter: IsPublicAttribute );
+            registrationData.MemberAttributes = groupMember.GetPublicAttributesForEdit( this.CurrentPerson, enforceSecurity: false, attributeFilter: IsPublicAttribute );
 
             // Load all member opportunity attributes for this project.
             var groupMemberAssignment = new GroupMemberAssignment { GroupId = registrationData.Project.Id };
             groupMemberAssignment.LoadAttributes( rockContext );
-            registrationData.MemberOpportunityAttributes = groupMemberAssignment.GetPublicAttributesForEdit( this.CurrentPerson, attributeFilter: IsPublicAttribute );
+            registrationData.MemberOpportunityAttributes = groupMemberAssignment.GetPublicAttributesForEdit( this.CurrentPerson, enforceSecurity: false, attributeFilter: IsPublicAttribute );
         }
 
         /// <summary>
@@ -788,7 +788,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 }
 
                 existingProjectGroupMember.LoadAttributes( rockContext );
-                registrant.MemberAttributeValues = existingProjectGroupMember.GetPublicAttributeValuesForEdit( this.CurrentPerson, attributeFilter: IsPublicAttribute );
+                registrant.MemberAttributeValues = existingProjectGroupMember.GetPublicAttributeValuesForEdit( this.CurrentPerson, enforceSecurity: false, attributeFilter: IsPublicAttribute );
 
                 var existingRegistration = registrationData.ExistingRegistrations
                         .FirstOrDefault( gma => gma.GroupMember.Id == existingProjectGroupMember.Id );
@@ -796,7 +796,7 @@ namespace Rock.Blocks.Engagement.SignUp
                 if ( existingRegistration != null )
                 {
                     existingRegistration.LoadAttributes( rockContext );
-                    registrant.MemberOpportunityAttributeValues = existingRegistration.GetPublicAttributeValuesForEdit( this.CurrentPerson, attributeFilter: IsPublicAttribute );
+                    registrant.MemberOpportunityAttributeValues = existingRegistration.GetPublicAttributeValuesForEdit( this.CurrentPerson, enforceSecurity: false, attributeFilter: IsPublicAttribute );
                 }
             }
         }
@@ -873,7 +873,7 @@ namespace Rock.Blocks.Engagement.SignUp
             // We'll pass this Person instance to any workflow defined on the block, so we know who was responsible for registering
             // a given group of registrants.
             Person registrarPerson = null;
-            if ( IsAuthenticated )
+            if ( IsAuthenticatedOrImpersonated )
             {
                 registrarPerson = this.RequestContext.CurrentPerson;
             }
@@ -1168,7 +1168,7 @@ namespace Rock.Blocks.Engagement.SignUp
             }
             else // Family or Group mode.
             {
-                if ( !IsAuthenticated )
+                if ( !IsAuthenticatedOrImpersonated )
                 {
                     errorMessage = MustBeLoggedInMessage;
                     return null;

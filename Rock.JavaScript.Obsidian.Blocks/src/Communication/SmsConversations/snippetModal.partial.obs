@@ -5,7 +5,8 @@
                  title="Insert Snippet"
                  saveText="Insert"
                  :isSaveButtonDisabled="!selectedSnippet"
-                 @save="onSave">
+                 @save="onSave"
+                 @closeModal="resetForm">
         <template #prepend>
             <NotificationBox v-if="!isNullOrWhiteSpace(errorMessage)" alertType="danger">
                 {{ errorMessage }}
@@ -14,13 +15,13 @@
         <template #tabpane="{ item }">
             <template v-if="item === selectedTab">
                 <div class="row">
-                    <div class="col-md-5 col-sm-12 p-3">
+                    <div class="col-lg-4 col-md-5 col-sm-12 p-3">
                         <CategoryTree v-model="selectedCategory"
                                       :entityTypeGuid="EntityType.Snippet"
                                       :enableDeselect="true"
                                       height="250px" />
                     </div>
-                    <div class="col-md-7 col-sm-12 overflow-visible scrollbar-thin overflow-y-auto p-3" style="height: 250px;">
+                    <div class="col-lg-8 col-md-7 col-sm-12 overflow-visible scrollbar-thin overflow-y-auto p-3" style="height: 250px;">
                         <div class="btn-grid-container">
                             <RockButton v-for="snippetBag in filteredSnippetBags"
                                         @click="selectedSnippet = snippetBag.snippet?.value ?? ''"
@@ -128,8 +129,13 @@
     function onSave(): void {
         if (selectedSnippet.value) {
             emit("insertSnippet", selectedSnippet.value);
-            selectedSnippet.value = "";
+            resetForm();
         }
+    }
+
+    function resetForm(): void {
+        selectedCategory.value = undefined;
+        selectedSnippet.value = "";
     }
 
     watch(filteredSnippetBags, () => {

@@ -68,28 +68,7 @@ namespace Rock.Obsidian
         /// <summary>
         /// Gets or sets the path to the Obsidian component's .obs file.
         /// </summary>
-        public virtual string ComponentUrl { get; set; }
-
-        #endregion
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ObsidianComponent"/> class.
-        /// </summary>
-        /// <param name="componentFilePath">The path to the Obsidian component's .obs file.</param>
-        public ObsidianComponent( string componentFilePath )
-        {
-            ComponentUrl = componentFilePath;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ObsidianComponent"/> class.
-        /// </summary>
-        public ObsidianComponent() : base()
-        {
-
-        }
+        public abstract string ComponentUrl { get; }
 
         #endregion
     }

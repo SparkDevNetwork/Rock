@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActionType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.WORKFLOW_ACTION_TYPE )]
     public partial class WorkflowActionType : Model<WorkflowActionType>, IOrdered, ICacheable
     {

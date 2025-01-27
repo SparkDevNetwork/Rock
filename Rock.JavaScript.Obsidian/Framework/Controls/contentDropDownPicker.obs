@@ -198,7 +198,7 @@
          * be ignored, but there are certain use cases that it could be useful for.
          */
         showPopup: {
-            type: Boolean as PropType<boolean>,
+            type: Boolean as PropType<boolean | null>,
             default: null
         },
 
@@ -394,8 +394,11 @@
      * and just treat internalShowPopup like a normal value
      */
     watch(() => props.showPopup, () => {
-        if (props.showPopup != null) {
+        if (props.showPopup !== null) {
             internalShowPopup.value = props.showPopup;
+        }
+        else {
+            emit("update:showPopup", internalShowPopup.value);
         }
     }, { immediate: true });
 

@@ -7,7 +7,7 @@
     <RockForm v-model:submit="submitForm" @submit="onSave" :formResetKey="resetKey">
         <Panel :title="panelTitle" :headerSecondaryActions="secondaryActions">
 
-            <EditPanel v-model="attributeMatrixTemplateEditBag" :options="options" @propertyChanged="onPropertyChanged" :isEditable="isEditable" />
+            <EditPanel v-model="attributeMatrixTemplateEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :isEditable="isEditable" />
 
             <Modal v-model="showAuditDetailsModal" title="Audit Details">
                 <AuditDetail :entityTypeGuid="entityTypeGuid" :entityKey="entityKey" />
@@ -52,17 +52,16 @@
     import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import EditPanel from "./AttributeMatrixTemplateDetail/editPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./AttributeMatrixTemplateDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { AttributeMatrixTemplateBag } from "@Obsidian/ViewModels/Blocks/Core/AttributeMatrixTemplateDetail/attributeMatrixTemplateBag";
     import { AttributeMatrixTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AttributeMatrixTemplateDetail/attributeMatrixTemplateDetailOptionsBag";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<AttributeMatrixTemplateBag, AttributeMatrixTemplateDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -72,11 +71,6 @@
     const resetKey = ref("");
     const showAuditDetailsModal = ref(false);
     const isSaving = ref(false);
-
-    const attributeMatrixTemplateEditBag = ref<AttributeMatrixTemplateBag>(config.entity ?? {} as AttributeMatrixTemplateBag);
-
-    const entityTypeGuid = EntityType.AttributeMatrixTemplate;
-
     // The properties that are being edited in the UI. This is used to
     // inform the server which incoming values have valid data in them.
     const validProperties = [
@@ -90,7 +84,17 @@
         "templateAttributes"
     ];
 
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(attributeMatrixTemplateEditBag, validProperties, invokeBlockAction), undefined, true);
+    const attributeMatrixTemplateEditBag = ref<ValidPropertiesBox<AttributeMatrixTemplateBag>>({
+        bag: config.entity as AttributeMatrixTemplateBag,
+        validProperties: config.entity ? Object.keys(config.entity) : validProperties
+    });
+
+    const entityTypeGuid = EntityType.AttributeMatrixTemplate;
+
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: attributeMatrixTemplateEditBag
+    });
 
     // #endregion
 
@@ -103,13 +107,13 @@
         if (config.isEditable !== true) {
             return "View Attribute Matrix Template";
         }
-        return attributeMatrixTemplateEditBag.value.idKey ? "Edit Attribute Matrix Template" : "Add Attribute Matrix Template";
+        return attributeMatrixTemplateEditBag.value?.bag?.idKey ? "Edit Attribute Matrix Template" : "Add Attribute Matrix Template";
     });
     /**
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
-        return attributeMatrixTemplateEditBag.value?.idKey ?? "";
+        return attributeMatrixTemplateEditBag.value?.bag?.idKey ?? "";
     });
 
     /**
@@ -118,7 +122,7 @@
     const secondaryActions = computed((): PanelAction[] | undefined => {
         const actions: PanelAction[] = [];
 
-        if (attributeMatrixTemplateEditBag?.value?.idKey) {
+        if (attributeMatrixTemplateEditBag?.value?.bag?.idKey) {
             actions.push({
                 type: "default",
                 title: "Audit Details",
@@ -156,23 +160,6 @@
     }
 
     /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
-    }
-
-    /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.
      *
@@ -181,14 +168,9 @@
     async function onSave(): Promise<void> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<AttributeMatrixTemplateBag, AttributeMatrixTemplateDetailOptionsBag> = {
-            entity: attributeMatrixTemplateEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
+        const result = await invokeBlockAction<ValidPropertiesBox<AttributeMatrixTemplateBag> | string>("Save", {
+            box: attributeMatrixTemplateEditBag.value,
 
-        const result = await invokeBlockAction<AttributeMatrixTemplateBag | string>("Save", {
-            box: data
         });
 
         if (result.isSuccess && result.data) {
@@ -210,8 +192,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -219,4 +199,8 @@
     else if (!config.entity) {
         blockError.value = "The specified attribute matrix template could not be viewed.";
     }
+    else if (!config.entity.idKey) {
+        attributeMatrixTemplateEditBag.value = { bag: config.entity };
+    }
+
 </script>

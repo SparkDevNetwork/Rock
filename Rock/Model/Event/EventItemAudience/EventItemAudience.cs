@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "EventItemAudience" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "22394315-E21B-40AF-AFDA-75D9F5DAD721")]
     public partial class EventItemAudience : Model<EventItemAudience>
     {

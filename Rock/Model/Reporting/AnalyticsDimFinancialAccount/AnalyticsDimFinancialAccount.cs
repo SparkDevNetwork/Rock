@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimFinancialAccount" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [HideFromReporting]
     [Rock.SystemGuid.EntityTypeGuid( "893F38F8-FBF8-4157-B718-6009298ABC91")]
     public class AnalyticsDimFinancialAccount : Entity<AnalyticsDimFinancialAccount>

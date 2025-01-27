@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "MediaAccount" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "CD35F034-AC18-40D5-B703-6BF16D79C51C")]
     public partial class MediaAccount : Model<MediaAccount>, IHasActiveFlag
     {

@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -106,6 +107,7 @@ namespace Rock.ClientService.Finance.FinancialPersonSavedAccount
                 {
                     string image = null;
                     string expirationDate = null;
+                    Guid? currencyTypeGuid = null;
 
                     if ( a.ExpirationMonth.HasValue && a.ExpirationYear.HasValue )
                     {
@@ -143,12 +145,20 @@ namespace Rock.ClientService.Finance.FinancialPersonSavedAccount
                         image = creditCardTypeValueCache?.GetAttributeValue( SystemKey.CreditCardTypeAttributeKey.IconImage );
                     }
 
+                    if( a.CurrencyTypeValueId.HasValue )
+                    {
+                        var currencyTypeValueCache = DefinedValueCache.Get( a.CurrencyTypeValueId.Value );
+                        currencyTypeGuid = currencyTypeValueCache?.Guid;
+                    }
+
                     return new SavedFinancialAccountListItemBag
                     {
                         Value = a.Guid.ToString(),
                         Text = a.Name,
                         Description = description,
-                        Image = image
+                        Image = image,
+                        AccountNumberMasked = a.AccountNumberMasked,
+                        CurrencyTypeGuid = currencyTypeGuid
                     };
                 } )
                 .OrderBy( a => a.Text )

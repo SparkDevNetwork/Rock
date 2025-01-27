@@ -4,9 +4,7 @@
 
         <NotificationBox v-if="errorMessage" alertType="warning" v-html="errorMessage" />
 
-        <div v-if="!errorMessage" v-html="content">
-
-        </div>
+        <div v-if="!errorMessage" v-html="content"></div>
 
     </Panel>
 </template>

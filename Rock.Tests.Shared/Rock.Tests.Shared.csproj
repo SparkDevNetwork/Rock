@@ -217,6 +217,7 @@
     <Compile Include="TestFramework\Database\ITestDatabaseContainer.cs" />
     <Compile Include="TestFramework\Database\ITestDatabaseInitializer.cs" />
     <Compile Include="TestFramework\Database\LocalDatabaseContainer.cs" />
+    <Compile Include="TestFramework\MsSqlContainerPool.cs" />
     <Compile Include="TestFramework\NumericAssertExtensions.cs" />
     <Compile Include="TestFramework\DateTimeAssertExtensions.cs" />
     <Compile Include="TestFramework\AssertExtensions.cs" />
@@ -240,12 +241,9 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
-      <Project>{00edcb8d-ef33-459c-ad62-02876bd24dff}</Project>
-      <Name>DotLiquid</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
       <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
       <Name>Rock.Common</Name>
@@ -253,10 +251,6 @@
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
       <Project>{61dece2b-0434-435e-8d65-49a4fdf98365}</Project>
       <Name>Rock.Enums</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Lava.DotLiquid\Rock.Lava.DotLiquid.csproj">
-      <Project>{79aa470a-dc63-4cb4-b0b6-77285f60c69b}</Project>
-      <Name>Rock.Lava.DotLiquid</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj">
       <Project>{afce6f84-bf3a-4182-a816-8fb47afc0305}</Project>

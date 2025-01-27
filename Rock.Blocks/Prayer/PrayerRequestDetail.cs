@@ -39,7 +39,7 @@ namespace Rock.Blocks.Prayer
     [Category( "Prayer" )]
     [Description( "Displays the details of a particular prayer request." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -293,7 +293,7 @@ namespace Rock.Blocks.Prayer
             var bag = GetCommonEntityBag( entity );
             bag.Text = entity.Text.ScrubHtmlAndConvertCrLfToBr();
             bag.Answer = entity.Answer.ScrubHtmlAndConvertCrLfToBr();
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -312,7 +312,7 @@ namespace Rock.Blocks.Prayer
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             // If there is no email for the prayer request detail entity, set it to the requester's 
             if ( string.IsNullOrWhiteSpace( entity.Email ) && entity.RequestedByPersonAlias != null )
@@ -403,7 +403,7 @@ namespace Rock.Blocks.Prayer
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;

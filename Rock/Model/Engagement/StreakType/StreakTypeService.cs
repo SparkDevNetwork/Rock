@@ -2457,11 +2457,9 @@ namespace Rock.Model
                         g.Id == structureEntityId ||
                         g.ParentGroupId == structureEntityId );
                 case StreakStructureType.GroupTypePurpose:
-                    var groupTypes = groupTypeService.GetCheckinAreaDescendants( structureEntityId );
-                    groupTypes.Add( GroupTypeCache.Get( structureEntityId ) );
-                    var groupTypePurposeValueIds = groupTypes.ConvertAll( x => x.GroupTypePurposeValueId );
                     return query.Where( g =>
-                        groupTypePurposeValueIds.Contains( g.GroupType.GroupTypePurposeValueId ) );
+                        g.GroupType.GroupTypePurposeValueId == structureEntityId ||
+                        g.GroupType.ParentGroupTypes.Any( pgt => pgt.GroupTypePurposeValueId == structureEntityId ) );
                 default:
                     throw new NotImplementedException( string.Format( "Getting groups for the Structure Type '{0}' is not implemented", structureType ) );
             }

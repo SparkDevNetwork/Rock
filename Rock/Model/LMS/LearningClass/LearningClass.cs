@@ -44,6 +44,7 @@ namespace Rock.Model
     [RockDomain( "LMS" )]
     [Table( "LearningClass" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_CLASS )]
     public partial class LearningClass : Group
     {

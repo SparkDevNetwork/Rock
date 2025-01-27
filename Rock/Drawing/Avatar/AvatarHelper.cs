@@ -153,7 +153,7 @@ namespace Rock.Drawing.Avatar
                 avatar?.CropResize( settings.Size, settings.Size );
             }
 
-            // If not photo was provided then we'll create a fallback
+            // If no photo was provided then we'll create a fallback
             if ( avatar == null )
             {
                 switch ( settings.AvatarStyle )

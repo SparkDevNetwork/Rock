@@ -24,7 +24,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Field;
 using Rock.Model;
-using Rock.ViewModels;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -265,13 +265,15 @@ namespace Rock
                 return new Dictionary<string, PublicAttributeBag>();
             }
 
+            bool? entityAuthorized = null;
+
             return entity.Attributes
                 .Select( a => new
                 {
                     Value = entity.GetAttributeValue( a.Key ),
                     Attribute = a.Value
                 } )
-                .Where( av => !enforceSecurity || av.Attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Where( av => !enforceSecurity || IsAttributeAuthorized( entity, ref entityAuthorized, av.Attribute, Authorization.VIEW, currentPerson ) )
                 .Where( av => attributeFilter == null || attributeFilter( av.Attribute ) )
                 .ToDictionary( av => av.Attribute.Key, kvp => PublicAttributeHelper.GetPublicAttributeForView( kvp.Attribute, kvp.Value ) );
         }
@@ -292,13 +294,15 @@ namespace Rock
                 return new Dictionary<string, string>();
             }
 
+            bool? entityAuthorized = null;
+
             return entity.Attributes
                 .Select( a => new
                 {
                     Value = entity.GetAttributeValue( a.Key ),
                     Attribute = a.Value
                 } )
-                .Where( av => !enforceSecurity || av.Attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Where( av => !enforceSecurity || IsAttributeAuthorized( entity, ref entityAuthorized, av.Attribute, Authorization.VIEW, currentPerson ) )
                 .Where( av => attributeFilter == null || attributeFilter( av.Attribute ) )
                 .ToDictionary( av => av.Attribute.Key, kvp => PublicAttributeHelper.GetPublicValueForView( kvp.Attribute, kvp.Value ) );
         }
@@ -319,9 +323,11 @@ namespace Rock
                 return new Dictionary<string, PublicAttributeBag>();
             }
 
+            bool? entityAuthorized = null;
+
             return entity.Attributes
                 .Select( a => a.Value )
-                .Where( a => !enforceSecurity || a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Where( a => !enforceSecurity || IsAttributeAuthorized( entity, ref entityAuthorized, a, Authorization.EDIT, currentPerson ) )
                 .Where( a => attributeFilter == null || attributeFilter( a ) )
                 .ToDictionary( a => a.Key, a => PublicAttributeHelper.GetPublicAttributeForEdit( a ) );
         }
@@ -342,13 +348,15 @@ namespace Rock
                 return new Dictionary<string, string>();
             }
 
+            bool? entityAuthorized = null;
+
             return entity.Attributes
                 .Select( a => new
                 {
                     Value = entity.GetAttributeValue( a.Key ),
                     Attribute = a.Value
                 } )
-                .Where( av => !enforceSecurity || av.Attribute.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+                .Where( av => !enforceSecurity || IsAttributeAuthorized( entity, ref entityAuthorized, av.Attribute, Authorization.EDIT, currentPerson ) )
                 .Where( av => attributeFilter == null || attributeFilter( av.Attribute ) )
                 .ToDictionary( av => av.Attribute.Key, av => PublicAttributeHelper.GetPublicEditValue( av.Attribute, av.Value ) );
         }
@@ -376,6 +384,8 @@ namespace Rock
                 return;
             }
 
+            bool? entityAuthorized = null;
+
             foreach ( var kvp in attributeValues )
             {
                 if ( !entity.Attributes.ContainsKey( kvp.Key ) || !entity.AttributeValues.ContainsKey( kvp.Key ) )
@@ -385,7 +395,7 @@ namespace Rock
 
                 var attribute = entity.Attributes[kvp.Key];
 
-                if ( enforceSecurity && !attribute.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) )
+                if ( enforceSecurity && !IsAttributeAuthorized( entity, ref entityAuthorized, attribute, Authorization.EDIT, currentPerson ) )
                 {
                     continue;
                 }
@@ -429,9 +439,10 @@ namespace Rock
                 return;
             }
 
+            bool? entityAuthorized = null;
             var attribute = entity.Attributes[key];
 
-            if ( enforceSecurity && !attribute.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) )
+            if ( enforceSecurity && !IsAttributeAuthorized( entity, ref entityAuthorized, attribute, Authorization.EDIT, currentPerson ) )
             {
                 return;
             }
@@ -783,6 +794,49 @@ namespace Rock
             }
 
             return field?.GetTextValue( rawValue, attributeCache.ConfigurationValues );
+        }
+
+        /// <summary>
+        /// Checks if the attribute is authorized for the action. This will
+        /// first check for an explicit Auth rule on the attribute. If none
+        /// is found then the entity is checked to see if the person can perform
+        /// the action on the entity as a whole.
+        /// </summary>
+        /// <param name="entity">The entity that the attribute value belongs to.</param>
+        /// <param name="entityAuthorized">A reference to a nullable boolean that indicates if the entity is authorized or not; or <c>null</c> meaning not-yet-checked.</param>
+        /// <param name="attribute">The attribute to be checked.</param>
+        /// <param name="action">The action to be performed.</param>
+        /// <param name="person">The person that needs to be authorized.</param>
+        /// <returns><c>true</c> if access to the attribute is granted; otherwise <c>false</c>.</returns>
+        private static bool IsAttributeAuthorized( IHasAttributes entity, ref bool? entityAuthorized, AttributeCache attribute, string action, Person person )
+        {
+            // The AuthorizedForEntity method will check explicit
+            // permissions on the entity. No inherited permissions
+            // will be considered.
+            var authorized = Security.Authorization.AuthorizedForEntity( attribute, action, person );
+
+            // If the attribute explicitly granted or denied them permission
+            // then return that status.
+            if ( authorized.HasValue )
+            {
+                return authorized.Value;
+            }
+
+            if ( !entityAuthorized.HasValue )
+            {
+                if ( entity is ISecured securedEntity )
+                {
+                    entityAuthorized = securedEntity.IsAuthorized( action, person );
+                }
+                else
+                {
+                    // If the entity isn't securable, then assume they can
+                    // perform the action.
+                    entityAuthorized = true;
+                }
+            }
+
+            return entityAuthorized.Value;
         }
 
         #endregion IHasAttributes extensions

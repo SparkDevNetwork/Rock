@@ -131,7 +131,7 @@ namespace Rock.Blocks
         /// <summary>
         /// Creates an entity set for the subset of selected rows in the grid.
         /// </summary>
-        /// <returns>An action result that contains identifier of the entity set.</returns>
+        /// <returns>An action result that contains the identifier of the entity set.</returns>
         [BlockAction]
         public virtual BlockActionResult CreateGridEntitySet( GridEntitySetBag entitySet )
         {

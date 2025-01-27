@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "CampusTopic" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "0FFDCB0B-B435-4E66-9085-2750534E706A" )]
     public partial class CampusTopic : Model<CampusTopic>
     {

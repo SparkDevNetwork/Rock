@@ -1,5 +1,9 @@
 <template>
-    <Panel type="block"
+    <NotificationBox v-if="areNoNumbersAvailable" alertType="warning">
+        No "SMS Phone Numbers" are available to view. Either there are none configured or you do not have access to them.
+    </NotificationBox>
+    <Panel v-else
+           type="block"
            title="SMS Conversations"
            titleIconCssClass="fa fa-comments"
            :hasFullscreen="true">
@@ -15,23 +19,29 @@
             </div>
         </template>
         <div class="d-flex flex-column h-100">
-            <NotificationBox v-if="isSuccessNotificationBoxVisible"
-                             alertType="success"
-                             class="mb-0 text-center flex-shrink-0"
-                             v-html="successNotificationBoxMessage" />
-            <NotificationBox v-if="isErrorNotificationBoxVisible"
-                             alertType="danger"
-                             class="mb-0 text-center flex-shrink-0"
-                             :dismissible="true"
-                             @dismiss="clearErrorNotificationBoxText">
-                {{ errorNotificationText }}
-            </NotificationBox>
+            <transition name="slide">
+                <NotificationBox v-if="isSuccessNotificationBoxVisible"
+                                 alertType="success"
+                                 class="mb-0 text-center flex-shrink-0"
+                                 style="--slide-padding-close: 0 16px; --slide-padding-open: 16px; --slide-height: 59px; --border-top-width: 3px"
+                                 v-html="successNotificationBoxMessage" />
+            </transition>
+            <transition name="slide">
+                <NotificationBox v-if="isErrorNotificationBoxVisible"
+                                 alertType="danger"
+                                 class="mb-0 text-center flex-shrink-0"
+                                 style="--slide-padding-close: 0 16px; --slide-padding-open: 16px; --slide-height: 59px; --border-top-width: 3px"
+                                 :dismissible="true"
+                                 @dismiss="clearErrorNotificationBoxText">
+                    {{ errorNotificationText }}
+                </NotificationBox>
+            </transition>
             <div class="sms-conversations-parent flex-grow-1">
                 <div class="sms-conversations-container styled-scroll">
                     <div class="conversation-list d-flex flex-column">
                         <div class="header">
                             <div class="clearfix">
-                                <RockButton v-if="isNewMessageButtonVisible"
+                                <RockButton v-if="isNewMessageButtonVisible && canEditOrAdministrate"
                                             :btnType="BtnType.Primary"
                                             :btnSize="BtnSize.Small"
                                             @click="showNewMessageModal">
@@ -80,10 +90,10 @@
                                             <span v-if="!conversation.isConversationRead" class="status-dot mb-1"></span>
                                         </div>
                                         <div class="d-flex align-items-center">
-                                            <div v-if="conversation.messages" class="date">
+                                            <div v-if="conversation.messages && conversation.messages?.length > 0" class="date">
                                                 {{ humanizedDateTime(conversation.messages[conversation.messages.length - 1].createdDateTime) }}
                                             </div>
-                                            <div :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === index }]">
+                                            <div v-if="canEditOrAdministrate" :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === index }]">
                                                 <button type="button"
                                                         class="btn btn-xs btn-link btn-overflow"
                                                         data-toggle="dropdown"
@@ -119,13 +129,13 @@
                     <div v-if="selectedConversation" :class="['conversation-panel', { 'has-focus': conversationHasFocus }]">
                         <div class="header d-flex align-items-center justify-content-between">
                             <div class="d-flex">
-                                <a href="#" class="conversation-back mr-3" @click.prevent="conversationHasFocus = false">
+                                <a href="#" class="conversation-back mr-3" @click.prevent="deselectConversation">
                                     <i class="fa fa-chevron-left"></i>
                                 </a>
                                 <div v-if="!isNullOrWhiteSpace(selectedConversation.recipientDescription)" class="header-lava" v-html="selectedConversation.recipientDescription"></div>
                                 <div v-else class="header-lava"> {{ selectedFormattedPhoneNumber }} (Unknown Person)</div>
                             </div>
-                            <div class="d-flex gap-1 flex-wrap">
+                            <div class="d-flex gap-1 flex-wrap justify-content-end">
                                 <RockButton :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
                                             :isSquare="true"
@@ -137,14 +147,15 @@
                                                 :contextEntityTypeGuid="selectedConversation.entityTypeGuidForReminder"
                                                 :btnSize="BtnSize.Small"
                                                 @addSuccess="onAddReminder" />
-                                <RockButton :btnType="BtnType.Default"
+                                <RockButton v-if="canEditOrAdministrate"
+                                            :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
                                             :isSquare="true"
                                             @click="toggleConversationReadStatus(selectedConversation)">
                                     <i v-if="selectedConversation.isConversationRead" class="fa fa-eye-slash"></i>
                                     <i v-else class="fa fa-eye"></i>
                                 </RockButton>
-                                <RockButton v-if="selectedConversation.isLinkToPersonVisible"
+                                <RockButton v-if="selectedConversation.isLinkToPersonVisible && canEditOrAdministrate"
                                             :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
                                             @click="showLinkToPersonModal">
@@ -213,7 +224,7 @@
                                 </div>
                             </transition>
                         </div>
-                        <div ref="newMessageTextBoxContainer" class="footer">
+                        <div v-if="canEditOrAdministrate" ref="newMessageTextBoxContainer" class="footer">
                             <div class="message-actions-prepend">
                                 <RockButton :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Default"
@@ -291,6 +302,7 @@
 .slide-leave-to {
     max-height: 0;
     opacity: 0;
+    border-top-width: 0;
     overflow: hidden;
     padding: var(--slide-padding-close, 0) !important;
 }
@@ -299,6 +311,7 @@
 .slide-leave-from {
     max-height: var(--slide-height, 200px);
     opacity: 1;
+    border-top-width: var(--border-top-width, 0);
     padding: var(--slide-padding-open, 0) !important;
 }
 
@@ -674,11 +687,10 @@
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { getTopic, ITopic } from "@Obsidian/Utility/realTime";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-    import { getTopic } from "@Obsidian/Utility/realTime";
-    import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import Panel from "@Obsidian/Controls/panel.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
@@ -699,6 +711,7 @@
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
     const messageFilterItems = enumToListItemBag(CommunicationMessageFilterDescription);
+    var realTimeTopic: ITopic<IConversationParticipantTopic>;
 
     // #region Filter Values
 
@@ -706,7 +719,7 @@
     const personFilterSelection = ref<ListItemBag | undefined>();
     const isPersonFilterToggled = ref<boolean>(false);
     const systemPhoneNumbers = ref<ListItemBag[]>(box.systemPhoneNumbers ?? []);
-    const selectedSystemPhoneNumberValue = ref<string>(getSelectedSystemPhoneNumber());
+    const selectedSystemPhoneNumberValue = ref<string>(preferences.getValue(PreferenceKey.SelectedSystemPhoneNumber));
 
     // #endregion
 
@@ -728,6 +741,7 @@
     const errorNotificationText = ref<string>(box.errorMessage ?? "");
     const successNotificationBoxMessage = ref<string>("");
     const isConversationLoading = ref<boolean>(false);
+    const canEditOrAdministrate = ref<boolean>(box.canEditOrAdministrate);
 
     // #endregion
 
@@ -749,6 +763,8 @@
     const selectedFormattedPhoneNumber = computed(() => formattedPhoneNumber(selectedConversation.value?.recipientPhoneNumber));
 
     const isErrorNotificationBoxVisible = computed(() => !isNullOrWhiteSpace(errorNotificationText.value));
+
+    const areNoNumbersAvailable = computed(() => systemPhoneNumbers.value.length === 0);
 
     /**
      *  Computed property to sort conversations by the last message's date using RockDateTime and filter messages based on person filter selection.
@@ -799,7 +815,7 @@
             return messageDateTime?.localDateTime.toLocaleString(DateTimeFormat.TimeShort) ?? "";
         }
 
-        return messageDateTime?.localDateTime?.humanizeElapsed() ?? "";
+        return messageDateTime?.localDateTime?.toElapsedString() ?? "";
     };
 
     /**
@@ -817,7 +833,7 @@
      * @returns the message preview or "Image" if the last message contains an attachment.
      */
     const getSmsMessagePreview = (conversation: ConversationBag): string | null | undefined => {
-        if (!conversation.messages) {
+        if (!conversation.messages || conversation.messages.length === 0) {
             return;
         }
 
@@ -845,19 +861,6 @@
 
         return messageClasses;
     };
-
-    /**
-     * Gets the selected system phone number, considering user preferences.
-     * @returns the selected system phone number.
-     */
-    function getSelectedSystemPhoneNumber(): string {
-        // If there is more than 1 system phone number check preferences to make sure that the selected system phone number is in the list of possible system phone numbers.
-        if (systemPhoneNumbers.value.length > 1) {
-            return systemPhoneNumbers.value.find(spn => spn.value === preferences.getValue(PreferenceKey.SelectedSystemPhoneNumber))?.value ?? "";
-        }
-
-        return systemPhoneNumbers.value[0]?.value ?? "";
-    }
 
     /**
      * Displays the modal for creating a new message.
@@ -901,7 +904,7 @@
 
         // Make sure we start off on a clean slate.
         addNoteBag.value = {
-            noteTypeIdKey: selectableNoteTypes[0].idKey,
+            noteTypeIdKey: selectableNoteTypes[0]?.idKey,
             text: "",
             isAlert: false,
             isPrivate: false,
@@ -909,6 +912,14 @@
             attributeValues: {}
         };
         toggleNoteEditor(true);
+    }
+
+    /**
+     * Deselects the selected conversation and removes conversation focus. (Only used on devices < 599px)
+     */
+    function deselectConversation(): void {
+        conversationHasFocus.value = false;
+        selectedConversation.value = null;
     }
 
     /**
@@ -933,6 +944,11 @@
      */
     function toggleSuccessNotificationBox(toggleValue: boolean = !isSuccessNotificationBoxVisible.value): void {
         isSuccessNotificationBoxVisible.value = toggleValue;
+        if (toggleValue === true) {
+            setTimeout(() => {
+                isSuccessNotificationBoxVisible.value = false;
+            }, 5000);
+        }
     }
 
     /**
@@ -1014,7 +1030,7 @@
             if (lastMessage) {
                 setTimeout(() => {
                     lastMessage?.scrollIntoView({ block: "end", behavior: "smooth" });
-                }, 500);
+                }, 100);
             }
         });
     }
@@ -1033,6 +1049,11 @@
      * @param newMessageData the new message data to be added.
      */
     function refreshMessages(newMessageData: ConversationMessageBag): void {
+        // Check if the new message belongs to our currently selected system phone number
+        if (newMessageData.rockContactKey !== selectedSystemPhoneNumberValue.value) {
+            return;
+        }
+
         const conversationToUpdate = conversations.value.find(c => c.conversationKey === newMessageData.conversationKey);
 
         let attachmentUrls: (string | null | undefined)[] = [];
@@ -1041,8 +1062,6 @@
         }
 
         if (conversationToUpdate) {
-
-
             const newMessage = <MessageBag>{
                 attachmentUrls: attachmentUrls,
                 createdDateTime: newMessageData.messageDateTime,
@@ -1108,16 +1127,32 @@
             throw new Error("Missing a selected System Phone Number.");
         }
 
-        const topic = await getTopic<IConversationParticipantTopic>("Rock.RealTime.Topics.ConversationParticipantTopic");
+        realTimeTopic = await getTopic<IConversationParticipantTopic>("Rock.RealTime.Topics.ConversationParticipantTopic");
 
-        topic.onDisconnected(async () => {
+        realTimeTopic.onDisconnected(async () => {
             await startRealTime();
         });
 
-        await topic.server.joinSmsNumber(systemPhoneGuid);
+        addRealtimeChannel(systemPhoneGuid);
 
-        topic.on("newSmsMessage", refreshMessages);
-        topic.on("conversationReadStatusChanged", toggleIsRead);
+        realTimeTopic.on("newSmsMessage", refreshMessages);
+        realTimeTopic.on("conversationReadStatusChanged", toggleIsRead);
+    }
+
+    /**
+     * Leaves the real-time channel for the given phone GUID.
+     * @param phoneGuid - The GUID of the phone to leave the channel.
+     */
+    async function leaveRealTimeChannel(phoneGuid: string): Promise<void> {
+        await realTimeTopic.server.leaveSmsNumber(phoneGuid);
+    }
+
+    /**
+     * Joins the real-time channel for the given phone GUID.
+     * @param phoneGuid - The GUID of the phone to join the channel.
+     */
+    async function addRealtimeChannel(phoneGuid: string): Promise<void> {
+        await realTimeTopic.server.joinSmsNumber(phoneGuid);
     }
 
     // #endregion
@@ -1211,6 +1246,9 @@
         if (result.isSuccess) {
             newMessageText.value = "";
             imageAttachment.value = {};
+            if (selectedConversation.value && !selectedConversation.value?.isConversationRead) {
+                toggleConversationReadStatus(selectedConversation.value);
+            }
         }
         else {
             errorNotificationText.value = result.errorMessage ?? "Unknown error while trying to send a message.";
@@ -1352,6 +1390,11 @@
 
         if (result.isSuccess) {
             conversations.value = result.data ?? [];
+
+            // If the reloaded conversations no longer include the selected conversation then set the selected conversation to null.
+            if (!result.data?.find(c => c.conversationKey === selectedConversation.value?.conversationKey)) {
+                selectedConversation.value = null;
+            }
         }
         else {
             errorNotificationText.value = result.errorMessage ?? "An unknown error occurred while reloading conversations.";
@@ -1375,9 +1418,19 @@
         reloadConversations();
     });
 
-    watch(selectedSystemPhoneNumberValue, () => {
-        //Restart realtime when the system phone number changes
-        startRealTime();
+    watch(selectedSystemPhoneNumberValue, (newValue, oldValue) => {
+        if (!realTimeTopic) {
+            startRealTime();
+            return;
+        }
+
+        if (!isNullOrWhiteSpace(oldValue)) {
+            leaveRealTimeChannel(oldValue);
+        }
+
+        if (!isNullOrWhiteSpace(newValue)) {
+            addRealtimeChannel(newValue);
+        }
     });
 
     if (selectedSystemPhoneNumberValue.value) {

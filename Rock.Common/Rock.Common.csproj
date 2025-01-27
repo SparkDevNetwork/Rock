@@ -59,6 +59,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="CodeGenerateRestAttribute.cs" />
     <Compile Include="ExtensionMethods\BooleanExtensions.cs" />
     <Compile Include="ExtensionMethods\DateTimeExtensions.cs" />
     <Compile Include="ExtensionMethods\DecimalExtensions.cs" />

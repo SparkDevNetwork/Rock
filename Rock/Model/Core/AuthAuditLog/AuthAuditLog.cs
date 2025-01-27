@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AuthAuditLog" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "6AC9997F-B238-4A67-933E-D80E1551704D")]
     public class AuthAuditLog : Entity<AuthAuditLog>
     {

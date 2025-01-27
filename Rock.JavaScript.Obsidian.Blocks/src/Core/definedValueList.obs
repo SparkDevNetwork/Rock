@@ -34,7 +34,7 @@
                     field="description"
                     :filter="textValueFilter"
                     visiblePriority="md"
-                    width="45%"/>
+                    width="45%" />
 
         <BooleanColumn name="isActive"
                        title="Active"
@@ -51,7 +51,7 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 
-    <Modal v-model="isModalOpen" title="Defined Value" saveText="Save" @save="onSaveDefinedValue">
+    <Modal v-model="isModalOpen" title="Defined Value" :subtitle="`Id: ${id}`" saveText="Save" @save="onSaveDefinedValue">
         <legend>
             {{ modalTitle }}
         </legend>
@@ -112,6 +112,7 @@
     let gridData: GridDataBag | undefined;
     const isModalOpen = ref(false);
     const idKey = ref("");
+    const id = ref(0);
     const value = ref("");
     const category = ref<ListItemBag | undefined>();
     const description = ref("");
@@ -174,6 +175,7 @@
             isActive.value = result.data.isActive;
             attributes.value = result.data.attributes ?? {};
             attributeValues.value = result.data.attributeValues ?? {};
+            id.value = result.data.id;
 
             isModalOpen.value = true;
         }
@@ -234,6 +236,7 @@
     */
     async function onSaveDefinedValue(): Promise<void> {
         const bag: DefinedValueBag = {
+            id: id.value,
             idKey: idKey.value,
             value: value.value,
             category: category.value,

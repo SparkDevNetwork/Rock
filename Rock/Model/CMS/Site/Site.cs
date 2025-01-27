@@ -40,6 +40,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Site" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.SITE )]
     public partial class Site : Model<Site>, IRockIndexable, ICacheable
     {

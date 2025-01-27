@@ -10,7 +10,6 @@
           :isCountMessageVisible="false"
           stickyHeader
           liveUpdates
-          :onAddItem="config.isAddEnabled ? onAddCompletionClick : undefined"
           @selectItem="onSelectItem">
         <SelectColumn />
 
@@ -84,20 +83,6 @@
             </template>
         </Column>
     </Grid>
-
-    <Modal v-model="isAddCompletionModalVisible"
-           title="Add Activity"
-           @save="onSaveCompletionClick"
-           saveText="Add"
-           cancelText="Cancel"
-           @close="onCloseCompletionModal">
-
-        <DropDownList v-model="studentGuidToAdd"
-                      :items="studentsWithoutActivity"
-                      label="For Individual"
-                      help="Select the individual to add the activity for." />
-
-    </Modal>
 </template>
 
 <script setup lang="ts">
@@ -105,14 +90,12 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import Grid, { numberValueFilter, dateValueFilter, textValueFilter, Column, DateColumn, DateTimeColumn, PersonColumn, SelectColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
-    import Modal from "@Obsidian/Controls/modal.obs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { LearningActivityCompletionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionList/learningActivityCompletionListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./LearningActivityCompletionList/types.partial";
     import { computed, onMounted, reactive, ref } from "vue";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { BlockMessages } from "@Obsidian/Utility/browserBus";
 
     const config = useConfigurationValues<ListBlockBox<LearningActivityCompletionListOptionsBag>>();
@@ -143,22 +126,11 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
-    const isAddCompletionModalVisible = ref(false);
-
-    const allStudents = ref(config.options?.students ?? []);
-    const studentGuidToAdd = ref<string>("");
-
     // #endregion
 
     // #region Computed Functions
 
     const canViewGrades = computed((): boolean => config.options?.canViewGrades ?? false);
-
-    const studentsWithoutActivity = computed(() =>
-        allStudents.value.filter(s =>
-            !gridData?.rows?.find(r => s.value === r["studentGuid"])
-        )
-    );
 
     // #endregion
 
@@ -234,37 +206,6 @@
     // #region Event Handlers
 
     /**
-     * Called when the Add button has been clicked by the individual.
-     */
-    function onAddCompletionClick(): void {
-        isAddCompletionModalVisible.value = true;
-    }
-
-    /**
-     * Called when the Add button has been clicked in the Add Student modal.
-     */
-    async function onSaveCompletionClick(): Promise<void> {
-        const result = await invokeBlockAction<GridDataBag>("AddStudent", {
-            participantGuid: studentGuidToAdd.value
-        });
-
-        if (result.isSuccess) {
-            isAddCompletionModalVisible.value = false;
-            reloadBlock();
-        }
-        else {
-            throw new Error(result.errorMessage ?? "Unknown error while trying to add individual.");
-        }
-    }
-
-    /**
-     * Called when the Cancel button of the Add Completion modal has been clicked by the individual.
-     */
-    function onCloseCompletionModal(): void {
-        isAddCompletionModalVisible.value = true;
-    }
-
-    /**
      * Called when a row has been selected by the individual.
      *
      * @param key The key of the row that was selected.
@@ -306,7 +247,7 @@
             if (visibleCssClass.value === "show") {
                 gridDataSource.value = loadGridData();
             }
-        }, 250);
+        }, 450);
     });
 
 </script>

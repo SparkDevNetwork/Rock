@@ -116,7 +116,7 @@
                                         <TextBox v-model="courseCode"
                                                  class="input-width-md"
                                                  label="Course Code"
-                                                 :max="12" />
+                                                 :maxLength="12" />
                                     </div>
                                     <div class="col-md-6">
 

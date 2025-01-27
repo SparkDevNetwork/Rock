@@ -16,7 +16,7 @@
             obj.drawingMode = options.drawingMode || "Polygon" || "Point";  // the available modes
             obj.strokeColor = options.strokeColor || "#0088cc";
             obj.fillColor = options.fillColor || "#0088cc";
-            obj.mapId = options.mapId || "DEFAULT_MAP_ID";
+            obj.mapId = options.mapId;
 
             // An array of styles that controls the look of the Google Map
             // http://gmaps-samples-v3.googlecode.com/svn/trunk/styledmaps/wizard/index.html
@@ -334,7 +334,7 @@
                         else if (obj.drawingMode == "Point") {
                             var point;
 
-                            if (obj.mapId === "DEFAULT_MAP_ID") {
+                            if (!obj.mapId) {
                                 point = new google.maps.Marker({
                                     position: pathArray[0],
                                     map: map,
@@ -671,7 +671,7 @@
                 },
             };
 
-            if (self.mapId !== "DEFAULT_MAP_ID") {
+            if (self.mapId) {
                 mapOptions.mapId = self.mapId;
             }
 

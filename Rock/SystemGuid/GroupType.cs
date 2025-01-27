@@ -119,5 +119,15 @@ namespace Rock.SystemGuid
         /// Sign-up Group group type guid
         /// </summary>
         public const string GROUPTYPE_SIGNUP_GROUP = "499B1367-06B3-4538-9D56-56D53F55DCB1";
+
+        /// <summary>
+        /// Chat Direct Message group type guid
+        /// </summary>
+        public const string GROUPTYPE_CHAT_DIRECT_MESSAGE = "DFDC14A3-D1DC-4342-A012-5CE9E8994B5E";
+
+        /// <summary>
+        /// Chat Shared Channel group type guid
+        /// </summary>
+        public const string GROUPTYPE_CHAT_SHARED_CHANNEL = "268D4802-24C7-4891-890E-71313BEE17B1";
     }
 }

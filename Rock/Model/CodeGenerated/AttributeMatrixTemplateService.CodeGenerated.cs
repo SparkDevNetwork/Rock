@@ -52,6 +52,12 @@ namespace Rock.Model
         public bool CanDelete( AttributeMatrixTemplate item, out string errorMessage )
         {
             errorMessage = string.Empty;
+
+            if ( new Service<AttributeMatrixItem>( Context ).Queryable().Any( a => a.AttributeMatrixTemplateId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", AttributeMatrixTemplate.FriendlyTypeName, AttributeMatrixItem.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

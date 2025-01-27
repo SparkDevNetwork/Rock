@@ -192,11 +192,11 @@
                         <div class="rock-header">
                             <h3 class="title">
                                 <asp:Literal ID="lTitle" runat="server" /></h3>
-                            <div class="d-flex flex-wrap justify-content-between">
-                                <div class="description">
+                            <div class="d-flex justify-content-between">
+                                <div class="description pr-2">
                                     <asp:Literal ID="lDescription" runat="server" />
                                 </div>
-                                <div id="divFormListTopPanel" runat="server" class="ml-auto">
+                                <div id="divFormListTopPanel" runat="server" class="ml-auto d-flex gap-1">
                                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-xs btn-square btn-security" />
                                     <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEditCategory_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
                                     <asp:LinkButton ID="btnDeleteCategory" data-toggle="tooltip" data-trigger="hover" data-delay="250" runat="server" CssClass="btn btn-danger btn-xs btn-square btn-category-delete" OnClick="btnDeleteCategory_Click"><i class="fa fa-trash-alt"></i></asp:LinkButton>
@@ -214,19 +214,16 @@
                             <asp:Repeater ID="rForms" runat="server" OnItemDataBound="rForms_ItemDataBound" OnItemCommand="rForms_ItemCommand">
                                 <ItemTemplate>
                                     <div class="card card-sm group-hover mb-3">
-                                        <div class="card-body d-flex">
-                                            <div class="flex-fill">
+                                        <div class="card-body d-flex justify-content-between">
+                                            <div>
                                                 <h3 class="m-0"><%# Eval("Name") %></h3>
-                                                <div class="position-relative">
-                                                    <span class="position-absolute d-inline-flex align-items-center text-muted text-sm group-hover-item"><%# Eval("Description") %></span>
-                                                </div>
+                                                <p class="text-muted text-sm group-hover-item pr-3 mt-1 leading-snug"><%# Eval("Description") %></p>
                                             </div>
                                             <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center" runat="server">
-                                                <asp:LinkButton ID="lbBuilder" runat="server" ToolTip="Builder" CssClass="btn btn-default btn-sm btn-square ml-2" CommandName="Builder" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-list'></i>" />
-                                                <asp:LinkButton ID="lbSubmissions" runat="server" ToolTip="Submissions" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Submissions" Text="<i class='fa fa-edit'></i>" CommandArgument='<%# Eval( "Id" ) %>' />
-                                                <asp:LinkButton ID="lbCommunications" runat="server" ToolTip="Communications" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Communications" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-envelope'></i>" />
-                                                <asp:LinkButton ID="lbSettings" runat="server" ToolTip="Settings" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Settings" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-cog'></i>" />
+                                                <asp:LinkButton ID="lbSubmissions" runat="server" ToolTip="Submissions" CssClass="btn btn-default btn-sm btn-square ml-2" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-list'></i>" />
+                                                <asp:LinkButton ID="lbBuilder" runat="server" ToolTip="Builder" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Builder" Text="<i class='fa fa-edit'></i>" CommandArgument='<%# Eval( "Id" ) %>' />
                                                 <asp:LinkButton ID="lbAnalytics" runat="server" ToolTip="Analytics" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-chart-bar'></i>" />
+                                                <asp:LinkButton ID="lbLinkToForm" runat="server" ToolTip="Link To Form" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="LinkToForm" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-link'></i>" />
                                                 <div class="dropdown js-group-actions hide-dragging">
                                                     <button type="button" class="btn btn-default btn-sm btn-square dropdown-toggle ml-1" data-toggle="dropdown">
                                                         <i class="fa fa-ellipsis-v"></i>
@@ -238,7 +235,7 @@
                                                         </li>
                                                     </ul>
                                                 </div>
-                                                <span class='badge badge-info ml-1'><%# Eval("SubmissionCount") %></span>
+                                                <span class='badge badge-info ml-2'><%# Eval("SubmissionCount") %></span>
                                             </asp:Panel>
                                         </div>
                                     </div>
@@ -282,6 +279,33 @@
                             </div>
                         </asp:Panel>
                     </div>
+                    <Rock:ModalDialog ID="mdLinkToFormModal" runat="server" Title="Link To Form" CancelLinkVisible="false" OnSaveClick="mdLinkToFormModal_SaveClick" SaveButtonText="Close" >
+                        <Content>
+                            <h3>Select a Page for Form Link</h3>
+                            <p>Choose a page from the list below to generate a link for the form. Once selected, you can copy and use the link as needed.</p>
+                            <Rock:Grid ID="gPages" runat="server" DisplayType="Light" RowItemText="Page">
+                                <Columns>
+                                    <Rock:RockBoundField DataField="Name" HeaderText="Page Name" />
+                                    <Rock:RockBoundField DataField="Site" HeaderText="Site" />
+                                    <Rock:RockBoundField DataField="Route" HeaderText="Route" />
+                                    <Rock:RockTemplateFieldUnselected>
+                                        <ItemTemplate>
+                                            <button class="btn btn-default js-copy-clipboard"
+                                                    data-toggle="tooltip"
+                                                    data-placement="top"
+                                                    data-trigger="hover"
+                                                    data-delay="250"
+                                                    title="Copy to Clipboard"
+                                                    data-clipboard-text='<%# Eval( "RouteURL" ) %>'
+                                                    onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy to Clipboard');return false;">
+                                                <i class='fa fa-clipboard'></i> Copy Link
+                                            </button>
+                                        </ItemTemplate>
+                                    </Rock:RockTemplateFieldUnselected>
+                                </Columns>
+                            </Rock:Grid>
+                        </Content>
+                    </Rock:ModalDialog>
                 </ContentTemplate>
             </asp:UpdatePanel>
         </div>

@@ -265,13 +265,15 @@ namespace Rock.Blocks.Lms
                                         </div>
                                         <div class=""text-muted"">You completed this class on {{
                                             classInfo.StudentParticipant.LearningCompletionDateTime | Date: 'sd' }}</div>
-                            
+
+                                        {% if classInfo.StudentParticipant.LearningGradingSystemScale.Name != empty %}
                                         <div class=""mt-3"">
                                             <div class=""text-muted"">
                                                 <p class=""text-bold mb-0"">Grade</p>
                                                 <p class=""mb-0"">{{ classInfo.StudentParticipant.LearningGradingSystemScale.Name }}</p>
                                             </div>
                                         </div>
+                                        {% endif %}
                                     </div>
                                     
                                 </div>
@@ -450,12 +452,17 @@ namespace Rock.Blocks.Lms
 
             var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
 
+            // Get the course details or a default value.
             var course = learningCourseService.GetPublicCourseDetails(
                 courseId,
                 currentPerson,
                 publicOnly,
                 semesterDateRange.Start,
-                semesterDateRange.End );
+                semesterDateRange.End ) ?? new LearningCourseService.PublicLearningCourseBag
+                {
+                    Semesters = new List<LearningCourseService.PublicLearningSemesterBag>(),
+                    ProgramInfo = new LearningProgramService.PublicLearningProgramBag(),
+                };
 
             course.DescriptionAsHtml = new StructuredContentHelper( course.Description ?? string.Empty ).Render();
 

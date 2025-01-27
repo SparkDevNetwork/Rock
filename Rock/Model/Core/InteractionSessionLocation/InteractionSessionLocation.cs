@@ -33,6 +33,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "InteractionSessionLocation" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "790EC7AC-7443-466C-A07E-F702D86B9E1B")]
     public partial class InteractionSessionLocation : Model<InteractionSessionLocation>
     {

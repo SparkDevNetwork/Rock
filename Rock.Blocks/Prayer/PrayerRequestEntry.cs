@@ -643,7 +643,7 @@ namespace Rock.Blocks.Prayer
                 if ( bag.AttributeValues?.Any() == true )
                 {
                     prayerRequest.LoadAttributes( rockContext );
-                    prayerRequest.SetPublicAttributeValues( bag.AttributeValues, currentPerson );
+                    prayerRequest.SetPublicAttributeValues( bag.AttributeValues, currentPerson, enforceSecurity: false );
                 }
 
                 if ( !prayerRequest.IsValid )
@@ -790,7 +790,7 @@ namespace Rock.Blocks.Prayer
             // Load the attributes.
             var prayerRequest = new PrayerRequest { Id = 0 };
             prayerRequest.LoadAttributes();
-            box.Attributes = prayerRequest.GetPublicAttributesForEdit( currentPerson );
+            box.Attributes = prayerRequest.GetPublicAttributesForEdit( currentPerson, enforceSecurity: false );
 
             return box;
         }

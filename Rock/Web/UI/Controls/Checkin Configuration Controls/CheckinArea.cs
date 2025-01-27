@@ -411,7 +411,7 @@ namespace Rock.Web.UI.Controls
             _ddlAttendanceRule = new RockDropDownList();
             _ddlAttendanceRule.ID = this.ID + "_ddlAttendanceRule";
             _ddlAttendanceRule.Label = "Check-in Rule";
-            _ddlAttendanceRule.Help = "The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in.";
+            _ddlAttendanceRule.Help = "The rule that decides what happens when someone tries to check in to a group of this type.  If 'None' is selected, the individual will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, the individual will be added to group if they do not already belong.  If 'Already Enrolled in Group' is selected, the individual must already be a member of the group to check in.";
             _ddlAttendanceRule.BindToEnum<Rock.Model.AttendanceRule>();
             _ddlAttendanceRule.AutoPostBack = true;
 

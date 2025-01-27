@@ -383,7 +383,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <returns>A list of editable attribute values.</returns>
         private List<ClientEditableAttributeValueViewModel> GetPublicEditableAttributeValues( IHasAttributes request )
         {
-            var attributes = request.GetPublicAttributesForEdit( RequestContext.CurrentPerson )
+            var attributes = request.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: false )
                 .ToDictionary( kvp => kvp.Key, kvp => new ClientEditableAttributeValueViewModel
                 {
                     AttributeGuid = kvp.Value.AttributeGuid,
@@ -398,7 +398,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     Value = ""
                 } );
 
-            request.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
+            request.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: false )
                 .ToList()
                 .ForEach( kvp =>
                 {
@@ -590,7 +590,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
             if ( bag.AttributeValues != null )
             {
                 connectionRequest.LoadAttributes();
-                connectionRequest.SetPublicAttributeValues( bag.AttributeValues, RequestContext.CurrentPerson );
+                connectionRequest.SetPublicAttributeValues( bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
             }
 
             // Add an activity that the connector was assigned or changed.

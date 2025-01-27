@@ -18,29 +18,44 @@
                     field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="25%" />
+                    width="22%" />
 
-        <DateTimeColumn name="lastSuccessfulRun"
-                        title="Last Successful Run"
-                        field="lastSuccessfulRun"
-                        :filter="dateValueFilter"
-                        visiblePriority="md"
-                        headerClass="title-right"
-                        itemClass="no-x-padding"
-                        width="9%" />
+        <Column name="lastSuccessfulRun"
+                title="Last Successful Run"
+                field="lastSuccessfulRun"
+                width="9%"
+                :filter="dateValueFilter"
+                :filterValue="getlastSuccessfulRunFilterValue"
+                :quickFilterValue="getlastSuccessfulRunFilterValue"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div>
+                    <p>{{ row.lastSuccessfulRunDate }}</p>
+                    <p>{{ row.lastSuccessfulRunTime }}</p>
+                </div>
+            </template>
+        </Column>
 
-        <DateTimeColumn name="lastRunDateTime"
-                        title="Last Run Date"
-                        field="lastRunDateTime"
-                        :filter="dateValueFilter"
-                        visiblePriority="md"
-                        headerClass="title-right"
-                        itemClass="no-x-padding"
-                        width="9%" />
+        <Column name="lastRunDateTime"
+                title="Last Run Date"
+                field="lastRunDateTime"
+                width="9%"
+                :filter="dateValueFilter"
+                :filterValue="getlastRunDateFilterValue"
+                :quickFilterValue="getlastRunDateFilterValue"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div>
+                    <p>{{ row.lastRunDate }}</p>
+                    <p>{{ row.lastRunTime }}</p>
+                </div>
+            </template>
+        </Column>
 
         <TextColumn name="lastRunDurationSeconds"
                     title="Last Run Duration"
                     field="lastRunDurationSeconds"
+                    width="9%"
                     :filter="textValueFilter"
                     visiblePriority="md"
                     headerClass="title-center"
@@ -66,7 +81,7 @@
         <Column name="lastStatusMessageAsHtml"
                 title="Last Status Message"
                 field="lastStatusMessageAsHtml"
-                width="20%"
+                width="35%"
                 :filter="textValueFilter"
                 :filterValue="getlastStatusMessageFilterValue"
                 :quickFilterValue="getlastStatusMessageFilterValue"
@@ -82,6 +97,7 @@
                        field="isSystem"
                        :filter="booleanValueFilter"
                        visiblePriority="md"
+                       width="90"
                        headerClass="title-center"
                        itemClass="justify-content-center text-center" />
 
@@ -90,13 +106,14 @@
                        field="isActive"
                        :filter="booleanValueFilter"
                        visiblePriority="md"
-                       width="5%"
+                       width="90"
                        headerClass="title-center"
                        itemClass="justify-content-center text-center" />
 
         <Column name="history"
-                width="5%"
+                width="80"
                 title="History"
+                itemClass="transparent-content justify-content-center text-center"
                 disableSort
                 headerClass="title-center">
             <template #format="{ row }">
@@ -110,13 +127,14 @@
         </Column>
 
         <Column name="runJob"
-                width="5%"
+                width="70"
                 title="Run Now"
+                itemClass="transparent-content justify-content-center text-center"
                 disableSort>
             <template #format="{ row }">
                 <button v-if="row.guid !== ServiceJob.JobPulse"
                         @click.prevent="onRunNowClick(row, $event)"
-                        class="btn btn-sm"
+                        class="btn btn-default btn-sm"
                         title="Run Now">
                     <i class="fa fa-play"></i>
                 </button>
@@ -138,6 +156,18 @@
 
 .title-center .grid-column-title {
     text-align: center;
+}
+
+.transparent-content .btn {
+    opacity: .4;
+    background-color: transparent;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.transparent-content .btn:hover {
+    opacity: 1;
+    background-color: #e6e6e6;
 }
 </style>
 
@@ -211,14 +241,32 @@
         return row.lastStatusMessage as string;
     }
 
-     /**
-     * Gets the filter value text to use for the status column.
+    /**
+    * Gets the filter value text to use for the status column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getlastStatusFilterValue(row: Record<string, unknown>): string {
+        const status = row.lastStatus as string ?? "";
+        return status === "Exception" ? "Failed" : status;
+    }
+
+    /**
+     * Gets the filter value text to use for the last successful run column.
      *
      * @param row The row to be filtered.
      */
-     function getlastStatusFilterValue(row: Record<string, unknown>): string {
-        const status = row.lastStatus as string ?? "";
-        return status === "Exception" ? "Failed" : status;
+    function getlastSuccessfulRunFilterValue(row: Record<string, unknown>): string {
+        return row.lastSuccessfulRun as string;
+    }
+
+    /**
+ * Gets the filter value text to use for the last run date column.
+ *
+ * @param row The row to be filtered.
+ */
+    function getlastRunDateFilterValue(row: Record<string, unknown>): string {
+        return row.lastRunDateTime as string;
     }
 
     // #endregion

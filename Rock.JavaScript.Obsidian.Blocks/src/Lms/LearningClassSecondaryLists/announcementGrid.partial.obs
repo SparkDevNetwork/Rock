@@ -1,6 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :data="gridDataSource"
+    <Grid
+          :definition="gridDefinitionBag"
+          :data="gridDataSource"
           keyField="idKey"
           title="Announcements"
           itemTerm="Announcement"
@@ -57,6 +59,7 @@
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { CommunicationMode, CommunicationModeDescription } from "@Obsidian/Enums/Lms/communicationMode";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -67,12 +70,15 @@
     }>();
 
     const props = defineProps({
+        gridDefinitionBag: {
+            type: Object as PropType<GridDefinitionBag>,
+            required: true
+        },
         isAddEnabled: {
             type: Object as PropType<boolean>,
             required: true,
             default: false
         },
-
         isDeleteEnabled: {
             type: Object as PropType<boolean>,
             required: true,

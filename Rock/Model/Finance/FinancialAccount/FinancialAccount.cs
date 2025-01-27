@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialAccount" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_ACCOUNT )]
     public partial class FinancialAccount : Model<FinancialAccount>, IOrdered, IHasActiveFlag, ICacheable
     {

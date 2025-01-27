@@ -574,11 +574,13 @@ namespace Rock.CheckIn.v2
                 }
 
                 var hasCutter = printer?.GetAttributeValue( DeviceAttributeKey.DEVICE_HAS_CUTTER ).AsBoolean() ?? false;
+                var dpi = printer?.GetAttributeValue( DeviceAttributeKey.DEVICE_PRINTER_DPI ).AsIntegerOrNull();
 
                 var printRequest = new PrintLabelRequest
                 {
                     Capabilities = new PrinterCapabilities
                     {
+                        Dpi = dpi,
                         IsCutterSupported = hasCutter
                     },
                     RockContext = RockContext,

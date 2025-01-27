@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "WorkflowActivityType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "E5FBDBA2-9539-4679-B948-2E06C1BB1E3F")]
     public partial class WorkflowActivityType : Model<WorkflowActivityType>, IOrdered, ICacheable
     {

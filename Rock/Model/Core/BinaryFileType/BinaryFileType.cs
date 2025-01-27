@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "BinaryFileType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "62AF597F-F193-412B-94EA-291CF713327D")]
     public partial class BinaryFileType : Model<BinaryFileType>, ICacheable
     {

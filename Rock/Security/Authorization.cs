@@ -182,6 +182,41 @@ namespace Rock.Security
         /// </summary>
         public const string EDIT_GRADES = "EditGrades";
 
+        /// <summary>
+        /// Authorization to execute the item.
+        /// </summary>
+        public const string EXECUTE = "Execute";
+
+        #region API Security Actions
+
+        /// <summary>
+        /// Authorization to execute API endpoints in the context of reading data.
+        /// This is used by API endpoints.
+        /// </summary>
+        public const string EXECUTE_READ = "ExecuteRead";
+
+        /// <summary>
+        /// Authorization to execute API endpoints in the context of writing data.
+        /// This is used by API endpoints.
+        /// </summary>
+        public const string EXECUTE_WRITE = "ExecuteWrite";
+
+        /// <summary>
+        /// Authorization to execute API endpoints in the context of reading data.
+        /// Security on individual entities is not checked. This is used by API
+        /// endpoints.
+        /// </summary>
+        public const string EXECUTE_UNRESTRICTED_READ = "ExecuteUnrestrictedRead";
+
+        /// <summary>
+        /// Authorization to execute API endpoints in the context of writing data.
+        /// Security on individual entities is not checked. This is used by API
+        /// endpoints.
+        /// </summary>
+        public const string EXECUTE_UNRESTRICTED_WRITE = "ExecuteUnrestrictedWrite";
+
+        #endregion
+
         #endregion
 
         #region Public Methods

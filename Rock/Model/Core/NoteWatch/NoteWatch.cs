@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -27,6 +27,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "NoteWatch" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "A5C129C2-E64D-4B72-B94D-DBA6DA6AC2E3")]
     public partial class NoteWatch : Model<NoteWatch>
     {

@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.Security;
+
 namespace Rock.Model
 {
     public partial class WebFarmNodeMetric
@@ -35,5 +37,12 @@ namespace Rock.Model
             /// </summary>
             MemoryUsageMegabytes = 1,
         }
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => WebFarmNode ?? base.ParentAuthority;
+
+        #endregion
     }
 }

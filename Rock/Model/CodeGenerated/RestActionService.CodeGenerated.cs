@@ -130,6 +130,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this RestAction target, RestAction source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.ApiId = source.ApiId;
             target.CacheControlHeaderSettings = source.CacheControlHeaderSettings;
             target.ControllerId = source.ControllerId;

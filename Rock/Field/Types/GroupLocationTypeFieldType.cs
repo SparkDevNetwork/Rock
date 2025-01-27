@@ -113,7 +113,7 @@ namespace Rock.Field.Types
 
             if ( publicConfigurationValues.ContainsKey( GROUP_TYPE_KEY ) )
             {
-                var groupTypeValue= publicConfigurationValues[GROUP_TYPE_KEY].FromJsonOrNull<ListItemBag>();
+                var groupTypeValue = publicConfigurationValues[GROUP_TYPE_KEY].FromJsonOrNull<ListItemBag>();
                 if ( groupTypeValue != null )
                 {
                     privateConfigurationValues[GROUP_TYPE_KEY] = groupTypeValue.Value;

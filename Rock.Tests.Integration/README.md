@@ -1,7 +1,7 @@
 # The Integration Tests Project
 The goal of this project is to be a permanent place to store tests that require things such as a database context to fetch data, configuration settings, save data, etc.  At the moment, you (the developer) will run these tests when needed, but ultimately our automated build system (AppVeyor) will automatically run all these tests after every commit (or push to a particular branch). 
 
-**For general information about the Rock Test projects, refer to the README file in the Rock.Tests.UnitTests project.**
+**For general information about the Rock Test projects, refer to the README file in the Rock.Tests project.**
 
 # Configuring the Test Environment
 Settings for the test environment are configured in local `*.config` files.
@@ -162,7 +162,7 @@ Tests are organized into the following main categories:
     Following this pattern makes it easier to identify and locate tests, and also provides an indication of the scenario in which the test is failing.
 
 2. Test classes should be placed in the namespace corresponding to the Rock module or feature to which they are related.
-For example, "Rock.Tests.Integration.Modules.Engagement.Steps" contains the tests related to classes in Rock.Engagement.Steps namespace.
+For example, "Rock.Tests.Integration.Engagement.Steps" contains the tests related to classes in Rock.Engagement.Steps namespace.
 
 
 ## Test Setup/Teardown

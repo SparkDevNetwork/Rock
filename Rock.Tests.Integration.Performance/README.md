@@ -15,5 +15,4 @@ Some things to note about this test console:
 
 1. It's important to verify that the test templates render correctly in all of the engines being tested before using them to establish a benchmark.
 The _showFirstRenderResult flag can be set to send the rendered result of each test template to the console output.
-2. The _templateCachingEnabled flag can be used to disable caching for Lava library engines such as Fluid, but it cannot disable caching for RockLiquid.
-Therefore, caching should only be disabled if the performance result is being compared to anoter Lava library engine.
+2. The _templateCachingEnabled flag can be used to disable caching for Lava library engines such as Fluid.

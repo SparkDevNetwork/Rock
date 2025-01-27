@@ -28,27 +28,11 @@ namespace Rock.ViewModels.Blocks.Crm.AssessmentList
     public class AssessmentListBag
     {
         /// <summary>
-        /// Gets or sets the assessment list.
+        /// Gets or sets the assessment list content.
         /// </summary>
         /// <value>
-        /// The assessment list.
+        /// The assessment list content.
         /// </value>
-        public string AssessmentList { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has content.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance has content; otherwise, <c>false</c>.
-        /// </value>
-        public bool HasContent { get; set; }
-
-        /// <summary>
-        /// Gets or sets the error message.
-        /// </summary>
-        /// <value>
-        /// The error message.
-        /// </value>
-        public string ErrorMessage { get; set; }
+        public string AssessmentListContent { get; set; }
     }
 }

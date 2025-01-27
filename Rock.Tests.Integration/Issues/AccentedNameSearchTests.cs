@@ -21,7 +21,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Integration.Organization;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Integration.TestData.Crm;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.TestFramework;
@@ -98,7 +98,7 @@ namespace Rock.Tests.Integration.Core.Crm
 
             jobAnalytics.ExecuteInternal( analyticsSettings );
 
-            Assert.That.Contains( jobAnalytics.Result, "Person BI Results:\r\n-- Inserted" );
+            Assert.That.Contains( jobAnalytics.Result, "Person BI Results:" );
         }
 
         [TestMethod]

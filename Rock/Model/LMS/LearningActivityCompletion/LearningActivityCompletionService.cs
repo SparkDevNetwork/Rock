@@ -28,7 +28,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="activityCompletionIds">List of <see cref="LearningActivityCompletion"/> identifiers to update.</param>
         /// <param name="systemCommunicationId">The system communication id to set for the given identifiers.</param>
-        public void UpdateNotificationCommunicationProperties( List<int> activityCompletionIds, int systemCommunicationId )
+        public void UpdateNotificationCommunicationIdProperty( List<int> activityCompletionIds, int systemCommunicationId )
         {
             var activityCompletions = Queryable().Where( c => activityCompletionIds.Contains( c.Id ) );
 

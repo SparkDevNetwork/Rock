@@ -49,7 +49,7 @@ namespace Rock.Blocks.Event
 
     [Rock.SystemGuid.EntityTypeGuid( "b033f86d-c166-4642-b999-0677f2ca2daf" )]
     [Rock.SystemGuid.BlockTypeGuid( "2dc334ac-c2c2-4031-9e1c-6a5b6fbcae9c" )]
-    public class EventCalendarDetail : RockDetailBlockType
+    public class EventCalendarDetail : RockEntityDetailBlockType<EventCalendar, EventCalendarBag>
     {
         #region Keys
 
@@ -70,18 +70,14 @@ namespace Rock.Blocks.Event
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<EventCalendarBag, EventCalendarDetailOptionsBag>();
+            var box = new DetailBlockBox<EventCalendarBag, EventCalendarDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<EventCalendar>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -89,9 +85,8 @@ namespace Rock.Blocks.Event
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private EventCalendarDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private EventCalendarDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new EventCalendarDetailOptionsBag()
             {
@@ -105,10 +100,9 @@ namespace Rock.Blocks.Event
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="eventCalendar">The EventCalendar to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the EventCalendar is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateEventCalendar( EventCalendar eventCalendar, RockContext rockContext, out string errorMessage )
+        private bool ValidateEventCalendar( EventCalendar eventCalendar, out string errorMessage )
         {
             errorMessage = null;
 
@@ -120,10 +114,9 @@ namespace Rock.Blocks.Event
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<EventCalendarBag, EventCalendarDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<EventCalendarBag, EventCalendarDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -134,7 +127,7 @@ namespace Rock.Blocks.Event
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -142,7 +135,6 @@ namespace Rock.Blocks.Event
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -154,14 +146,15 @@ namespace Rock.Blocks.Event
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity = GetEntityBagForEdit( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( EventCalendar.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -189,12 +182,8 @@ namespace Rock.Blocks.Event
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="EventCalendarBag"/> that represents the entity.</returns>
-        private EventCalendarBag GetEntityBagForView( EventCalendar entity )
+        // <inheritdoc/>
+        protected override EventCalendarBag GetEntityBagForView( EventCalendar entity )
         {
             if ( entity == null )
             {
@@ -203,18 +192,13 @@ namespace Rock.Blocks.Event
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <param name="rockContext"></param>
-        /// <returns>A <see cref="EventCalendarBag"/> that represents the entity.</returns>
-        private EventCalendarBag GetEntityBagForEdit( EventCalendar entity, RockContext rockContext )
+        // <inheritdoc/>
+        protected override EventCalendarBag GetEntityBagForEdit( EventCalendar entity )
         {
             if ( entity == null )
             {
@@ -223,16 +207,16 @@ namespace Rock.Blocks.Event
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
-            var eventAttributes = GetEventAttributes( rockContext, entity.Id.ToString() );
+            var eventAttributes = GetEventAttributes( entity.Id.ToString() );
             bag.EventAttributes = eventAttributes.ConvertAll( e => new EventAttributeBag()
             {
                 Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( e ),
                 FieldType = FieldTypeCache.Get( e.FieldTypeId )?.Name,
             } );
 
-            bag.SavedContentChannels = new EventCalendarContentChannelService( rockContext )
+            bag.SavedContentChannels = new EventCalendarContentChannelService( RockContext )
             .Queryable()
                 .Where( c => c.EventCalendarId == entity.Id )
                 .Select( e => new ListItemBag()
@@ -242,7 +226,7 @@ namespace Rock.Blocks.Event
                 } )
                 .ToList();
 
-            bag.ContentChannels = new ContentChannelService( rockContext )
+            bag.ContentChannels = new ContentChannelService( RockContext )
                 .Queryable()
                 .Select( c => new ListItemBag()
                 {
@@ -255,55 +239,44 @@ namespace Rock.Blocks.Event
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( EventCalendar entity, DetailBlockBox<EventCalendarBag, EventCalendarDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( EventCalendar entity, ValidPropertiesBox<EventCalendarBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.IconCssClass ),
-                () => entity.IconCssClass = box.Entity.IconCssClass );
+            box.IfValidProperty( nameof( box.Bag.IconCssClass ),
+                () => entity.IconCssClass = box.Bag.IconCssClass );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.IsIndexEnabled ),
-                () => entity.IsIndexEnabled = box.Entity.IsIndexEnabled );
+            box.IfValidProperty( nameof( box.Bag.IsIndexEnabled ),
+                () => entity.IsIndexEnabled = box.Bag.IsIndexEnabled );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="EventCalendar"/> to be viewed or edited on the page.</returns>
-        private EventCalendar GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override EventCalendar GetInitialEntity()
         {
-            return GetInitialEntity<EventCalendar, EventCalendarService>( rockContext, PageParameterKey.EventCalendarId );
+            return GetInitialEntity<EventCalendar, EventCalendarService>( RockContext, PageParameterKey.EventCalendarId );
         }
 
         /// <summary>
@@ -318,47 +291,10 @@ namespace Rock.Blocks.Event
             };
         }
 
-        /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        // <inheritdoc/>
+        protected override bool TryGetEntityForEditAction( string idKey, out EventCalendar entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( EventCalendar entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out EventCalendar entity, out BlockActionResult error )
-        {
-            var entityService = new EventCalendarService( rockContext );
+            var entityService = new EventCalendarService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -397,11 +333,10 @@ namespace Rock.Blocks.Event
         /// <param name="qualifierColumn"></param>
         /// <param name="qualifierValue"></param>
         /// <param name="viewStateAttributes"></param>
-        /// <param name="rockContext"></param>
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<PublicEditableAttributeBag> viewStateAttributes, RockContext rockContext )
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<PublicEditableAttributeBag> viewStateAttributes )
         {
             // Get the existing attributes for this entity type and qualifier value
-            var attributeService = new AttributeService( rockContext );
+            var attributeService = new AttributeService( RockContext );
             var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
 
             // Delete any of those attributes that were removed in the UI
@@ -409,25 +344,24 @@ namespace Rock.Blocks.Event
             foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
                 attributeService.Delete( attr );
-                rockContext.SaveChanges();
+                RockContext.SaveChanges();
             }
 
             // Update the Attributes that were assigned in the UI
             foreach ( var attributeState in viewStateAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
             }
         }
 
         /// <summary>
         /// Gets the Event attributes.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="eventIdQualifierValue">The event identifier qualifier value.</param>
         /// <returns></returns>
-        private static List<Model.Attribute> GetEventAttributes( RockContext rockContext, string eventIdQualifierValue )
+        private List<Model.Attribute> GetEventAttributes( string eventIdQualifierValue )
         {
-            return new AttributeService( rockContext ).GetByEntityTypeId( new EventCalendarItem().TypeId, true ).AsQueryable()
+            return new AttributeService( RockContext ).GetByEntityTypeId( new EventCalendarItem().TypeId, true ).AsQueryable()
                 .Where( a =>
                     a.EntityTypeQualifierColumn.Equals( "EventCalendarId", StringComparison.OrdinalIgnoreCase ) &&
                     a.EntityTypeQualifierValue.Equals( eventIdQualifierValue ) )
@@ -450,22 +384,20 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<EventCalendarBag, EventCalendarDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<EventCalendarBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -474,101 +406,106 @@ namespace Rock.Blocks.Event
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<EventCalendarBag, EventCalendarDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<EventCalendarBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new EventCalendarService( RockContext );
+            var eventCalendarContentChannelService = new EventCalendarContentChannelService( RockContext );
+            var contentChannelService = new ContentChannelService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new EventCalendarService( rockContext );
-                var eventCalendarContentChannelService = new EventCalendarContentChannelService( rockContext );
-                var contentChannelService = new ContentChannelService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateEventCalendar( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-
-                    var dbChannelGuids = eventCalendarContentChannelService.Queryable()
-                        .Where( c => c.EventCalendarId == entity.Id )
-                        .Select( c => c.Guid )
-                        .ToList();
-
-                    var uiChannelGuids = box.Entity.SavedContentChannels.Select( c => c.Value.AsGuid() ).ToList();
-
-                    var toDelete = eventCalendarContentChannelService
-                        .Queryable()
-                        .Where( c =>
-                            dbChannelGuids.Contains( c.Guid ) &&
-                            !uiChannelGuids.Contains( c.Guid ) );
-
-                    eventCalendarContentChannelService.DeleteRange( toDelete );
-                    contentChannelService.Queryable()
-                        .Where( c =>
-                            uiChannelGuids.Contains( c.Guid ) &&
-                            !dbChannelGuids.Contains( c.Guid ) )
-                        .ToList()
-                        .ForEach( c =>
-                        {
-                            var eventCalendarContentChannel = new EventCalendarContentChannel();
-                            eventCalendarContentChannel.EventCalendarId = entity.Id;
-                            eventCalendarContentChannel.ContentChannelId = c.Id;
-                            eventCalendarContentChannelService.Add( eventCalendarContentChannel );
-                        } );
-
-                    /* Save Event Attributes */
-                    var eventAttributes = box.Entity.EventAttributes.ConvertAll( e => e.Attribute );
-                    SaveAttributes( new EventCalendarItem().TypeId, "EventCalendarId", entity.Id.ToString(), eventAttributes, rockContext );
-
-                    entity = entityService.Get( entity.Id );
-
-                    if ( entity != null )
-                    {
-                        if ( !entity.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
-                        {
-                            entity.AllowPerson( Authorization.VIEW, GetCurrentPerson(), rockContext );
-                        }
-                        if ( !entity.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
-                        {
-                            entity.AllowPerson( Authorization.EDIT, GetCurrentPerson(), rockContext );
-                        }
-                        if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() ) )
-                        {
-                            entity.AllowPerson( Authorization.ADMINISTRATE, GetCurrentPerson(), rockContext );
-                        }
-                    }
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.EventCalendarId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateEventCalendar( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+
+                var dbChannelGuids = eventCalendarContentChannelService.Queryable()
+                    .Where( c => c.EventCalendarId == entity.Id )
+                    .Select( c => c.Guid )
+                    .ToList();
+
+                var uiChannelGuids = box.Bag.SavedContentChannels.Select( c => c.Value.AsGuid() ).ToList();
+
+                var toDelete = eventCalendarContentChannelService
+                    .Queryable()
+                    .Where( c =>
+                        dbChannelGuids.Contains( c.Guid ) &&
+                        !uiChannelGuids.Contains( c.Guid ) );
+
+                eventCalendarContentChannelService.DeleteRange( toDelete );
+                contentChannelService.Queryable()
+                    .Where( c =>
+                        uiChannelGuids.Contains( c.Guid ) &&
+                        !dbChannelGuids.Contains( c.Guid ) )
+                    .ToList()
+                    .ForEach( c =>
+                    {
+                        var eventCalendarContentChannel = new EventCalendarContentChannel();
+                        eventCalendarContentChannel.EventCalendarId = entity.Id;
+                        eventCalendarContentChannel.ContentChannelId = c.Id;
+                        eventCalendarContentChannelService.Add( eventCalendarContentChannel );
+                    } );
+
+                /* Save Event Attributes */
+                var eventAttributes = box.Bag.EventAttributes.ConvertAll( e => e.Attribute );
+                SaveAttributes( new EventCalendarItem().TypeId, "EventCalendarId", entity.Id.ToString(), eventAttributes );
+
+                entity = entityService.Get( entity.Id );
+
+                if ( entity != null )
+                {
+                    if ( !entity.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+                    {
+                        entity.AllowPerson( Authorization.VIEW, GetCurrentPerson(), RockContext );
+                    }
+                    if ( !entity.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+                    {
+                        entity.AllowPerson( Authorization.EDIT, GetCurrentPerson(), RockContext );
+                    }
+                    if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, GetCurrentPerson() ) )
+                    {
+                        entity.AllowPerson( Authorization.ADMINISTRATE, GetCurrentPerson(), RockContext );
+                    }
+                }
+            } );
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.EventCalendarId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForView( entity );
+
+            return ActionOk( new ValidPropertiesBox<EventCalendarBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
+
         }
 
         /// <summary>
@@ -579,79 +516,22 @@ namespace Rock.Blocks.Event
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new EventCalendarService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new EventCalendarService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<EventCalendarBag, EventCalendarDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<EventCalendarBag, EventCalendarDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -663,11 +543,9 @@ namespace Rock.Blocks.Event
         public BlockActionResult GetAttribute( Guid? attributeGuid )
         {
             PublicEditableAttributeBag editableAttribute;
-            var rockContext = new RockContext();
-
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
             var eventIdQualifierValue = entity.Id.ToString();
-            var attributes = GetEventAttributes( rockContext, eventIdQualifierValue );
+            var attributes = GetEventAttributes( eventIdQualifierValue );
 
             if ( !attributeGuid.HasValue )
             {
@@ -700,7 +578,7 @@ namespace Rock.Blocks.Event
             // Get the queryable and make sure it is ordered correctly.
             var id = Rock.Utility.IdHasher.Instance.GetId( idKey );
 
-            var attributes = GetEventAttributes( RockContext, id?.ToString() );
+            var attributes = GetEventAttributes( id?.ToString() );
 
             if ( !attributes.ReorderEntity( guid.ToString(), beforeGuid.ToString() ) )
             {

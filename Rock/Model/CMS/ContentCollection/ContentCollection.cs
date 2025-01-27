@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentCollection" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONTENT_COLLECTION )]
     public partial class ContentCollection : Model<ContentCollection>, ICacheable
     {

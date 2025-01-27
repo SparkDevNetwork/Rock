@@ -80,7 +80,7 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <div>
-    <NotificationBox alertType="info">The user will be prompted to complete verify they are human each time this field is displayed in edit mode.</NotificationBox>
+    <NotificationBox alertType="info">The individual will be prompted to verify that they are human each time this field is displayed in edit mode.</NotificationBox>
     <NotificationBox v-if="notificationWarning" alertType="warning">{{ notificationWarning }}</NotificationBox>
 </div>
 `

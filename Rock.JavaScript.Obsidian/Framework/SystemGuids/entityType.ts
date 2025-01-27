@@ -239,6 +239,8 @@ export const EntityType = {
     EntityCampusFilter: "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78",
     /** The EntityType Guid for Rock.Model.EntityIntent  */
     EntityIntent: "15CE39A3-193F-44E5-80C7-DE47DA3EAF97",
+    /** The guid for Rock.Model.EntitySearch entity. */
+    EntitySearch: "080374B4-C765-4F90-8B85-BC2635164275",
     /** The EntityType Guid for Rock.Model.EntitySet  */
     EntitySet: "50E3F9C8-4010-41AF-8F61-08308DC44640",
     /** The EntityType Guid for Rock.Model.EntitySetItem  */
@@ -513,6 +515,10 @@ export const EntityType = {
     MobileEventsPrayerSessionBlockType: "BCAF9B7B-2ADE-496B-9303-150F495851FC",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.PrayerSessionSetup */
     MobileEventsPrayerSessionSetupBlockType: "51431866-FF92-433C-8B0F-0F6BBAD9BCE7",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finances.ScheduledTransactionList. */
+    MobileFinanceScheduledTransactionListBlockType: "7698E529-6834-46B0-BC5A-D466A6BCE4F6",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finances.TransactionDetail. */
+    MobileFinanceTransactionDetailBlockType: "3355006B-4C1F-4F85-8390-7C83C26D5C4A",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupRegistration */
     MobileGroupsGroupAddToGroup: "E0664BDC-9583-44F2-AC8D-23AE48603EAB",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Groups.GroupAttendanceEntry */

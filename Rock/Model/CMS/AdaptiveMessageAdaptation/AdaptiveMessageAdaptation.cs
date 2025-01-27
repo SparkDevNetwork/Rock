@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "AdaptiveMessageAdaptation" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_ADAPTATION )]
     public partial class AdaptiveMessageAdaptation : Model<AdaptiveMessageAdaptation>, IHasActiveFlag, IOrdered, ICacheable
     {

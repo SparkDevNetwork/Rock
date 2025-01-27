@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "MergeTemplate" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MERGE_TEMPLATE )]
     public partial class MergeTemplate : Model<MergeTemplate>, ICategorized
     {

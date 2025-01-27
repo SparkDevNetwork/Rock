@@ -21,6 +21,7 @@ using System.Windows.Input;
 using Rock;
 using Rock.CodeGeneration.Utility;
 using Rock.CodeGeneration.XmlDoc;
+using Rock.Enums;
 using Rock.Utility;
 
 namespace Rock.CodeGeneration.Pages
@@ -381,9 +382,14 @@ namespace Rock.CodeGeneration.Pages
 
                                 if ( IsRestChecked )
                                 {
-                                    WriteRESTFile( RestFolder, type );
+                                    WriteRESTV1File( RestFolder, type );
                                 }
                             }
+                        }
+
+                        if ( IsRestChecked )
+                        {
+                            WriteRestV2Files( _modelItems.Where( i => i.IsChecked ).Select( i => i.Item ), RestFolder, allModelsAreSelected );
                         }
 
                         var projectName = Path.GetFileNameWithoutExtension( AssemblyPath );
@@ -450,6 +456,7 @@ namespace Rock.CodeGeneration.Pages
             bool hasWarnings = false;
             StringBuilder rockObsoleteWarnings = new StringBuilder();
             StringBuilder rockGuidWarnings = new StringBuilder();
+            StringBuilder codeGenerateRestWarnings = new StringBuilder();
             Dictionary<string, string> rockGuids = new Dictionary<string, string>(); // GUID, Class/Method
             List<string> singletonClassVariablesWarnings = new List<string>();
             List<string> obsoleteReportList = new List<string>();
@@ -516,6 +523,17 @@ namespace Rock.CodeGeneration.Pages
                         }
                     }
 
+                    // See if this is an Entity that doesn't have a defined.
+                    if ( typeof( Data.IEntity ).IsAssignableFrom( type ) && !type.IsAbstract )
+                    {
+                        var attr = type.GetCustomAttribute<CodeGenerateRestAttribute>();
+
+                        if ( attr == null )
+                        {
+                            codeGenerateRestWarnings.AppendLine( $" - {type.FullName}" );
+                        }
+                    }
+
                     // get all members so we can see if there are warnings that we want to show
                     var memberList = type
                         .GetMembers( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static )
@@ -572,22 +590,26 @@ namespace Rock.CodeGeneration.Pages
                             "Rock.Extension.Component._typeName",
                             "Rock.Web.HttpModules.ResponseHeaders.Headers",
                             "Rock.Field.FieldType.QualifierUpdated",
+                            "Rock.Communication.Transport.Firebase._currentApp",
+                            "Rock.Communication.Transport.RockMobilePush._currentApp",
+                            "Rock.Extension.Component._logger",
 
-                             // Fields that probably should be fixed, but would take some time to figure out how to fix them.
-                             "Rock.Field.Types.CurrencyFieldType.CurrencyCodeDefinedValueId",
-                             "Rock.Field.Types.EnumFieldType`1._EnumValues",
-                             "Rock.Financial.TestGateway.MostRecentException",
-                             "Rock.Financial.TestRedirectionGateway.MostRecentException",
-                             "Rock.Security.BackgroundCheck.ProtectMyMinistry._httpStatusCode",
-                             "Rock.Security.ExternalAuthentication.Twitter._oauthToken",
-                             "Rock.Security.ExternalAuthentication.Twitter._oauthTokenSecret",
-                             "Rock.Security.ExternalAuthentication.Twitter._returnUrl",
-                             "Rock.UniversalSearch.IndexComponents.Elasticsearch._client",
-                             "Rock.Workflow.Action.AddStep._mergeFields",
-                             "Rock.Workflow.Action.PrayerRequestAdd._action",
-                             "Rock.Workflow.Action.PrayerRequestAdd._mergeField",
-                             "Rock.Workflow.Action.PrayerRequestAdd._rockContext",
-                             "Rock.Workflow.Action.PrayerRequestAdd._mergeFields"
+                            // Fields that probably should be fixed, but would take some time to figure out how to fix them.
+                            "Rock.Field.Types.CurrencyFieldType.CurrencyCodeDefinedValueId",
+                            "Rock.Field.Types.EnumFieldType`1._EnumValues",
+                            "Rock.Financial.TestGateway.MostRecentException",
+                            "Rock.Financial.TestRedirectionGateway.MostRecentException",
+                            "Rock.Security.BackgroundCheck.ProtectMyMinistry._httpStatusCode",
+                            "Rock.Security.ExternalAuthentication.Twitter._oauthToken",
+                            "Rock.Security.ExternalAuthentication.Twitter._oauthTokenSecret",
+                            "Rock.Security.ExternalAuthentication.Twitter._returnUrl",
+                            "Rock.UniversalSearch.IndexComponents.Elasticsearch._client",
+                            "Rock.Workflow.Action.AddStep._mergeFields",
+                            "Rock.Workflow.Action.PrayerRequestAdd._action",
+                            "Rock.Workflow.Action.PrayerRequestAdd._mergeField",
+                            "Rock.Workflow.Action.PrayerRequestAdd._rockContext",
+                            "Rock.Workflow.Action.PrayerRequestAdd._mergeFields",
+                            "Rock.Field.Types.PhoneNumberFieldType._defaultCountryCode",
                         };
 
                         if ( typeof( Rock.Field.FieldType ).IsAssignableFrom( type )
@@ -683,6 +705,14 @@ namespace Rock.CodeGeneration.Pages
                 warnings.AppendLine();
                 warnings.AppendLine( "[RockGuid] issues found." );
                 warnings.Append( rockGuidWarnings );
+            }
+
+            if ( codeGenerateRestWarnings.Length > 0 )
+            {
+                hasWarnings = true;
+                warnings.AppendLine();
+                warnings.AppendLine( "The following types are missing [CodeGenerateRest] attributes:" );
+                warnings.Append( codeGenerateRestWarnings );
             }
 
             if ( IsReportObsoleteChecked )
@@ -1406,11 +1436,11 @@ GO
         private Dictionary<string, Guid> _restControllerGuidLookupFromDatabase = null;
 
         /// <summary>
-        /// Writes the REST file for a given type
+        /// Writes the REST v1 file for a given type
         /// </summary>
         /// <param name="rootFolder"></param>
         /// <param name="type"></param>
-        private void WriteRESTFile( string rootFolder, Type type )
+        private void WriteRESTV1File( string rootFolder, Type type )
         {
             if ( _restControllerGuidLookupFromDatabase == null )
             {
@@ -1501,6 +1531,85 @@ GO
             var filePath1 = Path.Combine( rootFolder, "Controllers" );
             var file = new FileInfo( Path.Combine( filePath1, "CodeGenerated", pluralizedName + "Controller.CodeGenerated.cs" ) );
             WriteFile( file, sb );
+        }
+
+        /// <summary>
+        /// Writes the rest v2 files for the specified set of models. If the
+        /// <paramref name="removeOldFiles"/> parameter is <c>true</c> then any
+        /// existing files that were not generated by this call will be removed
+        /// from the file system and from the project.
+        /// </summary>
+        /// <param name="modelTypes">The model types to be generated.</param>
+        /// <param name="rootFolder">The root Rock.Rest folder.</param>
+        /// <param name="removeOldFiles">if set to <c>true</c> then old files will be removed.</param>
+        private void WriteRestV2Files( IEnumerable<Type> modelTypes, string rootFolder, bool removeOldFiles )
+        {
+            var codeGeneratedDirectory = Path.Combine( rootFolder, "v2", "Models", "CodeGenerated" );
+            var filesAdded = new List<string>();
+            var filesWritten = new List<string>();
+            var filesRemoved = new List<string>();
+            var generator = new FileGenerators.RestV2ApiGenerator();
+            var solutionPath = SupportTools.GetSolutionPath();
+
+            foreach ( var modelType in modelTypes )
+            {
+                var codeGenerateRestAttribute = modelType.GetCustomAttribute<CodeGenerateRestAttribute>();
+
+                if ( codeGenerateRestAttribute == null || codeGenerateRestAttribute.Endpoints == CodeGenerateRestEndpoint.None )
+                {
+                    continue;
+                }
+
+                var filename = Path.Combine( codeGeneratedDirectory, $"{modelType.Name.Pluralize()}Controller.CodeGenerated.cs" );
+                var exists = File.Exists( filename );
+                var originalContent = exists ? File.ReadAllText( filename ) : null;
+
+                var content = generator.GenerateStandardFileContent( modelType.Name, modelType.FullName, codeGenerateRestAttribute.Endpoints, codeGenerateRestAttribute.DisableEntitySecurity );
+
+                WriteFile( new FileInfo( filename ), new StringBuilder( content ) );
+                filesWritten.Add( filename );
+
+                if ( !exists )
+                {
+                    filesAdded.Add( filename );
+                }
+            }
+
+            if ( removeOldFiles )
+            {
+                foreach ( var filename in Directory.EnumerateFiles( codeGeneratedDirectory, "*.cs" ) )
+                {
+                    if ( !filesWritten.Any( f => Path.GetFileName( f ) == Path.GetFileName( filename ) ) )
+                    {
+                        filesRemoved.Add( filename );
+                        File.Delete( filename );
+                    }
+                }
+            }
+
+            if ( solutionPath == null )
+            {
+                return;
+            }
+
+            using ( var solution = SolutionHelper.LoadSolution( Path.Combine( solutionPath, "Rock.sln" ) ) )
+            {
+                // For each file that was created, make sure it
+                // has been added to the project file automatically.
+                foreach ( var filename in filesAdded )
+                {
+                    solution.AddCompileFileToProject( "Rock.Rest", filename );
+                }
+
+                // For each file that was removed, make sure it
+                // has been removed from the project file.
+                foreach ( var filename in filesRemoved )
+                {
+                    solution.RemoveFileFromProject( "Rock.Rest", filename );
+                }
+
+                solution.Save();
+            }
         }
 
         /// <summary>

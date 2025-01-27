@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "Communication" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "C4CCBD91-1264-48BF-BC33-92751C8948B5")]
     public partial class Communication : Model<Communication>, ICommunicationDetails
     {
