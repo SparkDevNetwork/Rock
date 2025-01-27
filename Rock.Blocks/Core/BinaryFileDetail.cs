@@ -463,6 +463,47 @@ namespace Rock.Blocks.Core
                 && ( bag.BinaryFileType?.Value.Equals( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL, StringComparison.OrdinalIgnoreCase ) == true );
         }
 
+        /// <summary>
+        /// Sets the uploaded file as a stream on the BinaryFile entity.
+        /// </summary>
+        /// <param name="bag">The bag.</param>
+        /// <param name="entity">The entity.</param>
+        private void SaveFile( BinaryFileBag bag, BinaryFile entity )
+        {
+            var entityService = new BinaryFileService( RockContext );
+            var binaryFileId = bag.File.GetEntityId<BinaryFile>( RockContext );
+            if ( binaryFileId.HasValue && entity.Id != binaryFileId.Value )
+            {
+                var uploadedBinaryFile = entityService.Get( binaryFileId.Value );
+                if ( uploadedBinaryFile != null )
+                {
+                    entity.BinaryFileTypeId = uploadedBinaryFile.BinaryFileTypeId;
+                    entity.FileSize = uploadedBinaryFile.FileSize;
+                    var memoryStream = new MemoryStream();
+
+                    // If this is a label file then we need to cleanup some settings that most templates will use by default
+                    if ( IsLabelFile( bag ) )
+                    {
+                        // ^JUS will save changes to EEPROM, doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
+                        string label = uploadedBinaryFile.ContentsToString().Replace( "^JUS", string.Empty );
+
+                        // Use UTF-8 instead of ASCII
+                        label = label.Replace( "^CI0", "^CI28" );
+
+                        var writer = new StreamWriter( memoryStream );
+                        writer.Write( label );
+                        writer.Flush();
+                    }
+                    else
+                    {
+                        uploadedBinaryFile.ContentStream.CopyTo( memoryStream );
+                    }
+
+                    entity.ContentStream = memoryStream;
+                }
+            }
+        }
+
         #endregion
 
         #region Block Actions
@@ -543,46 +584,10 @@ namespace Rock.Blocks.Core
                 }
             }
 
-            return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl( new Dictionary<string, string>
+            return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
             {
                 [PageParameterKey.BinaryFileId] = entity.IdKey
             } ) );
-        }
-
-        private void SaveFile( BinaryFileBag bag, BinaryFile entity )
-        {
-            var entityService = new BinaryFileService( RockContext );
-            var binaryFileId = bag.File.GetEntityId<BinaryFile>( RockContext );
-            if ( binaryFileId.HasValue && entity.Id != binaryFileId.Value )
-            {
-                var uploadedBinaryFile = entityService.Get( binaryFileId.Value );
-                if ( uploadedBinaryFile != null )
-                {
-                    entity.BinaryFileTypeId = uploadedBinaryFile.BinaryFileTypeId;
-                    entity.FileSize = uploadedBinaryFile.FileSize;
-                    var memoryStream = new MemoryStream();
-
-                    // If this is a label file then we need to cleanup some settings that most templates will use by default
-                    if ( IsLabelFile( bag ) )
-                    {
-                        // ^JUS will save changes to EEPROM, doing this for each label is not needed, slows printing dramatically, and shortens the printer's memory life.
-                        string label = uploadedBinaryFile.ContentsToString().Replace( "^JUS", string.Empty );
-
-                        // Use UTF-8 instead of ASCII
-                        label = label.Replace( "^CI0", "^CI28" );
-
-                        var writer = new StreamWriter( memoryStream );
-                        writer.Write( label );
-                        writer.Flush();
-                    }
-                    else
-                    {
-                        uploadedBinaryFile.ContentStream.CopyTo( memoryStream );
-                    }
-
-                    entity.ContentStream = memoryStream;
-                }
-            }
         }
 
         /// <summary>
