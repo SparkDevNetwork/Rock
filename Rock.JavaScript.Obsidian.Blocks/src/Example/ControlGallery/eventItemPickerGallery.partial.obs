@@ -49,6 +49,9 @@
     import { ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import EventItemPicker from "@Obsidian/Controls/eventItemPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
     import { getSfcControlImportPath, displayStyleItems } from "./common/utils.partial";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
 

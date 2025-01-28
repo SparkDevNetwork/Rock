@@ -1,5 +1,5 @@
 <template>
-    <GalleryAndResult :value="signature"
+    <GalleryAndResult :value="signature ?? null"
                       :importCode="importCode"
                       :exampleCode="exampleCode">
 
@@ -18,6 +18,8 @@
     import { ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
     import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
 

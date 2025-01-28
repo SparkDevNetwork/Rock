@@ -5,7 +5,7 @@
                       enableReflection>
 
         <RockForm v-model:submit="submit">
-            <AddressControl label="Address" v-model="value" :rules="required ? 'required' : ''" :partialAddressIsAllowed="partial" :showCountry="showCountry" />
+            <AddressControl label="Address" v-model="value" :rules="required ? 'required' : ''" :disableFrontEndValidation="partial" :showCountry="showCountry" />
 
             <RockButton @click="submit = true">Validate</RockButton>
         </RockForm>
@@ -31,6 +31,10 @@
     import { computed, ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
 
     const showCountrySelected = ref("default");

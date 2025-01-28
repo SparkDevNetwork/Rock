@@ -34,7 +34,6 @@
     import CategorizedValuePicker from "@Obsidian/Controls/categorizedValuePicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-
     import { getSfcControlImportPath } from "./common/utils.partial";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { Guid } from "@Obsidian/Types";

@@ -3,6 +3,7 @@
                       :importCode="importCode"
                       :exampleCode="exampleCode"
                       enableReflection>
+
         <CampusPicker label="Campus"
                       v-model="value"
                       :multiple="multiple"
@@ -67,6 +68,10 @@
     import { ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import CampusPicker from "@Obsidian/Controls/campusPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { getSfcControlImportPath, displayStyleItems } from "./common/utils.partial";
     import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
     import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

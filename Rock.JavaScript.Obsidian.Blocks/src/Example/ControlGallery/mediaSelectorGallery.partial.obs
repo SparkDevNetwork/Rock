@@ -7,10 +7,8 @@
         <MediaSelector label="MediaSelector" v-model="items" :mediaItems="mediaItems" :mode="modeNum" />
 
         <template #settings>
-            <div class="row">
-                <KeyValueList label="Media Items" v-model="mediaItems" />
-                <DropDownList label="Mode" v-model="mode" :items="modeOptions" />
-            </div>
+            <KeyValueList label="Media Items" v-model="mediaItems" />
+            <DropDownList label="Mode" v-model="mode" :items="modeOptions" />
         </template>
     </GalleryAndResult>
 </template>

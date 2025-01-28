@@ -22,6 +22,9 @@
     import { computed, ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
 

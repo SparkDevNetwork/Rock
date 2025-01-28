@@ -1,8 +1,6 @@
 <template>
-    <GalleryAndResult :value="value"
-                      :importCode="importCode"
-                      :exampleCode="exampleCode"
-                      enableReflection>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
         <AchievementTypePicker label="Achievement Type"
                                v-model="value"
                                :multiple="multiple"
@@ -54,7 +52,7 @@
     const enhanceForLongLists = ref(false);
     const multiple = ref(false);
     const showBlankItem = ref(false);
-    const value = ref({});
+    const value = ref(null);
     const importCode = getSfcControlImportPath("achievementTypePicker");
     const exampleCode = `<AchievementTypePicker label="Achievement Type" v-model="value" :multiple="false" />`;
 </script>

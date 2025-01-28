@@ -10,8 +10,8 @@
                                 :groupLabel="glabel"
                                 v-model="value"
                                 v-model:groupType="groupType"
-                                v-model:group="group" :
-                                rules="required ? 'required' : ''" :disabled="disabled" />
+                                v-model:group="group"
+                                :rules="required ? 'required' : ''" :disabled="disabled" />
             <RockButton @click="submit = true">Submit</RockButton>
         </RockForm>
 

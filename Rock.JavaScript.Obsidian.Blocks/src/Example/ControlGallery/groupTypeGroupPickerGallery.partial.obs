@@ -26,6 +26,8 @@
     import { ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
 
     const value = ref(null);

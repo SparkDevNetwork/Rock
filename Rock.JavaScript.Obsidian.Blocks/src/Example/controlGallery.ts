@@ -185,7 +185,7 @@ import CountdownTimerGallery from "./ControlGallery/countdownTimerGallery.partia
 import ElectronicSignatureGallery from "./ControlGallery/electronicSignatureGallery.partial.obs";
 import FieldTypeEditorGallery from "./ControlGallery/fieldTypeEditorGallery.partial.obs";
 import InlineRangeSliderGallery from "./ControlGallery/inlineRangeSliderGallery.partial.obs";
-import JavaScriptAnchorGallery from "./ControlGallery/javaScriptAnchorGallery.partial.obs";
+import JavaScriptAnchorGallery from "./ControlGallery/javascriptAnchorGallery.partial.obs";
 import LoadingGallery from "./ControlGallery/loadingGallery.partial.obs";
 import LoadingIndicatorGallery from "./ControlGallery/loadingIndicatorGallery.partial.obs";
 import NumberUpDownGroupGallery from "./ControlGallery/numberUpDownGroupGallery.partial.obs";
@@ -445,8 +445,6 @@ const controlGalleryComponents: Record<string, Component> = [
         newList[comp.name!] = comp;
         return newList;
     }, {});
-
-// #endregion
 
 // #region Template Gallery
 
