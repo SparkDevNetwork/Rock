@@ -272,6 +272,7 @@ import CategoryTreeGallery from "./ControlGallery/categoryTreeGallery.partial.ob
 import PageNavButtonsGallery from "./ControlGallery/pageNavButtonsGallery.partial.obs";
 import SearchFieldGallery from "./ControlGallery/searchFieldGallery.partial.obs";
 import { Guid } from "@Obsidian/Types";
+import AdaptiveMessagePicker from "@Obsidian/Controls/adaptiveMessagePicker.obs";
 
 
 // #region Control Gallery
@@ -8019,6 +8020,41 @@ const blockTemplatePickerGallery = defineComponent({
 </GalleryAndResult>`
 });
 
+/** Demonstrates adaptive message picker */
+const adaptiveMessagePickerGallery = defineComponent({
+    name: "AdaptiveMessagePickerGallery",
+    components: {
+        GalleryAndResult,
+        CheckBox,
+        AdaptiveMessagePicker,
+    },
+    setup() {
+        return {
+            multiple: ref(false),
+            value: ref(null),
+            importCode: getControlImportPath("adaptiveMessagePicker"),
+            exampleCode: `<AdaptiveMessagePicker label="Adaptve Message" v-model="value" />`
+        };
+    },
+    template: `
+<GalleryAndResult
+    :value="value"
+    :importCode="importCode"
+    :exampleCode="exampleCode"
+    enableReflection >
+    <AdaptiveMessagePicker label="Adaptve Message"
+        v-model="value"
+        :multiple="multiple"/>
+    <template #settings>
+        <div class="row">
+            <div class="col-md-4">
+                <CheckBox label="Multiple" v-model="multiple" />
+            </div>
+        </div>
+    </template>
+</GalleryAndResult>`
+});
+
 
 const controlGalleryComponents: Record<string, Component> = [
     notificationBoxGallery,
@@ -8171,6 +8207,7 @@ const controlGalleryComponents: Record<string, Component> = [
     workflowPickerGallery,
     valueListGallery,
     blockTemplatePickerGallery,
+    adaptiveMessagePickerGallery,
     DropDownMenuGallery,
     DropDownContentGallery,
     ButtonDropDownListGallery,
