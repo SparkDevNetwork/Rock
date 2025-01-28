@@ -217,15 +217,6 @@
 				"isBackground": true,
 				"detail": "Build both Obsidian projects, watch file system for changes and rebuild.",
 				"problemMatcher": []
-			},
-			{
-				"label": "New Gallery Migration",
-				"type": "shell",
-				"command": "..\\..\\..\\..\\..\\newGallery.ps1",
-				"options": {
-					"cwd": "../Rock.JavaScript.Obsidian.Blocks/src/Example/ControlGallery"
-				},
-				"problemMatcher": []
 			}
 		]
 	}
