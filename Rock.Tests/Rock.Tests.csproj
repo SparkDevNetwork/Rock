@@ -241,6 +241,7 @@
     <Compile Include="CheckIn\v2\Filters\LocationOverflowOpportunityFilterTests.cs" />
     <Compile Include="CheckIn\v2\Filters\MembershipOpportunityFilterTests.cs" />
     <Compile Include="CheckIn\v2\Filters\PreferredGroupsOpportunityFilterTests.cs" />
+    <Compile Include="CheckIn\v2\Filters\ScheduleRequirementOpportunityFilterTests.cs" />
     <Compile Include="CheckIn\v2\Filters\ThresholdOpportunityFilterTests.cs" />
     <Compile Include="CheckIn\v2\Labels\Renderers\TextLabelRendererTests.cs" />
     <Compile Include="CheckIn\v2\Labels\Renderers\ZplImageHelperTests.cs" />

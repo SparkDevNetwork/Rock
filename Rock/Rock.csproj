@@ -963,6 +963,7 @@
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationOverflowOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\PreferredGroupsOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\ScheduleRequirementOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\SpecialNeedsOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelAttendanceDetail.cs" />
