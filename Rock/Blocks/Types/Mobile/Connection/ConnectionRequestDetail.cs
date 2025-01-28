@@ -520,7 +520,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     Key = kvp.Value.Key,
                     Name = kvp.Value.Name,
                     Order = kvp.Value.Order,
-                    Value = ""
+                    Value = "",
+                    TextValue = request.GetAttributeTextValue( kvp.Value.Key )
                 } );
 
             // Add all the values to those attributes.
@@ -3105,6 +3106,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// </summary>
             /// <value>The value.</value>
             public string Value { get; set; }
+
+            /// <summary>
+            /// Gets or sets the text value.
+            /// </summary>
+            public string TextValue { get; set; }
         }
 
         /// <summary>
