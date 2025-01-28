@@ -35,6 +35,12 @@ namespace Rock.CheckIn.v2
         #region Properties
 
         /// <summary>
+        /// Determines if this group requires that the person be scheduled
+        /// in order to check-in. This is used by the group scheduler.
+        /// </summary>        
+        public virtual AttendanceRecordRequiredForCheckIn AttendanceRecordRequiredForCheckIn { get; }
+
+        /// <summary>
         /// Gets the minimum age requirement or <c>null</c> if there is no
         /// minimum. The person's age must be greater than or equal to
         /// this value.
@@ -141,6 +147,7 @@ namespace Rock.CheckIn.v2
             (MinimumBirthdate, MaximumBirthdate) = GetBirthdateRange( groupCache );
             (MinimumGradeOffset, MaximumGradeOffset) = GetGradeOffsetRange( groupCache, rockContext );
             (MinimumBirthMonth, MaximumBirthMonth) = GetBirthMonthRange( groupCache );
+            AttendanceRecordRequiredForCheckIn = groupCache.AttendanceRecordRequiredForCheckIn;
             Gender = groupCache.GetAttributeValue( "Gender" ).ConvertToEnumOrNull<Gender>();
             DataViewGuids = groupCache.GetAttributeValue( "DataView" ).SplitDelimitedValues().AsGuidList();
             IsSpecialNeeds = groupCache.IsSpecialNeeds;

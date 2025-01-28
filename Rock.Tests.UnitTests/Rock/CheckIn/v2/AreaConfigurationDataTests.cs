@@ -36,6 +36,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
             groupType.Object.AttendancePrintTo = expectedPrintTo;
             groupType.Object.AlreadyEnrolledMatchingLogic = expectedAlreadyEnrolledMatchingLogic;
             groupType.Object.IsConcurrentCheckInPrevented = true;
+            groupType.Object.IsSchedulingEnabled = true;
             groupType.SetMockAttributeValue( SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY, LocationSelectionStrategy.Balance.ConvertToInt().ToString() );
 
             var groupTypeCache = new GroupTypeCache();
@@ -46,6 +47,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
             Assert.AreEqual( expectedAttendanceRule, instance.AttendanceRule );
             Assert.AreEqual( expectedAlreadyEnrolledMatchingLogic, instance.AlreadyEnrolledMatchingLogic );
             Assert.IsTrue( instance.IsConcurrentCheckInPrevented );
+            Assert.IsTrue( instance.IsSchedulingEnabled );
             Assert.AreEqual( expectedPrintTo, instance.PrintTo );
             Assert.AreEqual( expectedLocationSelectionStrategy, instance.LocationSelectionStrategy );
         }
@@ -57,7 +59,7 @@ namespace Rock.Tests.UnitTests.Rock.CheckIn.v2
             // added so we can update the other tests to check for those
             // properties.
             var type = typeof( AreaConfigurationData );
-            var expectedPropertyCount = 5;
+            var expectedPropertyCount = 6;
 
             var propertyCount = type.GetProperties().Length;
 
