@@ -20,22 +20,10 @@
 
         <div class="row">
             <div class="col-md-3">
-                <NumberBox :minimumValue="0" v-model="viewSaturationCount" label="View Saturation Count" help="The number of times a person should view the message before it's deemed to have been saturated." />
+                <DatePicker v-model="startDate" label="Start Date" help="The date when this adaptation becomes eligible to be shown." />
             </div>
             <div class="col-md-3">
-                <NumberBox :minimumValue="0" v-model="viewSaturationInDays" label="View Saturation Date Range" help="Specify the number of days to be taken into consideration for the saturation calculation of views. Views outside this range will not be considered.">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">days</span>
-                    </template>
-                </NumberBox>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-3">
-                <DatePicker v-model="startDate" label="Start Date" />
-            </div>
-            <div class="col-md-3">
-                <DatePicker v-model="endDate" label="End Date" />
+                <DatePicker v-model="endDate" label="End Date" help="The date when this adaptation stops being shown." />
             </div>
         </div>
         <div class="row">
@@ -47,6 +35,18 @@
                               label="Segments"
                               help="The segments that an individual needs to be in order for this message adaptation to be considered relevant. Leave blank for all individuals to be considered relevant."
                               :items="segmentOptions" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <NumberBox :minimumValue="0" v-model="viewSaturationCount" label="View Saturation Count" help="The number of times a person should view the message before it's deemed to have been saturated." />
+            </div>
+            <div class="col-md-3">
+                <NumberBox :minimumValue="0" v-model="viewSaturationInDays" label="View Saturation Date Range" help="Specify the number of days to be taken into consideration for the saturation calculation of views. Views outside this range will not be considered.">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
             </div>
         </div>
         <SectionHeader class="margin-t-lg" title="Message Content"
