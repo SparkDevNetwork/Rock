@@ -153,33 +153,42 @@ namespace Rock.Lava.Blocks
                 List<AdaptiveMessageCache> adaptiveMessages = new List<AdaptiveMessageCache>();
                 if ( commandMode == CommandMode.Message )
                 {
-                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.Key == messageKey && a.IsActive && ( a.StartDate == null || a.StartDate <= currentDate ) && ( a.EndDate == null || a.EndDate >= currentDate ) ).ToList();
+                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.Key == messageKey && IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) ).ToList();
                 }
                 else
                 {
                     var categoryService = new CategoryService( rockContext );
                     var categoryGuid = categoryService.GetGuid( categoryId.Value );
 
-                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.CategoryIds.Contains( categoryId.Value ) && a.IsActive && ( a.StartDate == null || a.StartDate <= currentDate ) && ( a.EndDate == null || a.EndDate >= currentDate ) ).ToList();
+                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.CategoryIds.Contains( categoryId.Value ) && IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) ).ToList();
                     GetAaptiveMessageForChildCategories( rockContext, adaptiveMessages, categoryGuid );
                 }
 
                 var adaptationQry = adaptiveMessages
                        .SelectMany( a => a.Adaptations.OrderBy( b => b.Order ).ThenBy( b => b.Name ).Take( adaptationPerMessage.Value ) )
-                       .Where( a => a.IsActive && ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) && ( a.StartDate == null || a.StartDate <= currentDate ) && ( a.EndDate == null || a.EndDate >= currentDate ) );
+                       .Where( a => IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) && ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) );
+
+                var adaptationIds = adaptationQry.Select( a => a.Id ).ToList();
+
+                var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.ADAPTIVE_MESSAGES.AsGuid() );
+                var interactionQry = new InteractionService( rockContext ).Queryable().Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelId && a.EntityId.HasValue && adaptationIds.Contains( a.EntityId.Value ) );
+
+                if ( person != null )
+                {
+                    adaptationQry = adaptationQry.Where( a => !IsSaturated( a, interactionQry, person.PrimaryAliasId ) );
+                }
 
                 if ( commandMode == CommandMode.Category )
                 {
                     adaptationQry = adaptationQry.Take( maxAdaptations.Value );
                 }
 
-                AddLavaMergeFieldsToContext( context, adaptationQry.ToList() );
+                AddLavaMergeFieldsToContext( context, adaptationQry.ToList(), person );
 
                 if ( isTrackViews && adaptationQry.Any() )
                 {
                     foreach ( var adaptation in adaptationQry )
                     {
-                        var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.ADAPTIVE_MESSAGES.AsGuid() );
                         var info = new InteractionTransactionInfo
                         {
                             InteractionChannelId = interactionChannelId.Value,
@@ -229,24 +238,84 @@ namespace Rock.Lava.Blocks
             }
         }
 
-        private void AddLavaMergeFieldsToContext( ILavaRenderContext context, List<AdaptiveMessageAdaptationCache> adaptations )
+        private void AddLavaMergeFieldsToContext( ILavaRenderContext context, List<AdaptiveMessageAdaptationCache> adaptations, Person person )
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-            foreach ( var adaptation in adaptations )
-            {
-                if ( adaptation.AttributeValues.ContainsKey( "CallToAction" ) )
-                {
-                    adaptation.AttributeValues["CallToAction"].Value = adaptation.AttributeValues["CallToAction"].Value.ResolveMergeFields( mergeFields );
-                }
-            }
+            mergeFields.Add( "Person", person ); 
 
-            context["messageAdaptations"] = adaptations;
+            var resolvedAdaptations = adaptations.Select( a => new AdaptiveMessageAdaptation
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Description = a.Description,
+                IsActive = a.IsActive,
+                Order = a.Order,
+                ViewSaturationCount = a.ViewSaturationCount,
+                ViewSaturationInDays = a.ViewSaturationInDays,
+                AdaptiveMessageId = a.AdaptiveMessageId,
+                StartDate = a.StartDate,
+                EndDate = a.EndDate,
+                Attributes = a.Attributes,
+                AttributeValues = a.AttributeValues.ToDictionary(
+                    av => av.Key,
+                    av => new Rock.Web.Cache.AttributeValueCache
+                    {
+                        AttributeId = av.Value.AttributeId,
+                        Value = av.Key == "CallToAction" ? av.Value.Value.ResolveMergeFields( mergeFields ) : av.Value.Value
+                    }
+                )
+            } ).ToList();
+
+            context["messageAdaptations"] = resolvedAdaptations;
             if ( adaptations.Count == 1 )
             {
                 context["messageAdaptation"] = adaptations.First();
             }
             //context.SetMergeField( "messageAdaptations", adaptations, LavaContextRelativeScopeSpecifier.Root );
         }
+
+        /// <summary>
+        /// Helper method to determine if the entity is currently active.
+        /// </summary>
+        /// <param name="isActive">The isActive boolean property</param>
+        /// <param name="startDate">The start date</param>
+        /// <param name="endDate">The end date</param>
+        /// <returns>Boolean value that determines if the entity is currently active</returns>
+        private bool IsCurrentlyActive( bool isActive, DateTime? startDate, DateTime? endDate )
+        {
+            return isActive &&
+                   ( startDate == null || startDate <= RockDateTime.Now ) &&
+                   ( endDate == null || endDate >= RockDateTime.Now );
+        }
+
+        private bool IsSaturated( AdaptiveMessageAdaptationCache adaptation, IQueryable<Interaction> interactionQry, int? personAliasId )
+        {
+            if ( !personAliasId.HasValue )
+            {
+                return false;
+            }
+
+            var currentDate = RockDateTime.Now;
+
+            if ( !adaptation.ViewSaturationCount.HasValue || !adaptation.ViewSaturationInDays.HasValue )
+            {
+                return false;
+            }
+
+            // Start debugging here.
+
+            int saturationCount = adaptation.ViewSaturationCount.Value;
+            int saturationDays = adaptation.ViewSaturationInDays.Value;
+            var startDate = currentDate.AddDays( -saturationDays );
+
+            int interactionCount = interactionQry
+                .Where( i => i.EntityId == adaptation.Id && i.PersonAliasId == personAliasId.Value && i.InteractionDateTime >= startDate )
+                .Count();
+
+            return interactionCount >= saturationCount;
+        }
+
+
 
         #region ILavaSecured
 
