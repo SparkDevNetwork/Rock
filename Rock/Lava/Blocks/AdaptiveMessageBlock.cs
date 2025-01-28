@@ -164,19 +164,26 @@ namespace Rock.Lava.Blocks
                     GetAaptiveMessageForChildCategories( rockContext, adaptiveMessages, categoryGuid );
                 }
 
-                var adaptationQry = adaptiveMessages
-                       .SelectMany( a => a.Adaptations.OrderBy( b => b.Order ).ThenBy( b => b.Name ).Take( adaptationPerMessage.Value ) )
-                       .Where( a => IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) && ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) );
-
-                var adaptationIds = adaptationQry.Select( a => a.Id ).ToList();
-
                 var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.ADAPTIVE_MESSAGES.AsGuid() );
-                var interactionQry = new InteractionService( rockContext ).Queryable().Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelId && a.EntityId.HasValue && adaptationIds.Contains( a.EntityId.Value ) );
+                IQueryable<Interaction> interactionQry = null;
 
-                if ( person != null )
+                if ( person != null && person.PrimaryAliasId.HasValue )
                 {
-                    adaptationQry = adaptationQry.Where( a => !IsSaturated( a, interactionQry, person.PrimaryAliasId ) );
+                    interactionQry = new InteractionService( rockContext )
+                        .Queryable()
+                        .Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelId &&
+                                    a.EntityId.HasValue &&
+                                    a.PersonAliasId == person.PrimaryAliasId.Value );
                 }
+
+                var adaptationQry = adaptiveMessages
+                    .SelectMany( a => a.Adaptations )
+                    .Where( a => IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) &&
+                                ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) &&
+                                ( person == null || !IsSaturated( a, interactionQry ) ) )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .Take( adaptationPerMessage.Value );
 
                 if ( commandMode == CommandMode.Category )
                 {
@@ -267,9 +274,9 @@ namespace Rock.Lava.Blocks
             } ).ToList();
 
             context["messageAdaptations"] = resolvedAdaptations;
-            if ( adaptations.Count == 1 )
+            if ( resolvedAdaptations.Count == 1 )
             {
-                context["messageAdaptation"] = adaptations.First();
+                context["messageAdaptation"] = resolvedAdaptations.First();
             }
             //context.SetMergeField( "messageAdaptations", adaptations, LavaContextRelativeScopeSpecifier.Root );
         }
@@ -288,13 +295,8 @@ namespace Rock.Lava.Blocks
                    ( endDate == null || endDate >= RockDateTime.Now );
         }
 
-        private bool IsSaturated( AdaptiveMessageAdaptationCache adaptation, IQueryable<Interaction> interactionQry, int? personAliasId )
+        private bool IsSaturated( AdaptiveMessageAdaptationCache adaptation, IQueryable<Interaction> interactionQry )
         {
-            if ( !personAliasId.HasValue )
-            {
-                return false;
-            }
-
             var currentDate = RockDateTime.Now;
 
             if ( !adaptation.ViewSaturationCount.HasValue || !adaptation.ViewSaturationInDays.HasValue )
@@ -302,14 +304,12 @@ namespace Rock.Lava.Blocks
                 return false;
             }
 
-            // Start debugging here.
-
             int saturationCount = adaptation.ViewSaturationCount.Value;
             int saturationDays = adaptation.ViewSaturationInDays.Value;
             var startDate = currentDate.AddDays( -saturationDays );
 
             int interactionCount = interactionQry
-                .Where( i => i.EntityId == adaptation.Id && i.PersonAliasId == personAliasId.Value && i.InteractionDateTime >= startDate )
+                .Where( i => i.EntityId == adaptation.Id && i.InteractionDateTime >= startDate )
                 .Count();
 
             return interactionCount >= saturationCount;

@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail
 {
     /// <summary>
@@ -39,5 +41,11 @@ namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail
         /// The message reserved key names.
         /// </value>
         public List<string> MessageReservedKeyNames { get; set; }
+
+
+        /// <summary>
+        /// The parent Category of the Adaptive Message
+        /// </summary>
+        public ListItemBag ParentCategory { get; set; }
     }
 }

@@ -6,6 +6,7 @@
                 <TextBox v-model="name"
                          label="Name"
                          rules="required"
+                         :maxLength="100"
                          @blur="populateMessageKey" />
             </div>
 
@@ -24,6 +25,7 @@
                 <TextBox v-model="key"
                          label="Key"
                          help="The unique key that will identify this adaptive message."
+                         :maxLength="100"
                          :rules="validityKeyRules" />
             </div>
             <div class="col-md-6">
@@ -140,7 +142,14 @@
     const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
     const key = propertyRef(props.modelValue.key ?? "", "Key");
-    const categories = propertyRef(props.modelValue.categories ?? [], "Categories");
+    const categories = propertyRef(
+        props.modelValue.categories?.length
+            ? props.modelValue.categories
+            : props.options.parentCategory
+                ? [props.options.parentCategory]
+                : [],
+        "Categories"
+    );
     const adaptationSharedAttributes = ref(props.modelValue.adaptationSharedAttributes ?? []);
     const adaptationAttributes = ref(props.modelValue.adaptationAttributes ?? []);
     const adaptationAttribute = ref<PublicEditableAttributeBag | null>(null);

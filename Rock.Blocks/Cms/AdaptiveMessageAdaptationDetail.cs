@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
@@ -28,9 +27,8 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.AdaptiveMessageAdaptationDetail;
-using Rock.ViewModels.Blocks.Cms.LayoutDetail;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 
 namespace Rock.Blocks.Cms
 {
@@ -501,6 +499,7 @@ namespace Rock.Blocks.Cms
                 {
                     rockContext.SaveChanges();
                     entity.SaveAttributeValues( rockContext );
+                    AdaptiveMessageAdaptationCache.FlushItem( entity.Id );
                 } );
 
                 if ( isNew )

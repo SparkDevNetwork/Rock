@@ -139,6 +139,16 @@ namespace Rock.Blocks.Cms
                 options.MessageReservedKeyNames = messageQry.Select( a => a.Key ).ToList();
             }
 
+            var parentCategoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+            if ( parentCategoryId.HasValue )
+            {
+                var parentCategory = new CategoryService( rockContext ).Get( parentCategoryId.Value );
+                if ( parentCategory != null && parentCategory.EntityType.Guid == Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE_CATEGORY.AsGuid() )
+                {
+                    options.ParentCategory = parentCategory.ToListItemBag();
+                }
+            }
+
             return options;
         }
 

@@ -46,7 +46,6 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
-            // Set a break point and view the call stack.
             var cachedAdaptations = AdaptiveMessageCache.Get( this.Id, ( RockContext ) dbContext )?.Adaptations;
             if ( cachedAdaptations?.Any() == true )
             {
