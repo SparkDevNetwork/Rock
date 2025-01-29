@@ -1083,7 +1083,7 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="id">The identifier of the entity.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>An object that can be used to access the attribute values or <c>null</c> if the entity type is not valid.</returns>
-        [RockInternal( "1.17", true )]
+        [RockInternal( "17.0", true )]
         public static IHasAttributes LoadAttributes( Type entityType, int id, RockContext rockContext )
         {
             var setMethod = GetQueryableAttributeSetMethod( entityType );

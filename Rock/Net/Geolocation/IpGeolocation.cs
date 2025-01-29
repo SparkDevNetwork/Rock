@@ -32,7 +32,7 @@ namespace Rock.Net.Geolocation
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal( "1.17.0" )]
+    [RockInternal( "17.0" )]
     public class IpGeolocation : RockDynamic
     {
         /// <summary>

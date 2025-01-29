@@ -32,7 +32,7 @@ namespace Rock.Obsidian
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal( "1.17" )]
+    [RockInternal( "17.0" )]
     public abstract class ObsidianComponent : Component
     {
         #region Properties
