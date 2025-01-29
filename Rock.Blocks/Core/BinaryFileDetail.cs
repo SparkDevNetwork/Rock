@@ -74,7 +74,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "de112a87-a1bc-46cc-bea1-d5d658ab1e3a" )]
     [Rock.SystemGuid.BlockTypeGuid( "d0d4fcb2-e21e-4287-9416-81ba60b90f40" )]
-    public class BinaryFileDetail : RockDetailBlockType
+    public class BinaryFileDetail : RockEntityDetailBlockType<BinaryFile, BinaryFileBag>
     {
         #region Keys
 
@@ -110,18 +110,14 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag>();
+            var box = new DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.Entity, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<BinaryFile>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.Entity );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -129,9 +125,8 @@ namespace Rock.Blocks.Core
         /// or edit the entity.
         /// </summary>
         /// <param name="bag"><c>true</c> if the block should be visible; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private BinaryFileDetailOptionsBag GetBoxOptions( BinaryFileBag bag, RockContext rockContext )
+        private BinaryFileDetailOptionsBag GetBoxOptions( BinaryFileBag bag )
         {
             var options = new BinaryFileDetailOptionsBag()
             {
@@ -145,10 +140,9 @@ namespace Rock.Blocks.Core
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="binaryFile">The BinaryFile to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the BinaryFile is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateBinaryFile( BinaryFile binaryFile, RockContext rockContext, out string errorMessage )
+        private bool ValidateBinaryFile( BinaryFile binaryFile, out string errorMessage )
         {
             errorMessage = null;
 
@@ -160,10 +154,9 @@ namespace Rock.Blocks.Core
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -174,15 +167,14 @@ namespace Rock.Blocks.Core
             var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
                 // Existing entity was found, prepare for view mode by default.
                 if ( isViewable )
                 {
-                    box.Entity = GetEntityBagForView( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity = GetEntityBagForView( entity );
                 }
                 else
                 {
@@ -194,14 +186,15 @@ namespace Rock.Blocks.Core
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity = GetEntityBagForEdit( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( BinaryFile.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -209,7 +202,7 @@ namespace Rock.Blocks.Core
         /// </summary>
         /// <param name="entity">The entity to be represented as a bag.</param>
         /// <returns>A <see cref="BinaryFileBag"/> that represents the entity.</returns>
-        private BinaryFileBag GetCommonEntityBag( BinaryFile entity, RockContext rockContext )
+        private BinaryFileBag GetCommonEntityBag( BinaryFile entity )
         {
             if ( entity == null )
             {
@@ -267,93 +260,74 @@ namespace Rock.Blocks.Core
             return _binaryFileType;
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="BinaryFileBag"/> that represents the entity.</returns>
-        private BinaryFileBag GetEntityBagForView( BinaryFile entity, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override BinaryFileBag GetEntityBagForView( BinaryFile entity )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var bag = GetCommonEntityBag( entity, rockContext );
+            var bag = GetCommonEntityBag( entity );
 
             bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="BinaryFileBag"/> that represents the entity.</returns>
-        private BinaryFileBag GetEntityBagForEdit( BinaryFile entity, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override BinaryFileBag GetEntityBagForEdit( BinaryFile entity )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            var bag = GetCommonEntityBag( entity, rockContext );
+            var bag = GetCommonEntityBag( entity );
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( BinaryFile entity, DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( BinaryFile entity, ValidPropertiesBox<BinaryFileBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.BinaryFileType ),
-                () => entity.BinaryFileTypeId = box.Entity.BinaryFileType.GetEntityId<BinaryFileType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.BinaryFileType ),
+                () => entity.BinaryFileTypeId = box.Bag.BinaryFileType.GetEntityId<BinaryFileType>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.FileName ),
-                () => entity.FileName = box.Entity.FileName );
+            box.IfValidProperty( nameof( box.Bag.FileName ),
+                () => entity.FileName = box.Bag.FileName );
 
-            box.IfValidProperty( nameof( box.Entity.MimeType ),
-                () => entity.MimeType = box.Entity.MimeType );
+            box.IfValidProperty( nameof( box.Bag.MimeType ),
+                () => entity.MimeType = box.Bag.MimeType );
 
-            box.IfValidProperty( nameof( box.Entity.File ),
-                () => SaveFile( box.Entity, rockContext, entity ) );
+            box.IfValidProperty( nameof( box.Bag.File ),
+                () => SaveFile( box.Bag, entity ) );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="BinaryFile"/> to be viewed or edited on the page.</returns>
-        private BinaryFile GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override BinaryFile GetInitialEntity()
         {
-            var entity = GetInitialEntity<BinaryFile, BinaryFileService>( rockContext, PageParameterKey.BinaryFileId );
+            var entity = GetInitialEntity<BinaryFile, BinaryFileService>( RockContext, PageParameterKey.BinaryFileId );
 
             if ( entity?.Id == 0 )
             {
@@ -377,46 +351,9 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out BinaryFile entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( BinaryFile entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out BinaryFile entity, out BlockActionResult error )
-        {
-            var entityService = new BinaryFileService( rockContext );
+            var entityService = new BinaryFileService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -471,13 +408,13 @@ namespace Rock.Blocks.Core
                         binaryFile = binaryFileService.Get( binaryFile.Id );
                     }
 
-                    var bag = GetEntityBagForEdit( binaryFile, binaryFileService.Context as RockContext );
+                    var bag = GetEntityBagForEdit( binaryFile );
                     bag.WorkflowNotificationMessage = $"Successfully processed a <strong>{workflowType.Name}</strong> workflow!";
                     return bag;
                 }
             }
 
-            return GetEntityBagForEdit( binaryFile, binaryFileService.Context as RockContext );
+            return GetEntityBagForEdit( binaryFile );
         }
 
         /// <summary>
@@ -487,7 +424,7 @@ namespace Rock.Blocks.Core
         /// <returns></returns>
         private int? GetId( string idKey )
         {
-            int? id = !PageCache.Layout.Site.DisablePredictableIds ? idKey.AsIntegerOrNull() : null;
+            var id = !PageCache.Layout.Site.DisablePredictableIds ? idKey.AsIntegerOrNull() : null;
 
             if ( !id.HasValue )
             {
@@ -514,7 +451,7 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Determines whether the instance is holding a label file
         /// </summary>
-        /// <param name="binaryFileId">The binary file identifier.</param>
+        /// <param name="bag">The binary file bag.</param>
         /// <returns>
         ///   <c>true</c> if [is label file] [the specified binary file identifier]; otherwise, <c>false</c>.
         /// </returns>
@@ -539,22 +476,19 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var box = new DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag>
+            {
+                Entity = GetEntityBagForEdit( entity )
+            };
+
+            return ActionOk( box );
         }
 
         /// <summary>
@@ -563,65 +497,62 @@ namespace Rock.Blocks.Core
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<BinaryFileBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new BinaryFileService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new BinaryFileService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                var prevBinaryFileTypeId = entity.BinaryFileTypeId;
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateBinaryFile( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                entity.IsTemporary = false;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    DeleteOrphanedFiles( box.Entity.OrphanedBinaryFileIdList, rockContext );
-
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                Rock.CheckIn.KioskLabel.Remove( entity.Guid );
-
-                if ( !prevBinaryFileTypeId.Equals( entity.BinaryFileTypeId ) )
-                {
-                    var checkInBinaryFileType = new BinaryFileTypeService( rockContext ).Get( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid() );
-                    if ( checkInBinaryFileType != null && (
-                        ( prevBinaryFileTypeId.HasValue && prevBinaryFileTypeId.Value == checkInBinaryFileType.Id ) ||
-                        ( entity.BinaryFileTypeId.HasValue && entity.BinaryFileTypeId.Value == checkInBinaryFileType.Id ) ) )
-                    {
-                        Rock.CheckIn.KioskDevice.Clear();
-                    }
-                }
-
-                return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl( new Dictionary<string, string>
-                {
-                    [PageParameterKey.BinaryFileId] = entity.IdKey
-                } ) );
+                return actionError;
             }
+
+            var prevBinaryFileTypeId = entity.BinaryFileTypeId;
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateBinaryFile( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            entity.IsTemporary = false;
+
+            RockContext.WrapTransaction( () =>
+            {
+                DeleteOrphanedFiles( box.Bag.OrphanedBinaryFileIdList, RockContext );
+
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            Rock.CheckIn.KioskLabel.Remove( entity.Guid );
+
+            if ( !prevBinaryFileTypeId.Equals( entity.BinaryFileTypeId ) )
+            {
+                var checkInBinaryFileType = new BinaryFileTypeService( RockContext ).Get( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid() );
+                if ( checkInBinaryFileType != null && (
+                    ( prevBinaryFileTypeId.HasValue && prevBinaryFileTypeId.Value == checkInBinaryFileType.Id ) ||
+                    ( entity.BinaryFileTypeId.HasValue && entity.BinaryFileTypeId.Value == checkInBinaryFileType.Id ) ) )
+                {
+                    Rock.CheckIn.KioskDevice.Clear();
+                }
+            }
+
+            return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl( new Dictionary<string, string>
+            {
+                [PageParameterKey.BinaryFileId] = entity.IdKey
+            } ) );
         }
 
-        private void SaveFile( BinaryFileBag bag, RockContext rockContext, BinaryFile entity )
+        private void SaveFile( BinaryFileBag bag, BinaryFile entity )
         {
-            var entityService = new BinaryFileService( rockContext );
-            var binaryFileId = bag.File.GetEntityId<BinaryFile>( rockContext );
+            var entityService = new BinaryFileService( RockContext );
+            var binaryFileId = bag.File.GetEntityId<BinaryFile>( RockContext );
             if ( binaryFileId.HasValue && entity.Id != binaryFileId.Value )
             {
                 var uploadedBinaryFile = entityService.Get( binaryFileId.Value );
@@ -662,25 +593,22 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new BinaryFileService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new BinaryFileService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -750,13 +678,21 @@ namespace Rock.Blocks.Core
                         {
                             bag = LaunchFileUploadWorkflow( binaryFile, binaryFileService );
                             bag.OrphanedBinaryFileIdList = orphanedBinaryFileIdList;
-                            return ActionOk( bag );
+                            return ActionOk( new ValidPropertiesBox<BinaryFileBag>()
+                            {
+                                Bag = bag,
+                                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList(),
+                            } );
                         }
                     }
                 }
             }
 
-            return ActionOk( bag );
+            return ActionOk( new ValidPropertiesBox<BinaryFileBag>()
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList(),
+            } );
         }
 
         /// <summary>
@@ -772,60 +708,6 @@ namespace Rock.Blocks.Core
                 DeleteOrphanedFiles( orphanedBinaryFileIdList, rockContext );
                 rockContext.SaveChanges();
                 return ActionOk( this.GetParentPageUrl() );
-            }
-        }
-
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<BinaryFileBag, BinaryFileDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
             }
         }
 
