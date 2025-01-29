@@ -83,7 +83,6 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         private void ProcessContentFileRequest( HttpContext context )
         {
-
             // Don't trust query strings
             string untrustedFilePath = context.Request.QueryString["fileName"];
             string encryptedRootFolder = context.Request.QueryString["rootFolder"];
@@ -141,6 +140,14 @@ namespace RockWeb
                     if ( fileContents != null )
                     {
                         string mimeType = MimeMapping.GetMimeMapping( trustedPhysicalFilePath );
+
+                        // If the requested file is not an image respond with not found.
+                        if ( !mimeType.StartsWith( "image/" ) )
+                        {
+                            SendNotFound( context );
+                            return;
+                        }
+
                         context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", Path.GetFileName( trustedPhysicalFilePath ) ) );
                         context.Response.ContentType = mimeType;
 
