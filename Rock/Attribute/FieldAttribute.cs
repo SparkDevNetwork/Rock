@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Enums.Cms;
 using Rock.Field;
 
 namespace Rock.Attribute
@@ -140,6 +141,13 @@ namespace Rock.Attribute
         /// The field type class.
         /// </value>
         public virtual string FieldTypeClass { get; set; }
+
+        /// <summary>
+        /// The site types this attribute will be displayed on. This is currently
+        /// only valid for block settings. If not set then all sites will be
+        /// considered valid.
+        /// </summary>
+        public SiteTypeFlags SiteTypes { get; set; }
 
         /// <summary>
         /// Gets or sets the field configuration values.

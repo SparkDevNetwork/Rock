@@ -28,6 +28,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Core;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -291,6 +292,13 @@ namespace Rock.Attribute
                     }
                 }
 
+                // Check additional display settings.
+                var displaySettings = attribute.GetAdditionalSettings<AttributeDisplaySettings>();
+
+                if ( displaySettings.SiteTypes != property.SiteTypes )
+                {
+                    updated = true;
+                }
             }
 
             if ( !updated )
@@ -351,6 +359,12 @@ namespace Rock.Attribute
                     f.Assembly == property.FieldTypeAssembly &&
                     f.Class == property.FieldTypeClass );
             }
+
+            // Set all additional settings.
+            attribute.SetAdditionalSettings( new AttributeDisplaySettings
+            {
+                SiteTypes = property.SiteTypes
+            } );
 
             // If this is a new attribute, add it, otherwise remove the exiting one from the cache
             if ( attribute.Id == 0 )
