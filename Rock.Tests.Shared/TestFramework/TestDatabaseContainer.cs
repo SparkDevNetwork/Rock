@@ -22,6 +22,8 @@ namespace Rock.Tests.Shared.TestFramework
     {
         private static bool? _hasValidImage;
 
+        private static bool _hasTriedToBuildImage;
+
         private readonly MsSqlContainerPool _containerPool;
         private MsSqlContainer _databaseContainer;
         private bool _containerIsInitialized = false;
@@ -47,6 +49,13 @@ namespace Rock.Tests.Shared.TestFramework
             // create one automatically.
             if ( !( await HasValidImage() ) )
             {
+                if ( _hasTriedToBuildImage )
+                {
+                    throw new Exception( "Previous attempt to build database image already failed." );
+                }
+
+                _hasTriedToBuildImage = true;
+
                 await new DatabaseContainerImageBuilder().BuildAsync();
 
                 _hasValidImage = true;
