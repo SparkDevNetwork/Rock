@@ -276,15 +276,116 @@ export function showShortLink(url: string): void {
     iframe.style.overflowY = "clip";
     const iframeResizer = new ResizeObserver((event) => {
         const iframeBody = event[0].target;
-        iframe.style.height = (iframeBody.scrollHeight?.toString() + "px") ?? "25vh";
+        iframe.style.height = iframeBody.scrollHeight.toString() + "px";
     });
     iframe.onload = () => {
-        if(!iframe?.contentWindow?.document?.documentElement) {
+        if (!iframe?.contentWindow?.document?.documentElement) {
             return;
         }
-        iframe.style.height = (iframe.contentWindow.document.body.scrollHeight?.toString() + "px") ?? "25vh";
+        iframe.style.height = iframe.contentWindow.document.body.scrollHeight.toString() + "px";
         iframeResizer.observe(iframe.contentWindow.document.body);
     };
+}
+
+/**
+ * This is an internal method that will be removed in the future. It serves the
+ * ObsidianDataViewComponentWrapper WebForms control to initialize an Obsidian
+ * component inside a WebForms component.
+ *
+ * @param url The URL of the Obsidian component to load.
+ * @param componentDataId The identifier of the DOM node that contains the component data.
+ */
+export async function initializeDataViewComponentWrapper(url: string, rootElementId: string, componentDataId: string): Promise<void> {
+    const componentUrl = `${url}.js`;
+    let component: Component | null = null;
+    let errorMessage = "";
+
+    const rootElement = document.getElementById(rootElementId);
+
+    if (!rootElement) {
+        throw new Error("Could not initialize Obsidian component because the root element was not found.");
+    }
+
+    try {
+        const componentModule = await import(componentUrl);
+        component = componentModule ?
+            (componentModule.default || componentModule) :
+            null;
+    }
+    catch (e) {
+        // Log the error, but continue setting up the app so the UI will show the user an error
+        console.error(e);
+        errorMessage = `${e}`;
+    }
+
+    const name = `Root${componentUrl.replace(/\//g, ".")}`;
+
+    const app = createApp({
+        name,
+        setup() {
+            let componentData: Record<string, string> = {};
+
+            try {
+                const componentDataElement = document.getElementById(componentDataId) as HTMLInputElement;
+
+                componentData = JSON.parse(componentDataElement.value) ?? {};
+            }
+            catch (e) {
+                if (!errorMessage) {
+                    errorMessage = `${e}`;
+                }
+            }
+
+            function onUpdateComponentData(data: Record<string, string>): void {
+                const componentDataElement = document.getElementById(componentDataId) as HTMLInputElement;
+
+                if (componentDataElement) {
+                    componentDataElement.value = JSON.stringify(data);
+                }
+            }
+
+            return {
+                component: component ? markRaw(component) : null,
+                componentData,
+                onUpdateComponentData,
+                errorMessage
+            };
+        },
+
+        // Note: We are using a custom alert so there is not a dependency on
+        // the Controls package.
+        template: `
+<div v-if="errorMessage" class="alert alert-danger">
+    <strong>Error Initializing Component</strong>
+    <br />
+    {{errorMessage}}
+</div>
+<component v-else :is="component" :modelValue="componentData" @update:modelValue="onUpdateComponentData" />`
+    });
+
+    app.mount(rootElement);
+
+    // This monitors for a WebForms postback that has removed the old DOM
+    // tree. The app will then be unmounted to free memory and remove even
+    // listeners that may have been installed.
+    const observer = new MutationObserver(mutations => {
+        let removed = false;
+
+        for (const mutation of mutations) {
+            for (const node of mutation.removedNodes) {
+                if (node == rootElement || node.contains(rootElement)) {
+                    removed = true;
+                }
+            }
+        }
+
+        if (removed) {
+            app.unmount();
+            observer.disconnect();
+        }
+    });
+
+    observer.observe(document.body, { subtree: true, childList: true });
 }
 
 /**
