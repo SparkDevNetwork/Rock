@@ -21,26 +21,59 @@ using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
-    public class ObsidianDataViewComponentWrapper : CompositeControl, INamingContainer
+    /// <summary>
+    /// Wraps an Obsidian component for use inside a WebForms block. This provides
+    /// a basic dictionary of strings for the data.
+    /// </summary>
+    public class ObsidianDataComponentWrapper : CompositeControl, INamingContainer
     {
-        public string ComponentUrl
-        {
-            get => ViewState[nameof( ComponentUrl )] as string;
-            set => ViewState[nameof( ComponentUrl )] = value;
-        }
+        /// <summary>
+        /// The URL to load the Obsidian component from.
+        /// </summary>
+        public string ComponentUrl { get; set; }
 
+        /// <summary>
+        /// The data that will be passed to the component, or during postback
+        /// that was provided by the component back to the server.
+        /// </summary>
         public Dictionary<string, string> ComponentData
         {
             get
             {
                 EnsureChildControls();
-                return ( ( HiddenField ) Controls[0] ).Value.FromJsonOrNull<Dictionary<string, string>>();
+
+                return ( ( HiddenField ) Controls[0] ).Value.FromJsonOrNull<Dictionary<string, string>>()
+                    ?? new Dictionary<string, string>();
             }
             set
             {
                 EnsureChildControls();
-                ( ( HiddenField ) Controls[0] ).Value = value.ToJson();
+
+                if ( value != null )
+                {
+                    ( ( HiddenField ) Controls[0] ).Value = value.ToJson();
+                }
+                else
+                {
+                    ( ( HiddenField ) Controls[0] ).Value = "{}";
+                }
             }
+        }
+
+        /// <inheritdoc/>
+        protected override object SaveViewState()
+        {
+            ViewState[nameof( ComponentUrl )] = ComponentUrl;
+
+            return base.SaveViewState();
+        }
+
+        /// <inheritdoc/>
+        protected override void LoadViewState( object savedState )
+        {
+            base.LoadViewState( savedState );
+
+            ComponentUrl = ( string ) ViewState[nameof( ComponentUrl )];
         }
 
         /// <inheritdoc/>
@@ -48,21 +81,23 @@ namespace Rock.Web.UI.Controls
         {
             var hfId = new HiddenField
             {
-                ID = "hfData"
+                ID = "hfData",
+                Value = "{}"
             };
 
             Controls.Add( hfId );
         }
 
+        /// <inheritdoc/>
         protected override void OnPreRender( EventArgs e )
         {
             var script = $@"
 Obsidian.onReady(() => {{
     System.import(""@Obsidian/Templates/rockPage.js"").then(module => {{
-        module.initializeDataViewComponentWrapper(""{ComponentUrl}"", ""{ClientID}"", ""{Controls[0].ClientID}"");
+        module.initializeDataComponentWrapper(""{ComponentUrl}"", ""{ClientID}"", ""{Controls[0].ClientID}"");
     }});
 }});";
-            ScriptManager.RegisterStartupScript( this, GetType(), "obsidian-data-component-wrapper-init", script, true );
+            ScriptManager.RegisterStartupScript( this, GetType(), $"init-{ClientID}", script, true );
 
             base.OnPreRender( e );
         }

@@ -69,8 +69,21 @@ namespace Rock.Reporting.DataFilter.Person
 
         #region Public Methods
 
+        /// <summary>
+        /// The URL that will be used to load the Obsidian component. This may
+        /// be a path prefixed with "~/" instead of a full absolute URL.
+        /// </summary>
         public virtual string ObsidianFileUrl => "~/Obsidian/Blocks/Reporting/personInGroup.obs";
 
+        /// <summary>
+        /// Gets the component data that will be provided to the Obsidian component
+        /// when it is initialized. This should include representations of the current
+        /// values as well as any additional data required to initialize the UI.
+        /// </summary>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current request.</param>
+        /// <returns>A dictionary of strings that will be provided to the Obsidian component.</returns>
         public virtual Dictionary<string, string> GetObsidianComponentData( string selection, RockContext rockContext, RockRequestContext requestContext )
         {
             var selectionValues = selection.Split( '|' );
@@ -112,22 +125,22 @@ namespace Rock.Reporting.DataFilter.Person
             {
                 ["groups"] = groups.ToCamelCaseJson( false, false ),
                 ["groupMemberRoles"] = selectionValues.Length > 1
-                    ? selectionValues[1].SplitDelimitedValues( "," ).ToCamelCaseJson( false, false )
+                    ? selectionValues[1]
                     : string.Empty,
                 ["includeChildGroups"] = selectionValues.Length > 2
-                    ? selectionValues[2].AsBoolean().ToString()
+                    ? selectionValues[2]
                     : false.ToString(),
                 ["groupMemberStatus"] = selectionValues.Length > 3
                     ? selectionValues[3]
                     : string.Empty,
                 ["includeSelectedGroups"] = selectionValues.Length > 4
-                    ? selectionValues[4].AsBoolean().ToString()
+                    ? selectionValues[4]
                     : false.ToString(),
                 ["includeAllDescendants"] = selectionValues.Length > 5
-                    ? selectionValues[5].AsBoolean().ToString()
+                    ? selectionValues[5]
                     : false.ToString(),
                 ["includeInactiveGroups"] = selectionValues.Length > 6
-                    ? selectionValues[6].AsBoolean().ToString()
+                    ? selectionValues[6]
                     : false.ToString(),
                 ["dateAdded"] = selectionValues.Length > 7
                     ? selectionValues[7].Replace( ',', '|' )
@@ -152,9 +165,45 @@ namespace Rock.Reporting.DataFilter.Person
             return data;
         }
 
+        /// <summary>
+        /// Gets the selection string that will be saved to the database from
+        /// the data returned by the Obsidian component.
+        /// </summary>
+        /// <param name="data">The data the was returned by the Obsidian component.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current request.</param>
+        /// <returns>The string of text that represents the selection which will be written to the database.</returns>
         public virtual string GetSelectionFromObsidianComponentData( Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
         {
-            return string.Empty;
+            var selections = new List<string>( 10 );
+
+            if ( data.TryGetValue( "groups", out var groupsJson ) )
+            {
+                var groupGuids = groupsJson.FromJsonOrNull<List<ListItemBag>>()
+                    ?.Select( g => g.Value )
+                    .JoinStrings( "," )
+                    ?? string.Empty;
+
+                selections.Add( groupGuids );
+            }
+            else
+            {
+                selections.Add( string.Empty );
+            }
+
+            // Use .AsBoolean().ToString() on boolean values to force empty
+            // strings to become "False".
+            selections.Add( data.GetValueOrDefault( "groupMemberRoles", string.Empty ) );
+            selections.Add( data.GetValueOrDefault( "includeChildGroups", string.Empty ).AsBoolean().ToString() );
+            selections.Add( data.GetValueOrDefault( "groupMemberStatus", string.Empty ) );
+            selections.Add( data.GetValueOrDefault( "includeSelectedGroups", string.Empty ).AsBoolean().ToString() );
+            selections.Add( data.GetValueOrDefault( "includeAllDescendants", string.Empty ).AsBoolean().ToString() );
+            selections.Add( data.GetValueOrDefault( "includeInactiveGroups", string.Empty ).AsBoolean().ToString() );
+            selections.Add( data.GetValueOrDefault( "dateAdded", string.Empty ).Replace( '|', ',' ) );
+            selections.Add( data.GetValueOrDefault( "firstAttendance", string.Empty ).Replace( '|', ',' ) );
+            selections.Add( data.GetValueOrDefault( "lastAttendance", string.Empty ).Replace( '|', ',' ) );
+
+            return selections.JoinStrings( "|" );
         }
 
         /// <summary>
@@ -494,9 +543,10 @@ namespace Rock.Reporting.DataFilter.Person
             lastAttendanceDateRangePicker.Help = "The date range of the last attendance using the 'Sunday Date' of each attendance";
             pwAdvanced.Controls.Add( lastAttendanceDateRangePicker );
 
-            var obsidianWrapper = new ObsidianDataViewComponentWrapper
+            var obsidianWrapper = new ObsidianDataComponentWrapper
             {
-                ID = $"{filterControl.ID}_obsidianComponentWrapper"
+                ID = $"{filterControl.ID}_obsidianComponentWrapper",
+                ComponentUrl = filterControl.ResolveUrl( ObsidianFileUrl )
             };
             filterControl.Controls.Add( obsidianWrapper );
 
@@ -568,7 +618,7 @@ namespace Rock.Reporting.DataFilter.Person
             RockDropDownList ddlGroupMemberStatus = controls[5] as RockDropDownList;
             RockCheckBox cbIncludeInactiveGroups = controls[6] as RockCheckBox;
             PanelWidget pwAdvanced = controls[8] as PanelWidget;
-            var obsidianWrapper = controls[11] as ObsidianDataViewComponentWrapper;
+            var obsidianWrapper = controls[11] as ObsidianDataComponentWrapper;
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -664,7 +714,7 @@ namespace Rock.Reporting.DataFilter.Person
                 firstAttendanceDateRangePicker.DelimitedValues.Replace( "|", "," ),
                 lastAttendanceDateRangePicker.DelimitedValues.Replace( "|", "," ) );
 
-            if ( controls[11] is ObsidianDataViewComponentWrapper obsidianWrapper )
+            if ( controls[11] is ObsidianDataComponentWrapper obsidianWrapper )
             {
                 var requestContext = obsidianWrapper.RockBlock()?.RockPage?.RequestContext;
                 using ( var rockContext = new RockContext() )
@@ -771,10 +821,8 @@ namespace Rock.Reporting.DataFilter.Person
                 }
             }
 
-            if ( controls[11] is ObsidianDataViewComponentWrapper obsidianWrapper )
+            if ( controls[11] is ObsidianDataComponentWrapper obsidianWrapper )
             {
-                obsidianWrapper.ComponentUrl = obsidianWrapper.ResolveUrl( ObsidianFileUrl );
-
                 var requestContext = obsidianWrapper.RockBlock()?.RockPage?.RequestContext;
                 using ( var rockContext = new RockContext() )
                 {

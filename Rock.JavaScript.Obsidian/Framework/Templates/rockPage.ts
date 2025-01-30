@@ -289,13 +289,13 @@ export function showShortLink(url: string): void {
 
 /**
  * This is an internal method that will be removed in the future. It serves the
- * ObsidianDataViewComponentWrapper WebForms control to initialize an Obsidian
+ * ObsidianDataComponentWrapper WebForms control to initialize an Obsidian
  * component inside a WebForms component.
  *
  * @param url The URL of the Obsidian component to load.
  * @param componentDataId The identifier of the DOM node that contains the component data.
  */
-export async function initializeDataViewComponentWrapper(url: string, rootElementId: string, componentDataId: string): Promise<void> {
+export async function initializeDataComponentWrapper(url: string, rootElementId: string, componentDataId: string): Promise<void> {
     const componentUrl = `${url}.js`;
     let component: Component | null = null;
     let errorMessage = "";
