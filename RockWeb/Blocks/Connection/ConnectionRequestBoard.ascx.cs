@@ -2523,7 +2523,19 @@ namespace RockWeb.Blocks.Connection
             var lGroupName = e.Row.FindControl( "lGroupName" ) as Literal;
             if ( lGroupName != null )
             {
-                lGroupName.Text = connectionRequestViewModel.GroupNameWithRoleAndStatus;
+                if ( connectionRequestViewModel.PlacementGroupRoleId.HasValue )
+                {
+                    var role = GroupTypeRoleCache.Get( connectionRequestViewModel.PlacementGroupRoleId.Value )?.Name;
+                    var statusName = connectionRequestViewModel.PlacementGroupMemberStatus.ConvertToStringSafe();
+                    if ( !string.IsNullOrWhiteSpace( role ) || !string.IsNullOrWhiteSpace( statusName ) )
+                    {
+                        lGroupName.Text = string.Format( "{0} ({1} {2})", connectionRequestViewModel.GroupName, statusName, role );
+                    }
+                }
+                else
+                {
+                    lGroupName.Text = connectionRequestViewModel.GroupNameWithRoleAndStatus;
+                }
             }
 
             var lConnectorPersonFullname = e.Row.FindControl( "lConnectorPersonFullname" ) as Literal;
