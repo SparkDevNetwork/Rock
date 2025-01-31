@@ -60,6 +60,39 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Additional properties to pass to the component.
+        /// </summary>
+        /// <remarks>
+        /// The keys are the property names and the values must be one of the
+        /// following value types: <see cref="bool"/>, <see cref="long"/>,
+        /// <see cref="string"/>. Other value types may work, but the CLR type
+        /// may change during PostBack operations.
+        /// </remarks>
+        public Dictionary<string, object> ComponentProperties
+        {
+            get
+            {
+                EnsureChildControls();
+
+                return ( ( HiddenField ) Controls[1] ).Value.FromJsonOrNull<Dictionary<string, object>>()
+                    ?? new Dictionary<string, object>();
+            }
+            set
+            {
+                EnsureChildControls();
+
+                if ( value != null )
+                {
+                    ( ( HiddenField ) Controls[1] ).Value = value.ToJson();
+                }
+                else
+                {
+                    ( ( HiddenField ) Controls[1] ).Value = "{}";
+                }
+            }
+        }
+
         /// <inheritdoc/>
         protected override object SaveViewState()
         {
@@ -79,13 +112,17 @@ namespace Rock.Web.UI.Controls
         /// <inheritdoc/>
         protected override void CreateChildControls()
         {
-            var hfId = new HiddenField
+            Controls.Add( new HiddenField
             {
                 ID = "hfData",
                 Value = "{}"
-            };
+            } );
 
-            Controls.Add( hfId );
+            Controls.Add( new HiddenField
+            {
+                ID = "hfConfigurationProperties",
+                Value = "{}"
+            } );
         }
 
         /// <inheritdoc/>
@@ -94,7 +131,7 @@ namespace Rock.Web.UI.Controls
             var script = $@"
 Obsidian.onReady(() => {{
     System.import(""@Obsidian/Templates/rockPage.js"").then(module => {{
-        module.initializeDataComponentWrapper(""{ComponentUrl}"", ""{ClientID}"", ""{Controls[0].ClientID}"");
+        module.initializeDataComponentWrapper(""{ComponentUrl}"", ""{ClientID}"", ""{Controls[0].ClientID}"", ""{Controls[1].ClientID}"");
     }});
 }});";
             ScriptManager.RegisterStartupScript( this, GetType(), $"init-{ClientID}", script, true );

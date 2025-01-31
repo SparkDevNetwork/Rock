@@ -225,6 +225,7 @@
     <Compile Include="Reporting\ComparisonType.cs" />
     <Compile Include="Reporting\FieldFilterSourceType.cs" />
     <Compile Include="Reporting\FilterExpressionType.cs" />
+    <Compile Include="Reporting\FilterMode.cs" />
     <Compile Include="Reporting\MetricNumericDataType.cs" />
     <Compile Include="Reporting\MetricValueType.cs" />
     <Compile Include="Reporting\ReportFieldType.cs" />

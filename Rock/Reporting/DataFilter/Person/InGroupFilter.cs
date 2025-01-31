@@ -524,9 +524,6 @@ namespace Rock.Reporting.DataFilter.Person
             writer.RenderEndTag();
 
             writer.RenderEndTag();
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Hr );
-            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -915,7 +912,7 @@ namespace Rock.Reporting.DataFilter.Person
         #region Configuration
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, FilterMode filterMode, RockContext rockContext, RockRequestContext requestContext )
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
             var selectionValues = selection.Split( '|' );
 
@@ -997,7 +994,7 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
         /// <inheritdoc/>
-        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, FilterMode filterMode, RockContext rockContext, RockRequestContext requestContext )
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
         {
             var selections = new List<string>( 10 );
 

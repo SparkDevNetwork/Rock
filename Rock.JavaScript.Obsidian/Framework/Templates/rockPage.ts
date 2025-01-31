@@ -293,9 +293,11 @@ export function showShortLink(url: string): void {
  * component inside a WebForms component.
  *
  * @param url The URL of the Obsidian component to load.
+ * @param rootElementId The identifier of the DOM node to mount the component on.
  * @param componentDataId The identifier of the DOM node that contains the component data.
+ * @param componentPropertiesId The identifier of the DOM node that contains the additional component properties.
  */
-export async function initializeDataComponentWrapper(url: string, rootElementId: string, componentDataId: string): Promise<void> {
+export async function initializeDataComponentWrapper(url: string, rootElementId: string, componentDataId: string, componentPropertiesId: string | undefined): Promise<void> {
     const componentUrl = `${url}.js`;
     let component: Component | null = null;
     let errorMessage = "";
@@ -324,6 +326,7 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
         name,
         setup() {
             let componentData: Record<string, string> = {};
+            let componentProperties: Record<string, unknown> = {};
 
             try {
                 const componentDataElement = document.getElementById(componentDataId) as HTMLInputElement;
@@ -333,6 +336,19 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
             catch (e) {
                 if (!errorMessage) {
                     errorMessage = `${e}`;
+                }
+            }
+
+            if (componentPropertiesId) {
+                try {
+                    const componentPropertiesElement = document.getElementById(componentPropertiesId) as HTMLInputElement;
+
+                    componentProperties = JSON.parse(componentPropertiesElement.value) ?? {};
+                }
+                catch (e) {
+                    if (!errorMessage) {
+                        errorMessage = `${e}`;
+                    }
                 }
             }
 
@@ -347,6 +363,7 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
             return {
                 component: component ? markRaw(component) : null,
                 componentData,
+                componentProperties,
                 onUpdateComponentData,
                 errorMessage
             };
@@ -360,7 +377,7 @@ export async function initializeDataComponentWrapper(url: string, rootElementId:
     <br />
     {{errorMessage}}
 </div>
-<component v-else :is="component" :modelValue="componentData" @update:modelValue="onUpdateComponentData" />`
+<component v-else :is="component" :modelValue="componentData" @update:modelValue="onUpdateComponentData" v-bind="componentProperties" />`
     });
 
     app.mount(rootElement);

@@ -189,12 +189,11 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
         /// <param name="selection">The selection string from the database.</param>
-        /// <param name="filterMode">The type of filter component to render, either <see cref="FilterMode.SimpleFilter"/> or <see cref="FilterMode.AdvancedFilter"/>.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <param name="requestContext">The context that describes the current request.</param>
         /// <returns>A dictionary of strings that will be provided to the Obsidian component.</returns>
         [RockInternal( "17.0" )]
-        public virtual Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, FilterMode filterMode, RockContext rockContext, RockRequestContext requestContext )
+        public virtual Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
             return new Dictionary<string, string>();
         }
@@ -205,12 +204,11 @@ namespace Rock.Reporting
         /// </summary>
         /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
         /// <param name="data">The data the was returned by the Obsidian component.</param>
-        /// <param name="filterMode">The type of filter component that was rendered, either <see cref="FilterMode.SimpleFilter"/> or <see cref="FilterMode.AdvancedFilter"/>.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <param name="requestContext">The context that describes the current request.</param>
         /// <returns>The string of text that represents the selection which will be written to the database.</returns>
         [RockInternal( "17.0" )]
-        public virtual string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, FilterMode filterMode, RockContext rockContext, RockRequestContext requestContext )
+        public virtual string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
         {
             return string.Empty;
         }
@@ -344,31 +342,5 @@ namespace Rock.Reporting
         public abstract Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection );
 
         #endregion
-
-        #region Protected Methods
-
-        #endregion
     }
-
-    #region Enums
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum FilterMode
-    {
-        /// <summary>
-        /// Render the UI and process the filter as a simple filter
-        /// This mode can be set if the filter just needs to be simple with minimal UI (like on a public page)
-        /// </summary>
-        SimpleFilter,
-
-        /// <summary>
-        /// Render and process as an advanced filter 
-        /// This will be the mode when configuring as a Data Filter
-        /// </summary>
-        AdvancedFilter
-    }
-
-    #endregion
 }

@@ -476,6 +476,9 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Configures the field to use the Obsidian component if it is supported.
+        /// </summary>
         [RockInternal( "17.0", true )]
         public bool UseObsidian
         {
@@ -503,7 +506,7 @@ namespace Rock.Web.UI.Controls
 
                         using ( var rockContext = new RockContext() )
                         {
-                            obsidianWrapper.ComponentData = component.GetObsidianComponentData( FilteredEntityType, value, FilterMode, rockContext, requestContext );
+                            obsidianWrapper.ComponentData = component.GetObsidianComponentData( FilteredEntityType, value, rockContext, requestContext );
                         }
                     }
                 }
@@ -534,7 +537,7 @@ namespace Rock.Web.UI.Controls
 
                         using ( var rockContext = new RockContext() )
                         {
-                            return component.GetSelectionFromObsidianComponentData( FilteredEntityType, obsidianWrapper.ComponentData, FilterMode, rockContext, requestContext );
+                            return component.GetSelectionFromObsidianComponentData( FilteredEntityType, obsidianWrapper.ComponentData, rockContext, requestContext );
                         }
                     }
                 }
@@ -597,7 +600,11 @@ namespace Rock.Web.UI.Controls
                         var obsidianWrapper = new ObsidianDataComponentWrapper
                         {
                             ID = $"{ID}_obsidianComponentWrapper",
-                            ComponentUrl = ResolveUrl( component.ObsidianFileUrl )
+                            ComponentUrl = ResolveUrl( component.ObsidianFileUrl ),
+                            ComponentProperties = new Dictionary<string, object>
+                            {
+                                ["filterMode"] = FilterMode
+                            }
                         };
 
                         Controls.Add( obsidianWrapper );
