@@ -34,6 +34,7 @@ using Rock.ViewModels.Blocks.Cms.LavaShortcodeDetail;
 using Rock.ViewModels.Blocks.Core.ScheduleDetail;
 using Rock.ViewModels.Blocks.Engagement.StepTypeDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -58,7 +59,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "d88ce6cf-c175-4c8f-bff1-d90c590abb3e" )]
     [Rock.SystemGuid.BlockTypeGuid( "a81fe4e0-df9f-4978-83a7-eb5459f37938" )]
-    public class AdaptiveMessageDetail : RockDetailBlockType
+    public class AdaptiveMessageDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -557,6 +558,38 @@ namespace Rock.Blocks.Cms
                     };
                 }
             }
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+            var adaptiveMessageId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageId );
+
+            if ( adaptiveMessageId == null )
+            {
+                var adaptiveMessageCategoryId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageCategoryId );
+                adaptiveMessageId = new AdaptiveMessageCategoryService( RockContext ).Get( adaptiveMessageCategoryId )?.AdaptiveMessageId.ToString();
+
+                if ( adaptiveMessageId == null )
+                {
+                    return new BreadCrumbResult
+                    {
+                        BreadCrumbs = new List<IBreadCrumb>()
+                    };
+                }
+            }
+
+            var title = new AdaptiveMessageService( RockContext ).Get( adaptiveMessageId )?.Name ?? "New Adaptive Message";
+            var breadCrumb = new BreadCrumbLink( title, breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                {
+                    breadCrumb
+                }
+            };
         }
 
         #endregion

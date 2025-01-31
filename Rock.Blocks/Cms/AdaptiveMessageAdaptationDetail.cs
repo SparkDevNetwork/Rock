@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.AdaptiveMessageAdaptationDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 
@@ -48,7 +49,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "005292c8-6af7-4250-b29f-759047243baf" )]
     [Rock.SystemGuid.BlockTypeGuid( "113c4223-19b9-46f2-aae8-ac646bc5a3c7" )]
-    public class AdaptiveMessageAdaptationDetail : RockDetailBlockType
+    public class AdaptiveMessageAdaptationDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         private AdaptiveMessageAdaptation SelectedAdaptiveMessageAdaptation { get; set; }
 
@@ -421,6 +422,32 @@ namespace Rock.Blocks.Cms
             }
 
             return SelectedAdaptiveMessageAdaptation;
+        }
+
+        /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+            var adaptiveMessageAdaptationId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageAdaptationId );
+
+            if ( adaptiveMessageAdaptationId == null )
+            {
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>()
+                };
+            }
+
+            var title = new AdaptiveMessageAdaptationService( RockContext ).Get( adaptiveMessageAdaptationId )?.Name ?? "New Adaptive Message Adaptation";
+            var breadCrumb = new BreadCrumbLink( title, breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb>
+                {
+                    breadCrumb
+                }
+            };
         }
 
         #endregion

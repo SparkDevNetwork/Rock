@@ -157,11 +157,10 @@ namespace Rock.Lava.Blocks
                 }
                 else
                 {
-                    var categoryService = new CategoryService( rockContext );
-                    var categoryGuid = categoryService.GetGuid( categoryId.Value );
+                    var parentCategory = CategoryCache.Get( categoryId.Value );
+                    var allCategories = GetCategoryHierarchy( parentCategory );
 
-                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.CategoryIds.Contains( categoryId.Value ) && IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) ).ToList();
-                    GetAaptiveMessageForChildCategories( rockContext, adaptiveMessages, categoryGuid );
+                    adaptiveMessages = GetAdaptiveMessagesForCategories( rockContext, allCategories );
                 }
 
                 var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.ADAPTIVE_MESSAGES.AsGuid() );
@@ -177,13 +176,19 @@ namespace Rock.Lava.Blocks
                 }
 
                 var adaptationQry = adaptiveMessages
-                    .SelectMany( a => a.Adaptations )
-                    .Where( a => IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) &&
-                                ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) &&
-                                ( person == null || !IsSaturated( a, interactionQry ) ) )
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Name )
-                    .Take( adaptationPerMessage.Value );
+                    .Select( m => new
+                    {
+                        AdaptiveMessage = m,
+                        Adaptations = m.Adaptations
+                            .Where( a => IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) &&
+                                        ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) &&
+                                        ( person == null || !IsSaturated( a, interactionQry ) ) )
+                            .OrderBy( a => a.Order )
+                            .ThenBy( a => a.Name )
+                            .Take( adaptationPerMessage.Value )
+                    } )
+                    .SelectMany( g => g.Adaptations );
+
 
                 if ( commandMode == CommandMode.Category )
                 {
@@ -220,29 +225,73 @@ namespace Rock.Lava.Blocks
             base.OnRender( context, result );
         }
 
-        private static void GetAaptiveMessageForChildCategories( RockContext rockContext, List<AdaptiveMessageCache> adaptiveMessages, Guid? categoryGuid )
+        private static List<int> GetCategoryHierarchy( CategoryCache parentCategory )
         {
-            var categories = new CategoryService( rockContext )
-                .GetChildCategoryQuery( new Rock.Model.Core.Category.Options.ChildCategoryQueryOptions
-                {
-                    ParentGuid = categoryGuid
-                } )
-                .ToList()
-                .OrderBy( c => c.Order )
-                .ThenBy( c => c.Name )
-                .ThenBy( c => c.Id )
-                .ToList();
+            var categoryIds = new List<int>();
 
-            // Message Should be in order of Category order.
-            // When considering a tree of categories all of the 1's will be considered first, then all the 2's, then 3's
-            foreach ( var category in categories )
+            if ( parentCategory == null )
             {
-                var categoryAdaptiveMessages = AdaptiveMessageCache.All().Where( a => a.CategoryIds.Contains( category.Id ) );
-                if ( categoryAdaptiveMessages.Any() )
+                return categoryIds;
+            }
+
+            var queue = new Queue<CategoryCache>();
+            var visitedCategories = new HashSet<int>();
+
+            queue.Enqueue( parentCategory );
+            visitedCategories.Add( parentCategory.Id );
+
+            while ( queue.Count > 0 )
+            {
+                var currentCategory = queue.Dequeue();
+                categoryIds.Add( currentCategory.Id );
+
+                foreach ( var child in currentCategory.Categories )
                 {
-                    adaptiveMessages.AddRange( categoryAdaptiveMessages.ToList() );
+                    if ( !visitedCategories.Contains( child.Id ) )
+                    {
+                        queue.Enqueue( child );
+                        visitedCategories.Add( child.Id );
+                    }
                 }
             }
+
+            return categoryIds;
+        }
+
+        private List<AdaptiveMessageCache> GetAdaptiveMessagesForCategories( RockContext rockContext, List<int> categoryIds )
+        {
+            if ( categoryIds == null || !categoryIds.Any() )
+            {
+                return new List<AdaptiveMessageCache>();
+            }
+
+            var categoryMappings = new AdaptiveMessageCategoryService( rockContext )
+                .Queryable()
+                .Where( amc => categoryIds.Contains( amc.CategoryId ) )
+                .OrderBy( amc => amc.Order )
+                .Select( amc => new { amc.AdaptiveMessageId, amc.CategoryId, amc.Order } )
+                .ToList();
+
+            var adaptiveMessages = AdaptiveMessageCache.All()
+                .Where( a => a.CategoryIds.Any( id => categoryIds.Contains( id ) ) && IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) )
+                .ToList();
+
+            // Perform an in-memory join to order messages correctly
+            var orderedMessages = categoryMappings
+                .Join(
+                    adaptiveMessages,
+                    mapping => mapping.AdaptiveMessageId,
+                    message => message.Id,
+                    ( mapping, message ) => new { Message = message, CategoryOrder = mapping.Order, mapping.CategoryId }
+                )
+                .OrderBy( joined => categoryIds.IndexOf( joined.CategoryId ) ) // Maintain category hierarchy order
+                .ThenBy( joined => joined.CategoryOrder )
+                .ThenBy( joined => joined.Message.Name )
+                .Select( joined => joined.Message )
+                .Distinct()
+                .ToList();
+
+            return orderedMessages;
         }
 
         private void AddLavaMergeFieldsToContext( ILavaRenderContext context, List<AdaptiveMessageAdaptationCache> adaptations, Person person )
@@ -299,17 +348,22 @@ namespace Rock.Lava.Blocks
         {
             var currentDate = RockDateTime.Now;
 
-            if ( !adaptation.ViewSaturationCount.HasValue || !adaptation.ViewSaturationInDays.HasValue )
+            if ( !adaptation.ViewSaturationCount.HasValue )
             {
                 return false;
             }
 
             int saturationCount = adaptation.ViewSaturationCount.Value;
-            int saturationDays = adaptation.ViewSaturationInDays.Value;
-            var startDate = currentDate.AddDays( -saturationDays );
+            DateTime? startDate = null;
+
+            if ( adaptation.ViewSaturationInDays.HasValue )
+            {
+                int saturationDays = adaptation.ViewSaturationInDays.Value;
+                startDate = currentDate.AddDays( -saturationDays );
+            }
 
             int interactionCount = interactionQry
-                .Where( i => i.EntityId == adaptation.Id && i.InteractionDateTime >= startDate )
+                .Where( i => i.EntityId == adaptation.Id && ( !startDate.HasValue || i.InteractionDateTime >= startDate ) )
                 .Count();
 
             return interactionCount >= saturationCount;
