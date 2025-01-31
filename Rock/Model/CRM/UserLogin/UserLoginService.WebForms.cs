@@ -183,6 +183,8 @@ namespace Rock.Model
                     clientIPAddress = "";
                 }
 
+                clientIPAddress = HttpUtility.HtmlEncode( clientIPAddress );
+
                 relatedDataBuilder.AppendFormat(
                     " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
                     cleanUrl,
