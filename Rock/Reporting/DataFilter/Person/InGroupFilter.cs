@@ -238,6 +238,17 @@ namespace Rock.Reporting.DataFilter.Person
             return result;
         }
 
+        /// <summary>
+        /// Gets a list of group type roles that should be available for
+        /// selection in the filter settings UI.
+        /// </summary>
+        /// <param name="groupIds">The integer identifiers of the selected groups.</param>
+        /// <param name="includeChildGroups">If <c>true</c> then child groups will be included when determining which group types to include.</param>
+        /// <param name="includeSelectedGroups">If <paramref name="includeChildGroups"/> and this are <c>true</c> then the originally selected groups will be included along with the child groups when determining the group types.</param>
+        /// <param name="includeAllDescendants">If <paramref name="includeChildGroups"/> and this are <c>true</c> then all descendant groups will be included when determining the group types.</param>
+        /// <param name="includeInactiveGroups">If <paramref name="includeChildGroups"/> and this are <c>true</c> then inactive groups will be included when determining the group types.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A list of <see cref="ListItemBag"/> objects that represent the options to display to the individual.</returns>
         private List<ListItemBag> GetGroupTypeRolesForSelectedGroups( List<int> groupIds, bool includeChildGroups, bool includeSelectedGroups, bool includeAllDescendants, bool includeInactiveGroups, RockContext rockContext )
         {
             var groupService = new GroupService( rockContext );
@@ -555,7 +566,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             //// NOTE: convert slidingdaterange delimitedvalues from pipe to comma delimited
 
-            var selection = string.Format(
+            return string.Format(
                 "{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}",
                 groupGuids.AsDelimited( "," ),
                 cblRoles.SelectedValues.AsDelimited( "," ),
@@ -567,8 +578,6 @@ namespace Rock.Reporting.DataFilter.Person
                 addedOnDateRangePicker.DelimitedValues.Replace( "|", "," ),
                 firstAttendanceDateRangePicker.DelimitedValues.Replace( "|", "," ),
                 lastAttendanceDateRangePicker.DelimitedValues.Replace( "|", "," ) );
-
-            return selection;
         }
 
         /// <summary>
