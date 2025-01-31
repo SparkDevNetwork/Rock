@@ -20,9 +20,12 @@ using System.Linq.Expressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting
@@ -110,6 +113,14 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// The URL that will be used to load the Obsidian component. This may
+        /// be a path prefixed with "~/" instead of a full absolute URL. This should
+        /// return <c>null</c> to indicate Obsidian is not supported and an empty
+        /// string to indicate it is supported but no UI is required.
+        /// </summary>
+        public virtual string ObsidianFileUrl => null;
+
+        /// <summary>
         /// The _Options when HttpContext.Current is null
         /// NOTE: ThreadStatic is per thread, but ASP.NET threads are ThreadPool threads, so they will be used again.
         /// see https://www.hanselman.com/blog/ATaleOfTwoTechniquesTheThreadStaticAttributeAndSystemWebHttpContextCurrentItems.aspx
@@ -165,6 +176,43 @@ namespace Rock.Reporting
             }
 
             return string.Format( "{0} {1} '{2}'", GetTitle( entityType ), comparisonType.ConvertToString(), value );
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <summary>
+        /// Gets the component data that will be provided to the Obsidian component
+        /// when it is initialized. This should include representations of the current
+        /// values as well as any additional data required to initialize the UI.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <param name="filterMode">The type of filter component to render, either <see cref="FilterMode.SimpleFilter"/> or <see cref="FilterMode.AdvancedFilter"/>.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current request.</param>
+        /// <returns>A dictionary of strings that will be provided to the Obsidian component.</returns>
+        [RockInternal( "17.0" )]
+        public virtual Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, FilterMode filterMode, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string>();
+        }
+
+        /// <summary>
+        /// Gets the selection string that will be saved to the database from
+        /// the data returned by the Obsidian component.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="data">The data the was returned by the Obsidian component.</param>
+        /// <param name="filterMode">The type of filter component that was rendered, either <see cref="FilterMode.SimpleFilter"/> or <see cref="FilterMode.AdvancedFilter"/>.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current request.</param>
+        /// <returns>The string of text that represents the selection which will be written to the database.</returns>
+        [RockInternal( "17.0" )]
+        public virtual string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, FilterMode filterMode, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return string.Empty;
         }
 
         /// <summary>
