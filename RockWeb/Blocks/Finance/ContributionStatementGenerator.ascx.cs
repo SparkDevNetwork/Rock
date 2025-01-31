@@ -187,6 +187,20 @@ namespace RockWeb.Blocks.Finance
 
             var result = FinancialStatementGeneratorHelper.GetStatementGeneratorRecipientResult( financialStatementGeneratorRecipientRequest, this.CurrentPerson );
 
+            if ( !string.IsNullOrWhiteSpace( result.FooterHtmlFragment ) )
+            {
+                // Insert the footer text before the closing body tag
+                var insertPosition = result.Html.IndexOf( "</body>" );
+                if ( insertPosition >= 0 )
+                {
+                    result.Html = result.Html.Insert( insertPosition, result.FooterHtmlFragment );
+                }
+                else
+                {
+                    result.Html += result.FooterHtmlFragment;
+                }
+            }
+
             Response.Write( result.Html );
             Response.End();
         }
