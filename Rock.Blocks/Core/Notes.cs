@@ -304,7 +304,7 @@ namespace Rock.Blocks.Core
                 IdKey = note.IdKey,
                 NoteTypeIdKey = noteType.IdKey,
                 Caption = note.Caption,
-                Text = note.Text,
+                Text = note.Text?.ConvertMarkdownToHtml(),
                 AnchorId = note.NoteAnchorId,
                 IsAlert = note.IsAlert ?? false,
                 IsPinned = note.IsPinned,
