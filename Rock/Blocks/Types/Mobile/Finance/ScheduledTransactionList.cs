@@ -160,20 +160,13 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             financialScheduledTransactionService.GetStatus( scheduledTransactions, true );
 
-            var transactionBags = scheduledTransactions.Select( st => new FinancialScheduledTransactionBag
-            {
-                TotalAmount = st.TotalAmount,
-                NextPaymentDate = st.NextPaymentDate,
-                FrequencyText = st.TransactionFrequencyValue?.Value,
-                IsActive = st.IsActive,
-            } ).ToList();
-
-            var templates = transactionBags.Select( ( bag ) =>
+            var templates = scheduledTransactions.Select( ( bag ) =>
             {
                 var mergeFields = RequestContext.GetCommonMergeFields();
                 var template = ScheduledTransactionItemTemplate;
 
-                mergeFields.Add( "ScheduledTransactionInfo", new Lava.LavaDataWrapper( bag ) );
+                mergeFields.Add( "ScheduledTransactionInfo", bag );
+                mergeFields.Add( "FrequencyText", bag.TransactionFrequencyValue?.Value );
                 mergeFields.Add( "DetailPage", DetailPageGuid );
 
                 return new ListItemViewModel

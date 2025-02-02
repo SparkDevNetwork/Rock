@@ -29,7 +29,9 @@ namespace Rock.Tests.Shared.TestFramework
         /// <summary>
         /// The number of containers to keep running.
         /// </summary>
-        private readonly int _count;
+        private readonly int _poolSize;
+
+        private int _takeCount;
 
         /// <summary>
         /// A lock object to provide synchronization.
@@ -72,11 +74,9 @@ namespace Rock.Tests.Shared.TestFramework
             // Subtract 1 because the image being used by the test does not
             // count towards the pool size, so if we want 4 images total in
             // memory then we only need 3 in the pool.
-            _count = Math.Max( 0, poolSize.Value - 1 );
+            _poolSize = Math.Max( 0, poolSize.Value - 1 );
 
-            LogHelper.Log( $"Initialized Docker Container standby pool size of {_count}." );
-
-            FillPool();
+            LogHelper.Log( $"Initialized Docker Container standby pool size of {_poolSize}." );
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Rock.Tests.Shared.TestFramework
         /// </summary>
         private void FillPoolNoLock()
         {
-            for ( int i = _pool.Count; i < _count; i++ )
+            for ( int i = _pool.Count; i < _poolSize; i++ )
             {
                 var task = Task.Run( () =>
                 {
@@ -125,22 +125,35 @@ namespace Rock.Tests.Shared.TestFramework
         /// <returns>A task that represents the container.</returns>
         public Task<MsSqlContainer> TakeAsync()
         {
-            if ( _count == 0 )
+            if ( _poolSize == 0 )
             {
                 return StartContainerAsync();
             }
 
-            Task<MsSqlContainer> task;
-
             lock ( _lock )
             {
-                task = _pool[0];
+                // If this is the first container being requested, then just
+                // start it without the pool. This way if we are running just
+                // a single test we don't spin up a bunch of extra containers.
+                if ( _takeCount == 0 )
+                {
+                    return StartContainerAsync();
+                }
+
+                _takeCount++;
+
+                if ( _pool.Count == 0 )
+                {
+                    FillPool();
+                }
+
+                var task = _pool[0];
+
                 _pool.RemoveAt( 0 );
-
                 FillPoolNoLock();
-            }
 
-            return task;
+                return task;
+            }
         }
 
         class OSInfo

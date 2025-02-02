@@ -19,17 +19,23 @@
             </div>
         </template>
         <div class="d-flex flex-column h-100">
-            <NotificationBox v-if="isSuccessNotificationBoxVisible"
-                             alertType="success"
-                             class="mb-0 text-center flex-shrink-0"
-                             v-html="successNotificationBoxMessage" />
-            <NotificationBox v-if="isErrorNotificationBoxVisible"
-                             alertType="danger"
-                             class="mb-0 text-center flex-shrink-0"
-                             :dismissible="true"
-                             @dismiss="clearErrorNotificationBoxText">
-                {{ errorNotificationText }}
-            </NotificationBox>
+            <transition name="slide">
+                <NotificationBox v-if="isSuccessNotificationBoxVisible"
+                                 alertType="success"
+                                 class="mb-0 text-center flex-shrink-0"
+                                 style="--slide-padding-close: 0 16px; --slide-padding-open: 16px; --slide-height: 59px; --border-top-width: 3px"
+                                 v-html="successNotificationBoxMessage" />
+            </transition>
+            <transition name="slide">
+                <NotificationBox v-if="isErrorNotificationBoxVisible"
+                                 alertType="danger"
+                                 class="mb-0 text-center flex-shrink-0"
+                                 style="--slide-padding-close: 0 16px; --slide-padding-open: 16px; --slide-height: 59px; --border-top-width: 3px"
+                                 :dismissible="true"
+                                 @dismiss="clearErrorNotificationBoxText">
+                    {{ errorNotificationText }}
+                </NotificationBox>
+            </transition>
             <div class="sms-conversations-parent flex-grow-1">
                 <div class="sms-conversations-container styled-scroll">
                     <div class="conversation-list d-flex flex-column">
@@ -296,6 +302,7 @@
 .slide-leave-to {
     max-height: 0;
     opacity: 0;
+    border-top-width: 0;
     overflow: hidden;
     padding: var(--slide-padding-close, 0) !important;
 }
@@ -304,6 +311,7 @@
 .slide-leave-from {
     max-height: var(--slide-height, 200px);
     opacity: 1;
+    border-top-width: var(--border-top-width, 0);
     padding: var(--slide-padding-open, 0) !important;
 }
 
@@ -936,6 +944,11 @@
      */
     function toggleSuccessNotificationBox(toggleValue: boolean = !isSuccessNotificationBoxVisible.value): void {
         isSuccessNotificationBoxVisible.value = toggleValue;
+        if (toggleValue === true) {
+            setTimeout(() => {
+                isSuccessNotificationBoxVisible.value = false;
+            }, 5000);
+        }
     }
 
     /**

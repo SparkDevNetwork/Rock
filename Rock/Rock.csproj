@@ -175,9 +175,6 @@
     <Reference Include="Ical.Net, Version=1.0.0.0, Culture=neutral, PublicKeyToken=65c0446cd019ea53, processorArchitecture=MSIL">
       <HintPath>..\packages\Ical.Net.4.2.0\lib\netstandard2.0\Ical.Net.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=1.4.2.13, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpZipLib.1.4.2\lib\netstandard2.0\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
     <Reference Include="IdentityModel, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IdentityModel.3.0.0\lib\net461\IdentityModel.dll</HintPath>
     </Reference>
@@ -243,9 +240,6 @@
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Http.Features, Version=2.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNetCore.Http.Features.2.1.0\lib\netstandard2.0\Microsoft.AspNetCore.Http.Features.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNetCore.WebUtilities, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNetCore.WebUtilities.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Azure.Amqp, Version=2.4.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.Amqp.2.6.7\lib\net45\Microsoft.Azure.Amqp.dll</HintPath>
@@ -430,8 +424,8 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="PuppeteerSharp, Version=7.0.0.0, Culture=neutral, PublicKeyToken=db12f80f85d8ba23, processorArchitecture=MSIL">
-      <HintPath>..\packages\PuppeteerSharp.7.0.0\lib\netstandard2.0\PuppeteerSharp.dll</HintPath>
+    <Reference Include="PuppeteerSharp, Version=18.1.0.0, Culture=neutral, PublicKeyToken=db12f80f85d8ba23, processorArchitecture=MSIL">
+      <HintPath>..\packages\PuppeteerSharp.18.1.0\lib\netstandard2.0\PuppeteerSharp.dll</HintPath>
     </Reference>
     <Reference Include="QRCoder, Version=1.3.9.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\QRCoder.1.3.9\lib\net40\QRCoder.dll</HintPath>
@@ -719,6 +713,7 @@
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
     <Compile Include="Cms\RestActionMetadata.cs" />
     <Compile Include="Cms\RestControllerMetadata.cs" />
+    <Compile Include="Core\AttributeDisplaySettings.cs" />
     <Compile Include="Core\EntitySearch\CustomExtensionMethodsExpressionVisitor.cs" />
     <Compile Include="Core\EntitySearch\DynamicLinqCustomTypeProvider.cs" />
     <Compile Include="Core\EntitySearch\DynamicLinqQueryExtensionMethods.cs" />
@@ -902,6 +897,7 @@
     <Compile Include="Blocks\Types\Mobile\Events\LiveExperience.cs" />
     <Compile Include="Blocks\Types\Mobile\Finance\TransactionDetail.cs" />
     <Compile Include="Blocks\Types\Mobile\Finance\ScheduledTransactionList.cs" />
+    <Compile Include="Blocks\Types\Mobile\Finance\TransactionList.cs" />
     <Compile Include="Blocks\Types\Mobile\Finance\Giving.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupSchedulePreference.cs" />
     <Compile Include="Blocks\Types\Mobile\Groups\GroupScheduleSignUp.cs" />
@@ -962,6 +958,7 @@
     <Compile Include="CheckIn\v2\Filters\LocationClosedOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\LocationOverflowOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\PreferredGroupsOpportunityFilter.cs" />
+    <Compile Include="CheckIn\v2\Filters\ScheduleRequirementOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\Filters\SpecialNeedsOpportunityFilter.cs" />
     <Compile Include="CheckIn\v2\IValidPropertiesBoxExtensions.cs" />
     <Compile Include="CheckIn\v2\Labels\LabelAttendanceDetail.cs" />
@@ -1607,7 +1604,6 @@
     <Compile Include="Observability\ObservabilityHelper.cs" />
     <Compile Include="Observability\RockActivitySource.cs" />
     <Compile Include="Observability\RockMetricSource.cs" />
-    <Compile Include="Obsidian\ObsidianComponent.cs" />
     <Compile Include="Obsidian\UI\GridActionUrlKey.cs" />
     <Compile Include="Obsidian\UI\GridBuilder.cs" />
     <Compile Include="Obsidian\UI\GridBuilderExtensions.cs" />
@@ -2421,6 +2417,7 @@
     <Compile Include="Utility\ExtensionMethods\SecurityGrantExtensions.cs" />
     <Compile Include="Utility\ExtensionMethods\Image.cs" />
     <Compile Include="Utility\ExtensionMethods\DecimalRockExtensions.cs" />
+    <Compile Include="Utility\ExtensionMethods\SiteTypeExtensions.cs" />
     <Compile Include="Utility\FileUrlHelper.cs" />
     <Compile Include="Utility\IdHasher.cs" />
     <Compile Include="Utility\IWebHostEnvironment.cs" />

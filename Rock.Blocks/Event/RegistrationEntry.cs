@@ -4013,6 +4013,7 @@ namespace Rock.Blocks.Event
                 Campuses = campusClientService.GetCampusesAsListItems(),
                 MaritalStatuses = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_MARITAL_STATUS )
                     .DefinedValues
+                    .Where( v => v.IsActive )
                     .OrderBy( v => v.Order )
                     .Select( v => new ListItemBag
                     {
@@ -4022,6 +4023,7 @@ namespace Rock.Blocks.Event
                     .ToList(),
                 ConnectionStatuses = DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS )
                     .DefinedValues
+                    .Where( v => v.IsActive )
                     .OrderBy( v => v.Order )
                     .Select( v => new ListItemBag
                     {
@@ -4031,6 +4033,7 @@ namespace Rock.Blocks.Event
                     .ToList(),
                 Grades = DefinedTypeCache.Get( SystemGuid.DefinedType.SCHOOL_GRADES )
                     .DefinedValues
+                    .Where( v => v.IsActive )
                     .OrderBy( v => v.Order )
                     .Select( v => new ListItemBag
                     {

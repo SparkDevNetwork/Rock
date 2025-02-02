@@ -129,7 +129,7 @@
 
 <script setup lang="ts">
     import Panel from "@Obsidian/Controls/panel.obs";
-    import { PropType, ref, watch } from "vue";
+    import { PropType, ref, watch, onMounted, onUnmounted } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -168,6 +168,14 @@
         (e: "update:modelValue", value: ValidPropertiesBox<LearningProgramBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
+
+    onMounted(() => {
+        document.body.classList.add("temp-is-edit");
+    });
+
+    onUnmounted(() => {
+        document.body.classList.remove("temp-is-edit");
+    });
 
     // #region Values
     const defaultConfigurationMode = ConfigurationMode.OnDemandLearning.toString();

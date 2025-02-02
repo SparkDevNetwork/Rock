@@ -584,7 +584,7 @@ namespace Rock.Blocks.Core
                 }
             }
 
-            return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
+            return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl( new Dictionary<string, string>
             {
                 [PageParameterKey.BinaryFileId] = entity.IdKey
             } ) );

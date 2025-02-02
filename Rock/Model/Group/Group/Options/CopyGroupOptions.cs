@@ -29,7 +29,7 @@ namespace Rock.Model.Groups.Group.Options
     /// <summary>
     /// Options and fields related to a copy group operation.
     /// </summary>
-    [RockInternal( "1.17" )]
+    [RockInternal( "17.0" )]
     public class CopyGroupOptions
     {
         /// <summary>
