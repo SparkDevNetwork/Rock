@@ -66,7 +66,7 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
         /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/inGroupFilter.obs";
+        public override string ObsidianFileUrl => null;//"~/Obsidian/Reporting/DataFilters/Person/inGroupFilter.obs";
 
         #endregion
 
