@@ -162,7 +162,7 @@
      */
     function onEditAdaptation(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.AdaptationDetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.AdaptationDetailPage].replace("((Key))", key);
+            window.location.href = config.navigationUrls[NavigationUrlKey.AdaptationDetailPage].replace("((Key))", key) + `&AdaptiveMessageId=${props.modelValue?.idKey}`;
         }
     }
 

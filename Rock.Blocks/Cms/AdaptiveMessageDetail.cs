@@ -565,10 +565,14 @@ namespace Rock.Blocks.Cms
         {
             var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
             var adaptiveMessageId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageId );
+            var adaptiveMessageCategoryId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageCategoryId );
 
-            if ( adaptiveMessageId == null )
+            if ( adaptiveMessageCategoryId == "0" )
             {
-                var adaptiveMessageCategoryId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageCategoryId );
+                adaptiveMessageId = "0";
+            }
+            else if ( adaptiveMessageId == null )
+            {
                 adaptiveMessageId = new AdaptiveMessageCategoryService( RockContext ).Get( adaptiveMessageCategoryId )?.AdaptiveMessageId.ToString();
 
                 if ( adaptiveMessageId == null )
