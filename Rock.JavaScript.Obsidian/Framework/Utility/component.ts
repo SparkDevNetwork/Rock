@@ -424,6 +424,28 @@ export const dataViewFilterProps: DataViewFilterProps = {
 
 // #endregion
 
+// #region Data View Selects
+
+type DataViewSelectProps = {
+    /**
+     * The component data value from the C# component class.
+     */
+    modelValue: {
+        type: PropType<Record<string, string | undefined | null>>,
+        required: true
+    }
+};
+
+/** The standard component props that will be passed to DataView Select components. */
+export const dataViewSelectProps: DataViewSelectProps = {
+    modelValue: {
+        type: Object as PropType<Record<string, string | undefined | null>>,
+        required: true
+    }
+};
+
+// #endregion
+
 // #region Extended References
 
 /**

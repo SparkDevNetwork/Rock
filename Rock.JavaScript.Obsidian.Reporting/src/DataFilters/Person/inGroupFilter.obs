@@ -92,6 +92,8 @@
 
     // #endregion
 
+    // #region Functions
+
     /**
      * Attempts to parse the JSON and returns undefined if it could not be parsed.
      *
@@ -111,6 +113,8 @@
             return undefined;
         }
     }
+
+    // #endregion
 
     watch([groups, includeChildGroups, includeSelectedGroups, includeAllDescendants, includeInactiveGroups, groupMemberRoles, groupMemberStatus, dateAdded, firstAttendance, lastAttendance], () => {
         const newData = { ...props.modelValue };
