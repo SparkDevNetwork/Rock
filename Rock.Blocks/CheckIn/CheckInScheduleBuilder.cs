@@ -503,7 +503,21 @@ namespace Rock.Blocks.CheckIn
                 {
                     if ( !destinationSchedule.CheckInStartOffsetMinutes.HasValue || !sourceSchedule.CheckInStartOffsetMinutes.HasValue )
                     {
-                        return ActionBadRequest( "The selected schedule is not enabled for check-in. Please select an active schedule." );
+                        string messagePrefix;
+                        if ( !destinationSchedule.CheckInStartOffsetMinutes.HasValue && !sourceSchedule.CheckInStartOffsetMinutes.HasValue )
+                        {
+                            messagePrefix = "The Destination and Source schedules are";
+                        }
+                        else if ( !destinationSchedule.CheckInStartOffsetMinutes.HasValue )
+                        {
+                            messagePrefix = "The Destination schedule is";
+                        }
+                        else
+                        {
+                            messagePrefix = "The Source schedule is";
+                        }
+
+                        return ActionBadRequest( $"{messagePrefix} is not enabled for check-in. You can enable check-in for a schedule by providing a value for the 'Enable Check-in' field of that schedule." );
                     }
 
                     var srcGroupLocations = groupLocationQuery.Where( gl => gl.Schedules.Any( s => s.Id == sourceSchedule.Id ) );
