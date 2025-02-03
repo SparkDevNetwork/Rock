@@ -698,7 +698,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import ImageUploader from "@Obsidian/Controls/imageuploader.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import NoteEditor from "./SmsConversations/noteEditor.partial.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -938,14 +938,22 @@
         isPersonFilterToggled.value = toggleFilterValue;
     }
 
+    let successMessageTimeout: number | null = null;
+
     /**
      * Toggles the visibility of the success notification box.
      * @param toggleValue whether to show or hide the success notification box.
      */
     function toggleSuccessNotificationBox(toggleValue: boolean = !isSuccessNotificationBoxVisible.value): void {
         isSuccessNotificationBoxVisible.value = toggleValue;
+
         if (toggleValue === true) {
-            setTimeout(() => {
+            // Clear any existing timeout before setting a new one
+            if (successMessageTimeout !== null) {
+                clearTimeout(successMessageTimeout);
+            }
+
+            successMessageTimeout = window.setTimeout(() => {
                 isSuccessNotificationBoxVisible.value = false;
             }, 5000);
         }
