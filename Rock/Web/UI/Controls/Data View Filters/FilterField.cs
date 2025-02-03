@@ -226,6 +226,8 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The filter options.
         /// </value>
+        [Obsolete]
+        [RockObsolete( "17.0" )]
         public Dictionary<string, object> FilterOptions
         {
             get
@@ -592,7 +594,9 @@ namespace Rock.Web.UI.Controls
             var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
+#pragma warning disable CS0612 // Type or member is obsolete
                 component.Options = FilterOptions;
+#pragma warning restore CS0612 // Type or member is obsolete
                 if ( UseObsidian && component.ObsidianFileUrl != null )
                 {
                     if ( component.ObsidianFileUrl.Length > 0 )

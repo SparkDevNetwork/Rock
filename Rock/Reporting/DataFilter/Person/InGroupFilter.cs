@@ -70,6 +70,126 @@ namespace Rock.Reporting.DataFilter.Person
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+
+            List<ListItemBag> groups = new List<ListItemBag>();
+            List<int> groupIds = new List<int>();
+
+            if ( selectionValues.Length > 0 )
+            {
+                var groupGuids = selectionValues[0]
+                    .SplitDelimitedValues()
+                    .AsGuidList();
+
+                if ( groupGuids.Any() )
+                {
+                    var groupData = new GroupService( rockContext )
+                        .GetByGuids( groupGuids )
+                        .Select( g => new
+                        {
+                            g.Id,
+                            g.Guid,
+                            g.Name
+                        } )
+                        .ToList();
+
+                    groups = groupData
+                        .Select( g => new ListItemBag
+                        {
+                            Value = g.Guid.ToString(),
+                            Text = g.Name
+                        } )
+                        .ToList();
+
+                    groupIds = groupData.Select( g => g.Id ).ToList();
+                }
+            }
+
+            var data = new Dictionary<string, string>
+            {
+                ["groups"] = groups.ToCamelCaseJson( false, false ),
+                ["groupMemberRoles"] = selectionValues.Length > 1
+                    ? selectionValues[1]
+                    : string.Empty,
+                ["includeChildGroups"] = selectionValues.Length > 2
+                    ? selectionValues[2]
+                    : false.ToString(),
+                ["groupMemberStatus"] = selectionValues.Length > 3
+                    ? selectionValues[3]
+                    : string.Empty,
+                ["includeSelectedGroups"] = selectionValues.Length > 4
+                    ? selectionValues[4]
+                    : false.ToString(),
+                ["includeAllDescendants"] = selectionValues.Length > 5
+                    ? selectionValues[5]
+                    : false.ToString(),
+                ["includeInactiveGroups"] = selectionValues.Length > 6
+                    ? selectionValues[6]
+                    : false.ToString(),
+                ["dateAdded"] = selectionValues.Length > 7
+                    ? selectionValues[7].Replace( ',', '|' )
+                    : string.Empty,
+                ["firstAttendance"] = selectionValues.Length > 8
+                    ? selectionValues[8].Replace( ',', '|' )
+                    : string.Empty,
+                ["lastAttendance"] = selectionValues.Length > 9
+                    ? selectionValues[9].Replace( ',', '|' )
+                    : string.Empty,
+            };
+
+            // Add some data that is only required during first paint of the UI.
+            data["groupMemberRoleItems"] = GetGroupTypeRolesForSelectedGroups( groupIds,
+                data["includeChildGroups"].AsBoolean(),
+                data["includeSelectedGroups"].AsBoolean(),
+                data["includeAllDescendants"].AsBoolean(),
+                data["includeInactiveGroups"].AsBoolean(),
+                rockContext )
+                .ToCamelCaseJson( false, false );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selections = new List<string>( 10 );
+
+            if ( data.TryGetValue( "groups", out var groupsJson ) )
+            {
+                var groupGuids = groupsJson.FromJsonOrNull<List<ListItemBag>>()
+                    ?.Select( g => g.Value )
+                    .JoinStrings( "," )
+                    ?? string.Empty;
+
+                selections.Add( groupGuids );
+            }
+            else
+            {
+                selections.Add( string.Empty );
+            }
+
+            // Use .AsBoolean().ToString() on boolean values to force empty
+            // strings to become "False".
+            selections.Add( data.GetValueOrDefault( "groupMemberRoles", string.Empty ) );
+            selections.Add( data.GetValueOrDefault( "includeChildGroups", string.Empty ).AsBoolean().ToString() );
+            selections.Add( data.GetValueOrDefault( "groupMemberStatus", string.Empty ) );
+            selections.Add( data.GetValueOrDefault( "includeSelectedGroups", string.Empty ).AsBoolean().ToString() );
+            selections.Add( data.GetValueOrDefault( "includeAllDescendants", string.Empty ).AsBoolean().ToString() );
+            selections.Add( data.GetValueOrDefault( "includeInactiveGroups", string.Empty ).AsBoolean().ToString() );
+            selections.Add( data.GetValueOrDefault( "dateAdded", string.Empty ).Replace( '|', ',' ) );
+            selections.Add( data.GetValueOrDefault( "firstAttendance", string.Empty ).Replace( '|', ',' ) );
+            selections.Add( data.GetValueOrDefault( "lastAttendance", string.Empty ).Replace( '|', ',' ) );
+
+            return selections.JoinStrings( "|" );
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>
@@ -914,126 +1034,6 @@ namespace Rock.Reporting.DataFilter.Person
             }
 
             return null;
-        }
-
-        #endregion
-
-        #region Configuration
-
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
-        {
-            var selectionValues = selection.Split( '|' );
-
-            List<ListItemBag> groups = new List<ListItemBag>();
-            List<int> groupIds = new List<int>();
-
-            if ( selectionValues.Length > 0 )
-            {
-                var groupGuids = selectionValues[0]
-                    .SplitDelimitedValues()
-                    .AsGuidList();
-
-                if ( groupGuids.Any() )
-                {
-                    var groupData = new GroupService( rockContext )
-                        .GetByGuids( groupGuids )
-                        .Select( g => new
-                        {
-                            g.Id,
-                            g.Guid,
-                            g.Name
-                        } )
-                        .ToList();
-
-                    groups = groupData
-                        .Select( g => new ListItemBag
-                        {
-                            Value = g.Guid.ToString(),
-                            Text = g.Name
-                        } )
-                        .ToList();
-
-                    groupIds = groupData.Select( g => g.Id ).ToList();
-                }
-            }
-
-            var data = new Dictionary<string, string>
-            {
-                ["groups"] = groups.ToCamelCaseJson( false, false ),
-                ["groupMemberRoles"] = selectionValues.Length > 1
-                    ? selectionValues[1]
-                    : string.Empty,
-                ["includeChildGroups"] = selectionValues.Length > 2
-                    ? selectionValues[2]
-                    : false.ToString(),
-                ["groupMemberStatus"] = selectionValues.Length > 3
-                    ? selectionValues[3]
-                    : string.Empty,
-                ["includeSelectedGroups"] = selectionValues.Length > 4
-                    ? selectionValues[4]
-                    : false.ToString(),
-                ["includeAllDescendants"] = selectionValues.Length > 5
-                    ? selectionValues[5]
-                    : false.ToString(),
-                ["includeInactiveGroups"] = selectionValues.Length > 6
-                    ? selectionValues[6]
-                    : false.ToString(),
-                ["dateAdded"] = selectionValues.Length > 7
-                    ? selectionValues[7].Replace( ',', '|' )
-                    : string.Empty,
-                ["firstAttendance"] = selectionValues.Length > 8
-                    ? selectionValues[8].Replace( ',', '|' )
-                    : string.Empty,
-                ["lastAttendance"] = selectionValues.Length > 9
-                    ? selectionValues[9].Replace( ',', '|' )
-                    : string.Empty,
-            };
-
-            // Add some data that is only required during first paint of the UI.
-            data["groupMemberRoleItems"] = GetGroupTypeRolesForSelectedGroups( groupIds,
-                data["includeChildGroups"].AsBoolean(),
-                data["includeSelectedGroups"].AsBoolean(),
-                data["includeAllDescendants"].AsBoolean(),
-                data["includeInactiveGroups"].AsBoolean(),
-                rockContext )
-                .ToCamelCaseJson( false, false );
-
-            return data;
-        }
-
-        /// <inheritdoc/>
-        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
-        {
-            var selections = new List<string>( 10 );
-
-            if ( data.TryGetValue( "groups", out var groupsJson ) )
-            {
-                var groupGuids = groupsJson.FromJsonOrNull<List<ListItemBag>>()
-                    ?.Select( g => g.Value )
-                    .JoinStrings( "," )
-                    ?? string.Empty;
-
-                selections.Add( groupGuids );
-            }
-            else
-            {
-                selections.Add( string.Empty );
-            }
-
-            // Use .AsBoolean().ToString() on boolean values to force empty
-            // strings to become "False".
-            selections.Add( data.GetValueOrDefault( "groupMemberRoles", string.Empty ) );
-            selections.Add( data.GetValueOrDefault( "includeChildGroups", string.Empty ).AsBoolean().ToString() );
-            selections.Add( data.GetValueOrDefault( "groupMemberStatus", string.Empty ) );
-            selections.Add( data.GetValueOrDefault( "includeSelectedGroups", string.Empty ).AsBoolean().ToString() );
-            selections.Add( data.GetValueOrDefault( "includeAllDescendants", string.Empty ).AsBoolean().ToString() );
-            selections.Add( data.GetValueOrDefault( "includeInactiveGroups", string.Empty ).AsBoolean().ToString() );
-            selections.Add( data.GetValueOrDefault( "dateAdded", string.Empty ).Replace( '|', ',' ) );
-            selections.Add( data.GetValueOrDefault( "firstAttendance", string.Empty ).Replace( '|', ',' ) );
-            selections.Add( data.GetValueOrDefault( "lastAttendance", string.Empty ).Replace( '|', ',' ) );
-
-            return selections.JoinStrings( "|" );
         }
 
         #endregion

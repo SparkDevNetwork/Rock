@@ -17,9 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+#if WEBFORMS
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;
@@ -87,25 +89,31 @@ namespace Rock.Reporting
         /// <value>
         /// A set of key-value pairs representing the option names and values.
         /// </value>
+        [Obsolete]
+        [RockObsolete( "17.0" )]
         public virtual Dictionary<string, object> Options
         {
             get
             {
+#if WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     return HttpContext.Current.Items[$"{this.GetType().FullName}:Options"] as Dictionary<string, object>;
                 }
+#endif
 
                 return _nonHttpContextOptions;
             }
 
             set
             {
+#if WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     HttpContext.Current.Items[$"{this.GetType().FullName}:Options"] = value;
                 }
                 else
+#endif
                 {
                     _nonHttpContextOptions = value;
                 }
@@ -127,57 +135,10 @@ namespace Rock.Reporting
         /// So be careful and only use the [ThreadStatic] trick if absolutely necessary
         /// </summary>
         [ThreadStatic]
+        [Obsolete]
+        [RockObsolete( "17.0" )]
         private static Dictionary<string, object> _nonHttpContextOptions;
    
-        #endregion
-
-        #region Public Methods
-
-        /// <summary>
-        /// Gets the user-friendly title used to identify the filter component.
-        /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <returns>The name of the filter.</returns>
-        public abstract string GetTitle( Type entityType );
-
-        /// <summary>
-        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
-        /// referencing this property.
-        /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <returns>The client format script.</returns>
-        public virtual string GetClientFormatSelection( Type entityType )
-        {
-            return string.Format( "'{0} ' + $('select', $content).find(':selected').text() + ' \\'' + $('input', $content).val() + '\\''", GetTitle( entityType ) );
-        }
-
-        /// <summary>
-        /// Provides a user-friendly description of the specified filter values.
-        /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <param name="selection">A formatted string representing the filter settings.</param>
-        /// <returns>A string containing the user-friendly description of the settings.</returns>
-        public virtual string FormatSelection( Type entityType, string selection )
-        {
-            ComparisonType comparisonType = ComparisonType.StartsWith;
-            string value = string.Empty;
-
-            string[] options = selection.Split( '|' );
-            if ( options.Length > 0 )
-            {
-                comparisonType = options[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
-            }
-
-            if ( options.Length > 1 )
-            {
-                value = options[1];
-            }
-
-            return string.Format( "{0} {1} '{2}'", GetTitle( entityType ), comparisonType.ConvertToString(), value );
-        }
-
         #endregion
 
         #region Configuration
@@ -213,6 +174,7 @@ namespace Rock.Reporting
             return string.Empty;
         }
 
+#if WEBFORMS
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.
         /// Implement this version of CreateChildControls if your DataFilterComponent supports different FilterModes
@@ -329,6 +291,56 @@ namespace Rock.Reporting
                 ( ( DropDownList ) controls[0] ).SelectedValue = options[0];
                 ( ( TextBox ) controls[1] ).Text = options[1];
             }
+        }
+#endif
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Gets the user-friendly title used to identify the filter component.
+        /// </summary>
+        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
+        /// <returns>The name of the filter.</returns>
+        public abstract string GetTitle( Type entityType );
+
+        /// <summary>
+        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
+        /// will set the description of the filter to whatever is returned by this property.  If including script, the
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// referencing this property.
+        /// </summary>
+        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
+        /// <returns>The client format script.</returns>
+        public virtual string GetClientFormatSelection( Type entityType )
+        {
+            return string.Format( "'{0} ' + $('select', $content).find(':selected').text() + ' \\'' + $('input', $content).val() + '\\''", GetTitle( entityType ) );
+        }
+
+        /// <summary>
+        /// Provides a user-friendly description of the specified filter values.
+        /// </summary>
+        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
+        /// <param name="selection">A formatted string representing the filter settings.</param>
+        /// <returns>A string containing the user-friendly description of the settings.</returns>
+        public virtual string FormatSelection( Type entityType, string selection )
+        {
+            ComparisonType comparisonType = ComparisonType.StartsWith;
+            string value = string.Empty;
+
+            string[] options = selection.Split( '|' );
+            if ( options.Length > 0 )
+            {
+                comparisonType = options[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
+            }
+
+            if ( options.Length > 1 )
+            {
+                value = options[1];
+            }
+
+            return string.Format( "{0} {1} '{2}'", GetTitle( entityType ), comparisonType.ConvertToString(), value );
         }
 
         /// <summary>
