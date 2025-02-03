@@ -7,6 +7,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "RockWeb\", "{E43
 	ProjectSection(ProjectDependencies) = postProject
 		{11ACFF28-4199-450B-8A43-F59ADEF63A99} = {11ACFF28-4199-450B-8A43-F59ADEF63A99}
 		{A4FB4B9B-3564-4C25-938C-4350A9515B24} = {A4FB4B9B-3564-4C25-938C-4350A9515B24}
+		{F4F169A8-34C5-4628-B33E-CE4697629EAB} = {F4F169A8-34C5-4628-B33E-CE4697629EAB}
 	EndProjectSection
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.7.2"
@@ -123,6 +124,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.NCOA", "Rock.NCOA\Rock.NCOA.csproj", "{6FC5781E-C9FC-41E9-87FB-2A9CA8AA2088}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rock.CloudPrint.Shared.Common", "Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.shproj", "{6519C205-3304-4D09-86BC-16BE8A0D9C41}"
+EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Rock.JavaScript.Obsidian.Reporting", "Rock.JavaScript.Obsidian.Reporting\Rock.JavaScript.Obsidian.Reporting.esproj", "{F4F169A8-34C5-4628-B33E-CE4697629EAB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A4FB4B9B-3564-4C25-938C-4350A9515B24} = {A4FB4B9B-3564-4C25-938C-4350A9515B24}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -298,6 +304,12 @@ Global
 		{6FC5781E-C9FC-41E9-87FB-2A9CA8AA2088}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FC5781E-C9FC-41E9-87FB-2A9CA8AA2088}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FC5781E-C9FC-41E9-87FB-2A9CA8AA2088}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4F169A8-34C5-4628-B33E-CE4697629EAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4F169A8-34C5-4628-B33E-CE4697629EAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4F169A8-34C5-4628-B33E-CE4697629EAB}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{F4F169A8-34C5-4628-B33E-CE4697629EAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4F169A8-34C5-4628-B33E-CE4697629EAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4F169A8-34C5-4628-B33E-CE4697629EAB}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
