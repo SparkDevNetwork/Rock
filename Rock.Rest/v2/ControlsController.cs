@@ -2320,6 +2320,13 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                // Check that user has access to view the BinaryFileType.
+                var authorizedFileTypeGuids = GetAuthorizedBinaryFileTypes( rockContext ).Select( t => t.Guid );
+                if ( !authorizedFileTypeGuids.Contains( options.BinaryFileTypeGuid ) )
+                {
+                    return NotFound();
+                }
+
                 var items = new BinaryFileService( new RockContext() )
                     .Queryable()
                     .Where( f => f.BinaryFileType.Guid == options.BinaryFileTypeGuid && !f.IsTemporary )
@@ -2354,8 +2361,7 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var items = new BinaryFileTypeService( rockContext )
-                    .Queryable()
+                var items = GetAuthorizedBinaryFileTypes( rockContext )
                     .OrderBy( f => f.Name )
                     .Select( t => new ListItemBag
                     {
@@ -2366,6 +2372,31 @@ namespace Rock.Rest.v2
 
                 return Ok( items );
             }
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="BinaryFileType"/>s that do not require view security and/or the current authenticated user is permitted to view.
+        /// </summary>
+        /// <param name="rockContext">The <see cref="RockContext"/>.</param>
+        /// <returns></returns>
+        private List<BinaryFileType> GetAuthorizedBinaryFileTypes( RockContext rockContext )
+        {
+            var fileTypeQry = new BinaryFileTypeService( rockContext ).Queryable();
+            var fileTypesWithoutViewSecurity = fileTypeQry.Where( t => !t.RequiresViewSecurity ).ToList();
+
+            var person = GetPerson( rockContext );
+            if ( person == null )
+            {
+                return fileTypesWithoutViewSecurity;
+            }
+
+            var fileTypesWithViewSecurity = fileTypeQry
+                .Where( t => t.RequiresViewSecurity )
+                .ToList()
+                .Where( t => t.IsAuthorized( Authorization.VIEW, person ) )
+                .ToList();
+
+            return fileTypesWithViewSecurity.Concat( fileTypesWithoutViewSecurity ).ToList();
         }
 
         #endregion
