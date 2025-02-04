@@ -63,6 +63,8 @@ using Rock.Web.Cache.Entities;
 using Rock.Web.UI.Controls;
 using Rock.Workflow;
 
+using Authorization = Rock.Security.Authorization;
+
 #if WEBFORMS
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
 using FromUriAttribute = System.Web.Http.FromUriAttribute;
