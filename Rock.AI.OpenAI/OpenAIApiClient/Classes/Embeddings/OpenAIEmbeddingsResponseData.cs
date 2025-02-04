@@ -15,6 +15,6 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings
         /// The embedding data.
         /// </summary>
         [JsonProperty( "embedding" )]
-        public List<float> Embedding { get; set; }
+        public List<double> Embedding { get; set; }
     }
 }

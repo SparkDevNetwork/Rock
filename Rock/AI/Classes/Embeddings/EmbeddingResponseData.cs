@@ -19,6 +19,6 @@ namespace Rock.AI.Classes.Embeddings
         /// <summary>
         /// The embedding data.
         /// </summary>
-        public List<float> Embedding { get; set; }
+        public List<double> Embedding { get; set; }
     }
 }
