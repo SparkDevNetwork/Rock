@@ -21,14 +21,14 @@ using Rock.Attribute;
 using Rock.AI.OpenAI.OpenAIApiClient;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using Rock.Crm.ConnectionStatusChangeReport;
-using Rock.AI.OpenAI.OpenAIApiClient.Classes;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions;
 using System.Threading.Tasks;
 using Rock.AI.Classes.Moderations;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
 using Rock.AI.Classes.ChatCompletions;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions;
+using Rock.AI.Classes.Embeddings;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings;
 
 namespace Rock.AI.OpenAI.Provider
 {
@@ -118,6 +118,26 @@ namespace Rock.AI.OpenAI.Provider
             }
 
             return response.AsModerationsResponse();
+        }
+
+        /// <summary>
+        /// Get's the embeddings for the given request.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override async Task<EmbeddingResponse> GetEmbeddings( EmbeddingRequest request )
+        {
+            var openAIApi = GetOpenAIApi();
+
+            var response = await openAIApi.GetEmbeddings( new OpenAIEmbeddingsRequest( request ) );
+
+            if ( response == null )
+            {
+                return null;
+            }
+
+            return response.AsEmbeddingsResponse();
         }
 
         /// <summary>

@@ -17,7 +17,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web.Http;
+using Rock.AI.Classes.Embeddings;
 using Rock.Data;
 using Rock.Net;
 using Rock.Web.Cache;
@@ -187,6 +189,23 @@ namespace Rock.Rest.Controllers
             Rock.Utility.TextToWorkflow.MessageRecieved( toNumber, fromNumber, message, out processResponse );
 
             return processResponse;
+        }
+
+        [HttpPost]
+        [System.Web.Http.Route( "api/Utility/ai/embedding" )]
+        [Rock.SystemGuid.RestActionGuid( "2456B062-C8E9-43B5-A161-C8C2267DE8F8" )]
+        public async Task<EmbeddingResponse> GetEmbeddings( EmbeddingRequest request )
+        {
+            var openAIApi = new ();
+
+            var response = await openAIApi.GetEmbeddings( new OpenAIEmbeddingsRequest( request ) );
+
+            if ( response == null )
+            {
+                return null;
+            }
+
+            return response.AsEmbeddingsResponse();
         }
     }
 }

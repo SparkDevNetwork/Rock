@@ -20,6 +20,7 @@ using Rock.AI.Classes.TextCompletions;
 using Rock.AI.Classes.Moderations;
 using Rock.Extension;
 using Rock.AI.Classes.ChatCompletions;
+using Rock.AI.Classes.Embeddings;
 
 namespace Rock.AI.Provider
 {
@@ -57,5 +58,12 @@ namespace Rock.AI.Provider
         /// <param name="request"></param>
         /// <returns></returns>
         public abstract Task<ModerationsResponse> GetModerations( ModerationsRequest request );
+
+        /// <summary>
+        /// Get's the embeddings for the given request.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public abstract Task<EmbeddingResponse> GetEmbeddings( EmbeddingRequest request );
     }
 }

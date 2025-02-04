@@ -23,6 +23,7 @@ using Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
 using Rock.AI.OpenAI.OpenAIApiClient.Enums;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient
 {
@@ -78,7 +79,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             var request = new RestRequest( resource, method );
             request.AddHeader( "OpenAI-Organization", _organization );
 
-            return request; 
+            return request;
         }
 
         #endregion
@@ -116,7 +117,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         internal async Task<OpenAITextCompletionsResponse> GetTextCompletions( OpenAITextCompletionsRequest completionRequest )
         {
             var request = GetOpenAIRequest( "completions", Method.POST );
-                                    
+
             request.AddParameter( "application/json", completionRequest.ToJson(), ParameterType.RequestBody );
 
             // Execute request
@@ -156,7 +157,29 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             }
         }
 
-        
+        /// <summary>
+        /// Performs a embeddings request on the OpenAI API.
+        /// </summary>
+        /// <param name="embeddingsRequest"></param>
+        /// <returns></returns>
+        internal async Task<OpenAIEmbeddingsResponse> GetEmbeddings( OpenAIEmbeddingsRequest embeddingsRequest )
+        {
+            var request = GetOpenAIRequest( "embeddings", Method.POST );
+
+            request.AddParameter( "application/json", embeddingsRequest.ToJson(), ParameterType.RequestBody );
+
+            var response = await _client.ExecuteTaskAsync<OpenAIEmbeddingsResponse>( request ).ConfigureAwait( false );
+
+            if ( response.StatusCode == System.Net.HttpStatusCode.OK )
+            {
+                return response.Data;
+            }
+            else
+            {
+                return new OpenAIEmbeddingsResponse() { IsSuccessful = false, ErrorMessage = response.ErrorMessage };
+            }
+        }
+
         #endregion
 
     }
