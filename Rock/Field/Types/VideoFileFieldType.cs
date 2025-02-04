@@ -89,7 +89,7 @@ namespace Rock.Field.Types
                     // NOTE: Flash and Silverlight might crash if we don't set width and height. However, that makes responsive stuff not work
                     string htmlFormat = @"
 <video 
-    src='{0}}'
+    src='{0}'
     class='js-media-video'
     type='{1}'
     controls='controls'
