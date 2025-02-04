@@ -77,7 +77,10 @@
                             </transition>
                         </div>
                         <div class="overflow-scroll">
-                            <div v-for="(conversation, index) in filteredAndSortedConversations" :class="['recipient-row', { 'selected': conversation.conversationKey === selectedConversation?.conversationKey }]" @click="getConversationForRecipient(conversation)">
+                            <div v-if="areConversationsLoading" class="d-flex h-100 align-items-center justify-content-center">
+                                <Loading :isLoading="areConversationsLoading" />
+                            </div>
+                            <div v-else-if="filteredAndSortedConversations.length > 0" v-for="(conversation, index) in filteredAndSortedConversations" :class="['recipient-row', { 'selected': conversation.conversationKey === selectedConversation?.conversationKey }]" @click="getConversationForRecipient(conversation)">
                                 <div class="mr-3 flex-shrink-0"
                                      :style="{ 'width': '36px', 'height': '36px', 'border-radius': '18px', 'background-image': `url('${conversation.recipientPhotoUrl}')`, 'background-size': 'cover' }">
                                 </div>
@@ -120,7 +123,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-if="filteredAndSortedConversations.length === 0" class="no-recipients-container">
+                            <div v-else class="no-recipients-container">
                                 <span class="table-empty">No Communication Recipient Responses Found</span>
                             </div>
                         </div>
@@ -139,6 +142,7 @@
                                 <RockButton :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
                                             :isSquare="true"
+                                            title="Add Note"
                                             @click="onNoteEditorButtonClick">
                                     <i class="fa fa-edit"></i>
                                 </RockButton>
@@ -147,14 +151,24 @@
                                                 :contextEntityTypeGuid="selectedConversation.entityTypeGuidForReminder"
                                                 :btnSize="BtnSize.Small"
                                                 @addSuccess="onAddReminder" />
-                                <RockButton v-if="canEditOrAdministrate"
-                                            :btnType="BtnType.Default"
-                                            :btnSize="BtnSize.Small"
-                                            :isSquare="true"
-                                            @click="toggleConversationReadStatus(selectedConversation)">
-                                    <i v-if="selectedConversation.isConversationRead" class="fa fa-eye-slash"></i>
-                                    <i v-else class="fa fa-eye"></i>
-                                </RockButton>
+                                <template v-if="canEditOrAdministrate">
+                                    <RockButton v-if="selectedConversation.isConversationRead"
+                                                :btnType="BtnType.Default"
+                                                :btnSize="BtnSize.Small"
+                                                :isSquare="true"
+                                                title="Mark As Unread"
+                                                @click="toggleConversationReadStatus(selectedConversation)">
+                                        <i class="fa fa-eye-slash"></i>
+                                    </RockButton>
+                                    <RockButton v-else
+                                                :btnType="BtnType.Default"
+                                                :btnSize="BtnSize.Small"
+                                                :isSquare="true"
+                                                title="Mark As Read"
+                                                @click="toggleConversationReadStatus(selectedConversation)">
+                                        <i class="fa fa-eye"></i>
+                                    </RockButton>
+                                </template>
                                 <RockButton v-if="selectedConversation.isLinkToPersonVisible && canEditOrAdministrate"
                                             :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
@@ -229,6 +243,7 @@
                                 <RockButton :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Default"
                                             :isSquare="true"
+                                            title="Insert Snippet"
                                             @click="showSnippetModal">
                                     <i class="fa fa-bolt"></i>
                                 </RockButton>
@@ -740,6 +755,7 @@
     const isSuccessNotificationBoxVisible = ref<boolean>(false);
     const errorNotificationText = ref<string>(box.errorMessage ?? "");
     const successNotificationBoxMessage = ref<string>("");
+    const areConversationsLoading = ref<boolean>(false);
     const isConversationLoading = ref<boolean>(false);
     const canEditOrAdministrate = ref<boolean>(box.canEditOrAdministrate);
 
@@ -1394,6 +1410,7 @@
      * Reloads all conversations.
      */
     async function reloadConversations(): Promise<void> {
+        areConversationsLoading.value = true;
         const result = await invokeBlockAction<ConversationBag[]>("ReloadConversations");
 
         if (result.isSuccess) {
@@ -1407,6 +1424,8 @@
         else {
             errorNotificationText.value = result.errorMessage ?? "An unknown error occurred while reloading conversations.";
         }
+
+        areConversationsLoading.value = false;
     }
 
     onMounted(() => {

@@ -28,7 +28,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Block for having SMS Conversations between an SMS enabled phone and a Rock SMS Phone number that has 'Enable Mobile Conversations' set to false." )]
     [IconCssClass( "fa fa-message" )]
-    //[SupportedSiteTypes( SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
