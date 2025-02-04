@@ -20,5 +20,10 @@ namespace Rock.AI.Classes.Embeddings
         /// The encoding format to use for the input. See documentation for your provider for valid values.
         /// </summary>
         public string EncodingFormat { get; set; }
+
+        /// <summary>
+        /// The number of dimensions in the embedding.
+        /// </summary>
+        public int? dimensions { get; set; }
     }
 }

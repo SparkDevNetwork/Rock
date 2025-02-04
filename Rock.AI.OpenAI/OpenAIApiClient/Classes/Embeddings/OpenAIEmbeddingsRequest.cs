@@ -28,6 +28,13 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings
         [JsonProperty( "encoding_format", NullValueHandling = NullValueHandling.Ignore )]
         public string EncodingFormat { get; set; }
 
+        /// <summary>
+        /// The number of dimensions in the embedding.
+        /// Note: Only work with text-embedding-3 and later models.
+        /// </summary>
+        [JsonProperty( "dimensions", NullValueHandling = NullValueHandling.Ignore )]
+        public int? dimensions { get; set; }
+
         #endregion
 
         /// <summary>
@@ -39,6 +46,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings
             this.Input = request.Input;
             this.Model = request.Model;
             this.EncodingFormat = request.EncodingFormat;
+            this.dimensions = request.dimensions;
         }
     }
 }
