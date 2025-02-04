@@ -190,22 +190,5 @@ namespace Rock.Rest.Controllers
 
             return processResponse;
         }
-
-        [HttpPost]
-        [System.Web.Http.Route( "api/Utility/ai/embedding" )]
-        [Rock.SystemGuid.RestActionGuid( "2456B062-C8E9-43B5-A161-C8C2267DE8F8" )]
-        public async Task<EmbeddingResponse> GetEmbeddings( EmbeddingRequest request )
-        {
-            var openAIApi = new ();
-
-            var response = await openAIApi.GetEmbeddings( new OpenAIEmbeddingsRequest( request ) );
-
-            if ( response == null )
-            {
-                return null;
-            }
-
-            return response.AsEmbeddingsResponse();
-        }
     }
 }
