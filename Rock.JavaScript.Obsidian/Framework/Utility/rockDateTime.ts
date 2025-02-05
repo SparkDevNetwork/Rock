@@ -630,7 +630,7 @@ export class RockDateTime {
      */
     public toElapsedString(currentDateTime?: RockDateTime): string {
         const msPerSecond = 1000;
-        const msPerMinute= 1000 * 60;
+        const msPerMinute = 1000 * 60;
         const msPerHour = 1000 * 60 * 60;
         const hoursPerDay = 24;
         const daysPerYear = 365;
@@ -773,6 +773,7 @@ export class RockDateTime {
     }
 
     /**
+     * Obsolete. Use toElapsedString instead.
      * Calculates the elapsed time between this date and the reference date and
      * returns that difference in a human friendly way.
      *

@@ -223,7 +223,7 @@
         const contentItems = getContentChannelItems(contentItemsString);
         for (const contentItem of contentItems) {
             filterValue += contentItem.title;
-            filterValue += contentItem.name;
+            filterValue += ` (${contentItem.name})`;
         }
 
         return filterValue;

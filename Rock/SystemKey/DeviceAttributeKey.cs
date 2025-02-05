@@ -25,5 +25,10 @@ namespace Rock.SystemKey
         /// The device has cutter
         /// </summary>
         public const string DEVICE_HAS_CUTTER = "core_device_HasCutter";
+
+        /// <summary>
+        /// The printer device DPI setting for rendering labels.
+        /// </summary>
+        public const string DEVICE_PRINTER_DPI = "core_device_PrinterDpi";
     }
 }

@@ -21,11 +21,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Jobs;
 using Rock.Model;
-using Rock.Tests.Integration.Data.Interactions;
-using Rock.Tests.Integration.Modules.Core.Lava;
+using Rock.Tests.Integration.Core.Lava;
+using Rock.Tests.Integration.Engagement.Interactions;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.BugFixes
+namespace Rock.Tests.Integration.Issues
 {
     /// <summary>
     /// Tests that verify specific bug fixes for a Rock version.

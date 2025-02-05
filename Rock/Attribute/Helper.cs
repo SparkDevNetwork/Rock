@@ -28,6 +28,7 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Rock.Core;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
@@ -291,6 +292,13 @@ namespace Rock.Attribute
                     }
                 }
 
+                // Check additional display settings.
+                var displaySettings = attribute.GetAdditionalSettings<AttributeDisplaySettings>();
+
+                if ( displaySettings.SiteTypes != property.SiteTypes )
+                {
+                    updated = true;
+                }
             }
 
             if ( !updated )
@@ -351,6 +359,12 @@ namespace Rock.Attribute
                     f.Assembly == property.FieldTypeAssembly &&
                     f.Class == property.FieldTypeClass );
             }
+
+            // Set all additional settings.
+            attribute.SetAdditionalSettings( new AttributeDisplaySettings
+            {
+                SiteTypes = property.SiteTypes
+            } );
 
             // If this is a new attribute, add it, otherwise remove the exiting one from the cache
             if ( attribute.Id == 0 )
@@ -1069,7 +1083,7 @@ This can be due to multiple threads updating the same attribute at the same time
         /// <param name="id">The identifier of the entity.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>An object that can be used to access the attribute values or <c>null</c> if the entity type is not valid.</returns>
-        [RockInternal( "1.17", true )]
+        [RockInternal( "17.0", true )]
         public static IHasAttributes LoadAttributes( Type entityType, int id, RockContext rockContext )
         {
             var setMethod = GetQueryableAttributeSetMethod( entityType );

@@ -1586,7 +1586,53 @@ namespace Rock.Model
                                 beginDateTime = occurrenceFirstDayOfWeek;
                             }
 
-                            var matches = InetCalendarHelper.GetOccurrencesExcludingStartDate( schedule.iCalendarContent, beginDateTime, endDateTime );
+                            /*
+                                1/30/2025: JPH
+
+                                When comparing this member's preferred schedule template against the current "Sunday week",
+                                any schedule template that follows an "every n [days|weeks|months]" recurrence should take
+                                into account the member's originally-preferred start date.
+
+                                For example:
+
+                                    - A schedule template of "Every Other Week" should truly hinge on the "Sunday week"
+                                      that originally corresponded to the member's preferred start date, to ensure we
+                                      accurately schedule this member based on that original start date, forward.
+
+                                    - On the other hand, a schedule template of "1st and 3rd Week" should NOT care which
+                                      "Sunday week" originally corresponded to the member's preferred start date, AS LONG
+                                      AS that original start date is today or earlier (which we've already determined
+                                      above). In this case, we specifically want to avoid overriding the iCalendar's
+                                      start date/time when determining if this member should be scheduled (see related
+                                      GitHub issue #5980: https://github.com/SparkDevNetwork/Rock/issues/5980).
+
+                                Note that the "every n [days|weeks|months]" schedule templates in question will be based
+                                upon an iCalendar that internally contain an `INTERVAL > 1`, so they should be pretty
+                                easy to identify.
+
+                                Reason: iCalendars should SOMETIMES have their start date/time overridden when getting occurrences.
+                                https://github.com/SparkDevNetwork/Rock/issues/6165
+                             */
+
+                            // Instantiate a `CalendarEvent` to identify "every n [days|weeks|months]" schedule templates.
+                            var calendarEvent = InetCalendarHelper.CreateCalendarEvent( schedule.iCalendarContent );
+                            var shouldOverrideStartDateTime = calendarEvent?.RecurrenceRules?.Any( rr => rr?.Interval > 1 ) == true;
+
+                            IList<Ical.Net.DataTypes.Occurrence> matches;
+
+                            if ( shouldOverrideStartDateTime )
+                            {
+                                // Override the schedule template's start date/time to hinge on the member's
+                                // originally-preferred start date.
+                                matches = schedule.GetICalOccurrences( beginDateTime, endDateTime, scheduleStartDate );
+                            }
+                            else
+                            {
+                                // Leave the schedule template's start date/time as is (and potentially EXCLUDE the start
+                                // date/time from consideration), since this isn't an "every n [days|weeks|months]" scenario.
+                                matches = InetCalendarHelper.GetOccurrencesExcludingStartDate( schedule.iCalendarContent, beginDateTime, endDateTime );
+                            }
+
                             if ( matches.Any() )
                             {
                                 matchingScheduleGroupMemberIdList.Add( groupMember.GroupMemberId );

@@ -17,8 +17,9 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-
+using System.Linq;
 using PuppeteerSharp;
+using PuppeteerSharp.BrowserData;
 using PuppeteerSharp.Media;
 using Rock.Observability;
 using Rock.SystemKey;
@@ -44,8 +45,8 @@ namespace Rock.Pdf
             InitializeChromeEngine();
         }
 
-        private Browser _puppeteerBrowser = null;
-        private Page _puppeteerPage;
+        private IBrowser _puppeteerBrowser = null;
+        private IPage _puppeteerPage;
 
         private static int _lastProgressPercentage = 0;
 
@@ -55,10 +56,7 @@ namespace Rock.Pdf
         /// </summary>
         public static void EnsureChromeEngineInstalled()
         {
-            using ( var browserFetcher = GetBrowserFetcher() )
-            {
-                EnsureChromeEngineInstalled( browserFetcher, true );
-            }
+            EnsureChromeEngineInstalled( GetBrowserFetcher(), true );
         }
 
         /// <inheritdoc cref="PdfGenerator.EnsureChromeEngineInstalled()"/>
@@ -73,14 +71,12 @@ namespace Rock.Pdf
             }
 
             _lastProgressPercentage = 0;
-            browserFetcher.DownloadProgressChanged += BrowserFetcher_DownloadProgressChanged;
 
             try
             {
-                var executablePath = browserFetcher.RevisionInfo( BrowserFetcher.DefaultChromiumRevision ).ExecutablePath;
-                var installingFlagFileName = Path.Combine( browserFetcher.DownloadsFolder, ".installing" );
-                var revisionInfo = AsyncHelper.RunSync( () => browserFetcher.GetRevisionInfoAsync() );
-                var localInstallExists = revisionInfo.Local;
+                var executablePath = browserFetcher.GetExecutablePath( Chrome.DefaultBuildId );
+                var installingFlagFileName = Path.Combine( browserFetcher.CacheDir, ".installing" );
+                var localInstallExists = browserFetcher.GetInstalledBrowsers().Any( b => b.BuildId == Chrome.DefaultBuildId );
 
                 // If checking for an incomplete install, check if there is an orphaned ".installing" file. Also make sure that the chrome.exe exists
                 // (just in case files were deleted, but folders were not).
@@ -91,7 +87,7 @@ namespace Rock.Pdf
                     {
                         // Attempt to kill any chrome.exe processes that are running in our ChromeEngine directory so that we can remove it.
                         KillChromeProcesses();
-                        browserFetcher.Remove( BrowserFetcher.DefaultChromiumRevision );
+                        browserFetcher.Uninstall( Chrome.DefaultBuildId );
                         localInstallExists = false;
                     }
                 }
@@ -148,7 +144,7 @@ namespace Rock.Pdf
 
             var browserFetcherOptions = new BrowserFetcherOptions
             {
-                Product = Product.Chrome,
+                Browser = SupportedBrowser.Chrome,
                 Path = browserDownloadPath,
             };
 
@@ -165,7 +161,7 @@ namespace Rock.Pdf
                 var browserFetcher = GetBrowserFetcher();
 
                 // Kill any chrome.exe's that got left running
-                var executablePath = browserFetcher.RevisionInfo( BrowserFetcher.DefaultChromiumRevision ).ExecutablePath;
+                var executablePath = browserFetcher.GetExecutablePath( Chrome.DefaultBuildId );
                 var chromeProcesses = Process.GetProcessesByName( "chrome" );
                 foreach ( var process in chromeProcesses )
                 {
@@ -249,32 +245,17 @@ namespace Rock.Pdf
                     DefaultViewport = new ViewPortOptions { Width = 1280, Height = 1024, DeviceScaleFactor = 1 },
                 };
 
-                using ( var browserFetcher = GetBrowserFetcher() )
-                {
-                    // should have already been installed, but just in case it hasn't, download it now.
-                    EnsureChromeEngineInstalled( browserFetcher, false );
-                    launchOptions.ExecutablePath = browserFetcher.RevisionInfo( BrowserFetcher.DefaultChromiumRevision ).ExecutablePath;
-                }
+                var browserFetcher = GetBrowserFetcher();
+
+                // should have already been installed, but just in case it hasn't, download it now.
+                EnsureChromeEngineInstalled( browserFetcher, false );
+                launchOptions.ExecutablePath = browserFetcher.GetExecutablePath( Chrome.DefaultBuildId );
 
                 _puppeteerBrowser = Puppeteer.LaunchAsync( launchOptions ).Result;
             }
 
             _puppeteerPage = _puppeteerBrowser.NewPageAsync().Result;
             _puppeteerPage.EmulateMediaTypeAsync( this.PDFMediaType ).Wait();
-        }
-
-        /// <summary>
-        /// Handles the DownloadProgressChanged event of the BrowserFetcher control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Net.DownloadProgressChangedEventArgs"/> instance containing the event data.</param>
-        private static void BrowserFetcher_DownloadProgressChanged( object sender, System.Net.DownloadProgressChangedEventArgs e )
-        {
-            if ( e.ProgressPercentage != _lastProgressPercentage )
-            {
-                _lastProgressPercentage = e.ProgressPercentage;
-                Debug.WriteLine( $"Downloading PdfGenerator ChromeEngine: {e.ProgressPercentage}%" );
-            }
         }
 
         /// <summary>

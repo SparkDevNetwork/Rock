@@ -71,6 +71,7 @@
                         <GradePicker v-if="isGradeVisible"
                                      label="Grade"
                                      v-model="grade"
+                                     showBlankItem
                                      :rules="gradeRules" />
                     </div>
                 </div>

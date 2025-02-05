@@ -16,14 +16,14 @@
 //
 using System;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
-using Rock.Tests.Integration.TestData;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Shortcode
+namespace Rock.Tests.Integration.TestData.Cms.Shortcodes
 {
     /// <summary>
     /// Provides actions to manage Shortcode data.

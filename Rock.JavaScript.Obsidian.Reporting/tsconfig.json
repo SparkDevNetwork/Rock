@@ -1,0 +1,8 @@
+{
+  "files": [],
+  "include": [],
+  "references": [
+    { "path": "./src/DataFilters" },
+    { "path": "./src/DataSelects" }
+  ]
+}

@@ -28,7 +28,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="contentChannelEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="contentChannelEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -42,16 +42,15 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./ContentChannelDetail/editPanel.partial.obs";
     import ViewPanel from "./ContentChannelDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./ContentChannelDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { ContentChannelBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelDetail/contentChannelBag";
     import { ContentChannelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelDetail/contentChannelDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<ContentChannelBag, ContentChannelDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -59,46 +58,18 @@
     const errorMessage = ref("");
 
     const contentChannelViewBag = ref(config.entity);
-    const contentChannelEditBag = ref<ContentChannelBag>({} as ContentChannelBag);
+    const contentChannelEditBag = ref<ValidPropertiesBox<ContentChannelBag>>({
+        bag: {} as ContentChannelBag
+    });
 
     const entityTypeGuid = EntityType.ContentChannel;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "categories",
-        "channelUrl",
-        "childContentChannels",
-        "childItemsManuallyOrdered",
-        "contentChannelType",
-        "contentControlType",
-        "description",
-        "enablePersonalization",
-        "enableRss",
-        "iconCssClass",
-        "isIndexEnabled",
-        "isStructuredContent",
-        "isTaggingEnabled",
-        "itemsManuallyOrdered",
-        "itemTagCategory",
-        "itemUrl",
-        "name",
-        "requiresApproval",
-        "rootImageDirectory",
-        "structuredContentToolValue",
-        "timeToLive",
-        "settings",
-        "isContentLibraryEnabled",
-        "licenseTypeGuid",
-        "summaryAttributeGuid",
-        "authorAttributeGuid",
-        "imageAttributeGuid",
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(contentChannelEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: contentChannelEditBag
+    });
 
     // #endregion
 
@@ -173,7 +144,7 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
-        if (!contentChannelEditBag.value?.idKey) {
+        if (!contentChannelEditBag.value?.bag?.idKey) {
             if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
                 return config.navigationUrls[NavigationUrlKey.ParentPage];
             }
@@ -214,35 +185,21 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<ContentChannelBag, ContentChannelDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<ContentChannelBag>>("Edit", {
             key: contentChannelViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            contentChannelEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            contentChannelEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
 
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -254,19 +211,13 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<ContentChannelBag, ContentChannelDetailOptionsBag> = {
-            entity: contentChannelEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<ContentChannelBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<ContentChannelBag> | string>("Save", {
+            box: contentChannelEditBag.value
         });
 
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
-                contentChannelViewBag.value = result.data;
+                contentChannelViewBag.value = result.data.bag;
 
                 return true;
             }
@@ -282,8 +233,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -292,7 +241,7 @@
         blockError.value = "The specified content channel could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        contentChannelEditBag.value = config.entity;
+        contentChannelEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

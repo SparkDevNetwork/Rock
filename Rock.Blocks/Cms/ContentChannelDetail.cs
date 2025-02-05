@@ -47,7 +47,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "c7c776c4-f1db-477d-87e3-62f8f82ba773" )]
     [Rock.SystemGuid.BlockTypeGuid( "2bad2ab9-86ad-480e-bf38-c54f2c5c03a8" )]
-    public class ContentChannelDetail : RockDetailBlockType, IBreadCrumbBlock
+    public class ContentChannelDetail : RockEntityDetailBlockType<ContentChannel, ContentChannelBag>, IBreadCrumbBlock
     {
         // This is a cache backing field and should not be accessed directly , instead use the GetItemAttributes method to access this field. 
         private List<Rock.Model.Attribute> _itemAttributes;
@@ -80,17 +80,13 @@ namespace Rock.Blocks.Cms
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<ContentChannelBag, ContentChannelDetailOptionsBag>();
+            var box = new DetailBlockBox<ContentChannelBag, ContentChannelDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<ContentChannel>();
+            box.NavigationUrls = GetBoxNavigationUrls();
 
-                return box;
-            }
+            return box;
         }
 
         /// <inheritdoc/>
@@ -114,7 +110,7 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Gets the box options required for the component to render the view
+        /// Gets the box options required for the component to render the view.
         /// or edit the entity.
         /// </summary>
         /// <param name="entity">The content channel.</param>
@@ -125,13 +121,13 @@ namespace Rock.Blocks.Cms
             var options = new ContentChannelDetailOptionsBag
             {
                 IsIndexEnabled = IndexContainer.IndexingEnabled,
-                IsApproverConfigured = IsApproverConfigured( entity, rockContext ),
-                ContentChannelTypes = GetContentChannelTypes( rockContext ),
+                IsApproverConfigured = IsApproverConfigured( entity ),
+                ContentChannelTypes = GetContentChannelTypes(),
                 ContentControlTypes = typeof( ContentControlType ).ToEnumListItemBag(),
                 SettingsOptions = GetSettingsOptions( entity ),
                 IsOrganizationConfigured = StoreService.OrganizationIsConfigured(),
                 AvailableLicenses = GetLicenses(),
-                ContentLibraryAttributes = GetContentLibraryAttributes( rockContext, entity.ContentChannelTypeId, GetItemAttributes( entity.Id, rockContext ) ),
+                ContentLibraryAttributes = GetContentLibraryAttributes( entity.ContentChannelTypeId, GetItemAttributes( entity.Id ) ),
                 ContentChannelList = GetContentChannelList( rockContext ),
                 CurrentPageUrl = this.GetCurrentPageUrl().UrlEncode(),
                 DisableContentField = entity.ContentChannelType?.DisableContentField ?? false
@@ -164,7 +160,6 @@ namespace Rock.Blocks.Cms
         /// Gets the available licenses.
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="System.NotImplementedException"></exception>
         private List<ListItemBag> GetLicenses()
         {
             // License
@@ -190,7 +185,7 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Gets the settings options.
+        /// Gets the content channel configuration settings options.
         /// </summary>
         /// <returns></returns>
         private List<ListItemBag> GetSettingsOptions( ContentChannel entity )
@@ -236,13 +231,12 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Gets the content channel types.
+        /// Gets the content channel types that can be shown in a channel list.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private List<ListItemBag> GetContentChannelTypes( RockContext rockContext )
+        private List<ListItemBag> GetContentChannelTypes()
         {
-            var contentChannelTypeService = new ContentChannelTypeService( rockContext );
+            var contentChannelTypeService = new ContentChannelTypeService( RockContext );
 
             var visibleContentChannelTypeList = contentChannelTypeService
                 .Queryable()
@@ -284,10 +278,9 @@ namespace Rock.Blocks.Cms
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<ContentChannelBag, ContentChannelDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<ContentChannelBag, ContentChannelDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -295,12 +288,12 @@ namespace Rock.Blocks.Cms
                 return;
             }
 
-            box.Options = GetBoxOptions( entity, rockContext );
+            box.Options = GetBoxOptions( entity, RockContext );
 
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -308,7 +301,6 @@ namespace Rock.Blocks.Cms
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -320,14 +312,15 @@ namespace Rock.Blocks.Cms
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity = GetEntityBagForEdit( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( ContentChannel.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -365,16 +358,12 @@ namespace Rock.Blocks.Cms
                 RequiresApproval = entity.RequiresApproval,
                 RootImageDirectory = entity.RootImageDirectory,
                 StructuredContentToolValue = entity.StructuredContentToolValue.ToListItemBag(),
-                TimeToLive = entity.TimeToLive.ToString()
+                TimeToLive = entity.TimeToLive
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="ContentChannelBag"/> that represents the entity.</returns>
-        private ContentChannelBag GetEntityBagForView( ContentChannel entity )
+        /// <inheritdoc/>
+        protected override ContentChannelBag GetEntityBagForView( ContentChannel entity )
         {
             if ( entity == null )
             {
@@ -388,12 +377,8 @@ namespace Rock.Blocks.Cms
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="ContentChannelBag"/> that represents the entity.</returns>
-        private ContentChannelBag GetEntityBagForEdit( ContentChannel entity, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override ContentChannelBag GetEntityBagForEdit( ContentChannel entity )
         {
             if ( entity == null )
             {
@@ -407,19 +392,25 @@ namespace Rock.Blocks.Cms
             bag.SummaryAttributeGuid = entity.ContentLibraryConfiguration?.SummaryAttributeGuid;
             bag.AuthorAttributeGuid = entity.ContentLibraryConfiguration?.AuthorAttributeGuid;
             bag.ImageAttributeGuid = entity.ContentLibraryConfiguration?.ImageAttributeGuid;
-            bag.ItemAttributes = GetItemAttributes( entity.Id, rockContext ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
+            bag.ItemAttributes = GetItemAttributes( entity.Id ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
 
-        private List<ListItemBag> GetContentLibraryAttributes( RockContext rockContext, int? contentChannelTypeId, List<Rock.Model.Attribute> itemAttributes )
+        /// <summary>
+        /// Gets the content type attributes and adds them to the attributes for the content channel item.
+        /// </summary>
+        /// <param name="contentChannelTypeId">The content channel type identifier.</param>
+        /// <param name="itemAttributes">The item attributes.</param>
+        /// <returns></returns>
+        private List<ListItemBag> GetContentLibraryAttributes( int? contentChannelTypeId, List<Rock.Model.Attribute> itemAttributes )
         {
             var listItems = itemAttributes.ToListItemBagList();
 
             if ( contentChannelTypeId.HasValue )
             {
-                var attributeService = new AttributeService( rockContext );
+                var attributeService = new AttributeService( RockContext );
                 var inheritedAttributes = attributeService
                     .GetByEntityTypeId( new ContentChannelItem().TypeId, true )
                     .AsQueryable()
@@ -434,7 +425,12 @@ namespace Rock.Blocks.Cms
             return listItems;
         }
 
-        private List<Rock.Model.Attribute> GetItemAttributes( int id, RockContext rockContext )
+        /// <summary>
+        /// Gets the content channel attributes.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <returns></returns>
+        private List<Rock.Model.Attribute> GetItemAttributes( int id )
         {
             if ( _itemAttributes != null )
             {
@@ -443,7 +439,7 @@ namespace Rock.Blocks.Cms
             else
             {
                 _itemAttributes = new List<Rock.Model.Attribute>();
-                AttributeService attributeService = new AttributeService( rockContext );
+                AttributeService attributeService = new AttributeService( RockContext );
 
                 attributeService.GetByEntityTypeId( new ContentChannelItem().TypeId, true ).AsQueryable()
                     .Where( a =>
@@ -457,6 +453,11 @@ namespace Rock.Blocks.Cms
             }
         }
 
+        /// <summary>
+        /// Gets the settings.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <returns></returns>
         private List<string> GetSettings( ContentChannel entity )
         {
             var settings = new List<string>();
@@ -489,114 +490,108 @@ namespace Rock.Blocks.Cms
             return settings;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( ContentChannel entity, DetailBlockBox<ContentChannelBag, ContentChannelDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( ContentChannel entity, ValidPropertiesBox<ContentChannelBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.ChannelUrl ),
-                () => entity.ChannelUrl = box.Entity.ChannelUrl );
+            box.IfValidProperty( nameof( box.Bag.ChannelUrl ),
+                () => entity.ChannelUrl = box.Bag.ChannelUrl );
 
-            box.IfValidProperty( nameof( box.Entity.ChildItemsManuallyOrdered ),
-                () => entity.ChildItemsManuallyOrdered = box.Entity.ChildItemsManuallyOrdered );
+            box.IfValidProperty( nameof( box.Bag.ChildItemsManuallyOrdered ),
+                () => entity.ChildItemsManuallyOrdered = box.Bag.ChildItemsManuallyOrdered );
 
-            box.IfValidProperty( nameof( box.Entity.ContentChannelType ),
-                () => entity.ContentChannelTypeId = box.Entity.ContentChannelType.GetEntityId<ContentChannelType>( rockContext ).Value );
+            box.IfValidProperty( nameof( box.Bag.ContentChannelType ),
+                () => entity.ContentChannelTypeId = box.Bag.ContentChannelType.GetEntityId<ContentChannelType>( RockContext ).Value );
 
-            box.IfValidProperty( nameof( box.Entity.ContentControlType ),
-                () => entity.ContentControlType = ( ContentControlType ) box.Entity.ContentControlType );
+            box.IfValidProperty( nameof( box.Bag.ContentControlType ),
+                () => entity.ContentControlType = ( ContentControlType ) box.Bag.ContentControlType );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.EnablePersonalization ),
-                () => entity.EnablePersonalization = box.Entity.EnablePersonalization );
+            box.IfValidProperty( nameof( box.Bag.EnablePersonalization ),
+                () => entity.EnablePersonalization = box.Bag.EnablePersonalization );
 
-            box.IfValidProperty( nameof( box.Entity.EnableRss ),
-                () => entity.EnableRss = box.Entity.EnableRss );
+            box.IfValidProperty( nameof( box.Bag.EnableRss ),
+                () => entity.EnableRss = box.Bag.EnableRss );
 
-            box.IfValidProperty( nameof( box.Entity.IconCssClass ),
-                () => entity.IconCssClass = box.Entity.IconCssClass );
+            box.IfValidProperty( nameof( box.Bag.IconCssClass ),
+                () => entity.IconCssClass = box.Bag.IconCssClass );
 
-            box.IfValidProperty( nameof( box.Entity.IsIndexEnabled ),
-                () => entity.IsIndexEnabled = box.Entity.IsIndexEnabled );
+            box.IfValidProperty( nameof( box.Bag.IsIndexEnabled ),
+                () => entity.IsIndexEnabled = box.Bag.IsIndexEnabled );
 
-            box.IfValidProperty( nameof( box.Entity.IsStructuredContent ),
-                () => entity.IsStructuredContent = box.Entity.IsStructuredContent );
+            box.IfValidProperty( nameof( box.Bag.IsStructuredContent ),
+                () => entity.IsStructuredContent = box.Bag.IsStructuredContent );
 
-            box.IfValidProperty( nameof( box.Entity.IsTaggingEnabled ),
-                () => entity.IsTaggingEnabled = box.Entity.IsTaggingEnabled );
+            box.IfValidProperty( nameof( box.Bag.IsTaggingEnabled ),
+                () => entity.IsTaggingEnabled = box.Bag.IsTaggingEnabled );
 
-            box.IfValidProperty( nameof( box.Entity.ItemsManuallyOrdered ),
-                () => entity.ItemsManuallyOrdered = box.Entity.ItemsManuallyOrdered );
+            box.IfValidProperty( nameof( box.Bag.ItemsManuallyOrdered ),
+                () => entity.ItemsManuallyOrdered = box.Bag.ItemsManuallyOrdered );
 
-            box.IfValidProperty( nameof( box.Entity.ItemTagCategory ),
-                () => entity.ItemTagCategoryId = box.Entity.ItemTagCategory.GetEntityId<Category>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.ItemTagCategory ),
+                () => entity.ItemTagCategoryId = box.Bag.ItemTagCategory.GetEntityId<Category>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.ItemUrl ),
-                () => entity.ItemUrl = box.Entity.ItemUrl );
+            box.IfValidProperty( nameof( box.Bag.ItemUrl ),
+                () => entity.ItemUrl = box.Bag.ItemUrl );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.RequiresApproval ),
-                () => entity.RequiresApproval = box.Entity.RequiresApproval );
+            box.IfValidProperty( nameof( box.Bag.RequiresApproval ),
+                () => entity.RequiresApproval = box.Bag.RequiresApproval );
 
-            box.IfValidProperty( nameof( box.Entity.RootImageDirectory ),
-                () => entity.RootImageDirectory = box.Entity.RootImageDirectory );
+            box.IfValidProperty( nameof( box.Bag.RootImageDirectory ),
+                () => entity.RootImageDirectory = box.Bag.RootImageDirectory );
 
-            box.IfValidProperty( nameof( box.Entity.StructuredContentToolValue ),
-                () => entity.StructuredContentToolValueId = box.Entity.StructuredContentToolValue.GetEntityId<DefinedValue>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.StructuredContentToolValue ),
+                () => entity.StructuredContentToolValueId = box.Bag.StructuredContentToolValue.GetEntityId<DefinedValue>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.TimeToLive ),
-                () => entity.TimeToLive = box.Entity.TimeToLive.AsIntegerOrNull() );
+            box.IfValidProperty( nameof( box.Bag.TimeToLive ),
+                () => entity.TimeToLive = box.Bag.TimeToLive );
 
-            box.IfValidProperty( nameof( box.Entity.Settings ),
-                () => UpdateContentChannelSettings( box.Entity, entity ) );
+            box.IfValidProperty( nameof( box.Bag.Settings ),
+                () => UpdateContentChannelSettings( box.Bag, entity ) );
 
-            box.IfValidProperty( nameof( box.Entity.Categories ),
-                () => UpdateCategories( box.Entity, entity, rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Categories ),
+                () => UpdateCategories( box.Bag, entity, RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.ChildContentChannels ),
-                () => UpdateChildContentChannels( box.Entity, entity, rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.ChildContentChannels ),
+                () => UpdateChildContentChannels( box.Bag, entity, RockContext ) );
 
             if ( StoreService.OrganizationIsConfigured() )
             {
                 var contentLibraryConfiguration = entity.ContentLibraryConfiguration ?? new Rock.Cms.ContentLibraryConfiguration();
 
-                box.IfValidProperty( nameof( box.Entity.IsContentLibraryEnabled ),
-                    () => contentLibraryConfiguration.IsEnabled = box.Entity.IsContentLibraryEnabled );
+                box.IfValidProperty( nameof( box.Bag.IsContentLibraryEnabled ),
+                    () => contentLibraryConfiguration.IsEnabled = box.Bag.IsContentLibraryEnabled );
 
-                box.IfValidProperty( nameof( box.Entity.LicenseTypeGuid ),
-                    () => contentLibraryConfiguration.LicenseTypeValueGuid = box.Entity.LicenseTypeGuid );
+                box.IfValidProperty( nameof( box.Bag.LicenseTypeGuid ),
+                    () => contentLibraryConfiguration.LicenseTypeValueGuid = box.Bag.LicenseTypeGuid );
 
-                box.IfValidProperty( nameof( box.Entity.SummaryAttributeGuid ),
-                    () => contentLibraryConfiguration.SummaryAttributeGuid = box.Entity.SummaryAttributeGuid );
+                box.IfValidProperty( nameof( box.Bag.SummaryAttributeGuid ),
+                    () => contentLibraryConfiguration.SummaryAttributeGuid = box.Bag.SummaryAttributeGuid );
 
-                box.IfValidProperty( nameof( box.Entity.AuthorAttributeGuid ),
-                    () => contentLibraryConfiguration.AuthorAttributeGuid = box.Entity.AuthorAttributeGuid );
+                box.IfValidProperty( nameof( box.Bag.AuthorAttributeGuid ),
+                    () => contentLibraryConfiguration.AuthorAttributeGuid = box.Bag.AuthorAttributeGuid );
 
-                box.IfValidProperty( nameof( box.Entity.ImageAttributeGuid ),
-                    () => contentLibraryConfiguration.ImageAttributeGuid = box.Entity.ImageAttributeGuid );
+                box.IfValidProperty( nameof( box.Bag.ImageAttributeGuid ),
+                    () => contentLibraryConfiguration.ImageAttributeGuid = box.Bag.ImageAttributeGuid );
 
                 entity.ContentLibraryConfiguration = contentLibraryConfiguration;
             }
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -659,15 +654,10 @@ namespace Rock.Blocks.Cms
             contentChannel.ChildItemsManuallyOrdered = bag.Settings.Contains( SettingsKey.ChildItemsManuallyOrdered );
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="ContentChannel"/> to be viewed or edited on the page.</returns>
-        private ContentChannel GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override ContentChannel GetInitialEntity()
         {
-            return GetInitialEntity<ContentChannel, ContentChannelService>( rockContext, PageParameterKey.ContentChannelId );
+            return GetInitialEntity<ContentChannel, ContentChannelService>( RockContext, PageParameterKey.ContentChannelId );
         }
 
         /// <summary>
@@ -683,46 +673,9 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out ContentChannel entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( ContentChannel entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out ContentChannel entity, out BlockActionResult error )
-        {
-            var entityService = new ContentChannelService( rockContext );
+            var entityService = new ContentChannelService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -758,10 +711,9 @@ namespace Rock.Blocks.Cms
         /// Check if there is any approver configured.
         /// </summary>
         /// <param name="contentChannel">The content channel.</param>
-        /// <param name="rockContext">The Rock Context.</param>
-        private bool IsApproverConfigured( ContentChannel contentChannel, RockContext rockContext )
+        private bool IsApproverConfigured( ContentChannel contentChannel )
         {
-            var authService = new AuthService( rockContext );
+            var authService = new AuthService( RockContext );
             var contentChannelEntityTypeId = EntityTypeCache.Get<Rock.Model.ContentChannel>().Id;
 
             var approvalAuths = authService.GetAuths( contentChannelEntityTypeId, contentChannel.Id, Rock.Security.Authorization.APPROVE );
@@ -780,13 +732,12 @@ namespace Rock.Blocks.Cms
         /// <param name="channelId">The channel identifier.</param>
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="attributes">The attributes.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SaveAttributes( int channelId, int entityTypeId, List<PublicEditableAttributeBag> attributes, RockContext rockContext )
+        private void SaveAttributes( int channelId, int entityTypeId, List<PublicEditableAttributeBag> attributes )
         {
             string qualifierColumn = "ContentChannelId";
             string qualifierValue = channelId.ToString();
 
-            AttributeService attributeService = new AttributeService( rockContext );
+            AttributeService attributeService = new AttributeService( RockContext );
 
             // Get the existing attributes for this entity type and qualifier value
             var existingAttributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true );
@@ -798,12 +749,12 @@ namespace Rock.Blocks.Cms
                 attributeService.Delete( attr );
             }
 
-            rockContext.SaveChanges();
+            RockContext.SaveChanges();
 
             // Update the Attributes that were assigned in the UI
             foreach ( var attr in attributes )
             {
-                Rock.Attribute.Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+                Rock.Attribute.Helper.SaveAttributeEdits( attr, entityTypeId, qualifierColumn, qualifierValue, RockContext );
             }
         }
 
@@ -820,22 +771,20 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<ContentChannelBag, ContentChannelDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<ContentChannelBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList(),
+            } );
         }
 
         /// <summary>
@@ -844,67 +793,70 @@ namespace Rock.Blocks.Cms
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<ContentChannelBag, ContentChannelDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<ContentChannelBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new ContentChannelService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new ContentChannelService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateContentChannel( entity, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-
-                    foreach ( var item in new ContentChannelItemService( rockContext )
-                        .Queryable()
-                        .Where( i =>
-                            i.ContentChannelId == entity.Id &&
-                            i.ContentChannelTypeId != entity.ContentChannelTypeId
-                        ) )
-                    {
-                        item.ContentChannelTypeId = entity.ContentChannelTypeId;
-                    }
-
-                    rockContext.SaveChanges();
-
-                    // Save the Item Attributes
-                    int entityTypeId = EntityTypeCache.Get( typeof( ContentChannelItem ) ).Id;
-                    SaveAttributes( entity.Id, entityTypeId, box.Entity.ItemAttributes, rockContext );
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.ContentChannelId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateContentChannel( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+
+                foreach ( var item in new ContentChannelItemService( RockContext )
+                    .Queryable()
+                    .Where( i =>
+                        i.ContentChannelId == entity.Id &&
+                        i.ContentChannelTypeId != entity.ContentChannelTypeId
+                    ) )
+                {
+                    item.ContentChannelTypeId = entity.ContentChannelTypeId;
+                }
+
+                RockContext.SaveChanges();
+
+                // Save the Item Attributes
+                int entityTypeId = EntityTypeCache.Get( typeof( ContentChannelItem ) ).Id;
+                SaveAttributes( entity.Id, entityTypeId, box.Bag.ItemAttributes );
+            } );
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.ContentChannelId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForView( entity );
+
+            return ActionOk( new ValidPropertiesBox<ContentChannelBag>()
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -915,79 +867,22 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new ContentChannelService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new ContentChannelService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<ContentChannelBag, ContentChannelDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<ContentChannelBag, ContentChannelDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
@@ -998,11 +893,8 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult GetContentChannelStatus( string guid )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( guid.AsGuid() );
-                return ActionOk( new { contentChannelType?.DisableStatus, contentChannelType?.DisableContentField } );
-            }
+            var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( guid.AsGuid() );
+            return ActionOk( new { contentChannelType?.DisableStatus, contentChannelType?.DisableContentField } );
         }
 
         /// <summary>
@@ -1014,43 +906,40 @@ namespace Rock.Blocks.Cms
         [BlockAction]
         public BlockActionResult GetLicenseMessage( Guid? selectedLicenseType, string idKey )
         {
-            using ( var rockContext = new RockContext() )
+            if ( selectedLicenseType.HasValue )
             {
-                if ( selectedLicenseType.HasValue )
+                var contentChannelId = Rock.Utility.IdHasher.Instance.GetId( idKey );
+
+                if ( contentChannelId.HasValue )
                 {
-                    var contentChannelId = Rock.Utility.IdHasher.Instance.GetId( idKey );
+                    var contentChannel = new ContentChannelService( RockContext )
+                        .Queryable( "ContentChannelType" )
+                        .Where( t => t.Id == contentChannelId )
+                        .FirstOrDefault();
 
-                    if ( contentChannelId.HasValue )
+                    var contentLibraryConfiguration = contentChannel?.ContentLibraryConfiguration;
+
+                    if ( contentLibraryConfiguration != null && contentLibraryConfiguration.LicenseTypeValueGuid.HasValue && contentLibraryConfiguration.LicenseTypeValueGuid != selectedLicenseType )
                     {
-                        var contentChannel = new ContentChannelService( rockContext )
-                            .Queryable( "ContentChannelType" )
-                            .Where( t => t.Id == contentChannelId )
-                            .FirstOrDefault();
+                        var oldLicenseType = DefinedValueCache.Get( contentLibraryConfiguration.LicenseTypeValueGuid.Value );
+                        var newLicenseType = DefinedValueCache.Get( selectedLicenseType.Value );
+                        string message;
 
-                        var contentLibraryConfiguration = contentChannel?.ContentLibraryConfiguration;
-
-                        if ( contentLibraryConfiguration != null && contentLibraryConfiguration.LicenseTypeValueGuid.HasValue && contentLibraryConfiguration.LicenseTypeValueGuid != selectedLicenseType )
+                        if ( newLicenseType.Guid != Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_OPEN.AsGuid() )
                         {
-                            var oldLicenseType = DefinedValueCache.Get( contentLibraryConfiguration.LicenseTypeValueGuid.Value );
-                            var newLicenseType = DefinedValueCache.Get( selectedLicenseType.Value );
-                            string message;
-
-                            if ( newLicenseType.Guid != Rock.SystemGuid.DefinedValue.LIBRARY_LICENSE_TYPE_OPEN.AsGuid() )
-                            {
-                                message = $"Future items will be uploaded with the license of \"{newLicenseType.Value}\". Items previously uploaded will retain the \"{oldLicenseType.Value}\" license.";
-                            }
-                            else
-                            {
-                                message = $"Future items will be uploaded with the license of \"{newLicenseType.Value}\". Items previously uploaded will retain the \"{oldLicenseType.Value}\" license. If you would like to change your existing items to \"{newLicenseType.Value}\", please reach out to us at <a href=\"mailto:info@sparkdevnetwork.org\">info@sparkdevnetwork.org</a>.";
-                            }
-
-                            return ActionOk( new { IsMessageVisible = true, Message = message } );
+                            message = $"Future items will be uploaded with the license of \"{newLicenseType.Value}\". Items previously uploaded will retain the \"{oldLicenseType.Value}\" license.";
                         }
+                        else
+                        {
+                            message = $"Future items will be uploaded with the license of \"{newLicenseType.Value}\". Items previously uploaded will retain the \"{oldLicenseType.Value}\" license. If you would like to change your existing items to \"{newLicenseType.Value}\", please reach out to us at <a href=\"mailto:info@sparkdevnetwork.org\">info@sparkdevnetwork.org</a>.";
+                        }
+
+                        return ActionOk( new { IsMessageVisible = true, Message = message } );
                     }
                 }
-
-                return ActionOk( new { IsMessageVisible = false, Message = "" } );
             }
+
+            return ActionOk( new { IsMessageVisible = false, Message = "" } );
         }
 
         /// <summary>
@@ -1065,7 +954,7 @@ namespace Rock.Blocks.Cms
             // Get the queryable and make sure it is ordered correctly.
             var id = Rock.Utility.IdHasher.Instance.GetId( idKey );
 
-            var attributes = GetItemAttributes( id ?? 0, RockContext );
+            var attributes = GetItemAttributes( id ?? 0 );
 
             if ( !attributes.ReorderEntity( guid.ToString(), beforeGuid.ToString() ) )
             {

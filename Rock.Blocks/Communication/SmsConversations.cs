@@ -28,7 +28,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Block for having SMS Conversations between an SMS enabled phone and a Rock SMS Phone number that has 'Enable Mobile Conversations' set to false." )]
     [IconCssClass( "fa fa-message" )]
-    //[SupportedSiteTypes( SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -720,11 +720,11 @@ namespace Rock.Blocks.Communication
                         } );
                     }
 
-                    if ( isConversationUnread )
+                    if ( isConversationUnread && ( BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) ) )
                     {
                         communicationResponseService.UpdateReadPropertyByFromPersonId( recipientPerson.Id, smsSystemPhoneNumber );
+                        bag.IsConversationRead = true;
                     }
-                    bag.IsConversationRead = true;
 
                     return ActionOk( bag );
                 }

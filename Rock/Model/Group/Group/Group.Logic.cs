@@ -106,7 +106,7 @@ namespace Rock.Model
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.17.0" )]
+        [RockInternal( "17.0" )]
         public bool IsOverridingGroupTypePeerNetworkConfiguration
         {
             get
@@ -167,7 +167,7 @@ namespace Rock.Model
         ///         release and should therefore not be directly used in any plug-ins.
         ///     </para>
         /// </remarks>
-        [RockInternal( "1.17.0" )]
+        [RockInternal( "17.0" )]
         public bool AreAnyRelationshipMultipliersCustomized
         {
             get

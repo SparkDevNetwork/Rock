@@ -15,22 +15,22 @@
 // </copyright>
 //
 using System;
-using System.Linq;
-using Rock.Data;
-using Rock.Model;
-using Rock.Tests.Integration.TestData;
-using Rock.Web.Cache;
-
 using System.Collections.Generic;
+using System.Linq;
 
 using Ical.Net;
+using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
-using Ical.Net.CalendarComponents;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Events
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Data;
+using Rock.Model;
+using Rock.Tests.Shared;
+using Rock.Web.Cache;
+
+namespace Rock.Tests.Integration.TestData
 {
     /// <summary>
     /// Provides actions to manage Event data.

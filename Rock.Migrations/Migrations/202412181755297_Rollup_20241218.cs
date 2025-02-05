@@ -10009,7 +10009,7 @@ WHERE [Guid] = 'D40A9C32-F179-4E5E-9B0D-CE208C5D1870'
             RockMigrationHelper.AddDefinedValue( SystemGuid.DefinedType.SENTIMENT_EMOTIONS, "Sadness", "The most identifiable sentiment of the available options is sadness." );
             RockMigrationHelper.AddDefinedValue( SystemGuid.DefinedType.SENTIMENT_EMOTIONS, "Worry", "The most identifiable sentiment of the available options is worry." );
 
-            Rock.Web.SystemSettings.SetValue( "core_PrayerRequestAICompletions", PrayerRequestAICompletionTemplate().ToJson() );
+            RockMigrationHelper.UpdateSystemSetting( "core_PrayerRequestAICompletions", PrayerRequestAICompletionTemplate().ToJson() );
 
             RockMigrationHelper.UpdateFieldType( "AI Provider", "Field type to select an AI Provider.", "Rock", "Rock.Field.Types.AIProviderFieldType", SystemGuid.FieldType.AI_PROVIDER );
 
@@ -10486,7 +10486,7 @@ WHERE [Page].[Guid] = 'A6D78C4F-958F-4196-B8FF-527A10F5F047'
 
         private void PrayerAutomationCompletionsUp()
         {
-            Rock.Web.SystemSettings.SetValue( "core_PrayerRequestAICompletions", MigrationRollupsForV17_0_14_PrayerRequestAICompletionTemplate().ToJson() );
+            RockMigrationHelper.UpdateSystemSetting( "core_PrayerRequestAICompletions", MigrationRollupsForV17_0_14_PrayerRequestAICompletionTemplate().ToJson() );
         }
 
         private PrayerRequest.PrayerRequestAICompletions MigrationRollupsForV17_0_14_PrayerRequestAICompletionTemplate()
@@ -10668,7 +10668,7 @@ Respond with ONLY a VALID JSON object in the format below. Do not use backticks 
 
         private void MigrationRollupsForV17_0_15_PrayerAutomationCompletionsUp()
         {
-            Rock.Web.SystemSettings.SetValue( "core_PrayerRequestAICompletions", MigrationRollupsForV17_0_15_PrayerRequestAICompletionTemplate().ToJson() );
+            RockMigrationHelper.UpdateSystemSetting( "core_PrayerRequestAICompletions", MigrationRollupsForV17_0_15_PrayerRequestAICompletionTemplate().ToJson() );
         }
 
         private PrayerRequest.PrayerRequestAICompletions MigrationRollupsForV17_0_15_PrayerRequestAICompletionTemplate()
@@ -12890,7 +12890,7 @@ WHERE [GUID] = '43819A34-4819-4507-8FEA-2E406B5474EA'" );
 
         private void PrayerCategoryPageBlockSettings_PrayerAutomationCompletionsUp()
         {
-            Rock.Web.SystemSettings.SetValue( "core_PrayerRequestAICompletions", PrayerCategoryPageBlockSettings_PrayerRequestAICompletionTemplate().ToJson() );
+            RockMigrationHelper.UpdateSystemSetting( "core_PrayerRequestAICompletions", PrayerCategoryPageBlockSettings_PrayerRequestAICompletionTemplate().ToJson() );
         }
 
         /// <summary>

@@ -17,11 +17,12 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
 
-namespace Rock.Tests.Integration.TestData
+namespace Rock.Tests.Integration.TestData.Core
 {
     /// <summary>
     /// Functions to assist with core module testing.

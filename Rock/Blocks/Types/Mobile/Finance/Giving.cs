@@ -34,6 +34,7 @@ using MassTransit;
 using Rock.Common.Mobile.Blocks.Finance.Giving;
 using Rock.Common.Mobile.ViewModel;
 using Rock.Web.UI;
+using Rock.ViewModels.Finance;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {
@@ -74,7 +75,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
     [AccountsField(
         "Accounts",
         Key = AttributeKey.Accounts,
-        Description = "The accounts to display. If the account has a child account for the selected campus, the child account for that campus will be used.",
+        Description = "The accounts to display.",
         Order = 3 )]
 
     [BooleanField(
@@ -86,7 +87,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
     [BooleanField( "Scheduled Transactions",
         Key = AttributeKey.AllowScheduled,
-        Description = "If the selected gateway(s) allow scheduled transactions, should that option be provided to user. This feature is not compatible when Text-to-Give mode is enabled.",
+        Description = "If the selected gateway(s) allow scheduled transactions, should that option be provided to user.",
         TrueText = "Allow",
         FalseText = "Don't Allow",
         DefaultBooleanValue = true,
@@ -288,52 +289,50 @@ namespace Rock.Blocks.Types.Mobile.Finance
         }
 
         /// <summary>
-        /// The GUID of the MyWell gateway.
+        /// The gateways that are supported in Rock Mobile.
         /// </summary>
-        private const string MyWellGatewayGuid = "c55f91ac-07f6-484b-b2ff-6ee7d82d7e93";
-
-        #endregion
-
-        #region Fields
-
-        private FinancialGateway _financialGateway;
-        private IHostedGatewayComponent _financialGatewayComponent;
+        private static class MobileSupportedGateway
+        {
+            public const string MyWell = "C55F91AC-07F6-484B-B2FF-6EE7D82D7E93";
+        }
 
         #endregion
 
         #region Properties
 
         /// <summary>
-        /// Gets the financial gateway.
+        /// Gets the MyWell gateway or returns null if it does not exist.
         /// </summary>
-        private FinancialGateway FinancialGateway
+        protected FinancialGateway MyWellGateway
         {
             get
             {
-                if ( _financialGateway == null )
+                if ( _myWellGateway == null )
                 {
-                    _financialGateway = new FinancialGatewayService( RockContext ).GetNoTracking( MyWellGatewayGuid, false );
+                    _myWellGateway = new FinancialGatewayService( RockContext ).Get( MobileSupportedGateway.MyWell, false );
                 }
 
-                return _financialGateway;
+                return _myWellGateway;
             }
         }
+        private FinancialGateway _myWellGateway;
 
         /// <summary>
         /// Gets the financial gateway component.
         /// </summary>
-        private IHostedGatewayComponent FinancialGatewayComponent
+        private IHostedGatewayComponent MyWellGatewayComponent
         {
             get
             {
-                if ( _financialGatewayComponent == null && FinancialGateway != null )
+                if ( _myWellGatewayComponent == null && MyWellGateway != null )
                 {
-                    _financialGatewayComponent = FinancialGateway.GetGatewayComponent() as IHostedGatewayComponent;
+                    _myWellGatewayComponent = MyWellGateway.GetGatewayComponent() as IHostedGatewayComponent;
                 }
 
-                return _financialGatewayComponent;
+                return _myWellGatewayComponent;
             }
         }
+        private IHostedGatewayComponent _myWellGatewayComponent;
 
         /// <summary>
         /// Whether or not ACH is enabled.
@@ -476,9 +475,9 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <returns></returns>
         private decimal? GetCreditCardFeeCoveragePercentage()
         {
-            if ( FinancialGatewayComponent is IFeeCoverageGatewayComponent feeCoverageGatewayComponent )
+            if ( MyWellGatewayComponent is IFeeCoverageGatewayComponent feeCoverageGatewayComponent )
             {
-                return feeCoverageGatewayComponent.GetCreditCardFeeCoveragePercentage( FinancialGateway );
+                return feeCoverageGatewayComponent.GetCreditCardFeeCoveragePercentage( MyWellGateway );
             }
 
             return null;
@@ -490,9 +489,9 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <returns></returns>
         private decimal? GetACHFeeCoverageAmount()
         {
-            if ( FinancialGatewayComponent is IFeeCoverageGatewayComponent feeCoverageGatewayComponent )
+            if ( MyWellGatewayComponent is IFeeCoverageGatewayComponent feeCoverageGatewayComponent )
             {
-                return feeCoverageGatewayComponent.GetACHFeeCoverageAmount( FinancialGateway );
+                return feeCoverageGatewayComponent.GetACHFeeCoverageAmount( MyWellGateway );
             }
 
             return null;
@@ -535,19 +534,19 @@ namespace Rock.Blocks.Types.Mobile.Finance
         {
             var supportedFrequencies = new List<DefinedValueCache>();
 
-            if ( AllowScheduled && this.FinancialGatewayComponent != null )
+            if ( AllowScheduled && this.MyWellGatewayComponent != null )
             {
-                supportedFrequencies = this.FinancialGatewayComponent.SupportedPaymentSchedules;
+                supportedFrequencies = this.MyWellGatewayComponent.SupportedPaymentSchedules;
 
                 // We want to remove the one-time frequency if it is supported.
                 // In mobile, we are opting for the flow that if someone wants to
                 // give a one-time gift, they will just enter the amount and give
                 // with "Set up recurring" unchecked.
                 var oneTimeFrequency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
-                if ( supportedFrequencies.Where( f => f.Value == oneTimeFrequency.IdKey ).Any() )
+                if ( supportedFrequencies.Where( f => f.IdKey == oneTimeFrequency.IdKey ).Any() )
                 {
                     // Remove the one-time frequency.
-                    supportedFrequencies = supportedFrequencies.Where( f => f.Value != oneTimeFrequency.IdKey ).ToList();
+                    supportedFrequencies = supportedFrequencies.Where( f => f.IdKey != oneTimeFrequency.IdKey ).ToList();
                 }
             }
 
@@ -653,7 +652,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// Returns a list of the saved accounts for the provided person.
         /// </summary>
         /// <returns></returns>
-        private List<SavedFinancialAccountListItemBag> GetCurrentPersonSavedAccounts()
+        private List<Common.Mobile.Blocks.Finance.Giving.SavedFinancialAccountListItemBag> GetCurrentPersonSavedAccounts()
         {
             if ( RequestContext.CurrentPerson == null )
             {
@@ -662,7 +661,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             var savedAccountClientService = new FinancialPersonSavedAccountClientService( RockContext, RequestContext.CurrentPerson );
 
-            if ( FinancialGatewayComponent == null )
+            if ( MyWellGatewayComponent == null )
             {
                 return null;
             }
@@ -671,13 +670,13 @@ namespace Rock.Blocks.Types.Mobile.Finance
             {
                 FinancialGatewayGuids = new List<Guid>
                 {
-                    FinancialGateway.Guid
+                    MyWellGateway.Guid
                 },
-                CurrencyTypeGuids = GetAllowedCurrencyTypes( EnableAch, EnableCreditCard, FinancialGatewayComponent ).Select( a => a.Guid ).ToList()
+                CurrencyTypeGuids = GetAllowedCurrencyTypes( EnableAch, EnableCreditCard, MyWellGatewayComponent ).Select( a => a.Guid ).ToList()
             };
 
             return savedAccountClientService.GetSavedFinancialAccountsForPersonAsAccountListItems( RequestContext.CurrentPerson.Id, accountOptions )
-                .Select( vm => new SavedFinancialAccountListItemBag
+                .Select( vm => new Common.Mobile.Blocks.Finance.Giving.SavedFinancialAccountListItemBag
                 {
                     AccountNumberMasked = vm.AccountNumberMasked,
                     Category = vm.Category,
@@ -685,7 +684,8 @@ namespace Rock.Blocks.Types.Mobile.Finance
                     Description = vm.Description,
                     Image = vm.Image,
                     Text = vm.Text,
-                    Value = vm.Value
+                    Value = vm.Value,
+                    Guid = vm.Value.AsGuid()
                 } ).ToList();
         }
 
@@ -693,9 +693,9 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// Gets giving data for the block. If there is a current person, their saved accounts will be included.
         /// </summary>
         /// <returns>A bag containing basic giving information.</returns>
-        private GivingInfoBag GetGivingData()
+        private GivingInfoBag GetGivingData( string scheduledTransactionId, out string errorMessage )
         {
-            var accounts = GetAvailableAccounts( RockContext );
+            errorMessage = "";
 
             var supportedFrequencies = GetSupportedFrequencies().Select( dvc => new ListItemViewModel
             {
@@ -721,9 +721,83 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 givingInfo.PaymentMethods = GetCurrentPersonSavedAccounts();
             }
 
+            if ( scheduledTransactionId.IsNotNullOrWhiteSpace() )
+            {
+                // Load the data for the scheduled transaction, capturing any errors.
+                givingInfo.ScheduledTransactionInfo = GetScheduledTransactionInfo( scheduledTransactionId, out errorMessage );
+
+                if ( errorMessage.IsNotNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+            }
+
             return givingInfo;
         }
 
+        /// <summary>
+        /// Returns a bag of scheduled transaction info.
+        /// </summary>
+        /// <param name="scheduledTransactionId">The transaction identifier.</param>
+        /// <param name="errorMessage">Outputs an error message if applicable.</param>
+        /// <returns>A <see cref="ScheduledTransactionInfoBag"/> or null if there's an error.</returns>
+        private ScheduledTransactionInfoBag GetScheduledTransactionInfo( string scheduledTransactionId, out string errorMessage )
+        {
+            errorMessage = "";
+
+            if ( scheduledTransactionId.IsNullOrWhiteSpace() )
+            {
+                errorMessage = "Scheduled transaction ID is required.";
+                return null;
+            }
+
+            var scheduledTransactionService = new FinancialScheduledTransactionService( RockContext );
+            var scheduledTransaction = scheduledTransactionService.Get( scheduledTransactionId, !this.PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( scheduledTransaction == null )
+            {
+                errorMessage = "Scheduled transaction not found.";
+                return null;
+            }
+
+            // Ensure the scheduled transaction belongs to the current user.
+            if ( scheduledTransaction.AuthorizedPersonAlias.PersonId != RequestContext.CurrentPerson?.Id )
+            {
+                errorMessage = "You are not authorized to access this scheduled transaction.";
+                return null;
+            }
+
+            // Check if the scheduled transaction is inactive.
+            if ( !scheduledTransaction.IsActive )
+            {
+                errorMessage = "This scheduled transaction is inactive.";
+                return null;
+            }
+
+            List<AccountAmountSelectionBag> amountSelections = scheduledTransaction.ScheduledTransactionDetails
+                .Select( detail => new AccountAmountSelectionBag
+                {
+                    AccountId = detail.Account.IdKey,
+                    Amount = detail.Amount
+                } )
+                .ToList();
+
+            return new ScheduledTransactionInfoBag
+            {
+                AmountSelections = amountSelections,
+                NextPaymentDate = scheduledTransaction.NextPaymentDate,
+                Frequency = new ListItemViewModel
+                {
+                    Text = scheduledTransaction.TransactionFrequencyValue?.Value,
+                    Value = scheduledTransaction.TransactionFrequencyValue?.IdKey
+                },
+                SavedAccount = new ListItemViewModel
+                {
+                    Text = scheduledTransaction.FinancialPaymentDetail?.FinancialPersonSavedAccount?.Name,
+                    Value = scheduledTransaction.FinancialPaymentDetail?.FinancialPersonSavedAccount?.Guid.ToString()
+                }
+            };
+        }
 
         /// <summary>
         /// Gets the transaction payment information.
@@ -758,14 +832,14 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             if ( paymentInfo.GatewayPersonIdentifier.IsNullOrWhiteSpace() )
             {
-                var financialGatewayComponent = this.FinancialGatewayComponent;
+                var financialGatewayComponent = this.MyWellGatewayComponent;
 
                 if ( errorMessage.IsNotNullOrWhiteSpace() )
                 {
                     return null;
                 }
 
-                var customerToken = financialGatewayComponent.CreateCustomerAccount( this.FinancialGateway, paymentInfo, out errorMessage );
+                var customerToken = financialGatewayComponent.CreateCustomerAccount( MyWellGateway, paymentInfo, out errorMessage );
                 if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
                 {
                     errorMessage = errorMessage.IsNotNullOrWhiteSpace() ? errorMessage : "Unknown Error";
@@ -832,8 +906,8 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <returns></returns>
         private TransactionResultBag ProcessTransaction( TransactionRequestInfoBag bag, out string errorMessage )
         {
-            var gateway = FinancialGatewayComponent;
-            var financialGateway = FinancialGateway;
+            var gateway = MyWellGatewayComponent;
+            var financialGateway = MyWellGateway;
 
             if ( gateway == null || financialGateway == null )
             {
@@ -1165,7 +1239,6 @@ namespace Rock.Blocks.Types.Mobile.Finance
             return person;
         }
 
-
         /// <summary>
         /// Populates the transaction details for a FinancialTransaction or ScheduledFinancialTransaction
         /// </summary>
@@ -1179,7 +1252,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
             var isAch = options.CurrencyTypeValue.AsGuid() == Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid();
             var enableCoverTheFees = options.EnableCoverTheFees;
 
-            var feeCoverageGatewayComponent = FinancialGateway.GetGatewayComponent() as IFeeCoverageGatewayComponent;
+            var feeCoverageGatewayComponent = MyWellGatewayComponent as IFeeCoverageGatewayComponent;
 
             foreach ( var selectedAccountAmount in selectedAccountAmounts )
             {
@@ -1219,196 +1292,12 @@ namespace Rock.Blocks.Types.Mobile.Finance
         }
 
         /// <summary>
-        /// Processes a new account for the hosted gateway component.
-        /// </summary>
-        /// <param name="hostedGatewayComponent">The gateway component.</param>
-        /// <param name="options">The options to create the account.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        private FinancialPersonSavedAccount ProcessNewAccount( IHostedGatewayComponent hostedGatewayComponent, AddNewSavedAccountBag options, out string errorMessage )
-        {
-            var currencyTypeValue = DefinedValueCache.Get( options.CurrencyTypeValueId, false );
-
-            if ( currencyTypeValue == null )
-            {
-                errorMessage = "A currency type is required when creating a new account.";
-                return null;
-            }
-
-            var isAch = currencyTypeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
-            var isCreditCard = currencyTypeValue.Guid.Equals( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
-
-            if ( isCreditCard )
-            {
-                return ProcessNewCreditCardAccount( hostedGatewayComponent, options, out errorMessage );
-            }
-            else if ( isAch )
-            {
-                return ProcessNewAchAccount( hostedGatewayComponent, options, out errorMessage );
-            }
-
-            errorMessage = "Only ACH and Credit Card currency types are supported.";
-            return null;
-        }
-
-        /// <summary>
-        /// Processes the creation of a new saved credit card account.
-        /// </summary>
-        /// <param name="hostedGatewayComponent">The hosted gateway component handling the payment gateway operations.</param>
-        /// <param name="options">The options containing details for creating the saved account.</param>
-        /// <param name="errorMessage">An output parameter that contains an error message if the operation fails.</param>
-        /// <returns>
-        /// A <see cref="FinancialPersonSavedAccount"/> object representing the saved credit card account, 
-        /// or null if the process fails.
-        /// </returns>
-        private FinancialPersonSavedAccount ProcessNewCreditCardAccount( IHostedGatewayComponent hostedGatewayComponent, AddNewSavedAccountBag options, out string errorMessage )
-        {
-            var paymentInfo = new ReferencePaymentInfo
-            {
-                Amount = 0.0M,
-                Comment1 = $"Saved Account for {RequestContext.CurrentPerson.FirstName}",
-                FirstName = RequestContext.CurrentPerson.FirstName,
-                LastName = RequestContext.CurrentPerson.LastName,
-                ReferenceNumber = options.Token,
-                InitialCurrencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ),
-                PostalCode = options.PostalCode,
-                Country = "US",
-                Street1 = string.Empty,
-                Street2 = string.Empty,
-                City = string.Empty,
-                State = string.Empty,
-                TransactionTypeValueId = TransactionType.Id
-            };
-
-            var customerToken = hostedGatewayComponent.CreateCustomerAccount( FinancialGateway, paymentInfo, out errorMessage );
-            if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            paymentInfo.GatewayPersonIdentifier = customerToken;
-            var transaction = hostedGatewayComponent.Authorize( FinancialGateway, paymentInfo, out errorMessage );
-            if ( transaction == null )
-            {
-                return null;
-            }
-
-            var savedAccount = new FinancialPersonSavedAccount
-            {
-                ReferenceNumber = hostedGatewayComponent.GetReferenceNumber( transaction, out errorMessage ),
-                TransactionCode = transaction.TransactionCode,
-                FinancialGatewayId = FinancialGateway.Id,
-                FinancialPaymentDetail = new FinancialPaymentDetail(),
-                GatewayPersonIdentifier = paymentInfo.GatewayPersonIdentifier,
-                PersonAliasId = RequestContext.CurrentPerson.PrimaryAliasId
-            };
-            savedAccount.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, hostedGatewayComponent as GatewayComponent, RockContext );
-            savedAccount.FinancialPaymentDetail.AccountNumberMasked = transaction.FinancialPaymentDetail.AccountNumberMasked;
-            savedAccount.FinancialPaymentDetail.NameOnCard = transaction.FinancialPaymentDetail.NameOnCard;
-            savedAccount.FinancialPaymentDetail.ExpirationMonth = transaction.FinancialPaymentDetail.ExpirationMonth;
-            savedAccount.FinancialPaymentDetail.ExpirationYear = transaction.FinancialPaymentDetail.ExpirationYear;
-
-            var creditCardTypeValue = string.Empty;
-
-            if ( transaction.FinancialPaymentDetail.CreditCardTypeValueId.HasValue )
-            {
-                var creditCardTypeDefinedValue = DefinedValueCache.Get( transaction.FinancialPaymentDetail.CreditCardTypeValueId.Value );
-                if ( creditCardTypeDefinedValue != null )
-                {
-                    creditCardTypeValue = creditCardTypeDefinedValue.Value;
-                }
-
-                savedAccount.Name = $"{creditCardTypeValue}";
-            }
-
-            if ( savedAccount.Name.IsNullOrWhiteSpace() )
-            {
-                savedAccount.Name = $"Card {string.Join( "", transaction.FinancialPaymentDetail.AccountNumberMasked.TakeLast( 5 ) )}";
-            }
-
-            var savedAccountService = new FinancialPersonSavedAccountService( RockContext );
-            savedAccountService.Add( savedAccount );
-            RockContext.SaveChanges();
-
-            return savedAccount;
-        }
-
-        /// <summary>
-        /// Processes the creation of a new saved ACH account.
-        /// </summary>
-        /// <param name="hostedGatewayComponent">The hosted gateway component handling the payment gateway operations.</param>
-        /// <param name="options">The options containing details for creating the saved account.</param>
-        /// <param name="errorMessage">An output parameter that contains an error message if the operation fails.</param>
-        /// <returns>
-        /// A <see cref="FinancialPersonSavedAccount"/> object representing the saved ACH account, 
-        /// or null if the process fails.
-        /// </returns>
-        private FinancialPersonSavedAccount ProcessNewAchAccount( IHostedGatewayComponent hostedGatewayComponent, AddNewSavedAccountBag options, out string errorMessage )
-        {
-            if ( options.HomeAddress == null )
-            {
-                errorMessage = "The address is required for an ACH account.";
-                return null;
-            }
-
-            var paymentInfo = new ReferencePaymentInfo
-            {
-                Amount = 0.0M,
-                Comment1 = $"Saved Account for {RequestContext.CurrentPerson.FirstName}",
-                FirstName = RequestContext.CurrentPerson.FirstName,
-                LastName = RequestContext.CurrentPerson.LastName,
-                ReferenceNumber = options.Token,
-                InitialCurrencyTypeValue = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ),
-                TransactionTypeValueId = TransactionType.Id,
-                Street1 = options.HomeAddress.Street1,
-                Street2 = string.Empty,
-                City = options.HomeAddress.City,
-                State = options.HomeAddress.State,
-                PostalCode = options.HomeAddress.PostalCode,
-                Country = options.HomeAddress.Country
-            };
-
-            var customerToken = hostedGatewayComponent.CreateCustomerAccount( FinancialGateway, paymentInfo, out errorMessage );
-            if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
-            paymentInfo.GatewayPersonIdentifier = customerToken;
-
-            var savedAccount = new FinancialPersonSavedAccount
-            {
-                FinancialGatewayId = FinancialGateway.Id,
-                FinancialPaymentDetail = new FinancialPaymentDetail(),
-                GatewayPersonIdentifier = paymentInfo.GatewayPersonIdentifier,
-                PersonAliasId = RequestContext.CurrentPerson.PrimaryAliasId
-            };
-            savedAccount.FinancialPaymentDetail.SetFromPaymentInfo( paymentInfo, hostedGatewayComponent as GatewayComponent, RockContext );
-
-            if ( savedAccount.Name.IsNullOrWhiteSpace() )
-            {
-                savedAccount.Name = $"Saved Bank Account";
-            }
-
-            if( paymentInfo.AdditionalParameters.ContainsKey( "AccountNumberMasked" ) )
-            {
-                savedAccount.FinancialPaymentDetail.AccountNumberMasked = paymentInfo.AdditionalParameters["AccountNumberMasked"];
-            }
-
-            var savedAccountService = new FinancialPersonSavedAccountService( RockContext );
-            savedAccountService.Add( savedAccount );
-            RockContext.SaveChanges();
-
-            return savedAccount;
-        }
-
-        /// <summary>
         /// Processes the account amount selections based on the campus (see <seealso cref="UseAccountCampusMappingLogic" />).
         /// </summary>
         /// <param name="options"></param>
         private void ProcessAccountAmountSelections( TransactionRequestInfoBag options )
         {
-            if( options.CampusId.IsNullOrWhiteSpace() )
+            if ( options.CampusId.IsNullOrWhiteSpace() )
             {
                 return;
             }
@@ -1501,6 +1390,62 @@ namespace Rock.Blocks.Types.Mobile.Finance
             }
         }
 
+        /// <summary>
+        /// Deletes the scheduled transaction.
+        /// </summary>
+        /// <param name="key">The scheduled transaction identifier.</param>
+        /// <param name="errorMessage"></param>
+        protected bool DeleteScheduledTransaction( string key, out string errorMessage )
+        {
+            FinancialScheduledTransactionService financialScheduledTransactionService = new FinancialScheduledTransactionService( RockContext );
+            var scheduledTransaction = financialScheduledTransactionService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( scheduledTransaction == null )
+            {
+                errorMessage = "Could not find the scheduled transaction.";
+                return false;
+            }
+
+            scheduledTransaction.FinancialGateway.LoadAttributes( RockContext );
+
+            if ( financialScheduledTransactionService.Cancel( scheduledTransaction, out errorMessage ) )
+            {
+                try
+                {
+                    financialScheduledTransactionService.GetStatus( scheduledTransaction, out errorMessage );
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                RockContext.SaveChanges();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Gets whether or not apple pay is enabled on the mywell gateway.
+        /// </summary>
+        /// <returns></returns>
+        private bool GetIsApplePayEnabled()
+        {
+            return MyWellGateway?.GetAttributeValue( "ApplePay" ).Equals( "Yes" ) ?? false;
+        }
+
+        /// <summary>
+        /// Gets whether or not google pay is enabled on the mywell gateway.
+        /// </summary>
+        /// <returns></returns>
+        private bool GetIsGooglePayEnabled()
+        {
+            return MyWellGateway?.GetAttributeValue( "GooglePay" ).Equals( "Yes" ) ?? false;
+        }
+
         #endregion
 
         #region IRockMobileBlockType
@@ -1518,10 +1463,15 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 CreditCardFeeCoveragePercentage = GetCreditCardFeeCoveragePercentage(),
                 ACHFeeCoverageAmount = GetACHFeeCoverageAmount(),
                 AskForCampusIfKnown = AskForCampusIfKnown,
-                PublicKey = FinancialGateway?.GetAttributeValue( "PublicApiKey" ),
                 TransactionListPageGuid = TransactionListPageGuid,
                 ScheduledTransactionListPageGuid = ScheduledTransactionListPageGuid,
                 SavedAccountListPageGuid = SavedAccountListPageGuid,
+
+                // Since this block only supports the MyWell gateway, we can fetch the public key
+                // from the gateway attributes safely.
+                PublicKey = MyWellGateway?.GetAttributeValue( "PublicApiKey" ),
+                IsApplePayEnabled = GetIsApplePayEnabled(),
+                IsGooglePayEnabled = GetIsGooglePayEnabled()
             };
         }
 
@@ -1534,9 +1484,21 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// </summary>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult GetInitialData()
+        public BlockActionResult GetInitialData( GetGivingInfoOptionsBag options )
         {
-            return ActionOk( GetGivingData() );
+            if ( MyWellGateway == null )
+            {
+                return ActionBadRequest( "The Giving block is only compatible with the MyWell gateway." );
+            }
+
+            var givingData = GetGivingData( options.ScheduledTransactionId, out string errorMessage );
+
+            if ( givingData == null && errorMessage.IsNotNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            return ActionOk( givingData );
         }
 
         /// <summary>
@@ -1555,7 +1517,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// <param name="options">The options to add the new payment method with.</param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult AddPaymentMethod( AddNewSavedAccountBag options )
+        public BlockActionResult AddSavedAccountFromToken( SavedAccountTokenBag options )
         {
             if ( RequestContext.CurrentPerson == null )
             {
@@ -1567,7 +1529,9 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 return ActionBadRequest( "Invalid request. Token and Currency Type are required parameters." );
             }
 
-            var savedAccount = ProcessNewAccount( FinancialGatewayComponent, options, out var errorMessage );
+            var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( RockContext );
+
+            var savedAccount = financialPersonSavedAccountService.CreateAccountFromToken( MyWellGateway, options, RequestContext.CurrentPerson, TransactionType.Id, out var errorMessage );
 
             if ( savedAccount == null )
             {
@@ -1594,6 +1558,146 @@ namespace Rock.Blocks.Types.Mobile.Finance
             }
 
             return ActionOk( transactionResult );
+        }
+
+        /// <summary>
+        /// Updates a scheduled transaction.
+        /// </summary>
+        /// <param name="options">The options to update the scheduled transaction with.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        [BlockAction]
+        public BlockActionResult UpdateScheduledTransaction( UpdateScheduledTransactionBag options )
+        {
+            if ( options.ScheduledTransactionId.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( "Scheduled Transaction Id is required." );
+            }
+
+            if ( MyWellGatewayComponent == null )
+            {
+                return ActionBadRequest( "The Giving block is only compatible with the MyWell gateway." );
+            }
+
+            var scheduledTransaction = new FinancialScheduledTransactionService( RockContext ).Get( options.ScheduledTransactionId, !this.PageCache.Layout.Site.DisablePredictableIds );
+            if ( scheduledTransaction == null )
+            {
+                return ActionNotFound( "Scheduled transaction not found." );
+            }
+
+            if ( scheduledTransaction.AuthorizedPersonAlias.PersonId != RequestContext.CurrentPerson?.Id )
+            {
+                return ActionUnauthorized( "You are not authorized to update this scheduled transaction." );
+            }
+
+            var financialScheduledTransactionDetailService = new FinancialScheduledTransactionDetailService( RockContext );
+
+            string errorMessage;
+            var useExistingPaymentMethod = options.SavedAccountId == scheduledTransaction.FinancialPaymentDetail?.FinancialPersonSavedAccount?.IdKey;
+            var useSavedAccount = options.SavedAccountId.IsNotNullOrWhiteSpace() && options.SavedAccountId != scheduledTransaction.FinancialPaymentDetail?.FinancialPersonSavedAccount?.IdKey;
+
+            ReferencePaymentInfo referencePaymentInfo;
+
+            if ( useExistingPaymentMethod )
+            {
+                // use save payment method as original transaction
+                referencePaymentInfo = new ReferencePaymentInfo
+                {
+                    GatewayPersonIdentifier = scheduledTransaction.FinancialPaymentDetail.GatewayPersonIdentifier,
+                    FinancialPersonSavedAccountId = scheduledTransaction.FinancialPaymentDetail.FinancialPersonSavedAccountId,
+                    ReferenceNumber = MyWellGatewayComponent.GetReferenceNumber( scheduledTransaction, out errorMessage )
+                };
+            }
+            else if ( useSavedAccount )
+            {
+                var savedAccount = new FinancialPersonSavedAccountService( RockContext ).Get( options.SavedAccountId, !this.PageCache.Layout.Site.DisablePredictableIds );
+                if ( savedAccount != null )
+                {
+                    referencePaymentInfo = savedAccount.GetReferencePayment();
+                }
+                else
+                {
+                    // shouldn't happen
+                    throw new Exception( "Unable to determine Saved Account" );
+                }
+            }
+            else
+            {
+                // shouldn't happen
+                throw new Exception( "Unable to determine payment method" );
+            }
+
+            referencePaymentInfo.Amount = options.AmountSelections.Sum( a => a.Amount );
+
+            // Update the transaction frequency with the new value.
+            scheduledTransaction.TransactionFrequencyValueId = DefinedValueCache.Get( options.FrequencyValueId, !this.PageCache.Layout.Site.DisablePredictableIds )?.Id
+                ?? scheduledTransaction.TransactionFrequencyValueId;
+            scheduledTransaction.StartDate = options.NextProcessDate;
+
+            // If we are using the existing payment method, DO NOT clear out the FinancialPaymentDetail record.
+            if ( !useExistingPaymentMethod )
+            {
+                scheduledTransaction.FinancialPaymentDetail.ClearPaymentInfo();
+            }
+
+            var updated = MyWellGatewayComponent.UpdateScheduledPayment( scheduledTransaction, referencePaymentInfo, out errorMessage );
+            if ( !updated )
+            {
+                return ActionBadRequest( errorMessage ?? "Unable to update the scheduled payment." );
+            }
+
+            scheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( referencePaymentInfo, this.MyWellGatewayComponent as GatewayComponent, RockContext );
+
+            var newTransactionAccountIds = options.AmountSelections
+                .Select( newTransaction => newTransaction.AccountId );
+
+            var deletedTransactionDetails = scheduledTransaction.ScheduledTransactionDetails
+                .Where( origTransaction => !newTransactionAccountIds.Contains( origTransaction.IdKey ) )
+                .ToList();
+
+            foreach ( var deletedTransactionDetail in deletedTransactionDetails )
+            {
+                scheduledTransaction.ScheduledTransactionDetails.Remove( deletedTransactionDetail );
+                financialScheduledTransactionDetailService.Delete( deletedTransactionDetail );
+            }
+
+            foreach ( var selectedAccountAmount in options.AmountSelections )
+            {
+                var selectedAccountAmountId = new FinancialAccountService( RockContext ).Get( selectedAccountAmount.AccountId, !this.PageCache.Layout.Site.DisablePredictableIds ).Id;
+
+                var scheduledTransactionDetail = scheduledTransaction.ScheduledTransactionDetails.FirstOrDefault( a => a.AccountId == selectedAccountAmountId );
+                if ( scheduledTransactionDetail == null )
+                {
+                    scheduledTransactionDetail = new FinancialScheduledTransactionDetail
+                    {
+                        AccountId = selectedAccountAmountId
+                    };
+                    scheduledTransaction.ScheduledTransactionDetails.Add( scheduledTransactionDetail );
+                }
+
+                scheduledTransactionDetail.Amount = selectedAccountAmount.Amount;
+            }
+
+            RockContext.SaveChanges();
+            Task.Run( () => ScheduledGiftWasModifiedMessage.PublishScheduledTransactionEvent( scheduledTransaction.Id, ScheduledGiftEventTypes.ScheduledGiftUpdated ) );
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Deletes a scheduled transaction.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult DeleteScheduledTransaction( string key )
+        {
+            if ( !DeleteScheduledTransaction( key, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage.IsNotNullOrWhiteSpace() ? errorMessage : "Failed to delete scheduled transaction." );
+            }
+
+            return ActionOk();
         }
 
         #endregion

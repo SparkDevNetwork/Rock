@@ -21,6 +21,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Lava;
 using Rock.ViewModels.Utility;
@@ -36,7 +38,7 @@ namespace Rock.Model
     [DataContract]
     [CodeGenerateRest( ~( Enums.CodeGenerateRestEndpoint.ReadAttributeValues | Enums.CodeGenerateRestEndpoint.UpdateAttributeValues ) )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ATTRIBUTE )]
-    public partial class Attribute : Model<Attribute>, IOrdered, ICacheable
+    public partial class Attribute : Model<Attribute>, IOrdered, ICacheable, IHasAdditionalSettings
     {
         /// <summary>
         /// The Qualifier on null entity types to distinguish a 'System Setting' from a Global Attribute
@@ -341,6 +343,11 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public bool IsSuppressHistoryLogging { get; set; }
+
+        /// <inheritdoc/>
+        [RockInternal( "17.0" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         #endregion
 

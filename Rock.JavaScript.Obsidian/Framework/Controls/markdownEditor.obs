@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <CodeEditor v-model="internalValue" v-bind="$attrs" mode="markdown" :editorHeight="editorHeight" />
-    <small class='pull-right text-muted' style="margin-top:-20px;">
+    <small class='pull-right text-muted' style="margin-top:-15px;">
         <strong>**bold**</strong>&nbsp;
         <em>*italics*</em>&nbsp;
         >quote&nbsp;

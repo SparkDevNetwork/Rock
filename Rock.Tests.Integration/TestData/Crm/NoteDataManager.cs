@@ -16,11 +16,12 @@
 //
 using System;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.TestData.Core
+namespace Rock.Tests.Integration.TestData.Crm
 {
     /// <summary>
     /// Provides actions to manage Entity Attributes.

@@ -15,9 +15,10 @@
 // </copyright>
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.TestData
+namespace Rock.Tests.Integration.TestData.Tests
 {
     /// <summary>
     /// A set of actions that can be run manually to configure the test environment.

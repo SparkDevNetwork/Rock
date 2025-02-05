@@ -328,12 +328,23 @@ namespace Rock.Observability
         {
             using ( var rockContext = new RockContext() )
             {
+                // Take the last 4 CPU averages. These are recorded every 15
+                // seconds. Then take the highest value. Since we are called every
+                // 60 seconds, this should give us the max recorded CPU in
+                // the last minute.
+                // NOTE: We use a TOP 4 instead of a timestamp check because
+                // I'm not sure there is any guarantee that "end_time" is in any
+                // specific time zone, so it's possible we might get wrong
+                // values if we filter on that.
                 var result = rockContext.Database.SqlQuery<double>( @"
 If EXISTS (SELECT * FROM [sys].[system_objects] WHERE [name] = 'dm_db_resource_stats')
-    SELECT TOP 1
-        CAST([avg_cpu_percent] AS FLOAT) AS [Value]
-    FROM [sys].[dm_db_resource_stats]
-    ORDER BY [end_time] DESC
+    SELECT MAX([Value]) AS [Value]
+        FROM (
+            SELECT TOP 4
+                CAST([avg_cpu_percent] AS FLOAT) AS [Value]
+            FROM [sys].[dm_db_resource_stats]
+            ORDER BY [end_time] DESC
+        ) AS [IQ]
 ELSE
 BEGIN TRY
     SELECT

@@ -55,7 +55,7 @@ namespace Rock.Field.Types
 
                 if ( siteKey.IsNullOrWhiteSpace() || secretKey.IsNullOrWhiteSpace() )
                 {
-                    publicConfigurationValues[NOTIFICATION_WARNING_PROPERTY_KEY] = "Google ReCaptcha site key or secret key have not been configured yet. Captcha will not work until those are set.";
+                    publicConfigurationValues[NOTIFICATION_WARNING_PROPERTY_KEY] = "Captcha site key or secret key have not been configured yet. Captcha will not work until both keys are set.";
                 }
             }
 
@@ -142,7 +142,7 @@ namespace Rock.Field.Types
                 var nokeysBox = new NotificationBox
                 {
                     NotificationBoxType = NotificationBoxType.Warning,
-                    Text = "Google ReCaptcha site key or secret key have not been configured yet. Captcha will not work until those are set."
+                    Text = "Captcha site key or secret key have not been configured yet. Captcha will not work until both keys are set."
                 };
                 controls.Add( nokeysBox );
             }

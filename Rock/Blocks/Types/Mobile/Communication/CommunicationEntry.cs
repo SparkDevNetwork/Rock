@@ -357,7 +357,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     Email = a.Email,
                     PersonGuid = a.PersonGuid,
                     EntitySetItemGuid = a.EntitySetItemGuid,
-                    PhotoUrl = a.PhotoId != null ? FileUrlHelper.GetImageUrl( a.PhotoId.Value, new GetImageUrlOptions { Width = 256, Height = 256 } ) : string.Empty,
+                    PhotoUrl = a.PhotoId != null ? MobileHelper.BuildPublicApplicationRootUrl( FileUrlHelper.GetImageUrl( a.PhotoId.Value, new GetImageUrlOptions { Width = 256, Height = 256 } ) ) : string.Empty,
                     SmsNumber = a.PhoneNumbers.GetFirstSmsNumber(),
                 } ).ToList();
 
@@ -414,7 +414,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
 
                 if ( entitySet == null )
                 {
-                    return ActionNotFound("Could not load the recipients for this communication.");
+                    return ActionNotFound( "Could not load the recipients for this communication." );
                 }
 
                 if ( entitySet.IsExpired )
@@ -478,7 +478,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
         /// <param name="bag">The bag containing the communication information.</param>
         /// <param name="entityset">The EntitySet of the recipients.</param>
         /// <returns></returns>
-        private string SendCommunicationInternal( SendCommunicationRequestBag bag, EntitySet entityset)
+        private string SendCommunicationInternal( SendCommunicationRequestBag bag, EntitySet entityset )
         {
             var communicationService = new CommunicationService( RockContext );
             var entitySetItemService = new EntitySetItemService( RockContext );
@@ -830,7 +830,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
         {
             // Convert our recipients to CommunicationRecipients.
             var recipientPeople = entitySetItemService
-                .GetByEntitySetId( entitySet.Id)
+                .GetByEntitySetId( entitySet.Id )
                 .Select( esi => new
                 {
                     esi.EntityId

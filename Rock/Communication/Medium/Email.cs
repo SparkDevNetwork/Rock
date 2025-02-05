@@ -162,7 +162,7 @@ You can view an online version of this email here:
         ///     </para>
         /// </remarks>
         /// <returns>The bulk email threshold.</returns>
-        [RockInternal( "1.17" )]
+        [RockInternal( "17.0" )]
         internal int? GetBulkEmailThreshold()
         {
             return GetAttributeValue( AttributeKey.BulkEmailThreshold ).AsIntegerOrNull();

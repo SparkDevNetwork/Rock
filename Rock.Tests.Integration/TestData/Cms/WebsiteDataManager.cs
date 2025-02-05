@@ -17,12 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Integration.TestData;
-using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Cms
+namespace Rock.Tests.Integration.TestData.Cms
 {
     /// <summary>
     /// Provides actions to manage Website data.

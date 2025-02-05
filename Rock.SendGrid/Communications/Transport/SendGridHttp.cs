@@ -188,7 +188,7 @@ namespace Rock.Communication.Transport
 
                     Reason: SendGrid is no longer able to parse "Admin" <admin@organization.com> correctly.
                  */
-                var mailAddressRegex = new Regex( @"^""?(?<name>.*?)""?\s*<(?<email>.*?)>$" );
+                var mailAddressRegex = new Regex( @"^""(?<name>[^""]+)""\s*<(?<email>[\w\.-]+@[\w\.-]+\.\w+)>$" );
                 var match = mailAddressRegex.Match( rockEmailMessage.ReplyToEmail );
 
                 if ( match.Success )
@@ -196,7 +196,7 @@ namespace Rock.Communication.Transport
                     var name = match.Groups["name"].Value;
                     var email = match.Groups["email"].Value;
 
-                    sendGridMessage.ReplyTo = new EmailAddress(email, name);
+                    sendGridMessage.ReplyTo = new EmailAddress( email, name );
                 }
                 else
                 {

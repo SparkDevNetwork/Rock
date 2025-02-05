@@ -36,12 +36,12 @@
                 <CheckBox v-model="isValidInFuture"
                           label="Valid In Future"
                           help="Determines if documents of this type should be considered valid for future eligibility needs." />
-                <TextBox v-model="validityDurationInDays"
-                         v-if="isValidInFuture"
-                         label="Valid Duration Days"
-                         help="The number of days a signed document of this type will be considered valid."
-                         minimum-value="1"
-                         :rules="validityDurationRules" />
+                <NumberBox v-model="validityDurationInDays"
+                           v-if="isValidInFuture"
+                           rules="required"
+                           label="Valid Duration Days"
+                           help="The number of days a signed document of this type will be considered valid."
+                           :minimumValue="1" />
             </div>
 
             <div class="col-md-6">
@@ -183,10 +183,11 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
@@ -199,17 +200,17 @@
     import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
     import Loading from "@Obsidian/Controls/loading.obs";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { SignatureDocumentTemplateBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/signatureDocumentTemplateBag";
     import { GetPdfPreviewUrlRequestBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/getPdfPreviewUrlRequestBag";
     import { SignatureDocumentTemplateDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/SignatureDocumentTemplateDetail/signatureDocumentTemplateDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { ValidationRule } from "@Obsidian/ValidationRules";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<SignatureDocumentTemplateBag>,
+            type: Object as PropType<ValidPropertiesBox<SignatureDocumentTemplateBag>>,
             required: true
         },
 
@@ -220,31 +221,31 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: SignatureDocumentTemplateBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<SignatureDocumentTemplateBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const documentTerm = propertyRef(props.modelValue.documentTerm ?? "", "DocumentTerm");
-    const signatureInputTypes = ref(props.modelValue.signatureInputTypes ?? []);
-    const signatureType = propertyRef(props.modelValue.signatureType ?? "", "SignatureType");
-    const binaryFileType = propertyRef(props.modelValue.binaryFileType ?? null, "BinaryFileTypeId");
-    const completionSystemCommunicationValue = propertyRef(props.modelValue.completionSystemCommunication?.value ?? "", "CompletionSystemCommunicationId");
-    const providerEntityType = propertyRef(props.modelValue.providerEntityType ?? null, "ProviderEntityTypeId");
-    const providerTemplateKey = propertyRef(props.modelValue.providerTemplateKey ?? "", "ProviderTemplateKey");
-    const lavaTemplate = propertyRef(props.modelValue.lavaTemplate ?? "", "LavaTemplate");
-    const isValidInFuture = propertyRef(props.modelValue.isValidInFuture ?? false, "IsValidInFuture");
-    const validityDurationInDays = propertyRef(props.modelValue.validityDurationInDays ?? "", "ValidityDurationInDays");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const documentTerm = propertyRef(props.modelValue?.bag?.documentTerm ?? "", "DocumentTerm");
+    const signatureInputTypes = ref(props.modelValue?.bag?.signatureInputTypes ?? []);
+    const signatureType = propertyRef(props.modelValue?.bag?.signatureType ?? "", "SignatureType");
+    const binaryFileType = propertyRef(props.modelValue?.bag?.binaryFileType ?? null, "BinaryFileTypeId");
+    const completionSystemCommunicationValue = propertyRef(props.modelValue?.bag?.completionSystemCommunication?.value ?? "", "CompletionSystemCommunicationId");
+    const providerEntityType = propertyRef(props.modelValue?.bag?.providerEntityType ?? null, "ProviderEntityTypeId");
+    const providerTemplateKey = propertyRef(props.modelValue?.bag?.providerTemplateKey ?? "", "ProviderTemplateKey");
+    const lavaTemplate = propertyRef(props.modelValue?.bag?.lavaTemplate ?? "", "LavaTemplate");
+    const isValidInFuture = propertyRef(props.modelValue?.bag?.isValidInFuture ?? false, "IsValidInFuture");
+    const validityDurationInDays = propertyRef(props.modelValue?.bag?.validityDurationInDays, "ValidityDurationInDays");
     const communicationTemplates = ref(props.options.communicationTemplates ?? []);
     const showLegacyExternalProviders = ref(props.options.showLegacyExternalProviders);
     const externalProviders = ref<ListItemBag[]>([]);
-    const pdfUrl = ref(props.modelValue.pdfUrl ?? "");
+    const pdfUrl = ref(props.modelValue?.bag?.pdfUrl ?? "");
     const showTips = ref(false);
     const isPreviewMode = ref(false);
     const isLoadingUrl = ref(false);
@@ -254,40 +255,6 @@
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, isActive, name, documentTerm, signatureType, binaryFileType, completionSystemCommunicationValue, lavaTemplate, providerTemplateKey, providerEntityType, isValidInFuture, validityDurationInDays];
-
-    // #endregion
-
-    // #region Computed Values
-
-    const validityDurationRules = computed<ValidationRule[]>(() => [
-        "required",
-        validateIntegerValue
-    ]);
-
-    // #endregion
-
-    // #region Functions
-
-    function validateIntegerValue(value: unknown): string | boolean {
-
-        const stringValue = value as string;
-
-        if (stringValue) {
-            const num = Number(value);
-            if (!isValidNumber(num)) {
-                return "must be a valid number.";
-            }
-            else if (num < 0) {
-                return "must have a value of 0 or more.";
-            }
-        }
-
-        return true;
-    }
-
-    function isValidNumber(num: number): boolean {
-        return !isNaN(num) && isFinite(num);
-    }
 
     // #endregion
 
@@ -360,42 +327,43 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(documentTerm, props.modelValue.documentTerm ?? "");
-        updateRefValue(signatureType, props.modelValue.signatureType ?? "");
-        updateRefValue(binaryFileType, props.modelValue.binaryFileType ?? {});
-        updateRefValue(completionSystemCommunicationValue, props.modelValue.completionSystemCommunication?.value ?? "");
-        updateRefValue(lavaTemplate, props.modelValue.lavaTemplate ?? "");
-        updateRefValue(providerTemplateKey, props.modelValue.providerTemplateKey ?? "");
-        updateRefValue(providerEntityType, props.modelValue.providerEntityType ?? {});
-        updateRefValue(isValidInFuture, props.modelValue.isValidInFuture ?? false);
-        updateRefValue(validityDurationInDays, props.modelValue.validityDurationInDays ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(documentTerm, props.modelValue?.bag?.documentTerm ?? "");
+        updateRefValue(signatureType, props.modelValue?.bag?.signatureType ?? "");
+        updateRefValue(binaryFileType, props.modelValue?.bag?.binaryFileType ?? {});
+        updateRefValue(completionSystemCommunicationValue, props.modelValue?.bag?.completionSystemCommunication?.value ?? "");
+        updateRefValue(lavaTemplate, props.modelValue?.bag?.lavaTemplate ?? "");
+        updateRefValue(providerTemplateKey, props.modelValue?.bag?.providerTemplateKey ?? "");
+        updateRefValue(providerEntityType, props.modelValue?.bag?.providerEntityType ?? {});
+        updateRefValue(isValidInFuture, props.modelValue?.bag?.isValidInFuture ?? false);
+        updateRefValue(validityDurationInDays, props.modelValue?.bag?.validityDurationInDays);
         updateRefValue(showLegacyExternalProviders, props.options.showLegacyExternalProviders);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        const newValue: SignatureDocumentTemplateBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            isActive: isActive.value,
-            name: name.value,
-            signatureType: signatureType.value,
-            binaryFileType: binaryFileType.value,
-            completionSystemCommunication: { value: completionSystemCommunicationValue.value },
-            lavaTemplate: lavaTemplate.value,
-            isValidInFuture: isValidInFuture.value,
-            validityDurationInDays: validityDurationInDays.value,
-            providerTemplateKey: providerTemplateKey.value,
-            providerEntityType: providerEntityType.value,
-            documentTerm: documentTerm.value
+        const newValue: ValidPropertiesBox<SignatureDocumentTemplateBag> = {
+            bag: { ...props.modelValue.bag } as SignatureDocumentTemplateBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "signatureType", signatureType.value);
+        setPropertiesBoxValue(newValue, "binaryFileType", binaryFileType.value);
+        setPropertiesBoxValue(newValue, "completionSystemCommunication", { value: completionSystemCommunicationValue.value });
+        setPropertiesBoxValue(newValue, "lavaTemplate", lavaTemplate.value);
+        setPropertiesBoxValue(newValue, "isValidInFuture", isValidInFuture.value);
+        setPropertiesBoxValue(newValue, "validityDurationInDays", validityDurationInDays.value);
+        setPropertiesBoxValue(newValue, "providerTemplateKey", providerTemplateKey.value);
+        setPropertiesBoxValue(newValue, "providerEntityType", providerEntityType.value);
+        setPropertiesBoxValue(newValue, "documentTerm", documentTerm.value);
 
         emit("update:modelValue", newValue);
     });

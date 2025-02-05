@@ -15,13 +15,13 @@
 // </copyright>
 //
 using System;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
-using Rock.Tests.Integration.TestData;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Communications
+namespace Rock.Tests.Integration.TestData.Communications
 {
     /// <summary>
     /// Provides actions to manage Communications data.

@@ -19,17 +19,23 @@
             </div>
         </template>
         <div class="d-flex flex-column h-100">
-            <NotificationBox v-if="isSuccessNotificationBoxVisible"
-                             alertType="success"
-                             class="mb-0 text-center flex-shrink-0"
-                             v-html="successNotificationBoxMessage" />
-            <NotificationBox v-if="isErrorNotificationBoxVisible"
-                             alertType="danger"
-                             class="mb-0 text-center flex-shrink-0"
-                             :dismissible="true"
-                             @dismiss="clearErrorNotificationBoxText">
-                {{ errorNotificationText }}
-            </NotificationBox>
+            <transition name="slide">
+                <NotificationBox v-if="isSuccessNotificationBoxVisible"
+                                 alertType="success"
+                                 class="mb-0 text-center flex-shrink-0"
+                                 style="--slide-padding-close: 0 16px; --slide-padding-open: 16px; --slide-height: 59px; --border-top-width: 3px"
+                                 v-html="successNotificationBoxMessage" />
+            </transition>
+            <transition name="slide">
+                <NotificationBox v-if="isErrorNotificationBoxVisible"
+                                 alertType="danger"
+                                 class="mb-0 text-center flex-shrink-0"
+                                 style="--slide-padding-close: 0 16px; --slide-padding-open: 16px; --slide-height: 59px; --border-top-width: 3px"
+                                 :dismissible="true"
+                                 @dismiss="clearErrorNotificationBoxText">
+                    {{ errorNotificationText }}
+                </NotificationBox>
+            </transition>
             <div class="sms-conversations-parent flex-grow-1">
                 <div class="sms-conversations-container styled-scroll">
                     <div class="conversation-list d-flex flex-column">
@@ -71,7 +77,10 @@
                             </transition>
                         </div>
                         <div class="overflow-scroll">
-                            <div v-for="(conversation, index) in filteredAndSortedConversations" :class="['recipient-row', { 'selected': conversation.conversationKey === selectedConversation?.conversationKey }]" @click="getConversationForRecipient(conversation)">
+                            <div v-if="areConversationsLoading" class="d-flex h-100 align-items-center justify-content-center">
+                                <Loading :isLoading="areConversationsLoading" />
+                            </div>
+                            <div v-else-if="filteredAndSortedConversations.length > 0" v-for="(conversation, index) in filteredAndSortedConversations" :class="['recipient-row', { 'selected': conversation.conversationKey === selectedConversation?.conversationKey }]" @click="getConversationForRecipient(conversation)">
                                 <div class="mr-3 flex-shrink-0"
                                      :style="{ 'width': '36px', 'height': '36px', 'border-radius': '18px', 'background-image': `url('${conversation.recipientPhotoUrl}')`, 'background-size': 'cover' }">
                                 </div>
@@ -114,7 +123,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-if="filteredAndSortedConversations.length === 0" class="no-recipients-container">
+                            <div v-else class="no-recipients-container">
                                 <span class="table-empty">No Communication Recipient Responses Found</span>
                             </div>
                         </div>
@@ -133,6 +142,7 @@
                                 <RockButton :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
                                             :isSquare="true"
+                                            title="Add Note"
                                             @click="onNoteEditorButtonClick">
                                     <i class="fa fa-edit"></i>
                                 </RockButton>
@@ -141,14 +151,24 @@
                                                 :contextEntityTypeGuid="selectedConversation.entityTypeGuidForReminder"
                                                 :btnSize="BtnSize.Small"
                                                 @addSuccess="onAddReminder" />
-                                <RockButton v-if="canEditOrAdministrate"
-                                            :btnType="BtnType.Default"
-                                            :btnSize="BtnSize.Small"
-                                            :isSquare="true"
-                                            @click="toggleConversationReadStatus(selectedConversation)">
-                                    <i v-if="selectedConversation.isConversationRead" class="fa fa-eye-slash"></i>
-                                    <i v-else class="fa fa-eye"></i>
-                                </RockButton>
+                                <template v-if="canEditOrAdministrate">
+                                    <RockButton v-if="selectedConversation.isConversationRead"
+                                                :btnType="BtnType.Default"
+                                                :btnSize="BtnSize.Small"
+                                                :isSquare="true"
+                                                title="Mark As Unread"
+                                                @click="toggleConversationReadStatus(selectedConversation)">
+                                        <i class="fa fa-eye-slash"></i>
+                                    </RockButton>
+                                    <RockButton v-else
+                                                :btnType="BtnType.Default"
+                                                :btnSize="BtnSize.Small"
+                                                :isSquare="true"
+                                                title="Mark As Read"
+                                                @click="toggleConversationReadStatus(selectedConversation)">
+                                        <i class="fa fa-eye"></i>
+                                    </RockButton>
+                                </template>
                                 <RockButton v-if="selectedConversation.isLinkToPersonVisible && canEditOrAdministrate"
                                             :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
@@ -223,6 +243,7 @@
                                 <RockButton :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Default"
                                             :isSquare="true"
+                                            title="Insert Snippet"
                                             @click="showSnippetModal">
                                     <i class="fa fa-bolt"></i>
                                 </RockButton>
@@ -296,6 +317,7 @@
 .slide-leave-to {
     max-height: 0;
     opacity: 0;
+    border-top-width: 0;
     overflow: hidden;
     padding: var(--slide-padding-close, 0) !important;
 }
@@ -304,6 +326,7 @@
 .slide-leave-from {
     max-height: var(--slide-height, 200px);
     opacity: 1;
+    border-top-width: var(--border-top-width, 0);
     padding: var(--slide-padding-open, 0) !important;
 }
 
@@ -690,7 +713,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import ImageUploader from "@Obsidian/Controls/imageuploader.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import NoteEditor from "./SmsConversations/noteEditor.partial.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -732,6 +755,7 @@
     const isSuccessNotificationBoxVisible = ref<boolean>(false);
     const errorNotificationText = ref<string>(box.errorMessage ?? "");
     const successNotificationBoxMessage = ref<string>("");
+    const areConversationsLoading = ref<boolean>(false);
     const isConversationLoading = ref<boolean>(false);
     const canEditOrAdministrate = ref<boolean>(box.canEditOrAdministrate);
 
@@ -807,7 +831,7 @@
             return messageDateTime?.localDateTime.toLocaleString(DateTimeFormat.TimeShort) ?? "";
         }
 
-        return messageDateTime?.localDateTime?.humanizeElapsed() ?? "";
+        return messageDateTime?.localDateTime?.toElapsedString() ?? "";
     };
 
     /**
@@ -930,12 +954,25 @@
         isPersonFilterToggled.value = toggleFilterValue;
     }
 
+    let successMessageTimeout: number | null = null;
+
     /**
      * Toggles the visibility of the success notification box.
      * @param toggleValue whether to show or hide the success notification box.
      */
     function toggleSuccessNotificationBox(toggleValue: boolean = !isSuccessNotificationBoxVisible.value): void {
         isSuccessNotificationBoxVisible.value = toggleValue;
+
+        if (toggleValue === true) {
+            // Clear any existing timeout before setting a new one
+            if (successMessageTimeout !== null) {
+                clearTimeout(successMessageTimeout);
+            }
+
+            successMessageTimeout = window.setTimeout(() => {
+                isSuccessNotificationBoxVisible.value = false;
+            }, 5000);
+        }
     }
 
     /**
@@ -1373,6 +1410,7 @@
      * Reloads all conversations.
      */
     async function reloadConversations(): Promise<void> {
+        areConversationsLoading.value = true;
         const result = await invokeBlockAction<ConversationBag[]>("ReloadConversations");
 
         if (result.isSuccess) {
@@ -1386,6 +1424,8 @@
         else {
             errorNotificationText.value = result.errorMessage ?? "An unknown error occurred while reloading conversations.";
         }
+
+        areConversationsLoading.value = false;
     }
 
     onMounted(() => {

@@ -69,6 +69,13 @@ namespace RockWeb.Blocks.Reporting
         IsRequired = false,
         Order = 3 )]
 
+    [BooleanField(
+        "Use Obsidian Components",
+        Key = AttributeKey.UseObsidianComponents,
+        Description = "Switches the filter components to use Obsidian if supported.",
+        DefaultBooleanValue = true,
+        Category = "Advanced" )]
+
     [Rock.SystemGuid.BlockTypeGuid( "E431DBDF-5C65-45DC-ADC5-157A02045CCD" )]
     public partial class ReportDetail : RockBlock
     {
@@ -80,6 +87,7 @@ namespace RockWeb.Blocks.Reporting
             public const string DatabaseTimeout = "DatabaseTimeout";
             public const string DataViewPage = "DataViewPage";
             public const string Report = "Report";
+            public const string UseObsidianComponents = "UseObsidianComponents";
         }
 
         #endregion Attribute Keys
@@ -690,7 +698,21 @@ namespace RockWeb.Blocks.Reporting
                     var dataSelectComponent = this.GetDataSelectComponent( rockContext, reportField.DataSelectComponentEntityTypeId ?? 0 );
                     if ( dataSelectComponent != null )
                     {
-                        reportField.Selection = dataSelectComponent.GetSelection( placeHolder.Controls.OfType<Control>().ToArray() );
+                        if ( GetAttributeValue(AttributeKey.UseObsidianComponents).AsBoolean() && dataSelectComponent.ObsidianFileUrl != null )
+                        {
+                            if ( dataSelectComponent.ObsidianFileUrl.Length > 0 )
+                            {
+                                var obsidianWrapper = ( ObsidianDataComponentWrapper ) placeHolder.Controls[0];
+                                var requestContext = this.RockBlock()?.RockPage?.RequestContext;
+                                var reportEntityType = EntityTypeCache.Get( etpEntityType.SelectedEntityTypeId.Value, rockContext ).GetEntityType();
+
+                                reportField.Selection = dataSelectComponent.GetSelectionFromObsidianComponentData( reportEntityType, obsidianWrapper.ComponentData, rockContext, requestContext );
+                            }
+                        }
+                        else
+                        {
+                            reportField.Selection = dataSelectComponent.GetSelection( placeHolder.Controls.OfType<Control>().ToArray() );
+                        }
                     }
                 }
                 else if ( reportFieldType == ReportFieldType.Attribute )
@@ -1533,8 +1555,24 @@ namespace RockWeb.Blocks.Reporting
                 var dataSelectComponent = GetDataSelectComponent( rockContext, fieldSelection.AsInteger() );
                 if ( dataSelectComponent != null )
                 {
-                    Control[] dataSelectControls = dataSelectComponent.CreateChildControls( phDataSelectControls );
-                    SetDataSelectControlsValidationGroup( dataSelectControls, this.BlockValidationGroup );
+                    if ( GetAttributeValue(AttributeKey.UseObsidianComponents).AsBoolean() && dataSelectComponent.ObsidianFileUrl != null )
+                    {
+                        if ( dataSelectComponent.ObsidianFileUrl.Length > 0 )
+                        {
+                            var obsidianWrapper = new ObsidianDataComponentWrapper
+                            {
+                                ID = $"{ID}_obsidianComponentWrapper",
+                                ComponentUrl = ResolveUrl( dataSelectComponent.ObsidianFileUrl ),
+                            };
+
+                            phDataSelectControls.Controls.Add( obsidianWrapper );
+                        }
+                    }
+                    else
+                    {
+                        Control[] dataSelectControls = dataSelectComponent.CreateChildControls( phDataSelectControls );
+                        SetDataSelectControlsValidationGroup( dataSelectControls, this.BlockValidationGroup );
+                    }
                 }
             }
             else if ( reportFieldType == ReportFieldType.Attribute )
@@ -1771,8 +1809,22 @@ namespace RockWeb.Blocks.Reporting
                 PlaceHolder phDataSelectControls = panelWidget.ControlsOfTypeRecursive<PlaceHolder>().FirstOrDefault( a => a.ID == panelWidget.ID + "_phDataSelectControls" );
                 if ( phDataSelectControls != null )
                 {
-                    var dataSelectControls = phDataSelectControls.Controls.OfType<Control>().ToArray();
-                    dataSelectComponent.SetSelection( dataSelectControls, reportField.Selection ?? string.Empty );
+                    if ( GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean() && dataSelectComponent.ObsidianFileUrl != null )
+                    {
+                        if ( dataSelectComponent.ObsidianFileUrl.Length > 0 )
+                        {
+                            var obsidianWrapper = ( ObsidianDataComponentWrapper ) phDataSelectControls.Controls[0];
+                            var requestContext = this.RockBlock()?.RockPage?.RequestContext;
+                            var reportEntityType = EntityTypeCache.Get( etpEntityType.SelectedEntityTypeId.Value, rockContext ).GetEntityType();
+
+                            obsidianWrapper.ComponentData = dataSelectComponent.GetObsidianComponentData( reportEntityType, reportField.Selection ?? string.Empty, rockContext, requestContext );
+                        }
+                    }
+                    else
+                    {
+                        var dataSelectControls = phDataSelectControls.Controls.OfType<Control>().ToArray();
+                        dataSelectComponent.SetSelection( dataSelectControls, reportField.Selection ?? string.Empty );
+                    }
                 }
             }
         }

@@ -92,7 +92,7 @@ namespace Rock.ClientService.Finance.FinancialPersonSavedAccount
                     a.FinancialPaymentDetail.ExpirationYear,
                     a.FinancialPaymentDetail.AccountNumberMasked,
                     a.FinancialPaymentDetail.CurrencyTypeValueId,
-                    a.FinancialPaymentDetail.CreditCardTypeValueId
+                    a.FinancialPaymentDetail.CreditCardTypeValueId,
                 } )
                 .ToList();
 
@@ -105,47 +105,12 @@ namespace Rock.ClientService.Finance.FinancialPersonSavedAccount
             return savedAccounts
                 .Select( a =>
                 {
-                    string image = null;
-                    string expirationDate = null;
+                    var description = FinancialPaymentDetail.GetAccountDescription( a.AccountNumberMasked, a.ExpirationMonth, a.ExpirationYear );
+                    var image = FinancialPaymentDetail.GetCreditCardImageSourceByTypeId( a.CreditCardTypeValueId );
+
                     Guid? currencyTypeGuid = null;
 
-                    if ( a.ExpirationMonth.HasValue && a.ExpirationYear.HasValue )
-                    {
-                        // ExpirationYear returns 4 digits, but just in case,
-                        // check if it is 4 digits before just getting the last 2.
-                        string expireYY = a.ExpirationYear.Value.ToString();
-                        if ( expireYY.Length == 4 )
-                        {
-                            expireYY = expireYY.Substring( 2 );
-                        }
-
-                        expirationDate = $"{a.ExpirationMonth.Value:00}/{expireYY:00}";
-                    }
-
-                    // Determine the descriptive text to associate with this account.
-                    string description = string.Empty;
-                    if ( expirationDate != null )
-                    {
-                        description = a.AccountNumberMasked != null && a.AccountNumberMasked.Length >= 4
-                            ? $"Ending in {a.AccountNumberMasked.Right( 4 )} and Expires {expirationDate}"
-                            : $"Expires {expirationDate}";
-                    }
-                    else
-                    {
-                        description = a.AccountNumberMasked != null && a.AccountNumberMasked.Length >= 4
-                            ? $"Ending in {a.AccountNumberMasked.Right( 4 )}"
-                            : string.Empty;
-                    }
-
-                    // Determine the image to use for this account.
-                    if ( a.CreditCardTypeValueId.HasValue )
-                    {
-                        var creditCardTypeValueCache = DefinedValueCache.Get( a.CreditCardTypeValueId.Value );
-
-                        image = creditCardTypeValueCache?.GetAttributeValue( SystemKey.CreditCardTypeAttributeKey.IconImage );
-                    }
-
-                    if( a.CurrencyTypeValueId.HasValue )
+                    if ( a.CurrencyTypeValueId.HasValue )
                     {
                         var currencyTypeValueCache = DefinedValueCache.Get( a.CurrencyTypeValueId.Value );
                         currencyTypeGuid = currencyTypeValueCache?.Guid;
@@ -158,7 +123,7 @@ namespace Rock.ClientService.Finance.FinancialPersonSavedAccount
                         Description = description,
                         Image = image,
                         AccountNumberMasked = a.AccountNumberMasked,
-                        CurrencyTypeGuid = currencyTypeGuid
+                        CurrencyTypeGuid = currencyTypeGuid,
                     };
                 } )
                 .OrderBy( a => a.Text )

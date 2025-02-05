@@ -22,16 +22,18 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Tests.Integration.TestData;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.BugFixes
+namespace Rock.Tests.Integration.Issues
 {
     /// <summary>
     /// Tests that verify correct functionality after fixing github issue #1808.
     /// </summary>
     [TestClass]
-    public class Issue1808
+    public class Issue1808 : DatabaseTestsBase
     {
         private const string ReferenceDateValue = "2023-10-09T00:00:00.0000000";
 

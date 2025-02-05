@@ -63,6 +63,8 @@ using Rock.Web.Cache.Entities;
 using Rock.Web.UI.Controls;
 using Rock.Workflow;
 
+using Authorization = Rock.Security.Authorization;
+
 #if WEBFORMS
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
 using FromUriAttribute = System.Web.Http.FromUriAttribute;
@@ -375,6 +377,45 @@ namespace Rock.Rest.v2
                         Category = t.Category?.Name
                     } )
                     .ToList();
+
+                return Ok( items );
+            }
+        }
+
+        #endregion
+
+        #region Adaptive Message Picker
+
+        /// <summary>
+        /// Gets the adaptive messages and their categories that match the options sent in the request body.
+        /// This endpoint returns items formatted for use in a tree view control.
+        /// </summary>
+        /// <param name="options">The options that describe which data views to load.</param>
+        /// <returns>A collection of <see cref="TreeItemBag"/> objects that represent a tree of adaptive messages.</returns>
+        [HttpPost]
+        [Route( "AdaptiveMessagePickerGetAdaptiveMessages" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
+        [Rock.SystemGuid.RestActionGuid( "3484A62B-8A52-423A-8154-909D9176E4B6" )]
+        public IActionResult AdaptiveMessagePickerGetAdaptiveMessages( [FromBody] AdaptiveMessagePickerGetAdaptiveMessagesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                var items = clientService.GetCategorizedTreeItems( new CategoryItemTreeOptions
+                {
+                    ParentGuid = options.ParentGuid,
+                    GetCategorizedItems = options.GetCategorizedItems,
+                    EntityTypeGuid = EntityTypeCache.Get<Rock.Model.AdaptiveMessageCategory>().Guid,
+                    IncludeUnnamedEntityItems = options.IncludeUnnamedEntityItems,
+                    IncludeCategoriesWithoutChildren = options.IncludeCategoriesWithoutChildren,
+                    DefaultIconCssClass = options.DefaultIconCssClass,
+                    LazyLoad = options.LazyLoad,
+                    SecurityGrant = grant
+                } );
 
                 return Ok( items );
             }
@@ -2320,6 +2361,13 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
+                // Check that user has access to view the BinaryFileType.
+                var authorizedFileTypeGuids = GetAuthorizedBinaryFileTypes( rockContext ).Select( t => t.Guid );
+                if ( !authorizedFileTypeGuids.Contains( options.BinaryFileTypeGuid ) )
+                {
+                    return NotFound();
+                }
+
                 var items = new BinaryFileService( new RockContext() )
                     .Queryable()
                     .Where( f => f.BinaryFileType.Guid == options.BinaryFileTypeGuid && !f.IsTemporary )
@@ -2354,8 +2402,7 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var items = new BinaryFileTypeService( rockContext )
-                    .Queryable()
+                var items = GetAuthorizedBinaryFileTypes( rockContext )
                     .OrderBy( f => f.Name )
                     .Select( t => new ListItemBag
                     {
@@ -2366,6 +2413,31 @@ namespace Rock.Rest.v2
 
                 return Ok( items );
             }
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="BinaryFileType"/>s that do not require view security and/or the current authenticated user is permitted to view.
+        /// </summary>
+        /// <param name="rockContext">The <see cref="RockContext"/>.</param>
+        /// <returns></returns>
+        private List<BinaryFileType> GetAuthorizedBinaryFileTypes( RockContext rockContext )
+        {
+            var fileTypeQry = new BinaryFileTypeService( rockContext ).Queryable();
+            var fileTypesWithoutViewSecurity = fileTypeQry.Where( t => !t.RequiresViewSecurity ).ToList();
+
+            var person = GetPerson( rockContext );
+            if ( person == null )
+            {
+                return fileTypesWithoutViewSecurity;
+            }
+
+            var fileTypesWithViewSecurity = fileTypeQry
+                .Where( t => t.RequiresViewSecurity )
+                .ToList()
+                .Where( t => t.IsAuthorized( Authorization.VIEW, person ) )
+                .ToList();
+
+            return fileTypesWithViewSecurity.Concat( fileTypesWithoutViewSecurity ).ToList();
         }
 
         #endregion

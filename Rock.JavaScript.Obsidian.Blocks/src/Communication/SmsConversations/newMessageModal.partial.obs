@@ -44,7 +44,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
-    import ImageUploader from "@Obsidian/Controls/imageuploader.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
 
     const props = defineProps({

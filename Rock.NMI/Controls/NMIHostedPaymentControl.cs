@@ -394,7 +394,7 @@ namespace Rock.NMI.Controls
         /// Gets the billing address country.
         /// </summary>
         /// <value>
-        /// The asdf.
+        /// The billing address country.
         /// </value>
         public string BillingAddressCountry
         {

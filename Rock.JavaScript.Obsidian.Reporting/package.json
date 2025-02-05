@@ -1,0 +1,38 @@
+{
+  "private": true,
+  "description": "Project for all core data filters and data selects in Rock.",
+  "scripts": {
+    "build-fast": "node build/build-fast.js",
+    "build": "npm run build:types && node ../Rock.JavaScript.Obsidian/Build/rollup-mt.js rollup.config.cjs && echo '' > dist/.buildstamp && echo DONE",
+    "build:types": "node ./build/build-types.js",
+    "watch": "rollup --config rollup.config.cjs --watch",
+    "clean": "rimraf dist",
+    "lint": "eslint --ext .ts --ext .obs src"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.11",
+    "@babel/preset-env": "^7.22.10",
+    "@babel/preset-typescript": "^7.22.11",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^25.0.4",
+    "@rollup/plugin-node-resolve": "^15.2.1",
+    "@types/google.maps": "^3.54.0",
+    "@types/node": "^20.5.7",
+    "@typescript-eslint/eslint-plugin": "^6.5.0",
+    "@typescript-eslint/parser": "^6.5.0",
+    "copyfiles": "^2.4.1",
+    "eslint": "^8.48.0",
+    "eslint-plugin-vue": "^9.17.0",
+    "glob": "^10.3.3",
+    "rimraf": "^5.0.1",
+    "rollup": "^3.28.1",
+    "rollup-plugin-copy": "^3.4.0",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-vue": "^6.0.0",
+    "ts-node": "^10.9.1",
+    "tslib": "^2.6.2",
+    "typescript": "^5.2.2",
+    "vue": "^3.3.10",
+    "vue-eslint-parser": "^9.3.1"
+  }
+}

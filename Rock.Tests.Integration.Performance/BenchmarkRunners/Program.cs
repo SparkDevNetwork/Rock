@@ -20,9 +20,10 @@ using BenchmarkDotNet.Configs;
 using BenchmarkDotNet.Running;
 
 using Rock.Lava.Fluid;
-using Rock.Tests.Integration.Performance.Modules.Lava;
+using Rock.Tests.Integration.Performance.Lava;
+using Rock.Tests.Lava;
+using Rock.Tests.Lava.Filters;
 using Rock.Tests.Shared.Lava;
-using Rock.Tests.UnitTests.Lava;
 
 namespace Rock.Tests.Integration.Performance.BenchmarkRunners
 {

@@ -14,17 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.SqlTypes;
-using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
-using Rock.Security;
 
 namespace Rock.Model
 {
@@ -123,6 +119,98 @@ namespace Rock.Model
             {
                 // invalid year
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the image associated with the credit card type for the current financial payment detail.
+        /// </summary>
+        /// <returns>
+        /// A string representing the path to the credit card image, or an empty string if no image is available.
+        /// </returns>
+        internal string GetCreditCardImageSource()
+        {
+            return GetCreditCardImageSourceByTypeId( CreditCardTypeValueId );
+        }
+
+        /// <summary>
+        /// Retrieves the image source associated with a given credit card type.
+        /// </summary>
+        /// <param name="creditCardTypeValueId">The defined value ID representing the credit card type.</param>
+        /// <returns>
+        /// A string representing the path to the credit card image, or an empty string if no image is available.
+        /// </returns>
+        /// <remarks>
+        /// This method returns an empty string if <paramref name="creditCardTypeValueId"/> is null or invalid. 
+        /// It uses the <see cref="Rock.Web.Cache.DefinedValueCache"/> to look up the image associated with the credit card type.
+        /// </remarks>
+        internal static string GetCreditCardImageSourceByTypeId( int? creditCardTypeValueId )
+        {
+            if ( !creditCardTypeValueId.HasValue )
+            {
+                return string.Empty;
+            }
+
+            // Retrieve the defined value cache for the given credit card type ID.
+            var creditCardTypeValueCache = Rock.Web.Cache.DefinedValueCache.Get( creditCardTypeValueId.Value );
+            if ( creditCardTypeValueCache == null )
+            {
+                return string.Empty;
+            }
+
+            // Retrieve and return the associated image source or an empty string if not set.
+            return creditCardTypeValueCache.GetAttributeValue( SystemKey.CreditCardTypeAttributeKey.IconImage ) ?? string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the description for the account, including masked account number and expiration date if available.
+        /// </summary>
+        /// <returns>
+        /// A string representing the account description. If the expiration date and/or account number are available, 
+        /// they are included in the description. Otherwise, an empty string is returned.
+        /// </returns>
+        internal string GetDescription()
+        {
+            return GetAccountDescription( AccountNumberMasked, ExpirationMonth, ExpirationYear );
+        }
+
+        /// <summary>
+        /// Generates a description based on the account number and expiration details.
+        /// </summary>
+        /// <param name="accountNumberMasked">The masked account number (e.g., "****1234").</param>
+        /// <param name="expirationMonth">The expiration month.</param>
+        /// <param name="expirationYear">The expiration year.</param>
+        /// <returns>
+        /// A string containing the description. Includes expiration date and the last four digits of the account number if available.
+        /// </returns>
+        internal static string GetAccountDescription( string accountNumberMasked, int? expirationMonth, int? expirationYear )
+        {
+            string expirationDate = null;
+
+            if ( expirationMonth.HasValue && expirationYear.HasValue )
+            {
+                // ExpirationYear returns 4 digits, but ensure it is 4 digits before getting the last 2.
+                string expireYY = expirationYear.Value.ToString();
+                if ( expireYY.Length == 4 )
+                {
+                    expireYY = expireYY.Substring( 2 );
+                }
+
+                expirationDate = $"{expirationMonth.Value:00}/{expireYY:00}";
+            }
+
+            // Build the description based on available data.
+            if ( expirationDate != null )
+            {
+                return accountNumberMasked != null && accountNumberMasked.Length >= 4
+                    ? $"Ending in {accountNumberMasked.Right( 4 )} and Expires {expirationDate}"
+                    : $"Expires {expirationDate}";
+            }
+            else
+            {
+                return accountNumberMasked != null && accountNumberMasked.Length >= 4
+                    ? $"Ending in {accountNumberMasked.Right( 4 )}"
+                    : string.Empty;
             }
         }
 

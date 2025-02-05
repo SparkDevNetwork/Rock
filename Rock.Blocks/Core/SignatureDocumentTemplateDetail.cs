@@ -68,7 +68,7 @@ namespace Rock.Blocks.Core
 
     [Rock.SystemGuid.EntityTypeGuid( "525b6687-964e-4051-94a5-4b20d4575041" )]
     [Rock.SystemGuid.BlockTypeGuid( "e6a5bac5-c34c-421a-b536-eec3d9f1d1b5" )]
-    public class SignatureDocumentTemplateDetail : RockDetailBlockType
+    public class SignatureDocumentTemplateDetail : RockEntityDetailBlockType<SignatureDocumentTemplate, SignatureDocumentTemplateBag>
     {
         #region Keys
 
@@ -95,18 +95,14 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag>();
+            var box = new DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<SignatureDocumentTemplate>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -114,13 +110,12 @@ namespace Rock.Blocks.Core
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private SignatureDocumentTemplateDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private SignatureDocumentTemplateDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new SignatureDocumentTemplateDetailOptionsBag
             {
-                CommunicationTemplates = GetCommunicationTemplates( rockContext ),
+                CommunicationTemplates = GetCommunicationTemplates(),
                 ShowLegacyExternalProviders = GetAttributeValue( AttributeKey.ShowLegacyExternalProviders ).AsBoolean()
             };
             return options;
@@ -131,10 +126,9 @@ namespace Rock.Blocks.Core
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="signatureDocumentTemplate">The SignatureDocumentTemplate to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the SignatureDocumentTemplate is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateSignatureDocumentTemplate( SignatureDocumentTemplate signatureDocumentTemplate, RockContext rockContext, out string errorMessage )
+        private bool ValidateSignatureDocumentTemplate( SignatureDocumentTemplate signatureDocumentTemplate, out string errorMessage )
         {
             errorMessage = null;
 
@@ -146,10 +140,9 @@ namespace Rock.Blocks.Core
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -160,7 +153,7 @@ namespace Rock.Blocks.Core
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -168,7 +161,6 @@ namespace Rock.Blocks.Core
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -180,14 +172,15 @@ namespace Rock.Blocks.Core
                 // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
-                    box.Entity = GetEntityBagForEdit( entity, rockContext );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                    box.Entity = GetEntityBagForEdit( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( SignatureDocumentTemplate.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -217,7 +210,7 @@ namespace Rock.Blocks.Core
                 SignatureInputTypes = GetSignatureInputTypes(),
                 SignatureType = entity.SignatureType.ConvertToStringSafe(),
                 IsValidInFuture = entity.IsValidInFuture,
-                ValidityDurationInDays = entity.ValidityDurationInDays.ToString(),
+                ValidityDurationInDays = entity.ValidityDurationInDays,
             };
         }
 
@@ -237,12 +230,8 @@ namespace Rock.Blocks.Core
             return signatureInputTypes;
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="SignatureDocumentTemplateBag"/> that represents the entity.</returns>
-        private SignatureDocumentTemplateBag GetEntityBagForView( SignatureDocumentTemplate entity )
+        /// <inheritdoc/>
+        protected override SignatureDocumentTemplateBag GetEntityBagForView( SignatureDocumentTemplate entity )
         {
             if ( entity == null )
             {
@@ -257,12 +246,8 @@ namespace Rock.Blocks.Core
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="SignatureDocumentTemplateBag"/> that represents the entity.</returns>
-        private SignatureDocumentTemplateBag GetEntityBagForEdit( SignatureDocumentTemplate entity, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override SignatureDocumentTemplateBag GetEntityBagForEdit( SignatureDocumentTemplate entity )
         {
             if ( entity == null )
             {
@@ -278,7 +263,7 @@ namespace Rock.Blocks.Core
                 Guid? fileTypeGuid = GetAttributeValue( AttributeKey.DefaultFileType ).AsGuidOrNull();
                 if ( fileTypeGuid.HasValue )
                 {
-                    var binaryFileType = new BinaryFileTypeService( rockContext ).Get( fileTypeGuid.Value );
+                    var binaryFileType = new BinaryFileTypeService( RockContext ).Get( fileTypeGuid.Value );
                     if ( binaryFileType != null )
                     {
                         bag.BinaryFileType = binaryFileType.ToListItemBag();
@@ -292,76 +277,65 @@ namespace Rock.Blocks.Core
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( SignatureDocumentTemplate entity, DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( SignatureDocumentTemplate entity, ValidPropertiesBox<SignatureDocumentTemplateBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.BinaryFileType ),
-                () => entity.BinaryFileTypeId = box.Entity.BinaryFileType.GetEntityId<BinaryFileType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.BinaryFileType ),
+                () => entity.BinaryFileTypeId = box.Bag.BinaryFileType.GetEntityId<BinaryFileType>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.CompletionSystemCommunication ),
-                () => entity.CompletionSystemCommunicationId = box.Entity.CompletionSystemCommunication.GetEntityId<SystemCommunication>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.CompletionSystemCommunication ),
+                () => entity.CompletionSystemCommunicationId = box.Bag.CompletionSystemCommunication.GetEntityId<SystemCommunication>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.DocumentTerm ),
-                () => entity.DocumentTerm = box.Entity.DocumentTerm );
+            box.IfValidProperty( nameof( box.Bag.DocumentTerm ),
+                () => entity.DocumentTerm = box.Bag.DocumentTerm );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.LavaTemplate ),
-                () => entity.LavaTemplate = box.Entity.LavaTemplate );
+            box.IfValidProperty( nameof( box.Bag.LavaTemplate ),
+                () => entity.LavaTemplate = box.Bag.LavaTemplate );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.ProviderEntityType ),
-                () => entity.ProviderEntityTypeId = box.Entity.ProviderEntityType.GetEntityId<EntityType>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.ProviderEntityType ),
+                () => entity.ProviderEntityTypeId = box.Bag.ProviderEntityType.GetEntityId<EntityType>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.ProviderTemplateKey ),
-                () => entity.ProviderTemplateKey = box.Entity.ProviderTemplateKey );
+            box.IfValidProperty( nameof( box.Bag.ProviderTemplateKey ),
+                () => entity.ProviderTemplateKey = box.Bag.ProviderTemplateKey );
 
-            box.IfValidProperty( nameof( box.Entity.SignatureType ),
-                () => entity.SignatureType = box.Entity.SignatureType.ConvertToEnum<SignatureType>() );
+            box.IfValidProperty( nameof( box.Bag.SignatureType ),
+                () => entity.SignatureType = box.Bag.SignatureType.ConvertToEnum<SignatureType>() );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
-            box.IfValidProperty( nameof( box.Entity.IsValidInFuture ),
-                    () => entity.IsValidInFuture = box.Entity.IsValidInFuture );
+            box.IfValidProperty( nameof( box.Bag.IsValidInFuture ),
+                    () => entity.IsValidInFuture = box.Bag.IsValidInFuture );
 
-            box.IfValidProperty( nameof( box.Entity.ValidityDurationInDays ),
-                    () => entity.ValidityDurationInDays = box.Entity.ValidityDurationInDays.AsIntegerOrNull() );
+            box.IfValidProperty( nameof( box.Bag.ValidityDurationInDays ),
+                    () => entity.ValidityDurationInDays = box.Bag.ValidityDurationInDays );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="SignatureDocumentTemplate"/> to be viewed or edited on the page.</returns>
-        private SignatureDocumentTemplate GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override SignatureDocumentTemplate GetInitialEntity()
         {
-            return GetInitialEntity<SignatureDocumentTemplate, SignatureDocumentTemplateService>( rockContext, PageParameterKey.SignatureDocumentTemplateId );
+            return GetInitialEntity<SignatureDocumentTemplate, SignatureDocumentTemplateService>( RockContext, PageParameterKey.SignatureDocumentTemplateId );
         }
 
         /// <summary>
@@ -377,46 +351,9 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out SignatureDocumentTemplate entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( SignatureDocumentTemplate entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out SignatureDocumentTemplate entity, out BlockActionResult error )
-        {
-            var entityService = new SignatureDocumentTemplateService( rockContext );
+            var entityService = new SignatureDocumentTemplateService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -451,12 +388,11 @@ namespace Rock.Blocks.Core
         /// <summary>
         /// Gets the communication templates.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
-        private List<ListItemBag> GetCommunicationTemplates( RockContext rockContext )
+        private List<ListItemBag> GetCommunicationTemplates()
         {
             var communicationTemplates = new List<ListItemBag>();
-            foreach ( var systemEmail in new SystemCommunicationService( rockContext )
+            foreach ( var systemEmail in new SystemCommunicationService( RockContext )
                 .Queryable().AsNoTracking()
                 .OrderBy( e => e.Title )
                 .Select( e => new
@@ -530,23 +466,20 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext ),
-                    Options = GetBoxOptions( true, rockContext )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<SignatureDocumentTemplateBag>()
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -555,51 +488,54 @@ namespace Rock.Blocks.Core
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<SignatureDocumentTemplateBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new SignatureDocumentTemplateService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new SignatureDocumentTemplateService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateSignatureDocumentTemplate( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.SignatureDocumentTemplateId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateSignatureDocumentTemplate( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.SignatureDocumentTemplateId] = entity.IdKey
+                } ) );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForView( entity );
+
+            return ActionOk( new ValidPropertiesBox<SignatureDocumentTemplateBag>()
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -610,79 +546,22 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new SignatureDocumentTemplateService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new SignatureDocumentTemplateService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<SignatureDocumentTemplateBag, SignatureDocumentTemplateDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity, rockContext )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>
