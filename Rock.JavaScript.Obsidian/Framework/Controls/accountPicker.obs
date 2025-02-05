@@ -141,31 +141,37 @@
     const props = defineProps({
         ...standardRockFormFieldProps,
 
+        /** V-Model representing the selected account(s) */
         modelValue: {
             type: Object as PropType<ListItemBag | ListItemBag[]>,
             required: true
         },
 
+        /** True if the picker should allow multiple items to be selected. */
         multiple: {
             type: Boolean,
             default: false
         },
 
+        /** Set to true if the picker should display the account's public name rather than the internal name */
         displayPublicName: {
             type: Boolean,
             default: false
         },
 
+        /** Set to true to hide inactive accounts */
         activeOnly: {
             type: Boolean,
             default: false
         },
 
+        /** Set to true to show a label on parent accounts indicating the number of child accounts it has */
         displayChildItemCountLabel: {
             type: Boolean,
             default: false
         },
 
+        /** Enhance the picker for dealing with long lists by providing a search mechanism. */
         enhanceForLongLists: {
             type: Boolean,
             default: true
@@ -497,7 +503,7 @@
 
     // The picker should select on item click when we are not selecting multiple and we are not in search mode.
     watch(internalValues, (): void => {
-        if(!props.multiple && mode.value !== "search") {
+        if (!props.multiple && mode.value !== "search") {
             select();
         }
     });

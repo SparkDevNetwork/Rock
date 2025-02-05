@@ -14,6 +14,7 @@
     import BaseAsyncPicker from "./baseAsyncPicker.obs";
 
     const props = defineProps({
+        /** V-Model representing the selected achievement type(s) */
         modelValue: {
             type: Object as PropType<ListItemBag | ListItemBag[] | null>,
             required: false
