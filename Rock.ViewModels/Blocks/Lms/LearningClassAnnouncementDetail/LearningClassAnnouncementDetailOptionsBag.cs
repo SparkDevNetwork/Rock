@@ -22,6 +22,9 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassAnnouncementDetail
     /// </summary>
     public class LearningClassAnnouncementDetailOptionsBag
     {
-
+        /// <summary>
+        /// Gets or sets the character limit for the configured SMS medium.
+        /// </summary>
+        public int SmsCharacterLimit { get; set; }
     }
 }

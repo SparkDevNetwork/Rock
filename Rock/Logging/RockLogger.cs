@@ -109,7 +109,7 @@ namespace Rock.Logging
         /// Gets the standard categories that have been defined in Rock.
         /// </summary>
         /// <returns>A list of category names.</returns>
-        [RockInternal( "1.17", true )]
+        [RockInternal( "17.0", true )]
         public static List<string> GetStandardCategories()
         {
             var typeCategories = Reflection.FindTypes( typeof( object ) )
@@ -133,7 +133,7 @@ namespace Rock.Logging
         /// Reloads the configuration defined in the database and reconfigures
         /// the loggers to match the new settings.
         /// </summary>
-        [RockInternal( "1.17", true )]
+        [RockInternal( "17.0", true )]
         public static void ReloadConfiguration()
         {
             var configuration = Rock.Web.SystemSettings.GetValue( SystemSetting.ROCK_LOGGING_SETTINGS ).FromJsonOrNull<RockLogSystemSettings>();
@@ -230,7 +230,7 @@ namespace Rock.Logging
         /// <summary>
         /// Recycles the serilog writer which frees up any old files.
         /// </summary>
-        [RockInternal( "1.17", true )]
+        [RockInternal( "17.0", true )]
         public static void RecycleSerilog()
         {
             SinkWrapper.SetLogger( CreateSerilogLogger( GetSerilogConfiguration() ) );

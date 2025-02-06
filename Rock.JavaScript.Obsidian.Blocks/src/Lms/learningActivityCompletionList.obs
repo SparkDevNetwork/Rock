@@ -247,7 +247,7 @@
             if (visibleCssClass.value === "show") {
                 gridDataSource.value = loadGridData();
             }
-        }, 250);
+        }, 450);
     });
 
 </script>

@@ -16,16 +16,77 @@
 //
 using System.Collections.Generic;
 
+using Rock.Extension;
 using Rock.Model;
-using Rock.Obsidian;
 
 namespace Rock.Lms
 {
     /// <summary>
     /// Base class for learning activity components
     /// </summary>
-    public abstract class LearningActivityComponent : ObsidianComponent
+    public abstract class LearningActivityComponent : Component
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override Dictionary<string, string> AttributeValueDefaults { get; } = new Dictionary<string, string>
+        {
+            { "Active", "True" },
+            { "Order", "0" }
+        };
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsActive => true;
+
+        /// <summary>
+        /// Gets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public override int Order => 0;
+
+        /// <summary>
+        /// Gets or sets the path to the Obsidian component's .obs file.
+        /// </summary>
+        public abstract string ComponentUrl { get; }
+
+        /// <summary>
+        /// Gets or sets the Icon CSS Class for this component.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.String"/> CSS class for the icon.
+        /// </value>
+        public virtual string IconCssClass => null;
+
+        /// <summary>
+        /// Gets or sets the highlight color of the icon for this component.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.String"/> hex highlight color of the icon.
+        /// </value>
+        public virtual string HighlightColor => null;
+
+        /// <summary>
+        /// Gets or sets the name of this component.
+        /// </summary>
+        /// <value>
+        /// The <see cref="System.String"/> name of the component.
+        /// </value>
+        public virtual string Name => null;
+
+        #endregion
+
         /// <summary>
         /// Gets the completion JSON string that should be persisted to the database.
         /// </summary>
@@ -68,44 +129,5 @@ namespace Rock.Lms
         /// <param name="rawConfigurationJsonString">The unparsed activity configuration data.</param>
         /// <returns>The configuration data scrubbed of sensitive content as a JSON <c>string</c></returns>
         public virtual string StudentScrubbedConfiguration( string rawConfigurationJsonString ) => rawConfigurationJsonString;
-
-        /// <summary>
-        /// Gets the attribute value defaults.
-        /// </summary>
-        /// <value>
-        /// The attribute defaults.
-        /// </value>
-        public override Dictionary<string, string> AttributeValueDefaults
-        {
-            get => new Dictionary<string, string>
-            {
-                { "Active", "True" },
-                { "Order", "0" }
-            };
-        }
-
-        /// <summary>
-        /// Gets or sets the Icon CSS Class for this component.
-        /// </summary>
-        /// <value>
-        /// The <see cref="System.String"/> CSS class for the icon.
-        /// </value>
-        public virtual string IconCssClass => null;
-
-        /// <summary>
-        /// Gets or sets the highlight color of the icon for this component.
-        /// </summary>
-        /// <value>
-        /// The <see cref="System.String"/> hex highlight color of the icon.
-        /// </value>
-        public virtual string HighlightColor => null;
-
-        /// <summary>
-        /// Gets or sets the name of this component.
-        /// </summary>
-        /// <value>
-        /// The <see cref="System.String"/> name of the component.
-        /// </value>
-        public virtual string Name => null;
     }
 }

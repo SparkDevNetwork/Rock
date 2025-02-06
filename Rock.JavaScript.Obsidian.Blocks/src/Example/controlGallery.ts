@@ -272,6 +272,7 @@ import CategoryTreeGallery from "./ControlGallery/categoryTreeGallery.partial.ob
 import PageNavButtonsGallery from "./ControlGallery/pageNavButtonsGallery.partial.obs";
 import SearchFieldGallery from "./ControlGallery/searchFieldGallery.partial.obs";
 import { Guid } from "@Obsidian/Types";
+import AdaptiveMessagePickerGallery from "./ControlGallery/adaptiveMessagePickerGallery.partial.obs";
 
 
 // #region Control Gallery
@@ -8205,6 +8206,7 @@ const controlGalleryComponents: Record<string, Component> = [
     CategoryTreeGallery,
     PageNavButtonsGallery,
     SearchFieldGallery,
+    AdaptiveMessagePickerGallery
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

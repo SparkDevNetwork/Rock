@@ -37,7 +37,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock.RealTime.Dynamic" )]
 [assembly: InternalsVisibleTo( "Rock.Rest" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Shared" )]
-[assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]
+[assembly: InternalsVisibleTo( "Rock.Tests" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Integration.Performance" )]
 [assembly: InternalsVisibleTo( "Rock.Tests.Performance" )]
@@ -159,3 +159,6 @@ using System.Runtime.InteropServices;
 
 // The following type forwardings were setup in Rock 1.16.6
 [assembly: TypeForwardedTo( typeof( Rock.Model.ComparisonType ) )]
+
+// The following type forwardings were setup in Rock 17.0
+[assembly: TypeForwardedTo( typeof( Rock.Reporting.FilterMode ) )]

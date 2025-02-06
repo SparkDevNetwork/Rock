@@ -217,6 +217,7 @@
     <Compile Include="TestFramework\Database\ITestDatabaseContainer.cs" />
     <Compile Include="TestFramework\Database\ITestDatabaseInitializer.cs" />
     <Compile Include="TestFramework\Database\LocalDatabaseContainer.cs" />
+    <Compile Include="TestFramework\MsSqlContainerPool.cs" />
     <Compile Include="TestFramework\NumericAssertExtensions.cs" />
     <Compile Include="TestFramework\DateTimeAssertExtensions.cs" />
     <Compile Include="TestFramework\AssertExtensions.cs" />
@@ -240,6 +241,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">

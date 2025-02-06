@@ -280,19 +280,19 @@
   <ItemGroup>
     <Compile Include="BenchmarkRunners\PersonSearchBenchmarks.cs" />
     <Compile Include="BenchmarkRunners\Program.cs" />
-    <Compile Include="Modules\Core\RockCleanupJobTests.cs" />
+    <Compile Include="Core\RockCleanupJobTests.cs" />
     <Compile Include="PerformanceTestInitializer.cs" />
-    <Compile Include="Modules\Checkin\AttendanceCodeTests.cs" />
-    <Compile Include="Modules\Checkin\CheckinAttendance.cs" />
-    <Compile Include="Modules\Core\SundayDateTest.cs" />
-    <Compile Include="Modules\Crm\ConnectionStatusChangeReportTests.cs" />
-    <Compile Include="Modules\Crm\Interactions\PageViewTests.cs" />
-    <Compile Include="Modules\Crm\Person\PersonPickerControllerTests.cs" />
-    <Compile Include="Modules\Lava\LavaPerformanceTestConsole.cs" />
-    <Compile Include="Modules\Lava\ConsoleOutputManager.cs" />
+    <Compile Include="CheckIn\AttendanceCodeTests.cs" />
+    <Compile Include="CheckIn\CheckInAttendance.cs" />
+    <Compile Include="Core\SundayDateTest.cs" />
+    <Compile Include="Crm\ConnectionStatusChangeReportTests.cs" />
+    <Compile Include="Crm\Interactions\PageViewTests.cs" />
+    <Compile Include="Crm\Person\PersonPickerControllerTests.cs" />
+    <Compile Include="Lava\LavaPerformanceTestConsole.cs" />
+    <Compile Include="Lava\ConsoleOutputManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Modules\Lava\TestData.cs" />
-    <Compile Include="Modules\Lava\TestResultTracker.cs" />
+    <Compile Include="Lava\TestData.cs" />
+    <Compile Include="Lava\TestResultTracker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -348,9 +348,9 @@
       <Project>{d8de32c9-25da-4897-a750-7dd8755b3d45}</Project>
       <Name>Rock.Tests.Shared</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Rock.Tests.UnitTests\Rock.Tests.UnitTests.csproj">
+    <ProjectReference Include="..\Rock.Tests\Rock.Tests.csproj">
       <Project>{F6BEC5AC-D8E1-48ED-921F-D7D2EB58BF7D}</Project>
-      <Name>Rock.Tests.UnitTests</Name>
+      <Name>Rock.Tests</Name>
     </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185A31D7-3037-4DAE-8797-0459849A84BD}</Project>

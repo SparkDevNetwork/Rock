@@ -56,5 +56,10 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
         /// Gets or sets the available semesters for this course.
         /// </summary>
         public List<ListItemBag> Semesters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the character limit of the SMS medium.
+        /// </summary>
+        public int SmsMediumCharacterLimit { get; set; }
     }
 }

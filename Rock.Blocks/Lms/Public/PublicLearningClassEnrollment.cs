@@ -343,7 +343,6 @@ namespace Rock.Blocks.Lms
     <h3 class=""completion-header text-center"">Successfully Enrolled!</h3>
     <div class=""completion-sub-header text-center"">
         You are now enrolled in this class.
-        Check your email for a confirmation with your enrollment details.
         Click “Go to Class Workspace” to begin your learning experience.
     </div>
 </div>

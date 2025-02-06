@@ -38,7 +38,7 @@ namespace Rock.Blocks.Lms
     /// <remarks>
     ///     <para>
     ///         This list block was created for use by multiple pages in different contexts.
-    ///         It's design to be used on a page with a Learning Program Detail block or
+    ///         It's designed to be used on a page with a Learning Program Detail block or
     ///         on a page with a Course Detail block which provides additional filtering.
     ///     </para>
     /// </remarks>

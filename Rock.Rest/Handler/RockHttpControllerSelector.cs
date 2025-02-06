@@ -107,7 +107,7 @@ namespace Rock.Rest.Handler
                 .GroupBy( t => t.Name.Substring( 0, t.Name.Length - ControllerSuffix.Length ), StringComparer.OrdinalIgnoreCase )
                 .Where( x => x.Count() > 1 );
 
-            var result = new Dictionary<string, HttpControllerDescriptor>();
+            var result = new Dictionary<string, HttpControllerDescriptor>( StringComparer.OrdinalIgnoreCase );
 
             foreach ( var controllerTypeGroup in groupedByName )
             {

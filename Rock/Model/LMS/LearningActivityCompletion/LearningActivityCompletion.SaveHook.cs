@@ -40,6 +40,13 @@ namespace Rock.Model
             /// </summary>
             private bool WasRegraded { get; set; }
 
+            /// <summary>
+            /// The configured <see cref="WorkflowType" /> to launch
+            /// if the <see cref="LearningActivity.CompletionWorkflowType"/>
+            /// is not null and the activity was just completed.
+            /// </summary>
+            private WorkflowType ActivityCompletionWorkflowToLaunch { get; set; }
+
             protected override void PreSave()
             {
                 base.PreSave();
@@ -52,6 +59,8 @@ namespace Rock.Model
                 }
 
                 SetWasRegraded();
+
+                SetActivityCompletionWorkflowToLaunch();
 
                 LogChanges();
             }
@@ -131,6 +140,9 @@ namespace Rock.Model
                             var originalCompletionJson = ( string ) this.Entry.OriginalValues["ActivityComponentCompletionJson"];
                             History.EvaluateChange( HistoryChanges, "ActivityComponentCompletionJson", originalCompletionJson, Entity.ActivityComponentCompletionJson );
 
+                            var originalIsStudentCompleted = this.Entry.OriginalValues["IsStudentCompleted"].ConvertToBooleanOrDefault( false );
+                            History.EvaluateChange( HistoryChanges, "IsStudentCompleted", originalIsStudentCompleted, Entity.IsStudentCompleted );
+
                             var originalIsFacilitatorCompleted = this.Entry.OriginalValues["IsFacilitatorCompleted"].ConvertToBooleanOrDefault( false );
                             History.EvaluateChange( HistoryChanges, "IsFacilitatorCompleted", originalIsFacilitatorCompleted, Entity.IsFacilitatorCompleted );
 
@@ -179,7 +191,7 @@ namespace Rock.Model
                         a.Student,
 
                         // The course completion workflow type id (if any).
-                        a.LearningActivity.LearningClass.LearningCourse.CompletionWorkflowTypeId,
+                        CourseCompletionWorkflowTypeId = a.LearningActivity.LearningClass.LearningCourse.CompletionWorkflowTypeId,
 
                         // Some activities (assessment) may not clearly indicate if the Facilitator must
                         // grade the activity before it can be considered complete.
@@ -230,15 +242,64 @@ namespace Rock.Model
 
                 RockContext.SaveChanges();
 
-                if ( participant.LearningCompletionStatus != Enums.Lms.LearningCompletionStatus.Incomplete && anyCompletionRecord.CompletionWorkflowTypeId.HasValue )
+                var wasCourseCompleted = participant.LearningCompletionStatus != Enums.Lms.LearningCompletionStatus.Incomplete;
+                var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
+
+                // If it was determined that the activity was completed and should launch a workflow
+                // then launch that workflow before the Course completion workflow (if any).
+                if ( ActivityCompletionWorkflowToLaunch != null )
+                {
+                    var workflowAttributes = new Dictionary<string, string>
+                    {
+                        {"Entity", Entity.ToJson()},
+                        {"Student", participant.ToJson()}
+                    };
+
+                    participant.LaunchWorkflow( ActivityCompletionWorkflowToLaunch.Id, ActivityCompletionWorkflowToLaunch.Name, workflowAttributes, currentPersonAliasId );
+                }
+
+                // Launch the Course Completion workflow (if any).
+                if ( wasCourseCompleted && anyCompletionRecord.CourseCompletionWorkflowTypeId.HasValue )
                 {
                     var workflowAttributes = new Dictionary<string, string>
                     {
                         {"Student", participant.ToJson()}
                     };
 
-                    var workflow = WorkflowTypeCache.Get( ( int ) anyCompletionRecord.CompletionWorkflowTypeId );
-                    participant.LaunchWorkflow( anyCompletionRecord.CompletionWorkflowTypeId, workflow?.Name, workflowAttributes, null );
+                    var workflow = WorkflowTypeCache.Get( ( int ) anyCompletionRecord.CourseCompletionWorkflowTypeId );
+                    participant.LaunchWorkflow( anyCompletionRecord.CourseCompletionWorkflowTypeId, workflow?.Name, workflowAttributes, currentPersonAliasId );
+                }
+            }
+
+            /// <summary>
+            /// Determines whether the LearningActivityCompletion.CompletionWorkflow
+            /// should be launched and sets the value of the ActivityCompletionWorkflowToLaunch accordingly.
+            /// </summary>
+            private void SetActivityCompletionWorkflowToLaunch()
+            {
+                var activityCompletionWorkflow = new LearningActivityService( RockContext )
+                    .GetSelect( Entity.LearningActivityId, a => a.CompletionWorkflowType );
+
+                // If the activity doesn't have a CompletionWorkflow there's no need for further evaluation.
+                if ( activityCompletionWorkflow == null )
+                {
+                    return;
+                }
+
+                var originalIsStudentCompleted = ( this.Entry.OriginalValues?["IsStudentCompleted"] as bool? ).GetValueOrDefault();
+                var originalIsFacilitatorCompleted = ( this.Entry.OriginalValues?["IsFacilitatorCompleted"] as bool? ).GetValueOrDefault();
+
+                var wasStudentCompleted = !originalIsStudentCompleted && Entity.IsStudentCompleted;
+                var wasFacilitatorCompleted = !originalIsFacilitatorCompleted && Entity.IsFacilitatorCompleted;
+
+                // If the either the IsStudentCompleted or IsFacilitatorCompleted value is true
+                // and the corresponding previous value was either null or false then
+                // launch the activity completion workflow.
+                // Note: Only one of these two properties should be set to true
+                //  so this should never be launched twice.
+                if ( wasStudentCompleted || wasFacilitatorCompleted )
+                {
+                    ActivityCompletionWorkflowToLaunch = activityCompletionWorkflow;
                 }
             }
 

@@ -373,6 +373,18 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets all students for the specified <paramref name="classIds"/>.
+        /// </summary>
+        /// <param name="classIds">The identifiers for the <see cref="LearningClass"/> records to include.</param>
+        /// <returns></returns>
+        public IQueryable<LearningParticipant> GetStudentsForClasses( IEnumerable<int> classIds )
+        {
+            return Queryable()
+                .AreStudents()
+                .Where( a => classIds.Contains( a.LearningClassId ) );
+        }
+
+        /// <summary>
         /// Gets a list of <see cref="LearningActivity">LearningActivities</see> matching the specified <paramref name="classId">LearningClassId</paramref>.
         /// Includes the <see cref="LearningActivityCompletion">LearningActivityCompletions</see> the specified <paramref name="personId"/>.
         /// </summary>

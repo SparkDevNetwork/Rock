@@ -34,7 +34,7 @@ namespace Rock.Communication.Chat
     ///         release and should therefore not be directly used in any plug-ins.
     ///     </para>
     /// </remarks>
-    [RockInternal( "1.17", true )]
+    [RockInternal( "17.0", true )]
     public class ChatConfiguration
     {
         /// <summary>

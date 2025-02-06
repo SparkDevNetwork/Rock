@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Communication;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -74,6 +75,14 @@ namespace Rock.Blocks.Lms
             public const string ParentPage = "ParentPage";
         }
 
+        /// <summary>
+        /// Keys to use for SMS Medium Attributes.
+        /// </summary>
+        private static class SmsMediumAttributeKey
+        {
+            public const string CharacterLimit = "CharacterLimit";
+        }
+
         #endregion Keys
 
         #region Methods
@@ -99,6 +108,9 @@ namespace Rock.Blocks.Lms
         /// <returns>The options that provide additional details to the block.</returns>
         private LearningClassAnnouncementDetailOptionsBag GetBoxOptions( bool isEditable )
         {
+            var options = new LearningClassAnnouncementDetailOptionsBag();
+            var smsMedium = MediumContainer.GetActiveMediumComponentsWithActiveTransports()?.FirstOrDefault( c => c.CommunicationType == CommunicationType.SMS );
+            options.SmsCharacterLimit = smsMedium?.GetAttributeValue( SmsMediumAttributeKey.CharacterLimit ).AsIntegerOrNull() ?? 160;
             return new LearningClassAnnouncementDetailOptionsBag();
         }
 

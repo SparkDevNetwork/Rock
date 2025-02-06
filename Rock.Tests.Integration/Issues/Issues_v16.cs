@@ -15,17 +15,18 @@
 // </copyright>
 //
 using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Field.Types;
-using Rock.Lava;
 using Rock.Lava.Fluid;
-using Rock.Tests.Integration.Modules.Crm;
+using Rock.Tests.Integration.Crm;
 using Rock.Tests.Shared;
 using Rock.Tests.Shared.Lava;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.UI.Controls;
 
-namespace Rock.Tests.Integration.BugFixes
+namespace Rock.Tests.Integration.Issues
 {
     /// <summary>
     /// Tests that verify specific bug fixes for a Rock version.
@@ -37,7 +38,7 @@ namespace Rock.Tests.Integration.BugFixes
     [TestClass]
     [TestCategory( TestFeatures.Lava )]
     [RockObsolete( "1.16" )]
-    public class BugFixVerificationTests_v16
+    public class BugFixVerificationTests_v16 : DatabaseTestsBase
     {
         private LavaIntegrationTestHelper _TestHelper = LavaIntegrationTestHelper.CurrentInstance;
 

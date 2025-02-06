@@ -7,9 +7,10 @@
                    selectedTabQueryParameterKey="tab">
         <template #tabpane="{ item }">
             <div v-if="item === 'Learning Plan'">
-                <LearningPlanGrid :isAddEnabled="isEditable"
+                <LearningPlanGrid
+                                  :gridDefinitionBag="gridDefinitionBag"
+                                  :isAddEnabled="isEditable"
                                   :isDeleteEnabled="isEditable"
-                                  getDataActionName="GetLearningPlan"
                                   @addClick="onAddActivityClick"
                                   @rowClick="onActivityRowClick"
                                   @deleteClick="onDeleteActivityClick"
@@ -17,6 +18,7 @@
             </div>
             <div v-else-if="item === 'Students'">
                 <StudentGrid v-if="!isRefreshingStudents"
+                             :gridDefinitionBag="gridDefinitionBag"
                              :isAddEnabled="isEditable"
                              :isDeleteEnabled="isEditable"
                              :showGrades="canViewGrades"
@@ -26,6 +28,7 @@
             </div>
             <div v-else-if="item === 'Facilitators'">
                 <FacilitatorGrid v-if="!isRefreshingFacilitators"
+                                 :gridDefinitionBag="gridDefinitionBag"
                                  :isAddEnabled="isEditable"
                                  :isDeleteEnabled="isEditable"
                                  @addClick="onAddFacilitatorClick"
@@ -33,7 +36,9 @@
                                  @deleteClick="onDeleteFacilitatorClick" />
             </div>
             <div v-else-if="item === 'Content'">
-                <ContentPageGrid :isAddEnabled="isEditable"
+                <ContentPageGrid
+                                 :gridDefinitionBag="gridDefinitionBag"
+                                 :isAddEnabled="isEditable"
                                  :isDeleteEnabled="isEditable"
                                  @addClick="onAddContentPageClick"
                                  @rowClick="onContentPageClick"
@@ -41,7 +46,9 @@
             </div>
 
             <div v-else-if="item === 'Announcements'">
-                <AnnouncementGrid :isAddEnabled="isEditable"
+                <AnnouncementGrid
+                                  :gridDefinitionBag="gridDefinitionBag"
+                                  :isAddEnabled="isEditable"
                                   :isDeleteEnabled="isEditable"
                                   @addClick="onAddAnnouncementClick"
                                   @rowClick="onAnnouncementClick"
@@ -96,6 +103,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -120,34 +128,37 @@
             type: Boolean as PropType<boolean>,
             default: () => false
         },
-        includeContentPages: {
-            type: Boolean as PropType<boolean>,
-            default: () => true
+        gridDefinitionBag: {
+            type: Object as PropType<GridDefinitionBag>,
+            required: true
         },
-
         includeAnnouncements: {
             type: Boolean as PropType<boolean>,
             default: () => true
         },
-
-        navigationUrls: {
-            type: Object as PropType<Record<string, string> | null>,
-            required: false
+        includeContentPages: {
+            type: Boolean as PropType<boolean>,
+            default: () => true
         },
         isEditable: {
             type: Boolean as PropType<boolean>,
             default: () => false
         },
+        navigationUrls: {
+            type: Object as PropType<Record<string, string> | null>,
+            required: false
+        },
         showAbsences: {
             type: Boolean as PropType<boolean>,
             default: () => false
-        }
+        },
     });
 
     const includeAnnouncements = ref(props.includeAnnouncements);
     const includeContentPages = ref(props.includeContentPages);
     const isEditable = ref(props.isEditable ?? false);
     const navigationUrls = ref(props.navigationUrls ?? {});
+    const gridDefinitionBag = ref(props.gridDefinitionBag ?? {});
 
     const tabs: Array<string> = ["Learning Plan", "Students", "Facilitators"];
 

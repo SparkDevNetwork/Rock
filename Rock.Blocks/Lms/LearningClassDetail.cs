@@ -32,6 +32,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningClassDetail;
 using Rock.ViewModels.Blocks.Lms.LearningParticipantDetail;
+using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -760,6 +761,58 @@ namespace Rock.Blocks.Lms
             Reason: Unable to embed child blocks in an Obsidian block.
         */
         #region Secondary List/Grid Block Actions
+
+        /// <summary>
+        /// Gets the grid definition bag containing the default grid action urls.
+        /// </summary>
+        /// <returns>A GridDefinitionBag with the default grid action urls.</returns>
+        [BlockAction]
+        public BlockActionResult GetSecondaryGridDefinitionBag()
+        {
+            var secondaryGridDefinitionBag = new GridBuilder<LearningParticipant>()
+                .WithBlock( this )
+                .BuildDefinition();
+
+            // Enable the launch workflow by default to mimic the behavior of List blocks.
+            secondaryGridDefinitionBag.EnableLaunchWorkflow = true;
+
+            return ActionOk( secondaryGridDefinitionBag );
+        }
+
+        /// <summary>
+        /// Creates an entity set for the subset of selected rows in a secondary grid.
+        /// <para>
+        /// This method is typically defined in the RockListBlockType, but
+        /// because this detail block uses secondary grids it must provide
+        /// its own endpoint to support Merge Templates.
+        /// </para>
+        /// </summary>
+        /// <returns>An action result that contains the identifier of the entity set.</returns>
+        [BlockAction]
+        public BlockActionResult CreateGridEntitySet( GridEntitySetBag entitySet )
+        {
+            try
+            {
+                if ( entitySet == null )
+                {
+                    return ActionBadRequest( "No entity set data was provided." );
+                }
+
+                var rockEntitySet = GridHelper.CreateEntitySet( entitySet );
+
+                if ( rockEntitySet == null )
+                {
+                    return ActionBadRequest( "No entities were found to create the set." );
+                }
+
+                return ActionOk( rockEntitySet.Id.ToString() );
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                return ActionBadRequest( "There was an error while creating the entity set." );
+            }
+        }
 
         /// <summary>
         /// Deletes the specified activity.

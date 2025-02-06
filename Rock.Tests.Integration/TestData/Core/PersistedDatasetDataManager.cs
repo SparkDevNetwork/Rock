@@ -22,7 +22,7 @@ using Rock.Model;
 using Rock.Tests.Shared;
 using Rock.Web.Cache;
 
-namespace Rock.Tests.Integration.Core
+namespace Rock.Tests.Integration.TestData.Core
 {
     /// <summary>
     /// Provides actions to manage data for the Persisted Dataset features of Rock.

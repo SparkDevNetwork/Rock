@@ -407,7 +407,7 @@ namespace Rock.Model
         /// This flag was added to help test the obsidian blocks in dev machines. It needs to be removed once all the Website
         /// blocks have been migrated to obsidian.</param>
         /// <returns></returns>
-        [RockInternal( "1.17", true )]
+        [RockInternal( "17.0", true )]
         public static List<BlockTypeCache> BlockTypesToDisplay( SiteType siteType, bool showAllWebsitesBlocks = false )
         {
             // Convert the SiteType Enum to the one of type SiteTypeFlag. Throw an exception if the conversion fails.

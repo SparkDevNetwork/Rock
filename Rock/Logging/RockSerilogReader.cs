@@ -38,7 +38,7 @@ namespace Rock.Logging
     /// point in time.
     /// </summary>
     /// <seealso cref="Rock.Logging.IRockLogReader" />
-    [RockInternal( "1.17", true )]
+    [RockInternal( "17.0", true )]
     public class RockSerilogReader : IRockLogReader
     {
         private readonly JsonSerializer _jsonSerializer;

@@ -23,4 +23,6 @@
 
 /** The additional configuration options for the Learning Class Announcement Detail block. */
 export type LearningClassAnnouncementDetailOptionsBag = {
+    /** Gets or sets the character limit for the configured SMS medium. */
+    smsCharacterLimit: number;
 };

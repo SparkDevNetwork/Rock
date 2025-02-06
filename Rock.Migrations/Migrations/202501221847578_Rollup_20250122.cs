@@ -649,7 +649,7 @@ WHERE ([Guid]='FE298210-1307-49DF-B28B-3735A414CCA0')
         private void ChopBlocksUp()
         {
             RegisterBlockAttributesForChop();
-            ChopBlockTypesv17();
+            //ChopBlockTypesv17();
         }
 
         /// <summary>

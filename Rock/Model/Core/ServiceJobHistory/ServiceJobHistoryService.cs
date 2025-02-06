@@ -208,7 +208,7 @@ namespace Rock.Model
         ///     </para>
         /// </remarks>
         /// <param name="job">The job.</param>
-        [RockInternal( "1.17" )]
+        [RockInternal( "17.0" )]
         internal ServiceJobHistory GetServiceJobHistoryForLastRun( ServiceJob job )
         {
             // Check if there is an incomplete job history record for this job.

@@ -16,13 +16,13 @@
 //
 import { defineComponent, ref, watch } from "vue";
 import { getFieldEditorProps } from "./utils";
-import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+import MarkdownEditor from "@Obsidian/Controls/markdownEditor.obs";
 
 export const EditComponent = defineComponent({
     name: "MarkdownField.Edit",
 
     components: {
-        CodeEditor
+        MarkdownEditor
     },
 
     props: getFieldEditorProps(),
@@ -44,7 +44,7 @@ export const EditComponent = defineComponent({
     },
 
     template: `
-<CodeEditor v-model="internalValue" mode="markdown" :editorHeight="250" />
+<MarkdownEditor v-model="internalValue" :editorHeight="250" />
 `
 });
 
