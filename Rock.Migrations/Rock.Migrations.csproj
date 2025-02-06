@@ -172,6 +172,14 @@
     <Compile Include="Migrations\202501310105327_UpdateLMSPageNavBlocks.Designer.cs">
       <DependentUpon>202501310105327_UpdateLMSPageNavBlocks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202502061749335_Rollup_20250206.cs" />
+    <Compile Include="Migrations\202502061749335_Rollup_20250206.designer.cs">
+      <DependentUpon>202502061749335_Rollup_20250206.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202502061833244_CodeGenerated_20250206.cs" />
+    <Compile Include="Migrations\202502061833244_CodeGenerated_20250206.designer.cs">
+      <DependentUpon>202502061833244_CodeGenerated_20250206.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2522,6 +2530,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202501310105327_UpdateLMSPageNavBlocks.resx">
       <DependentUpon>202501310105327_UpdateLMSPageNavBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202502061749335_Rollup_20250206.resx">
+      <DependentUpon>202502061749335_Rollup_20250206.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202502061833244_CodeGenerated_20250206.resx">
+      <DependentUpon>202502061833244_CodeGenerated_20250206.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
