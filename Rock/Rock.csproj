@@ -1713,6 +1713,8 @@
     <Compile Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks.cs" />
     <Compile Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations.cs" />
     <Compile Include="Plugin\HotFixes\229_PeerNetworkFitNFinish.cs" />
+    <Compile Include="Plugin\HotFixes\233_UpdateAppleDeviceList.cs" />
+    <Compile Include="Plugin\HotFixes\232_UpdateContentFileTypeBlacklist.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
