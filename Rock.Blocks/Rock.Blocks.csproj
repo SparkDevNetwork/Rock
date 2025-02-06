@@ -154,7 +154,6 @@
     <Compile Include="Cms\PageShortLinkList.cs" />
     <Compile Include="Cms\BlockList.cs" />
     <Compile Include="Cms\PageShortLinkDialog.cs" />
-    <Compile Include="Administration\PageProperties.cs" />
     <Compile Include="Tv\RokuApplicationDetail.cs" />
     <Compile Include="Cms\LayoutList.cs" />
     <Compile Include="Cms\PersistedDatasetList.cs" />
