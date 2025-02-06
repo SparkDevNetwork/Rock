@@ -3541,12 +3541,11 @@ WHERE NOT EXISTS (
         }
 
         /// <summary>
-        ///  Deletes the SendLearningNotifications Job based on Guid and Class.
+        ///  Deletes the SendLearningNotifications Job based on Guid.
         /// </summary>
         private void DeleteSendLearningActivityNotificationsJob()
         {
-            var jobClass = "Rock.Jobs.SendLearningNotifications";
-            Sql( $"DELETE [ServiceJob] WHERE [Class] = '{jobClass}' AND [Guid] = '{SystemGuid.ServiceJob.SEND_LEARNING_ACTIVITY_NOTIFICATIONS}'" );
+            Sql( $"DELETE [ServiceJob] WHERE [Guid] = '{SystemGuid.ServiceJob.SEND_LEARNING_ACTIVITY_NOTIFICATIONS}'" );
         }
 
         /// <summary>
@@ -3560,7 +3559,7 @@ WHERE NOT EXISTS (
             var description = "A job that sends notifications to students for newly available activities and class announcements.";
 
             Sql( $@"
-            IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Class] = '{jobClass}' AND [Guid] = '{SystemGuid.ServiceJob.SEND_LEARNING_ACTIVITY_NOTIFICATIONS}' )
+            IF NOT EXISTS( SELECT [Id] FROM [ServiceJob] WHERE [Guid] = '{SystemGuid.ServiceJob.SEND_LEARNING_ACTIVITY_NOTIFICATIONS}' )
             BEGIN
                 INSERT INTO [ServiceJob] (
                     [IsSystem],
