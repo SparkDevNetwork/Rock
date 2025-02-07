@@ -2634,7 +2634,7 @@ formfield .required-indicator {
 
 ^VerticalIconButton.contact-button-disabled .contact-button-icon,
 ^VerticalIconButton.contact-button-disabled .contact-button-text {
-  color: ?color-primary-100;
+  color: ?color-primary;
 }
 
 .connection-request-detail-content .request-details {
