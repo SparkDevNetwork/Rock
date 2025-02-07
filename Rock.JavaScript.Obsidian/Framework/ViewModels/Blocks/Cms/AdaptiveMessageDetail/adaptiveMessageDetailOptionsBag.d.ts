@@ -24,12 +24,6 @@
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type AdaptiveMessageDetailOptionsBag = {
-    /** Gets or sets the message reserved key names. */
-    messageReservedKeyNames?: string[] | null;
-
     /** The parent Category of the Adaptive Message */
     parentCategory?: ListItemBag | null;
-
-    /** Gets or sets the reserved key names. */
-    reservedKeyNames?: string[] | null;
 };
