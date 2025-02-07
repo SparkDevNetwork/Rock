@@ -108,6 +108,8 @@
     <Compile Include="Blocks\Cms\PageRouteList\PageRouteListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\ScheduledRedirectBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkDetail\UtmSettingsBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPersonSavedAccountDetail\FinancialPersonSavedAccountBag.cs" />
+    <Compile Include="Blocks\Finance\FinancialPersonSavedAccountDetail\FinancialPersonSavedAccountDetailOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialPledgeEntry\FinancialPledgeEntryPhoneNumberBag.cs" />
     <Compile Include="Blocks\Reporting\DynamicData\GetDynamicDataRequestBag.cs" />
     <Compile Include="Blocks\Reporting\DynamicData\GetDynamicDataResponseBag.cs" />
@@ -605,6 +607,7 @@
     <Compile Include="Controls\MobileNavigationActionBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
+    <Compile Include="Finance\SavedAccountTokenBag.cs" />
     <Compile Include="Reporting\FieldFilterPublicPropertyBag.cs" />
     <Compile Include="Rest\CheckIn\CheckoutOptionsBag.cs" />
     <Compile Include="Rest\CheckIn\CheckoutResponseBag.cs" />

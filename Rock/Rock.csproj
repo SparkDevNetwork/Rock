@@ -1531,6 +1531,9 @@
     <Compile Include="Plugin\HotFixes\196_MigrationRollupsForV16_5_1.cs" />
     <Compile Include="Plugin\HotFixes\193_MigratoinRollupForV15_4_1.cs" />
     <Compile Include="Plugin\HotFixes\192_MailgunCopyApiKeyToHttpWebhookSigningKey.cs" />
+    <Compile Include="Plugin\HotFixes\234_MigrationRollupsForV16_10_1.cs" />
+    <Compile Include="Plugin\HotFixes\233_UpdateAppleDeviceList.cs" />
+    <Compile Include="Plugin\HotFixes\232_UpdateContentFileTypeBlacklist.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

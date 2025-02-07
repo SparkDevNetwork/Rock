@@ -815,8 +815,9 @@ namespace RockWeb.Blocks.Finance
                 dtbAmount.Value = benevolenceResult.Amount;
                 hfInfoGuid.Value = e.RowKeyValue.ToString();
 
-                phViewResultAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( benevolenceResult, phViewResultAttributes, true, valViewResultsSummary.ValidationGroup, 2 );
+                avcViewResultAttributes.NumberOfColumns = 2;
+                avcViewResultAttributes.ValidationGroup = valViewResultsSummary.ValidationGroup;
+                avcViewResultAttributes.AddEditControls( benevolenceResult );
 
                 mdViewAddResult.SaveButtonText = "Save";
                 mdViewAddResult.Show();
@@ -854,8 +855,9 @@ namespace RockWeb.Blocks.Finance
             dtbAmount.Value = null;
             hfInfoGuid.Value = Guid.NewGuid().ToString();
 
-            phViewResultAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( MockBenevolenceResult, phViewResultAttributes, true, valViewResultsSummary.ValidationGroup, 2 );
+            avcViewResultAttributes.NumberOfColumns = 2;
+            avcViewResultAttributes.ValidationGroup = valViewResultsSummary.ValidationGroup;
+            avcViewResultAttributes.AddEditControls( MockBenevolenceResult );
 
             mdViewAddResult.SaveButtonText = "Save";
             mdViewAddResult.Show();
@@ -884,26 +886,31 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                var benevolenceResultInfo = new BenevolenceResult
+                benevolenceResult = new BenevolenceResult
                 {
-                    // We need the attributes and values so that we can populate them later
-                    Attributes = MockBenevolenceResult.Attributes,
-                    AttributeValues = MockBenevolenceResult.AttributeValues,
-
                     Amount = dtbAmount.Value,
-
                     ResultSummary = dtbResultSummary.Text
                 };
+
                 if ( resultType != null )
                 {
-                    benevolenceResultInfo.ResultTypeValueId = resultType.Value;
+                    benevolenceResult.ResultTypeValueId = resultType.Value;
                 }
 
-                benevolenceResultInfo.Guid = Guid.NewGuid();
-                benevolenceRequest.BenevolenceResults.Add( benevolenceResultInfo );
+                benevolenceResult.Guid = Guid.NewGuid();
+                benevolenceRequest.BenevolenceResults.Add( benevolenceResult );
             }
 
-            rockContext.SaveChanges();
+            benevolenceResult.LoadAttributes();
+            avcViewResultAttributes.GetEditValues( benevolenceResult );
+
+            rockContext.WrapTransaction(() =>
+            {
+                rockContext.SaveChanges();
+                benevolenceResult.SaveAttributeValues( rockContext );
+            } );
+
+
             BindResultsGrid();
 
             mdViewAddResult.Hide();
