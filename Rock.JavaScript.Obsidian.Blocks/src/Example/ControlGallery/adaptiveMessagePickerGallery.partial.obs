@@ -21,7 +21,7 @@
     import { computed, ref } from "vue";
     import GalleryAndResult from "./galleryAndResult.partial.obs";
     import AdaptiveMessagePicker from "@Obsidian/Controls/adaptiveMessagePicker.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
