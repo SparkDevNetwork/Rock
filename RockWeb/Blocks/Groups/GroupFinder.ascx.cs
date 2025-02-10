@@ -1941,7 +1941,6 @@ namespace RockWeb.Blocks.Groups
             // Set default map options
             var mapOptions = {{
                  mapTypeId: 'roadmap'
-                ,styles: mapStyle
                 ,center: new google.maps.LatLng({7}, {8})
                 ,maxZoom: {11}
                 ,minZoom: {12}
@@ -1950,11 +1949,13 @@ namespace RockWeb.Blocks.Groups
 
             if (!isMapIdEmpty) {{
                 mapOptions.mapId = mapId;
+            }} else {{
+                mapOptions.styles = mapStyle;
             }}
 
             // Display a map on the page
             map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
-            google.maps.event.addDomListener(map, 'zoom_changed', function() {{
+            google.maps.event.addListener(map, 'zoom_changed', function() {{
                 var zoomThreshold = {13};
                 var zoomAmount = {14};
 
