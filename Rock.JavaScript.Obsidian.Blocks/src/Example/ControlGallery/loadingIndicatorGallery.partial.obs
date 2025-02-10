@@ -1,0 +1,19 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <LoadingIndicator />
+
+        <template #settings>
+            <p>It's best to use the <a href="#LoadingGallery">Loading</a> component instead of using this one directly.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const importCode = getSfcControlImportPath("loadingIndicator");
+    const exampleCode = `<LoadingIndicator />`;
+</script>

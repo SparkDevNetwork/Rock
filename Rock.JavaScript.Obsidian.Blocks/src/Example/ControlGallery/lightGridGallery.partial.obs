@@ -45,9 +45,9 @@
 
 <script setup lang="ts">
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import Grid, { BooleanColumn, DateColumn, DeleteColumn, EditColumn, NumberColumn, TextColumn, ReorderColumn } from "@Obsidian/Controls/grid";
-    import { getControlImportPath } from "./utils.partial";
+    import { getControlImportPath } from "./common/utils.partial";
     import { computed, nextTick, reactive, ref, watch } from "vue";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";

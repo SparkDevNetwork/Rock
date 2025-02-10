@@ -1,0 +1,42 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <IntervalPicker v-model="value" label="Interval" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" />
+
+        <template #settings>
+            <div class="row">
+                <DropDownList formGroupClasses="col-md-4" label="Selected Button Type" v-model="sbtnType" :items="typeOptions" :showBlankItem="false" />
+                <DropDownList formGroupClasses="col-md-4" label="Unselected Button Type" v-model="ubtnType" :items="typeOptions" :showBlankItem="false" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import IntervalPicker from "@Obsidian/Controls/intervalPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const typeOptions: ListItemBag[] = [
+        { text: "Default", value: BtnType.Default },
+        { text: "Primary", value: BtnType.Primary },
+        { text: "Danger", value: BtnType.Danger },
+        { text: "Warning", value: BtnType.Warning },
+        { text: "Success", value: BtnType.Success },
+        { text: "Info", value: BtnType.Info },
+        { text: "Link", value: BtnType.Link },
+    ];
+
+    const sbtnType = ref(BtnType.Primary);
+    const ubtnType = ref(BtnType.Default);
+    const value = ref(null);
+    const importCode = getSfcControlImportPath("intervalPicker");
+    const exampleCode = `<IntervalPicker v-model="value" label="Interval" :selectedBtnType="sbtnType" :unselectedBtnType="ubtnType" />`;
+</script>

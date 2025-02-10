@@ -2,13 +2,14 @@
     <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
         <RockForm>
-            <FirstNameTextBox v-model="value" label="First Name" />
+            <FirstNameTextBox v-model="value" label="First Name" :rules="isRequired ? 'required' : ''" />
             <RockButton type="submit">Validate</RockButton>
         </RockForm>
 
         <template #settings>
             <div class="row">
                 <div class="col-md-3">
+                    <CheckBox v-model="isRequired" label="Required" />
                 </div>
             </div>
         </template>
@@ -17,13 +18,15 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
     const value = ref("");
+    const isRequired = ref(false);
 
     const importCode = getSfcControlImportPath("firstNameTextBox");
     const exampleCode = computed(() => {

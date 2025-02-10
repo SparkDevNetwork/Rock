@@ -1,0 +1,45 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <PagePicker label="Page" v-model="value" :multiple="multiple" :promptForPageRoute="promptForPageRoute" :showSelectCurrentPage="showSelectCurrentPage" />
+
+        <template #settings>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Show 'Select Current Page' Button" v-model="showSelectCurrentPage" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Prompt for Route" v-model="promptForPageRoute" help="Only works if not selecting multiple values" />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const multiple = ref(false);
+    const showSelectCurrentPage = ref(false);
+    const promptForPageRoute = ref(false);
+    const value = ref({
+        "page": {
+            value: "b07f30b3-95c4-40a5-9cf6-455399bef67a",
+            text: "Universal Search"
+        }
+    });
+    const importCode = getSfcControlImportPath("pagePicker");
+    const exampleCode = `<PagePicker label="Page" v-model="value" :multiple="false" promptForPageRoute showSelectCurrentPage />`;
+</script>

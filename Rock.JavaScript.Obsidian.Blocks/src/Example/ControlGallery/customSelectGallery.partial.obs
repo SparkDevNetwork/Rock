@@ -145,11 +145,11 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import RockFormFieldPropsTable from "./rockFormFieldPropsTable.partial.obs";
     import CustomSelect from "@Obsidian/Controls/customSelect.obs";
-    import CodeSample from "./codeSample.partial.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import CodeSample from "./common/codeSample.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
     const items = ref([
         { id: "matthew", title: "Matthew", description: "The gospel according to Matthew", isDisabled: false, icon: "fa-book" },

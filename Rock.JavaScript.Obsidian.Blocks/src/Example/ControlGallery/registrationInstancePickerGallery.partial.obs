@@ -1,0 +1,48 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <RegistrationInstancePicker v-model="value"
+                                    label="Registration Instance"
+                                    :registrationTemplateGuid="registrationTemplateGuid?.value"
+                                    :disabled="disabled"
+                                    :rules="required ? 'required' : ''" />
+
+        <template #settings>
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <RegistrationTemplatePicker label="Default Registration Template" v-model="registrationTemplateGuid" showBlankItem />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Required" v-model="required" />
+                </div>
+                <div class="col-md-4">
+                    <CheckBox label="Disabled" v-model="disabled" />
+                </div>
+            </div>
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import RegistrationInstancePicker from "@Obsidian/Controls/registrationInstancePicker.obs";
+    import RegistrationTemplatePicker from "@Obsidian/Controls/registrationTemplatePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const registrationTemplateGuid = ref<ListItemBag>();
+    const value = ref({
+        "value": "eefe4ad9-bfa9-405c-b732-ccb4d857ab73",
+        "text": "Joe's Test Registration",
+        "category": null
+    });
+    const required = ref(false);
+    const disabled = ref(false);
+    const importCode = getSfcControlImportPath("registrationInstancePicker");
+    const exampleCode = `<RegistrationInstancePicker label="Registration Instance" v-model="value" />`;
+</script>

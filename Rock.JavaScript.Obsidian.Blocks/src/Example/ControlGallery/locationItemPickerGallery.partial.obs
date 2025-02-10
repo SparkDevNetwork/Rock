@@ -1,0 +1,27 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <LocationItemPicker label="Location" v-model="value" :multiple="multiple" />
+
+        <template #settings>
+            <CheckBox label="Multiple" v-model="multiple" />
+
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const multiple = ref(false);
+    const value = ref(null);
+    const importCode = getSfcControlImportPath("locationItemPicker");
+    const exampleCode = `<LocationItemPicker label="Location" v-model="value" :multiple="false" />`;
+</script>
