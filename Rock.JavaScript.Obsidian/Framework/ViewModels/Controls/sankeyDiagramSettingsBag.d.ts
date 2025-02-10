@@ -21,8 +21,8 @@
 // </copyright>
 //
 
-/** Model of the settings for the Flow Node Diagram */
-export type FlowNodeDiagramSettingsBag = {
+/** Model of the settings for a Sankey Diagram */
+export type SankeyDiagramSettingsBag = {
     /** Gets or sets the chart height */
     chartHeight?: number | null;
 

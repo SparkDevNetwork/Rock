@@ -805,6 +805,9 @@
     <Compile Include="Cms\ObsidianBlockPreferencesBag.cs" />
     <Compile Include="Communication\ConversationAttachmentBag.cs" />
     <Compile Include="Communication\ConversationMessageBag.cs" />
+    <Compile Include="Controls\SankeyDiagramSettingsBag.cs" />
+    <Compile Include="Controls\SankeyDiagramEdgeBag.cs" />
+    <Compile Include="Controls\SankeyDiagramNodeBag.cs" />
     <Compile Include="Core\EntitySearchQueryBag.cs" />
     <Compile Include="Core\EntitySearchResultsBag.cs" />
     <Compile Include="Controls\FieldPropertyItemBag.cs" />
@@ -1007,7 +1010,6 @@
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateDetail\ValueSourcesViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormTemplateListItemViewModel.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormValueSourcesViewModel.cs" />
-    <Compile Include="Blocks\Engagement\FlowNodeDiagramBag.cs" />
     <Compile Include="Cms\ContentCollectionSourceAdditionalSettingsBag.cs" />
     <Compile Include="Cms\ContentCollectionAttributeFilterSettingsBag.cs" />
     <Compile Include="Cms\ContentCollectionFilterSettingsBag.cs" />

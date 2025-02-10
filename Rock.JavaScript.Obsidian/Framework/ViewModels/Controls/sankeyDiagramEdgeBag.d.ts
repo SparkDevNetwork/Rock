@@ -22,19 +22,22 @@
 //
 
 /**
- * Type for a Flow Node Diagram's Node definitions.
- * For Step Flow diagrams, this represents a Step
+ * A description of the number of items flowing from a Node on
+ * one level to a node on the next level
  */
-export type FlowNodeDiagramNodeBag = {
-    /** Gets or sets the color */
-    color?: string | null;
+export type SankeyDiagramEdgeBag = {
+    /** Gets or sets the level */
+    level: number;
 
-    /** Gets or sets the id */
-    id: number;
+    /** Gets or sets the source ID */
+    sourceId?: number | null;
 
-    /** Gets or sets the name */
-    name?: string | null;
+    /** Gets or sets the target ID */
+    targetId: number;
 
-    /** Gets or sets the order */
-    order: number;
+    /** Gets or sets the tooltip */
+    tooltip?: string | null;
+
+    /** Gets or sets the units */
+    units: number;
 };

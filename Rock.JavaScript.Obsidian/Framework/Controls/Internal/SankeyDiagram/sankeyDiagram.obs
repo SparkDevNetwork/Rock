@@ -4,12 +4,12 @@
         <div class="flow-tooltip" v-html="tooltip.html" v-if="tooltip.isShown" :style="tooltipStyles" />
 
         <svg class="step-flow-svg mx-auto" :width="chartWidth" :height="chartHeight" :viewBox="'0 0 ' + chartWidth + ' ' + chartHeight">
-            <FlowNodeDiagramLevel
-                                  v-for="(level, levelNum) in diagramData"
-                                  :key="'level' + levelNum"
-                                  :levelData="level"
-                                  :levelNumber="levelNum + 1"
-                                  @showTooltip="showTooltip" />
+            <SankeyDiagramLevel v-for="(level, levelNum) in diagramData"
+                                :key="'level' + levelNum"
+                                :levelData="level"
+                                :levelNumber="levelNum + 1"
+                                :nodeTooltipActionLabel="nodeTooltipActionLabel"
+                                @showTooltip="showTooltip" />
         </svg>
 
         <div class="step-flow-legend" v-html="settings.legendHtml" />
@@ -79,36 +79,43 @@
 }
 
 .step-flow-svg .edge {
-  opacity: 0;
-  transform-origin: left center;
-  animation: flow-edges 0.25s ease-in-out forwards;
-}
-.step-flow-svg .edge.level-2 {
-  animation-delay: 0.25s;
-}
-.step-flow-svg .edge.level-3 {
-  animation-delay: .5s;
-}
-.step-flow-svg .edge.level-4 {
-  animation-delay: .75s;
-}
-.step-flow-svg .edge.level-5 {
-  animation-delay: 1s;
-}
-.step-flow-svg .edge.level-6 {
-  animation-delay: 1.25s;
-}
-@keyframes flow-edges {
-  0% {
     opacity: 0;
-    -webkit-clip-path: inset(0 100% 0 0);
-    clip-path: inset(0 100% 0 0);
-  }
-  100% {
-    opacity: 1;
-    -webkit-clip-path: inset(0 0 0 0);
-    clip-path: inset(0 0 0 0);
-  }
+    transform-origin: left center;
+    animation: flow-edges 0.25s ease-in-out forwards;
+}
+
+.step-flow-svg .edge.level-2 {
+    animation-delay: 0.25s;
+}
+
+.step-flow-svg .edge.level-3 {
+    animation-delay: .5s;
+}
+
+.step-flow-svg .edge.level-4 {
+    animation-delay: .75s;
+}
+
+.step-flow-svg .edge.level-5 {
+    animation-delay: 1s;
+}
+
+.step-flow-svg .edge.level-6 {
+    animation-delay: 1.25s;
+}
+
+@keyframes flow-edges {
+    0% {
+        opacity: 0;
+        -webkit-clip-path: inset(0 100% 0 0);
+        clip-path: inset(0 100% 0 0);
+    }
+
+    100% {
+        opacity: 1;
+        -webkit-clip-path: inset(0 0 0 0);
+        clip-path: inset(0 0 0 0);
+    }
 }
 
 .flow-legend {
@@ -137,19 +144,19 @@
 </style>
 
 <script setup lang="ts">
-    import FlowNodeDiagramLevel from "./flowNodeDiagramLevel.partial.obs";
+    import SankeyDiagramLevel from "./sankeyDiagramLevel.partial.obs";
     import { computed, PropType, reactive } from "vue";
     import { toDecimalPlaces } from "@Obsidian/Utility/numberUtils";
-    import { FlowNodeDiagramNodeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramNodeBag";
-    import { FlowNodeDiagramEdgeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramEdgeBag";
-    import { FlowNodeDiagramSettingsBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramSettingsBag";
+    import { SankeyDiagramNodeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramNodeBag";
+    import { SankeyDiagramEdgeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramEdgeBag";
+    import { SankeyDiagramSettingsBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramSettingsBag";
 
     type Point = { x: number; y: number };
     type Rectangle = Point & { width: number; height: number };
     type Path = { sourcePoint: Point, targetPoint: Point, thickness: number };
 
-    type FlowDiagramInFlow = FlowNodeDiagramEdgeBag & Path;
-    type FlowDiagramLevelNode = FlowNodeDiagramNodeBag & Rectangle & {
+    type FlowDiagramInFlow = SankeyDiagramEdgeBag & Path;
+    type FlowDiagramLevelNode = SankeyDiagramNodeBag & Rectangle & {
         totalUnits: number;
         inFlows: FlowDiagramInFlow[];
     };
@@ -158,9 +165,9 @@
     type FlowDiagramData = FlowDiagramLevel[];
 
     type NonNullValues<T> = { [P in keyof T]: NonNullable<T[P]> };
-    type FlowNodeDiagramSettingsFull = NonNullValues<Required<FlowNodeDiagramSettingsBag>>;
+    type SankeyDiagramSettingsFull = NonNullValues<Required<SankeyDiagramSettingsBag>>;
 
-    const defaultSettings: FlowNodeDiagramSettingsFull = {
+    const defaultSettings: SankeyDiagramSettingsFull = {
         nodeWidth: 12,
         nodeVerticalSpacing: 12,
         chartWidth: 1200,
@@ -175,26 +182,26 @@
     const props = defineProps({
         // Details about the nodes that are being "flowed" between.
         flowNodes: {
-            type: Array as PropType<FlowNodeDiagramNodeBag[]>,
+            type: Array as PropType<SankeyDiagramNodeBag[]>,
             default: () => []
         },
 
         // Details about flows between nodes
         flowEdges: {
-            type: Array as PropType<FlowNodeDiagramEdgeBag[]>,
+            type: Array as PropType<SankeyDiagramEdgeBag[]>,
             default: () => []
-        },
-
-        // Generated HTML string for the chart legend
-        legendHtml: {
-            type: Boolean as PropType<boolean>,
-            default: false
         },
 
         // Settings that control the sizes of different items in the diagram.
         settings: {
-            type: Object as PropType<FlowNodeDiagramSettingsBag>,
+            type: Object as PropType<SankeyDiagramSettingsBag>,
             default: () => ({})
+        },
+
+        // When hovering a node, a tooltip shows. If this is specified, this text will be prepended before the unit count.
+        nodeTooltipActionLabel: {
+            type: String,
+            required: false
         },
 
         // Show a spinner to indicate the data is being loaded if true.
@@ -212,7 +219,7 @@
         side: "left"
     });
 
-    const settings = computed<FlowNodeDiagramSettingsFull>(() => {
+    const settings = computed<SankeyDiagramSettingsFull>(() => {
         const settings = { ...defaultSettings };
         Object.entries(props.settings).forEach(([key, value]) => {
             if (value !== undefined && value !== null) {
@@ -278,7 +285,7 @@
             // Construct the base diagram nodes, which we'll fill in calculations for later.
             const levelNodes: FlowDiagramLevel = orderedNodes.map(node => {
                 // Get the flows coming into this node and order them by the order of the source nodes
-                const nodeInFlows: FlowNodeDiagramEdgeBag[] = levelFlows.filter(flow => flow.targetId == node.id).sort((flowA, flowB): number => {
+                const nodeInFlows: SankeyDiagramEdgeBag[] = levelFlows.filter(flow => flow.targetId == node.id).sort((flowA, flowB): number => {
                     const nodeOrderA = orderedNodes.findIndex(node => node.id == flowA.sourceId);
                     const nodeOrderB = orderedNodes.findIndex(node => node.id == flowB.sourceId);
 

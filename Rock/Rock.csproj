@@ -1284,6 +1284,7 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdateHistoryTableEntityTypeIdIndexPostMigration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdatePersonPrimaryAliasGuid.cs" />
     <Compile Include="Jobs\UpdateProgramCompletions.cs" />
+    <Compile Include="Lava\Shortcodes\SankeyDiagramShortcode.cs" />
     <Compile Include="Model\CMS\AdaptiveMessageAdaptationSegment\AdaptiveMessageAdaptationSegment.Logic.cs" />
     <Compile Include="Model\CMS\ContentChannelItemAssociation\ContentChannelItemAssociation.Logic.cs" />
     <Compile Include="Model\CMS\ContentChannelItemSlug\ContentChannelItemSlug.Logic.cs" />

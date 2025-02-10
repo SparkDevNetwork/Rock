@@ -7,8 +7,7 @@
     </g>
     <g class="flow-edges" v-if="levelNumber > 1">
         <template v-for="node in levelData" key="node.id + 'flows'">
-            <path
-                  v-for="(flow, index) in node.inFlows"
+            <path v-for="(flow, index) in node.inFlows"
                   key="node.id + 'flow' + index"
                   :d="flowPoints(flow)"
                   fill="rgb(170, 170, 170, 0.6)"
@@ -18,8 +17,7 @@
         </template>
     </g>
     <g class="flow-sections">
-        <rect
-              v-for="node in levelData"
+        <rect v-for="node in levelData"
               key="node.id" :x="node.x"
               :y="node.y"
               :width="node.width"
@@ -34,20 +32,20 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import { toDecimalPlaces } from "@Obsidian/Utility/numberUtils";
-    import { FlowNodeDiagramNodeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramNodeBag";
-    import { FlowNodeDiagramEdgeBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/flowNodeDiagramEdgeBag";
+    import { SankeyDiagramNodeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramNodeBag";
+    import { SankeyDiagramEdgeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramEdgeBag";
 
     type Point = { x: number; y: number };
     type Rectangle = Point & { width: number; height: number };
     type Path = { sourcePoint: Point, targetPoint: Point, thickness: number };
 
-    type FlowDiagramInFlow = FlowNodeDiagramEdgeBag & Path;
-    type FlowDiagramLevelNode = FlowNodeDiagramNodeBag & Rectangle & {
+    type SankeyDiagramInFlow = SankeyDiagramEdgeBag & Path;
+    type SankeyDiagramLevelNode = SankeyDiagramNodeBag & Rectangle & {
         totalUnits: number;
-        inFlows: FlowDiagramInFlow[];
+        inFlows: SankeyDiagramInFlow[];
     };
 
-    type FlowDiagramLevel = FlowDiagramLevelNode[];
+    type SankeyDiagramLevel = SankeyDiagramLevelNode[];
 
     function round(num: number): number {
         return toDecimalPlaces(num, 2);
@@ -55,13 +53,19 @@
 
     const props = defineProps({
         levelData: {
-            type: Array as PropType<FlowDiagramLevel>,
+            type: Array as PropType<SankeyDiagramLevel>,
             required: true
         },
         levelNumber: {
             type: Number as PropType<number>,
             required: true
-        }
+        },
+
+        // When hovering a node, a tooltip shows. If this is specified, this text will be prepended before the unit count.
+        nodeTooltipActionLabel: {
+            type: String,
+            required: false
+        },
     });
 
     const emit = defineEmits<{
@@ -73,7 +77,7 @@
     });
 
     // Construct path dimensions and coordinates for a flow
-    function flowPoints({ sourcePoint, targetPoint, thickness }: FlowDiagramInFlow): string {
+    function flowPoints({ sourcePoint, targetPoint, thickness }: SankeyDiagramInFlow): string {
         const oneThirdX = round((targetPoint.x - sourcePoint.x) / 3) + sourcePoint.x;
         const twoThirdsX = round((targetPoint.x - sourcePoint.x) * 2 / 3) + sourcePoint.x;
         const sourceBottom = sourcePoint.y + thickness;
@@ -94,20 +98,20 @@
         return `rotate(-90, ${x - 6}, ${y})`;
     }
 
-    function nodeClass(node: FlowDiagramLevelNode): string {
+    function nodeClass(node: SankeyDiagramLevelNode): string {
         return `node node-${node.id} level-${props.levelNumber}`;
     }
 
-    function flowClass(flow: FlowDiagramInFlow): string {
+    function flowClass(flow: SankeyDiagramInFlow): string {
         return `edge node-${flow.sourceId} node-${flow.targetId} level-${props.levelNumber - 1} level-${props.levelNumber - 1}_${props.levelNumber}`;
     }
 
-    function onHoverFlow(flow: FlowDiagramInFlow, e: MouseEvent): void {
-        emit("showTooltip", flow.tooltip ?? undefined, e);
+    function onHoverFlow(flow: SankeyDiagramInFlow, e: MouseEvent): void {
+        emit("showTooltip", flow.tooltip || flow.units?.toString() || undefined, e);
     }
 
-    function onHoverNode(node: FlowDiagramLevelNode, e: MouseEvent): void {
-        emit("showTooltip", `<strong>${node.name}</strong><br>Total Steps Taken: ${node.totalUnits}`, e);
+    function onHoverNode(node: SankeyDiagramLevelNode, e: MouseEvent): void {
+        emit("showTooltip", `<strong>${node.name}</strong>${props.nodeTooltipActionLabel ? `<br>${props.nodeTooltipActionLabel}` : ""}: ${node.totalUnits}`, e);
     }
 
     function onUnHover(): void {
