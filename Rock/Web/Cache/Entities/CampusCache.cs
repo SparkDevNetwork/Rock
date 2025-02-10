@@ -195,7 +195,8 @@ namespace Rock.Web.Cache
             get
             {
                 var serviceTimes = new List<ServiceTime>();
-                if ( string.IsNullOrWhiteSpace( RawServiceTimes ) ) return serviceTimes;
+                if ( string.IsNullOrWhiteSpace( RawServiceTimes ) )
+                    return serviceTimes;
 
                 var keyValues = RawServiceTimes.Split( new[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
 
@@ -213,6 +214,24 @@ namespace Rock.Web.Cache
                 return serviceTimes;
             }
         }
+
+        /// <summary>
+        /// Gets a <see cref="Rock.Web.Cache.DefinedValueCache"/> of the campus's status.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Web.Cache.DefinedValueCache"/> of the campus's status.
+        /// </value>
+        [DataMember]
+        public DefinedValueCache CampusStatusValue => CampusStatusValueId.HasValue ? DefinedValueCache.Get( CampusStatusValueId.Value ) : null;
+
+        /// <summary>
+        /// Gets a <see cref="Rock.Web.Cache.DefinedValueCache"/> of the campus's type.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Web.Cache.DefinedValueCache"/> of the campus's type.
+        /// </value>
+        [DataMember]
+        public DefinedValueCache CampusTypeValue => CampusTypeValueId.HasValue ? DefinedValueCache.Get( CampusTypeValueId.Value ) : null;
 
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.Schedule"/> ids that are associated with this Campus.
@@ -320,7 +339,8 @@ namespace Rock.Web.Cache
             base.SetFromEntity( entity );
 
             var campus = entity as Campus;
-            if ( campus == null ) return;
+            if ( campus == null )
+                return;
 
             IsSystem = campus.IsSystem;
             Name = campus.Name;
