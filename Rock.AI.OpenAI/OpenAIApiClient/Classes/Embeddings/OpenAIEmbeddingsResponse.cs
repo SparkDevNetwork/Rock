@@ -30,6 +30,10 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings
 
         #region Methods
 
+        /// <summary>
+        /// Convert OpenAIEmbeddingsResponse to EmbeddingResponse
+        /// </summary>
+        /// <returns></returns>
         internal EmbeddingResponse AsEmbeddingsResponse()
         {
             var response = new EmbeddingResponse();
