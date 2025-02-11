@@ -151,10 +151,13 @@ namespace Rock.Blocks.Lms
                             </div>
                             {% endif %}
 
+                            {% if CourseInfo.Credits != empty and CourseInfo.Credits != 0 %}
                             <div class=""d-flex text-gray-600 gap-1 pb-3"">
                                 <p class=""text-bold mb-0"">Credits: </p>
                                 <p class=""mb-0"">{{CourseInfo.Credits}}</p>
                             </div>
+                            {% endif %}
+
                             <div class=""pt-3 border-top border-gray-200"">
                                 {% if CourseInfo.DescriptionAsHtml == empty %}
                                     <span>No course description provided.</span>
