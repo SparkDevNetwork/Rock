@@ -35,7 +35,8 @@ namespace Rock.Lava.Shortcodes
         TagName = "sankeydiagram",
         Description = "Displays a set of data as a sankey diagram, showing the flow from nodes to other nodes.",
         Documentation = DocumentationMetadata,
-        Parameters = ParameterNamesMetadata )]
+        Parameters = ParameterNamesMetadata,
+        Categories = "A5503FF2-01A2-49CB-8C22-E57C3D7FDC29" )]
     public class SankeyDiagramShortcode : LavaShortcodeBase, ILavaBlock
     {
         #region Constants
