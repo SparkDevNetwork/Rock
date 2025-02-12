@@ -144,7 +144,6 @@ namespace Rock.Blocks.Cms
             {
                 { PageParameterKey.AdaptiveMessageId, "((Key))" },
                 { PageParameterKey.ParentCategoryId, PageParameter( PageParameterKey.CategoryId ) },
-                { PageParameterKey.CategoryId, PageParameter( PageParameterKey.CategoryId ) },
             };
             return new Dictionary<string, string>
             {

@@ -495,8 +495,10 @@ namespace Rock.Blocks.Cms
                 .ToDictionary( kv => kv.Key, kv => kv.Value );
 
             var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, paramsToInclude );
-            var adaptiveMessageId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageId )?.AsIntegerOrNull();
-            var adaptiveMessageCategoryId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageCategoryId )?.AsIntegerOrNull();
+            var adaptiveMessageIdParam = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageId );
+            var adaptiveMessageCategoryIdParam = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageCategoryId );
+            var adaptiveMessageId = Rock.Utility.IdHasher.Instance.GetId( adaptiveMessageIdParam ) ?? adaptiveMessageIdParam.AsIntegerOrNull();
+            var adaptiveMessageCategoryId = Rock.Utility.IdHasher.Instance.GetId( adaptiveMessageCategoryIdParam ) ?? adaptiveMessageCategoryIdParam.AsIntegerOrNull();
 
             if ( adaptiveMessageCategoryId == 0 )
             {
@@ -510,7 +512,7 @@ namespace Rock.Blocks.Cms
                     .Select( a => a.AdaptiveMessageId)
                     .FirstOrDefault();
 
-                if ( adaptiveMessageId == null )
+                if ( adaptiveMessageId == 0 )
                 {
                     return new BreadCrumbResult
                     {

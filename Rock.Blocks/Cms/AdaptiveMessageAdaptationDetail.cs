@@ -25,6 +25,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.SystemGuid;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.AdaptiveMessageAdaptationDetail;
 using Rock.ViewModels.Utility;
@@ -353,7 +354,8 @@ namespace Rock.Blocks.Cms
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
             var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
-            var adaptiveMessageAdaptationId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageAdaptationId )?.AsIntegerOrNull();
+            var adaptiveMessageAdaptationIdParam = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageAdaptationId );
+            var adaptiveMessageAdaptationId = Rock.Utility.IdHasher.Instance.GetId( adaptiveMessageAdaptationIdParam ) ?? adaptiveMessageAdaptationIdParam.AsIntegerOrNull();
 
             if ( !adaptiveMessageAdaptationId.HasValue )
             {
