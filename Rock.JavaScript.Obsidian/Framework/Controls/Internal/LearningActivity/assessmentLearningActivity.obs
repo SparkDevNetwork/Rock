@@ -8,9 +8,9 @@
                          label="Assessment Term"
                          help="How we should refer to this assessment." />
             </div>
-            <div class="header-content-section">
-                <StructuredContentEditor label="Header" v-model="header" :disabled="disabled" />
-            </div>
+
+            <StructuredContentEditor label="Header" v-model="header" :disabled="disabled" />
+
             <div class="grading-configuration-section d-flex flex-column">
                 <div class="d-flex flex-row flex-fill mb-2">
                     <SectionHeader title="Grading Configuration" description="" :isSeparatorHidden="true" />
@@ -134,9 +134,8 @@
 
     <div class="assessment-content" v-if="screenToShow === ComponentScreen.Completion">
         <fieldset v-if="isStudentAssignedAndIncomplete">
-            <div class="header-content-section-summary">
-                <StructuredContentEditor :disabled="true" v-model="header" />
-            </div>
+
+            <StructuredContentEditor :disabled="true" v-model="header" />
 
             <div class="assessment-item-container assessment-items-section">
                 <div class="assessment-item" v-for="(item, index) in completedItems">

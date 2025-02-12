@@ -74,7 +74,9 @@
 
         const averageGradePercentText = props.modelValue?.averageGradePercent?.toFixed(1).toString() ?? "0";
         const labelType = props.modelValue.averageGradeIsPassing ? "success" : "warning";
-        const averageScoreHtml = `<span class="label label-${labelType}">${props.modelValue.averageGrade ?? ""} (${averageGradePercentText}%)</span>`;
+        const averageScoreHtml = props.modelValue.averageGrade
+            ? `<span class="label label-${labelType}">${props.modelValue.averageGrade} (${averageGradePercentText}%)</span>`
+            : `<span class="label label-${labelType}">${averageGradePercentText}%</span>`;
 
         valueBuilder.addHtmlValue("Average Score", averageScoreHtml);
 

@@ -2,9 +2,7 @@
 <template>
     <Panel v-if="[ComponentScreen.Configuration, ComponentScreen.Summary].includes(screenToShow)" :title="panelTitle" :hasFullscreen="false" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
-            <div class="header-content-section">
-                <StructuredContentEditor label="Content" v-model="content" :disabled="disabled" help="Text the individual will acknowledge or provide consent for." />
-            </div>
+            <StructuredContentEditor label="Content" v-model="content" :disabled="disabled" help="Text the individual will acknowledge or provide consent for." />
             <div class="is-required-section">
                 <CheckBox
                           v-model="isConfirmationRequired"
@@ -34,10 +32,9 @@
     <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
 
         <div class="acknowledgment-container">
-            <div class="header-content-section">
-                <StructuredContentEditor :disabled="true"
-                                         v-model="content" />
-            </div>
+
+            <StructuredContentEditor :disabled="true" v-model="content" />
+
             <div class="is-required-section" v-if="isConfirmationRequired">
                 <CheckBox v-model="isConfirmed" label="" :disabled="completionBag.isStudentCompleted" :text="confirmationText" />
             </div>
