@@ -108,20 +108,6 @@ namespace Rock.Blocks.Cms
         }
 
         /// <summary>
-        /// Validates the AdaptiveMessageAdaptation for any final information that might not be
-        /// valid after storing all the data from the client.
-        /// </summary>
-        /// <param name="adaptiveMessageAdaptation">The AdaptiveMessageAdaptation to be validated.</param>
-        /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
-        /// <returns><c>true</c> if the AdaptiveMessageAdaptation is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateAdaptiveMessageAdaptation( AdaptiveMessageAdaptation adaptiveMessageAdaptation, out string errorMessage )
-        {
-            errorMessage = null;
-
-            return true;
-        }
-
-        /// <summary>
         /// Sets the initial entity state of the box. Populates the Entity or
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
@@ -367,9 +353,9 @@ namespace Rock.Blocks.Cms
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
             var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
-            var adaptiveMessageAdaptationId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageAdaptationId );
+            var adaptiveMessageAdaptationId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageAdaptationId )?.AsIntegerOrNull();
 
-            if ( adaptiveMessageAdaptationId == null )
+            if ( !adaptiveMessageAdaptationId.HasValue )
             {
                 return new BreadCrumbResult
                 {
@@ -377,7 +363,11 @@ namespace Rock.Blocks.Cms
                 };
             }
 
-            var title = new AdaptiveMessageAdaptationService( RockContext ).Get( adaptiveMessageAdaptationId )?.Name ?? "New Adaptive Message Adaptation";
+            var title = new AdaptiveMessageAdaptationService( RockContext )
+                .Queryable()
+                .Where( a => a.Id == adaptiveMessageAdaptationId )
+                .Select( a => a.Name )
+                .FirstOrDefault() ?? "New Adaptive Message Adaptation";
             var breadCrumb = new BreadCrumbLink( title, breadCrumbPageRef );
 
             return new BreadCrumbResult
@@ -445,12 +435,6 @@ namespace Rock.Blocks.Cms
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
-            }
-
-            // Ensure everything is valid before saving.
-            if ( !ValidateAdaptiveMessageAdaptation( entity, out var validationMessage ) )
-            {
-                return ActionBadRequest( validationMessage );
             }
 
             var segmentIds = box.Bag.Segments.AsGuidList().Select( a => PersonalizationSegmentCache.GetId( a ) ).Where( a => a.HasValue ).ToList();

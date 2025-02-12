@@ -162,7 +162,13 @@
      */
     function onEditAdaptation(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.AdaptationDetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.AdaptationDetailPage].replace("((Key))", key) + `&AdaptiveMessageId=${props.modelValue?.idKey}&autoEdit=true`;
+            const baseUrlString = config.navigationUrls[NavigationUrlKey.AdaptationDetailPage].replace("((Key))", key);
+            const baseUrl = new URL(baseUrlString, window.location.origin);
+
+            baseUrl.searchParams.set("AdaptiveMessageId", props.modelValue?.idKey ?? "");
+            baseUrl.searchParams.set("autoEdit", "true");
+
+            window.location.href = baseUrl.toString();
         }
     }
 

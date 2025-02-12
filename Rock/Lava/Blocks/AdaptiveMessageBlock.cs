@@ -182,7 +182,7 @@ namespace Rock.Lava.Blocks
                         Adaptations = m.Adaptations
                             .Where( a => IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) &&
                                         ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) &&
-                                        ( person == null || !IsSaturated( a, interactionQry ) ) )
+                                        ( interactionQry == null || !IsSaturated( a, interactionQry ) ) )
                             .OrderBy( a => a.Order )
                             .ThenBy( a => a.Name )
                             .Take( adaptationPerMessage.Value )

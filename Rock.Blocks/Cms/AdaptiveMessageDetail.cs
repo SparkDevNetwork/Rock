@@ -495,16 +495,20 @@ namespace Rock.Blocks.Cms
                 .ToDictionary( kv => kv.Key, kv => kv.Value );
 
             var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, paramsToInclude );
-            var adaptiveMessageId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageId );
-            var adaptiveMessageCategoryId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageCategoryId );
+            var adaptiveMessageId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageId )?.AsIntegerOrNull();
+            var adaptiveMessageCategoryId = pageReference.GetPageParameter( PageParameterKey.AdaptiveMessageCategoryId )?.AsIntegerOrNull();
 
-            if ( adaptiveMessageCategoryId == "0" )
+            if ( adaptiveMessageCategoryId == 0 )
             {
-                adaptiveMessageId = "0";
+                adaptiveMessageId = 0;
             }
-            else if ( adaptiveMessageId == null )
+            else if ( !adaptiveMessageId.HasValue )
             {
-                adaptiveMessageId = new AdaptiveMessageCategoryService( RockContext ).Get( adaptiveMessageCategoryId )?.AdaptiveMessageId.ToString();
+                adaptiveMessageId = new AdaptiveMessageCategoryService( RockContext )
+                    .Queryable()
+                    .Where( a => a.Id == adaptiveMessageCategoryId )
+                    .Select( a => a.AdaptiveMessageId)
+                    .FirstOrDefault();
 
                 if ( adaptiveMessageId == null )
                 {
@@ -515,7 +519,11 @@ namespace Rock.Blocks.Cms
                 }
             }
 
-            var title = new AdaptiveMessageService( RockContext ).Get( adaptiveMessageId )?.Name ?? "New Adaptive Message";
+            var title = new AdaptiveMessageService( RockContext )
+                .Queryable()
+                .Where( a => a.Id == adaptiveMessageId )
+                .Select( a => a.Name )
+                .FirstOrDefault() ?? "New Adaptive Message";
             var breadCrumb = new BreadCrumbLink( title, breadCrumbPageRef );
 
             return new BreadCrumbResult
