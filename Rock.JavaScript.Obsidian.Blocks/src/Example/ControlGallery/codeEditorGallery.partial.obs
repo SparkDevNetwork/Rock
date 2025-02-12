@@ -1,7 +1,8 @@
 <template>
     <GalleryAndResult :value="value"
                       :importCode="importCode"
-                      :exampleCode="exampleCode">
+                      :exampleCode="exampleCode"
+                      displayAsRaw>
         <CodeEditor v-model="value" :theme="theme" :mode="mode" :editorHeight="editorHeight" :editor="editorType" :noLineWrap="!lineWrap" :disabled="disabled" />
 
         <template #settings>
