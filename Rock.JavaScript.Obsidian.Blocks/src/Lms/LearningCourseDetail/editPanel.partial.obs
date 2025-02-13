@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TabbedContent :tabs="courseDetailTabs">
+    <TabbedContent :tabs="courseDetailTabs" v-model:selectedTab="selectedTab">
         <template #tabpane="{ item }">
             <div v-if="item === 'Overview'">
                 <fieldset>
@@ -202,16 +202,20 @@
             type: Object as PropType<ValidPropertiesBox<LearningCourseBag>>,
             required: true
         },
-
         options: {
             type: Object as PropType<LearningCourseDetailOptionsBag>,
+            required: true
+        },
+        selectedTab: {
+            type: String,
             required: true
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ValidPropertiesBox<LearningCourseBag>): void,
-        (e: "propertyChanged", value: string): void
+        (e: "propertyChanged", value: string): void,
+        (e: "update:selectedTab", value: string): void
     }>();
 
     // #region Values
