@@ -43,6 +43,7 @@ using Rock.Lava.Fluid;
 using Rock.Lava.RockLiquid;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net.Geolocation;
 using Rock.Observability;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
@@ -281,6 +282,9 @@ namespace Rock.WebStartup
             {
                 LogStartupMessage( "Themes are updated" );
             }
+
+            // Update the geolocation database.
+            Task.Run( () => IpGeoLookup.Instance.UpdateDatabase() );
         }
 
         /// <summary>
