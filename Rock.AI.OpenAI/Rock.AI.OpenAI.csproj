@@ -62,10 +62,10 @@
     <Compile Include="OpenAIApiClient\Attributes\OpenAIModelProperties.cs" />
     <Compile Include="OpenAIApiClient\Classes\ChatCompletions\OpenAIChatCompletionsRequestMessage.cs" />
     <Compile Include="OpenAIApiClient\Classes\ChatCompletions\OpenAIChatCompletionsResponseChoiceMessage.cs" />
-    <Compile Include="OpenAIApiClient\Classes\Embeddings\OpenAIEmbeddingsResponseData.cs" />
-    <Compile Include="OpenAIApiClient\Classes\Embeddings\OpenAIEmbeddingsRequest.cs" />
-    <Compile Include="OpenAIApiClient\Classes\Embeddings\OpenAIEmbeddingsResponse.cs" />
-    <Compile Include="OpenAIApiClient\Classes\Embeddings\OpenAIEmbeddingsTokenResponseUsage.cs" />
+    <Compile Include="OpenAIApiClient\Classes\Embedding\OpenAIEmbeddingResponseData.cs" />
+    <Compile Include="OpenAIApiClient\Classes\Embedding\OpenAIEmbeddingRequest.cs" />
+    <Compile Include="OpenAIApiClient\Classes\Embedding\OpenAIEmbeddingResponse.cs" />
+    <Compile Include="OpenAIApiClient\Classes\Embedding\OpenAIEmbeddingTokenResponseUsage.cs" />
     <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsRequest.cs" />
     <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponseResultsCategoryScores.cs" />
     <Compile Include="OpenAIApiClient\Classes\Moderations\OpenAIModerationsResponseResultsCategories.cs" />

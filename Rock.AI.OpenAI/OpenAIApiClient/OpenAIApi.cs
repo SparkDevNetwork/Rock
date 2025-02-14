@@ -23,7 +23,7 @@ using Rock.AI.OpenAI.OpenAIApiClient.Classes.TextCompletions;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
 using Rock.AI.OpenAI.OpenAIApiClient.Enums;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions;
-using Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.Embedding;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient
 {
@@ -162,13 +162,13 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         /// </summary>
         /// <param name="embeddingsRequest"></param>
         /// <returns></returns>
-        internal async Task<OpenAIEmbeddingsResponse> GetEmbeddings( OpenAIEmbeddingsRequest embeddingsRequest )
+        internal async Task<OpenAIEmbeddingResponse> GetEmbeddings( OpenAIEmbeddingRequest embeddingsRequest )
         {
             var request = GetOpenAIRequest( "embeddings", Method.POST );
 
             request.AddParameter( "application/json", embeddingsRequest.ToJson(), ParameterType.RequestBody );
 
-            var response = await _client.ExecuteTaskAsync<OpenAIEmbeddingsResponse>( request ).ConfigureAwait( false );
+            var response = await _client.ExecuteTaskAsync<OpenAIEmbeddingResponse>( request ).ConfigureAwait( false );
 
             if ( response.StatusCode == System.Net.HttpStatusCode.OK )
             {
@@ -176,7 +176,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             }
             else
             {
-                return new OpenAIEmbeddingsResponse() { IsSuccessful = false, ErrorMessage = response.ErrorMessage };
+                return new OpenAIEmbeddingResponse() { IsSuccessful = false, ErrorMessage = response.ErrorMessage };
             }
         }
 

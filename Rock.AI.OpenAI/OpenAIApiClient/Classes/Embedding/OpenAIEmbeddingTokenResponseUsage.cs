@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
 
-namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings
+namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embedding
 {
-    internal class OpenAIEmbeddingsTokenResponseUsage
+    internal class OpenAIEmbeddingTokenResponseUsage
     {
         /// <summary>
         /// The number of tokens used in the prompt.

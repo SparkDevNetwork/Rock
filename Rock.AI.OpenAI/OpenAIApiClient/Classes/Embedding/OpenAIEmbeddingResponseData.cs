@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings
+namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embedding
 {
-    internal class OpenAIEmbeddingsResponseData
+    internal class OpenAIEmbeddingResponseData
     {
         /// <summary>
         /// The index of the embedding in the response.

@@ -14,7 +14,7 @@ namespace Rock.AI.Classes.Embeddings
         /// <summary>
         /// The data from the embedding request.
         /// </summary>
-        public List<EmbeddingResponseData> Data { get; set; } = new List<EmbeddingResponseData>();
+        public List<double> Embedding { get; set; }
 
         /// <summary>
         /// Determines if the request was successful.

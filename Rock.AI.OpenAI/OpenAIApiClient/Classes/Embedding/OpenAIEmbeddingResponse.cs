@@ -2,9 +2,9 @@
 using Newtonsoft.Json;
 using Rock.AI.Classes.Embeddings;
 
-namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings
+namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embedding
 {
-    internal class OpenAIEmbeddingsResponse
+    internal class OpenAIEmbeddingResponse
     {
         #region Properties
 
@@ -12,13 +12,13 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings
         /// The data from the embedding request.
         /// </summary>
         [JsonProperty("data")]
-        public List<OpenAIEmbeddingsResponseData> Data { get; set; }
+        public List<OpenAIEmbeddingResponseData> Data { get; set; }
 
         /// <summary>
         /// The usage of tokens in the request.
         /// </summary>
         [JsonProperty( "usage" )]
-        public OpenAIEmbeddingsTokenResponseUsage Usage { get; set; }
+        public OpenAIEmbeddingTokenResponseUsage Usage { get; set; }
 
         /// <summary>
         /// Determines if the request was successful.
@@ -35,10 +35,10 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings
         #region Methods
 
         /// <summary>
-        /// Convert OpenAIEmbeddingsResponse to EmbeddingResponse
+        /// Convert OpenAIEmbeddingResponse to EmbeddingResponse
         /// </summary>
         /// <returns></returns>
-        internal EmbeddingResponse AsEmbeddingsResponse()
+        internal EmbeddingResponse AsEmbeddingResponse()
         {
             var response = new EmbeddingResponse();
 
@@ -47,14 +47,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings
 
             if ( response.IsSuccessful )
             {
-                foreach ( var data in Data )
-                {
-                    response.Data.Add( new EmbeddingResponseData
-                    {
-                        Index = data.Index,
-                        Embedding = data.Embedding
-                    } );
-                }
+                response.Embedding = Data[0].Embedding;
                 response.TokensUsed = this.Usage.TotalTokens;
             }
 

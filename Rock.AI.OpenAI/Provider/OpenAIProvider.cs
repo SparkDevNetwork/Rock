@@ -28,7 +28,7 @@ using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
 using Rock.AI.Classes.ChatCompletions;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions;
 using Rock.AI.Classes.Embeddings;
-using Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings;
+using Rock.AI.OpenAI.OpenAIApiClient.Classes.Embedding;
 
 namespace Rock.AI.OpenAI.Provider
 {
@@ -130,14 +130,14 @@ namespace Rock.AI.OpenAI.Provider
         {
             var openAIApi = GetOpenAIApi();
 
-            var response = await openAIApi.GetEmbeddings( new OpenAIEmbeddingsRequest( request ) );
+            var response = await openAIApi.GetEmbeddings( new OpenAIEmbeddingRequest( request ) );
 
             if ( response == null )
             {
                 return null;
             }
 
-            return response.AsEmbeddingsResponse();
+            return response.AsEmbeddingResponse();
         }
 
         /// <summary>
