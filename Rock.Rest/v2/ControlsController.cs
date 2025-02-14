@@ -249,7 +249,7 @@ namespace Rock.Rest.v2
         [Route( "AccountPickerGetSearchedAccounts" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof ( List<ListItemBag> ) )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "69fd94cc-f049-4cee-85d1-13e573e30586" )]
         public IActionResult AccountPickerGetSearchedAccounts( [FromBody] AccountPickerGetSearchedAccountsOptionsBag options )
@@ -398,7 +398,7 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "3484A62B-8A52-423A-8154-909D9176E4B6" )]
-        public IActionResult AdaptiveMessagePickerGetAdaptiveMessages( [FromBody] AdaptiveMessagePickerGetAdaptiveMessagesOptionsBag options )
+        public IActionResult AdaptiveMessagePickerGetAdaptiveMessages( [FromBody] UniversalItemTreePickerOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -407,13 +407,13 @@ namespace Rock.Rest.v2
 
                 var items = clientService.GetCategorizedTreeItems( new CategoryItemTreeOptions
                 {
-                    ParentGuid = options.ParentGuid,
-                    GetCategorizedItems = options.GetCategorizedItems,
+                    ParentGuid = options.ParentValue.AsGuidOrNull(),
+                    GetCategorizedItems = true,
                     EntityTypeGuid = EntityTypeCache.Get<Rock.Model.AdaptiveMessageCategory>().Guid,
-                    IncludeUnnamedEntityItems = options.IncludeUnnamedEntityItems,
-                    IncludeCategoriesWithoutChildren = options.IncludeCategoriesWithoutChildren,
-                    DefaultIconCssClass = options.DefaultIconCssClass,
-                    LazyLoad = options.LazyLoad,
+                    IncludeUnnamedEntityItems = true,
+                    IncludeCategoriesWithoutChildren = false,
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = false,
                     SecurityGrant = grant
                 } );
 
@@ -868,7 +868,7 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Asset ) )]
         [ProducesResponseType( HttpStatusCode.Unauthorized, Description = "Not authorized to view the asset manager tree information." )]
-        [ProducesResponseType( HttpStatusCode.BadRequest ) ]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "D45422C0-5FCA-44C4-B9E1-4BA05E8D534D" )]
         public IActionResult AssetManagerGetFiles( [FromBody] AssetManagerGetFilesOptionsBag options )
         {
@@ -2889,7 +2889,7 @@ namespace Rock.Rest.v2
         [Route( "CategoryPickerChildTreeItems" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) ) ]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "A1D07211-6C50-463B-98ED-1622DC4D73DD" )]
         public IActionResult CategoryPickerChildTreeItems( [FromBody] CategoryPickerChildTreeItemsOptionsBag options )
         {
@@ -3380,7 +3380,7 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ListItemBag ) )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized ) ]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "E1AB17E0-CF28-4032-97A8-2A4279C5815A" )]
         public IActionResult DefinedValueEditorSaveNewValue( DefinedValueEditorSaveNewValueOptionsBag options )
         {
