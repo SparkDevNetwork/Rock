@@ -14,6 +14,10 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embeddings
         [JsonProperty("data")]
         public List<OpenAIEmbeddingsResponseData> Data { get; set; }
 
+        /// <summary>
+        /// The usage of tokens in the request.
+        /// </summary>
+        [JsonProperty( "usage" )]
         public OpenAIEmbeddingsTokenResponseUsage Usage { get; set; }
 
         /// <summary>
