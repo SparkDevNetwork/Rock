@@ -575,6 +575,10 @@
     font-weight: var(--font-weight-bold);
 }
 
+.check-in-page .attendance-card .achievement .header .title {
+    font-size: var(--font-size-h4);
+}
+
 .check-in-page .attendance-card {
     width: calc(33.33% - calc(var(--spacing-xsmall) * 2 / 3));
     display: flex;
