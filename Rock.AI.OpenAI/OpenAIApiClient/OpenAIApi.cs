@@ -24,6 +24,7 @@ using Rock.AI.OpenAI.OpenAIApiClient.Classes.Moderations;
 using Rock.AI.OpenAI.OpenAIApiClient.Enums;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.ChatCompletions;
 using Rock.AI.OpenAI.OpenAIApiClient.Classes.Embedding;
+using Newtonsoft.Json;
 
 namespace Rock.AI.OpenAI.OpenAIApiClient
 {
@@ -162,7 +163,7 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
         /// </summary>
         /// <param name="embeddingsRequest"></param>
         /// <returns></returns>
-        internal async Task<OpenAIEmbeddingResponse> GetEmbeddings( OpenAIEmbeddingRequest embeddingsRequest )
+        internal async Task<OpenAIEmbeddingResponse> GetEmbedding( OpenAIEmbeddingRequest embeddingsRequest )
         {
             var request = GetOpenAIRequest( "embeddings", Method.POST );
 
@@ -176,7 +177,11 @@ namespace Rock.AI.OpenAI.OpenAIApiClient
             }
             else
             {
-                return new OpenAIEmbeddingResponse() { IsSuccessful = false, ErrorMessage = response.ErrorMessage };
+                return new OpenAIEmbeddingResponse()
+                {
+                    IsSuccessful = false,
+                    ErrorMessage = JsonConvert.DeserializeObject<dynamic>( response.Content ).error.message
+                };
             }
         }
 

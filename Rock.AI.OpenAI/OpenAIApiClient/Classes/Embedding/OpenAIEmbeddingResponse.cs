@@ -40,12 +40,13 @@ namespace Rock.AI.OpenAI.OpenAIApiClient.Classes.Embedding
         /// <returns></returns>
         internal EmbeddingResponse AsEmbeddingResponse()
         {
-            var response = new EmbeddingResponse();
+            var response = new EmbeddingResponse
+            {
+                IsSuccessful = IsSuccessful,
+                ErrorMessage = ErrorMessage 
+            };
 
-            response.IsSuccessful = IsSuccessful;
-            response.ErrorMessage = ErrorMessage;
-
-            if ( response.IsSuccessful )
+            if ( IsSuccessful )
             {
                 response.Embedding = Data[0].Embedding;
                 response.TokensUsed = this.Usage.TotalTokens;

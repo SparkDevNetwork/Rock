@@ -667,7 +667,6 @@
     <Compile Include="AI\Classes\ChatCompletions\ChatCompletionsResponseChoice.cs" />
     <Compile Include="AI\Classes\Embeddings\EmbeddingRequest.cs" />
     <Compile Include="AI\Classes\Embeddings\EmbeddingResponse.cs" />
-    <Compile Include="AI\Classes\Embeddings\EmbeddingResponseData.cs" />
     <Compile Include="AI\Classes\TextCompletions\TextCompletionsRequest.cs" />
     <Compile Include="AI\Classes\TextCompletions\TextCompletionsResponse.cs" />
     <Compile Include="AI\Classes\TextCompletions\TextCompletionsResponseChoice.cs" />

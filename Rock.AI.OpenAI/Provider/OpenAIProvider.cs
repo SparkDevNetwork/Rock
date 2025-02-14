@@ -130,7 +130,7 @@ namespace Rock.AI.OpenAI.Provider
         {
             var openAIApi = GetOpenAIApi();
 
-            var response = await openAIApi.GetEmbeddings( new OpenAIEmbeddingRequest( request ) );
+            var response = await openAIApi.GetEmbedding( new OpenAIEmbeddingRequest( request ) );
 
             if ( response == null )
             {
