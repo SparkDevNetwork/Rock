@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.Serialization;
 
 using Rock.CheckIn.v2;
@@ -208,6 +209,77 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsSpecialNeeds { get; private set; }
 
+        /// <inheritdoc cref="Group.IsChatEnabledOverride"/>
+        [DataMember]
+        public bool? IsChatEnabledOverride { get; set; }
+
+        /// <inheritdoc cref="Group.IsLeavingChatChannelAllowedOverride"/>
+        [DataMember]
+        public bool? IsLeavingChatChannelAllowedOverride { get; set; }
+
+        /// <inheritdoc cref="Group.IsChatChannelPublicOverride"/>
+        [DataMember]
+        public bool? IsChatChannelPublicOverride { get; set; }
+
+        /// <inheritdoc cref="Group.IsChatChannelAlwaysShownOverride"/>
+        [DataMember]
+        public bool? IsChatChannelAlwaysShownOverride { get; set; }
+
+        /// <inheritdoc cref="Group.ChatChannelKey"/>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string ChatChannelKey { get; set; }
+
+        /// <inheritdoc cref="Group.GetIsChatEnabled"/>
+        internal bool GetIsChatEnabled()
+        {
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache?.IsChatAllowed != true )
+            {
+                return false;
+            }
+
+            if ( this.IsChatEnabledOverride.HasValue )
+            {
+                return this.IsChatEnabledOverride.Value;
+            }
+
+            return groupTypeCache.IsChatEnabledForAllGroups;
+        }
+
+        /// <inheritdoc cref="Group.GetIsLeavingChatChannelAllowed"/>
+        internal bool GetIsLeavingChatChannelAllowed()
+        {
+            if ( this.IsLeavingChatChannelAllowedOverride.HasValue )
+            {
+                return this.IsLeavingChatChannelAllowedOverride.Value;
+            }
+
+            return GroupTypeCache.Get( this.GroupTypeId )?.IsLeavingChatChannelAllowed ?? false;
+        }
+
+        /// <inheritdoc cref="Group.GetIsChatChannelPublic"/>
+        internal bool GetIsChatChannelPublic()
+        {
+            if ( this.IsChatChannelPublicOverride.HasValue )
+            {
+                return this.IsChatChannelPublicOverride.Value;
+            }
+
+            return GroupTypeCache.Get( this.GroupTypeId )?.IsChatChannelPublic ?? false;
+        }
+
+        /// <inheritdoc cref="Group.GetIsChatChannelAlwaysShown"/>
+        internal bool GetIsChatChannelAlwaysShown()
+        {
+            if ( this.IsChatChannelAlwaysShownOverride.HasValue )
+            {
+                return this.IsChatChannelAlwaysShownOverride.Value;
+            }
+
+            return GroupTypeCache.Get( this.GroupTypeId )?.IsChatChannelAlwaysShown ?? false;
+        }
+
         #endregion
 
         #region Navigation Properties
@@ -324,6 +396,11 @@ namespace Rock.Web.Cache
             ReminderAdditionalDetails = group.ReminderAdditionalDetails;
             ScheduleConfirmationLogic = group.ScheduleConfirmationLogic;
             IsSpecialNeeds = group.IsSpecialNeeds;
+            IsChatEnabledOverride = group.IsChatEnabledOverride;
+            IsLeavingChatChannelAllowedOverride = group.IsLeavingChatChannelAllowedOverride;
+            IsChatChannelPublicOverride = group.IsChatChannelPublicOverride;
+            IsChatChannelAlwaysShownOverride = group.IsChatChannelAlwaysShownOverride;
+            ChatChannelKey = group.ChatChannelKey;
         }
 
         /// <inheritdoc/>

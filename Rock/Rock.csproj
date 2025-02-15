@@ -472,6 +472,9 @@
     <Reference Include="SixLabors.ImageSharp.Drawing, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d998eea7b14cab13, processorArchitecture=MSIL">
       <HintPath>..\packages\SixLabors.ImageSharp.Drawing.1.0.0-beta15\lib\net472\SixLabors.ImageSharp.Drawing.dll</HintPath>
     </Reference>
+    <Reference Include="stream-chat-net, Version=2.10.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\stream-chat-net.2.10.0\lib\net47\stream-chat-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -713,7 +716,24 @@
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
     <Compile Include="Cms\RestActionMetadata.cs" />
     <Compile Include="Cms\RestControllerMetadata.cs" />
+    <Compile Include="Communication\Chat\DTO\RockChatChannelMember.cs" />
+    <Compile Include="Communication\Chat\DTO\RockChatUserPerson.cs" />
+    <Compile Include="Communication\Chat\DTO\RockChatUserPersonKey.cs" />
+    <Compile Include="Communication\Chat\Exceptions\ChatChannelNotFoundException.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatBadgeRoster.cs" />
+    <Compile Include="Communication\Chat\Sync\RockToChatSyncConfig.cs" />
+    <Compile Include="Communication\Chat\Sync\SyncGroupMemberToChatCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\CreateOrUpdateChatUserResult.cs" />
+    <Compile Include="Communication\Chat\Sync\SyncChannelMembersToChatCommand.cs" />
     <Compile Include="Core\AttributeDisplaySettings.cs" />
+    <Compile Include="Communication\Chat\ChatHelper.cs" />
+    <Compile Include="Communication\Chat\DTO\ChatBadge.cs" />
+    <Compile Include="Communication\Chat\DTO\ChatChannel.cs" />
+    <Compile Include="Communication\Chat\DTO\ChatChannelMember.cs" />
+    <Compile Include="Communication\Chat\DTO\ChatChannelType.cs" />
+    <Compile Include="Communication\Chat\DTO\ChatUser.cs" />
+    <Compile Include="Communication\Chat\IChatProvider.cs" />
+    <Compile Include="Communication\Chat\Stream\StreamChatProvider.cs" />
     <Compile Include="Core\EntitySearch\CustomExtensionMethodsExpressionVisitor.cs" />
     <Compile Include="Core\EntitySearch\DynamicLinqCustomTypeProvider.cs" />
     <Compile Include="Core\EntitySearch\DynamicLinqQueryExtensionMethods.cs" />

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel;
+
 namespace Rock.Enums.Communication.Chat
 {
     /// <summary>
@@ -26,18 +28,21 @@ namespace Rock.Enums.Communication.Chat
         /// Represents a rock_user role in the external chat system. Individuals of this role will be able to
         /// participate in chat channels in which they're members.
         /// </summary>
+        [Description( "rock_user" )]
         User = 0,
 
         /// <summary>
         /// Represents a rock_moderator role in the external chat system. Individuals of this role will be able to
         /// participate in and moderate chat channels in which they're members.
         /// </summary>
+        [Description( "rock_moderator" )]
         Moderator = 1,
 
         /// <summary>
         /// Represents a rock_admin role in the external chat system. Individuals of this role be able to participate
         /// in and moderate all chat channels, whether they're a member of a given channel or not.
         /// </summary>
+        [Description( "rock_admin" )]
         Administrator = 3
     }
 }

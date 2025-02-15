@@ -643,18 +643,40 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets whether chat is enabled for this group. If <see cref="IsChatEnabledOverride"/> is set to
-        /// <see langword="null"/>, then the value from <see cref="GroupType.IsChatEnabledForAllGroups"/> will be used.
+        /// Gets whether chat is enabled for this group. <see cref="GroupType.IsChatAllowed"/> will be checked first; if
+        /// <see langword="false"/>, chat cannot be enabled for this group. <see cref="IsChatEnabledOverride"/> will be
+        /// checked next; if <see langword="null"/>, then the value from <see cref="GroupType.IsChatEnabledForAllGroups"/>
+        /// will be used.
         /// </summary>
         /// <returns>Whether chat is enabled for this group.</returns>
         internal bool GetIsChatEnabled()
         {
+            bool groupTypeIsChatAllowed;
+            bool groupTypeIsChatEnabledForAllGroups;
+
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                groupTypeIsChatAllowed = groupTypeCache.IsChatAllowed;
+                groupTypeIsChatEnabledForAllGroups = groupTypeCache.IsChatEnabledForAllGroups;
+            }
+            else
+            {
+                groupTypeIsChatAllowed = this.GroupType?.IsChatAllowed ?? false;
+                groupTypeIsChatEnabledForAllGroups = this.GroupType?.IsChatEnabledForAllGroups ?? false;
+            }
+
+            if ( !groupTypeIsChatAllowed )
+            {
+                return false;
+            }
+
             if ( this.IsChatEnabledOverride.HasValue )
             {
                 return this.IsChatEnabledOverride.Value;
             }
 
-            return this.GroupType?.IsChatEnabledForAllGroups ?? false;
+            return groupTypeIsChatEnabledForAllGroups;
         }
 
         /// <summary>
@@ -668,6 +690,12 @@ namespace Rock.Model
             if ( this.IsLeavingChatChannelAllowedOverride.HasValue )
             {
                 return this.IsLeavingChatChannelAllowedOverride.Value;
+            }
+
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                return groupTypeCache.IsLeavingChatChannelAllowed;
             }
 
             return this.GroupType?.IsLeavingChatChannelAllowed ?? false;
@@ -687,6 +715,12 @@ namespace Rock.Model
                 return this.IsChatChannelPublicOverride.Value;
             }
 
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                return groupTypeCache.IsChatChannelPublic;
+            }
+
             return this.GroupType?.IsChatChannelPublic ?? false;
         }
 
@@ -702,6 +736,12 @@ namespace Rock.Model
             if ( this.IsChatChannelAlwaysShownOverride.HasValue )
             {
                 return this.IsChatChannelAlwaysShownOverride.Value;
+            }
+
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                return groupTypeCache.IsChatChannelAlwaysShown;
             }
 
             return this.GroupType?.IsChatChannelAlwaysShown ?? false;

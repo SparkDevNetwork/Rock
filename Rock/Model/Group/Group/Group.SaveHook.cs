@@ -15,10 +15,14 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+
+using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -209,6 +213,23 @@ namespace Rock.Model
                 if ( _FamilyCampusIsChanged )
                 {
                     PersonService.UpdatePrimaryFamilyByGroup( Entity.Id, rockContext );
+                }
+
+                if ( ChatHelper.IsChatEnabled )
+                {
+                    Task.Run( async () =>
+                    {
+                        if ( PreSaveState == EntityContextState.Deleted )
+                        {
+                            // Ensure the chat helper deletes the channel within the external chat system.
+                            Entity.IsChatEnabledOverride = false;
+                        }
+
+                        using ( var chatHelper = new ChatHelper() )
+                        {
+                            await chatHelper.SyncGroupsToChatProviderAsync( new List<Group> { Entity } );
+                        }
+                    } );
                 }
 
                 base.PostSave();

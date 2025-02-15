@@ -34,6 +34,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Blocks;
 using Rock.Bus;
+using Rock.Communication.Chat;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Configuration;
@@ -300,6 +301,7 @@ namespace Rock.WebStartup
             sc.AddSingleton<IInitializationSettings, WebFormsInitializationSettings>();
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IHostingSettings, HostingSettings>();
+            sc.AddSingleton<IChatProvider, StreamChatProvider>();
 
             // Register the class to initialize for InitializationSettings. This
             // is transient so that we always get the current values from the
