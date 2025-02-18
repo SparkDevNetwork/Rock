@@ -24,7 +24,7 @@ using Rock.Web.Cache;
 
 namespace Rock.Blocks
 {
-    internal static class IEntityExtensions
+    public static class IEntityExtensions
     {
         public static int? GetEntityId<TEntity>( this ListItemBag viewModel, RockContext rockContext )
             where TEntity : IEntity
