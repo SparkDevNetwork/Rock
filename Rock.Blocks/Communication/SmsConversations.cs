@@ -41,7 +41,7 @@ namespace Rock.Blocks.Communication
 
     [BooleanField( "Show only personal SMS number",
         Key = AttributeKey.ShowOnlyPersonalSmsNumber,
-        Description = "Only SMS Numbers tied to the current individual will be shown. Those with ADMIN rights will see all SMS Numbers.",
+        Description = "Only SMS Numbers assigned to the current individual will be shown. Those with ADMIN rights will see all SMS Numbers.",
         DefaultBooleanValue = false,
         Order = 2
          )]
