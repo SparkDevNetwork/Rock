@@ -118,6 +118,7 @@
     <Compile Include="Blocks\Cms\LavaShortcodeList\LavaShortcodeListBox.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\PersonalizationSegmentList\PersonalizationSegmentListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationInitializationBox.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntryWizard\CommunicationEntryWizardGetEmailPreviewHtmlBag.cs" />

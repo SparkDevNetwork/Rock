@@ -17,6 +17,8 @@
 using Rock.Data;
 using Rock.Web.Cache;
 
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -105,15 +107,6 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the CategoryId for the segment.
-        /// </summary>
-        /// <value>
-        /// The CategoryId of the segment.
-        /// </value>
-        [DataMember]
-        public int? CategoryId { get; set; }
-
-        /// <summary>
         /// Gets or sets the duration in milliseconds it takes to update the segment.
         /// </summary>
         /// <value>
@@ -135,13 +128,20 @@ namespace Rock.Model
         public virtual DataView FilterDataView { get; set; }
 
         /// <summary>
-        /// Gets or sets the category associated with the segment.
+        /// Gets or sets the collection of <see cref="Rock.Model.Category">Categories</see> that this <see cref="PersonalizationSegment"/> is associated with.
+        /// NOTE: Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
         /// </summary>
         /// <value>
-        /// The category associated with the segment.
+        /// A collection of <see cref="Rock.Model.Category">Categories</see> that this <see cref="PersonalizationSegment"/> is associated with.
         /// </value>
         [DataMember]
-        public virtual Category Category { get; set; }
+        public virtual ICollection<Category> Categories
+        {
+            get { return _categories ?? ( _categories = new Collection<Category>() ); }
+            set { _categories = value; }
+        }
+
+        private ICollection<Category> _categories;
 
         #endregion Navigation Properties
     }
@@ -158,7 +158,15 @@ namespace Rock.Model
         /// </summary>
         public SegmentConfiguration()
         {
-            HasOptional( a => a.FilterDataView ).WithMany().HasForeignKey( a => a.FilterDataViewId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.FilterDataView ).WithMany().HasForeignKey( a => a.FilterDataViewId ).WillCascadeOnDelete( false );
+            this.HasMany( a => a.Categories )
+                .WithMany()
+                .Map( a =>
+                {
+                    a.MapLeftKey( "PersonalizationSegmentId" );
+                    a.MapRightKey( "CategoryId" );
+                    a.ToTable( "PersonalizationSegmentCategory" );
+                } );
         }
     }
 
