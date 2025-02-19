@@ -140,6 +140,7 @@ namespace Rock.Model
             target.BCCEmails = source.BCCEmails;
             target.CCEmails = source.CCEmails;
             target.CommunicationTemplateId = source.CommunicationTemplateId;
+            target.CommunicationTopicValueId = source.CommunicationTopicValueId;
             target.CommunicationType = source.CommunicationType;
             target.EmailMetricsReminderOffsetDays = source.EmailMetricsReminderOffsetDays;
             target.EmailMetricsReminderSentDateTime = source.EmailMetricsReminderSentDateTime;

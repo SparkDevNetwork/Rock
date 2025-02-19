@@ -649,6 +649,8 @@ export const EntityType = {
     PersonalLinkSectionOrder: "648325DC-1555-44B7-AFA4-1971E57F7E11",
     /** The EntityType Guid for Rock.Model.PersonalizationSegment  */
     PersonalizationSegment: "368A3581-C8C4-4960-901A-9587864226F3",
+    /** The EntityType Guid for PersonalizationSegmentCategory 'joiner' table Rock.Model.PersonalizationSegment */
+    PersonalizationSegmentCategory: "D2026C0C-6C5F-4BB8-B085-9928E373812D",
     /** The EntityType Guid for Rock.Model.PhoneNumber  */
     PhoneNumber: "AD7E27CB-036D-40C6-B352-81B38BFAE798",
     /** The EntityType Guid for Rock.Model.PluginMigration  */

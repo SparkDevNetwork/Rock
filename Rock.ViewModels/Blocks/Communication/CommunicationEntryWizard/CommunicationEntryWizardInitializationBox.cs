@@ -49,10 +49,19 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// </value>
         public bool IsHidden { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public List<ListItemBag> CommunicationListGroups { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public List<ListItemBag> SegmentDataViews { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public List<ListItemBag> SmsFromNumbers { get; set; }
 
         /// <summary>
@@ -64,10 +73,19 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// </value>
         public List<ListItemBag> Mediums { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsDuplicatePreventionOptionShown { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public List<string> MergeFields { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public List<CommunicationEntryWizardRecipientBag> Recipients { get; set; }
 
         /// <summary>

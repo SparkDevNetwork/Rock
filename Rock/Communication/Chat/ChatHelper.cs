@@ -142,6 +142,7 @@ namespace Rock.Communication.Chat
 
         #region Con/Destructors
 
+#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatHelper"/> class.
         /// </summary>
@@ -150,6 +151,7 @@ namespace Rock.Communication.Chat
         /// one will be created and disposed of within this chat helper. If a context IS provided, it will NOT be
         /// disposed of within this chat helper, but <see cref="DbContext.SaveChanges()"/> will be called as needed.</param>
         public ChatHelper( RockContext rockContext = null )
+#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
         {
             Logger = RockLogger.LoggerFactory.CreateLogger( typeof( ChatHelper ).FullName );
 
@@ -1397,7 +1399,9 @@ namespace Rock.Communication.Chat
             return results;
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task<List<Guid>> DeleteChatUsersAsync( List<Guid> personAliasGuids )
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             /*
                 --------------------------

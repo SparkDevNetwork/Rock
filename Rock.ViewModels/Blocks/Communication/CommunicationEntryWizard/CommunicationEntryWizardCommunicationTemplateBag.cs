@@ -62,6 +62,9 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// Gets or sets a value indicating whether this is a starter template.
         /// </summary>
         public bool IsStarter { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
         public int CommunicationCount { get; internal set; }
     }
 }
