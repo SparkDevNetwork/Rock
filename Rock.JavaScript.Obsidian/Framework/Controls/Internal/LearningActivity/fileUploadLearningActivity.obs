@@ -32,6 +32,18 @@
                         <RockLabel>File</RockLabel>
                         <a v-if="fileUrl" :href="fileUrl" target="_blank">{{ binaryFile?.text }}</a>
                     </div>
+
+                    <NumberBox v-model="pointsEarned"
+                               label="Score"
+                               :min="0"
+                               :minimumValue="0"
+                               :max="pointsPossible"
+                               :rules="'lte:' + pointsPossible"
+                               inputGroupClasses="input-width-lg">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">out of {{ pointsPossible }}</span>
+                        </template>
+                    </NumberBox>
                 </div>
             </fieldset>
         </div>
@@ -99,6 +111,7 @@
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";

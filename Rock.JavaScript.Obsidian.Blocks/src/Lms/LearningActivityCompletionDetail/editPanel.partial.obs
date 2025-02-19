@@ -6,7 +6,13 @@
                 <NumberBox v-model="pointsEarned"
                            label="Points Earned"
                            :minimumValue="0"
+                           disabled
                            :rules="'required|lte:' + pointsPossible">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">
+                            out of {{ pointsPossible }}
+                        </span>
+                    </template>
                 </NumberBox>
             </div>
 
@@ -194,11 +200,11 @@
     watch(completionBag, () => {
         if (!deepEqual(completionBag.value.activityComponentCompletionJson, completionJson.value, true)) {
             completionJson.value = completionBag.value.activityComponentCompletionJson;
+        }
 
-            // Allow the component to update the points earned for the activity completion.
-            if (completionBag.value.pointsEarned !== pointsEarned.value) {
-                pointsEarned.value = completionBag.value.pointsEarned;
-            }
+        // Allow the component to update the points earned for the activity completion.
+        if (completionBag.value.pointsEarned !== pointsEarned.value) {
+            pointsEarned.value = completionBag.value.pointsEarned;
         }
     });
 

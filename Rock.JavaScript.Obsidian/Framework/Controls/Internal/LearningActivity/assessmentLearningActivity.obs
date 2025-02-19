@@ -106,6 +106,26 @@
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Scoring">
+            <div v-if="hasMultipleChoiceQuestions" class="assessment-items-container">
+                <div class="well well-sm assessment-item-container-scoring">
+                    <div class="scoring-screen-question-header question-header d-flex flex-fill">
+                        <div>
+                            <span class="question-section">Multiple Choice</span>
+                            <div class="answer-section text-muted"></div>
+                        </div>
+
+                        <NumberBox v-model="multipleChoicePointsEarned"
+                                   label="Score"
+                                   disabled
+                                   inputGroupClasses="input-width-lg">
+                            <template #inputGroupAppend>
+                                <span class="input-group-addon">out of {{ multipleChoicePointsPossible }}</span>
+                            </template>
+                        </NumberBox>
+                    </div>
+                </div>
+            </div>
+
             <div class="assessment-items-container" v-for="(item, index) of completedItems">
                 <div class="well well-sm assessment-item-container-scoring" v-if="item.typeName === 'Short Answer'">
                     <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" :hasBeenGraded="hasBeenGraded" />
@@ -411,21 +431,27 @@
     const hasIncorrectResponses = computed(() => incorrectMultipleChoiceItems.value.length > 0);
     const gradePercent = computed(() => totalPointsEarned.value / activityBag.value.points * 100);
 
+    const multipleChoicePointsEarned = computed((): number => {
+        const availableMultipleChoicePoints = activityBag.value.points * (multipleChoiceWeight.value / 100);
+        return multipleChoiceGradePercent.value * availableMultipleChoicePoints;
+    });
+
+    const multipleChoicePointsPossible = computed((): number => {
+        return multipleChoiceWeight.value * activityBag.value.points / 100;
+    });
+
     /**
      * The calculated points earned.
      * Automatically graded multiple choice items are added to the currently scored short answer items (if any).
      * */
     const totalPointsEarned = computed(() => {
-        const availableMultipleChoicePoints = activityBag.value.points * (multipleChoiceWeight.value / 100);
-        const earnedMultipleChoicePoints = multipleChoiceGradePercent.value * availableMultipleChoicePoints;
-
         // Each short answer score * weight * points possible
         // Points possible is the total activity points possible * the individual question weight.
         const earnedShortAnswerPoints = shortAnswerItems.value
             .map(i => Number(i.pointsPossible) > 0 ? (i.pointsEarned / Number(i.pointsPossible)) * (i.questionWeight / 100) * activityBag.value.points : 0)
             .reduce((prev, cur) => cur + prev, 0);
 
-        return Math.round((earnedMultipleChoicePoints + earnedShortAnswerPoints));
+        return Math.round((multipleChoicePointsEarned.value + earnedShortAnswerPoints));
     });
 
     const multipleChoiceGradePercent = computed(() => {

@@ -13,6 +13,18 @@
         <div v-if="screenToShow === ComponentScreen.Scoring">
             <div class="scoring-section">
                 <StructuredContentEditor v-model="rubric" disabled />
+
+                <NumberBox v-model="pointsEarned"
+                           label="Score"
+                           :min="0"
+                           :minimumValue="0"
+                           :max="pointsPossible"
+                           :rules="'lte:' + pointsPossible"
+                           inputGroupClasses="input-width-lg">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">out of {{ pointsPossible }}</span>
+                    </template>
+                </NumberBox>
             </div>
         </div>
 
@@ -44,6 +56,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
@@ -68,6 +81,7 @@
         hasBeenGraded,
         instructions,
         isCompleted,
+        pointsPossibleAtCompletion,
         rubric,
         panelTitle
     } = useLearningComponent<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion>(
@@ -78,6 +92,9 @@
     );
 
     const disabled = ref(props.disabled ?? false);
+
+    const pointsEarned = ref(completionBag.value.pointsEarned);
+    const pointsPossible = computed(() => Number(pointsPossibleAtCompletion?.value ?? activityBag.value.points));
 
     function onContinueClicked(): void {
         emits("closed");
@@ -101,4 +118,18 @@
         debouncedActivityBagEmits();
     }, { deep: true });
 
+    /** Watch for modified component completion. */
+    const debouncedCompletionBagEmits = debounce(() => {
+        const updatedCompletionBag = {
+            ...toValue(completionBag)
+        } as LearningActivityCompletionBag;
+
+        updatedCompletionBag.pointsEarned = pointsEarned.value;
+
+        emits("update:completionBag", updatedCompletionBag);
+    });
+
+    watch([pointsEarned], () => {
+        debouncedCompletionBagEmits();
+    }, { deep: true });
 </script>
