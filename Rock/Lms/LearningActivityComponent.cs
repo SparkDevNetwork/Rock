@@ -16,6 +16,7 @@
 //
 using System.Collections.Generic;
 
+using Rock.Attribute;
 using Rock.Extension;
 using Rock.Model;
 
@@ -24,6 +25,7 @@ namespace Rock.Lms
     /// <summary>
     /// Base class for learning activity components
     /// </summary>
+    [RockInternal( "17.0" )]
     public abstract class LearningActivityComponent : Component
     {
         #region Properties

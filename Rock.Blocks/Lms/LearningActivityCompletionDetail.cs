@@ -283,7 +283,7 @@ namespace Rock.Blocks.Lms
 
             // If the current person is a facilitator include a security grant for viewing the uploaded file.
             var binaryFileSecurityGrant = string.Empty;
-            if ( binaryFile != null && currentPersonBag.IsFacilitator )
+            if ( binaryFile != null && currentPersonBag?.IsFacilitator == true )
             {
                 var binaryFileEntityTypeId = EntityTypeCache.GetId( typeof( Rock.Model.BinaryFile ) ).ToIntSafe();
                 binaryFileSecurityGrant = new Rock.Security.SecurityGrant()
