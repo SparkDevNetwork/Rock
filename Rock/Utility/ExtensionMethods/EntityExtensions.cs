@@ -247,7 +247,10 @@ namespace Rock
                 return new List<ListItemBag>();
             }
 
-            return entities.Select( e => e.ToListItemBag() ).ToList();
+            return entities
+                .Where( e => e != null )
+                .Select( e => e.ToListItemBag() )
+                .ToList();
         }
 
         /// <summary>
@@ -263,7 +266,10 @@ namespace Rock
                 return new List<ListItemBag>();
             }
 
-            return entities.Select( e => e.ToListItemBag( toText( e ) ) ).ToList();
+            return entities
+                .Where( e => e != null )
+                .Select( e => e.ToListItemBag( toText( e ) ) )
+                .ToList();
         }
 
         /// <summary>
@@ -299,7 +305,10 @@ namespace Rock
                 return new List<ListItemBag>();
             }
 
-            return entities.Select( e => e.ToListItemBag() ).ToList();
+            return entities
+                .Where( e => e != null )
+                .Select( e => e.ToListItemBag() )
+                .ToList();
         }
 
 
