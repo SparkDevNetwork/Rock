@@ -259,7 +259,29 @@ namespace Rock
         /// <param name="entities">The entities to be represented by the bags.</param>
         /// <param name="toText">A function that can set the Text property of the ListItemBag for the entity.</param>
         /// <returns>A collection of <see cref="ListItemBag"/> that represents the entities.</returns>
-        public static List<ListItemBag> ToListItemBagList<T>( this IEnumerable<T> entities, Func<T, string> toText ) where T : IEntity
+        [Obsolete( "Use the method that takes a generic enumerable set." )]
+        [RockObsolete( "17.0" )]
+        public static List<ListItemBag> ToListItemBagList( IEnumerable<IEntity> entities, Func<IEntity, string> toText )
+        {
+            if ( entities == null )
+            {
+                return new List<ListItemBag>();
+            }
+
+            return entities
+                .Where( e => e != null )
+                .Select( e => e.ToListItemBag( toText( e ) ) )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Converts a collection of entities to ListItemBags.
+        /// </summary>
+        /// <param name="entities">The entities to be represented by the bags.</param>
+        /// <param name="toText">A function that can set the Text property of the ListItemBag for the entity.</param>
+        /// <returns>A collection of <see cref="ListItemBag"/> that represents the entities.</returns>
+        public static List<ListItemBag> ToListItemBagList<T>( this IEnumerable<T> entities, Func<T, string> toText )
+            where T : IEntity
         {
             if ( entities == null )
             {
