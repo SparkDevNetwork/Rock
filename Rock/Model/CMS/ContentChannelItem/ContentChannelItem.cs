@@ -243,7 +243,6 @@ namespace Rock.Model
         public ContentLibraryItemExperienceLevel? ExperienceLevel { get; set; }
 
         /// <inheritdoc/>
-        [RockInternal( "1.16.4" )]
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 

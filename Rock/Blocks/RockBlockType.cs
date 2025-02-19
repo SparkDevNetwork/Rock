@@ -252,7 +252,7 @@ namespace Rock.Blocks
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>A list of attribute value strings or an empty list if no attribute values exist.</returns>
-        internal List<string> GetAttributeValues( string key )
+        public List<string> GetAttributeValues( string key )
         {
             return BlockCache.GetAttributeValues( key );
         }

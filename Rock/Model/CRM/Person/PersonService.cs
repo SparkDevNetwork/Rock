@@ -4027,7 +4027,6 @@ namespace Rock.Model
         /// <param name="filename">The filename.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>The new person profile image (built with the Public Application Root), or an empty string if something went wrong.</returns>
-        [RockInternal( "1.15" )]
         internal static string UpdatePersonProfilePhoto( Guid personGuid, byte[] photoBytes, string filename, RockContext rockContext = null )
         {
             // If rockContext is null, create a new RockContext object.

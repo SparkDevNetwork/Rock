@@ -67,7 +67,6 @@ namespace Rock.Model
         public string Url { get; set; }
 
         /// <inheritdoc/>
-        [RockInternal( "1.16.6" )]
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 

@@ -782,11 +782,9 @@ namespace Rock.Blocks.Types.Mobile.Communication
         /// <summary>
         /// Gets the people from the entity set.
         /// </summary>
-        /// <param name="entitySetGuid"></param>
         /// <param name="entitySet"></param>
         /// <param name="entitySetItemService"></param>
         /// <param name="personService"></param>
-        /// <param name="personAliasService"></param>
         /// <returns></returns>
         private IEnumerable<int?> GetPeopleFromEntitySet( EntitySet entitySet, EntitySetItemService entitySetItemService, PersonService personService )
         {

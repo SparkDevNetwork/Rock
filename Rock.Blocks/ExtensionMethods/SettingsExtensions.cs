@@ -70,42 +70,6 @@ namespace Rock.Blocks
         }
 
         /// <summary>
-        /// Converts the <see cref="IEntityCache"/> into a <see cref="ListItemBag"/>.
-        /// </summary>
-        /// <param name="entityCache">The <see cref="IEntityCache"/> instance to be converted.</param>
-        /// <returns>A <see cref="ListItemBag"/> representing the <see cref="IEntityCache"/>, with the <see cref="IEntityCache.Guid"/> string mapped to <see cref="ListItemBag.Value"/> and the <see cref="IEntityCache.ToString()"/> result mapped to <see cref="ListItemBag.Text"/>.</returns>
-        public static ListItemBag ToListItemBag( this IEntityCache entityCache )
-        {
-            if ( entityCache == null )
-            {
-                return null;
-            }
-
-            return new ListItemBag
-            {
-                Value = entityCache.Guid.ToString(),
-                Text = entityCache.ToString()
-            };
-        }
-
-        /// <summary>
-        /// Converts the <see cref="IEntityCache"/> collection into a <see cref="ListItemBag"/> list.
-        /// </summary>
-        /// <param name="entityCache">The <see cref="IEntityCache"/> collection to be converted.</param>
-       /// <returns>A <see cref="ListItemBag"/> list of <see cref="IEntityCache"/> representations, with each <see cref="IEntityCache.Guid"/> string mapped to <see cref="ListItemBag.Value"/> and its corresponding <see cref="IEntityCache.ToString()"/> result mapped to <see cref="ListItemBag.Text"/>.</returns>
-        public static List<ListItemBag> ToListItemBagList( this IEnumerable<IEntityCache> entityCaches )
-        {
-            var listItemBags = new List<ListItemBag>();
-
-            foreach ( var entityCache in entityCaches.Where( a => a != null ) )
-            {
-                listItemBags.Add( entityCache.ToListItemBag() );
-            }
-
-            return listItemBags;
-        }
-
-        /// <summary>
         /// Deserializes the <see cref="IEntity.Guid"/> string into a <see cref="ListItemBag"/>, using the specified delegate to source its corresponding <see cref="IEntityCache"/> instance.
         /// </summary>
         /// <param name="entityGuidString">The <see cref="IEntity.Guid"/> string.</param>

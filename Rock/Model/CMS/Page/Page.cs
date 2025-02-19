@@ -402,7 +402,6 @@ namespace Rock.Model
         public string AdditionalSettings { get; set; }
 
         /// <inheritdoc/>
-        [RockInternal( "1.16.4" )]
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 

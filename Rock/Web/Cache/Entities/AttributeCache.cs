@@ -831,7 +831,6 @@ namespace Rock.Web.Cache
         /// and <paramref name="entityQualifierValue"/> values for the <paramref name="entityTypeId"/>.
         /// </summary>
         /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
-        [RockInternal( "1.16" )]
         internal static List<AttributeCache> GetOrderedGridAttributes( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue )
         {
             return GetByEntityTypeQualifier( entityTypeId, entityQualifierColumn, entityQualifierValue, false )

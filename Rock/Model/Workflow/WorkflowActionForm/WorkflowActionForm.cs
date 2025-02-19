@@ -390,7 +390,6 @@ namespace Rock.Model
         #endregion Person entry related Entity Properties
 
         /// <inheritdoc/>
-        [RockInternal( "1.16.6" )]
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 
