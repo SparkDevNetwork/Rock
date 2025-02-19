@@ -188,13 +188,13 @@
     <Compile Include="Migrations\202502182025337_UpdateLMSPageName.Designer.cs">
       <DependentUpon>202502182025337_UpdateLMSPageName.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\202501292355096_AddCommunicationEntryWizardV2.cs" />
-    <Compile Include="Migrations\202501292355096_AddCommunicationEntryWizardV2.Designer.cs">
-      <DependentUpon>202501292355096_AddCommunicationEntryWizardV2.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\202502191454371_AddPersonalizationSegmentCategories.cs" />
     <Compile Include="Migrations\202502191454371_AddPersonalizationSegmentCategories.Designer.cs">
       <DependentUpon>202502191454371_AddPersonalizationSegmentCategories.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202502191621368_AddCommunicationEntryWizardV2.cs" />
+    <Compile Include="Migrations\202502191621368_AddCommunicationEntryWizardV2.Designer.cs">
+      <DependentUpon>202502191621368_AddCommunicationEntryWizardV2.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
@@ -2559,11 +2559,11 @@
     <EmbeddedResource Include="Migrations\202502182025337_UpdateLMSPageName.resx">
       <DependentUpon>202502182025337_UpdateLMSPageName.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\202501292355096_AddCommunicationEntryWizardV2.resx">
-      <DependentUpon>202501292355096_AddCommunicationEntryWizardV2.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202502191454371_AddPersonalizationSegmentCategories.resx">
       <DependentUpon>202502191454371_AddPersonalizationSegmentCategories.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202502191621368_AddCommunicationEntryWizardV2.resx">
+      <DependentUpon>202502191621368_AddCommunicationEntryWizardV2.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>

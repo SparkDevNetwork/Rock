@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
-    public sealed partial class _202501231536362_AddCommunicationEntryWizardV2 : IMigrationMetadata
+    public sealed partial class AddCommunicationEntryWizardV2 : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(_202501231536362_AddCommunicationEntryWizardV2));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AddPersonalizationSegmentCategories));
         
         string IMigrationMetadata.Id
         {
-            get { return "202501292355096_AddCommunicationEntryWizardV2"; }
+            get { return "202502191621368_AddCommunicationEntryWizardV2"; }
         }
         
         string IMigrationMetadata.Source
