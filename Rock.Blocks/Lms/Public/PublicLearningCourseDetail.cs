@@ -249,6 +249,16 @@ namespace Rock.Blocks.Lms
                                         </div>
                                         <div class=""text-muted"">You completed this class on {{
                                             classInfo.StudentParticipant.LearningCompletionDateTime | Date: 'sd' }}.</div>
+
+                                        {% if classInfo.StudentParticipant.LearningGradingSystemScale.Name != empty %}
+                                        <div class=""mt-3"">
+                                            <div class=""text-muted"">
+                                                <p class=""text-bold mb-0"">Grade</p>
+                                                <p class=""mb-0"">{{ classInfo.StudentParticipant.LearningGradingSystemScale.Name }}</p>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
                                         <div class=""mt-2"">
                                             <a href=""{{ classInfo.WorkspaceLink }}"">View Class Workspace</a>
                                         </div>
