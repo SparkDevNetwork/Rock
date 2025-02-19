@@ -23,18 +23,18 @@
 
 /** Determines the configuration mode of a LearningProgram. */
 export const ConfigurationMode = {
-    /** On-demand learning mode. */
-    OnDemandLearning: 0,
-
     /** Academic calendar mode. */
-    AcademicCalendar: 1
+    AcademicCalendar: 0,
+
+    /** On-demand learning mode. */
+    OnDemandLearning: 1
 } as const;
 
 /** Determines the configuration mode of a LearningProgram. */
 export const ConfigurationModeDescription: Record<number, string> = {
-    0: "On Demand Learning",
+    0: "Academic Calendar",
 
-    1: "Academic Calendar"
+    1: "On Demand Learning"
 };
 
 /** Determines the configuration mode of a LearningProgram. */
