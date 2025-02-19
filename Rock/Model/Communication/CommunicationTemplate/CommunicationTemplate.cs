@@ -129,6 +129,15 @@ namespace Rock.Model
         [DataMember]
         public int? CategoryId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a flag indicating if this is a starter communication template.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> value that is <see langword="true" /> if this is a starter template, otherwise <see langword="false" />.
+        /// </value>=
+        [DataMember]
+        public bool IsStarter { get; set; }
+
         #region Email Fields
 
         /// <summary>

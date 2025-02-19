@@ -33,6 +33,8 @@ export const Category = {
     DefinedtypeCms: "6B1B3106-B7F5-BBA2-4F81-8300F21F6661",
     /** CMS Settings Category */
     DefinedtypeCmsSettings: "262313F6-5D66-41CE-9B6F-D36567D9AB9D",
+    /** Start Sections Category */
+    EmailSectionStarterSections: "760C6F4D-F7BF-4818-9BDF-DF7650F2A468",
     /** The 'Public' category for Communication List groups */
     GrouptypeCommunicationlistPublic: "A0889E77-67D9-418C-B301-1B3924692058",
     /** The history attendance changes for a person */

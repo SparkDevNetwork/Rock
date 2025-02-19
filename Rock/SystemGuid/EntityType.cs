@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -2025,5 +2025,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.AIProvider"/> 
         /// </summary>
         public const string AI_PROVIDER = "945A994F-F15E-43AC-B503-A54BDE70F77F";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.EmailSection"/> 
+        /// </summary>
+        public const string EMAIL_SECTION = "86B2CE94-9DC3-463C-B2B1-DEECAB70474E";
     }
 }

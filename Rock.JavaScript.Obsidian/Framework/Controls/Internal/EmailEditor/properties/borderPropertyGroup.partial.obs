@@ -1,0 +1,255 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TogglablePropertyGroup :label="label"
+                            :valueProvider="valueProvider"
+                            @toggle="onBorderToggled">
+        <BorderStyleProperty :element="element"
+                             label="Border Styles"
+                             :valueProviderOverride="valueProvider.borderStyleProvider"
+                             @update:borderStyle="onBorderUpdated" />
+
+        <BorderWidthProperty :element="element"
+                             label="Border Thickness"
+                             :valueProviderOverride="valueProvider.borderWidthProvider"
+                             @update:borderWidth="onBorderUpdated" />
+
+        <BorderColorProperty :element="element"
+                             label="Border Color"
+                             :valueProviderOverride="valueProvider.borderColorProvider"
+                             @update:borderColor="onBorderUpdated" />
+    </TogglablePropertyGroup>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import BorderColorProperty from "./borderColorProperty.partial.obs";
+    import BorderStyleProperty from "./borderStyleProperty.partial.obs";
+    import BorderWidthProperty from "./borderWidthProperty.partial.obs";
+    import TogglablePropertyGroup from "./togglablePropertyGroup.partial.obs";
+    import { Shorthand, ShorthandValueProvider, StyleSheetMode, ValueProvider } from "../types.partial";
+    import { createBorderColorProvider, createBorderStyleProvider, createBorderWidthProvider } from "../utils.partial";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    type BorderPropertyGroupValueProvider = ValueProvider<boolean | null | undefined> & {
+        borderStyleProvider: ShorthandValueProvider<string | null | undefined>;
+        borderWidthProvider: ShorthandValueProvider<number | null | undefined>;
+        borderColorProvider: ShorthandValueProvider<string | null | undefined>;
+    };
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Border" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Creates and adds a &lt;style&gt; element to the `element` input to host the changes.
+         */
+        styleSheetMode: {
+            type: Object as PropType<StyleSheetMode | undefined>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isBorderShown", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    // Initialize to true so the child components can create the providers.
+    const isBorderShown = ref<boolean>(true);
+
+    // #endregion Values
+
+    // #region Values
+
+    const valueProvider = ref<BorderPropertyGroupValueProvider>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): BorderPropertyGroupValueProvider {
+        const element = props.element;
+        const copyToElements = props.copyToElements;
+        const styleSheetMode = props.styleSheetMode;
+
+        const borderStyleProvider: ShorthandValueProvider<string | null | undefined> = createBorderStyleProvider(
+            element,
+            copyToElements,
+            styleSheetMode
+        );
+        const borderWidthProvider: ShorthandValueProvider<number | null | undefined> = createBorderWidthProvider(
+            element,
+            copyToElements,
+            styleSheetMode
+        );
+        const borderColorProvider: ShorthandValueProvider<string | null | undefined> = createBorderColorProvider(
+            element,
+            copyToElements,
+            styleSheetMode
+        );
+
+        const value = ref<boolean | null | undefined>(hasAnyBorderStyles());
+
+        const watcher = watch(value, (newValue) => {
+            if (!newValue) {
+                borderStyleProvider.shorthandValue = null;
+                borderStyleProvider.topValue = null;
+                borderStyleProvider.bottomValue = null;
+                borderStyleProvider.rightValue = null;
+                borderStyleProvider.leftValue = null;
+
+                borderColorProvider.shorthandValue = null;
+                borderColorProvider.topValue = null;
+                borderColorProvider.bottomValue = null;
+                borderColorProvider.rightValue = null;
+                borderColorProvider.leftValue = null;
+
+                borderWidthProvider.shorthandValue = null;
+                borderWidthProvider.topValue = null;
+                borderWidthProvider.bottomValue = null;
+                borderWidthProvider.rightValue = null;
+                borderWidthProvider.leftValue = null;
+            }
+        });
+
+        function hasAnyBorderStyles(): boolean {
+            return hasBorderStyle() || hasBorderColor() || hasBorderWidth();
+        }
+
+        function hasBorderStyle(): boolean {
+            return !!(borderStyleProvider.shorthandValue
+                || borderStyleProvider.topValue
+                || borderStyleProvider.bottomValue
+                || borderStyleProvider.leftValue
+                || borderStyleProvider.rightValue);
+        }
+
+        function hasBorderColor(): boolean {
+            return !!(borderColorProvider.shorthandValue
+                || borderColorProvider.topValue
+                || borderColorProvider.bottomValue
+                || borderColorProvider.leftValue
+                || borderColorProvider.rightValue);
+        }
+
+        function hasBorderWidth(): boolean {
+            return !isNullish(borderWidthProvider.shorthandValue)
+                || !isNullish(borderWidthProvider.topValue)
+                || !isNullish(borderWidthProvider.bottomValue)
+                || !isNullish(borderWidthProvider.leftValue)
+                || !isNullish(borderWidthProvider.rightValue);
+        }
+
+        return {
+            get value(): boolean | null | undefined {
+                return value.value;
+            },
+            set value(newValue: boolean | null | undefined) {
+                value.value = newValue;
+            },
+            dispose() {
+                watcher();
+                borderStyleProvider.dispose();
+                borderWidthProvider.dispose();
+                borderColorProvider.dispose();
+            },
+            borderColorProvider,
+            borderStyleProvider,
+            borderWidthProvider
+        };
+    }
+
+    function hasProvidedBorderWidth(): boolean {
+        const borderWidthProvider = valueProvider.value.borderWidthProvider;
+        return !isNullish(borderWidthProvider.shorthandValue)
+            && !isNullish(borderWidthProvider.topValue)
+            && !isNullish(borderWidthProvider.bottomValue)
+            && !isNullish(borderWidthProvider.leftValue)
+            && !isNullish(borderWidthProvider.rightValue);
+    }
+
+    function hasProvidedBorderColor(): boolean {
+        const borderColorProvider = valueProvider.value.borderColorProvider;
+        return !!borderColorProvider.shorthandValue
+            && !!borderColorProvider.topValue
+            && !!borderColorProvider.bottomValue
+            && !!borderColorProvider.leftValue
+            && !!borderColorProvider.rightValue;
+    }
+
+    function hasProvidedBorderStyle(): boolean {
+        const borderStyleProvider = valueProvider.value.borderColorProvider;
+        return !!borderStyleProvider.shorthandValue
+            && !!borderStyleProvider.topValue
+            && !!borderStyleProvider.bottomValue
+            && !!borderStyleProvider.leftValue
+            && !!borderStyleProvider.rightValue;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onBorderUpdated(value: Shorthand<string | null>): void {
+        if (value?.shorthand || value?.bottom || value?.top || value?.right || value?.left) {
+            // If any border style is found, show the border properties.
+            isBorderShown.value = true;
+            emit("update:isBorderShown", true);
+        }
+    }
+
+    function onBorderToggled(value: boolean): void {
+        if (!value) {
+            // Clear the border properties when "Border" is switched off
+            // or when toggled in code.
+            valueProvider.value.borderColorProvider.shorthandValue = null;
+            valueProvider.value.borderStyleProvider.shorthandValue = null;
+            valueProvider.value.borderWidthProvider.shorthandValue = null;
+        }
+
+        emit("update:isBorderShown", value);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.styleSheetMode, () => props.copyToElements], () => {
+        valueProvider.value.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onMounted(() => {
+        if (!hasProvidedBorderWidth() && !hasProvidedBorderColor() && !hasProvidedBorderStyle()) {
+            isBorderShown.value = false;
+        }
+    });
+
+    onUnmounted(() => {
+        valueProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

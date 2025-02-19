@@ -4042,6 +4042,95 @@ END";
         }
 
         /// <summary>
+        /// Adds a new DefinedType, or Updates it if it already exists
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="helpText">The help text.</param>
+        /// <param name="categorizedValuesEnabled">Whether defined values of this type can have categories.</param>
+        public void AddDefinedType( string category, string name, string description, string guid, string helpText, bool? categorizedValuesEnabled )
+        {
+            var areCategorizedValuesEnabledBit = "NULL";
+            if ( categorizedValuesEnabled.HasValue )
+            {
+                if ( categorizedValuesEnabled.Value )
+                {
+                    areCategorizedValuesEnabledBit = "1";
+                }
+                else
+                {
+                    areCategorizedValuesEnabledBit = "0";
+                }
+            }
+
+            Migration.Sql( string.Format( @"
+
+                DECLARE @DefinedTypeEntityTypeId int = (
+                    SELECT TOP 1 [Id]
+                    FROM [EntityType]
+                    WHERE [Name] = 'Rock.Model.DefinedType' )
+
+                DECLARE @CategoryId int = (
+                    SELECT TOP 1 [Id] FROM [Category]
+                    WHERE [EntityTypeId] = @DefinedTypeEntityTypeId
+                    AND [Name] = '{0}' )
+
+                IF @CategoryId IS NULL AND @DefinedTypeEntityTypeId IS NOT NULL
+                BEGIN
+                    INSERT INTO [Category] ( [IsSystem],[EntityTypeId],[Name],[Order],[Guid] )
+                    VALUES( 0, @DefinedTypeEntityTypeId,'{0}', 0, NEWID() )
+                    SET @CategoryId = SCOPE_IDENTITY()
+                END
+
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT TOP 1 [Id] FROM [FieldType] WHERE [Guid] = '9C204CD0-1233-41C5-818A-C5DA439445AA')
+
+                DECLARE @Order int
+                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [DefinedType];
+
+                IF NOT EXISTS (
+                    SELECT [Id]
+                    FROM [DefinedType]
+                    WHERE [Guid] = '{3}' )
+
+                BEGIN
+
+                    INSERT INTO [DefinedType] (
+                        [IsSystem],[FieldTypeId],[Order],
+                        [CategoryId],[Name],[Description],[HelpText],[CategorizedValuesEnabled],
+                        [Guid])
+                    VALUES(
+                        1,@FieldTypeId,@Order,
+                        @CategoryId,'{1}','{2}','{4}',{5},
+                        '{3}')
+                END
+                ELSE
+                BEGIN
+
+                    UPDATE [DefinedType] SET
+                        [IsSystem] = 1,
+                        [FieldTypeId] = @FieldTypeId,
+                        [CategoryId] = @CategoryId,
+                        [Name] = '{1}',
+                        [Description] = '{2}',
+                        [HelpText] = '{4}',
+                        [CategorizedValuesEnabled] = {5}
+                    WHERE [Guid] = '{3}'
+
+                END
+",
+                    category,
+                    name,
+                    description.Replace( "'", "''" ),
+                    guid,
+                    helpText ?? string.Empty,
+                    areCategorizedValuesEnabledBit
+                    ) );
+        }
+
+        /// <summary>
         /// Deletes the DefinedType.
         /// </summary>
         /// <param name="guid">The GUID.</param>

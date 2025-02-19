@@ -1,0 +1,73 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="section-column-property-header">
+        <RockLabel class="section-column-property-label">Column {{ columnNumber }}</RockLabel>
+        <RockButton v-if="!isDeleteHidden"
+                    btnSize="xs"
+                    btnType="link"
+                    class="section-column-property-remove-button"
+                    @click="$emit('delete')"><i class="fa fa-trash"></i> Remove</RockButton>
+    </div>
+
+    <HorizontalAlignmentTextAlignProperty :element="element" />
+
+    <BackgroundColorProperty :element="element" />
+
+    <PaddingProperty :element="element" />
+
+    <BorderRadiusProperty :element="element" />
+
+    <BorderPropertyGroup :element="element" />
+</template>
+
+<style scoped>
+.section-column-property-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-small);
+}
+
+.section-column-property-label {
+    font-size: var(--font-size-h5);
+    color: var(--color-info-strong);
+}
+
+.section-column-property-remove-button {
+    color: var(--color-danger-strong);
+    font-weight: bold;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import BackgroundColorProperty from "./backgroundColorProperty.partial.obs";
+    import BorderPropertyGroup from "./borderPropertyGroup.partial.obs";
+    import BorderRadiusProperty from "./borderRadiusProperty.partial.obs";
+    import PaddingProperty from "./paddingProperty.partial.obs";
+    import HorizontalAlignmentTextAlignProperty from "./horizontalAlignmentTextAlignProperty.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+
+    defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        columnNumber: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        isDeleteHidden: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "delete"): void;
+    }>();
+</script>

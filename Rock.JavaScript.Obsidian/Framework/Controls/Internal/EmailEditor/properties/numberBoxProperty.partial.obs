@@ -1,0 +1,47 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NumberBox v-model="internalValue"
+               v-bind="$attrs"
+               :disableLabel="!label"
+            :label="label">
+        <template v-if="valueSuffix" #inputGroupAppend>
+            <span class="input-group-addon">{{ valueSuffix }}</span>
+        </template>
+    </NumberBox>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ValueProvider } from "../types.partial";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+
+    const props = defineProps({
+        label: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        valueProvider: {
+            type: Object as PropType<ValueProvider<number | null | undefined>>,
+            required: true
+        },
+
+        valueSuffix: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    // #region Computed Props
+
+    const internalValue = computed<number | null | undefined>({
+        get(): number | null | undefined {
+            return props.valueProvider.value;
+        },
+        set(value: number | null | undefined): void {
+            props.valueProvider.value = value;
+        }
+    });
+
+    // #endregion Computed Props
+</script>

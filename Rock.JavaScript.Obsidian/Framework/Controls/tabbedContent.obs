@@ -125,6 +125,11 @@
         }, 150);
     });
 
+    watch(() => props.selectedTab, (current, _previous) => {
+        // Change the internal selectedTab whenever the tab is changed externally.
+        selectedTab.value = current;
+    });
+
     onMounted(() => {
         if (shouldManageQueryString) {
             // Listen for the browser back button click and update the selected tab.

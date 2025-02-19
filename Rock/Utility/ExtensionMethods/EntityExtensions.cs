@@ -256,7 +256,7 @@ namespace Rock
         /// <param name="entities">The entities to be represented by the bags.</param>
         /// <param name="toText">A function that can set the Text property of the ListItemBag for the entity.</param>
         /// <returns>A collection of <see cref="ListItemBag"/> that represents the entities.</returns>
-        public static List<ListItemBag> ToListItemBagList( this IEnumerable<IEntity> entities, Func<IEntity, string> toText )
+        public static List<ListItemBag> ToListItemBagList<T>( this IEnumerable<T> entities, Func<T, string> toText ) where T : IEntity
         {
             if ( entities == null )
             {

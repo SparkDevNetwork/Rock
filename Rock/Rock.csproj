@@ -1311,9 +1311,11 @@
     <Compile Include="Model\CMS\HtmlContent\HtmlContent.Logic.cs" />
     <Compile Include="Model\CMS\MediaFolder\MediaFolder.Logic.cs" />
     <Compile Include="Model\CMS\PageRoute\PageRoute.Logic.cs" />
+    <Compile Include="Model\CodeGenerated\EmailSectionService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\CommunicationAttachment\CommunicationAttachment.Logic.cs" />
     <Compile Include="Model\Communication\CommunicationResponseAttachment\CommunicationResponseAttachment.Logic.cs" />
     <Compile Include="Model\Communication\CommunicationTemplateAttachment\CommunicationTemplateAttachment.Logic.cs" />
+    <Compile Include="Model\Communication\EmailSection\EmailSection.cs" />
     <Compile Include="Model\Communication\NotificationRecipient\NotificationRecipient.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionActivityType\ConnectionActivityType.Logic.cs" />
     <Compile Include="Model\Connection\ConnectionOpportunityCampus\ConnectionOpportunityCampus.Logic.cs" />
@@ -1832,6 +1834,7 @@
     <Compile Include="Security\GlobalRestrictedDefault.cs" />
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
+    <Compile Include="SystemGuid\EmailSection.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
     <Compile Include="SystemKey\GlobalAttributeKey.cs" />
     <Compile Include="Tasks\UpdatePersonAliasPersonalizationData.cs" />

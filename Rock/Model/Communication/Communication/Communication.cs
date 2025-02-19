@@ -291,6 +291,12 @@ namespace Rock.Model
         [DataMember]
         public string MessageMetaData { get; set; }
 
+        /// <summary>
+        /// Gets or sets the communication topic defined value.
+        /// </summary>
+        [DataMember]
+        public int? CommunicationTopicValueId { get; set; }
+
         #endregion
 
         #region SMS Properties
@@ -601,6 +607,12 @@ namespace Rock.Model
         /// <inheritdoc cref="SystemCommunicationId"/>
         [DataMember]
         public virtual SystemCommunication SystemCommunication { get; set;  }
+        
+        /// <summary>
+        /// Gets or sets the communication topic defined value.
+        /// </summary>
+        [DataMember]
+        public virtual DefinedValue CommunicationTopicValue { get; set; }
 
         #endregion
     }

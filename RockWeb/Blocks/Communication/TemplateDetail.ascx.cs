@@ -186,6 +186,7 @@ namespace RockWeb.Blocks.Communication
 
             communicationTemplate.Name = tbName.Text;
             communicationTemplate.IsActive = cbIsActive.Checked;
+            communicationTemplate.IsStarter = cbIsStarter.Checked;
             communicationTemplate.Description = tbDescription.Text;
 
             if ( communicationTemplate.ImageFileId != imgTemplatePreview.BinaryFileId )
@@ -416,6 +417,7 @@ namespace RockWeb.Blocks.Communication
 
             tbName.Text = communicationTemplate.Name;
             cbIsActive.Checked = communicationTemplate.IsActive;
+            cbIsStarter.Checked = communicationTemplate.IsStarter;
             tbDescription.Text = communicationTemplate.Description;
             cpCategory.SetValue( communicationTemplate.CategoryId );
 
@@ -467,6 +469,7 @@ namespace RockWeb.Blocks.Communication
 
             tbName.ReadOnly = restrictedEdit;
             cbIsActive.Enabled = !restrictedEdit;
+            cbIsStarter.Enabled = !restrictedEdit;
 
             tbFromName.ReadOnly = restrictedEdit;
             tbName.ReadOnly = restrictedEdit;

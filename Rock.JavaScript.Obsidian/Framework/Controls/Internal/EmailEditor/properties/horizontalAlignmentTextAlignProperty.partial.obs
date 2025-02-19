@@ -1,0 +1,90 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <HorizontalAlignmentProperty v-bind="$attrs"
+                                 :label="label"
+                                 :valueProvider="valueProvider" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import HorizontalAlignmentProperty from "./horizontalAlignmentProperty.partial.obs";
+    import { HorizontalAlignment, StyleSheetMode, ValueProvider } from "../types.partial";
+    import { horizontalAlignmentConverter, inlineStyleProvider, styleSheetProvider } from "../utils.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Horizontal Alignment" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Creates and adds a &lt;style&gt; element to the `element` input to host the changes.
+         */
+        styleSheetMode: {
+            type: Object as PropType<StyleSheetMode | undefined>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const valueProvider = ref<ValueProvider<HorizontalAlignment | "" | null | undefined>>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ValueProvider<"" | HorizontalAlignment | null | undefined> {
+        if (!props.styleSheetMode) {
+            return inlineStyleProvider(
+                props.element,
+                "text-align",
+                horizontalAlignmentConverter,
+                props.copyToElements
+            );
+        }
+        else {
+            return styleSheetProvider(
+                props.element,
+                props.styleSheetMode.styleCssClass,
+                props.styleSheetMode.rulesetCssSelector,
+                "text-align",
+                horizontalAlignmentConverter
+            );
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements, () => props.styleSheetMode], () => {
+        valueProvider.value.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

@@ -1,0 +1,305 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase :componentElement="componentElement"
+                                title="Video"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion title="Settings">
+                <TextBox v-model="sourceVideoUrl"
+                         :help="sourceVideoUrlHelpText"
+                         label="Source Video URL"
+                         @update:modelValue="onSourceVideoUrlUpdated">
+                    <template #inputGroupPrepend>
+                        <span class="input-group-addon">
+                            <i class="fa fa-link"></i>
+                        </span>
+                    </template>
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">
+                            <RockButton @click="onSourceVideoUrlUpdated(sourceVideoUrl)">
+                                <i :class="addonIconCssClass"></i>
+                            </RockButton>
+                        </span>
+                    </template>
+                </TextBox>
+
+                <TextBox v-model="linkTargetUrl"
+                         help="The URL that opens when the video is clicked. This can differ from the source URL if the video is embedded on your website."
+                         label="Link Target URL"
+                         @update:modelValue="onLinkTargetUrlUpdated">
+                    <template #inputGroupPrepend>
+                        <span class="input-group-addon">
+                            <i class="fa fa-link"></i>
+                        </span>
+                    </template>
+                </TextBox>
+
+                <div ref="imageUploader">
+                    <ImageUploader v-model="imageGuidAndName"
+                                   :binaryFileTypeGuid="BinaryFileType.CommunicationImage"
+                                   help="Manually select a video preview image to display in your block."
+                                   label="Poster Image"
+                                   :uploadAsTemporary="true"
+                                   @imageRemoved="onImageRemoved"
+                                   @update:modelValue="onImageUploaded" />
+                </div>
+
+                <AltAttributeProperty v-if="imageElement"
+                                      :element="imageElement"
+                                      help="Provide a brief description of the video for better accessibility. Keep it concise and relevant."
+                                      placeholder="Add video description..." />
+            </Accordion>
+
+            <Accordion title="Spacing">
+                <PaddingProperty :element="componentElement" />
+            </Accordion>
+        </AccordionGroup>
+    </ComponentPropertyPanelBase>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import AltAttributeProperty from "../properties/altAttributeProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BinaryFiletype as BinaryFileType } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { ICancellationToken } from "@Obsidian/Utility/cancellation";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
+    import { debounceAsync } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        videoProviderNames: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    // The value casing is inconsistent but is backward compatible with the old block.
+    const dataAttributeKey = {
+        imageGuid: "imageGuid",
+        imageFileName: "imageFilename",
+        imgCssWidth: "imgcsswidth",
+        imageSourceVideoUrl: "imageSourceVideoUrl"
+    } as const;
+
+    const placeholderImageUrl = "/Assets/Images/video-placeholder.jpg";
+
+    // #region Values
+
+    const addonIconCssClass = ref<string>("fa fa-arrow-right");
+    const imageElement = ref<HTMLImageElement | null | undefined>(props.componentElement.querySelector("img"));
+    const anchorElement = ref<HTMLAnchorElement | null | undefined>(imageElement.value?.closest("a") === imageElement.value?.parentElement ? imageElement.value?.parentElement as HTMLAnchorElement : null);
+    const sourceVideoUrl = ref<string>(props.componentElement.dataset[dataAttributeKey.imageSourceVideoUrl] ?? "");
+    const linkTargetUrl = ref<string>(anchorElement.value?.getAttribute("href") ?? "");
+    const imageGuidAndName = ref<ListItemBag | null | undefined>(props.componentElement.dataset[dataAttributeKey.imageGuid]
+        ? ({
+            text: props.componentElement.dataset[dataAttributeKey.imageFileName],
+            value: props.componentElement.dataset[dataAttributeKey.imageGuid]
+        })
+        : null);
+    const imageUploader = ref<HTMLElement | undefined>();
+
+    // #endregion
+
+    // #region Computed Values
+
+    const constructedImageSource = computed<string | null | undefined>(() => {
+        if (!imageGuidAndName.value?.value) {
+            return null;
+        }
+
+        const queryStringParameters: string[] = [];
+
+        queryStringParameters.push(`isBinaryFile=T`);
+        queryStringParameters.push(`guid=${imageGuidAndName.value.value}`);
+        queryStringParameters.push(`fileName=${imageGuidAndName.value.text}`);
+
+        return `/GetImage.ashx?${queryStringParameters.join("&")}`;
+    });
+
+    const sourceVideoUrlHelpText = computed<string>(() => {
+        const helpTextSentences: string[] = ["The video URL to generate a preview thumbnail and set as the default link."];
+
+        if (props.videoProviderNames?.length) {
+            helpTextSentences.push(`Previews are auto-generated for ${asCommaAnd(props.videoProviderNames)}.`);
+        }
+
+        return helpTextSentences.join(" ");
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    const refreshThumbnail = debounceAsync(async (cancellationToken: ICancellationToken): Promise<void> => {
+        try {
+            addonIconCssClass.value = "fa fa-sync fa-spin";
+
+            const controller = new AbortController();
+            const signal = controller.signal;
+            cancellationToken.onCancellationRequested(() => {
+                controller.abort();
+            });
+
+            const formData = new FormData();
+            formData.append("video_url", sourceVideoUrl.value);
+
+            // Send the request as form data
+            const result = await fetch("/GetVideoEmbed.ashx", {
+                method: "POST",
+                body: formData,
+                signal
+            });
+
+            if (result.ok) {
+                // Assume content-type: "text/plain"
+                const thumbnailUrl = await result.text();
+
+                // Only update the thumbnail if the result is a valid URL.
+                if (thumbnailUrl) {
+                    const url = new URL(thumbnailUrl);
+
+                    const fileName = url.searchParams.get("filename");
+                    const fileGuid = toGuidOrNull(url.searchParams.get("guid"));
+
+                    props.componentElement.dataset[dataAttributeKey.imageGuid] = fileGuid ?? "";
+                    props.componentElement.dataset[dataAttributeKey.imageFileName] = fileName ?? "";
+
+                    if (imageElement.value) {
+                        imageElement.value.setAttribute("src", thumbnailUrl);
+
+                    }
+
+                    if (imageUploader.value) {
+                        const imageUploaderThumbnailImage = imageUploader.value.querySelector(".imageupload-thumbnail-image") as HTMLElement;
+
+                        if (imageUploaderThumbnailImage) {
+                            imageUploaderThumbnailImage.style.backgroundImage = `url("${thumbnailUrl}")`;
+                        }
+                    }
+                }
+            }
+        }
+        finally {
+            addonIconCssClass.value = "fa fa-arrow-right";
+        }
+    }, {
+        delay: 1000
+    });
+
+    function updateLinkTargetUrl(url: string): void {
+        if (url) {
+            if (!anchorElement.value) {
+                // Create the anchor element.
+                anchorElement.value = props.componentElement.ownerDocument.createElement("a");
+
+                if (imageElement.value) {
+                    imageElement.value.replaceWith(anchorElement.value);
+                    anchorElement.value.appendChild(imageElement.value);
+                }
+            }
+
+            // Update the anchor element's href attribute.
+            anchorElement.value.setAttribute("href", url);
+        }
+        else if (anchorElement.value) {
+            if (imageElement.value) {
+                anchorElement.value.replaceWith(imageElement.value);
+            }
+            else {
+                anchorElement.value.remove();
+            }
+
+            anchorElement.value = null;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onSourceVideoUrlUpdated(url: string): void {
+        props.componentElement.dataset[dataAttributeKey.imageSourceVideoUrl] = url;
+
+        updateLinkTargetUrl(url);
+
+        linkTargetUrl.value = url;
+
+        refreshThumbnail();
+    }
+
+    function onLinkTargetUrlUpdated(url: string): void {
+        updateLinkTargetUrl(url);
+    }
+
+    function onImageUploaded(): void {
+        const imageListItemBag = imageGuidAndName.value;
+
+        const fileGuid = toGuidOrNull(imageListItemBag?.value);
+        const fileName = imageListItemBag?.text;
+
+        props.componentElement.dataset[dataAttributeKey.imageGuid] = fileGuid ?? "";
+        props.componentElement.dataset[dataAttributeKey.imageFileName] = fileName ?? "";
+    }
+
+    function onImageRemoved(): void {
+        delete props.componentElement.dataset[dataAttributeKey.imageGuid];
+        delete props.componentElement.dataset[dataAttributeKey.imageFileName];
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(constructedImageSource, src => {
+        if (!imageElement.value) {
+            return;
+        }
+
+        if (src) {
+            imageElement.value.src = src;
+            imageElement.value.style.width = "100%";
+            imageElement.value.dataset[dataAttributeKey.imgCssWidth] = "full";
+        }
+        else {
+            // Use the placeholder image.
+            imageElement.value.src = placeholderImageUrl;
+        }
+    });
+
+    watch(() => props.componentElement, () => {
+        imageElement.value = props.componentElement.querySelector("img");
+        anchorElement.value = imageElement.value?.closest("a") === imageElement.value?.parentElement ? imageElement.value?.parentElement as HTMLAnchorElement : null;
+        imageGuidAndName.value = props.componentElement.dataset[dataAttributeKey.imageGuid]
+            ? ({
+                text: props.componentElement.dataset[dataAttributeKey.imageFileName],
+                value: props.componentElement.dataset[dataAttributeKey.imageGuid]
+            })
+            : null;
+        sourceVideoUrl.value = props.componentElement.dataset[dataAttributeKey.imageSourceVideoUrl] ?? "";
+        addonIconCssClass.value = "fa fa-arrow-right";
+        linkTargetUrl.value = anchorElement.value?.getAttribute("href") ?? "";
+    });
+
+    // #endregion
+</script>

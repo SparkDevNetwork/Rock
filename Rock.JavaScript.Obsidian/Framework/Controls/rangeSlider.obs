@@ -5,9 +5,13 @@
                    v-bind="fieldProps"
                    :formGroupClasses="'rock-range-slider ' + fieldProps.formGroupClasses"
                    name="range-slider">
+        <template v-if="$slots.besideLabel" #besideLabel>
+            <slot name="besideLabel"></slot>
+        </template>
+
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
-                <InlineRangeSlider v-model="internalValue" :uniqueId="uniqueId" v-bind="field" :step="step" :min="min" :max="max" :showValueBar="showValueBar" />
+                <InlineRangeSlider v-model="internalValue" :uniqueId="uniqueId" v-bind="field" :step="step" :min="min" :max="max" :showValueBar="showValueBar" :valueSuffix="valueSuffix" />
             </div>
         </template>
     </RockFormField>
@@ -43,6 +47,11 @@
         showValueBar: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        valueSuffix: {
+            type: String as PropType<string>,
+            default: ""
         },
 
         ...standardRockFormFieldProps

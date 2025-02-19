@@ -181,6 +181,7 @@
     <Compile Include="Controllers\CodeGenerated\ContentCollectionSourcesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentTopicDomainsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentTopicsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\EmailSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\EntityIntentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionSessionLocationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceActionsController.CodeGenerated.cs" />
@@ -317,6 +318,7 @@
     <Compile Include="v2\Models\CodeGenerated\DevicesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\DocumentsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\DocumentTypesController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\EmailSectionsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\EntityIntentsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\EntitySearchesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\EntitySetItemsController.CodeGenerated.cs" />

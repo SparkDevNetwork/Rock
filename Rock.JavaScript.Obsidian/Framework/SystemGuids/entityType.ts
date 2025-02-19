@@ -235,6 +235,8 @@ export const EntityType = {
     Document: "7CEFA340-9D98-4B2C-B462-313C61944B6C",
     /** The EntityType Guid for Rock.Model.DocumentType  */
     DocumentType: "18CF366F-46B6-49CA-B557-BCABD6BBD175",
+    /** The EntityType Guid for Rock.Model.EmailSection  */
+    EmailSection: "86B2CE94-9DC3-463C-B2B1-DEECAB70474E",
     /** The EntityType Guid for Rock.Model.EntityCampusFilter  */
     EntityCampusFilter: "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78",
     /** The EntityType Guid for Rock.Model.EntityIntent  */

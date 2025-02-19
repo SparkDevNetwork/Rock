@@ -4,6 +4,9 @@
                    v-bind="standardProps"
                    formGroupClasses="check-box-list"
                    name="check-box-list">
+        <template v-if="$slots.besideLabel" #besideLabel>
+            <slot name="besideLabel"></slot>
+        </template>
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <slot name="prepend" :isInputGroupSupported="false" />
