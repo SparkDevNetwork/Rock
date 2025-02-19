@@ -170,7 +170,14 @@ namespace Rock.Blocks.Cms
 
             var personalizationSegmentList = personalizationSegmentService.Queryable().ToList();
 
-            //var nameFilter = GetBlockPersonPreferences().GetValue( UserPreferenceKey.Name );
+            foreach ( var personalizationSegment in personalizationSegmentList )
+            {
+                if ( personalizationSegment.TimeToUpdateDurationMilliseconds.HasValue )
+                {
+                    // Round values to a single digit.
+                    personalizationSegment.TimeToUpdateDurationMilliseconds = Math.Round( personalizationSegment.TimeToUpdateDurationMilliseconds.Value, 1 );
+                }
+            }
 
             var personalizationSegmentItemQuery = personalizationSegmentList.Select( a => new PersonalizationSegmentListBag
             {
