@@ -2,7 +2,7 @@
 <template>
     <Panel v-if="[ComponentScreen.Summary, ComponentScreen.Configuration].includes(screenToShow)" :title="panelTitle" :class="containerClasses" :hasFullscreen="false">
         <div v-if="screenToShow === ComponentScreen.Configuration" class="learning-activity-video-file-configuration-container">
-            <div class="header-content-section">
+            <div>
                 <RockLabel>Header Content</RockLabel>
                 <StructuredContentEditor v-model="headerContent" :disabled="disabled" />
             </div>
@@ -29,9 +29,7 @@
 
             <div class="footer-content-section">
                 <RockLabel>Footer Content</RockLabel>
-                <StructuredContentEditor
-                                         v-model="footerContent"
-                                         :disabled="disabled" />
+                <StructuredContentEditor v-model="footerContent" :disabled="disabled" />
             </div>
         </div>
 

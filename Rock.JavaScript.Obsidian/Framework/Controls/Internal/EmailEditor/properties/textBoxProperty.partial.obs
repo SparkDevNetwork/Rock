@@ -1,0 +1,42 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TextBox v-model="internalValue"
+             v-bind="$attrs"
+             :disableLabel="!label"
+             :label="label">
+        <template v-if="$slots.inputGroupPrepend" #inputGroupPrepend>
+            <slot name="inputGroupPrepend"></slot>
+        </template>
+    </TextBox>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ValueProvider } from "../types.partial";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+
+    const props = defineProps({
+        label: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        valueProvider: {
+            type: Object as PropType<ValueProvider<string | null | undefined>>,
+            required: true
+        }
+    });
+
+    // #region Computed Props
+
+    const internalValue = computed<string>({
+        get(): string {
+            return props.valueProvider.value ?? "";
+        },
+        set(value: string | null | undefined): void {
+            props.valueProvider.value = value || null;
+        }
+    });
+
+    // #endregion Computed Props
+</script>

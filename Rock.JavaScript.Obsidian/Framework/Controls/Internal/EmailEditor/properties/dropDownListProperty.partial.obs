@@ -1,0 +1,38 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownList v-model="internalValue"
+                  v-bind="$attrs"
+                  :items="items" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ValueProvider } from "../types.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        valueProvider: {
+            type: Object as PropType<ValueProvider<string | null | undefined>>,
+            required: true
+        },
+
+        items: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    // #region Computed Props
+
+    const internalValue = computed<string>({
+        get(): string {
+            return props.valueProvider.value ?? "";
+        },
+        set(value: string): void {
+            props.valueProvider.value = value;
+        }
+    });
+
+    // #endregion Computed Props
+</script>

@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 using Rock.Communication;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks.Communication
 {
@@ -49,6 +50,9 @@ namespace Rock.Blocks.Communication
         /// <summary>
         /// Begins a new validation context for the target value.
         /// </summary>
+        /// <remarks>
+        /// <paramref name="friendlyName"/> will be used in generated error messages, if provided; otherwise, error messages will use "Field".
+        /// </remarks>
         /// <typeparam name="TTarget">The validation target type.</typeparam>
         /// <param name="target">The target to validate.</param>
         /// <param name="friendlyName">The validation target friendly name that will be used in error messages if validation fails.</param>
@@ -80,7 +84,7 @@ namespace Rock.Blocks.Communication
         /// Overrides the error message builder of the validation context.
         /// </summary>
         /// <param name="validationContext">The validation context.</param>
-        /// <param name="errorMessageBuilder">The error message builder.</param>
+        /// <param name="errorMessageBuilder">The error message builder with signature, <c>string GetErrorMessage( TTarget validatedValue, string friendlyName )</c>.</param>
         /// <returns>The modified <paramref name="validationContext"/>.</returns>
         internal static IValidationContext<TTarget> WithErrorMessage<TTarget>( this IValidationContext<TTarget> validationContext, Func<TTarget, string, string> errorMessageBuilder )
         {
@@ -140,6 +144,9 @@ namespace Rock.Blocks.Communication
         /// <summary>
         /// Validates that the target value is not <see langword="null"/>.
         /// </summary>
+        /// <remarks>
+        /// If invalid, <paramref name="validationResult"/> is set to an unsuccessful result with the error message "(Friendly Name | Field) is required."
+        /// </remarks>
         /// <param name="validationContext">The validation context.</param>
         /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
         /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
@@ -147,6 +154,21 @@ namespace Rock.Blocks.Communication
         {
             return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} is required." )
                 .IsTrue( target => target != null, out validationResult );
+        }
+        
+        /// <summary>
+        /// Validates that the target list item bag is not <see langword="null"/> and its value is not <see langword="null"/> or white space.
+        /// </summary>
+        /// <remarks>
+        /// If invalid, <paramref name="validationResult"/> is set to an unsuccessful result with the error message "(Friendly Name | Field) is required."
+        /// </remarks>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool ValueIsNotNullOrWhiteSpace( this IValidationContext<ListItemBag> validationContext, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} is required." )
+                .IsTrue( target => target?.Value.IsNotNullOrWhiteSpace() == true, out validationResult );
         }
 
         #endregion

@@ -1,0 +1,57 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <ModalAlert v-model="isShowing" :type="type">{{ message }}</ModalAlert>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <RockButton @click="isShowing = true">Show</RockButton>
+                </div>
+                <div class="col-md-4">
+                    <TextBox label="Message" v-model="message" />
+                </div>
+                <div class="col-md-4">
+                    <DropDownList label="Alert Type" v-model="type" :items="types" />
+                </div>
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
+
+    const types = [
+        {
+            text: ModalAlertType.Alert,
+            value: ModalAlertType.Alert
+        },
+        {
+            text: ModalAlertType.Information,
+            value: ModalAlertType.Information
+        },
+        {
+            text: ModalAlertType.Warning,
+            value: ModalAlertType.Warning
+        },
+        {
+            text: ModalAlertType.None,
+            value: ModalAlertType.None
+        }
+    ];
+
+    const type = ref<ModalAlertType>("Alert");
+    const isShowing = ref(false);
+    const message = ref("Message I want to alert you to.");
+    const importCode = getSfcControlImportPath("modalAlert");
+    const exampleCode = `<ModalAlert v-model="isShowing" type="ModalAlertType.Alert">Message I want to alert you to.</ModalAlert>`;
+</script>

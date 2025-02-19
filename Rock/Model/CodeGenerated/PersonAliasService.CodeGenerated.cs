@@ -1084,6 +1084,18 @@ namespace Rock.Model
                 return false;
             }
 
+            if ( new Service<EmailSection>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EmailSection.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<EmailSection>( Context ).Queryable().Any( a => a.ModifiedByPersonAliasId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", PersonAlias.FriendlyTypeName, EmailSection.FriendlyTypeName );
+                return false;
+            }
+
             #pragma warning disable 612, 618 // EntityCampusFilter is obsolete, but we still need this code generated
             if ( new Service<EntityCampusFilter>( Context ).Queryable().Any( a => a.CreatedByPersonAliasId == item.Id ) )
             {

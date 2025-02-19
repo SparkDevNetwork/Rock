@@ -1,0 +1,148 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TextFormatPicker v-bind="$attrs"
+                      :label="label"
+                      :fontStyleProvider="fontStyleProvider"
+                      :fontWeightProvider="fontWeightProvider"
+                      :textDecorationProvider="textDecorationProvider" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import TextFormatPicker from "../textFormatPicker.partial.obs";
+    import { StyleSheetMode, ValueProvider } from "../types.partial";
+    import { inlineStyleProvider, stringConverter, styleSheetProvider } from "../utils.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Text Format" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Creates and adds a &lt;style&gt; element to the `element` input to host the changes.
+         */
+        styleSheetMode: {
+            type: Object as PropType<StyleSheetMode | undefined>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const fontStyleProvider = ref<ValueProvider<string | null | undefined>>(
+        createFontStyleProvider()
+    );
+
+    const fontWeightProvider = ref<ValueProvider<string | null | undefined>>(
+        createFontWeightProvider()
+    );
+
+    const textDecorationProvider = ref<ValueProvider<string | null | undefined>>(
+        createTextDecorationProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createFontStyleProvider(): ValueProvider<string | null | undefined> {
+        if (!props.styleSheetMode) {
+            return inlineStyleProvider(
+                props.element,
+                "font-style",
+                stringConverter,
+                props.copyToElements
+            );
+        }
+        else {
+            return styleSheetProvider(
+                props.element,
+                props.styleSheetMode.styleCssClass,
+                props.styleSheetMode.rulesetCssSelector,
+                "font-style",
+                stringConverter
+            );
+        }
+    }
+
+    function createFontWeightProvider(): ValueProvider<string | null | undefined> {
+        if (!props.styleSheetMode) {
+            return inlineStyleProvider(
+                props.element,
+                "font-weight",
+                stringConverter,
+                props.copyToElements
+            );
+        }
+        else {
+            return styleSheetProvider(
+                props.element,
+                props.styleSheetMode.styleCssClass,
+                props.styleSheetMode.rulesetCssSelector,
+                "font-weight",
+                stringConverter
+            );
+        }
+    }
+
+    function createTextDecorationProvider(): ValueProvider<string | null | undefined> {
+        if (!props.styleSheetMode) {
+            return inlineStyleProvider(
+                props.element,
+                "text-decoration",
+                stringConverter,
+                props.copyToElements
+            );
+        }
+        else {
+            return styleSheetProvider(
+                props.element,
+                props.styleSheetMode.styleCssClass,
+                props.styleSheetMode.rulesetCssSelector,
+                "text-decoration",
+                stringConverter
+            );
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements, () => props.styleSheetMode], () => {
+        fontStyleProvider.value.dispose();
+        fontStyleProvider.value = createFontStyleProvider();
+
+        fontWeightProvider.value.dispose();
+        fontWeightProvider.value = createFontWeightProvider();
+
+        textDecorationProvider.value.dispose();
+        textDecorationProvider.value = createTextDecorationProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        fontStyleProvider.value.dispose();
+        fontWeightProvider.value.dispose();
+        textDecorationProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

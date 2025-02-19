@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1670,6 +1670,11 @@ namespace Rock.SystemGuid
         public const string PERSONALIZATION_SEGMENT = "368A3581-C8C4-4960-901A-9587864226F3";
 
         /// <summary>
+        /// The EntityType Guid for PersonalizationSegmentCategory 'joiner' table <see cref="Rock.Model.PersonalizationSegment"/>
+        /// </summary>
+        public const string PERSONALIZATION_SEGMENT_CATEGORY = "D2026C0C-6C5F-4BB8-B085-9928E373812D";
+
+        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.PersonalLink"/> 
         /// </summary>
         public const string PERSONAL_LINK = "F858CF72-ECCC-4DC6-AD72-7B82467B3466";
@@ -2025,5 +2030,10 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.AIProvider"/> 
         /// </summary>
         public const string AI_PROVIDER = "945A994F-F15E-43AC-B503-A54BDE70F77F";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.EmailSection"/> 
+        /// </summary>
+        public const string EMAIL_SECTION = "86B2CE94-9DC3-463C-B2B1-DEECAB70474E";
     }
 }

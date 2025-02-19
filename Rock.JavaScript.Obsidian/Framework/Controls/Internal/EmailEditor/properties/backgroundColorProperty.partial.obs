@@ -1,0 +1,109 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ColorPickerProperty v-bind="$attrs"
+                         :label="label"
+                         :valueProvider="valueProvider" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import ColorPickerProperty from "./colorPickerProperty.partial.obs";
+    import { StyleSheetMode, ValueProvider, ValueProviderHooks } from "../types.partial";
+    import { inlineStyleProvider, styleSheetProvider, stringConverter } from "../utils.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Background Color" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Creates and adds a &lt;style&gt; element to the `element` input to host the changes.
+         */
+        styleSheetMode: {
+            type: Object as PropType<StyleSheetMode | undefined>,
+            required: false
+        },
+
+        hooks: {
+            type: Object as PropType<ValueProviderHooks<string | null | undefined, string | null> | undefined>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:backgroundColor", value: string | null): void;
+    }>();
+
+    // #region Values
+
+    const valueProvider = ref<ValueProvider<string | null | undefined>>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ValueProvider<string | null | undefined> {
+        if (!props.styleSheetMode) {
+            return inlineStyleProvider(
+                props.element,
+                "background-color",
+                stringConverter,
+                props.copyToElements,
+                {
+                    onTargetValueUpdated(targetValue) {
+                        emit("update:backgroundColor", targetValue);
+                    },
+                }
+            );
+        }
+        else {
+            return styleSheetProvider(
+                props.element,
+                props.styleSheetMode.styleCssClass,
+                props.styleSheetMode.rulesetCssSelector,
+                "background-color",
+                stringConverter,
+                {
+                    onTargetValueUpdated(targetValue) {
+                        emit("update:backgroundColor", targetValue);
+                    },
+                }
+            );
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements, () => props.styleSheetMode], () => {
+        valueProvider.value.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

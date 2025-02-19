@@ -44,11 +44,11 @@ export const ChatRole = {
 
 /** The role of a chat individual, to be synchronized with the external chat system. */
 export const ChatRoleDescription: Record<number, string> = {
-    0: "User",
+    0: "rock_user",
 
-    1: "Moderator",
+    1: "rock_moderator",
 
-    3: "Administrator"
+    3: "rock_admin"
 };
 
 /** The role of a chat individual, to be synchronized with the external chat system. */

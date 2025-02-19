@@ -1,0 +1,31 @@
+<template>
+    <GalleryAndResult :value="signature ?? null"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode">
+
+        <ElectronicSignature v-model="signature" :isDrawn="isDrawn" :documentTerm="term" />
+
+        <template #settings>
+            <div class="row">
+                <Toggle formGroupClasses="col-md-4" label="Signature Type" trueText="Drawn" falseText="Typed" v-model="isDrawn" />
+                <TextBox formGroupClasses="col-md-4" label="Document Type Term" v-model="term" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
+
+    const signature = ref<ElectronicSignatureValue>();
+    const isDrawn = ref(false);
+    const term = ref("document");
+    const importCode = getSfcControlImportPath("electronicSignature");
+    const exampleCode = `<ElectronicSignature v-model="signature" :isDrawn="isDrawn" documentTerm="document" />`;
+</script>

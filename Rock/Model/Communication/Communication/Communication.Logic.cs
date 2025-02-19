@@ -215,46 +215,91 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<GroupMember> GetCommunicationListMembers( RockContext rockContext, int? listGroupId, SegmentCriteria segmentCriteria, List<int> segmentDataViewIds )
         {
-            IQueryable<GroupMember> groupMemberQuery = null;
             if ( listGroupId.HasValue )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
-                var personService = new PersonService( rockContext );
+                var groupMemberQuery = groupMemberService.Queryable()
+                    .Where( a => a.GroupId == listGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+
                 var dataViewService = new DataViewService( rockContext );
+                var segmentDataViews = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking();
 
-                groupMemberQuery = groupMemberService.Queryable().Where( a => a.GroupId == listGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+                return GetCommunicationListMembersInternal( rockContext, groupMemberQuery, segmentCriteria, segmentDataViews );
+            }
+            else
+            {
+                return null;
+            }
+        }
 
-                Expression segmentExpression = null;
-                ParameterExpression paramExpression = personService.ParameterExpression;
-                var segmentDataViewList = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking().ToList();
-                foreach ( var segmentDataView in segmentDataViewList )
+        /// <summary>
+        /// Gets the communication list members.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="listGroupGuid">The group unique identifier.</param>
+        /// <param name="segmentCriteria">The segment criteria.</param>
+        /// <param name="segmentDataViewGuids">The segment data view unique identifiers.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupMember> GetCommunicationListMembers( RockContext rockContext, Guid? listGroupGuid, SegmentCriteria segmentCriteria, List<Guid> segmentDataViewGuids )
+        {
+            if ( listGroupGuid.HasValue )
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupMemberQuery = groupMemberService.Queryable()
+                    .Where( a => a.Group.Guid == listGroupGuid.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+
+                var dataViewService = new DataViewService( rockContext );
+                var segmentDataViews = dataViewService.GetByGuids( segmentDataViewGuids ).AsNoTracking();
+
+                return GetCommunicationListMembersInternal( rockContext, groupMemberQuery, segmentCriteria, segmentDataViews );
+            }
+            else
+            {
+                return Enumerable.Empty<GroupMember>().AsQueryable();
+            }
+        }
+
+        /// <summary>
+        /// Gets the communication list members.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="groupMemberQuery">The group member query.</param>
+        /// <param name="segmentCriteria">The segment criteria.</param>
+        /// <param name="segmentDataViews">The segment data views.</param>
+        /// <returns></returns>
+        private static IQueryable<GroupMember> GetCommunicationListMembersInternal( RockContext rockContext, IQueryable<GroupMember> groupMemberQuery, SegmentCriteria segmentCriteria, IQueryable<DataView> segmentDataViews )
+        {
+            var personService = new PersonService( rockContext );
+
+            Expression segmentExpression = null;
+            ParameterExpression paramExpression = personService.ParameterExpression;
+            foreach ( var segmentDataView in segmentDataViews )
+            {
+                var exp = segmentDataView.GetExpression( personService, paramExpression );
+                if ( exp != null )
                 {
-                    var exp = segmentDataView.GetExpression( personService, paramExpression );
-                    if ( exp != null )
+                    if ( segmentExpression == null )
                     {
-                        if ( segmentExpression == null )
+                        segmentExpression = exp;
+                    }
+                    else
+                    {
+                        if ( segmentCriteria == SegmentCriteria.All )
                         {
-                            segmentExpression = exp;
+                            segmentExpression = Expression.AndAlso( segmentExpression, exp );
                         }
                         else
                         {
-                            if ( segmentCriteria == SegmentCriteria.All )
-                            {
-                                segmentExpression = Expression.AndAlso( segmentExpression, exp );
-                            }
-                            else
-                            {
-                                segmentExpression = Expression.OrElse( segmentExpression, exp );
-                            }
+                            segmentExpression = Expression.OrElse( segmentExpression, exp );
                         }
                     }
                 }
+            }
 
-                if ( segmentExpression != null )
-                {
-                    var personQry = personService.Get( paramExpression, segmentExpression );
-                    groupMemberQuery = groupMemberQuery.Where( a => personQry.Any( p => p.Id == a.PersonId ) );
-                }
+            if ( segmentExpression != null )
+            {
+                var personQry = personService.Get( paramExpression, segmentExpression );
+                groupMemberQuery = groupMemberQuery.Join( personQry, g => g.PersonId, p => p.Id, ( g, p ) => g );
             }
 
             return groupMemberQuery;

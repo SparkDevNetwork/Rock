@@ -46,11 +46,11 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DatePartsPicker from "@Obsidian/Controls/datePartsPicker.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
     import { DatePartsPickerValue } from "@Obsidian/Types/Controls/datePartsPicker";
 
     const value = ref<DatePartsPickerValue>({

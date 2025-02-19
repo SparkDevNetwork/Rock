@@ -28,7 +28,6 @@ using Rock.Communication;
 using Rock.Data;
 using Rock.Enums.Blocks.Communication.CommunicationEntry;
 using Rock.Model;
-using Rock.Net;
 using Rock.Security;
 using Rock.Security.SecurityGrantRules;
 using Rock.Tasks;

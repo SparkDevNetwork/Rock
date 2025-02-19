@@ -58,7 +58,7 @@ namespace Rock.Rest.Handler
                 }
             }
 
-            // Handle duplicate controller names.
+            // Handle duplicate controller names.http://localhost:6229/page/814?CommunicationId=101#
             var routeData = request.GetRouteData();
             if ( routeData.Values != null && routeData.Values.TryGetValue( ControllerKey, out var cn ) && _duplicateControllerTypes.Value.ContainsKey( cn.ToString() ) )
             {

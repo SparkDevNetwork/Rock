@@ -1,0 +1,547 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="push-notification-editor-step">
+        <Panel :hasFullscreen="true"
+               :headerSecondaryActions="[{
+                   title: 'TBD', type: 'default'
+               }]"
+               panelBodyCssClass="panel-body-wizard"
+               type="block">
+            <template #title>
+                <div class="push-notification-editor-panel-title">
+                    <span>{{ title }}</span>
+                    <div class="push-notification-editor-panel-title-right">
+                        <HighlightLabel v-if="isSaveSuccessMessageShown"
+                                        labelType="success"
+                                        :dismissible="true">
+                            The communication has been saved.
+                            <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSaveSuccessMessageShown = false">
+                                <i class="fa fa-times" aria-hidden="true"></i>
+                            </button>
+                        </HighlightLabel>
+
+                        <HighlightLabel labelType="info">{{ recipientsLabel }}</HighlightLabel>
+                    </div>
+                </div>
+            </template>
+
+            <template #headerActions>
+                <span class="action panel-action-save clickable"
+                      @click="onSaveCommunication">
+                    <i ref="saveElement"
+                       data-toggle="tooltip"
+                       title="Save Draft"
+                       class="fa fa-save"></i>
+                </span>
+            </template>
+
+            <template #default>
+                <div class="panel-body-contents">
+                    <div class="row d-sm-flex">
+                        <div class="col-xs-12 col-sm-5">
+                            <RockForm :id="formId"
+                                      @submit="$emit('nextStep')">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <DropDownList v-model="mobileApplicationGuidOrEmptyString"
+                                                      blankValue="All Applications"
+                                                      :disabled="isSaving || isSendingTest"
+                                                      :items="applications"
+                                                      label="Application"
+                                                      @update:modelValue="onMobileApplicationGuidUpdated" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <TextBox v-model="internalPushTitle"
+                                                 :disabled="isSaving || isSendingTest"
+                                                 label="Title"
+                                                 rules="required" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <SmsMessageEditor v-model="internalPushMessage"
+                                                          :disabled="isSaving || isSendingTest"
+                                                          :editorHeight="200"
+                                                          :isCharacterCountShown="true"
+                                                          :mergeFields="mergeFields"
+                                                          rules="required"
+                                                          toolbarLabel="Push Message" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <RadioButtonList v-model="openAction"
+                                                         :disabled="isSaving || isSendingTest"
+                                                         help="Defines the open action for the message."
+                                                         :horizontal="true"
+                                                         :items="openActions"
+                                                         label="Open Action" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-xs-12">
+                                        <div v-show="openAction === OpenAction.LinkToUrl"
+                                             class="well">
+                                            <UrlLinkBox v-model="linkToPageUrl"
+                                                        :disabled="isSaving || isSendingTest"
+                                                        label="URL"
+                                                        @update:modelValue="onUrlUpdated" />
+                                        </div>
+
+                                        <div v-show="openAction === OpenAction.SpecificPage"
+                                             class="well">
+                                            <PagePicker v-model="mobilePage"
+                                                        :disabled="isSaving || isSendingTest"
+                                                        label="Mobile Page"
+                                                        :siteType="SiteType.Mobile"
+                                                        @update:modelValue="onMobilePageUpdated" />
+
+                                            <KeyValueList v-model="mobilePageQueryStringItems"
+                                                          :disabled="isSaving || isSendingTest"
+                                                          label="Mobile Page Query String"
+                                                          keyPlaceholder="Key"
+                                                          valuePlaceholder="Value"
+                                                          @update:modelValue="onMobilePageQueryStringItemsUpdated" />
+                                        </div>
+
+                                        <div v-show="openAction === OpenAction.ShowDetails"
+                                             class="well">
+                                            <StructuredContentEditor v-model="internalPushOpenMessageJson"
+                                                                     :disabled="isSaving || isSendingTest"
+                                                                     label="Additional Information" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </RockForm>
+                        </div>
+
+                        <div class="col-xs-12 col-sm-7">
+                            <PushNotificationPreview :class="breakpointHelper.breakpoint"
+                                                     :pushTitle="internalPushTitle"
+                                                     :pushMessage="internalPushMessage" />
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template #footerActions>
+                <RockButton :disabled="isSaving || isSendingTest"
+                            @click="onPreviousClicked()">Previous</RockButton>
+            </template>
+
+            <template #footerSecondaryActions>
+                <RockButton btnType="primary"
+                            :disabled="isSaving || isSendingTest"
+                            :form="formId"
+                            type="submit">{{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}</RockButton>
+            </template>
+        </Panel>
+
+        <LoadingOverlay :isVisible="isSaving || isSendingTest"
+                        targetSelector=".push-notification-editor-step" />
+    </div>
+</template>
+
+<style scoped>
+:deep(.panel-body-wizard) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-body-contents {
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+:deep(.panel-sub-header) {
+    background-color: var(--color-interface-softer);
+    border-color: var(--color-interface-soft);
+}
+
+.push-notification-editor-panel-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.push-notification-editor-panel-title-right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-medium);
+}
+
+.btn-dismiss-alert {
+    font-size: var(--font-size-xsmall);
+}
+
+.btn-dismiss-alert.close i {
+    display: inline-block;
+}
+
+:deep(.confirmation-preview-panel) {
+    /* Since the preview is displayed inside a panel
+       and it needs to expand to the edge of the panel,
+       add a negative margin to the preview and add the same padding to the preview that the panel has. */
+    margin: calc(0px - var(--panel-body-padding));
+}
+
+:deep(.confirmation-preview-panel.xs) {
+    /* In mobile, the preview will move to a new row. Remove the top and bottom negative margin. */
+    margin-top: 0;
+    margin-bottom: 0;
+
+    /* Remove padding and the gray background on mobile devices so the preview takes up the full width. */
+    padding: 0;
+    background: none;
+}
+</style>
+
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import LoadingOverlay from "./loadingOverlay.partial.obs";
+    import PushNotificationPreview from "./pushNotificationMobilePreview.partial.obs";
+    import { BlockActionCallbacks } from "./types.partial";
+    import { useBreakpointHelper } from "./utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+    import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/pushOpenAction";
+    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
+    import { Guid } from "@Obsidian/Types";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationEntryWizardPushNotificationOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardPushNotificationOptionsBag";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        applications: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        isUsingRockMobilePushTransport: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        mergeFields: {
+            type: Object as PropType<string[] | undefined>,
+            required: true
+        },
+
+        nextStepTitle: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        pushData: {
+            type: String as PropType<CommunicationEntryWizardPushNotificationOptionsBag | null | undefined>,
+            required: true
+        },
+
+        pushMessage: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        pushOpenAction: {
+            type: Number as PropType<PushOpenAction>,
+            required: true
+        },
+
+        pushOpenMessageJson: {
+            type: String as PropType<string | undefined>,
+            required: true
+        },
+
+        pushTitle: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        recipientsLabel: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "nextStep"): void;
+        (e: "previousStep"): void;
+        (e: "sendTestCommunication", BlockActionCallbacks): void;
+        (e: "saveCommunication", value: BlockActionCallbacks): void;
+        (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
+        (e: "update:pushData", value: string | null | undefined): void;
+        (e: "update:pushMessage", value: string): void;
+        (e: "update:pushOpenAction", value: PushOpenAction): void;
+        (e: "update:pushOpenMessageJson", value: string | null | undefined): void;
+        (e: "update:pushTitle", value: string): void;
+    }>();
+
+    const formId = `push-editor-form-${newGuid()}`;
+
+    enum OpenAction {
+        OpenHomepage = "Open Homepage",
+        SpecificPage = "Specific Page",
+        ShowDetails = "Show Details",
+        NoAction = "No Action",
+        LinkToUrl = "Link to URL"
+    }
+
+    const openActions = computed<ListItemBag[]>(() => {
+        if (props.isUsingRockMobilePushTransport) {
+            return [
+                {
+                    text: OpenAction.OpenHomepage,
+                    value: OpenAction.OpenHomepage
+                },
+                {
+                    text: OpenAction.SpecificPage,
+                    value: OpenAction.SpecificPage
+                },
+                {
+                    text: OpenAction.ShowDetails,
+                    value: OpenAction.ShowDetails
+                }
+            ];
+        }
+        else {
+            return [
+                {
+                    text: OpenAction.NoAction,
+                    value: OpenAction.NoAction
+                },
+                {
+                    text: OpenAction.LinkToUrl,
+                    value: OpenAction.LinkToUrl
+                }
+            ];
+        }
+    });
+
+    const breakpointHelper = useBreakpointHelper();
+
+    // #region Values
+
+    // UI state.
+    const saveElement = ref<HTMLElement | undefined>();
+    const isSaveSuccessMessageShown = ref<boolean>(false);
+    const isSaving = ref<boolean>(false);
+    const isSendingTest = ref<boolean>(false);
+
+    // Communication state.
+    const internalPushMessage = useVModelPassthrough(props, "pushMessage", emit);
+    const internalPushTitle = useVModelPassthrough(props, "pushTitle", emit);
+    const internalPushOpenAction = useVModelPassthrough(props, "pushOpenAction", emit);
+    const internalPushData = useVModelPassthrough(props, "pushData", emit);
+
+    const mobilePage = ref<PageRouteValueBag | null | undefined>(internalPushData.value?.mobilePage);
+    const openAction = ref<OpenAction>(getOpenAction(internalPushOpenAction.value, props.isUsingRockMobilePushTransport, mobilePage.value));
+    const linkToPageUrl = ref<string>(internalPushData.value?.linkToPageUrl ?? "");
+    const mobilePageQueryStringItems = ref<KeyValueItem[] | undefined>(recordAsKeyValueItems(internalPushData.value?.mobilePageQueryString));
+    const internalPushOpenMessageJson = useVModelPassthrough(props, "pushOpenMessageJson", emit);
+    const mobileApplicationGuidOrEmptyString = ref<string>(internalPushData.value?.mobileApplicationGuid ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    function getOpenAction(pushOpenAction: PushOpenAction, isUsingRockMobilePushTransport: boolean, mobilePage: PageRouteValueBag | null | undefined): OpenAction {
+        switch (pushOpenAction) {
+            case PushOpenAction.LinkToMobilePage:
+                if (mobilePage) {
+                    return OpenAction.SpecificPage;
+                }
+                else {
+                    return OpenAction.OpenHomepage;
+                }
+            case PushOpenAction.LinkToUrl:
+                return OpenAction.LinkToUrl;
+            case PushOpenAction.ShowDetails:
+                return OpenAction.ShowDetails;
+            case PushOpenAction.NoAction:
+            default:
+                if (isUsingRockMobilePushTransport) {
+                    return OpenAction.OpenHomepage;
+                }
+                else {
+                    return OpenAction.NoAction;
+                }
+        }
+    }
+
+    function recordAsKeyValueItems(record: Record<string, string> | null | undefined): KeyValueItem[] | undefined {
+        if (isNullish(record)) {
+            return undefined;
+        }
+
+        const items: KeyValueItem[] = [];
+
+        for (const key in record) {
+            if (key) {
+                items.push({
+                    key,
+                    value: record[key]
+                });
+            }
+        }
+
+        return items;
+    }
+
+    function keyValueItemsAsRecord(items: KeyValueItem[] | undefined): Record<string, string> | undefined {
+        if (items === undefined) {
+            return undefined;
+        }
+
+        const record: Record<string, string> = {};
+
+        for (const item of items) {
+            if (item.key && item.value) {
+                record[item.key] = item.value;
+            }
+        }
+
+        return record;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onUrlUpdated(): void {
+        internalPushData.value = {
+            ...internalPushData.value,
+            linkToPageUrl: linkToPageUrl.value
+        };
+    }
+
+    function onMobilePageUpdated(): void {
+        internalPushData.value = {
+            ...internalPushData.value,
+            mobilePage: mobilePage.value
+        };
+    }
+
+    function onMobilePageQueryStringItemsUpdated(): void {
+        internalPushData.value = {
+            ...internalPushData.value,
+            mobilePageQueryString: keyValueItemsAsRecord(mobilePageQueryStringItems.value)
+        };
+    }
+
+    function onMobileApplicationGuidUpdated(): void {
+        internalPushData.value = {
+            ...internalPushData.value,
+            mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidOrEmptyString.value)
+        };
+    }
+
+    watch(openAction, () => {
+        switch (openAction.value) {
+            case OpenAction.LinkToUrl:
+                internalPushOpenAction.value = PushOpenAction.LinkToUrl;
+                internalPushData.value = {
+                    mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidOrEmptyString.value),
+                    linkToPageUrl: linkToPageUrl.value
+                };
+                break;
+            case OpenAction.OpenHomepage:
+                internalPushOpenAction.value = PushOpenAction.LinkToMobilePage;
+                // To open the homepage, do not specify a page.
+                internalPushData.value = {
+                    mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidOrEmptyString.value),
+                    mobilePage: null
+                };
+                break;
+            case OpenAction.ShowDetails:
+                internalPushOpenAction.value = PushOpenAction.ShowDetails;
+                internalPushData.value = {
+                    mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidOrEmptyString.value),
+                };
+                break;
+            case OpenAction.SpecificPage:
+                internalPushOpenAction.value = PushOpenAction.LinkToMobilePage;
+                internalPushData.value = {
+                    mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidOrEmptyString.value),
+                    mobilePage: mobilePage.value,
+                    mobilePageQueryString: keyValueItemsAsRecord(mobilePageQueryStringItems.value)
+                };
+                break;
+            case OpenAction.NoAction:
+            default:
+                internalPushOpenAction.value = PushOpenAction.NoAction;
+                internalPushData.value = {
+                    mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidOrEmptyString.value),
+                };
+                break;
+        }
+    });
+
+    function onPreviousClicked(): void {
+        emit("previousStep");
+    }
+
+    function onSaveCommunication(): void {
+        if (isSaving.value) {
+            return;
+        }
+
+        isSaving.value = true;
+
+        emit("saveCommunication", {
+            onSuccess() {
+                isSaveSuccessMessageShown.value = true;
+                isSaving.value = false;
+            },
+            onError() {
+                isSaving.value = false;
+            }
+        });
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(saveElement, element => {
+        if (element) {
+            tooltip(element);
+        }
+    });
+
+    // #endregion
+</script>

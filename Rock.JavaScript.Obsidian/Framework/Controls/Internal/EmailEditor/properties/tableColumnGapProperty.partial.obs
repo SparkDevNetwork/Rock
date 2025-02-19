@@ -1,0 +1,160 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NumberBox v-model="gap"
+               label="Gap Between Columns"
+               @update:modelValue="onGapUpdated">
+        <template #besideLabel>
+            <ClearStyleButton v-if="enableClearButton && !isNullish(gap)"
+                              @click="onClearClicked" />
+        </template>
+        <template #inputGroupAppend>
+            <span class="input-group-addon">px</span>
+        </template>
+    </NumberBox>
+</template>
+
+<script setup lang="ts">
+    import { onMounted, PropType, ref, watch } from "vue";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        enableClearButton: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        columnElements: {
+            type: Object as PropType<HTMLElement[]>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const gap = ref<number | null>(null);
+
+    // #endregion Values
+
+    // #region Functions
+
+    function updateSpacerElementGaps(): void {
+        if (gap.value) {
+            // Add spacer columns.
+            if (props.columnElements.length) {
+                const gapPixels = `${gap.value}px`;
+
+                for (const columnElement of props.columnElements.filter((_, index) => index !== props.columnElements.length - 1)) {
+                    const nextElement = columnElement.nextElementSibling as HTMLElement;
+                    if (nextElement?.classList.contains("spacer")) {
+                        // Update gap.
+                        nextElement.setAttribute("width", gapPixels);
+                        nextElement.style.width = gapPixels;
+                        nextElement.style.minWidth = gapPixels;
+                    }
+                    else {
+                        // Add spacer column.
+                        const spacerColumn = columnElement.ownerDocument.createElement("td");
+                        spacerColumn.classList.add("spacer");
+                        spacerColumn.setAttribute("width", gapPixels);
+                        spacerColumn.style.width = gapPixels;
+                        spacerColumn.style.minWidth = gapPixels;
+                        spacerColumn.style.fontSize = "0";
+                        spacerColumn.style.lineHeight = "0";
+                        spacerColumn.style.padding = "0";
+                        spacerColumn.innerHTML = "&nbsp;";
+                        columnElement.parentElement?.insertBefore(spacerColumn, nextElement);
+                    }
+                }
+            }
+
+            // Exclude spacer widths from columns.
+            if (props.columnElements.length > 1) {
+                const minusPixels = `${gap.value * (props.columnElements.length - 1) / props.columnElements.length}px`;
+
+                for (const columnElement of props.columnElements) {
+                    columnElement.style.minWidth = `calc(${columnElement.getAttribute("width")} - ${minusPixels})`;
+                }
+            }
+        }
+        else {
+            // Remove spacer columns.
+            for (const columnElement of props.columnElements.filter((_, index) => index !== props.columnElements.length - 1)) {
+                columnElement.style.minWidth = "";
+                const nextElement = columnElement.nextElementSibling as HTMLElement;
+                if (nextElement?.classList.contains("spacer")) {
+                    // Remove spacer column.
+                    nextElement.remove();
+                }
+            }
+        }
+    }
+
+    function findGapFromSpacerElements(): void {
+        if (props.columnElements.length) {
+            const firstSpacer = props.columnElements
+                .map(columnElement => {
+                    const nextElement = columnElement.nextElementSibling as HTMLElement;
+                    if (nextElement?.classList.contains("spacer")) {
+                        return nextElement;
+                    }
+                    else {
+                        return null;
+                    }
+                })
+                .find(spacerElement => !!spacerElement);
+
+            if (firstSpacer) {
+                gap.value = parseInt(firstSpacer.getAttribute("width") || "0");
+            }
+            else {
+                gap.value = null;
+            }
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the clear styles button being clicked.
+     *
+     * Deletes the property from the CSS style declarations.
+     */
+    function onClearClicked(): void {
+        gap.value = null;
+    }
+
+    function onGapUpdated(): void {
+        updateSpacerElementGaps();
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    // Column elements change when:
+    // - a column is added
+    // - a column is removed
+    // - a different section component is selected
+    watch(() => props.columnElements, (newValue, oldValue) => {
+        if (newValue[0]?.parentElement !== oldValue[0]?.parentElement) {
+            findGapFromSpacerElements();
+        }
+        else {
+            // Figure out the existing gap.
+            updateSpacerElementGaps();
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onMounted(() => {
+        findGapFromSpacerElements();
+    });
+
+    // #endregion Hooks
+</script>

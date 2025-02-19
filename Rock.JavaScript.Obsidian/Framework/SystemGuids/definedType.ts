@@ -68,6 +68,8 @@ export const DefinedType = {
      * The DefinedValue.Description will just be any description, such as 'Rock Solid Church SMS Number'.
      */
     CommunicationSmsFrom: "611BDE1F-7405-4D16-8626-CCFEDB0E62BE",
+    /** Guid for the Communication Topic. */
+    CommunicationTopic: "A798492C-F0A4-496E-9142-97D9336C3E99",
     /** Guid for Content Channel Audience Type */
     ContentChannelAudienceType: "799301A3-2026-4977-994E-45DC68502559",
     /** The content component template */

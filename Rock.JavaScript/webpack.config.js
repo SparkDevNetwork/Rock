@@ -17,14 +17,14 @@ module.exports = {
         Plyr: {
             import: "./src/plyr/index.ts",
             filename: "plyr.js"
-        }
+        },
     },
     output: {
         path: path.resolve(__dirname, "../RockWeb/Scripts/Rock"),
     },
     /* Enable caching so rebuilds are faster. */
     cache: {
-        type: 'filesystem',
+        type: "filesystem",
         buildDependencies: {
             config: [__filename],
         },

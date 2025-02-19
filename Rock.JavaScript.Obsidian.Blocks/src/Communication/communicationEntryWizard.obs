@@ -1,0 +1,1155 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="!config.isHidden"
+         ref="communicationEntryWizardElement"
+         class="communication-entry-wizard">
+        <BreakpointObserver>
+            <WizardStartStep v-if="step === 'Configure Communication'"
+                             v-model:communicationListGroupGuid="communicationListGroupGuid"
+                             v-model:communicationName="communicationName"
+                             v-model:communicationTopicValue="communicationTopicValue"
+                             v-model:communicationType="communicationType"
+                             v-model:excludeDuplicateRecipientAddress="excludeDuplicateRecipientAddress"
+                             v-model:futureSendDateTime="futureSendDateTime"
+                             v-model:individualRecipientPersonAliasGuids="individualRecipientPersonAliasGuids"
+                             v-model:isBulkCommunication="isBulkCommunication"
+                             v-model:recipients="recipients"
+                             v-model:segmentCriteria="segmentCriteria"
+                             v-model:segmentDataViewGuids="segmentDataViewGuids"
+                             :allowedMediums="allowedMediums"
+                             :communicationId="communicationId"
+                             :communicationListGroups="config.communicationListGroups ?? []"
+                             :emailRecipientCount="emailRecipients.length"
+                             :isAddingIndividualsToRecipientListsDisabled="config.isAddingIndividualsToRecipientListsDisabled"
+                             :isDeletingIndividualsToRecipientListsDisabled="!!communicationListGroupGuid"
+                             :isBulkCommunicationForced="isBulkCommunicationForced"
+                             :isDuplicatePreventionOptionShown="config.isDuplicatePreventionOptionShown"
+                             :isFetchingRecipients="isFetchingRecipients"
+                             :isIncompatibleCommunicationTemplateNotificationShown="isIncompatibleCommunicationTemplateNotificationShown"
+                             :isUseSimpleEditorButtonShown="isUseSimpleEditorButtonShown"
+                             :nextStepTitle="nextStep"
+                             :personalPreferenceRecipientCount="personalPreferenceRecipients.length"
+                             :pushNotificationRecipientCount="pushNotificationRecipients.length"
+                             :recipientCount="selectedMediumRecipients.length"
+                             :recipientsLabel="selectedMediumRecipientsLabel"
+                             :segmentDataViews="segmentDataViews"
+                             :smsRecipientCount="smsRecipients.length"
+                             :simpleCommunicationPageUrl="config.navigationUrls?.['SimpleCommunicationPage']"
+                             :title="step"
+                             @update:communicationListGroupGuid="onCommunicationListGroupGuidUpdated"
+                             @update:segmentCriteria="debouncedUpdateRecipients"
+                             @update:segmentDataViewGuids="debouncedUpdateRecipients"
+                             @nextStep="onNextStepClicked"
+                             @recipientListModified="wasRecipientListModifiedOnce = true" />
+
+            <ChooseTemplateStep v-else-if="step === 'Choose Template'"
+                                :communicationTemplateGuid="communicationTemplateGuid"
+                                :allowedMediums="allowedMediums"
+                                :communicationTemplates="config.templates ?? []"
+                                :communicationType="communicationType"
+                                :isFetchingCommunicationTemplate="isFetchingCommunicationTemplate"
+                                :nextStepTitle="nextStep"
+                                :pendingCommunicationTemplate="pendingCommunicationTemplate"
+                                :title="step"
+                                @nextStep="onNextStepClicked"
+                                @previousStep="onPreviousStepClicked"
+                                @selectCommunicationTemplate="onCommunicationTemplateSelected"
+                                @update:communicationTemplateGuid="onPendingCommunicationTemplateGuidUpdated" />
+
+            <EmailSettingsStep v-else-if="step === 'Email Settings'"
+                               v-model:bccEmails="bccEmails"
+                               v-model:ccEmails="ccEmails"
+                               v-model:emailAttachmentBinaryFiles="emailAttachmentBinaryFiles"
+                               v-model:fromEmail="fromEmail"
+                               v-model:fromName="fromName"
+                               v-model:message="message"
+                               v-model:replyToEmail="replyToEmail"
+                               v-model:subject="subject"
+                               :attachmentBinaryFileTypeGuid="config.attachmentBinaryFileTypeGuid"
+                               :nextStepTitle="nextStep"
+                               :title="step"
+                               @nextStep="onNextStepClicked"
+                               @previousStep="onPreviousStepClicked" />
+
+            <EmailEditorStep v-else-if="step === 'Email Builder'"
+                             v-model:communicationTemplateGuid="communicationTemplateGuid"
+                             v-model:message="message"
+                             v-model:testEmailAddress="testEmailAddress"
+                             :communicationTemplates="communicationTemplateListItems"
+                             :imageComponentBinaryFileTypeGuid="config.imageComponentBinaryFileTypeGuid"
+                             :isFetchingRecipients="isFetchingRecipients"
+                             :mergeFields="config.mergeFields ?? undefined"
+                             :nextStepTitle="nextStep"
+                             :previewHtmlProcessor="previewHtmlProcessor"
+                             :recipientPersonIds="emailRecipients.map(e => e.personId)"
+                             :recipientsLabel="emailRecipientsLabel"
+                             :title="step"
+                             :videoProviderNames="config.videoProviderNames"
+                             @nextStep="onNextStepClicked"
+                             @previousStep="onPreviousStepClicked"
+                             @saveCommunication="onSaveCommunication"
+                             @sendTestCommunication="onSendTestEmail" />
+
+            <SmsEditorStep v-else-if="step === 'SMS Editor'"
+                           v-model:message="smsMessage"
+                           v-model:smsAttachmentBinaryFiles="smsAttachmentBinaryFiles"
+                           v-model:smsFromSystemPhoneNumberGuid="smsFromSystemPhoneNumberGuid"
+                           v-model:testSmsPhoneNumber="testSmsPhoneNumber"
+                           :attachmentBinaryFileTypeGuid="config.attachmentBinaryFileTypeGuid"
+                           :maxImageWidth="config.maxSmsImageWidth"
+                           :mergeFields="config.mergeFields ?? undefined"
+                           :nextStepTitle="nextStep"
+                           :recipientsLabel="smsRecipientsLabel"
+                           :smsAcceptedMimeTypes="config.smsAcceptedMimeTypes"
+                           :smsAttachmentLinks="smsAttachmentLinks"
+                           :smsFromNumberName="smsFromNumberName"
+                           :smsFromNumbers="config.smsFromNumbers ?? []"
+                           :smsMediaSizeLimitBytes="config.smsMediaSizeLimitBytes"
+                           :smsSupportedMimeTypes="config.smsSupportedMimeTypes"
+                           :title="step"
+                           @nextStep="onNextStepClicked"
+                           @previousStep="onPreviousStepClicked"
+                           @saveCommunication="onSaveCommunication"
+                           @sendTestCommunication="onSendTestSms" />
+
+            <PushNotificationEditorStep v-else-if="step === 'Push Notification Editor'"
+                                        v-model:pushData="pushData"
+                                        v-model:pushMessage="pushMessage"
+                                        v-model:pushOpenAction="pushOpenAction"
+                                        v-model:pushOpenMessageJson="pushOpenMessageJson"
+                                        v-model:pushTitle="pushTitle"
+                                        :applications="config.pushApplications ?? []"
+                                        :isUsingRockMobilePushTransport="config.isUsingRockMobilePushTransport"
+                                        :mergeFields="config.mergeFields ?? undefined"
+                                        :nextStepTitle="nextStep"
+                                        :recipientsLabel="pushNotificationRecipientsLabel"
+                                        :title="step"
+                                        @nextStep="onNextStepClicked"
+                                        @previousStep="onPreviousStepClicked"
+                                        @saveCommunication="onSaveCommunication" />
+
+            <ConfirmationStep v-else-if="step === 'Review & Confirm'"
+                              :allowedMediums="allowedMediums"
+                              :bccEmails="bccEmails"
+                              :ccEmails="ccEmails"
+                              :communicationListGroupName="communicationListGroupName"
+                              :communicationName="communicationName"
+                              :communicationTopicValueName="communicationTopicValue?.text"
+                              :communicationType="communicationType"
+                              :emailAttachmentNames="emailAttachmentNames"
+                              :emailTo="emailTo"
+                              :futureSendDateTime="futureSendDateTime"
+                              :isBulkCommunication="isBulkCommunication"
+                              :message="message"
+                              :pushMessage="pushMessage"
+                              :pushTitle="pushTitle"
+                              :recipientsLabel="selectedMediumRecipientsLabel"
+                              :replyToEmail="replyToEmail"
+                              :segmentNames="segmentNames"
+                              :smsAttachmentLinks="smsAttachmentLinks"
+                              :smsAttachmentNames="smsAttachmentNames"
+                              :smsFromNumberName="smsFromNumberName"
+                              :smsMessage="smsMessage"
+                              :subject="subject"
+                              :title="step"
+                              @saveCommunication="onReviewAndConfirmSaveCommunication"
+                              @sendCommunication="onSendCommunication"
+                              @previousStep="onPreviousStepClicked" />
+
+            <SendingStep v-else-if="step === 'Sending Communication'"
+                         :completionPercentage="sendingCompletionPercentage"
+                         :sendingProgressMessage="sendingProgressMessage" />
+
+            <SentStep v-else-if="step === 'Communication Queued'"
+                      :allowedMediums="allowedMediums"
+                      :communicationType="communicationType"
+                      :finalMessage="finalMessage"
+                      :finalMessageAlertType="finalMessageAlertType"
+                      :hasDetailBlockOnCurrentPage="hasDetailBlockOnCurrentPage"
+                      @saveEmailAnalytics="onSaveEmailAnalytics"
+                      @cancelEmailAnalytics="onCancelEmailAnalytics"
+                      @viewCommunication="onViewCommunication"
+                      @newCommunication="onNewCommunication" />
+
+            <SavedStep v-else-if="step === 'Communication Saved'"
+                       :finalMessage="finalMessage"
+                       :finalMessageAlertType="finalMessageAlertType"
+                       :hasDetailBlockOnCurrentPage="hasDetailBlockOnCurrentPage"
+                       @viewCommunication="onViewCommunication" />
+        </BreakpointObserver>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, ref, watch } from "vue";
+    import BreakpointObserver from "./CommunicationEntryWizard/breakpointObserver.partial.obs";
+    import ChooseTemplateStep from "./CommunicationEntryWizard/chooseTemplateStep.partial.obs";
+    import ConfirmationStep from "./CommunicationEntryWizard/confirmationStep.partial.obs";
+    import EmailEditorStep from "./CommunicationEntryWizard/emailEditorStep.partial.obs";
+    import EmailSettingsStep from "./CommunicationEntryWizard/emailSettingsStep.partial.obs";
+    import PushNotificationEditorStep from "./CommunicationEntryWizard/pushNotificationEditorStep.partial.obs";
+    import SavedStep from "./CommunicationEntryWizard/savedStep.partial.obs";
+    import SendingStep from "./CommunicationEntryWizard/sendingStep.partial.obs";
+    import SentStep from "./CommunicationEntryWizard/sentStep.partial.obs";
+    import SmsEditorStep from "./CommunicationEntryWizard/smsEditorStep.partial.obs";
+    import { BinaryFileAttachment, BlockActionCallbacks } from "./CommunicationEntryWizard/types.partial";
+    import { useInvokeBlockActionHelper, usePersonPreferencesHelper } from "./CommunicationEntryWizard/utils.partial";
+    import WizardStartStep from "./CommunicationEntryWizard/wizardStartStep.partial.obs";
+    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/pushOpenAction";
+    import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
+    import { SegmentCriteria } from "@Obsidian/Enums/Communication/segmentCriteria";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Guid } from "@Obsidian/Types";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { scrollElementStartToTop } from "@Obsidian/Utility/dom";
+    import { areEqual, emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { HttpResult } from "@Obsidian/Types/Utility/http";
+    import { getTopic } from "@Obsidian/Utility/realTime";
+    import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
+    import { debounceAsync, isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationBag";
+    import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
+    import { CommunicationEntryWizardInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardInitializationBox";
+    import { CommunicationEntryWizardPushNotificationOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardPushNotificationOptionsBag";
+    import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { TaskActivityProgressStatusBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressStatusBag";
+    import { TaskActivityProgressUpdateBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressUpdateBag";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { CancellationTokenNone, CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
+
+    // TODO JMH Put this error message somewhere: This template isn't compatible with the Email Wizard. If you continue, the main content will be replaced when a compatible template is selected. To keep your content, choose 'Use Simple Editor' instead.
+    // TODO JMH 👆 it should be shown when config.showTemplateCompatibilityWarning === true.
+    const config = useConfigurationValues<CommunicationEntryWizardInitializationBox>();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+    provideSecurityGrant(securityGrant);
+    const personPreferencesHelper = usePersonPreferencesHelper();
+
+    // These are also used as the step titles.
+    type Step =
+        | "Configure Communication"
+        | "Choose Template"
+        | "Email Settings"
+        | "Email Builder"
+        | "SMS Editor"
+        | "Push Notification Editor"
+        | "Review & Confirm"
+        | "Sending Communication"
+        | "Communication Queued"
+        | "Communication Saved";
+
+    const invokeBlockAction = useInvokeBlockActionHelper();
+
+    const stepTransitions: Record<Step, () => Step | null> = {
+        "Configure Communication": () => "Choose Template",
+        "Choose Template": () => {
+            switch (communicationType.value) {
+                case CommunicationType.Email:
+                    return "Email Settings";
+                case CommunicationType.SMS:
+                    return "SMS Editor";
+                case CommunicationType.PushNotification:
+                    return "Push Notification Editor";
+                case CommunicationType.RecipientPreference:
+                    if (allowedMediums.value.includes(CommunicationType.Email)) {
+                        return "Email Settings";
+                    }
+                    else if (allowedMediums.value.includes(CommunicationType.SMS)) {
+                        return "SMS Editor";
+                    }
+                    else if (allowedMediums.value.includes(CommunicationType.PushNotification)) {
+                        return "Push Notification Editor";
+                    }
+                    else {
+                        return null;
+                    }
+                default:
+                    console.error(`Unknown communication type: ${communicationType.value}`);
+                    return null;
+            }
+        },
+        "Email Settings": () => "Email Builder",
+        "Email Builder": () => {
+            if (communicationType.value === CommunicationType.RecipientPreference) {
+                if (allowedMediums.value.includes(CommunicationType.SMS)) {
+                    return "SMS Editor";
+                }
+                else if (allowedMediums.value.includes(CommunicationType.PushNotification)) {
+                    return "Push Notification Editor";
+                }
+                else {
+                    return "Review & Confirm";
+                }
+            }
+            else {
+                return "Review & Confirm";
+            }
+        },
+        "SMS Editor": () => "Review & Confirm",
+        "Push Notification Editor": () => "Review & Confirm",
+        "Review & Confirm": () => {
+            if (reviewAndConfirmNextAction.value === "save") {
+                return "Communication Saved";
+            }
+            else {
+                return "Sending Communication";
+            }
+        },
+        "Sending Communication": () => "Communication Queued",
+        "Communication Queued": () => null,
+        "Communication Saved": () => null
+    };
+
+    // #region Values
+
+    // Stepper state.
+    const steps = JSON.parse(new URLSearchParams(window.location.search).get("step") ?? "[]") as Step[];
+    const previousSteps: Step[] = steps.length > 1 ? steps.slice(0, steps.length - 1) : [];
+    const step = ref<Step>(steps.length ? steps[steps.length - 1] : "Configure Communication");
+
+    // UI state.
+    const recipients = ref<CommunicationEntryWizardRecipientBag[]>(config.recipients ?? []);
+    const segmentDataViews = ref<ListItemBag[]>(config.segmentDataViews ?? []);
+    const isFetchingRecipients = ref<boolean>(false);
+    const communicationEntryWizardElement = ref<HTMLElement | undefined>();
+    const sendingProgressMessage = ref<string>("");
+    const sendingCompletionPercentage = ref<number>(0);
+    const isFetchingCommunicationTemplate = ref<boolean>(false);
+    const pendingCommunicationTemplate = ref<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>();
+    const communicationTemplateDetail = ref<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>(config.communicationTemplateDetail);
+    const hasDetailBlockOnCurrentPage = ref<boolean>(config.hasDetailBlockOnCurrentPage);
+    const finalMessage = ref<string>("");
+    const finalMessageAlertType = ref<AlertType>(AlertType.Default);
+    const wasNextButtonClickedOnce = ref<boolean>(false);
+    const wasRecipientListModifiedOnce = ref<boolean>(false);
+    const reviewAndConfirmNextAction = ref<"send" | "save">("send");
+
+    // Communication state.
+    const bccEmails = ref<string>(config.communication?.bccEmails ?? "");
+    const ccEmails = ref<string>(config.communication?.ccEmails ?? "");
+    const communicationId = ref<number | null | undefined>(config.communication?.communicationId);
+    const communicationGuid = ref<Guid>(config.communication?.communicationGuid ?? newGuid());
+    const communicationListGroupGuid = ref<Guid | null | undefined>(config.communication?.communicationListGroupGuid);
+    const communicationName = ref<string>(config.communication?.communicationName ?? "");
+    const communicationTemplateGuid = ref<Guid | null | undefined>(config.communication?.communicationTemplateGuid ?? config.communicationTemplateDetail?.guid ?? personPreferencesHelper.getCommunicationTemplateGuid());
+    const communicationTopicValue = ref<ListItemBag | null | undefined>(config.communication?.communicationTopicValue);
+    const communicationType = ref<CommunicationType>(config.communication?.communicationType ?? CommunicationType.Email);
+    const emailAttachmentBinaryFiles = ref<ListItemBag[] | null | undefined>(config.communication?.emailAttachmentBinaryFiles);
+    const enabledLavaCommands = ref<string | null | undefined>(config.communication?.enabledLavaCommands);
+    const excludeDuplicateRecipientAddress = ref<boolean>(config.communication?.excludeDuplicateRecipientAddress ?? false);
+    const fromEmail = ref<string>(config.communication?.fromEmail ?? "");
+    const fromName = ref<string>(config.communication?.fromName ?? "");
+    const futureSendDateTime = ref<string | null | undefined>(config.communication?.futureSendDateTime);
+    const individualRecipientPersonAliasGuids = ref<Guid[] | null | undefined>(config.communication?.individualRecipientPersonAliasGuids);
+    const isBulkCommunication = ref<boolean>(config.communication?.isBulkCommunication ?? false);
+    const message = ref<string>(config.communication?.message ?? "");
+    const pushData = ref<CommunicationEntryWizardPushNotificationOptionsBag | null | undefined>(config.communication?.pushData);
+    const pushImageBinaryFileGuid = ref<Guid | null | undefined>(config.communication?.pushImageBinaryFileGuid);
+    const pushMessage = ref<string>(config.communication?.pushMessage ?? "");
+    const pushOpenAction = ref<PushOpenAction>(config.communication?.pushOpenAction ?? PushOpenAction.NoAction);
+    const pushOpenMessage = ref<string>(config.communication?.pushOpenMessage ?? "");
+    const pushOpenMessageJson = ref<string | undefined>(config.communication?.pushOpenMessageJson ?? undefined);
+    const pushTitle = ref<string>(config.communication?.pushTitle ?? "");
+    const replyToEmail = ref<string>(config.communication?.replyToEmail ?? "");
+    const segmentCriteria = ref<SegmentCriteria>(config.communication?.segmentCriteria ?? SegmentCriteria.All);
+    const segmentDataViewGuids = ref<Guid[]>(config.communication?.segmentDataViewGuids ?? []);
+    const smsAttachmentBinaryFiles = ref<ListItemBag[] | null | undefined>(config.communication?.smsAttachmentBinaryFiles);
+    const smsFromSystemPhoneNumberGuid = ref<Guid | null | undefined>(config.communication?.smsFromSystemPhoneNumberGuid);
+    const smsMessage = ref<string>(config.communication?.smsMessage ?? "");
+    const status = ref<CommunicationStatus>(config.communication?.status ?? CommunicationStatus.Transient);
+    const subject = ref<string>(config.communication?.subject ?? "");
+    const testSmsPhoneNumber = ref<string | null | undefined>(config.communication?.testSmsPhoneNumber);
+    const testEmailAddress = ref<string>(config.communication?.testEmailAddress ?? "");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isBulkCommunicationForced = computed<boolean>(() => {
+        const isNewCommunication = (): boolean =>
+            isNullish(communicationId.value) || communicationId.value === 0;
+        const isTransientCommunication = (): boolean =>
+            status.value === CommunicationStatus.Transient;
+        const isEmailCommunication = (): boolean =>
+            allowedMediums.value.includes(CommunicationType.Email)
+            && (
+                communicationType.value === CommunicationType.Email
+                || communicationType.value === CommunicationType.RecipientPreference
+            );
+        const isBulkEmailThresholdExceeded = (): boolean =>
+            !isNullish(config.bulkEmailThreshold)
+            && emailRecipients.value.length > config.bulkEmailThreshold;
+
+        return (isNewCommunication() || isTransientCommunication())
+            && isEmailCommunication()
+            && isBulkEmailThresholdExceeded();
+    });
+
+    const allowedMediums = computed<CommunicationType[]>(() => {
+        const allowedCommunicationTypes: CommunicationType[] = [];
+
+        function tryAdd(allowedCommunicationType: CommunicationType): void {
+            if (!allowedCommunicationTypes.includes(allowedCommunicationType)) {
+                allowedCommunicationTypes.push(allowedCommunicationType);
+            }
+        }
+
+        if (config.mediums?.length) {
+            for (const mediumGuid of config.mediums.filter(medium => !!medium.value).map(medium => medium.value!)) {
+                if (areEqual(mediumGuid, EntityType.CommunicationMediumEmail)) {
+                    tryAdd(CommunicationType.Email);
+                }
+                else if (areEqual(mediumGuid, EntityType.CommunicationMediumSms)) {
+                    tryAdd(CommunicationType.SMS);
+                }
+                else if (areEqual(mediumGuid, EntityType.CommunicationMediumPushNotification)) {
+                    tryAdd(CommunicationType.PushNotification);
+                }
+                else if (mediumGuid?.toLocaleLowerCase() === "recipient preference") {
+                    tryAdd(CommunicationType.RecipientPreference);
+                }
+            }
+        }
+
+        return allowedCommunicationTypes;
+    });
+
+    const communicationTemplateListItems = computed<ListItemBag[]>(() => {
+        if (!config.templates) {
+            return [];
+        }
+        else {
+            return config.templates.map(t => ({
+                text: t.name,
+                value: t.guid
+            }));
+        }
+    });
+
+    const nextStep = computed<Step | null>(() => {
+        return stepTransitions[step.value]?.();
+    });
+
+    const emailRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
+        return recipients.value.filter(r => r.isEmailAllowed);
+    });
+
+    const smsRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
+        return recipients.value.filter(r => r.isSmsAllowed);
+    });
+
+    const pushNotificationRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
+        return recipients.value.filter(r => r.isPushAllowed);
+    });
+
+    const personalPreferenceRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
+        return recipients.value.filter(r => r.isEmailAllowed || r.isSmsAllowed);
+    });
+
+    const selectedMediumRecipients = computed<CommunicationEntryWizardRecipientBag[]>(() => {
+        switch (communicationType.value) {
+            case CommunicationType.Email:
+                return emailRecipients.value;
+            case CommunicationType.SMS:
+                return smsRecipients.value;
+            case CommunicationType.PushNotification:
+                return pushNotificationRecipients.value;
+            case CommunicationType.RecipientPreference:
+            default:
+                return personalPreferenceRecipients.value;
+        }
+    });
+
+    const communicationListGroupName = computed<string | null | undefined>(() => {
+        if (communicationListGroupGuid.value) {
+            const communicationListGroup = config.communicationListGroups?.find(c => areEqual(c.value, communicationListGroupGuid.value));
+
+            return communicationListGroup?.text;
+        }
+        else {
+            return null;
+        }
+    });
+
+    const segmentNames = computed<string[] | null | undefined>(() => {
+        if (segmentDataViewGuids.value.length) {
+            const names: string[] = [];
+
+            for (const segmentDataViewGuid of segmentDataViewGuids.value) {
+                const segmentDataView = segmentDataViews.value.find(c => areEqual(c.value, segmentDataViewGuid));
+
+                if (segmentDataView?.text) {
+                    names.push(segmentDataView.text);
+                }
+            }
+
+            return names.length ? names : null;
+        }
+        else {
+            return null;
+        }
+    });
+
+    const emailAttachmentNames = computed<string[] | null | undefined>(() => {
+        if (emailAttachmentBinaryFiles.value?.length) {
+            const names: string[] = emailAttachmentBinaryFiles.value
+                .map(e => e.text)
+                .filter(t => !!t)
+                .map(t => t!);
+
+            return names.length ? names : null;
+        }
+        else {
+            return null;
+        }
+    });
+
+    const smsAttachmentNames = computed<string[] | null | undefined>(() => {
+        if (smsAttachmentBinaryFiles.value?.length) {
+            const names: string[] = smsAttachmentBinaryFiles.value
+                .map(e => e.text)
+                .filter(t => !!t)
+                .map(t => t!);
+
+            return names.length ? names : null;
+        }
+        else {
+            return null;
+        }
+    });
+
+    const smsFromNumberName = computed<string>(() => {
+        if (smsAttachmentBinaryFiles.value) {
+            const t = config.smsFromNumbers?.find(n => {
+                return areEqual(smsFromSystemPhoneNumberGuid.value, n.value);
+            });
+
+            return t?.text ?? "";
+        }
+        else {
+            return "";
+        }
+    });
+
+    const smsAttachmentLinks = computed<BinaryFileAttachment[]>(() => {
+        if (smsAttachmentBinaryFiles.value?.length) {
+            return smsAttachmentBinaryFiles.value.map(binaryFileAttachment => {
+                const binaryFileGuid: Guid = toGuidOrNull(binaryFileAttachment?.value) ?? emptyGuid;
+                return {
+                    fileName: binaryFileAttachment.text ?? "",
+                    binaryFileGuid,
+                    url: `/GetFile.ashx?guid=${binaryFileGuid}&fileName=${binaryFileAttachment.text}`
+                };
+            });
+        }
+        else {
+            return [];
+        }
+    });
+
+    const emailRecipientsLabel = computed<string>(() => {
+        return getRecipientsLabel(emailRecipients.value.length);
+    });
+
+    const pushNotificationRecipientsLabel = computed<string>(() => {
+        return getRecipientsLabel(pushNotificationRecipients.value.length);
+    });
+
+    const selectedMediumRecipientsLabel = computed<string>(() => {
+        return getRecipientsLabel(selectedMediumRecipients.value.length);
+    });
+
+    const smsRecipientsLabel = computed<string>(() => {
+        return getRecipientsLabel(smsRecipients.value.length);
+    });
+
+    const isIncompatibleCommunicationTemplateNotificationShown = computed<boolean>(() => {
+        return !isNullish(communicationId.value)
+            && communicationId.value > 0
+            && !isNullOrWhiteSpace(message.value)
+            && !isNullish(communicationTemplateDetail.value)
+            && !communicationTemplateDetail.value.isWizardSupported;
+    });
+
+    const isUseSimpleEditorButtonShown = computed<boolean>(() => {
+        if (!config.navigationUrls?.["SimpleCommunicationPage"]
+            || wasNextButtonClickedOnce.value
+            || wasRecipientListModifiedOnce.value
+        ) {
+            return false;
+        }
+        else {
+            return true;
+        }
+    });
+
+    const emailTo = computed<string | null | undefined>(() => {
+        if (communicationListGroupName.value) {
+            return communicationListGroupName.value;
+        }
+        else {
+            // Return the first email recipient email address.
+            return emailRecipients.value[0]?.email;
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function getRecipientsLabel(recipientCount: number): string {
+        return `${recipientCount} ${pluralize("Recipient", recipientCount)}`;
+    }
+
+    let tokenSource: CancellationTokenSource = new CancellationTokenSource();
+    const cmanager = {
+        get token(): ICancellationToken {
+            return tokenSource.token;
+        },
+
+        refreshToken(): ICancellationToken {
+            tokenSource.cancel();
+            tokenSource = new CancellationTokenSource();
+            return tokenSource.token;
+        }
+    };
+
+    async function getRecipients(ctoken: ICancellationToken = CancellationTokenNone): Promise<HttpResult<CommunicationEntryWizardRecipientBag[]>> {
+        if (!ctoken.isCancellationRequested) {
+            isFetchingRecipients.value = true;
+        }
+
+        const result = await invokeBlockAction.getRecipients(getCommunicationBag(), ctoken);
+
+        if (!ctoken.isCancellationRequested) {
+            isFetchingRecipients.value = false;
+        }
+
+        return result;
+    }
+
+    function replaceQueryParam(key: string, value: string): void {
+        // Ensure URL and URLSearchParams are supported
+        if (typeof window !== "undefined" && window.location) {
+            const url = new URL(window.location.href);
+
+            // Add or update the query parameter.
+            url.searchParams.set(key, value);
+
+            // Update the URL without reloading.
+            history.replaceState(null, "", url.toString());
+        }
+    }
+
+    function scrollToTopOfBlock(): void {
+        if (communicationEntryWizardElement.value) {
+            scrollElementStartToTop(communicationEntryWizardElement.value);
+        }
+    }
+
+    function setStep(value: Step): void {
+        if (value !== step.value) {
+            previousSteps.push(step.value);
+            step.value = value;
+            nextTick(scrollToTopOfBlock);
+        }
+    }
+
+    function getCommunicationBag(): CommunicationEntryWizardCommunicationBag {
+        return {
+            // Shared medium fields.
+            communicationId: communicationId.value,
+            communicationGuid: communicationGuid.value,
+            communicationListGroupGuid: communicationListGroupGuid.value,
+            communicationName: communicationName.value,
+            communicationTemplateGuid: communicationTemplateGuid.value,
+            communicationTopicValue: communicationTopicValue.value,
+            communicationType: communicationType.value,
+            enabledLavaCommands: enabledLavaCommands.value,
+            excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value,
+            futureSendDateTime: futureSendDateTime.value,
+            individualRecipientPersonAliasGuids: individualRecipientPersonAliasGuids.value,
+            isBulkCommunication: isBulkCommunication.value,
+            segmentCriteria: segmentCriteria.value,
+            segmentDataViewGuids: segmentDataViewGuids.value,
+            status: status.value,
+
+            // Email medium fields.
+            ccEmails: ccEmails.value || null,
+            bccEmails: bccEmails.value || null,
+            fromEmail: fromEmail.value || null,
+            fromName: fromName.value || null,
+            message: message.value || null,
+            replyToEmail: replyToEmail.value || null,
+            subject: subject.value || null,
+            emailAttachmentBinaryFiles: emailAttachmentBinaryFiles.value,
+            testEmailAddress: testEmailAddress.value || null,
+
+            // SMS medium fields.
+            smsAttachmentBinaryFiles: smsAttachmentBinaryFiles.value,
+            smsFromSystemPhoneNumberGuid: smsFromSystemPhoneNumberGuid.value,
+            smsMessage: smsMessage.value || null,
+            testSmsPhoneNumber: testSmsPhoneNumber.value,
+
+            // Push fields.
+            pushData: pushData.value,
+            pushImageBinaryFileGuid: pushImageBinaryFileGuid.value,
+            pushMessage: pushMessage.value || null,
+            pushOpenAction: pushOpenAction.value,
+            pushOpenMessage: pushOpenMessage.value || null,
+            pushOpenMessageJson: pushOpenMessageJson.value,
+            pushTitle: pushTitle.value || null
+        };
+    }
+
+    function updateFieldsFromCommunicationBag(bag: CommunicationEntryWizardCommunicationBag): void {
+        // Shared medium fields.
+        communicationGuid.value = bag.communicationGuid;
+        communicationId.value = bag.communicationId;
+        communicationListGroupGuid.value = bag.communicationListGroupGuid;
+        communicationName.value = bag.communicationName ?? "";
+        communicationTemplateGuid.value = bag.communicationTemplateGuid;
+        communicationTopicValue.value = bag.communicationTopicValue;
+        communicationType.value = bag.communicationType ?? CommunicationType.Email;
+        enabledLavaCommands.value = bag.enabledLavaCommands;
+        excludeDuplicateRecipientAddress.value = bag.excludeDuplicateRecipientAddress ?? false;
+        futureSendDateTime.value = bag.futureSendDateTime;
+        individualRecipientPersonAliasGuids.value = bag.individualRecipientPersonAliasGuids;
+        isBulkCommunication.value = bag.isBulkCommunication ?? false;
+        segmentCriteria.value = bag.segmentCriteria ?? SegmentCriteria.All;
+        segmentDataViewGuids.value = bag.segmentDataViewGuids ?? [];
+        status.value = bag.status ?? CommunicationStatus.Transient;
+
+        // Email fields.
+        bccEmails.value = bag.bccEmails ?? "";
+        ccEmails.value = bag.ccEmails ?? "";
+        emailAttachmentBinaryFiles.value = bag.emailAttachmentBinaryFiles;
+        fromEmail.value = bag.fromEmail ?? "";
+        fromName.value = bag.fromName ?? "";
+        message.value = bag.message ?? "";
+        replyToEmail.value = bag.replyToEmail ?? "";
+        subject.value = bag.subject ?? "";
+        testEmailAddress.value = bag.testEmailAddress ?? "";
+
+        // SMS fields.
+        smsAttachmentBinaryFiles.value = bag.smsAttachmentBinaryFiles;
+        smsFromSystemPhoneNumberGuid.value = bag.smsFromSystemPhoneNumberGuid;
+        smsMessage.value = bag.smsMessage ?? "";
+        testSmsPhoneNumber.value = bag.testSmsPhoneNumber;
+
+        // Push fields.
+        pushData.value = bag.pushData;
+        pushMessage.value = bag.pushMessage ?? "";
+        pushOpenAction.value = bag.pushOpenAction ?? PushOpenAction.NoAction;
+        pushOpenMessageJson.value = bag.pushOpenMessageJson ?? undefined;
+        pushTitle.value = bag.pushTitle ?? "";
+        pushImageBinaryFileGuid.value = bag.pushImageBinaryFileGuid;
+        pushOpenMessage.value = bag.pushOpenMessage ?? "";
+    }
+
+    /**
+     * Initialize the real-time engine and start monitoring for updates to the
+     * proxy connection status messages.
+     */
+    async function startRealTime(): Promise<void> {
+        const topic = await getTopic("Rock.RealTime.Topics.TaskActivityProgressTopic");
+
+        topic.onDisconnected(async () => {
+            await startRealTime();
+        });
+
+        topic.on("updateTaskProgress", onSendProgressUpdated);
+        topic.on("taskStarted", onSendStarted);
+        topic.on("taskCompleted", onSendCompleted);
+
+        await invokeBlockAction.subscribeToRealTime({
+            connectionId: topic.connectionId,
+            communicationGuid: communicationGuid.value
+        });
+    }
+
+    function moveToNextStep(): void {
+        if (nextStep.value) {
+            setStep(nextStep.value);
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onNextStepClicked(): void {
+        wasNextButtonClickedOnce.value = true;
+        moveToNextStep();
+    }
+
+    function onPreviousStepClicked(): void {
+        step.value = previousSteps.pop() ?? "Configure Communication";
+        // After the step is rendered, scroll to the top of the window.
+        nextTick(scrollToTopOfBlock);
+    }
+
+    async function onCommunicationListGroupGuidUpdated(_value: Guid | null | undefined): Promise<void> {
+        // Reset tracking for communication list changes.
+        wasRecipientListModifiedOnce.value = false;
+
+        const getRecipients = updateRecipients();
+        const getDataSegmentViews = invokeBlockAction.getSegmentDataViews(communicationListGroupGuid.value);
+
+        const [_result, segmentDataViewsResult] = await Promise.all([getRecipients, getDataSegmentViews]);
+
+        if (segmentDataViewsResult?.isSuccess) {
+            segmentDataViews.value = segmentDataViewsResult.data ?? [];
+        }
+        else {
+            segmentDataViews.value = [];
+            console.error(segmentDataViewsResult?.errorMessage ?? "Unable to get segment data views.");
+        }
+    }
+
+    const debouncedGetRecipients = debounceAsync(
+        getRecipients,
+        {
+            delay: 500
+        });
+
+    async function debouncedUpdateRecipients(): Promise<void> {
+        const result = await debouncedGetRecipients();
+
+        if (result?.isSuccess && !isNullish(result.data)) {
+            recipients.value = result.data;
+        }
+        else {
+            recipients.value = [];
+            console.error(result?.errorMessage ?? "Unable to get recipient count.");
+        }
+    }
+
+    async function updateRecipients(): Promise<void> {
+        const token = cmanager.refreshToken();
+        const result = await getRecipients(token);
+
+        if (result?.isSuccess && !isNullish(result.data)) {
+            recipients.value = result.data;
+        }
+        else {
+            recipients.value = [];
+            console.error(result?.errorMessage ?? "Unable to get recipient count.");
+        }
+    }
+
+    async function onSendTestEmail(message: string, callbacks: BlockActionCallbacks): Promise<void> {
+        const bag = getCommunicationBag();
+
+        // Override the communication type when sending a test communication
+        // so Rock can send a test email message.
+        bag.communicationType = CommunicationType.Email;
+        bag.message = message;
+
+        const result = await invokeBlockAction.sendTest(bag);
+
+        if (result?.isSuccess) {
+            console.log("success!");
+            callbacks.onSuccess();
+        }
+        else {
+            console.error(result?.errorMessage ?? "The test communication failed to send.");
+            callbacks.onError();
+        }
+    }
+
+    async function previewHtmlProcessor(previewHtml: string): Promise<string | null | undefined> {
+        message.value = previewHtml;
+        const result = await invokeBlockAction.getEmailPreviewHtml(getCommunicationBag());
+
+        if (result.isSuccess && result.data) {
+            // Keep the browser communication up-to-date with the server communication.
+            if (result.data.communication) {
+                updateFieldsFromCommunicationBag(result.data.communication);
+            }
+
+            return result.data.previewHtml;
+        }
+        else {
+            console.error(result.errorMessage ?? "An error occurred.");
+            return (result.errorMessage ?? "An error occurred.");
+        }
+    }
+
+    async function onSendTestSms(callbacks: BlockActionCallbacks): Promise<void> {
+        const bag = getCommunicationBag();
+
+        // Override the communication type when sending a test communication
+        // so Rock can send a test SMS message.
+        bag.communicationType = CommunicationType.SMS;
+
+        const result = await invokeBlockAction.sendTest(bag);
+
+        if (result?.isSuccess) {
+            callbacks.onSuccess();
+        }
+        else {
+            console.error(result?.errorMessage ?? "The test communication failed to send.");
+            callbacks.onError();
+        }
+    }
+
+    async function onReviewAndConfirmSaveCommunication(callbacks: BlockActionCallbacks): Promise<void> {
+        const result = await invokeBlockAction.save(getCommunicationBag());
+
+        if (result?.isSuccess && result?.data?.communication?.communicationId) {
+            // Keep the browser communication up-to-date with the server communication.
+            updateFieldsFromCommunicationBag(result.data.communication);
+            callbacks.onSuccess();
+            reviewAndConfirmNextAction.value = "save";
+
+            finalMessage.value = "The communication has been saved.";
+            finalMessageAlertType.value = "success";
+
+            moveToNextStep();
+        }
+        else {
+            console.error(result?.errorMessage ?? "The test communication failed to save.");
+            callbacks.onError();
+        }
+    }
+
+    async function onSaveCommunication(callbacks: BlockActionCallbacks): Promise<void> {
+        const result = await invokeBlockAction.save(getCommunicationBag());
+
+        if (result?.isSuccess && result?.data?.communication?.communicationId) {
+            // Keep the browser communication up-to-date with the server communication.
+            updateFieldsFromCommunicationBag(result.data.communication);
+            callbacks.onSuccess();
+        }
+        else {
+            console.error(result?.errorMessage ?? "The test communication failed to save.");
+            callbacks.onError();
+        }
+    }
+
+    async function onPendingCommunicationTemplateGuidUpdated(value: Guid | null | undefined): Promise<void> {
+        try {
+            if (value) {
+                isFetchingCommunicationTemplate.value = true;
+
+                const result = await invokeBlockAction.getCommunicationTemplate(value);
+
+                if (!result?.isSuccess || !result.data) {
+                    console.error(result?.errorMessage ?? "unable to select communication template");
+                }
+
+                pendingCommunicationTemplate.value = result?.data;
+            }
+        }
+        finally {
+            isFetchingCommunicationTemplate.value = false;
+        }
+    }
+
+    function populateFromCommunicationTemplateDetail(bag: CommunicationEntryWizardCommunicationTemplateDetailBag): void {
+        // Email Fields
+        fromEmail.value = bag.fromEmail ?? "";
+        fromName.value = bag.fromName ?? "";
+        emailAttachmentBinaryFiles.value = bag.emailAttachmentBinaryFiles;
+
+        // Set the subject from the template even if it is null so we don't accidentally keep a subject doesn't make sense for the newly selected template.
+        subject.value = bag.subject ?? "";
+
+        // Only set reply-to, cc, bcc if the template has a value
+        // (in case they already filled in these for this communication).
+        if (bag.replyToEmail?.trim()) {
+            replyToEmail.value = bag.replyToEmail;
+        }
+
+        if (bag.ccEmails?.trim()) {
+            ccEmails.value = bag.ccEmails;
+        }
+
+        if (bag.bccEmails?.trim()) {
+            bccEmails.value = bag.bccEmails;
+        }
+
+        // Reset the email message if a template is selected or re-selected,
+        // as the email content depends on the chosen template.
+        message.value = bag.message ?? "";
+
+        // SMS fields.
+        smsAttachmentBinaryFiles.value = bag.smsAttachmentBinaryFiles;
+
+        // Only set the from number if the template has one.
+        if (bag.smsFromSystemPhoneNumberGuid) {
+            smsFromSystemPhoneNumberGuid.value = bag.smsFromSystemPhoneNumberGuid;
+        }
+
+        // Only set the SMS message if the template has one
+        // (just in case they already typed in an SMS message for this communication).
+        if (bag.smsMessage?.trim()) {
+            smsMessage.value = bag.smsMessage;
+        }
+
+        // Push fields.
+        pushData.value = bag.pushData;
+        pushImageBinaryFileGuid.value = bag.pushImageBinaryFileGuid;
+        pushMessage.value = bag.pushMessage ?? "";
+        pushOpenAction.value = bag.pushOpenAction ?? PushOpenAction.NoAction;
+        pushOpenMessage.value = bag.pushOpenMessage ?? "";
+        pushOpenMessageJson.value = bag.pushOpenMessageJson ?? undefined;
+        pushTitle.value = bag.pushTitle ?? "";
+    }
+
+    async function onCommunicationTemplateSelected(bag: CommunicationEntryWizardCommunicationTemplateDetailBag): Promise<void> {
+        populateFromCommunicationTemplateDetail(bag);
+
+        communicationTemplateGuid.value = bag.guid;
+
+        // Clear the pending communication template.
+        pendingCommunicationTemplate.value = null;
+
+        // Update the block person preferences.
+        await personPreferencesHelper.setCommuncationTemplateGuid(bag.guid);
+    }
+
+    async function onSendCommunication(callbacks: BlockActionCallbacks): Promise<void> {
+        const result = await invokeBlockAction.send(getCommunicationBag());
+
+        if (result?.isSuccess) {
+            callbacks.onSuccess();
+
+            // Refresh this from the response even though it is set on page load.
+            hasDetailBlockOnCurrentPage.value = result.data?.hasDetailBlockOnCurrentPage ?? false;
+        }
+        else {
+            console.error(result?.errorMessage ?? "The test communication failed to send.");
+            callbacks.onError();
+        }
+    }
+
+    function onSendStarted(_bag: TaskActivityProgressStatusBag): void {
+        sendingProgressMessage.value = "Loading...";
+        sendingCompletionPercentage.value = 0;
+
+        moveToNextStep();
+    }
+
+    function onSendProgressUpdated(bag: TaskActivityProgressUpdateBag): void {
+        console.log(bag);
+        sendingProgressMessage.value = bag.message || "Loading...";
+        sendingCompletionPercentage.value = bag.completionPercentage;
+    }
+
+    function onSendCompleted(bag: TaskActivityProgressStatusBag): void {
+        console.log(bag);
+        sendingCompletionPercentage.value = 100;
+
+        if (bag.data?.["communicationId"]) {
+            communicationId.value = bag.data["communicationId"];
+        }
+
+        finalMessage.value = bag.message ?? "Communication has been queued for sending.";
+
+        if (bag.errors?.length) {
+            finalMessageAlertType.value = AlertType.Danger;
+        }
+        else if (bag.warnings?.length) {
+            finalMessageAlertType.value = AlertType.Warning;
+        }
+        else {
+            finalMessageAlertType.value = AlertType.Success;
+        }
+
+        if (bag.isFinished) {
+            moveToNextStep();
+        }
+    }
+
+    async function onSaveEmailAnalytics(daysFromNow: number, callbacks: BlockActionCallbacks): Promise<void> {
+        const result = await invokeBlockAction.saveMetricsReminder({
+            daysUntilReminder: daysFromNow,
+            communicationGuid: communicationGuid.value
+        });
+
+        if (result?.isSuccess) {
+            callbacks.onSuccess();
+        }
+        else {
+            callbacks.onError(result?.errorMessage);
+        }
+    }
+
+    async function onCancelEmailAnalytics(callbacks: BlockActionCallbacks): Promise<void> {
+        const result = await invokeBlockAction.cancelMetricsReminder(communicationGuid.value);
+
+        if (result?.isSuccess) {
+            callbacks.onSuccess();
+        }
+        else {
+            callbacks.onError(result?.errorMessage);
+        }
+    }
+
+    function onViewCommunication(): void {
+        const url = new URL(window.location.href);
+
+        url.searchParams.set("CommunicationId", (communicationId.value ?? 0).toString());
+
+        window.location.href = url.toString();
+    }
+
+    function onNewCommunication(): void {
+        const url = new URL(window.location.href);
+
+        url.search = "";
+
+        window.location.href = url.toString();
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(communicationGuid, (newValue, oldValue) => {
+        if (!areEqual(newValue, oldValue)) {
+            startRealTime();
+        }
+    });
+
+    watch(communicationId, (newValue, _oldValue) => {
+        if (newValue) {
+            replaceQueryParam("CommunicationId", newValue.toString());
+        }
+    });
+
+    watch(isBulkCommunicationForced, (newValue) => {
+        if (newValue) {
+            isBulkCommunication.value = true;
+        }
+    }, {
+        immediate: true
+    });
+
+    // #endregion Watchers
+
+    const reloadBlock = useReloadBlock();
+    onConfigurationValuesChanged(reloadBlock);
+
+    startRealTime();
+
+    // On initialization, if the communication is new, then copy fields from the template.
+    onMounted(async () => {
+        if (!communicationId.value) {
+            if (communicationTemplateDetail.value) {
+                populateFromCommunicationTemplateDetail(communicationTemplateDetail.value);
+            }
+            else if (communicationTemplateGuid.value) {
+                const result = await invokeBlockAction.getCommunicationTemplate(communicationTemplateGuid.value);
+
+                if (result?.isSuccess && result.data) {
+                    communicationTemplateDetail.value = result.data;
+                    populateFromCommunicationTemplateDetail(result.data);
+                }
+            }
+        }
+    });
+</script>

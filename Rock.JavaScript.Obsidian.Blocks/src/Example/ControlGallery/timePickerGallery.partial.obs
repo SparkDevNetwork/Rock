@@ -1,0 +1,29 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <TimePicker label="Time" v-model="value" :disabled="disabled" />
+
+        <template #settings>
+            <div>
+                <CheckBox v-model="disabled" label="Disabled" />
+            </div>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import TimePicker from "@Obsidian/Controls/timePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref({ hour: 14, minute: 15 });
+    const disabled = ref(false);
+    const importCode = getSfcControlImportPath("timePicker");
+    const exampleCode = `<TimePicker label="Time" v-model="value" />`;
+</script>

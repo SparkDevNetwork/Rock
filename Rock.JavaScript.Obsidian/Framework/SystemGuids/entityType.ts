@@ -235,6 +235,8 @@ export const EntityType = {
     Document: "7CEFA340-9D98-4B2C-B462-313C61944B6C",
     /** The EntityType Guid for Rock.Model.DocumentType  */
     DocumentType: "18CF366F-46B6-49CA-B557-BCABD6BBD175",
+    /** The EntityType Guid for Rock.Model.EmailSection  */
+    EmailSection: "86B2CE94-9DC3-463C-B2B1-DEECAB70474E",
     /** The EntityType Guid for Rock.Model.EntityCampusFilter  */
     EntityCampusFilter: "A736A9FB-F2A5-4458-B126-FAD6BD3F3B78",
     /** The EntityType Guid for Rock.Model.EntityIntent  */
@@ -647,6 +649,8 @@ export const EntityType = {
     PersonalLinkSectionOrder: "648325DC-1555-44B7-AFA4-1971E57F7E11",
     /** The EntityType Guid for Rock.Model.PersonalizationSegment  */
     PersonalizationSegment: "368A3581-C8C4-4960-901A-9587864226F3",
+    /** The EntityType Guid for PersonalizationSegmentCategory 'joiner' table Rock.Model.PersonalizationSegment */
+    PersonalizationSegmentCategory: "D2026C0C-6C5F-4BB8-B085-9928E373812D",
     /** The EntityType Guid for Rock.Model.PhoneNumber  */
     PhoneNumber: "AD7E27CB-036D-40C6-B352-81B38BFAE798",
     /** The EntityType Guid for Rock.Model.PluginMigration  */

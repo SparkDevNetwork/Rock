@@ -1,0 +1,229 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="['shorthand-property-header', isMoreShown ? 'more' : '']">
+        <RockLabel class="shorthand-property-label">{{ label }}</RockLabel>
+        <div class="more-switch">
+            <InlineSwitch v-model="isMoreShown"
+                          label="More" />
+        </div>
+    </div>
+
+    <TransitionVerticalCollapse>
+        <div v-if="!isMoreShown" class="row">
+            <div class="col-sm-6">
+                <DropDownList v-model="internalShorthandValue"
+                              v-bind="$attrs"
+                              :label="shorthandLabel"
+                              :items="items" />
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+
+    <TransitionVerticalCollapse>
+        <div v-if="isMoreShown">
+            <div class="row">
+                <div class="col-sm-6">
+                    <DropDownList v-model="internalTopValue"
+                                  v-bind="$attrs"
+                                  :label="topLabel"
+                                  :disableLabel="!topLabel"
+                                  :items="items" />
+                </div>
+
+                <div class="col-sm-6">
+                    <DropDownList v-model="internalBottomValue"
+                                  v-bind="$attrs"
+                                  :label="bottomLabel"
+                                  :disableLabel="!bottomLabel"
+                                  :items="items" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <DropDownList v-model="internalLeftValue"
+                                  v-bind="$attrs"
+                                  :label="leftLabel"
+                                  :disableLabel="!leftLabel"
+                                  :items="items" />
+                </div>
+
+                <div class="col-sm-6">
+                    <DropDownList v-model="internalRightValue"
+                                  v-bind="$attrs"
+                                  :label="rightLabel"
+                                  :disableLabel="!rightLabel"
+                                  :items="items" />
+                </div>
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<style scoped>
+.shorthand-property-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-interface-soft);
+    margin-bottom: var(--spacing-small);
+}
+
+.shorthand-property-label {
+    font-size: var(--font-size-regular);
+}
+
+.more-switch {
+    font-size: var(--font-size-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ShorthandValueProvider } from "../types.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        valueProvider: {
+            type: Object as PropType<ShorthandValueProvider<string | null | undefined>>,
+            required: true
+        },
+
+        items: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        shorthandLabel: {
+            type: String as PropType<string>,
+            default: "All Sides"
+        },
+
+        topLabel: {
+            type: String as PropType<string>,
+            default: "Top"
+        },
+
+        bottomLabel: {
+            type: String as PropType<string>,
+            default: "Bottom"
+        },
+
+        leftLabel: {
+            type: String as PropType<string>,
+            default: "Left"
+        },
+
+        rightLabel: {
+            type: String as PropType<string>,
+            default: "Right"
+        }
+    });
+
+    // #region Computed Props
+
+    const internalShorthandValue = computed<string>({
+        get(): string {
+            return props.valueProvider.shorthandValue ?? "";
+        },
+        set(value: string): void {
+            props.valueProvider.shorthandValue = value || null;
+        }
+    });
+
+    const internalTopValue = computed<string>({
+        get(): string {
+            return props.valueProvider.topValue ?? "";
+        },
+        set(value: string): void {
+            props.valueProvider.topValue = value || null;
+        }
+    });
+
+    const internalBottomValue = computed<string>({
+        get(): string {
+            return props.valueProvider.bottomValue ?? "";
+        },
+        set(value: string): void {
+            props.valueProvider.bottomValue = value || null;
+        }
+    });
+
+    const internalRightValue = computed<string>({
+        get(): string {
+            return props.valueProvider.rightValue ?? "";
+        },
+        set(value: string): void {
+            props.valueProvider.rightValue = value || null;
+        }
+    });
+
+    const internalLeftValue = computed<string>({
+        get(): string {
+            return props.valueProvider.leftValue ?? "";
+        },
+        set(value: string): void {
+            props.valueProvider.leftValue = value || null;
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Values
+
+    const isMoreShown = ref<boolean>(
+        (internalShorthandValue.value ?? "") !== (internalTopValue.value ?? "")
+        || (internalShorthandValue.value ?? "") !== (internalBottomValue.value ?? "")
+        || (internalShorthandValue.value ?? "") !== (internalLeftValue.value ?? "")
+        || (internalShorthandValue.value ?? "") !== (internalRightValue.value ?? "")
+    );
+
+    // #endregion Values
+
+    // #region Watchers
+
+    watch(isMoreShown, (newValue) => {
+        if (!newValue) {
+            if (!isNullish(internalTopValue.value)
+                || !isNullish(internalBottomValue.value)
+                || !isNullish(internalLeftValue.value)
+                || !isNullish(internalRightValue.value)) {
+                internalShorthandValue.value =
+                    internalTopValue.value
+                    || internalBottomValue.value
+                    || internalLeftValue.value
+                    || internalRightValue.value;
+            }
+            else {
+                internalShorthandValue.value = "";
+            }
+        }
+        else {
+            if (!isNullish(internalShorthandValue.value)) {
+                internalTopValue.value = internalShorthandValue.value;
+                internalBottomValue.value = internalShorthandValue.value;
+                internalLeftValue.value = internalShorthandValue.value;
+                internalRightValue.value = internalShorthandValue.value;
+            }
+            else {
+                internalTopValue.value = "";
+                internalBottomValue.value = "";
+                internalLeftValue.value = "";
+                internalRightValue.value = "";
+            }
+        }
+    });
+
+    // #endregion Watchers
+</script>

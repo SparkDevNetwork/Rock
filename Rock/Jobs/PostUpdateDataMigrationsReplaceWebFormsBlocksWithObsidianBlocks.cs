@@ -67,7 +67,6 @@ namespace Rock.Jobs
         IsRequired = false,
         Order = 4 )]
 
-    [RockInternal( "1.16" )]
     internal class PostUpdateDataMigrationsReplaceWebFormsBlocksWithObsidianBlocks : RockJob
     {
         #region Keys

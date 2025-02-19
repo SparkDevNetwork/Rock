@@ -192,7 +192,6 @@ namespace RockWeb.Blocks.Communication
         {
             switch ( e.Key )
             {
-
                 case UserPreferenceKey.OwnershipTypeFilter:
                     e.Name = "Ownership Type";
                     break;
@@ -241,25 +240,27 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSnippets_Delete( object sender, RowEventArgs e )
         {
-            var rockContext = new RockContext();
-            var snippetService = new SnippetService( rockContext );
-            var snippet = snippetService.Get( e.RowKeyId );
-
-            if ( snippet == null )
+            using ( var rockContext = new RockContext() )
             {
-                ShowMessage( "The snippet type could not be found.", NotificationBoxType.Warning );
-                return;
-            }
+                var snippetService = new SnippetService( rockContext );
+                var snippet = snippetService.Get( e.RowKeyId );
 
-            if ( snippetService.CanDelete( snippet, out string errorMessage ) )
-            {
-                ShowMessage( errorMessage, NotificationBoxType.Warning );
-                return;
-            }
+                if ( snippet == null )
+                {
+                    ShowMessage( "The snippet could not be found.", NotificationBoxType.Warning );
+                    return;
+                }
 
-            snippetService.Delete( snippet );
-            rockContext.SaveChanges();
-            BindGrid();
+                if ( !snippetService.CanDelete( snippet, out string errorMessage ) )
+                {
+                    ShowMessage( errorMessage, NotificationBoxType.Warning );
+                    return;
+                }
+
+                snippetService.Delete( snippet );
+                rockContext.SaveChanges();
+                BindGrid();
+            }
         }
 
         /// <summary>
@@ -293,10 +294,13 @@ namespace RockWeb.Blocks.Communication
         /// </summary>
         private void SetBlockTitle()
         {
-            var snippetTypeName = new SnippetTypeService( new RockContext() ).GetSelect( GetAttributeValue( AttributeKey.SnippetType ).AsGuid(), s => s.Name );
-            if ( snippetTypeName.IsNotNullOrWhiteSpace() )
+            using ( var rockContext = new RockContext() )
             {
-                lTitle.Text = $"{snippetTypeName} Snippets";
+                var snippetTypeName = new SnippetTypeService( rockContext ).GetSelect( GetAttributeValue( AttributeKey.SnippetType ).AsGuid(), s => s.Name );
+                if ( snippetTypeName.IsNotNullOrWhiteSpace() )
+                {
+                    lTitle.Text = $"{snippetTypeName} Snippets";
+                }
             }
         }
 
@@ -343,25 +347,27 @@ namespace RockWeb.Blocks.Communication
         {
             TogglePersonalColumnVisibility();
 
-            var rockContext = new RockContext();
-            var snippetService = new SnippetService( rockContext );
-            var snippetTypeGuid = GetAttributeValue( AttributeKey.SnippetType ).AsGuid();
-
-            var snippets = snippetService.Queryable().Where( s => s.SnippetType.Guid == snippetTypeGuid ).Select( s => new SnippetListViewModel()
+            using ( var rockContext = new RockContext() )
             {
-                Description = s.Description,
-                Id = s.Id,
-                IsActive = s.IsActive,
-                Name = s.Name,
-                Personal = s.OwnerPersonAliasId.HasValue,
-                CategoryId = s.CategoryId,
-            } );
+                var snippetService = new SnippetService( rockContext );
+                var snippetTypeGuid = GetAttributeValue( AttributeKey.SnippetType ).AsGuid();
 
-            snippets = ApplyFiltersAndSorting( snippets );
+                var snippets = snippetService.Queryable().Where( s => s.SnippetType.Guid == snippetTypeGuid ).Select( s => new SnippetListViewModel()
+                {
+                    Description = s.Description,
+                    Id = s.Id,
+                    IsActive = s.IsActive,
+                    Name = s.Name,
+                    Personal = s.OwnerPersonAliasId.HasValue,
+                    CategoryId = s.CategoryId,
+                } );
 
-            gSnippets.EntityTypeId = EntityTypeCache.Get<Snippet>().Id;
-            gSnippets.SetLinqDataSource( snippets );
-            gSnippets.DataBind();
+                snippets = ApplyFiltersAndSorting( snippets );
+
+                gSnippets.EntityTypeId = EntityTypeCache.Get<Snippet>().Id;
+                gSnippets.SetLinqDataSource( snippets );
+                gSnippets.DataBind();
+            }
         }
 
         /// <summary>

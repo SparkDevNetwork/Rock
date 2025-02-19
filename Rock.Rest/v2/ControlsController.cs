@@ -249,7 +249,7 @@ namespace Rock.Rest.v2
         [Route( "AccountPickerGetSearchedAccounts" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof ( List<ListItemBag> ) )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
         [ProducesResponseType( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "69fd94cc-f049-4cee-85d1-13e573e30586" )]
         public IActionResult AccountPickerGetSearchedAccounts( [FromBody] AccountPickerGetSearchedAccountsOptionsBag options )
@@ -398,7 +398,7 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "3484A62B-8A52-423A-8154-909D9176E4B6" )]
-        public IActionResult AdaptiveMessagePickerGetAdaptiveMessages( [FromBody] AdaptiveMessagePickerGetAdaptiveMessagesOptionsBag options )
+        public IActionResult AdaptiveMessagePickerGetAdaptiveMessages( [FromBody] UniversalItemTreePickerOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
@@ -407,13 +407,13 @@ namespace Rock.Rest.v2
 
                 var items = clientService.GetCategorizedTreeItems( new CategoryItemTreeOptions
                 {
-                    ParentGuid = options.ParentGuid,
-                    GetCategorizedItems = options.GetCategorizedItems,
+                    ParentGuid = options.ParentValue.AsGuidOrNull(),
+                    GetCategorizedItems = true,
                     EntityTypeGuid = EntityTypeCache.Get<Rock.Model.AdaptiveMessageCategory>().Guid,
-                    IncludeUnnamedEntityItems = options.IncludeUnnamedEntityItems,
-                    IncludeCategoriesWithoutChildren = options.IncludeCategoriesWithoutChildren,
-                    DefaultIconCssClass = options.DefaultIconCssClass,
-                    LazyLoad = options.LazyLoad,
+                    IncludeUnnamedEntityItems = true,
+                    IncludeCategoriesWithoutChildren = false,
+                    DefaultIconCssClass = "fa fa-list-ol",
+                    LazyLoad = false,
                     SecurityGrant = grant
                 } );
 
@@ -868,7 +868,7 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( Asset ) )]
         [ProducesResponseType( HttpStatusCode.Unauthorized, Description = "Not authorized to view the asset manager tree information." )]
-        [ProducesResponseType( HttpStatusCode.BadRequest ) ]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
         [Rock.SystemGuid.RestActionGuid( "D45422C0-5FCA-44C4-B9E1-4BA05E8D534D" )]
         public IActionResult AssetManagerGetFiles( [FromBody] AssetManagerGetFilesOptionsBag options )
         {
@@ -2889,7 +2889,7 @@ namespace Rock.Rest.v2
         [Route( "CategoryPickerChildTreeItems" )]
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) ) ]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<TreeItemBag> ) )]
         [Rock.SystemGuid.RestActionGuid( "A1D07211-6C50-463B-98ED-1622DC4D73DD" )]
         public IActionResult CategoryPickerChildTreeItems( [FromBody] CategoryPickerChildTreeItemsOptionsBag options )
         {
@@ -3380,7 +3380,7 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ListItemBag ) )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized ) ]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "E1AB17E0-CF28-4032-97A8-2A4279C5815A" )]
         public IActionResult DefinedValueEditorSaveNewValue( DefinedValueEditorSaveNewValueOptionsBag options )
         {
@@ -3498,6 +3498,392 @@ namespace Rock.Rest.v2
                 return Ok( definedValues );
             }
         }
+
+        #endregion
+
+        #region Email Editor
+
+        /// <summary>
+        /// Creates an email section.
+        /// </summary>
+        /// <param name="options">The email section to create.</param>
+        /// <returns>A <see cref="EmailEditorEmailSectionBag"/> that represents the new email section.</returns>
+        [HttpPost]
+        [Route( "EmailEditorCreateEmailSection" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.Created, Type = typeof( EmailEditorEmailSectionBag ) )]
+        [ProducesResponseType( HttpStatusCode.Conflict, Description = "The email section already exists." )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [Rock.SystemGuid.RestActionGuid( "67998BF6-CFEE-4740-8C11-195AF9C91F83" )]
+        public IActionResult EmailEditorCreateEmailSection( [FromBody] EmailEditorEmailSectionBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( options == null )
+                {
+                    return BadRequest( "Email Section is required." );
+                }
+
+                var emailSectionService = new EmailSectionService( rockContext );
+
+                if ( !options.Guid.IsEmpty() )
+                {
+                    // Make sure there isn't an email section with the same unique identifier.
+                    var isExistingEmailSection = emailSectionService.Queryable().AsNoTracking().Any( es => es.Guid == options.Guid );
+
+                    if ( isExistingEmailSection )
+                    {
+                        return Conflict();
+                    }
+                }
+
+                var categoryGuid = options.Category?.Value.AsGuidOrNull();
+                var category = categoryGuid.HasValue ? new CategoryService( rockContext ).Get( categoryGuid.Value ) : null;
+
+                var thumbnailBinaryFileGuid = options.ThumbnailBinaryFile?.Value.AsGuidOrNull();
+                var thumbnailBinaryFile = thumbnailBinaryFileGuid.HasValue ? new BinaryFileService( rockContext ).Get( thumbnailBinaryFileGuid.Value ) : null;
+
+                var emailSection = new EmailSection
+                {
+                    Category = category,
+                    Guid = options.Guid,
+                    IsSystem = options.IsSystem,
+                    Name = options.Name,
+                    SourceMarkup = options.SourceMarkup,
+                    ThumbnailBinaryFile = thumbnailBinaryFile,
+                    UsageSummary = options.UsageSummary
+                };
+
+                if ( !emailSection.IsValid )
+                {
+                    return BadRequest( string.Join( ", ", emailSection.ValidationResults.Select( r => r.ErrorMessage ) ) );
+                }
+
+                emailSectionService.Add( emailSection );
+
+                // Ensure the binary file is no longer temporary.
+                emailSection.ThumbnailBinaryFile.IsTemporary = false;
+
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
+                rockContext.SaveChanges();
+
+                return Content( HttpStatusCode.Created, GetEmailSectionBagFromEmailSection( emailSection ) );
+            }
+        }
+
+        /// <summary>
+        /// Gets the email section for the given id.
+        /// </summary>
+        /// <param name="options">The options to get an email section.</param>
+        /// <returns>A <see cref="EmailEditorEmailSectionBag"/> that represents the email section.</returns>
+        [HttpPost]
+        [Route( "EmailEditorGetEmailSection" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( EmailEditorEmailSectionBag ) )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "23350465-88EC-472E-80DF-5445D84062EA" )]
+        public IActionResult EmailEditorGetEmailSection( [FromBody] EmailEditorGetEmailSectionOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var emailSectionService = new EmailSectionService( rockContext );
+                var emailSection = emailSectionService.Queryable().AsNoTracking()
+                    .Include( es => es.Category )
+                    .Include( es => es.ThumbnailBinaryFile )
+                    .Where( es => es.Guid == options.EmailSectionGuid )
+                    .ToList()
+                    .Where( es => es.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                    .Select( es => GetEmailSectionBagFromEmailSection( es ) )
+                    .FirstOrDefault();
+
+                if ( emailSection == null )
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    return Ok( emailSection );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets all email sections.
+        /// </summary>
+        /// <returns>A <see cref="List{EmailEditorEmailSectionBag}"/> that represents the email sections.</returns>
+        [HttpPost]
+        [Route( "EmailEditorGetAllEmailSections" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<EmailEditorEmailSectionBag> ) )]
+        [Rock.SystemGuid.RestActionGuid( "4966E119-918B-47A8-AFD0-A6EB01EDD8C9" )]
+        public IActionResult EmailEditorGetAllEmailSections()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var emailSectionService = new EmailSectionService( rockContext );
+                var emailSection = emailSectionService.Queryable().AsNoTracking()
+                    .Include( es => es.Category )
+                    .Include( es => es.ThumbnailBinaryFile )
+                    .ToList()
+                    .Where( es => es.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                    .Select( es => GetEmailSectionBagFromEmailSection( es ) )
+                    .ToList();
+
+                return Ok( emailSection );
+            }
+        }
+
+        /// <summary>
+        /// Updates an email section or creates one if it doesn't exist.
+        /// </summary>
+        /// <param name="options">The email section to update or create.</param>
+        /// <returns>A <see cref="EmailEditorEmailSectionBag"/> that represents the updated or new email section.</returns>
+        [HttpPost]
+        [Route( "EmailEditorUpdateEmailSection" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( EmailEditorEmailSectionBag ) )]
+        [ProducesResponseType( HttpStatusCode.Forbidden )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [Rock.SystemGuid.RestActionGuid( "E2250994-58D5-40BD-AB86-F02C40CB36A9" )]
+        public IActionResult EmailEditorUpdateEmailSection( [FromBody] EmailEditorEmailSectionBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                if ( options == null )
+                {
+                    return BadRequest( "Email Section is required." );
+                }
+
+                var emailSectionService = new EmailSectionService( rockContext );
+                EmailSection emailSection = null;
+
+                if ( !options.Guid.IsEmpty() )
+                {
+                    emailSection = emailSectionService.Get( options.Guid );
+
+                    if ( emailSection != null && ( emailSection.IsSystem || !emailSection.IsAuthorized( Rock.Security.Authorization.EDIT, this.RockRequestContext.CurrentPerson ) ) )
+                    {
+                        // The logged in person is not allowed to edit this email section.
+                        return StatusCode( HttpStatusCode.Forbidden );
+                    }
+                }
+
+                if ( emailSection == null )
+                {
+                    // Create a new email section.
+                    emailSection = new EmailSection
+                    {
+                        Guid = options.Guid
+                    };
+
+                    emailSectionService.Add( emailSection );
+                }
+                
+                var categoryGuid = options.Category?.Value.AsGuidOrNull();
+                var category = categoryGuid.HasValue ? new CategoryService( rockContext ).Get( categoryGuid.Value ) : null;
+
+                var thumbnailBinaryFileGuid = options.ThumbnailBinaryFile?.Value.AsGuidOrNull();
+                var thumbnailBinaryFile = thumbnailBinaryFileGuid.HasValue ? new BinaryFileService( rockContext ).Get( thumbnailBinaryFileGuid.Value ) : null;
+                
+                emailSection.Category = category;
+                emailSection.Guid = options.Guid;
+                emailSection.Name = options.Name;
+                emailSection.SourceMarkup = options.SourceMarkup;
+                emailSection.ThumbnailBinaryFile = thumbnailBinaryFile;
+                emailSection.UsageSummary = options.UsageSummary;
+
+                if ( !emailSection.IsValid )
+                {
+                    // The email section is invalid.
+                    return BadRequest( string.Join( ", ", emailSection.ValidationResults.Select( r => r.ErrorMessage ) ) );
+                }
+
+                // Ensure the binary file is no longer temporary.
+                emailSection.ThumbnailBinaryFile.IsTemporary = false;
+
+                System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
+                rockContext.SaveChanges();
+
+                return Ok( GetEmailSectionBagFromEmailSection( emailSection ) );
+            }
+        }
+
+        /// <summary>
+        /// Deletes the email section for the given id.
+        /// </summary>
+        /// <param name="options">The options to delete an email section.</param>
+        [HttpPost]
+        [Route( "EmailEditorDeleteEmailSection" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.NoContent )]
+        [ProducesResponseType( HttpStatusCode.Forbidden )]
+        [Rock.SystemGuid.RestActionGuid( "66B74F97-85D7-45F5-AD3E-0425903000AF" )]
+        public IActionResult EmailEditorDeleteEmailSection( [FromBody] EmailEditorDeleteEmailSectionOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var emailSectionService = new EmailSectionService( rockContext );
+                var emailSection = emailSectionService.Get( options.EmailSectionGuid );
+
+                if ( emailSection == null )
+                {
+                    // The email section was already deleted so return early.
+                    return NoContent();
+                }
+
+                if ( emailSection.IsSystem || !emailSection.IsAuthorized( Security.Authorization.EDIT, RockRequestContext.CurrentPerson ) )
+                {
+                    // The logged in person is not allowed to delete the email section.
+                    return StatusCode( HttpStatusCode.Forbidden );
+                }
+
+                emailSectionService.Delete( emailSection );
+                rockContext.SaveChanges();
+
+                return NoContent();
+            }
+        }
+
+        /// <summary>
+        /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
+        /// </summary>
+        /// <param name="options">The options to delete an email section.</param>
+        [HttpPost]
+        [Route( "EmailEditorRegisterRsvpRecipients" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.NoContent )]
+        [Rock.SystemGuid.RestActionGuid( "FFE635FE-3988-4286-AEC6-0ADFAC162A58" )]
+        public IActionResult EmailEditorRegisterRsvpRecipients( [FromBody] EmailEditorRegisterRsvpRecipientsOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var attendanceService = new AttendanceService( rockContext );
+
+                attendanceService.RegisterRSVPRecipients( options.OccurrenceId, options.PersonIds );
+
+                return NoContent();
+            }
+        }
+
+        /// <summary>
+        /// Creates attendance records if they don't exist for a designated occurrence and list of person IDs.
+        /// </summary>
+        /// <param name="options">The options to delete an email section.</param>
+        [HttpPost]
+        [Route( "EmailEditorGetAttendanceOccurrence" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( EmailEditorAttendanceOccurrenceBag ) )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "C8450C3D-4DD9-45D3-8020-8980D0E7CA02" )]
+        public IActionResult EmailEditorGetAttendanceOccurrence( [FromBody] EmailEditorGetAttendanceOccurrenceOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).Get( options.OccurrenceId );
+
+                if ( attendanceOccurrence == null )
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    return Ok( OccurrenceAsBag( attendanceOccurrence ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets all the occurrences for a group for the selected dates, location and schedule, sorted by occurrence data in ascending order.
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        [Route( "EmailEditorGetFutureAttendanceOccurrences" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [Rock.SystemGuid.RestActionGuid( "25C14E2A-36A2-46C6-8B22-848D83A6D2C9" )]
+        public IActionResult EmailEditorGetFutureAttendanceOccurrences( EmailEditorGetFutureAttendanceOccurrencesOptionsBag bag )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var previousProxyCreationEnabled = rockContext.Configuration.ProxyCreationEnabled;
+                rockContext.Configuration.ProxyCreationEnabled = false;
+
+                var group = new GroupService( rockContext ).Get( bag.GroupGuid );
+                var occurrences = new AttendanceOccurrenceService( rockContext )
+                    .GetFutureGroupOccurrences( group, null )
+                    .Select( OccurrenceAsListItemBag )
+                    .ToList();
+
+                rockContext.Configuration.ProxyCreationEnabled = previousProxyCreationEnabled;
+
+                return Ok( occurrences );
+            }
+        }
+
+        /// <summary>
+        /// Creates a new attendance occurrence for a group.
+        /// </summary>
+        [HttpPost]
+        [Route( "EmailEditorCreateAttendanceOccurrence" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( EmailEditorAttendanceOccurrenceBag ) )]
+        [Rock.SystemGuid.RestActionGuid( "2A8A1319-3A64-4449-876D-480FD500EAEC" )]
+        public IActionResult EmailEditorCreateAttendanceOccurrence( [FromBody] EmailEditorCreateAttendanceOccurrenceOptionsBag bag )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var occurrence = new AttendanceOccurrenceService( rockContext )
+                    .GetOrAdd( bag.OccurrenceDate, bag.GroupId, bag.LocationId, bag.ScheduleId );
+
+                return Ok( OccurrenceAsBag( occurrence ) );
+            }
+        }
+
+        private static EmailEditorEmailSectionBag GetEmailSectionBagFromEmailSection( EmailSection emailSection )
+        {
+            return emailSection == null ? null : new EmailEditorEmailSectionBag
+            {
+                Category = emailSection.Category.ToListItemBag(),
+                Guid = emailSection.Guid,
+                IsSystem = emailSection.IsSystem,
+                Name = emailSection.Name,
+                SourceMarkup = emailSection.SourceMarkup,
+                ThumbnailBinaryFile = emailSection.ThumbnailBinaryFile.ToListItemBag(),
+                UsageSummary = emailSection.UsageSummary
+            };
+        }
+        
+        private static ListItemBag OccurrenceAsListItemBag( AttendanceOccurrence attendanceOccurrence )
+        {
+            return attendanceOccurrence == null ? null : new ListItemBag
+            {
+                // Need to return the integer ID here to work with the RsvpResponse block.
+                Value = $"{attendanceOccurrence.Id}|{attendanceOccurrence.GroupId}|{attendanceOccurrence.LocationId}|{attendanceOccurrence.ScheduleId}|{attendanceOccurrence.OccurrenceDate:s}",
+                Text = attendanceOccurrence.OccurrenceDate.ToString( "dddd, MMMM d, yyyy" )
+            };
+        } 
+        
+        private static EmailEditorAttendanceOccurrenceBag OccurrenceAsBag( AttendanceOccurrence attendanceOccurrence )
+        {
+            return attendanceOccurrence == null ? null : new EmailEditorAttendanceOccurrenceBag
+            {
+                // Need to return the integer ID here to work with the RsvpResponse block.
+                OccurrenceId = attendanceOccurrence.Id,
+                GroupId = attendanceOccurrence.GroupId,
+                LocationId = attendanceOccurrence.LocationId,
+                ScheduleId = attendanceOccurrence.ScheduleId,
+                OccurrenceDate = $"{attendanceOccurrence.OccurrenceDate:s}"
+            };
+        } 
 
         #endregion
 

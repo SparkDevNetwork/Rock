@@ -570,12 +570,13 @@ namespace Rock.Model
         public bool IsSpecialNeeds { get; set; }
 
         /// <summary>
-        /// Gets or sets whether chat is enabled for this group. If set to <see langword="false"/>, then the group will
-        /// not have chat enabled. If set to <see langword="true"/>, then it will have chat enabled. If set to
-        /// <see langword="null"/>, then the value from <see cref="GroupType.IsChatEnabledForAllGroups"/> will be used.
-        /// This should only be used when editing the group. Call the <see cref="GetIsChatEnabled"/> method instead to
-        /// determine if the group is being used for chat, as that method will also check the
-        /// <see cref="GroupType.IsChatEnabledForAllGroups"/> property.
+        /// Gets or sets whether chat is enabled for this group. If set to <see langword="false"/> (or if the parent
+        /// <see cref="GroupType.IsChatAllowed"/> is set to <see langword="false"/>), then the group will not have chat
+        /// enabled. If set to <see langword="true"/>, then it will have chat enabled. If set to <see langword="null"/>,
+        /// then the value from <see cref="GroupType.IsChatEnabledForAllGroups"/> will be used. This should only be used
+        /// when editing the group. Call the <see cref="GetIsChatEnabled"/> method instead to determine if the group is
+        /// being used for chat, as that method will also check the <see cref="GroupType.IsChatAllowed"/> and
+        /// <see cref="GroupType.IsChatEnabledForAllGroups"/> properties.
         /// </summary>
         [DataMember]
         public bool? IsChatEnabledOverride { get; set; }

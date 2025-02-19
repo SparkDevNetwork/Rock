@@ -69,6 +69,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Email Section Categories
+
+        /// <summary>
+        /// Start Sections Category
+        /// </summary>
+        public const string EMAIL_SECTION_STARTER_SECTIONS = "760C6F4D-F7BF-4818-9BDF-DF7650F2A468";
+
+        #endregion
+
         #region History Categories
 
         /// <summary>

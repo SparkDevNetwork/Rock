@@ -1,0 +1,175 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownList v-model="width"
+                  v-bind="$attrs"
+                  :items="buttonWidthItems"
+                  :label="label"
+                  :popupContainerOverride="documentBody"
+                  :showBlankItem="false"
+                  @update:modelValue="onWidthChanged" />
+
+    <TransitionVerticalCollapse>
+        <div v-if="width === 'fixed'" class="row">
+            <div class="col-sm-6">
+                <NumberBoxProperty label="Fixed Width"
+                                   :valueProvider="fixedWidthProvider"
+                                   valueSuffix="px" />
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import NumberBoxProperty from "./numberBoxProperty.partial.obs";
+    import { ValueProvider } from "../types.partial";
+    import { inlineStyleProvider, pixelConverter } from "../utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    // This property group doesn't quite fit the pattern
+    // because it modifies multiple elements and the standardProps
+    // imply that a single element is being modified.
+    // We could, however, add another cssStyleDeclarations property for the other modified elements.
+
+    type ButtonWidth = "fitToText" | "full" | "fixed";
+
+    const props = defineProps({
+        label: {
+            type: String as PropType<string>,
+            default: "Width" as const
+        },
+
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        buttonShellElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    const documentBody = document.body;
+
+    const buttonWidthItems: ListItemBag[] = [
+        {
+            text: "Fit To Text",
+            value: get<ButtonWidth>("fitToText")
+        }, {
+            text: "Full Width",
+            value: get<ButtonWidth>("full")
+        }, {
+            text: "Fixed Width",
+            value: get<ButtonWidth>("fixed")
+        }
+    ];
+
+    // #region Values
+
+    const width = ref<ButtonWidth>(
+        getButtonWidthFromComponent()
+    );
+
+    const fixedWidthProvider = ref<ValueProvider<number | null | undefined>>(
+        createFixedWidthProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function getButtonWidthFromComponent(): ButtonWidth {
+        if (props.buttonShellElement.getAttribute("width") === "100%") {
+            return "full";
+        }
+        else if (props.buttonShellElement.getAttribute("width")?.endsWith("px")) {
+            return "fixed";
+        }
+        else {
+            return "fitToText";
+        }
+    }
+
+    function get<T>(value: T): T {
+        return value;
+    }
+
+    function isButtonWidth(value: unknown): value is ButtonWidth {
+        if (value === get<ButtonWidth>("fixed")
+            || value === get<ButtonWidth>("full")
+            || value === get<ButtonWidth>("fitToText")) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    function createFixedWidthProvider(): ValueProvider<number | null | undefined> {
+        return inlineStyleProvider(
+            props.buttonShellElement,
+            "width",
+            pixelConverter,
+            undefined,
+            {
+                onTargetValueUpdated(value) {
+                    // Also update the attribute (no "px" units needed).
+                    props.buttonShellElement.setAttribute("width", `${value}`);
+                }
+            }
+        );
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    function onWidthChanged(value: string | string[]): void {
+        if (Array.isArray(value)) {
+            value = value[0] ?? "";
+        }
+
+        const width = isButtonWidth(value) ? value : "fitToText";
+
+        if (width === "fitToText") {
+            // Keep the wrapped button updated.
+            props.buttonShellElement.removeAttribute("width");
+            props.buttonShellElement.style.removeProperty("width");
+            props.buttonShellElement.style.maxWidth = "100%";
+            props.buttonShellElement.style.tableLayout = "auto";
+            props.element.style.display = "inline-block";
+        }
+        else if (width === "full") {
+            props.buttonShellElement.setAttribute("width", "100%");
+            props.buttonShellElement.style.width = "100%";
+            props.buttonShellElement.style.maxWidth = "100%";
+            props.buttonShellElement.style.tableLayout = "fixed";
+            props.element.style.display = "block";
+        }
+        else if (width === "fixed") {
+            props.buttonShellElement.setAttribute("width", `${fixedWidthProvider.value.value}`);
+            props.buttonShellElement.style.width = `${fixedWidthProvider.value.value}px`;
+            props.buttonShellElement.style.removeProperty("max-width");
+            props.buttonShellElement.style.tableLayout = "fixed";
+            props.element.style.display = "block";
+        }
+    }
+
+    watch([() => props.element], () => {
+        fixedWidthProvider.value.dispose();
+        fixedWidthProvider.value = createFixedWidthProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        fixedWidthProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

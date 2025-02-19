@@ -113,7 +113,7 @@
         // If there's a grade scale then use the grade otherwise assume it's incomplete.
         const isGradePassing = hasGradeScale ? grade.isPassing : true;
 
-        const gradeText = hasGradeScale ? `${grade.name} (${percentEarned}%)` : `${percentEarned}%`;
+        const gradeText = hasGradeScale ? (grade.name?.trim() ? `${grade.name} (${percentEarned}%)` : `${percentEarned}%`) : `${percentEarned}%`;
 
         if (pointsPossible > 0 && gradeText.length > 0) {
             labels.push({

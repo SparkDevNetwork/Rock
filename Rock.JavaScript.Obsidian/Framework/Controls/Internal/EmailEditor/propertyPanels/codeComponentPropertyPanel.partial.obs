@@ -1,0 +1,58 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase :componentElement="componentElement"
+                                :hasPaddedBody="true"
+                                title="Lava"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+
+        <div class="row">
+            <div class="col-sm-12">
+                <InnerHtmlProperty :element="componentElement"
+                                   label="Code"
+                                   :mergeFields="mergeFields"
+                                   mode="code" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <p class="text-muted text-sm mb-3">
+                    *Keep in mind: Most email clients do not support interactive elements like JavaScript or Flash. Use basic HTML for higher likelihood of compatibility
+                </p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <MarginProperty :element="componentElement" />
+            </div>
+        </div>
+    </ComponentPropertyPanelBase>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import InnerHtmlProperty from "../properties/innerHtmlProperty.partial.obs";
+    import MarginProperty from "../properties/marginProperty.partial.obs";
+
+    defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        mergeFields: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: false
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+</script>

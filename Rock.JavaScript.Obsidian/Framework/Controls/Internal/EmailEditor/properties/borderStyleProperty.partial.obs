@@ -1,0 +1,116 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ShorthandDropDownListProperty v-bind="$attrs"
+                                   :label="label"
+                                   :items="borderStyles"
+                                   :valueProvider="valueProviderOverride ?? valueProvider!" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import ShorthandDropDownListProperty from "./shorthandDropDownListProperty.partial.obs";
+    import { BorderStyle, Shorthand, ShorthandValueProvider, StyleSheetMode } from "../types.partial";
+    import { createBorderStyleProvider, get } from "../utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Border Style" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Creates and adds a &lt;style&gt; element to the `element` input to host the changes.
+         */
+        styleSheetMode: {
+            type: Object as PropType<StyleSheetMode | undefined>,
+            required: false
+        },
+
+        /**
+         * Overrides the value provider.
+         */
+        valueProviderOverride: {
+            type: Object as PropType<ShorthandValueProvider<string | null | undefined> | undefined>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:borderStyle", value: Shorthand<string | null>): void;
+    }>();
+
+    // IMPORTANT! These values will be used as is in the rendered CSS Ruleset.
+    // If quotes are required, add them here.
+    const borderStyles: ListItemBag[] = [
+        {
+            value: get<BorderStyle>("solid"),
+            text: "Solid"
+        }, {
+            value: get<BorderStyle>("dashed"),
+            text: "Dashed"
+        }, {
+            value: get<BorderStyle>("dotted"),
+            text: "Dotted"
+        }
+    ];
+
+    // #region Values
+
+    const valueProvider = ref<ShorthandValueProvider<string | null | undefined> | undefined>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ShorthandValueProvider<string | null | undefined> | undefined {
+        if (props.valueProviderOverride) {
+            return;
+        }
+
+        return createBorderStyleProvider(
+            props.element,
+            props.copyToElements,
+            props.styleSheetMode,
+            {
+                onTargetValueUpdated(value) {
+                    emit("update:borderStyle", value);
+                }
+            }
+        );
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements, () => props.styleSheetMode], () => {
+        valueProvider.value?.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value?.dispose();
+    });
+
+    // #endregion Hooks
+</script>

@@ -1,0 +1,24 @@
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { getControlImportPath } from "./common/utils.partial";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import SocialSecurityNumberBox from "@Obsidian/Controls/socialSecurityNumberBox.obs";
+
+    const value = ref("123456789");
+    const importCode = getControlImportPath("socialSecurityNumberBox");
+    const exampleCode = `<SocialSecurityNumberBox label="SSN" v-model="value" />`;
+</script>
+
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <SocialSecurityNumberBox label="SSN" v-model="value" />
+
+        <template #settings>
+            <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code> and <code>Drop Down List</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>

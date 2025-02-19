@@ -392,6 +392,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
+    overflow-wrap: anywhere;
 }
 
 .sms-conversations-container .conversation-list {

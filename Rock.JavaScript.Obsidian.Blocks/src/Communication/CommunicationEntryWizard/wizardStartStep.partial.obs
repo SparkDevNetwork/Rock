@@ -1,0 +1,754 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="wizardStartStepElement" class="wizard-start-step">
+        <Panel :title="title" type="block" panelBodyCssClass="panel-body-wizard">
+            <template #headerActions>
+                <div class="mr-3">
+                    <HighlightLabel labelType="info">
+                        <template v-if="isFetchingRecipients"><i class="fas fa-spinner fa-pulse"></i> Recipients</template>
+                        <template v-else>{{ recipientsLabel }}</template>
+                    </HighlightLabel>
+                </div>
+                <div v-if="isUseSimpleEditorButtonShown && internalSimpleCommunicationPageUrl" class="mr-3">
+                    <HighlightLabel labelType="default">
+                        <a :href="internalSimpleCommunicationPageUrl">Use Simple Editor</a>
+                    </HighlightLabel>
+                </div>
+            </template>
+
+            <template #default>
+                <div class="panel-body-contents">
+                    <div ref="noMediumsContainerElement">
+                        <NotificationBox v-if="!allowedMediums.length" alertType="warning">
+                            There are no active Email, SMS, or Push communication transports configured.
+                        </NotificationBox>
+                    </div>
+
+                    <div ref="noRecipientsNotificationContainerElement">
+                        <NotificationBox v-if="isNoRecipientsNotificationShown" alertType="warning" heading="No Recipients Selected">
+                            You cannot continue until you select a Communication List or configure a Manual List with recipients.
+                        </NotificationBox>
+                    </div>
+
+                    <NotificationBox v-if="isIncompatibleCommunicationTemplateNotificationShown" alertType="info">
+                        This message uses a template that isn't compatible with the Email Wizard. If you proceed with the wizard, the email's main content will be replaced when a compatible template is chosen. To preserve the existing content, select 'Use Simple Editor' to edit the email with the basic editor instead.
+                    </NotificationBox>
+
+                    <RockForm :id="formId"
+                              @submit="onFormSubmitted">
+                        <div class="wizard-start-container">
+                            <div class="wizard-start">
+
+                                <label class="text-md">Recipients</label>
+                                <div class="row">
+                                    <div class="col-sm-5">
+                                        <TextBox v-model="internalCommunicationName"
+                                                 help="This name is used internally to describe the communication. It is not sent as a part of the communication."
+                                                 label="Communication Name"
+                                                 rules="required" />
+                                    </div>
+
+                                    <div class="col-sm-5">
+                                        <DefinedValuePicker v-model="internalCommunicationTopicValue"
+                                                            :definedTypeGuid="DefinedType.CommunicationTopic"
+                                                            help="This internal field allows you to associate this communication with a defined communication topic or campaign."
+                                                            label="Topic"
+                                                            lazyMode="eager"
+                                                            :showBlankItem="true" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-5">
+                                        <div class="communication-list-group-container">
+                                            <div class="communication-list-container">
+                                                <div v-if="communicationId && individualRecipientPersonAliasGuids?.length"
+                                                     class="form-group">
+                                                    <RockLabel>Communication List</RockLabel>
+                                                    <div class="control-wrapper">
+                                                        Manual Recipient List
+                                                    </div>
+                                                </div>
+
+                                                <DropDownList v-else v-model="selectedCommunicationListGuidOrManualOrEmptyString"
+                                                              help="Choose a list of people to send your communication to. These lists are defined in Settings/Communication Settings."
+                                                              :items="communicationListGroupItems"
+                                                              label="Communication List"
+                                                              rules="required"
+                                                              :showBlankItem="communicationListGroupItems.length > 1"
+                                                              @update:modelValue="onListGroupGuidUpdated" />
+                                            </div>
+                                            <div class="form-group">
+                                                <RockLabel v-if="breakpointHelper.isSmOrLarger">&nbsp;</RockLabel>
+                                                <div class="control-wrapper">
+                                                    <RockButton btnSize="sm"
+                                                                :disabled="isFetchingRecipients"
+                                                                @click="isRecipientModalShown = true">
+                                                        <i v-if="isFetchingRecipients" class="fas fa-spinner fa-pulse"></i>
+                                                        <i v-else class="fa fa-eye"></i> View List
+                                                    </RockButton>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-sm-5">
+                                        <Switch v-if="!isBulkCommunicationForced"
+                                                v-model="internalIsBulkCommunication"
+                                                label="Bulk Communication"
+                                                :text="internalIsBulkCommunication ? 'Yes' : 'No'" />
+                                    </div>
+                                </div>
+
+                                <div class="row" v-if="selectedCommunicationListGuidOrManualOrEmptyString !== manualRecipientList && segmentDataViews.length">
+                                    <div class="col-sm-5">
+                                        <ConditionalWell class="segments-section">
+                                            <DropDownList v-model="internalSegmentDataViewGuids"
+                                                          :items="segmentDataViews"
+                                                          label="Select Segments"
+                                                          :multiple="true" />
+
+                                            <TransitionVerticalCollapse>
+                                                <div v-if="internalSegmentDataViewGuids.length > 1">
+                                                    <RadioButtonList v-model="segmentCriteriaAsString"
+                                                                     :items="segmentCriteria"
+                                                                     :horizontal="true"
+                                                                     label="Recipients Must Meet" />
+                                                </div>
+                                            </TransitionVerticalCollapse>
+                                        </ConditionalWell>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <Switch v-if="isDuplicatePreventionOptionShown"
+                                                v-model="internalExcludeDuplicateRecipientAddress"
+                                                help="Prevent communications from being sent to people with the same email/SMS addresses. Two people who share an address will not receive a personalized communication, only one of them will."
+                                                label="Prevent Duplicate Email/SMS Addresses"
+                                                :text="internalExcludeDuplicateRecipientAddress ? 'Yes' : 'No'" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div v-if="allowedMediums.length" class="form-group">
+                                            <label class="text-md">Medium</label>
+                                            <div class="mediums-section">
+                                                <div v-if="allowedMediums.includes(CommunicationType.Email)"
+                                                     :class="['medium', { 'selected': internalCommunicationType === CommunicationType.Email }]"
+                                                     @click="internalCommunicationType = CommunicationType.Email">
+                                                    <div class="medium-content">
+                                                        <i class="fa fa-envelope fa-2x"></i>
+                                                        <h3>Email</h3>
+                                                        <small>Send an email to everyone in your targeted segment.</small>
+                                                    </div>
+
+                                                    <HighlightLabel labelType="info">
+                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="fas fa-spinner fa-pulse"></i></template>
+                                                        <template v-else>Reachable Audience: {{ emailRecipientCount }}</template>
+                                                    </HighlightLabel>
+
+                                                    <i :class="internalCommunicationType === CommunicationType.Email ? 'fa fa-dot-circle-o' : 'fa fa-circle-o'"></i>
+                                                </div>
+
+                                                <div v-if="allowedMediums.includes(CommunicationType.SMS)"
+                                                     :class="['medium', { 'selected': internalCommunicationType === CommunicationType.SMS }]"
+                                                     @click="internalCommunicationType = CommunicationType.SMS">
+                                                    <div class="medium-content">
+                                                        <i class="fa fa-sms fa-2x"></i>
+                                                        <h3>SMS</h3>
+                                                        <small>Send a text message to your targeted segment.</small>
+                                                    </div>
+
+                                                    <HighlightLabel labelType="info">
+                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="fas fa-spinner fa-pulse"></i></template>
+                                                        <template v-else>Reachable Audience: {{ smsRecipientCount }}</template>
+                                                    </HighlightLabel>
+
+                                                    <i :class="internalCommunicationType === CommunicationType.SMS ? 'fa fa-dot-circle-o' : 'fa fa-circle-o'"></i>
+                                                </div>
+
+                                                <div v-if="allowedMediums.includes(CommunicationType.PushNotification)"
+                                                     :class="['medium', { 'selected': internalCommunicationType === CommunicationType.PushNotification }]"
+                                                     @click="internalCommunicationType = CommunicationType.PushNotification">
+                                                    <div class="medium-content">
+                                                        <i class="fa fa-bell fa-2x"></i>
+                                                        <h3>Push Notifications</h3>
+                                                        <small>Notify targeted segment via the church app.</small>
+                                                    </div>
+
+                                                    <HighlightLabel labelType="info">
+                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="fas fa-spinner fa-pulse"></i></template>
+                                                        <template v-else>Reachable Audience: {{ pushNotificationRecipientCount }}</template>
+                                                    </HighlightLabel>
+
+                                                    <i :class="internalCommunicationType === CommunicationType.PushNotification ? 'fa fa-dot-circle-o' : 'fa fa-circle-o'"></i>
+                                                </div>
+
+                                                <div v-if="allowedMediums.includes(CommunicationType.RecipientPreference)"
+                                                     :class="['medium', { 'selected': internalCommunicationType === CommunicationType.RecipientPreference }]"
+                                                     @click="internalCommunicationType = CommunicationType.RecipientPreference">
+                                                    <div class="medium-content">
+                                                        <i class="fa fa-user fa-2x"></i>
+                                                        <h3>Personal Preference</h3>
+                                                        <small>Notify targeted segment via person's preferred channel.</small>
+                                                    </div>
+
+                                                    <HighlightLabel labelType="info">
+                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="fas fa-spinner fa-pulse"></i></template>
+                                                        <template v-else>Reachable Audience: {{ personalPreferenceRecipientCount }}</template>
+                                                    </HighlightLabel>
+
+                                                    <i :class="internalCommunicationType === CommunicationType.RecipientPreference ? 'fa fa-dot-circle-o' : 'fa fa-circle-o'"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <label class="text-md">Schedule</label>
+                                <div class="row">
+                                    <div class="col-sm-5">
+                                        <RadioButtonList v-model="selectedSendTimePreference"
+                                                         :items="[
+                                                             {
+                                                                 value: 'now',
+                                                                 text: 'Now'
+                                                             },
+                                                             {
+                                                                 value: 'later',
+                                                                 text: 'Later'
+                                                             }
+                                                         ]"
+                                                         :horizontal="true"
+                                                         label="When to Send"
+                                                         rules="required"
+                                                         @update:modelValue="onSendTimePreferenceUpdated" />
+
+                                        <TransitionVerticalCollapse>
+                                            <div v-if="selectedSendTimePreference === 'later'">
+                                                <DateTimePicker v-model="internalFutureSendDateTime"
+                                                                label="Date &amp; Time"
+                                                                rules="required" />
+                                            </div>
+                                        </TransitionVerticalCollapse>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </RockForm>
+                </div>
+            </template>
+
+            <template #footerSecondaryActions>
+                <RockButton btnType="primary"
+                            :form="formId"
+                            type="submit">{{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}</RockButton>
+            </template>
+        </Panel>
+
+        <RecipientModal v-model="isRecipientModalShown"
+                        v-model:excludeDuplicateRecipientAddress="internalExcludeDuplicateRecipientAddress"
+                        v-model:recipients="internalRecipients"
+                        :communicationListGroupName="communicationListGroups.find(f => f.value === selectedCommunicationListGuidOrManualOrEmptyString)?.text"
+                        :getTooltipRef="getTooltipRef"
+                        :isAddingIndividualsToRecipientListsDisabled="isAddingIndividualsToRecipientListsDisabled"
+                        :isDeletingIndividualsFromRecipientListsDisabled="isDeletingIndividualsToRecipientListsDisabled"
+                        :isBulkCommunication="isBulkCommunication"
+                        :isDuplicatePreventionOptionShown="isDuplicatePreventionOptionShown"
+                        @update:recipients="onRecipientsUpdated" />
+    </div>
+</template>
+
+<style scoped>
+@import "/Styles/RockFont/style.css";
+@import "/Styles/Blocks/Shared/Devices.css";
+
+.mediums-section {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--spacing-large);
+}
+
+.medium {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    justify-content: space-between;
+    border: 1px solid gray;
+    border-radius: var(--border-radius-base);
+    padding: var(--spacing-medium);
+    cursor: pointer;
+    width: 230px;
+    height: 210px;
+
+    gap: var(--spacing-xsmall);
+}
+
+.medium.selected {
+    border: var(--focus-state-border);
+    box-shadow: var(--focus-state-shadow);
+}
+
+.medium-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.medium-content h3 {
+    margin: 0;
+}
+
+.medium .fa-dot-circle-o {
+    color: var(--color-primary);
+}
+
+.wizard-start-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.communication-list-group-container {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-xsmall);
+}
+
+.communication-list-container {
+    flex: 1;
+}
+
+:deep(.panel-body-wizard) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-body-contents {
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+</style>
+
+
+<script setup lang="ts">
+    import { computed, nextTick, PropType, Ref, ref, watch } from "vue";
+    import RecipientModal from "./recipientModal.partial.obs";
+    import { get, useBreakpointHelper } from "./utils.partial";
+    import { SendTimePreference } from "./types.partial";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { SegmentCriteria, SegmentCriteriaDescription } from "@Obsidian/Enums/Communication/segmentCriteria";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { Guid } from "@Obsidian/Types";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { scrollElementStartToTop } from "@Obsidian/Utility/dom";
+    import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { splitCase } from "@Obsidian/Utility/stringUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";
+
+    const props = defineProps({
+        allowedMediums: {
+            type: Object as PropType<CommunicationType[]>,
+            required: true
+        },
+
+        communicationId: {
+            type: Number as PropType<number | null | undefined>,
+            required: true
+        },
+
+        communicationListGroupGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: true
+        },
+
+        communicationListGroups: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        communicationName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        communicationTopicValue: {
+            type: String as PropType<ListItemBag | null | undefined>,
+            required: true
+        },
+
+        communicationType: {
+            type: Number as PropType<CommunicationType>,
+            required: true
+        },
+
+        emailRecipientCount: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        excludeDuplicateRecipientAddress: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        futureSendDateTime: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        individualRecipientPersonAliasGuids: {
+            type: Object as PropType<Guid[] | null | undefined>,
+            required: true
+        },
+
+        isAddingIndividualsToRecipientListsDisabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isDeletingIndividualsToRecipientListsDisabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isBulkCommunication: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isBulkCommunicationForced: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isDuplicatePreventionOptionShown: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isFetchingRecipients: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isIncompatibleCommunicationTemplateNotificationShown: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isUseSimpleEditorButtonShown: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        nextStepTitle: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        personalPreferenceRecipientCount: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        pushNotificationRecipientCount: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        recipientCount: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        recipients: {
+            type: Object as PropType<CommunicationEntryWizardRecipientBag[]>,
+            required: true
+        },
+
+        recipientsLabel: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        segmentCriteria: {
+            type: Number as PropType<SegmentCriteria>,
+            required: true
+        },
+
+        segmentDataViews: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        segmentDataViewGuids: {
+            type: Object as PropType<Guid[]>,
+            required: true
+        },
+
+        simpleCommunicationPageUrl: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        smsRecipientCount: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "nextStep"): void;
+        (e: "recipientListModified"): void;
+        (e: "update:communicationListGroupGuid", value: Guid | null | undefined): void;
+        (e: "update:communicationTopicValue", value: ListItemBag | null | undefined): void;
+        (e: "update:communicationName", value: string): void;
+        (e: "update:communicationType", value: CommunicationType): void;
+        (e: "update:excludeDuplicateRecipientAddress", value: boolean): void;
+        (e: "update:futureSendDateTime", value: string | null | undefined): void;
+        (e: "update:individualRecipientPersonAliasGuids", value: string[] | null | undefined): void;
+        (e: "update:isBulkCommunication", value: boolean): void;
+        (e: "update:recipients", value: CommunicationEntryWizardRecipientBag[]): void;
+        (e: "update:segmentCriteria", value: SegmentCriteria): void;
+        (e: "update:segmentDataViewGuids", value: Guid[]): void;
+    }>();
+
+    const segmentCriteria: ListItemBag[] = [
+        {
+            value: `${get(SegmentCriteria.All)}`,
+            text: "All Segment Filters"
+        },
+        {
+            value: `${get(SegmentCriteria.Any)}`,
+            text: "Any Segment Filters"
+        }
+    ];
+
+    const breakpointHelper = useBreakpointHelper();
+    const manualRecipientList = "manual" as const;
+
+    // #region Values
+
+    // UI state.
+    const formId = `wizard-start-step-form-${newGuid()}`;
+    const wizardStartStepElement = ref<HTMLElement | undefined>();
+    const noRecipientsNotificationContainerElement = ref<HTMLElement | undefined>();
+    const noMediumsContainerElement = ref<HTMLElement | undefined>();
+    const isNoRecipientsNotificationShown = ref<boolean>(false);
+    const isRecipientModalShown = ref<boolean>(false);
+
+    // Communication state.
+    const internalCommunicationName = useVModelPassthrough(props, "communicationName", emit);
+    const internalCommunicationTopicValue = useVModelPassthrough(props, "communicationTopicValue", emit);
+    const internalCommunicationType = useVModelPassthrough(props, "communicationType", emit);
+    const internalExcludeDuplicateRecipientAddress = useVModelPassthrough(props, "excludeDuplicateRecipientAddress", emit);
+    const internalFutureSendDateTime = useVModelPassthrough(props, "futureSendDateTime", emit);
+    const internalIndividualRecipientPersonAliasGuids = useVModelPassthrough(props, "individualRecipientPersonAliasGuids", emit);
+    const internalIsBulkCommunication = useVModelPassthrough(props, "isBulkCommunication", emit);
+    const internalRecipients = useVModelPassthrough(props, "recipients", emit);
+    const internalSegmentDataViewGuids = useVModelPassthrough(props, "segmentDataViewGuids", emit);
+    const internalSegmentCriteria = useVModelPassthrough(props, "segmentCriteria", emit);
+    const selectedSendTimePreference = ref<SendTimePreference>(internalFutureSendDateTime.value ? "later" : "now");
+    const selectedCommunicationListGuidOrManualOrEmptyString = ref<string>(
+        !isNullish(internalIndividualRecipientPersonAliasGuids.value) || (!isNullish(props.communicationId) && isNullish(props.communicationListGroupGuid))
+            ? manualRecipientList
+            : (props.communicationListGroupGuid ?? "")
+    );
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const communicationListGroupItems = computed<ListItemBag[]>(() => {
+        return [
+            {
+                value: manualRecipientList,
+                text: "Manual Recipient List",
+            },
+            ...props.communicationListGroups
+        ];
+    });
+
+    const segmentCriteriaAsString = computed<string>({
+        get(): string {
+            return `${internalSegmentCriteria.value}`;
+        },
+        set(value: string): void {
+            if (Object.keys(SegmentCriteriaDescription).includes(value)) {
+                internalSegmentCriteria.value = Number(value) as SegmentCriteria;
+            }
+            else {
+                internalSegmentCriteria.value = SegmentCriteria.All;
+            }
+        }
+    });
+
+    const internalSimpleCommunicationPageUrl = computed<string | null | undefined>(() => {
+        if (!props.simpleCommunicationPageUrl) {
+            return;
+        }
+        else {
+            return appendQueryParameters(props.simpleCommunicationPageUrl);
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function appendQueryParameters(url: string): string {
+        const currentParams = new URLSearchParams(window.location.search);
+        const targetUrl = new URL(url, window.location.origin);
+
+        // Merge the current query parameters with the new one.
+        currentParams.forEach((value, key) => {
+            if (!targetUrl.searchParams.has(key)) {
+                targetUrl.searchParams.append(key, value);
+            }
+        });
+
+        return targetUrl.toString();
+    }
+
+    /** Gets the reactive email tooltip. */
+    function getTooltipRef(recipient: CommunicationEntryWizardRecipientBag | null, communicationType: CommunicationType): Ref<string> {
+        return computed<string>(() => {
+            if (communicationType === CommunicationType.Email) {
+                if (!recipient
+                    || (props.isBulkCommunication && recipient.isBulkEmailAllowed)
+                    || (!props.isBulkCommunication && recipient.isEmailAllowed)) {
+                    // No tooltip when recipient is missing or email is allowed.
+                    return "";
+                }
+
+                // This recipient cannot receive email messages. Get the error.
+                if (!recipient.email) {
+                    return `${recipient.name ?? "This recipient"} doesn't have an email address.`;
+                }
+                else if (!recipient.isEmailActive) {
+                    return `${recipient.name ?? "This recipient"} has an inactive email.`;
+                }
+                else {
+                    return `${recipient.name ?? "This recipient"} has email preference set to "${splitCase(recipient.emailPreference ?? "")}".`;
+                }
+            }
+            else if (communicationType === CommunicationType.SMS) {
+                if (!recipient || recipient.isSmsAllowed) {
+                    // No tooltip when recipient is missing.
+                    return "";
+                }
+
+                // This recipient cannot receive SMS messages. Get the error.
+                return `${recipient.name ?? "This recipient"} doesn't have a phone number with SMS enabled.`;
+            }
+            else if (communicationType === CommunicationType.PushNotification) {
+                if (!recipient || recipient.isPushAllowed) {
+                    // No tooltip when recipient is missing.
+                    return "";
+                }
+
+                // This recipient cannot receive notifications enabled. Get the error.
+                return `${recipient.name ?? "This recipient"} doesn't have a phone number with notifications enabled.`;
+            }
+            else {
+                return "";
+            }
+        });
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onFormSubmitted(): void {
+        if (props.recipientCount <= 0) {
+            isNoRecipientsNotificationShown.value = true;
+
+            // Scroll to the notification.
+            nextTick(() => {
+                if (noRecipientsNotificationContainerElement.value) {
+                    scrollElementStartToTop(noRecipientsNotificationContainerElement.value);
+                }
+            });
+        }
+        else if (!props.allowedMediums.length) {
+            // Scroll to the notification.
+            nextTick(() => {
+                if (noMediumsContainerElement.value) {
+                    scrollElementStartToTop(noMediumsContainerElement.value);
+                }
+            });
+        }
+        else {
+            isNoRecipientsNotificationShown.value = false;
+            emit("nextStep");
+        }
+    }
+
+    function onSendTimePreferenceUpdated(): void {
+        if (selectedSendTimePreference.value !== "later") {
+            internalFutureSendDateTime.value = null;
+        }
+    }
+
+    function onListGroupGuidUpdated(): void {
+        if (selectedCommunicationListGuidOrManualOrEmptyString.value === manualRecipientList) {
+            internalIndividualRecipientPersonAliasGuids.value = [];
+            emit("update:communicationListGroupGuid", null);
+        }
+        else {
+            internalIndividualRecipientPersonAliasGuids.value = null;
+            emit("update:communicationListGroupGuid", toGuidOrNull(selectedCommunicationListGuidOrManualOrEmptyString.value));
+        }
+    }
+
+    function onRecipientsUpdated(): void {
+        internalIndividualRecipientPersonAliasGuids.value = internalRecipients.value.map(r => r.personAliasGuid);
+        emit("recipientListModified");
+
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.communicationListGroupGuid, value => {
+        value = value ?? "";
+
+        if (isNullish(internalIndividualRecipientPersonAliasGuids.value) && selectedCommunicationListGuidOrManualOrEmptyString.value !== value) {
+            selectedCommunicationListGuidOrManualOrEmptyString.value = value;
+        }
+    });
+
+    // #endregion Watchers
+</script>

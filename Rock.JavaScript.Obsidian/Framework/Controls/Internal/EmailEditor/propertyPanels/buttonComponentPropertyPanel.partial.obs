@@ -1,0 +1,145 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase v-if="buttonInnerWrapElement && buttonShellElement && buttonElement"
+                                :componentElement="componentElement"
+                                title="Button"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion title="Button Text">
+                <TextContentProperty :element="buttonElement"
+                                     label="Button Text"
+                                     @change="onButtonTextChanged" />
+
+                <AnchorPropertyGroup :element="buttonElement" />
+
+                <FontPropertyGroup :element="buttonElement"
+                                   :visibilityOptions="{
+                                       isJustifyTextHidden: true
+                                   }" />
+
+            </Accordion>
+
+            <Accordion title="Button Styling">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <AlignAttributeProperty :element="buttonInnerWrapElement"
+                                                label="Horizontal Alignment" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <BackgroundColorProperty :element="buttonElement"
+                                                 :copyToElements="buttonContentElement ? [buttonContentElement] : undefined" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <BorderRadiusProperty :element="buttonElement"
+                                              help="Outlook and Windows Mail email clients do not support rounded corners."
+                                              :copyToElements="buttonContentElement ? [buttonContentElement] : undefined" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <ButtonWidthProperty :buttonShellElement="buttonShellElement"
+                                             :element="buttonElement" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <PaddingProperty :element="buttonInnerWrapElement"
+                                         label="Margin" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <PaddingProperty :element="buttonElement"
+                                         label="Padding" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12">
+                        <BorderPropertyGroup :element="buttonElement" />
+                    </div>
+                </div>
+            </Accordion>
+        </AccordionGroup>
+    </ComponentPropertyPanelBase>
+</template>
+
+<style scoped>
+:deep(.picker-label) {
+    display: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import AlignAttributeProperty from "../properties/alignAttributeProperty.partial.obs";
+    import AnchorPropertyGroup from "../properties/anchorPropertyGroup.partial.obs";
+    import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
+    import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
+    import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
+    import ButtonWidthProperty from "../properties/buttonWidthProperty.partial.obs";
+    import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import TextContentProperty from "../properties/textContentProperty.partial.obs";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    // #region Values
+
+    const buttonInnerWrapElement = ref<HTMLElement | null | undefined>(props.componentElement.querySelector(".button-innerwrap") as HTMLElement);
+    const buttonShellElement = ref<HTMLElement | null | undefined>(buttonInnerWrapElement.value?.querySelector(".button-shell") as HTMLElement);
+    const buttonContentElement = ref<HTMLElement | null | undefined>(buttonShellElement.value?.querySelector(".button-content") as HTMLElement);
+    const buttonElement = ref<HTMLElement | null | undefined>(buttonContentElement.value?.querySelector(".button-link") as HTMLElement);
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onButtonTextChanged(value: string | null): void {
+        if (buttonElement.value) {
+            buttonElement.value.setAttribute("title", value ?? "");
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.componentElement, (element: HTMLElement) => {
+        buttonInnerWrapElement.value = element.querySelector(".button-innerwrap") as HTMLElement;
+        buttonShellElement.value = buttonInnerWrapElement.value?.querySelector(".button-shell") as HTMLElement;
+        buttonContentElement.value = buttonShellElement.value?.querySelector(".button-content") as HTMLElement;
+        buttonElement.value = buttonContentElement.value?.querySelector(".button-link") as HTMLElement;
+    });
+
+    // #endregion
+</script>

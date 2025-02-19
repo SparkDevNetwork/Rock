@@ -1,0 +1,201 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="form-group">
+        <div class="columns-header">
+            <RockLabel>Column Setup</RockLabel>
+            <RockButton v-if="columnValues.length < 12"
+                        btnSize="xs"
+                        btnType="link"
+                        @click="$emit('add')">
+                <i class="fa fa-plus" aria-hidden="true"></i> Add Column
+            </RockButton>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group column-structure">
+                    <template v-if="columnValues.length === 1">
+                        <div :class="['column', selectedColumnElement === columnElements[0] ? 'selected' : '']"
+                             style="flexBasis: 100%"
+                             @click="$emit('select', columnElements[0])">
+                            <div class="content">12</div>
+                        </div>
+                    </template>
+
+                    <template v-else>
+                        <template v-for="(columns, index, sfd) in columnValues" :key="'column-' + index">
+                            <div :class="['column', selectedColumnElement === columnElements[index] ? 'selected' : '']"
+                                 :style="{ flexBasis: getColumnPercentage(columns) }"
+                                 @click="$emit('select', columnElements[index])">
+                                <div class="content">{{ columns }}</div>
+                            </div>
+
+                            <!-- Add a divider after each column, except the last one -->
+                            <SectionColumnDivider v-if="index < columnValues.length - 1"
+                                                  :index="index"
+                                                  @dragged="onDragged" />
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-7">
+                <TableColumnGapProperty :columnElements="columnElements"
+                                        :enableClearButton="true" />
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.columns-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.column-structure {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+.column {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd;
+    transition: flex-basis 0.2s;
+    cursor: pointer;
+}
+
+.content {
+    text-align: center;
+    width: 100%;
+}
+
+.column.selected {
+    border: 2px solid var(--color-primary);
+}
+</style>
+
+<script lang="ts" setup>
+    import { onMounted, PropType, ref, watch } from "vue";
+    import SectionColumnDivider from "../sectionColumnDivider.partial.obs";
+    import TableColumnGapProperty from "./tableColumnGapProperty.partial.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+
+    const props = defineProps({
+        columnElements: {
+            type: Object as PropType<HTMLElement[]>,
+            required: true
+        },
+
+        selectedColumnElement: {
+            type: Object as PropType<HTMLElement | null | undefined>
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "select", value: HTMLElement): void;
+        (e: "add"): void;
+    }>();
+
+    // #region Values
+
+    // Reactive state to store column values (must sum to 12 in this example)
+    const columnValues = ref<number[]>(getColumnValues(props.columnElements));
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onDragged(index: number, delta: number): void {
+        const newColumnsValues = [...columnValues.value];
+
+        const newValueLeft = newColumnsValues[index] + delta;
+        const newValueRight = newColumnsValues[index + 1] - delta;
+
+        if (newValueLeft >= 1 && newValueRight >= 1) {
+            newColumnsValues[index] = newValueLeft;
+            newColumnsValues[index + 1] = newValueRight;
+
+            // Update the column drag UI.
+            columnValues.value = newColumnsValues;
+
+            // Update the elements!
+            const leftColumnElement = props.columnElements[index];
+            setColumnValue(leftColumnElement, newValueLeft);
+
+            const rightColumnElement = props.columnElements[index + 1];
+            setColumnValue(rightColumnElement, newValueRight);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function getColumnPercentage(cols: number): string {
+        return `${(cols / 12) * 100}%`;
+    }
+
+    function setColumnValue(columnElement: HTMLElement, cols: number): void {
+        // Remove all "large-x" classes.
+        columnElement.classList.remove(...[...columnElement.classList].filter(cls => cls.startsWith("large-")));
+
+        // Add the new "large-x" class.
+        columnElement.classList.add(`large-${cols}`);
+
+        // Set the width.
+        const widthPercentage = getColumnPercentage(cols);
+        columnElement.setAttribute("width", widthPercentage);
+        columnElement.style.width = widthPercentage;
+    }
+
+    function getColumnValues(columnElements: HTMLElement[]): number[] {
+        return columnElements.map(el => getCols(el));
+    }
+
+    function getCols(columnElement: HTMLElement): number {
+        const classes = [...columnElement.classList];
+        const sizeClass = classes.find(cls => cls.startsWith("large-"));
+
+        if (sizeClass) {
+            return parseInt(sizeClass.substring(6));
+        }
+        else {
+            // If the large-x CSS class isn't found, default to 2 columns.
+            return 2;
+        }
+    }
+
+    function selectFirstColumn(): void {
+        if (props.columnElements.length) {
+            emit("select", props.columnElements[0]);
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.columnElements, (columnElements) => {
+        columnValues.value = getColumnValues(columnElements);
+        selectFirstColumn();
+    });
+
+    // #endregion
+
+    // #region Hooks
+
+    onMounted(() => {
+        selectFirstColumn();
+    });
+
+    // #endregion Hooks
+</script>

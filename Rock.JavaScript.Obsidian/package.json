@@ -75,6 +75,7 @@
     "d3-cloud": "^1.2.7",
     "exceljs": "^4.3.0",
     "highlight.js": "^11.8.0",
+    "html2canvas": "^1.4.1",
     "html5-qrcode": "^2.3.8",
     "liquidjs": "^10.9.2",
     "luxon": "^3.4.2",

@@ -1,0 +1,89 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase :componentElement="componentElement"
+                                title="Divider"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <template v-if="hrElement">
+            <AccordionGroup>
+                <Accordion title="Divider Styling">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <DividerStyleProperty :element="hrElement"
+                                                  label="Style" />
+                        </div>
+
+                        <div class="col-sm-6 pl-0">
+                            <DividerThicknessProperty :element="hrElement"
+                                                      label="Thickness" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <DividerColorProperty :element="hrElement"
+                                                  label="Color" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <WidthProperty :element="hrElement"
+                                           label="Divider Width"
+                                           :min="5"
+                                           :max="100"
+                                           valueType="percentage" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <HorizontalAlignmentMarginProperty :element="hrElement" />
+                        </div>
+                    </div>
+                </Accordion>
+
+                <Accordion title="Spacing">
+                    <MarginProperty :element="hrElement"
+                                    label="Padding" />
+                </Accordion>
+            </AccordionGroup>
+        </template>
+    </ComponentPropertyPanelBase>
+</template>
+
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import DividerColorProperty from "../properties/dividerColorProperty.partial.obs";
+    import DividerStyleProperty from "../properties/dividerStyleProperty.partial.obs";
+    import DividerThicknessProperty from "../properties/dividerThicknessProperty.partial.obs";
+    import HorizontalAlignmentMarginProperty from "../properties/horizontalAlignmentMarginProperty.partial.obs";
+    import MarginProperty from "../properties/marginProperty.partial.obs";
+    import WidthProperty from "../properties/widthProperty.partial.obs";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    // #region Computed Values
+
+    const hrElement = computed<HTMLHRElement | null | undefined>(() => {
+        return props.componentElement.querySelector("hr");
+    });
+
+    // #endregion
+</script>

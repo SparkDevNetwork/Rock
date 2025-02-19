@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import BadgeControl from "@Obsidian/Controls/badgeControl.obs";
     import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -22,7 +22,7 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useStore } from "@Obsidian/PageState";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
 
 

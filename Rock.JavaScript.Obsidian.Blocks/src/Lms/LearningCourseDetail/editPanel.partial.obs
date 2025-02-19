@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TabbedContent :tabs="courseDetailTabs">
+    <TabbedContent :tabs="courseDetailTabs" v-model:selectedTab="internalSelectedTab">
         <template #tabpane="{ item }">
             <div v-if="item === 'Overview'">
                 <fieldset>
@@ -183,7 +183,7 @@
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
-    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { propertyRef, updateRefValue, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { LearningCourseBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseBag";
     import { LearningCourseDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseDetail/learningCourseDetailOptionsBag";
     import { LearningCourseRequirementBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningCourseRequirement/learningCourseRequirementBag";
@@ -202,16 +202,20 @@
             type: Object as PropType<ValidPropertiesBox<LearningCourseBag>>,
             required: true
         },
-
         options: {
             type: Object as PropType<LearningCourseDetailOptionsBag>,
+            required: true
+        },
+        selectedTab: {
+            type: String,
             required: true
         }
     });
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ValidPropertiesBox<LearningCourseBag>): void,
-        (e: "propertyChanged", value: string): void
+        (e: "propertyChanged", value: string): void,
+        (e: "update:selectedTab", value: string): void
     }>();
 
     // #region Values
@@ -222,6 +226,7 @@
     const courseDetailTabs: Array<string> = ["Overview", "Description"];
     const imageFileTypeGuid = BinaryFiletype.Default;
     const showAddCourseRequirementModal = ref(false);
+    const internalSelectedTab = useVModelPassthrough(props, "selectedTab", emit);
 
     // Manually exclude 'Corequisite'. This functionality will be added at a later time.
     const requirementTypes = enumToListItemBag(RequirementTypeDescription).filter(l => l.text !== "Corequisite");

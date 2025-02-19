@@ -1,0 +1,977 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="side-panel">
+        <div class="side-panel-menu">
+            <div v-for="sidePanelMenuItem in sidePanelMenuItems"
+                 :key="sidePanelMenuItem.type"
+                 :class="[
+                     'side-panel-menu-item',
+                     selectedSidePanelMenuItem === sidePanelMenuItem.type ? 'selected' : ''
+                 ]"
+                 @click="onSidePanelButtonClicked(sidePanelMenuItem.type)">
+                <i :class="sidePanelMenuItem.iconCssClass"></i>
+                <span class="side-panel-menu-item-text">{{ sidePanelMenuItem.title }}</span>
+            </div>
+        </div>
+
+        <div class="side-panel-content">
+            <template v-if="selectedSidePanelMenuItem === 'blocks'">
+                <ComponentPropertyPanel v-if="internalSelectedComponentElement"
+                                        :componentElement="internalSelectedComponentElement"
+                                        :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
+                                        :mergeFields="mergeFields"
+                                        :recipientPersonIds="recipientPersonIds"
+                                        :videoProviderNames="videoProviderNames"
+                                        @clone="onCloneComponent"
+                                        @complete="onCompleteComponent"
+                                        @delete="onDeleteComponent"
+                                        @emailSectionSaved="addEmailSectionToList" />
+
+                <FlatPanel v-else
+                           :hasPaddedBody="true"
+                           title="Blocks">
+                    <div class="side-panel-content-body">
+                        <div>
+                            <label>Content Components</label>
+                            <div class="component-list">
+                                <div v-for="(componentTypeRow, rowIndex) in componentTypeRows"
+                                     :key="rowIndex"
+                                     class="component-list-row">
+                                    <div v-for="componentType in componentTypeRow"
+                                         :key="componentType.componentTypeName"
+                                         :class="`component-list-item ${componentType.componentTypeName === 'message' ? 'disabled' : ''}`"
+                                         @mousedown="onComponentTypeDragStart($event, componentType.componentTypeName)"
+                                         @touchstart="onComponentTypeDragStart($event, componentType.componentTypeName)">
+                                        <div v-html="componentType.iconHtml"></div>
+                                        <span class="component-list-item-text">{{ componentType.title }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label>Column Layouts</label>
+                            <div class="component-list">
+                                <div v-for="(sectionComponentTypeRow, rowIndex) in sectionComponentTypeRows"
+                                     :key="rowIndex"
+                                     class="component-list-row">
+                                    <div v-for="componentType in sectionComponentTypeRow"
+                                         :key="componentType.componentTypeName"
+                                         class="component-list-item"
+                                         @mousedown="onComponentTypeDragStart($event, componentType.componentTypeName)"
+                                         @touchstart="onComponentTypeDragStart($event, componentType.componentTypeName)">
+                                        <div v-html="componentType.iconHtml"></div>
+                                        <span class="component-list-item-text">{{ componentType.title }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </FlatPanel>
+            </template>
+
+            <template v-else-if="selectedSidePanelMenuItem === 'sections'">
+                <FlatPanel :hasPaddedBody="true"
+                           title="Sections">
+                    <CategoryPicker v-model="emailSectionFilterByCategory"
+                                    blankValue="Select Category"
+                                    :entityTypeGuid="EntityType.EmailSection"
+                                    label="Category" />
+
+                    <TextBox v-model="emailSectionFilterByText"
+                             placeholder="Search for section...">
+                        <template #inputGroupPrepend>
+                            <span class="input-group-addon">
+                                <i class="fa fa-search"></i>
+                            </span>
+                        </template>
+                    </TextBox>
+
+                    <div class="email-section-list">
+                        <section v-for="emailSection in filteredEmailSections"
+                                 :key="emailSection.guid"
+                                 :aria-labelledby="`email-section-header-${emailSection.guid}`"
+                                 class="email-section"
+                                 @mousedown="onComponentTypeDragStart($event, 'section', emailSection.sourceMarkup)"
+                                 @touchstart="onComponentTypeDragStart($event, 'section', emailSection.sourceMarkup)">
+                            <header :id="`email-section-header-${emailSection.guid}`"
+                                    class="email-section-header">
+                                <h5>
+                                    {{ emailSection.name }}
+                                </h5>
+
+                                <DropDownMenu anchorButtonCssClass="btn-xs email-section-menu-button"
+                                              :items="getEmailSectionMenuItems(emailSection)"
+                                              @mousedown.stop />
+                            </header>
+                            <div class="email-section-content">
+                                <img v-if="emailSection.thumbnailBinaryFile"
+                                     :alt="`Thumbnail for ${emailSection.name}`"
+                                     class="email-section-thumbnail"
+                                     loading="lazy"
+                                     :src="`/GetImage.ashx?isBinaryFile=T&guid=${emailSection.thumbnailBinaryFile.value}&fileName=${emailSection.thumbnailBinaryFile.text}`" />
+                                <div class="email-section-usage-summary"
+                                     data-toggle="tooltip"
+                                     :title="emailSection.usageSummary ?? undefined"
+                                     @mouseenter="onEmailSectionUsageSummaryMouseEnter"
+                                     @mouseleave="cleanupTooltip">
+                                    {{ emailSection.usageSummary }}
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </FlatPanel>
+            </template>
+
+            <template v-else-if="selectedSidePanelMenuItem === 'styles'">
+                <GlobalPropertyPanel v-if="emailDocument"
+                                     v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
+                                     :document="emailDocument"
+                                     :communicationTemplates="communicationTemplates" />
+            </template>
+        </div>
+    </div>
+
+    <EmailSectionModal v-model="isEditEmailSectionModalShown"
+                       :componentElement="null"
+                       :emailDocument="emailDocument"
+                       :emailSection="emailSectionToEdit"
+                       @emailSectionSaved="onEmailSectionModalSaved"
+                       @emailSectionCanceled="onEmailSectionModalCanceled" />
+
+
+    <Modal v-model="isDeleteEmailSectionModalShown"
+           saveText="Confirm"
+           title="Delete Section"
+           @save="onDeleteEmailSection">
+        Are you sure you want to delete this section? It will be removed from your library.
+    </Modal>
+</template>
+
+<style scoped>
+.side-panel {
+    display: flex;
+    flex-wrap: nowrap;
+    flex-basis: 414px;
+}
+
+.side-panel-menu {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-interface-softer);
+    border-right: 1px solid var(--color-interface-soft);
+}
+
+.side-panel-menu-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    width: 94px;
+    height: 94px;
+    text-align: center;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--color-interface-stronger);
+}
+
+.side-panel-menu-item.selected {
+    background-color: var(--color-interface-softest);
+}
+
+.side-panel-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 320px;
+    max-width: 620px;
+    border-right: 1px solid var(--color-interface-soft);
+}
+
+.side-panel-content-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+}
+
+.component-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+.component-list-row {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-small);
+}
+
+.component-list-item:not(.disabled),
+.email-section {
+    cursor: grab;
+}
+
+.component-list-item:active:not(.disabled),
+.email-section:active {
+    cursor: grabbing;
+}
+
+.component-list-item {
+    display: flex;
+    flex-direction: column;
+    height: 88px;
+    width: 88px;
+    text-align: center;
+    align-items: center;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--border-radius-base);
+    justify-content: center;
+    gap: var(--spacing-xsmall);
+    color: var(--color-interface-strong);
+}
+
+.component-list-item-text {
+    line-height: 1;
+}
+
+.component-list-item:active {
+    border-color: var(--color-primary);
+}
+
+.email-section-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    margin-top: var(--spacing-large);
+}
+
+.email-section {
+    width: 290px;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--border-radius-base);
+}
+
+.email-section-header {
+    padding: var(--spacing-medium);
+    /* Remove some padding on the right to leave space for the .email-section-menu-button. */
+    padding-right: calc(var(--spacing-medium) - var(--spacing-xsmall));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+:deep(.email-section-menu-button) {
+    /* Explicitly define padding so the .email-section-header padding-right can be calculated. */
+    padding: 0 var(--spacing-xsmall);
+    line-height: 1;
+}
+
+.email-section-header i {
+    color: var(--text-color);
+}
+
+.email-section-header h5 {
+    margin: 0;
+    padding: 0;
+}
+
+.email-section-content {
+    padding: 0 var(--spacing-medium) var(--spacing-medium) var(--spacing-medium);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+.email-section-thumbnail {
+    background-color: var(--color-interface-softer);
+}
+
+.email-section-usage-summary {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+
+    /* Only display two lines. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 3em;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import ComponentPropertyPanel from "./componentPropertyPanel.partial.obs";
+    import EmailSectionModal from "./emailSectionModal.partial.obs";
+    import FlatPanel from "./flatPanel.partial.obs";
+    import GlobalPropertyPanel from "./propertyPanels/globalPropertyPanel.partial.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
+    import { EmailEditorDeleteEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorDeleteEmailSectionOptionsBag";
+    import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, EditorComponentTypeName } from "./types.partial";
+    import { getComponentIconHtml, getComponentTitle } from "./utils.partial";
+    import { Category } from "@Obsidian/SystemGuids/category";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { isHTMLElement, isMouseEvent, isTouchEvent } from "@Obsidian/Utility/dom";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { areEqual, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { destroyTooltip, showTooltip } from "@Obsidian/Utility/tooltip";
+    import { createEmailSection, createStarterSections, deleteEmailSection, getAllEmailSections } from "./api";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+
+    // #region Types
+
+    type SidePanelMenuItemType = "blocks" | "sections" | "styles";
+
+    type SidePanelMenuItem = {
+        type: SidePanelMenuItemType;
+        iconCssClass: string;
+        title: string;
+    };
+
+    type ComponentTypeListItem = {
+        componentTypeName: EditorComponentTypeName;
+        iconHtml: string;
+        title: string;
+    };
+
+    // #endregion Types
+
+    const props = defineProps({
+        communicationTemplateGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: false
+        },
+
+        communicationTemplates: {
+            type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: false
+        },
+
+        emailDocument: {
+            type: Object as PropType<Document | null | undefined>,
+            required: true
+        },
+
+        imageComponentBinaryFileTypeGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        mergeFields: {
+            type: Object as PropType<string[] | undefined>,
+            required: true
+        },
+
+        recipientPersonIds: {
+            type: Object as PropType<number[] | null | undefined>,
+            required: true
+        },
+
+        selectedComponentElement: {
+            type: Object as PropType<HTMLElement | null | undefined>,
+            required: true
+        },
+
+        videoProviderNames: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "cloneComponent", value: CloneComponentRequest): void;
+        (e: "completeComponent", value: CompleteComponentRequest): void;
+        (e: "componentTypeDragStart", value: ComponentTypeDragStartRequest): void;
+        (e: "componentTypeDragEnd", value: ComponentTypeDragEndRequest): void;
+        (e: "deleteComponent", value: DeleteComponentRequest): void;
+        (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
+        (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
+    }>();
+
+    // #region Constants
+
+    const sidePanelMenuItems: SidePanelMenuItem[] = [
+        {
+            title: "Blocks",
+            iconCssClass: "fa fa-shapes fa-lg",
+            type: "blocks"
+        },
+        {
+            title: "Sections",
+            iconCssClass: "fas fa-object-group fa-lg",
+            type: "sections"
+        },
+        {
+            title: "Styles",
+            iconCssClass: "fa fa-swatchbook fa-lg",
+            type: "styles"
+        }
+    ];
+
+    const componentTypeRows = getComponentTypeItemRows(
+        "title",
+        "text",
+        "image",
+        "button",
+        "video",
+        "divider",
+        "message",
+        "rsvp",
+        "code"
+    );
+
+    const sectionComponentTypeRows = getComponentTypeItemRows(
+        "one-column-section",
+        "right-sidebar-section",
+        "left-sidebar-section",
+        "two-column-section",
+        "three-column-section",
+        "four-column-section"
+    );
+
+    // #endregion Constants
+
+    // #region Values
+
+    const selectedSidePanelMenuItem = ref<SidePanelMenuItemType>("blocks");
+    const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
+    const internalSelectedComponentElement = useVModelPassthrough(props, "selectedComponentElement", emit);
+    const emailSectionFilterByCategory = ref<ListItemBag | ListItemBag[] | null | undefined>({
+        value: Category.EmailSectionStarterSections,
+        text: "Starter Sections"
+    });
+    const emailSectionFilterByText = ref<string>("");
+    const emailSections = ref<EmailEditorEmailSectionBag[]>([]);
+    const cleanupTooltip = ref<() => void>(() => { });
+    const isEditEmailSectionModalShown = ref<boolean>(false);
+    const emailSectionToEdit = ref<EmailEditorEmailSectionBag | null | undefined>();
+    const isDeleteEmailSectionModalShown = ref<boolean>(false);
+    const emailSectionToDelete = ref<EmailEditorEmailSectionBag | null | undefined>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const filteredEmailSections = computed<EmailEditorEmailSectionBag[]>(() => {
+        const emailSectionCategoryGuids: Guid[] = [];
+
+        if (Array.isArray(emailSectionFilterByCategory.value)) {
+            emailSectionFilterByCategory.value.forEach(category => {
+                const guid = toGuidOrNull(category?.value);
+                if (guid) {
+                    emailSectionCategoryGuids.push(guid);
+                }
+            });
+        }
+        else if (emailSectionFilterByCategory.value) {
+            const guid = toGuidOrNull(emailSectionFilterByCategory.value.value);
+
+            if (guid) {
+                emailSectionCategoryGuids.push(guid);
+            }
+        }
+
+        const emailSectionText = emailSectionFilterByText.value;
+
+        if (emailSectionCategoryGuids.length || emailSectionText) {
+            let filtered = Enumerable.from(emailSections.value);
+            if (emailSectionCategoryGuids.length) {
+                filtered = filtered.where(emailSection => {
+                    return emailSectionCategoryGuids.some(guid => {
+                        return areEqual(guid, emailSection.category?.value);
+                    });
+                });
+            }
+
+            if (emailSectionText) {
+                // Matches regex strings in the form /<regex>/<flags>
+                const isRegex: RegExp = /\/(.+)\/(.*)/;
+                const match = emailSectionText.match(isRegex);
+                let regex: RegExp | null = null;
+                if (match && match.length) {
+                    try {
+                        regex = new RegExp(match[1], match[2]);
+                    }
+                    catch {
+                        regex = null;
+                    }
+                }
+
+                if (!regex) {
+                    // If regular text was entered, then use a case-insensitive regex.
+                    regex = new RegExp(emailSectionText, "i");
+                }
+
+                filtered = filtered.where(emailSection => {
+                    return (!!emailSection.name && regex!.test(emailSection.name))
+                        || (!!emailSection.usageSummary && regex!.test(emailSection.usageSummary))
+                        || (!!emailSection.sourceMarkup && regex!.test(emailSection.sourceMarkup));
+                });
+            }
+
+            return filtered.toArray();
+        }
+        else {
+            // No filters so return all email sections.
+            return emailSections.value;
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function getComponentTypeItemRows(...componentTypeNames: EditorComponentTypeName[]): ComponentTypeListItem[][] {
+        function getComponentTypeListItem(componentTypeName: EditorComponentTypeName): ComponentTypeListItem {
+            return {
+                componentTypeName,
+                iconHtml: getComponentIconHtml(componentTypeName),
+                title: getComponentTitle(componentTypeName)
+            };
+        }
+
+        const componentTypeListItems: ComponentTypeListItem[] = componentTypeNames
+            .map(componentTypeName => getComponentTypeListItem(componentTypeName));
+
+        const itemsPerRow: number = 3;
+        const rows: ComponentTypeListItem[][] = [];
+
+        for (let i = 0; i < componentTypeListItems.length; i += itemsPerRow) {
+            rows.push(componentTypeListItems.slice(i, i + itemsPerRow));
+        }
+
+        return rows;
+    }
+
+    function addEmailSectionToList(emailSection: EmailEditorEmailSectionBag, options?: { after: EmailEditorEmailSectionBag; } | undefined): void {
+        const newEmailSections: EmailEditorEmailSectionBag[] = [];
+        let addedToList: boolean = false;
+
+        emailSections.value.forEach(e => {
+            if (areEqual(e.guid, emailSection.guid)) {
+                newEmailSections.push(emailSection);
+                addedToList = true;
+            }
+            else {
+                newEmailSections.push(e);
+            }
+        });
+
+        if (!addedToList) {
+            if (options?.after) {
+                let index = -1;
+
+                newEmailSections.find((e, i) => {
+                    if (areEqual(e.guid, options.after.guid)) {
+                        index = i;
+                        return true;
+                    }
+                });
+
+                if (index !== -1) {
+                    // Insert the section.
+                    newEmailSections.splice(index + 1, 0, emailSection);
+                }
+                else {
+                    // Just add the section to the end.
+                    newEmailSections.push(emailSection);
+                }
+            }
+            else {
+                // Just add the section to the end.
+                newEmailSections.push(emailSection);
+            }
+        }
+
+        emailSections.value = newEmailSections;
+    }
+
+    function removeEmailSectionFromList(emailSection: EmailEditorEmailSectionBag): void {
+        const newEmailSections: EmailEditorEmailSectionBag[] = [];
+        let removed: boolean = false;
+
+        emailSections.value.forEach(e => {
+            if (areEqual(e.guid, emailSection.guid)) {
+                removed = true;
+            }
+            else {
+                newEmailSections.push(e);
+            }
+        });
+
+        if (removed) {
+            emailSections.value = newEmailSections;
+        }
+        else {
+            // Email section already removed.
+        }
+    }
+
+    function getEmailSectionMenuItems(emailSection: EmailEditorEmailSectionBag): MenuAction[] {
+        if (emailSection.isSystem) {
+            return [
+                {
+                    title: "Clone",
+                    type: "default",
+                    handler: () => onEmailSectionCloneClicked(emailSection)
+                }
+            ];
+        }
+        else {
+            return [
+                {
+                    title: "Edit Details",
+                    type: "default",
+                    handler: () => onEmailSectionEditClicked(emailSection)
+                },
+                {
+                    title: "Clone",
+                    type: "default",
+                    handler: () => onEmailSectionCloneClicked(emailSection)
+                },
+                {
+                    title: "Delete",
+                    type: "danger",
+                    handler: () => onEmailSectionDeleteClicked(emailSection)
+                }
+            ];
+        }
+    }
+
+    async function loadEmailSections(): Promise<void> {
+        const result = await getAllEmailSections();
+
+        if (result.isSuccess && result.data) {
+            emailSections.value = result.data;
+        }
+        else {
+            emailSections.value = [];
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onCloneComponent(): void {
+        if (internalSelectedComponentElement.value) {
+            emit("cloneComponent", {
+                componentElement: internalSelectedComponentElement.value
+            });
+        }
+    }
+
+    function onCompleteComponent(): void {
+        if (internalSelectedComponentElement.value) {
+            emit("completeComponent", {
+                componentElement: internalSelectedComponentElement.value
+            });
+        }
+    }
+
+    function onDeleteComponent(): void {
+        if (internalSelectedComponentElement.value) {
+
+            emit("deleteComponent", {
+                componentElement: internalSelectedComponentElement.value
+            });
+        }
+    }
+
+    /**
+     * Handles a component type starting to be dragged in the parent window
+     * and passes arguments to the child editor iframe to handle the event in the editor.
+     */
+    function onComponentTypeDragStart(event: MouseEvent | TouchEvent, componentTypeName: EditorComponentTypeName, customHtml?: string | null | undefined): void {
+        console.log(`"dragstart" toolbox component type`, componentTypeName);
+
+        // Prevent right-clicks from starting the drag event cycle.
+        if (isMouseEvent(event) && event.button !== 0) {
+            return;
+        }
+
+        const parentElement = (event.target as HTMLElement)?.closest(".component-list-item:not(.disabled), .email-section");
+        let draggableElement: Element | null | undefined;
+
+        if (parentElement?.classList.contains("email-section")) {
+            // For email sections, the thumbnail should be dragged.
+            draggableElement = parentElement.querySelector(".email-section-thumbnail");
+        }
+        else {
+            // For all other component types, the parent element itself should be dragged.
+            draggableElement = parentElement;
+        }
+
+        event.preventDefault();
+
+        function addTemporaryMouseMove(draggingElement: HTMLElement, unsubCallback: () => void): void {
+            function onMousemove(e: MouseEvent | TouchEvent): void {
+                // Position the copy near the cursor
+                const pagePosition = getPagePosition(e);
+                const newLeft = `${pagePosition.pageX}px`;
+                const newTop = `${pagePosition.pageY}px`;
+                draggingElement.style.left = newLeft;
+                draggingElement.style.top = newTop;
+            }
+
+            function unsub(): void {
+                console.log("unsub");
+                window.removeEventListener("touchmove", onMousemove);
+                window.removeEventListener("mousemove", onMousemove);
+                window.removeEventListener("mouseup", unsub);
+                window.removeEventListener("touchend", unsub);
+                draggingElement.remove();
+
+                unsubCallback();
+            }
+
+            window.addEventListener("mousemove", onMousemove);
+            window.addEventListener("touchmove", onMousemove);
+            window.addEventListener("mouseup", unsub);
+            window.addEventListener("touchend", unsub);
+        }
+
+        function getPagePosition(e: MouseEvent | TouchEvent): { pageX: number, pageY: number } {
+            if (isTouchEvent(e)) {
+                const touch = e.touches[0];
+                return {
+                    pageX: touch.pageX,
+                    pageY: touch.pageY
+                };
+            }
+            else {
+                return {
+                    pageX: e.pageX,
+                    pageY: e.pageY
+                };
+            }
+        }
+
+        if (draggableElement) {
+            // Create the copy and center the dragging element on the cursor.
+            const dragCopy = draggableElement.cloneNode(true) as HTMLElement;
+            const rect = draggableElement.getBoundingClientRect();
+            dragCopy.style.backgroundColor = "rgba(255,255,255, 1)";
+            dragCopy.style.position = "absolute";
+            dragCopy.style.left = `${rect.left}px`;
+            dragCopy.style.top = `${rect.top}px`;
+            dragCopy.style.width = `${rect.width}px`;
+            dragCopy.style.height = `${rect.height}px`;
+            dragCopy.style.cursor = "grabbing";
+            const previousCursor = document.body.style.cursor;
+            document.body.style.cursor = "grabbing";
+
+            // Smooth rotation during drag (rotated below).
+            dragCopy.style.transition = "transform 0.1s ease-in-out";
+            dragCopy.style.transform = `translate(-50%, -50%)`;
+
+            // Prevent interfering with drag events.
+            dragCopy.style.pointerEvents = "none";
+
+            // Key Light Shadow: Stronger, darker, sharper.
+            const keyLightShadow = "0px 10px 20px rgba(0, 0, 0, 0.25)";
+            // Ambient Shadow: Larger, softer.
+            const ambientLightShadow = "0px 30px 40px rgba(0, 0, 0, 0.1)";
+            dragCopy.style.boxShadow = `${keyLightShadow}, ${ambientLightShadow}`;
+
+            // Ensure the dragging element is above elements added to body like drop downs, etc.
+            dragCopy.style.zIndex = "1000";
+
+            document.body.appendChild(dragCopy);
+
+            setTimeout(() => {
+                // Use setTimeout instead of nextTick to ensure the element rotation is animated.
+                dragCopy.style.transform = `translate(-50%, -50%) rotate(5deg)`;
+            }, 0);
+
+            // Position the copy near the cursor
+            if (isTouchEvent(event)) {
+                const touch = event.touches[0];
+                if (touch) {
+                    dragCopy.style.left = `${touch.pageX}px`;
+                    dragCopy.style.top = `${touch.pageY}px`;
+                }
+            }
+            else {
+                dragCopy.style.left = `${event.pageX}px`;
+                dragCopy.style.top = `${event.pageY}px`;
+            }
+
+            addTemporaryMouseMove(dragCopy, () => {
+                document.body.style.cursor = previousCursor;
+            });
+
+            window.addEventListener("mouseup", onComponentTypeDragEnd);
+            window.addEventListener("touchend", onComponentTypeDragEnd);
+            emit("componentTypeDragStart", {
+                componentTypeName,
+                customHtml
+            });
+        }
+    }
+
+    /**
+     * Handles a component type stopping being dragged
+     * and passes arguments to the child editor iframe to handle the event.
+     *
+     * This is the last event that is occurs in the drag-drop cycle.
+     */
+    function onComponentTypeDragEnd(): void {
+        console.log(`"dragend" toolbox component type`);
+
+        document.removeEventListener("mouseup", onComponentTypeDragEnd);
+        document.removeEventListener("touchend", onComponentTypeDragEnd);
+
+        emit("componentTypeDragEnd", {
+            type: "COMPONENT_TYPE_DRAG_END_REQUEST"
+        });
+    }
+
+    /**
+     * Handles the clone button being clicked for an email section.
+     */
+    async function onEmailSectionCloneClicked(emailSection: EmailEditorEmailSectionBag): Promise<void> {
+        const guid = newGuid();
+        const bag: EmailEditorEmailSectionBag = {
+            ...emailSection,
+            guid,
+            isSystem: false,
+            name: `Copy - ${emailSection.name}`,
+            sourceMarkup: emailSection.sourceMarkup?.replace(emailSection.guid, guid)
+        };
+
+        const result = await createEmailSection(bag);
+
+        if (result?.isSuccess && result.data) {
+            addEmailSectionToList(result.data, { after: emailSection });
+        }
+    }
+
+    function onEmailSectionEditClicked(emailSection: EmailEditorEmailSectionBag): void {
+        emailSectionToEdit.value = emailSection;
+        isEditEmailSectionModalShown.value = true;
+    }
+
+    /**
+     * Handles the delete button being clicked for an email section.
+     */
+    function onEmailSectionDeleteClicked(emailSection: EmailEditorEmailSectionBag): void {
+        emailSectionToDelete.value = emailSection;
+        isDeleteEmailSectionModalShown.value = true;
+    }
+
+    /**
+     * Handles the email section being deleted.
+     */
+    async function onDeleteEmailSection(): Promise<void> {
+        if (emailSectionToDelete.value) {
+            const bag: EmailEditorDeleteEmailSectionOptionsBag = {
+                emailSectionGuid: emailSectionToDelete.value.guid
+            };
+
+            const result = await deleteEmailSection(bag);
+
+            if (result?.isSuccess) {
+                removeEmailSectionFromList(emailSectionToDelete.value);
+            }
+
+            emailSectionToDelete.value = null;
+            isDeleteEmailSectionModalShown.value = false;
+        }
+    }
+
+    function onEmailSectionModalSaved(emailSection: EmailEditorEmailSectionBag): void {
+        emailSectionToEdit.value = null;
+        addEmailSectionToList(emailSection);
+    }
+
+    function onEmailSectionModalCanceled(): void {
+        emailSectionToEdit.value = null;
+    }
+
+    /**
+     * Handles the Email Section Usage Summary being hovered over.
+     */
+    function onEmailSectionUsageSummaryMouseEnter(e: MouseEvent): void {
+        if (isHTMLElement(e.target)) {
+            const element = e.target;
+
+            cleanupTooltip.value();
+
+            const timeout = setTimeout(() => {
+                showTooltip(element);
+            }, 250);
+
+            cleanupTooltip.value = () => {
+                clearTimeout(timeout);
+                destroyTooltip(element);
+            };
+        }
+    }
+
+    function onSidePanelButtonClicked(type: SidePanelMenuItemType): void {
+        selectedSidePanelMenuItem.value = type;
+
+        if (type === "blocks") {
+            // Clear out the selected component element when the Blocks item is clicked.
+            internalSelectedComponentElement.value = null;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(internalSelectedComponentElement, (newValue, oldValue) => {
+        if (newValue !== oldValue) {
+            if (newValue) {
+                // Ensure the Blocks side menu item is selected.
+                const desiredMainMenuItemType: SidePanelMenuItemType = "blocks";
+                if (selectedSidePanelMenuItem.value !== desiredMainMenuItemType) {
+                    selectedSidePanelMenuItem.value = desiredMainMenuItemType;
+                }
+            }
+            else {
+                // Don't change tabs.
+            }
+        }
+    });
+
+    watch(selectedSidePanelMenuItem, (newValue) => {
+        if (newValue !== "blocks" && internalSelectedComponentElement.value) {
+            internalSelectedComponentElement.value = null;
+        }
+    });
+
+    watch(() => props.emailDocument, async (newValue) => {
+        if (newValue) {
+            if (emailSections.value.length === 0) {
+                await loadEmailSections();
+
+                if (emailSections.value.length === 0) {
+                    // Generate starter sections.
+                    const document = props.emailDocument ?? props.selectedComponentElement?.ownerDocument;
+                    if (document) {
+                        const result = await createStarterSections(document);
+                        if (result.isSuccess && result.data) {
+                            result.data.forEach(emailSection => {
+                                addEmailSectionToList(emailSection);
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // #endregion Watchers
+</script>

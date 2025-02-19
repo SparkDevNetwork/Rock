@@ -1,7 +1,7 @@
 const eol = require("eol");
 const sources = require("webpack-sources");
 
-const pluginName = 'WebpackEolPlugin';
+const pluginName = "WebpackEolPlugin";
 
 /**
  * This plugin forces outputs from webpack to use CRLF instead of OS native.
@@ -17,7 +17,7 @@ class WebpackEolPlugin {
                 },
                 (assets) => {
                     for (let i in assets) {
-                        if (i.endsWith('.js.map')) {
+                        if (i.endsWith(".js.map")) {
                             continue;
                         }
 
@@ -27,7 +27,7 @@ class WebpackEolPlugin {
                         // standardized way of updating asset source
                         compilation.updateAsset(
                             i,
-                            new sources.RawSource(eol.crlf(source))
+                            new sources.RawSource(eol.crlf(typeof source == "string" ? source : ""))
                         );
                     }
                 });

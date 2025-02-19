@@ -1583,7 +1583,7 @@ function onTaskCompleted( resultData )
             var emailTransportEnabled = _emailTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.Email );
             var smsTransportEnabled = _smsTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.SMS );
             var pushTransportEnabled = _pushTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.PushNotification );
-            var recipientPreferenceEnabled = allowedCommunicationTypes.Contains( CommunicationType.RecipientPreference );
+            var recipientPreferenceEnabled = ( emailTransportEnabled || smsTransportEnabled || pushTransportEnabled ) && allowedCommunicationTypes.Contains( CommunicationType.RecipientPreference );
 
             // only prompt for Medium Type if more than one will be visible
             if ( emailTransportEnabled )

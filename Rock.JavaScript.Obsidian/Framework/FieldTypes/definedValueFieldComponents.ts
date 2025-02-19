@@ -433,13 +433,13 @@ export const ConfigurationComponent = defineComponent({
 
     template: `
 <div>
-    <DropDownList v-model="definedTypeValue" label="Defined Type" :items="definedTypeOptions" showBlankItem rules="required" />
+    <DropDownList v-model="definedTypeValue" label="Defined Type" :items="definedTypeOptions" showBlankItem rules="required" help="The Defined Type to select values from." />
     <CheckBox v-model="allowMultipleValues" label="Allow Multiple Values" help="When set, allows multiple defined type values to be selected." />
     <CheckBox v-model="displayDescriptions" label="Display Descriptions" help="When set, the defined value descriptions will be displayed instead of the values." />
-    <CheckBox v-model="enhanceForLongLists" label="Enhance For Long Lists" />
-    <CheckBox v-model="includeInactive" label="Include Inactive" />
+    <CheckBox v-model="enhanceForLongLists" label="Enhance For Long Lists" help="When set, will render a searchable selection of options." />
+    <CheckBox v-model="includeInactive" label="Include Inactive" help="When set, inactive defined values will be included in the list." />
     <CheckBox v-model="allowAddingNewValues" label="Allow Adding New Values" help="When set the defined type picker can be used to add new defined types." />
-    <NumberBox v-model="repeatColumns" label="Repeat Columns" />
+    <NumberBox v-model="repeatColumns" label="Repeat Columns" help="Select how many columns the list should use before going to the next row. If 0 then the options are put next to each other and wrap around. If blank then 4 columns will be displayed. There is no upper limit enforced here however the block this is used in might add contraints due to available space." />
     <CheckBoxList v-if="hasValues" v-model="selectableValues" label="Selectable Values" :items="definedValueOptions" :horizontal="true" :repeatColumns="4" />
 </div>
 `

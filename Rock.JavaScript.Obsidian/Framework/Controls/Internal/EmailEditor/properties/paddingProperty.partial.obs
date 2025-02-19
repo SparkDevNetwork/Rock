@@ -1,0 +1,102 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ShorthandNumberBoxProperty :label="label"
+                                :valueProvider="valueProvider"
+                                valueSuffix="px" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import ShorthandNumberBoxProperty from "./shorthandNumberBoxProperty.partial.obs";
+    import { ShorthandValueProvider, StyleSheetMode } from "../types.partial";
+    import { pixelConverter, shorthandInlineStyleProvider, shorthandStyleSheetProvider } from "../utils.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Padding"
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Creates and adds a &lt;style&gt; element to the `element` input to host the changes.
+         */
+        styleSheetMode: {
+            type: Object as PropType<StyleSheetMode | undefined>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const valueProvider = ref<ShorthandValueProvider<number | null | undefined>>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ShorthandValueProvider<number | null | undefined> {
+        if (!props.styleSheetMode) {
+            return shorthandInlineStyleProvider(
+                props.element,
+                "padding",
+                {
+                    top: "padding-top",
+                    bottom: "padding-bottom",
+                    right: "padding-right",
+                    left: "padding-left"
+                },
+                pixelConverter,
+                props.copyToElements
+            );
+        }
+        else {
+            return shorthandStyleSheetProvider(
+                props.element,
+                props.styleSheetMode.styleCssClass,
+                props.styleSheetMode.rulesetCssSelector,
+                "padding",
+                {
+                    top: "padding-top",
+                    bottom: "padding-bottom",
+                    right: "padding-right",
+                    left: "padding-left"
+                },
+                pixelConverter
+            );
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements, () => props.styleSheetMode], () => {
+        valueProvider.value.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

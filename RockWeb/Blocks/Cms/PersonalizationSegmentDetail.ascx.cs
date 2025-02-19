@@ -15,7 +15,6 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
@@ -28,7 +27,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Personalization.SegmentFilters;
 using Rock.Reporting;
-using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -119,6 +117,8 @@ namespace RockWeb.Blocks.Cms
                 sm.AsyncPostBackTimeout = databaseTimeout + 5;
                 Server.ScriptTimeout = databaseTimeout + 5;
             }
+
+            cpCategories.EntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSONALIZATION_SEGMENT_CATEGORY.AsGuid() ).Value;
         }
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace RockWeb.Blocks.Cms
         {
             if ( !Page.IsPostBack )
             {
-                ShowDetail( PageParameter( PageParameterKey.PersonalizationSegmentId ).AsInteger() );
+                ShowDetail( PageParameter( PageParameterKey.PersonalizationSegmentId ) );
             }
 
             base.OnLoad( e );
@@ -165,17 +165,23 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Shows the detail.
         /// </summary>
-        /// <param name="personalizationSegmentId">The segment identifier.</param>
-        public void ShowDetail( int personalizationSegmentId )
+        /// <param name="personalizationSegmentKey">The segment identifier key.</param>
+        public void ShowDetail( string personalizationSegmentKey )
         {
             var rockContext = new RockContext();
 
             var personalizationSegmentService = new PersonalizationSegmentService( rockContext );
             PersonalizationSegment personalizationSegment = null;
 
-            if ( personalizationSegmentId > 0 )
+            var personalizationSegmentId = personalizationSegmentKey.AsInteger();
+
+            if ( !PageCache.Layout.Site.DisablePredictableIds && personalizationSegmentId > 0 )
             {
                 personalizationSegment = personalizationSegmentService.Get( personalizationSegmentId );
+            }
+            else
+            {
+                personalizationSegment = personalizationSegmentService.Get( personalizationSegmentKey, !PageCache.Layout.Site.DisablePredictableIds );
             }
 
             if ( personalizationSegment == null )
@@ -206,6 +212,9 @@ namespace RockWeb.Blocks.Cms
             hlInactive.Visible = !personalizationSegment.IsActive;
             cbIsActive.Checked = personalizationSegment.IsActive;
             hfExistingSegmentKeyNames.Value = personalizationSegmentService.Queryable().Where( a => a.Id != personalizationSegment.Id ).Select( a => a.SegmentKey ).ToList().ToJson();
+
+            var categoryIds = personalizationSegment.Categories.Select( c => c.Id ).ToList();
+            cpCategories.SetValues( categoryIds );
 
             this.AdditionalFilterConfiguration = personalizationSegment.AdditionalFilterConfiguration ?? new Rock.Personalization.PersonalizationSegmentAdditionalFilterConfiguration();
 
@@ -324,6 +333,13 @@ namespace RockWeb.Blocks.Cms
 
             // Mark segment as dirty to signal the PostSave hook to update the sometimes long running Personalization data on a background task.
             personalizationSegment.IsDirty = isSegmentDefinitionChanged;
+
+            CategoryService categoryService = new CategoryService( rockContext );
+            personalizationSegment.Categories.Clear();
+            foreach ( var categoryId in cpCategories.SelectedValuesAsInt() )
+            {
+                personalizationSegment.Categories.Add( categoryService.Get( categoryId ) );
+            }
 
             rockContext.SaveChanges();
 

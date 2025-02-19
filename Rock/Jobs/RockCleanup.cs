@@ -342,8 +342,6 @@ namespace Rock.Jobs
 
             RunCleanupTask( "update campus tithe metric", () => UpdateCampusTitheMetric() );
 
-            RunCleanupTask( "update geolocation database", () => UpdateGeolocationDatabase() );
-
             /*
              * 21-APR-2022 DMV
              *
@@ -3547,20 +3545,6 @@ SET @UpdatedCampusCount = @CampusCount;
 
                 return ( int ) outputParam.Value;
             }
-        }
-
-        /// <summary>
-        /// Updates Rock's geolocation database.
-        /// </summary>
-        /// <returns>1 if the database was updated successfully.</returns>
-        private int UpdateGeolocationDatabase()
-        {
-            if ( !IsRunningFromUnitTest )
-            {
-                IpGeoLookup.Instance.UpdateDatabase();
-            }
-
-            return 1;
         }
 
         /// <summary>

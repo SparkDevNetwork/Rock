@@ -1,0 +1,121 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ColorPickerProperty v-bind="$attrs"
+                         :label="label"
+                         :valueProvider="valueProvider" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import ColorPickerProperty from "./colorPickerProperty.partial.obs";
+    import { StyleSheetMode, ValueProvider } from "../types.partial";
+    import { inlineStyleProvider, stringConverter, styleSheetProvider } from "../utils.partial";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Divider Color" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Creates and adds a &lt;style&gt; element to the `element` input to host the changes.
+         */
+        styleSheetMode: {
+            type: Object as PropType<StyleSheetMode | undefined>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const valueProvider = ref<ValueProvider<string | null | undefined>>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ValueProvider<string | null | undefined> {
+        if (!props.styleSheetMode) {
+            return inlineStyleProvider(
+                props.element,
+                "border-top-color",
+                stringConverter,
+                props.copyToElements,
+                {
+                    onStyleUpdated(style, value) {
+                        // Ensure the other sides don't have a border color.
+                        if (isNullish(value)) {
+                            style.removeProperty("border-bottom-color");
+                            style.removeProperty("border-left-color");
+                            style.removeProperty("border-right-color");
+                        }
+                        else {
+                            style.setProperty("border-bottom-color", "transparent");
+                            style.setProperty("border-left-color", "transparent");
+                            style.setProperty("border-right-color", "transparent");
+                        }
+                    }
+                }
+            );
+        }
+        else {
+            return styleSheetProvider(
+                props.element,
+                props.styleSheetMode.styleCssClass,
+                props.styleSheetMode.rulesetCssSelector,
+                "border-top-color",
+                stringConverter,
+                {
+                    onStyleUpdated(style, value) {
+                        // Ensure the other sides don't have a border color.
+                        if (isNullish(value)) {
+                            style.removeProperty("border-bottom-color");
+                            style.removeProperty("border-left-color");
+                            style.removeProperty("border-right-color");
+                        }
+                        else {
+                            style.setProperty("border-bottom-color", "transparent");
+                            style.setProperty("border-left-color", "transparent");
+                            style.setProperty("border-right-color", "transparent");
+                        }
+                    }
+                }
+            );
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements, () => props.styleSheetMode], () => {
+        valueProvider.value.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

@@ -1,0 +1,72 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+        <FinancialGatewayPicker label="Financial Gateway"
+                                v-model="value"
+                                :multiple="multiple"
+                                :columnCount="columnCount"
+                                :enhanceForLongLists="enhanceForLongLists"
+                                :displayStyle="displayStyle"
+                                :showBlankItem="showBlankItem"
+                                :includeInactive="includeInactive"
+                                :showAllGatewayComponents="showAllGatewayComponents" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox label="Multiple" v-model="multiple" />
+                </div>
+
+                <div class="col-md-4">
+                    <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+                </div>
+
+                <div class="col-md-4">
+                    <CheckBox label="Show Blank Item" v-model="showBlankItem" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <DropDownList label="Display Style" :showBlankItem="false" v-model="displayStyle" :items="displayStyleItems" />
+                </div>
+
+                <div class="col-md-4">
+                    <NumberUpDown label="Column Count" v-model="columnCount" :min="0" />
+                </div>
+
+                <div class="col-md-2">
+                    <CheckBox label="Show Inactive Gateways" v-model="includeInactive" />
+                </div>
+
+                <div class="col-md-2">
+                    <CheckBox label="Show All Gateway Components" v-model="showAllGatewayComponents" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import FinancialGatewayPicker from "@Obsidian/Controls/financialGatewayPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import { getSfcControlImportPath, displayStyleItems } from "./common/utils.partial";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+
+    const columnCount = ref(0);
+    const displayStyle = ref(PickerDisplayStyle.Auto);
+    const enhanceForLongLists = ref(false);
+    const multiple = ref(false);
+    const showBlankItem = ref(false);
+    const includeInactive = ref(false);
+    const showAllGatewayComponents = ref(false);
+    const value = ref({});
+    const importCode = getSfcControlImportPath("financialGatewayPicker");
+    const exampleCode = `<FinancialGatewayPicker label="Financial Gateway" v-model="value" :multiple="false" />`;
+</script>
