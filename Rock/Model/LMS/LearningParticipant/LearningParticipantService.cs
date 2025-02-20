@@ -197,12 +197,34 @@ namespace Rock.Model
         /// <param name="personId">The identifier of the person for whom to get classes.</param>
         /// <param name="includePerson"><c>true</c> if the Person navigation property should be included; otherwise <c>false</c>.</param>
         /// <returns>A IQueryable of LearningParticipant records.</returns>
-        public IQueryable<LearningParticipant> GetClasses( int personId, bool includePerson = false )
+        public IQueryable<LearningParticipant> GetClassesForStudent( int personId, bool includePerson = false )
         {
+            var studentRoleGuid = SystemGuid.GroupRole.GROUPROLE_LMS_CLASS_STUDENT.AsGuid();
+
             var baseQuery = Queryable()
-                .Include( p => p.LearningClass )
-                .Include( p => p.LearningClass.LearningCourse )
-                .Where( p => p.PersonId == personId );
+                .Include( lp => lp.LearningClass )
+                .Include( lp => lp.LearningClass.LearningCourse )
+                .Where( lp => lp.PersonId == personId
+                    && lp.GroupRole.Guid == studentRoleGuid );
+
+            return includePerson ? baseQuery.Include( p => p.Person ) : baseQuery;
+        }
+
+        /// <summary>
+        /// Gets a list of classes for the specified <see cref="Person"/>.
+        /// </summary>
+        /// <param name="personId">The identifier of the person for whom to get classes.</param>
+        /// <param name="includePerson"><c>true</c> if the Person navigation property should be included; otherwise <c>false</c>.</param>
+        /// <returns>A IQueryable of LearningParticipant records.</returns>
+        public IQueryable<LearningParticipant> GetClassesForFacilitator( int personId, bool includePerson = false )
+        {
+            var facilitatorRoleGuid = SystemGuid.GroupRole.GROUPROLE_LMS_CLASS_FACILITATOR.AsGuid();
+
+            var baseQuery = Queryable()
+                .Include( lp => lp.LearningClass )
+                .Include( lp => lp.LearningClass.LearningCourse )
+                .Where( lp => lp.PersonId == personId
+                    && lp.GroupRole.Guid == facilitatorRoleGuid );
 
             return includePerson ? baseQuery.Include( p => p.Person ) : baseQuery;
         }

@@ -62,20 +62,21 @@ namespace Rock.Model
             var participantService = new LearningParticipantService( rockContext );
             var hasPersonId = person?.Id.ToIntSafe() > 0;
             var now = RockDateTime.Now;
+            var studentRoleGuid = SystemGuid.GroupRole.GROUPROLE_LMS_CLASS_STUDENT.AsGuid();
+            var facilitatorRoleGuid = SystemGuid.GroupRole.GROUPROLE_LMS_CLASS_FACILITATOR.AsGuid();
 
-            var orderedPersonCompletions =
-                !hasPersonId ?
-                new List<LearningParticipant>().AsQueryable().OrderBy( "LearningCompletionStatus" ) :
-                new LearningParticipantService( rockContext )
-                .GetClasses( person.Id )
-                .AsNoTracking()
-                // If the student has taken the class multiple times take in this order:
-                // 'Pass' - 'Incomplete' - 'Fail'.
-                .OrderBy( p =>
-                            LearningCompletionStatus.Pass == p.LearningCompletionStatus ? 0 :
-                            LearningCompletionStatus.Incomplete == p.LearningCompletionStatus ? 1 :
-                            2 // Fail
-                        );
+            var orderedPersonCompletions = !hasPersonId
+                ? new List<LearningParticipant>().AsQueryable().Where( lp => false )
+                : new LearningParticipantService( rockContext )
+                    .GetClassesForStudent( person.Id )
+                    .AsNoTracking()
+                    // If the student has taken the class multiple times take in this order:
+                    // 'Pass' - 'Incomplete' - 'Fail'.
+                    .OrderBy( p =>
+                                LearningCompletionStatus.Pass == p.LearningCompletionStatus ? 0 :
+                                LearningCompletionStatus.Incomplete == p.LearningCompletionStatus ? 1 :
+                                2 // Fail
+                            );
 
             var course = Queryable()
                 .AsNoTracking()
@@ -98,6 +99,8 @@ namespace Rock.Model
                     Description = c.Description,
                     Id = c.Id,
                     ImageFileGuid = c.ImageBinaryFile.Guid,
+                    IsEnrolled = hasPersonId
+                        && orderedPersonCompletions.Any( lp => lp.LearningClass.LearningCourseId == c.Id ),
 
                     // Get the person's completion status for this course.
                     LearningCompletionStatus = !hasPersonId ?
@@ -289,19 +292,20 @@ namespace Rock.Model
         {
             var now = RockDateTime.Now;
             var rockContext = ( RockContext ) Context;
-            var orderedPersonCompletions =
-                !personId.HasValue ?
-                new List<LearningParticipant>().AsQueryable().OrderBy( "LearningCompletionStatus" ) :
-                new LearningParticipantService( rockContext )
-                .GetClasses( personId.Value )
-                .AsNoTracking()
-                // If the student has taken the class multiple times take in this order:
-                // 'Pass' - 'Incomplete' - 'Fail'.
-                .OrderBy( p =>
-                            LearningCompletionStatus.Pass == p.LearningCompletionStatus ? 0 :
-                            LearningCompletionStatus.Incomplete == p.LearningCompletionStatus ? 1 :
-                            2 // Fail
-                        );
+            var studentRoleGuid = SystemGuid.GroupRole.GROUPROLE_LMS_CLASS_STUDENT.AsGuid();
+            var facilitatorRoleGuid = SystemGuid.GroupRole.GROUPROLE_LMS_CLASS_FACILITATOR.AsGuid();
+            var orderedPersonCompletions = !personId.HasValue
+                ? new List<LearningParticipant>().AsQueryable().Where( lp => false )
+                : new LearningParticipantService( rockContext )
+                    .GetClassesForStudent( personId.Value )
+                    .AsNoTracking()
+                    // If the student has taken the class multiple times take in this order:
+                    // 'Pass' - 'Incomplete' - 'Fail'.
+                    .OrderBy( p =>
+                                LearningCompletionStatus.Pass == p.LearningCompletionStatus ? 0 :
+                                LearningCompletionStatus.Incomplete == p.LearningCompletionStatus ? 1 :
+                                2 // Fail
+                            );
 
             // Get all Semesters for the program.
             // Include the active (optionally public only) classes for joining to the Course.
@@ -357,6 +361,8 @@ namespace Rock.Model
                     Description = c.Description,
                     Id = c.Id,
                     ImageFileGuid = c.ImageBinaryFile?.Guid,
+                    IsEnrolled = personId.HasValue
+                        && orderedPersonCompletions.Any( lp => lp.LearningClass.LearningCourseId == c.Id ),
 
                     // Get the person's completion status for this course.
                     LearningCompletionStatus = !personId.HasValue ?
@@ -463,7 +469,7 @@ namespace Rock.Model
                     !personId.HasValue ?
                     default
                     : new LearningParticipantService( ( RockContext ) Context )
-                    .GetClasses( personId.Value )
+                    .GetClassesForStudent( personId.Value )
                     .AsNoTracking();
 
                 // Any Equivalent or PreRequisite classes that aren't already passed.
@@ -544,6 +550,12 @@ namespace Rock.Model
             /// Gets or sets the Guid for the Image file of this Program.
             /// </summary>
             public Guid? ImageFileGuid { get; set; }
+
+            /// <summary>
+            /// Determines if the current person is enrolled as a student in
+            /// this course. This includes past classes of the course.
+            /// </summary>
+            public bool IsEnrolled { get; set; }
 
             /// <summary>
             /// Gets or sets the completion status of the course for the current person.
