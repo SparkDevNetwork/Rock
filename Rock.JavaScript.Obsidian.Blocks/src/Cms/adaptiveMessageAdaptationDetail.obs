@@ -19,9 +19,10 @@
                  :isFollowVisible="true"
                  :isSecurityHidden="false"
                  @cancelEdit="onCancelEdit"
+                 @edit="onEdit"
                  @save="onSave">
         <template #edit>
-            <EditPanel v-model="adaptiveMessageAdaptationEditBag" :options="options" @propertyChanged="onPropertyChanged" />
+            <EditPanel v-model="adaptiveMessageAdaptationEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
         </template>
     </DetailBlock>
 </template>
@@ -34,42 +35,33 @@
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./AdaptiveMessageAdaptationDetail/editPanel.partial.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./AdaptiveMessageAdaptationDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { AdaptiveMessageAdaptationBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationBag";
     import { AdaptiveMessageAdaptationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<AdaptiveMessageAdaptationBag, AdaptiveMessageAdaptationDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
     const blockError = ref("");
     const errorMessage = ref("");
 
-    const adaptiveMessageAdaptationEditBag = ref(config.entity ?? {} as AdaptiveMessageAdaptationBag);
+    const adaptiveMessageAdaptationViewBag = ref(config.entity);
+    const adaptiveMessageAdaptationEditBag = ref<ValidPropertiesBox<AdaptiveMessageAdaptationBag>>({
+        bag: {} as AdaptiveMessageAdaptationBag
+    });
 
     const entityTypeGuid = EntityType.AdaptiveMessageAdaptation;
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "description",
-        "isActive",
-        "name",
-        "viewSaturationCount",
-        "viewSaturationInDays",
-        "segments",
-        "startDate",
-        "endDate"
-    ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(adaptiveMessageAdaptationEditBag, validProperties, invokeBlockAction), undefined, true);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: adaptiveMessageAdaptationEditBag
+    });
 
     // #endregion
 
@@ -83,14 +75,14 @@
             return "Add Message Adaptation";
         }
 
-        return adaptiveMessageAdaptationEditBag.value?.name ?? "";
+        return adaptiveMessageAdaptationViewBag.value?.name ?? "";
     });
 
     /**
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
-        return adaptiveMessageAdaptationEditBag.value?.idKey ?? "";
+        return adaptiveMessageAdaptationViewBag.value?.idKey ?? "";
     });
 
     /**
@@ -103,7 +95,7 @@
             return undefined;
         }
 
-        if (adaptiveMessageAdaptationEditBag.value?.isActive === true) {
+        if (adaptiveMessageAdaptationViewBag.value?.isActive === true) {
             labels.push({
                 iconCssClass: "fa fa-lightbulb",
                 title: "Active",
@@ -152,20 +144,27 @@
     }
 
     /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
      *
-     * @param propertyName The name of the C# property that was changed.
+     * @returns true if the panel should enter edit mode; otherwise false.
      */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
+    async function onEdit(): Promise<boolean> {
+        const result = await invokeBlockAction<ValidPropertiesBox<AdaptiveMessageAdaptationBag>>("Edit", {
+            key: adaptiveMessageAdaptationViewBag.value?.idKey
+        });
 
-        refreshAttributesDebounce();
+        if (result.isSuccess && result.data && result.data.bag) {
+            adaptiveMessageAdaptationEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
+
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     /**
@@ -177,14 +176,8 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<AdaptiveMessageAdaptationBag, AdaptiveMessageAdaptationDetailOptionsBag> = {
-            entity: adaptiveMessageAdaptationEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
         const result = await invokeBlockAction<string>("Save", {
-            box: data
+            box: adaptiveMessageAdaptationEditBag.value
         });
 
         if (result.isSuccess && result.data) {
@@ -198,8 +191,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -208,7 +199,7 @@
         blockError.value = "The specified adaptive message adaptation could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        adaptiveMessageAdaptationEditBag.value = config.entity;
+        adaptiveMessageAdaptationEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

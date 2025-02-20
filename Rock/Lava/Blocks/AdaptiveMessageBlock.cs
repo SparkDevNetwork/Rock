@@ -147,38 +147,60 @@ namespace Rock.Lava.Blocks
                     person = LavaHelper.GetCurrentVisitorInContext( context )?.Person;
                 }
 
+                var currentDate = RockDateTime.Now;
+
                 var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPersonFromContextCookie( context, System.Web.HttpContext.Current, person );
                 List<AdaptiveMessageCache> adaptiveMessages = new List<AdaptiveMessageCache>();
                 if ( commandMode == CommandMode.Message )
                 {
-                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.Key == messageKey && a.IsActive ).ToList();
+                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.Key == messageKey && IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) ).ToList();
                 }
                 else
                 {
-                    var categoryService = new CategoryService( rockContext );
-                    var categoryGuid = categoryService.GetGuid( categoryId.Value );
+                    var parentCategory = CategoryCache.Get( categoryId.Value );
+                    var allCategories = GetCategoryHierarchy( parentCategory );
 
-                    adaptiveMessages = AdaptiveMessageCache.All().Where( a => a.CategoryIds.Contains( categoryId.Value ) && a.IsActive ).ToList();
-                    GetAaptiveMessageForChildCategories( rockContext, adaptiveMessages, categoryGuid );
+                    adaptiveMessages = GetAdaptiveMessagesForCategories( rockContext, allCategories );
                 }
 
+                var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.ADAPTIVE_MESSAGES.AsGuid() );
+                IQueryable<Interaction> interactionQry = null;
+
+                if ( person != null && person.PrimaryAliasId.HasValue )
+                {
+                    interactionQry = new InteractionService( rockContext )
+                        .Queryable()
+                        .Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelId &&
+                                    a.EntityId.HasValue &&
+                                    a.PersonAliasId == person.PrimaryAliasId.Value );
+                }
 
                 var adaptationQry = adaptiveMessages
-                       .SelectMany( a => a.Adaptations.OrderBy( b => b.Order ).ThenBy( b => b.Name ).Take( adaptationPerMessage.Value ) )
-                       .Where( a => a.IsActive && ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) );
+                    .Select( m => new
+                    {
+                        AdaptiveMessage = m,
+                        Adaptations = m.Adaptations
+                            .Where( a => IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) &&
+                                        ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) &&
+                                        ( interactionQry == null || !IsSaturated( a, interactionQry ) ) )
+                            .OrderBy( a => a.Order )
+                            .ThenBy( a => a.Name )
+                            .Take( adaptationPerMessage.Value )
+                    } )
+                    .SelectMany( g => g.Adaptations );
+
 
                 if ( commandMode == CommandMode.Category )
                 {
                     adaptationQry = adaptationQry.Take( maxAdaptations.Value );
                 }
 
-                AddLavaMergeFieldsToContext( context, adaptationQry.ToList() );
+                AddLavaMergeFieldsToContext( context, adaptationQry.ToList(), person );
 
                 if ( isTrackViews && adaptationQry.Any() )
                 {
                     foreach ( var adaptation in adaptationQry )
                     {
-                        var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.ADAPTIVE_MESSAGES.AsGuid() );
                         var info = new InteractionTransactionInfo
                         {
                             InteractionChannelId = interactionChannelId.Value,
@@ -203,49 +225,151 @@ namespace Rock.Lava.Blocks
             base.OnRender( context, result );
         }
 
-        private static void GetAaptiveMessageForChildCategories( RockContext rockContext, List<AdaptiveMessageCache> adaptiveMessages, Guid? categoryGuid )
+        private static List<int> GetCategoryHierarchy( CategoryCache parentCategory )
         {
-            var categories = new CategoryService( rockContext )
-                .GetChildCategoryQuery( new Rock.Model.Core.Category.Options.ChildCategoryQueryOptions
-                {
-                    ParentGuid = categoryGuid
-                } )
-                .ToList()
-                .OrderBy( c => c.Order )
-                .ThenBy( c => c.Name )
-                .ThenBy( c => c.Id )
-                .ToList();
+            var categoryIds = new List<int>();
 
-            // Message Should be in order of Category order.
-            // When considering a tree of categories all of the 1's will be considered first, then all the 2's, then 3's
-            foreach ( var category in categories )
+            if ( parentCategory == null )
             {
-                var categoryAdaptiveMessages = AdaptiveMessageCache.All().Where( a => a.CategoryIds.Contains( category.Id ) );
-                if ( categoryAdaptiveMessages.Any() )
+                return categoryIds;
+            }
+
+            var queue = new Queue<CategoryCache>();
+            var visitedCategories = new HashSet<int>();
+
+            queue.Enqueue( parentCategory );
+            visitedCategories.Add( parentCategory.Id );
+
+            while ( queue.Count > 0 )
+            {
+                var currentCategory = queue.Dequeue();
+                categoryIds.Add( currentCategory.Id );
+
+                foreach ( var child in currentCategory.Categories )
                 {
-                    adaptiveMessages.AddRange( categoryAdaptiveMessages.ToList() );
+                    if ( !visitedCategories.Contains( child.Id ) )
+                    {
+                        queue.Enqueue( child );
+                        visitedCategories.Add( child.Id );
+                    }
                 }
             }
+
+            return categoryIds;
         }
 
-        private void AddLavaMergeFieldsToContext( ILavaRenderContext context, List<AdaptiveMessageAdaptationCache> adaptations )
+        private List<AdaptiveMessageCache> GetAdaptiveMessagesForCategories( RockContext rockContext, List<int> categoryIds )
         {
-            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-            foreach ( var adaptation in adaptations )
+            if ( categoryIds == null || !categoryIds.Any() )
             {
-                if ( adaptation.AttributeValues.ContainsKey( "CallToAction" ) )
-                {
-                    adaptation.AttributeValues["CallToAction"].Value = adaptation.AttributeValues["CallToAction"].Value.ResolveMergeFields( mergeFields );
-                }
+                return new List<AdaptiveMessageCache>();
             }
 
-            context["messageAdaptations"] = adaptations;
-            if ( adaptations.Count == 1 )
+            var categoryMappings = new AdaptiveMessageCategoryService( rockContext )
+                .Queryable()
+                .Where( amc => categoryIds.Contains( amc.CategoryId ) )
+                .OrderBy( amc => amc.Order )
+                .Select( amc => new { amc.AdaptiveMessageId, amc.CategoryId, amc.Order } )
+                .ToList();
+
+            var adaptiveMessages = AdaptiveMessageCache.All()
+                .Where( a => a.CategoryIds.Any( id => categoryIds.Contains( id ) ) && IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) )
+                .ToList();
+
+            // Perform an in-memory join to order messages correctly
+            var orderedMessages = categoryMappings
+                .Join(
+                    adaptiveMessages,
+                    mapping => mapping.AdaptiveMessageId,
+                    message => message.Id,
+                    ( mapping, message ) => new { Message = message, CategoryOrder = mapping.Order, mapping.CategoryId }
+                )
+                .OrderBy( joined => categoryIds.IndexOf( joined.CategoryId ) ) // Maintain category hierarchy order
+                .ThenBy( joined => joined.CategoryOrder )
+                .ThenBy( joined => joined.Message.Name )
+                .Select( joined => joined.Message )
+                .Distinct()
+                .ToList();
+
+            return orderedMessages;
+        }
+
+        private void AddLavaMergeFieldsToContext( ILavaRenderContext context, List<AdaptiveMessageAdaptationCache> adaptations, Person person )
+        {
+            var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
+            mergeFields.Add( "Person", person ); 
+
+            var resolvedAdaptations = adaptations.Select( a => new AdaptiveMessageAdaptation
             {
-                context["messageAdaptation"] = adaptations.First();
+                Id = a.Id,
+                Name = a.Name,
+                Description = a.Description,
+                IsActive = a.IsActive,
+                Order = a.Order,
+                ViewSaturationCount = a.ViewSaturationCount,
+                ViewSaturationInDays = a.ViewSaturationInDays,
+                AdaptiveMessageId = a.AdaptiveMessageId,
+                StartDate = a.StartDate,
+                EndDate = a.EndDate,
+                Attributes = a.Attributes,
+                AttributeValues = a.AttributeValues.ToDictionary(
+                    av => av.Key,
+                    av => new Rock.Web.Cache.AttributeValueCache
+                    {
+                        AttributeId = av.Value.AttributeId,
+                        Value = av.Key == "CallToAction" ? av.Value.Value.ResolveMergeFields( mergeFields ) : av.Value.Value
+                    }
+                )
+            } ).ToList();
+
+            context["messageAdaptations"] = resolvedAdaptations;
+            if ( resolvedAdaptations.Count == 1 )
+            {
+                context["messageAdaptation"] = resolvedAdaptations.First();
             }
             //context.SetMergeField( "messageAdaptations", adaptations, LavaContextRelativeScopeSpecifier.Root );
         }
+
+        /// <summary>
+        /// Helper method to determine if the entity is currently active.
+        /// </summary>
+        /// <param name="isActive">The isActive boolean property</param>
+        /// <param name="startDate">The start date</param>
+        /// <param name="endDate">The end date</param>
+        /// <returns>Boolean value that determines if the entity is currently active</returns>
+        private bool IsCurrentlyActive( bool isActive, DateTime? startDate, DateTime? endDate )
+        {
+            return isActive &&
+                   ( startDate == null || startDate <= RockDateTime.Now ) &&
+                   ( endDate == null || endDate >= RockDateTime.Now );
+        }
+
+        private bool IsSaturated( AdaptiveMessageAdaptationCache adaptation, IQueryable<Interaction> interactionQry )
+        {
+            var currentDate = RockDateTime.Now;
+
+            if ( !adaptation.ViewSaturationCount.HasValue )
+            {
+                return false;
+            }
+
+            int saturationCount = adaptation.ViewSaturationCount.Value;
+            DateTime? startDate = null;
+
+            if ( adaptation.ViewSaturationInDays.HasValue )
+            {
+                int saturationDays = adaptation.ViewSaturationInDays.Value;
+                startDate = currentDate.AddDays( -saturationDays );
+            }
+
+            int interactionCount = interactionQry
+                .Where( i => i.EntityId == adaptation.Id && ( !startDate.HasValue || i.InteractionDateTime >= startDate ) )
+                .Count();
+
+            return interactionCount >= saturationCount;
+        }
+
+
 
         #region ILavaSecured
 
