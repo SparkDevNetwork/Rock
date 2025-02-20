@@ -255,7 +255,7 @@
         updateRefValue(name, props.modelValue.bag?.name ?? "");
         updateRefValue(publicName, props.modelValue.bag?.name ?? "");
         updateRefValue(summary, props.modelValue.bag?.summary ?? "");
-        updateRefValue(configurationMode, props.modelValue.bag?.configurationMode?.toString() ?? undefined);
+        updateRefValue(configurationMode, props.modelValue.bag?.configurationMode?.toString() ?? defaultConfigurationMode);
         updateRefValue(systemCommunicationValue, props.modelValue.bag?.systemCommunication?.value ?? "");
         updateRefValue(category, props.modelValue.bag?.category ?? null);
         updateRefValue(highlightColor, props.modelValue.bag?.highlightColor ?? "");
