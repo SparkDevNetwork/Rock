@@ -307,7 +307,7 @@ namespace Rock.Blocks.Core
                 IdKey = note.IdKey,
                 NoteTypeIdKey = noteType.IdKey,
                 Caption = note.Caption,
-                Text = note.Text?.ConvertMarkdownToHtml(),
+                Text = note.Text,
                 ApprovalStatus = ( noteType.RequiresApprovals ) ? note.ApprovalStatus : NoteApprovalStatus.Approved,
                 AnchorId = note.NoteAnchorId,
                 IsAlert = note.IsAlert ?? false,
