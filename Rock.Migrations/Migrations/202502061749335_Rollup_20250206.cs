@@ -184,8 +184,9 @@ namespace Rock.Migrations
                 { "361F15FC-4C08-4A26-B482-CC260E708F7C", "NoteType,EntityType" }, // Note Watch Detail
                 { "4C32F2CD-5A88-4C3A-ADEA-CF94E85D20A6", "EnableDebug" }, // Prayer Request Entry
                 { "C96479B6-E309-4B1A-B024-1F1276122A13", "MaximumNumberOfDocuments" }, // Benevolence Type Detail
-                { "D9834641-7F39-4CFA-8CB2-E64068127565", "DisplayCount" }, // Communication Entry ( Communication )
-                { "F791046A-333F-4B2A-9815-73B60326162D", "EnableAIDisclaimer,AIDisclaimer" }, // Prayer Request Detail ( Prayer )
+                { "D9834641-7F39-4CFA-8CB2-E64068127565", "DisplayCount,Channels" }, // Communication Entry ( Communication )
+                { "F791046A-333F-4B2A-9815-73B60326162D", "EnableAIDisclaimer,AIDisclaimer,GroupCategoryId" }, // Prayer Request Detail ( Prayer )
+                { "9F26A1DA-74AE-4CB7-BABC-6AE81A581A06", "DefaultInviteEmail" }, // Signature Document Template Detail ( Core )
             } );
         }
 
