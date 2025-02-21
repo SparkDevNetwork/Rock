@@ -225,7 +225,7 @@ namespace Rock.Blocks.Lms
                                 <h4 class=""m-0""><span class=""label label-success"">Completed</span></h4>
                             </div>
                             
-                            {% elseif program.CompletionStatus == 'Pending' %}
+                        {% elseif program.CompletionStatus == 'Pending' %}
                             <div class=""d-flex align-items-center"">
                                 <h4 class=""m-0""><span class=""label label-warning"">Enrolled</span></h4>
                             </div>

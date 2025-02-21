@@ -197,7 +197,7 @@ namespace Rock.Blocks.Lms
                 <div class=""card-footer bg-transparent d-flex justify-content-between"">
                     <a href=""{{ course.CourseDetailsLink }}"" class=""btn btn-default"">Learn More</a>
                     
-                    {% if ShowCompletionStatus %}
+                    {% if ShowCompletionStatus and course.IsEnrolled == true %}
                                             
                         {% if course.LearningCompletionStatus == 'Incomplete' %}
                             <div class=""d-flex align-items-center"">
