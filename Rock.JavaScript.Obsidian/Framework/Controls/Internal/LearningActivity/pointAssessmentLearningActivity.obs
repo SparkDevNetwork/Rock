@@ -5,9 +5,15 @@
             <div class="instructions-section">
                 <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="disabled" />
             </div>
+
             <div class="rubric-section">
                 <StructuredContentEditor label="Grading Rubric" v-model="rubric" :disabled="disabled" />
             </div>
+
+            <TextBox v-model="acknowledgedButtonText"
+                     label="Button Text"
+                     help="The text that will be displayed in the button that allows the student to acknowledge the instructions."
+                     rules="required" />
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Scoring">
@@ -44,8 +50,12 @@
         </div>
 
         <div class="footer-button-section">
-            <RockButton v-if="isCompleted" :btnType="BtnType.Primary" @click="onContinueClicked">
-                Continue
+            <RockButton v-if="!isCompleted"
+                        :btnType="BtnType.Primary"
+                        :disabled="completeClicked"
+                        :autoDisable="true"
+                        @click="onCompletedAndClosed">
+                {{ completeButtonText }}
             </RockButton>
         </div>
     </div>
@@ -63,10 +73,13 @@
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion, PointAssessmentActivityDefaults } from "./pointAssessmentLearningActivity.partial";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
     const emits = defineEmits({ ...learningActivityEmits });
+
+    // #region Values
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = computed(() => props.activityBag);
@@ -75,6 +88,7 @@
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
+        acknowledgedButtonText,
         assignee,
         containerClasses,
         defaultAssigneeDescription,
@@ -92,13 +106,23 @@
     );
 
     const disabled = ref(props.disabled ?? false);
+    const completeClicked = ref(false);
 
     const pointsEarned = ref(completionBag.value.pointsEarned);
-    const pointsPossible = computed(() => Number(pointsPossibleAtCompletion?.value ?? activityBag.value.points));
 
-    function onContinueClicked(): void {
-        emits("closed");
-    }
+    // #endregion
+
+    // #region Computed Values
+
+    const pointsPossible = computed((): number => {
+        return Number(pointsPossibleAtCompletion?.value ?? activityBag.value.points);
+    });
+
+    const completeButtonText = computed((): string => {
+        return isCompleted.value === true
+            ? "Continue"
+            : acknowledgedButtonText?.value ?? "Acknowledged";
+    });
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
@@ -107,16 +131,13 @@
         } as LearningActivityBag;
 
         updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
+            acknowledgedButtonText: acknowledgedButtonText.value,
             instructions: instructions.value,
             rubric: rubric.value
         }) ?? "{}";
 
         emits("update:activityBag", updatedActivityBag);
     });
-
-    watch([activityBag.value.points, instructions, rubric], () => {
-        debouncedActivityBagEmits();
-    }, { deep: true });
 
     /** Watch for modified component completion. */
     const debouncedCompletionBagEmits = debounce(() => {
@@ -128,6 +149,23 @@
 
         emits("update:completionBag", updatedCompletionBag);
     });
+
+    // #region Event Handlers
+
+    function onCompletedAndClosed(): void {
+        if (isCompleted.value === false) {
+            emits("completed", true);
+            completeClicked.value = true;
+        }
+
+        emits("closed");
+    }
+
+    // #endregion
+
+    watch([activityBag.value.points, instructions, rubric, acknowledgedButtonText], () => {
+        debouncedActivityBagEmits();
+    }, { deep: true });
 
     watch([pointsEarned], () => {
         debouncedCompletionBagEmits();

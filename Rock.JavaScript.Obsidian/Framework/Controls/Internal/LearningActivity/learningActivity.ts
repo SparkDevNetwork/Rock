@@ -216,7 +216,10 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
 
     let configuration = defaults.defaultConfig;
     try {
-        configuration = JSON.parse(toValue(activityBag)?.activityComponentSettingsJson ?? "") as TConfig;
+        configuration = {
+            ...defaults.defaultConfig,
+            ...JSON.parse(toValue(activityBag)?.activityComponentSettingsJson ?? "") as TConfig
+        };
     }
     catch (error) {
         configuration = defaults.defaultConfig;
