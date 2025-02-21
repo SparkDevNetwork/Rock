@@ -190,6 +190,14 @@ namespace Rock.Blocks.Core
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
+            if ( entity.Id == 0 )
+            {
+                var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
+                if ( entityTypeGuid.HasValue )
+                {
+                    entity.EntityTypeId = EntityTypeCache.Get( entityTypeGuid.Value ).Id;
+                }
+            }
             entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
@@ -289,7 +297,7 @@ namespace Rock.Blocks.Core
             if ( entity.Id == 0 )
             {
                 bag.EntityTypeQualifierColumn = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
-                bag.EntityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierProperty );
+                bag.EntityTypeQualifierValue = GetAttributeValue( AttributeKey.EntityTypeQualifierValue );
                 var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
                 if ( entityTypeGuid.HasValue )
                 {
