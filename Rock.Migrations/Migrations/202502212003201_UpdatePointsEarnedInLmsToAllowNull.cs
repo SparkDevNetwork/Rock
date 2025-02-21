@@ -14,32 +14,28 @@
 // limitations under the License.
 // </copyright>
 //
-
-namespace Rock.ViewModels.Blocks.Prayer.PrayerRequestDetail
+namespace Rock.Migrations
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    public class PrayerRequestDetailOptionsBag
+    public partial class UpdatePointsEarnedInLmsToAllowNull : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// Pass the value of the RequireLastName block attribute to the front end
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        public bool IsLastNameRequired { get; set; }
-
+        public override void Up()
+        {
+            AlterColumn("dbo.LearningActivityCompletion", "PointsEarned", c => c.Int());
+        }
+        
         /// <summary>
-        /// Pass the value of the RequireCampus block attribute to the front end
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        public bool IsCampusRequired { get; set; }
-
-        /// <summary>
-        /// Pass the EnableAIDisclaimer block attribute to the front end
-        /// </summary>
-        public bool IsAIDisclaimerEnabled { get; set; }
-
-        /// <summary>
-        /// Pass the AIDisclaimer block attribute to the front end
-        /// </summary>
-        public string AIDisclaimer { get; set; }
+        public override void Down()
+        {
+            Sql( "UPDATE [LearningActivityCompletion] SET [PointsEarned] = 0 WHERE [PointsEarned] IS NULL" );
+            AlterColumn("dbo.LearningActivityCompletion", "PointsEarned", c => c.Int(nullable: false));
+        }
     }
 }

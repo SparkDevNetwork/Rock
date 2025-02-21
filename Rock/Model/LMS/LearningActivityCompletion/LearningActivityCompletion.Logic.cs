@@ -32,7 +32,23 @@ namespace Rock.Model
         /// If no points are configured or <see cref="LearningActivity" /> is null then 100 is returned.
         /// </summary>
         [NotMapped]
-        public decimal GradePercent => LearningActivity?.Points > 0 ? Math.Round( ( decimal ) PointsEarned / ( decimal ) LearningActivity.Points * 100, 3 ) : 100;
+        public decimal? GradePercent
+        {
+            get
+            {
+                if ( !PointsEarned.HasValue )
+                {
+                    return null;
+                }
+
+                if ( LearningActivity == null || LearningActivity.Points <= 0 )
+                {
+                    return 100;
+                }
+
+                return Math.Round( PointsEarned.Value * 100.0m / LearningActivity.Points, 3 );
+            }
+        }
 
         /// <summary>
         /// Gets the grade text for the activity.
@@ -51,9 +67,19 @@ namespace Rock.Model
                 return string.Empty;
             }
 
-            var percent = Math.Round( GradePercent, decimalPlaces );
             var grade = GetGrade( scales );
-            var percentString = decimalPlaces == 0 ? percent.ToIntSafe().ToString() : percent.ToString();
+
+            if ( !GradePercent.HasValue )
+            {
+                return grade?.Name.Length > 0
+                    ? grade.Name
+                    : string.Empty;
+            }
+
+            var percent = Math.Round( GradePercent.Value, decimalPlaces );
+            var percentString = decimalPlaces == 0
+                ? percent.ToIntSafe().ToString()
+                : percent.ToString();
 
             return grade?.Name.Length > 0 ? $"{grade?.Name} ({percentString}%)" : $"{percentString}%";
         }

@@ -636,10 +636,6 @@ namespace Rock.Blocks.Lms
                 .FirstOrDefault( c => c.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId )
                 .Value;
 
-            // Let the Activity component decide if it needs to be graded.
-            activity.RequiresGrading = activityComponent.RequiresGrading( activity );
-            activityCompletionBag.RequiresScoring = activity.RequiresGrading;
-
             // Only allow student updating completion and points if this hasn't yet been graded by a facilitator.
             if ( !activity.GradedByPersonAliasId.HasValue )
             {
@@ -678,6 +674,10 @@ namespace Rock.Blocks.Lms
                     activityCompletionBag.IsFacilitatorCompleted = true;
                 }
             }
+
+            // Let the Activity component decide if it needs to be graded.
+            activity.RequiresGrading = activityComponent.RequiresGrading( activity );
+            activityCompletionBag.RequiresScoring = activity.RequiresGrading;
 
             if ( isNew )
             {

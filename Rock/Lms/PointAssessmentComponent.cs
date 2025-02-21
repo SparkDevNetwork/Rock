@@ -50,22 +50,27 @@ namespace Rock.Lms
         /// <inheritdoc/>
         public override string ComponentUrl => @"/Obsidian/Controls/Internal/LearningActivity/pointAssessmentLearningActivity.obs";
 
-        /// <summary>
-        /// Point Assessments require grading when the due date is in the past and the activity hasn't yet been graded.
-        /// </summary>
-        /// <remarks>
-        /// Because there's no way to know when a student has completed the activity
-        /// we are using the due date as a qualifier for when to consider the activity
-        /// "completed" by a student.
-        /// </remarks>
-        /// <param name="completion">The learning activity completion.</param>
-        /// <returns><c>true</c> if the facilitator needs to grade the activity; otherwise <c>false</c>.</returns>
+        /// <inheritdoc/>
+        public override int? CalculatePointsEarned( string rawConfigurationJsonString, string rawCompletionJsonString, int pointsPossible )
+        {
+            // We don't auto-assign points based on submission.
+            return null;
+        }
+
+        /// <inheritdoc/>
         public override bool RequiresGrading( LearningActivityCompletion completion )
         {
-            return
-                completion.DueDate.HasValue &&
-                completion.DueDate.Value.IsPast() &&
-                !completion.GradedByPersonAliasId.HasValue;
+            // It has already been graded.
+            if ( completion.PointsEarned.HasValue )
+            {
+                return false;
+            }
+
+            var isPastDue = completion.DueDate.HasValue
+                && completion.DueDate.Value.IsPast();
+
+            // If it is past due or completed then it needs to be graded.
+            return isPastDue || completion.CompletedDateTime.HasValue;
         }
     }
 }

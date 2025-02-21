@@ -20,6 +20,7 @@ import { LearningComponentBaseDefaults } from "./learningActivity";
 export type PointAssessmentActivityConfiguration = {
     instructions: string;
     rubric: string;
+    acknowledgedButtonText: string;
 };
 
 export type PointAssessmentActivityCompletion = {
@@ -34,6 +35,7 @@ export class PointAssessmentActivityDefaults
         this.defaultConfig = {
             instructions: "",
             rubric: "",
+            acknowledgedButtonText: "Acknowledged",
         };
     }
 }

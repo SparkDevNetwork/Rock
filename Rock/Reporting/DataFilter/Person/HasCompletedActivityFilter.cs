@@ -342,22 +342,22 @@ function() {
             var rockContext = serviceInstance.Context as RockContext;
 
             var completionQuery = new LearningActivityCompletionService( rockContext ).Queryable()
-                .Include( c => c.Student )
-                .Where( c => c.LearningActivityId == activityId );
+                .Where( c => c.LearningActivityId == activityId
+                    && c.CompletedDateTime.HasValue );
 
             if ( dateRange.Start.HasValue )
             {
                 var startDate = dateRange.Start.Value;
-                completionQuery = completionQuery.Where( c => c.CompletedDateTime.HasValue && c.CompletedDateTime >= startDate );
+                completionQuery = completionQuery.Where( c => c.CompletedDateTime >= startDate );
             }
 
             if ( dateRange.End.HasValue )
             {
                 var endDate = dateRange.End.Value;
-                completionQuery = completionQuery.Where( c => c.CompletedDateTime.HasValue && c.CompletedDateTime <= endDate );
+                completionQuery = completionQuery.Where( c => c.CompletedDateTime <= endDate );
             }
 
-            if ( selectionConfig.Points.HasValue && selectionConfig.Points.Value > 0 && comparisonType != null )
+            if ( selectionConfig.Points.HasValue && comparisonType != null )
             {
                 switch ( comparisonType )
                 {

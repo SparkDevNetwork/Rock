@@ -322,7 +322,7 @@ namespace Rock.Blocks.Lms
                 IsGradePassing = canViewGrades ? entity.GetGrade()?.IsPassing ?? false : false,
                 IsLate = entity.IsLate,
                 IsStudentCompleted = entity.IsStudentCompleted,
-                PointsEarned = canViewGrades ? entity.PointsEarned : 0,
+                PointsEarned = canViewGrades ? entity.PointsEarned : null,
                 RequiresScoring = entity.RequiresGrading,
                 RequiresFacilitatorCompletion = entity.RequiresFacilitatorCompletion,
                 Student = studentBag,
