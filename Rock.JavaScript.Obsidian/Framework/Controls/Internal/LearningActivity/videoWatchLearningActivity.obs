@@ -48,7 +48,9 @@
 
         <div class="video-section">
             <MediaPlayer v-model:watchedPercentage="watchedPercentage"
-                         :mediaElementGuid="video?.value ?? ''" />
+                         :mediaElementGuid="video?.value ?? ''"
+                         :autoResumeInDays="60"
+                         :combinePlayStatisticsInDays="60" />
         </div>
 
         <div class="footer-section">
