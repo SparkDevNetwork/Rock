@@ -166,7 +166,9 @@ namespace Rock.Model
                 };
             }
 
-            var averagePoints = completedActivities.Average( a => a.PointsEarned );
+            var averagePoints = completedActivities
+                .Where( a => a.PointsEarned.HasValue )
+                .Average( a => a.PointsEarned.Value );
 
             // If there are no points treat it as a passing grade (100%).
             var averagePercent = points > 0 ? averagePoints / points * 100 : 100;

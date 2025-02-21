@@ -124,12 +124,13 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the number of points the student earned by completing the activity.
+        /// This will be <c>null</c> if no score has been set yet.
         /// </summary>
         /// <value>
         /// The <see cref="System.Int32" /> representing the number of points earned for the activity.
         /// </value>
         [DataMember]
-        public int PointsEarned { get; set; }
+        public int? PointsEarned { get; set; }
 
         /// <summary>
         /// Indicates whether or not the related activity instance has been completed by the <see cref="Rock.Model.LearningParticipant">student</see>.

@@ -98,7 +98,7 @@ export type LearningActivityCompletionBag = {
     learningActivityIdKey?: string | null;
 
     /** Gets or sets the number of points the student earned by completing the activity. */
-    pointsEarned: number;
+    pointsEarned?: number | null;
 
     /** Gets or sets whether the facilitator must complete the activity. */
     requiresFacilitatorCompletion: boolean;

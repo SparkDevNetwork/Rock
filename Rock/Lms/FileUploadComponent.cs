@@ -57,5 +57,11 @@ namespace Rock.Lms
         {
             return !completion.GradedByPersonAliasId.HasValue;
         }
+
+        /// <inheritdoc/>
+        public override int? CalculatePointsEarned( string rawConfigurationJsonString, string rawCompletionJsonString, int pointsPossible )
+        {
+            return null;
+        }
     }
 }

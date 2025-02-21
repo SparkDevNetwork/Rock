@@ -127,7 +127,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail
         /// <summary>
         /// Gets or sets the number of points the student earned by completing the activity.
         /// </summary>
-        public int PointsEarned { get; set; }
+        public int? PointsEarned { get; set; }
 
         /// <summary>
         /// Gets or sets whether the activity requires a facilitator to grade/score it.

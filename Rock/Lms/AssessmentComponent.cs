@@ -64,12 +64,17 @@ namespace Rock.Lms
         /// <param name="completionJson">The JSON string of the components completion.</param>
         /// <param name="pointsPossible">The total number of points possible for this activity.</param>
         /// <returns>The actual earned points for this activity.</returns>
-        public override int CalculatePointsEarned( string configurationJson, string completionJson, int pointsPossible )
+        public override int? CalculatePointsEarned( string configurationJson, string completionJson, int pointsPossible )
         {
             var multipleChoiceSectionPoints = GetMultipleChoiceSectionPoints( configurationJson, completionJson, pointsPossible );
             var shortAnswerSectionPoints = GetShortAnswerSectionPoints( configurationJson, completionJson );
 
-            return multipleChoiceSectionPoints + shortAnswerSectionPoints;
+            if ( shortAnswerSectionPoints.HasValue )
+            {
+                return null;
+            }
+
+            return multipleChoiceSectionPoints;
         }
 
         /// <summary>
@@ -184,7 +189,7 @@ namespace Rock.Lms
         /// <param name="completionJson">The JSON string of the components completion.</param>
         /// <param name="pointsPossible">The total number of points possible for this activity.</param>
         /// <returns>The actual earned points for the multiple choice section of the assessment.</returns>
-        private int GetMultipleChoiceSectionPoints( string configurationJson, string completionJson, int pointsPossible )
+        private int? GetMultipleChoiceSectionPoints( string configurationJson, string completionJson, int pointsPossible )
         {
             try
             {
@@ -197,6 +202,11 @@ namespace Rock.Lms
 
                 var configuredItems = config.SelectTokens( itemsPath );
                 var multipleChoiceWeight = config.SelectToken( "multipleChoiceWeight" )?.ToObject<decimal>() ?? 0;
+
+                if ( !configuredItems.Any() )
+                {
+                    return null;
+                }
 
                 foreach ( var question in configuredItems )
                 {
@@ -228,7 +238,7 @@ namespace Rock.Lms
                 ExceptionLogService.LogException( ex );
             }
 
-            return 0;
+            return null;
         }
 
         /// <summary>
@@ -237,9 +247,10 @@ namespace Rock.Lms
         /// <param name="configurationJson">The JSON string of the components configuration.</param>
         /// <param name="completionJson">The JSON string of the components completion.</param>
         /// <returns>The actual earned points for the short answer section of the assessment.</returns>
-        private int GetShortAnswerSectionPoints( string configurationJson, string completionJson )
+        private int? GetShortAnswerSectionPoints( string configurationJson, string completionJson )
         {
-            var pointsEarned = 0;
+            int? pointsEarned = null;
+
             try
             {
                 var itemsPath = $"$.items[?(@.typeName == '{SHORT_ANSWER_ITEM_TYPE_NAME}')]";

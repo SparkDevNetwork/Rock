@@ -111,7 +111,7 @@ namespace Rock.Lms
         /// <param name="rawCompletionJsonString"> The unparsed activity completion data.</param>
         /// <param name="pointsPossible">The maximum points possible for the activity./></param>
         /// <returns>The actual points earned.</returns>
-        public virtual int CalculatePointsEarned( string rawConfigurationJsonString, string rawCompletionJsonString, int pointsPossible ) => pointsPossible;
+        public virtual int? CalculatePointsEarned( string rawConfigurationJsonString, string rawCompletionJsonString, int pointsPossible ) => pointsPossible;
 
         /// <summary>
         /// Determines if the activity requires grading by a facilitator.

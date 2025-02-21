@@ -186,7 +186,7 @@ namespace Rock.Blocks.Lms
                 .AddField( "studentGuid", a => a.Student.Guid )
                 .AddField( "completionDate", a => a.CompletedDateTime )
                 .AddField( "dueDate", a => a.DueDate )
-                .AddField( "pointsEarned", a => !canViewGrades ? 0 : a.PointsEarned )
+                .AddField( "pointsEarned", a => canViewGrades ? a.PointsEarned : null )
                 .AddField( "points", a => !canViewGrades ? 0 : a.LearningActivity.Points )
                 .AddField( "grade", a => !canViewGrades || a.RequiresGrading || a.LearningActivity.Points == 0 ? null : a.GetGradeText() )
                 .AddField( "gradePercent", a => !canViewGrades ? 0 : a.GradePercent.ToIntSafe() )
