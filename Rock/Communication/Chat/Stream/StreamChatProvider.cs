@@ -78,6 +78,11 @@ namespace Rock.Communication.Chat
         #region Fields
 
         /// <summary>
+        /// A lock for thread-safe initialization of this chat provider instance.
+        /// </summary>
+        private static readonly object _initializationLock = new object();
+
+        /// <summary>
         /// The backing field for the <see cref="Logger"/> property.
         /// </summary>
         private readonly Lazy<ILogger> _logger;
@@ -88,32 +93,32 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// Provides access to the <see cref="StreamClientFactory"/> for creating specific API clients.
         /// </summary>
-        private readonly Lazy<StreamClientFactory> _clientFactory;
+        private Lazy<StreamClientFactory> _clientFactory;
 
         /// <summary>
         /// The backing field for the <see cref="AppClient"/> property.
         /// </summary>
-        private readonly Lazy<IAppClient> _appClient;
+        private Lazy<IAppClient> _appClient;
 
         /// <summary>
         /// The backing field for the <see cref="PermissionClient"/> property.
         /// </summary>
-        private readonly Lazy<IPermissionClient> _permissionClient;
+        private Lazy<IPermissionClient> _permissionClient;
 
         /// <summary>
         /// The backing field for the <see cref="ChannelTypeClient"/> property.
         /// </summary>
-        private readonly Lazy<IChannelTypeClient> _channelTypeClient;
+        private Lazy<IChannelTypeClient> _channelTypeClient;
 
         /// <summary>
         /// The backing field for the <see cref="ChannelClient"/> property.
         /// </summary>
-        private readonly Lazy<IChannelClient> _channelClient;
+        private Lazy<IChannelClient> _channelClient;
 
         /// <summary>
         /// The backing field for the <see cref="UserClient"/> property.
         /// </summary>
-        private readonly Lazy<IUserClient> _userClient;
+        private Lazy<IUserClient> _userClient;
 
         // TODO (Jason): Carefully evaluate the default grants-per-role, and decide if the below values are what we want.
         // https://getstream.io/chat/docs/rest/#/product%3Achat/GetApp
@@ -146,17 +151,21 @@ namespace Rock.Communication.Chat
                     new List<string>
                     {
                         "close-poll-any-team",
+                        "create-block-list-any-team",
                         "create-poll-any-team",
+                        "delete-block-list-any-team",
                         "delete-moderation-config-any-team",
                         "delete-poll-any-team",
                         "flag-user-any-team",
                         "mute-user-any-team",
                         "query-moderation-review-queue-any-team",
                         "query-polls-owner-any-team",
+                        "read-block-lists-any-team",
                         "read-flag-reports-any-team",
                         "read-moderation-config-any-team",
                         "search-user-any-team",
                         "submit-moderation-action-any-team",
+                        "update-block-list-any-team",
                         "update-flag-report-any-team",
                         "update-poll-any-team",
                         "update-user-owner",
@@ -223,6 +232,7 @@ namespace Rock.Communication.Chat
                         "create-message",
                         "create-reaction",
                         "create-reply",
+                        "create-restricted-visibility-message",
                         "create-system-message",
                         "delete-attachment",
                         "delete-message",
@@ -266,6 +276,7 @@ namespace Rock.Communication.Chat
                         "create-message",
                         "create-reaction",
                         "create-reply",
+                        "create-restricted-visibility-message",
                         "create-system-message",
                         "delete-attachment",
                         "delete-channel",
@@ -405,22 +416,35 @@ namespace Rock.Communication.Chat
                 RockLogger.LoggerFactory.CreateLogger( typeof( StreamChatProvider ).FullName )
             );
 
-            _clientFactory = new Lazy<StreamClientFactory>( () =>
-            {
-                var chatConfiguration = ChatHelper.GetChatConfiguration();
-                return new StreamClientFactory( chatConfiguration.ApiKey, chatConfiguration.ApiSecret );
-            } );
-
-            _appClient = new Lazy<IAppClient>( () => _clientFactory.Value.GetAppClient() );
-            _permissionClient = new Lazy<IPermissionClient>( () => _clientFactory.Value.GetPermissionClient() );
-            _channelTypeClient = new Lazy<IChannelTypeClient>( () => _clientFactory.Value.GetChannelTypeClient() );
-            _channelClient = new Lazy<IChannelClient>( () => _clientFactory.Value.GetChannelClient() );
-            _userClient = new Lazy<IUserClient>( () => _clientFactory.Value.GetUserClient() );
+            Initialize();
         }
 
         #endregion Constructors
 
         #region IChatProvider Implementation
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public void Initialize()
+        {
+            lock ( _initializationLock )
+            {
+                _clientFactory = new Lazy<StreamClientFactory>( () =>
+                {
+                    var chatConfiguration = ChatHelper.GetChatConfiguration();
+                    return new StreamClientFactory( chatConfiguration.ApiKey, chatConfiguration.ApiSecret );
+                } );
+
+                _appClient = new Lazy<IAppClient>( () => _clientFactory.Value.GetAppClient() );
+                _permissionClient = new Lazy<IPermissionClient>( () => _clientFactory.Value.GetPermissionClient() );
+                _channelTypeClient = new Lazy<IChannelTypeClient>( () => _clientFactory.Value.GetChannelTypeClient() );
+                _channelClient = new Lazy<IChannelClient>( () => _clientFactory.Value.GetChannelClient() );
+                _userClient = new Lazy<IUserClient>( () => _clientFactory.Value.GetUserClient() );
+            }
+        }
+
+        #endregion Configuration
 
         #region Roles & Permission Grants
 
@@ -1118,21 +1142,16 @@ namespace Rock.Communication.Chat
 
                     offset += membersRetrievedCount;
                 }
-                catch ( Exception ex )
+                catch ( StreamChatException ex ) when ( ex.ErrorCode == 16 )
                 {
-                    if ( ex is StreamChatException streamChatException && streamChatException.ErrorCode == 16 )
-                    {
-                        // Provide the caller with a predictable exception so they can decide how to proceed when the
-                        // targeted channel does not exist.
-                        throw new ChatChannelNotFoundException(
-                            $"{LogMessagePrefix} {operationName} failed: channel does not exist in Stream (type: {chatChannelTypeKey}; id: {chatChannelKey}).",
-                            ex,
-                            chatChannelTypeKey,
-                            chatChannelKey
-                        );
-                    }
-
-                    throw;
+                    // Provide the caller with a predictable exception so they can decide how to proceed when the
+                    // targeted channel does not exist.
+                    throw new ChatChannelNotFoundException(
+                        $"{LogMessagePrefix} {operationName} failed: channel does not exist in Stream (type: {chatChannelTypeKey}; id: {chatChannelKey}).",
+                        ex,
+                        chatChannelTypeKey,
+                        chatChannelKey
+                    );
                 }
             }
             while ( membersRetrievedCount == pageSize );
@@ -1180,21 +1199,16 @@ namespace Rock.Communication.Chat
                     return TryConvertToChatChannelMember( queryMembersResponse.Members.First() );
                 }
             }
-            catch ( Exception ex )
+            catch ( StreamChatException ex ) when ( ex.ErrorCode == 16 )
             {
-                if ( ex is StreamChatException streamChatException && streamChatException.ErrorCode == 16 )
-                {
-                    // Provide the caller with a predictable exception so they can decide how to proceed when the
-                    // targeted channel does not exist.
-                    throw new ChatChannelNotFoundException(
-                        $"{LogMessagePrefix} {operationName} failed: channel does not exist in Stream (type: {chatChannelTypeKey}; id: {chatChannelKey}).",
-                        ex,
-                        chatChannelTypeKey,
-                        chatChannelKey
-                    );
-                }
-
-                throw;
+                // Provide the caller with a predictable exception so they can decide how to proceed when the
+                // targeted channel does not exist.
+                throw new ChatChannelNotFoundException(
+                    $"{LogMessagePrefix} {operationName} failed: channel does not exist in Stream (type: {chatChannelTypeKey}; id: {chatChannelKey}).",
+                    ex,
+                    chatChannelTypeKey,
+                    chatChannelKey
+                );
             }
 
             return null;
@@ -1430,7 +1444,46 @@ namespace Rock.Communication.Chat
         /// <inheritdoc/>
         public async Task EnsureSystemUserExistsAsync()
         {
-            await UpsertChatUsersAsync( new List<ChatUser> { ChatHelper.GetChatSystemUser() } );
+            var retries = 0;
+            var maxRetries = 5;
+            var delay = TimeSpan.FromSeconds( 5 ); // Initial delay.
+
+            bool shouldRetry;
+
+            var operationName = nameof( EnsureSystemUserExistsAsync ).SplitCase();
+            var request = TryConvertToStreamUserRequest( ChatHelper.GetChatSystemUser() );
+
+            do
+            {
+                shouldRetry = false;
+
+                try
+                {
+                    await RetryAsync(
+                        async () => await UserClient.UpsertAsync( request ),
+                        operationName
+                    );
+                }
+                catch ( StreamChatException ex ) when ( ex.ErrorCode == 4 )
+                {
+                    if ( ++retries > maxRetries )
+                    {
+                        // If the max retry count has been exceeded, let the caller decide how to handle the exception.
+                        throw;
+                    }
+
+                    // Stream sometimes has trouble immediately assigning a user to a newly-created role.
+                    // Let's pause for a bit and try again.
+                    Logger.LogWarning( ex, $"{LogMessagePrefix} {operationName} failed. Retrying in {delay.TotalSeconds} seconds (attempt {retries}/{maxRetries})." );
+
+                    await Task.Delay( delay );
+                    shouldRetry = true;
+
+                    // Exponential backoff for repeated retries; max 30s.
+                    delay = TimeSpan.FromTicks( Math.Min( delay.Ticks * 2, TimeSpan.FromSeconds( 30 ).Ticks ) );
+                }
+            }
+            while ( shouldRetry );
         }
 
         /// <inheritdoc/>

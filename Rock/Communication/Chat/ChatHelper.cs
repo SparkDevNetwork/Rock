@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -142,16 +141,15 @@ namespace Rock.Communication.Chat
 
         #region Con/Destructors
 
-#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatHelper"/> class.
         /// </summary>
         /// <param name="rockContext">The optional <see cref="Rock.Data.RockContext"/> that should be used to initialize
         /// services and save any database changes made within this chat helper. If a context is not provided, a new
         /// one will be created and disposed of within this chat helper. If a context IS provided, it will NOT be
-        /// disposed of within this chat helper, but <see cref="DbContext.SaveChanges()"/> will be called as needed.</param>
+        /// disposed of within this chat helper, but its underlying <see cref="System.Data.Entity.DbContext.SaveChanges()"/>
+        /// will be called as needed.</param>
         public ChatHelper( RockContext rockContext = null )
-#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
         {
             Logger = RockLogger.LoggerFactory.CreateLogger( typeof( ChatHelper ).FullName );
 
@@ -166,6 +164,8 @@ namespace Rock.Communication.Chat
             }
 
             ChatProvider = RockApp.Current.GetChatProvider();
+
+            InitializeChatProvider();
         }
 
         /// <inheritdoc/>
@@ -183,7 +183,7 @@ namespace Rock.Communication.Chat
 
         #region Public Methods
 
-        #region Static Configuration & Keys
+        #region Configuration & Keys
 
         /// <summary>
         /// Gets the current chat configuration from system settings.
@@ -321,25 +321,34 @@ namespace Rock.Communication.Chat
             };
         }
 
-        #endregion Static Configuration & Keys
+        /// <summary>
+        /// Initializes (or reinitializes) the <see cref="IChatProvider"/> instance managed by this chat helper.
+        /// </summary>
+        public void InitializeChatProvider()
+        {
+            ChatProvider.Initialize();
+        }
+
+        #endregion Configuration & Keys
 
         #region Authentication
 
         /// <summary>
-        /// Gets a chat user token for the <see cref="Person"/> to use when authenticating with the chat provider.
+        /// Gets a <see cref="ChatUserAuthentication"/> for the <see cref="Person"/> to use when authenticating with the
+        /// chat provider.
         /// </summary>
-        /// <param name="personId">The identifier of the <see cref="Person"/> for whom to get a token.</param>
+        /// <param name="personId">The identifier of the <see cref="Person"/> for whom to get a <see cref="ChatUserAuthentication"/>.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the token or <see langword="null"/> if unable to
-        /// get a token.
+        /// A task representing the asynchronous operation, containing the <see cref="ChatUserAuthentication"/> or
+        /// <see langword="null"/> if unable to find the <see cref="ChatUser"/> or get a token.
         /// </returns>
-        public async Task<string> GetChatUserTokenAsync( int personId )
+        public async Task<ChatUserAuthentication> GetChatUserAuthenticationAsync( int personId )
         {
-            string token = null;
+            ChatUserAuthentication auth = null;
 
             if ( personId < 1 )
             {
-                return token;
+                return auth;
             }
 
             try
@@ -349,17 +358,27 @@ namespace Rock.Communication.Chat
                 var chatUserResult = results?.FirstOrDefault( r => r?.ChatUserKey.IsNotNullOrWhiteSpace() == true );
                 if ( chatUserResult == null )
                 {
-                    return token;
+                    return auth;
                 }
 
-                token = await ChatProvider.GetChatUserTokenAsync( chatUserResult.ChatUserKey );
+                var token = await ChatProvider.GetChatUserTokenAsync( chatUserResult.ChatUserKey );
+                if ( token.IsNullOrWhiteSpace() )
+                {
+                    return auth;
+                }
+
+                auth = new ChatUserAuthentication
+                {
+                    Token = token,
+                    ChatUserKey = chatUserResult.ChatUserKey
+                };
             }
             catch ( Exception ex )
             {
-                LogError( ex, nameof( GetChatUserTokenAsync ) );
+                LogError( ex, nameof( GetChatUserAuthenticationAsync ) );
             }
 
-            return token;
+            return auth;
         }
 
         #endregion Authentication
@@ -381,9 +400,9 @@ namespace Rock.Communication.Chat
 
             try
             {
-                await ChatProvider.EnsureSystemUserExistsAsync();
                 await ChatProvider.EnsureAppRolesExistAsync();
                 await ChatProvider.EnsureAppGrantsExistAsync();
+                await ChatProvider.EnsureSystemUserExistsAsync();
             }
             catch ( Exception ex )
             {

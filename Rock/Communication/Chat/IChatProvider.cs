@@ -28,6 +28,15 @@ namespace Rock.Communication.Chat
     /// </summary>
     internal interface IChatProvider
     {
+        #region Configuration
+
+        /// <summary>
+        /// Initializes the chat provider instance.
+        /// </summary>
+        void Initialize();
+
+        #endregion Configuration
+
         #region Roles & Permission Grants
 
         /// <summary>

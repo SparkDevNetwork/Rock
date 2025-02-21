@@ -14,32 +14,22 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;
-
-namespace Rock.Enums.Communication.Chat
+namespace Rock.Communication.Chat.DTO
 {
     /// <summary>
-    /// The role of a chat individual, to be synchronized with the external chat system.
+    /// Represents the token - as well as the <see cref="ChatUser.Key"/> that was used to obtain the token - to be used
+    /// when authenticating with the chat provider.
     /// </summary>
-    [Enums.EnumDomain( "Communication" )]
-    public enum ChatRole
+    internal class ChatUserAuthentication
     {
         /// <summary>
-        /// Represents a rock_user role in the external chat system.
+        /// Gets or sets the token to be used when authenticating with the chat provider.
         /// </summary>
-        [Description( "rock_user" )]
-        User = 0,
+        public string Token { get; set; }
 
         /// <summary>
-        /// Represents a rock_moderator role in the external chat system.
+        /// Gets or sets the <see cref="ChatUser.Key"/> that was used to obtain the token.
         /// </summary>
-        [Description( "rock_moderator" )]
-        Moderator = 1,
-
-        /// <summary>
-        /// Represents a rock_admin role in the external chat system.
-        /// </summary>
-        [Description( "rock_admin" )]
-        Administrator = 3
+        public string ChatUserKey { get; set; }
     }
 }
