@@ -23,16 +23,16 @@ namespace Rock.Model
     public partial class LearningActivityCompletionService
     {
         /// <summary>
-        /// Updates the NotificationCommunicationId property of <see cref="LearningActivityCompletion"/>
+        /// Updates the <see cref="LearningActivityCompletion.SentNotificationCommunicationId"/> property
         /// for the provided <paramref name="activityCompletionIds"/>.
         /// </summary>
         /// <param name="activityCompletionIds">List of <see cref="LearningActivityCompletion"/> identifiers to update.</param>
-        /// <param name="systemCommunicationId">The system communication id to set for the given identifiers.</param>
-        public void UpdateNotificationCommunicationIdProperty( List<int> activityCompletionIds, int systemCommunicationId )
+        /// <param name="communicationId">The communication id to set for the given identifiers.</param>
+        public void UpdateSentNotificationCommunicationIdProperty( List<int> activityCompletionIds, int communicationId )
         {
             var activityCompletions = Queryable().Where( c => activityCompletionIds.Contains( c.Id ) );
 
-            Context.BulkUpdate( activityCompletions, a => new LearningActivityCompletion { NotificationCommunicationId = systemCommunicationId } );
+            Context.BulkUpdate( activityCompletions, a => new LearningActivityCompletion { SentNotificationCommunicationId = communicationId } );
         }
 
         /// <summary>
@@ -66,8 +66,7 @@ namespace Rock.Model
                     activity.DueDateDefault,
                     activity.DueDateOffset,
                     semesterStartDate,
-                    enrollmentDate ),
-                NotificationCommunicationId = activity.SendNotificationCommunication ? programCommunicationId : null
+                    enrollmentDate )
             };
         }
 
@@ -81,7 +80,6 @@ namespace Rock.Model
         {
             var enrollmentDate = student?.CreatedDateTime;
             var classStartDate = student.LearningClass?.LearningSemester?.StartDate;
-            var systemCommunicationId = student.LearningClass?.LearningSemester?.LearningProgram?.SystemCommunicationId;
 
             return new LearningActivityCompletion
             {
@@ -100,8 +98,7 @@ namespace Rock.Model
                     activity.DueDateDefault,
                     activity.DueDateOffset,
                     classStartDate,
-                    enrollmentDate ),
-                NotificationCommunicationId = activity.SendNotificationCommunication ? systemCommunicationId : null
+                    enrollmentDate )
             };
         }
     }

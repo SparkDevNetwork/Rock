@@ -119,8 +119,8 @@ namespace Rock.Model
                             History.EvaluateChange( HistoryChanges, "IsStudentCompleted", null, Entity.IsStudentCompleted );
                             History.EvaluateChange( HistoryChanges, "IsFacilitatorCompleted", null, Entity.IsFacilitatorCompleted );
                             History.EvaluateChange( HistoryChanges, "WasCompletedOnTime", null, Entity.WasCompletedOnTime );
-                            History.EvaluateChange( HistoryChanges, "NotificationCommunicationId", null, Entity.NotificationCommunicationId );
-                            History.EvaluateChange( HistoryChanges, "NotificationCommunication", null, Entity.NotificationCommunication?.Title );
+                            History.EvaluateChange( HistoryChanges, "SentNotificationCommunicationId", null, Entity.SentNotificationCommunicationId );
+                            History.EvaluateChange( HistoryChanges, "SentNotificationCommunication", null, Entity.SentNotificationCommunication?.Subject );
                             History.EvaluateChange( HistoryChanges, "BinaryFileId", null, Entity.BinaryFileId );
                             break;
                         }

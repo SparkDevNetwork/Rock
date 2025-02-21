@@ -192,6 +192,16 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
+            ExecuteAndReturnCommunicationId();
+        }
+
+        /// <summary>
+        /// Executes the transaction and returns the created communication
+        /// identifier.
+        /// </summary>
+        /// <returns>The identifier of the communication or <c>null</c> if one was not created.</returns>
+        internal int? ExecuteAndReturnCommunicationId()
+        {
             using ( var rockContext = new RockContext() )
             {
                 var personService = new PersonService( rockContext );
@@ -243,7 +253,7 @@ namespace Rock.Transactions
 
                     var communication = new CommunicationService( rockContext ).CreateEmailCommunication( createEmailCommunicationArgs );
 
-                    if ( communication != null  )
+                    if ( communication != null )
                     {
                         if ( communication.Recipients.Count() == 1 && this.RecipientGuid.HasValue )
                         {
@@ -252,7 +262,11 @@ namespace Rock.Transactions
                     }
 
                     rockContext.SaveChanges();
+
+                    return communication.Id;
                 }
+
+                return null;
             }
         }
     }

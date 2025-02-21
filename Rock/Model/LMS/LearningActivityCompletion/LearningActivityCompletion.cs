@@ -159,13 +159,14 @@ namespace Rock.Model
         public bool WasCompletedOnTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the id of the <see cref="Rock.Model.SystemCommunication"/> that's used for notifications.
+        /// Gets or sets the id of the <see cref="Rock.Model.Communication"/> that
+        /// was sent as a notification that this activity is available.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.SystemCommunication"/> identifier.
+        /// The <see cref="Rock.Model.Communication"/> identifier.
         /// </value>
         [DataMember]
-        public int? NotificationCommunicationId { get; set; }
+        public int? SentNotificationCommunicationId { get; set; }
 
         /// <summary>
         /// Gets or sets the binary file id for use by the activity component.
@@ -202,10 +203,10 @@ namespace Rock.Model
         public virtual LearningActivity LearningActivity { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="SystemCommunication"/> used for notifications by the student activity instance.
+        /// Gets or sets the <see cref="Communication"/> used for notifications by the student activity instance.
         /// </summary>
         [DataMember]
-        public virtual SystemCommunication NotificationCommunication { get; set; }
+        public virtual Communication SentNotificationCommunication { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="LearningParticipant">student</see> the activity instance is for.
@@ -246,6 +247,7 @@ namespace Rock.Model
             this.HasRequired( a => a.LearningActivity ).WithMany( a => a.LearningActivityCompletions ).HasForeignKey( a => a.LearningActivityId ).WillCascadeOnDelete( true );
             this.HasRequired( a => a.Student ).WithMany( a => a.LearningActivities ).HasForeignKey( a => a.StudentId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.CompletedByPersonAlias ).WithMany().HasForeignKey( a => a.CompletedByPersonAliasId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.SentNotificationCommunication ).WithMany().HasForeignKey( a => a.SentNotificationCommunicationId ).WillCascadeOnDelete( false );
         }
     }
 

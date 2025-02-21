@@ -204,6 +204,10 @@
     <Compile Include="Migrations\202502191749233_CodeGenerated_20250219.designer.cs">
       <DependentUpon>202502191749233_CodeGenerated_20250219.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202502211454363_AddSentNotificationCommunicationIdToLms.cs" />
+    <Compile Include="Migrations\202502211454363_AddSentNotificationCommunicationIdToLms.Designer.cs">
+      <DependentUpon>202502211454363_AddSentNotificationCommunicationIdToLms.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2578,6 +2582,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202502191749233_CodeGenerated_20250219.resx">
       <DependentUpon>202502191749233_CodeGenerated_20250219.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202502211454363_AddSentNotificationCommunicationIdToLms.resx">
+      <DependentUpon>202502211454363_AddSentNotificationCommunicationIdToLms.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>

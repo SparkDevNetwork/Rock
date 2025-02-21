@@ -58,6 +58,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Communication.FriendlyTypeName, CommunicationResponse.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<LearningActivityCompletion>( Context ).Queryable().Any( a => a.SentNotificationCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Communication.FriendlyTypeName, LearningActivityCompletion.FriendlyTypeName );
+                return false;
+            }
             return true;
         }
     }

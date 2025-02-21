@@ -143,9 +143,9 @@ namespace Rock.Model
             target.IsFacilitatorCompleted = source.IsFacilitatorCompleted;
             target.IsStudentCompleted = source.IsStudentCompleted;
             target.LearningActivityId = source.LearningActivityId;
-            target.NotificationCommunicationId = source.NotificationCommunicationId;
             target.PointsEarned = source.PointsEarned;
             target.RequiresGrading = source.RequiresGrading;
+            target.SentNotificationCommunicationId = source.SentNotificationCommunicationId;
             target.StudentComment = source.StudentComment;
             target.StudentId = source.StudentId;
             target.WasCompletedOnTime = source.WasCompletedOnTime;

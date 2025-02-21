@@ -269,6 +269,8 @@ namespace Rock.Communication
 
                     var sendMessageResult = HandleEmailSendResponse( rockMessageRecipient, recipientEmailMessage, result );
 
+                    emailMessage.LastCommunicationId = recipientEmailMessage.LastCommunicationId;
+
                     errorMessages.AddRange( sendMessageResult.Errors );
                 }
                 catch ( Exception ex )
@@ -602,6 +604,7 @@ namespace Rock.Communication
             templateRockEmailMessage.ReplyToEmail = emailMessage.ReplyToEmail;
             templateRockEmailMessage.SystemCommunicationId = emailMessage.SystemCommunicationId;
             templateRockEmailMessage.CreateCommunicationRecord = emailMessage.CreateCommunicationRecord;
+            templateRockEmailMessage.CreateCommunicationRecordImmediately = emailMessage.CreateCommunicationRecordImmediately;
             templateRockEmailMessage.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
             templateRockEmailMessage.ThemeRoot = emailMessage.ThemeRoot;
 
@@ -710,6 +713,7 @@ namespace Rock.Communication
             recipientEmail.CssInliningEnabled = emailMessage.CssInliningEnabled;
             recipientEmail.SendSeperatelyToEachRecipient = emailMessage.SendSeperatelyToEachRecipient;
             recipientEmail.ThemeRoot = emailMessage.ThemeRoot;
+            recipientEmail.CreateCommunicationRecordImmediately = emailMessage.CreateCommunicationRecordImmediately;
 
             // CC
             recipientEmail.CCEmails = emailMessage.CCEmails;
@@ -1244,7 +1248,7 @@ namespace Rock.Communication
             }
 
             // Create the communication record
-            if ( recipientEmailMessage.CreateCommunicationRecord )
+            if ( recipientEmailMessage.CreateCommunicationRecordImmediately || recipientEmailMessage.CreateCommunicationRecord )
             {
                 var transaction = new SaveCommunicationTransaction(
                     rockMessageRecipient,
@@ -1258,7 +1262,22 @@ namespace Rock.Communication
 
                 transaction.RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull();
                 transaction.RecipientStatus = result.Status;
-                transaction.Enqueue();
+
+                if ( recipientEmailMessage.CreateCommunicationRecordImmediately )
+                {
+                    try
+                    {
+                        recipientEmailMessage.LastCommunicationId = transaction.ExecuteAndReturnCommunicationId();
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex );
+                    }
+                }
+                else
+                {
+                    transaction.Enqueue();
+                }
             }
 
             return sendResult;

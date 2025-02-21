@@ -97,12 +97,6 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<LearningActivityCompletion>( Context ).Queryable().Any( a => a.NotificationCommunicationId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, LearningActivityCompletion.FriendlyTypeName );
-                return false;
-            }
-
             if ( new Service<LearningProgram>( Context ).Queryable().Any( a => a.SystemCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", SystemCommunication.FriendlyTypeName, LearningProgram.FriendlyTypeName );
