@@ -726,6 +726,7 @@
     <Compile Include="Communication\Chat\Sync\SyncGroupMemberToChatCommand.cs" />
     <Compile Include="Communication\Chat\Sync\CreateOrUpdateChatUserResult.cs" />
     <Compile Include="Communication\Chat\Sync\SyncChannelMembersToChatCommand.cs" />
+    <Compile Include="Communication\Chat\Sync\SyncPersonToChatCommand.cs" />
     <Compile Include="Core\AttributeDisplaySettings.cs" />
     <Compile Include="Communication\Chat\ChatHelper.cs" />
     <Compile Include="Communication\Chat\DTO\ChatBadge.cs" />

@@ -353,7 +353,13 @@ namespace Rock.Communication.Chat
 
             try
             {
-                var results = await CreateOrUpdateChatUsersAsync( new List<int> { personId } );
+                var syncCommand = new SyncPersonToChatCommand
+                {
+                    PersonId = personId,
+                    ShouldEnsureChatAliasExists = true
+                };
+
+                var results = await CreateOrUpdateChatUsersAsync( new List<SyncPersonToChatCommand> { syncCommand } );
 
                 var chatUserResult = results?.FirstOrDefault( r => r?.ChatUserKey.IsNotNullOrWhiteSpace() == true );
                 if ( chatUserResult == null )
@@ -835,16 +841,23 @@ namespace Rock.Communication.Chat
                     if ( groupGuid.HasValue && groupGuid.Value.Equals( chatAdminsGroupGuid ) )
                     {
                         chatAdminsCommands.Add( syncCommand );
-                        syncCommands.Remove( syncCommand );
+                        syncCommands.RemoveAt( i );
                     }
                 }
 
                 if ( chatAdminsCommands.Any() )
                 {
-                    var chatAdminsPersonIds = chatAdminsCommands
+                    var syncPersonToChatCommands = chatAdminsCommands
                         .GroupBy( c => c.PersonId )
                         .Select( g => g.Key )
                         .Distinct()
+                        .Select( personId =>
+                            new SyncPersonToChatCommand
+                            {
+                                PersonId = personId,
+                                ShouldEnsureChatAliasExists = true
+                            }
+                        )
                         .ToList();
 
                     try
@@ -856,8 +869,8 @@ namespace Rock.Communication.Chat
 
                         // The next method call does the following:
                         //  1) Ensures this person has a chat-specific person alias in Rock;
-                        //  2) Ensures this person has a chat user in the external chat system.
-                        var createOrUpdateChatUserResults = await CreateOrUpdateChatUsersAsync( chatAdminsPersonIds );
+                        //  2) Ensures this person has a chat user in the external chat system IF dictated by `RockToChatSyncConfig.ShouldEnsureChatUsersExist`.
+                        var createOrUpdateChatUserResults = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
 
                         // Be sure to set this value back to whatever it was.
                         RockToChatSyncConfig.ShouldEnsureChatUsersExist = shouldEnsureChatUsersExist;
@@ -1029,16 +1042,23 @@ namespace Rock.Communication.Chat
                 {
                     // Chat channel members require chat users. We'll start by ensuring a user exists in the external
                     // chat system for each member.
-                    var createOrUpdatePersonIds = createOrUpdateMembers
+                    var syncPersonToChatCommands = createOrUpdateMembers
                         .GroupBy( c => c.PersonId )
                         .Select( g => g.Key )
                         .Distinct()
+                        .Select( personId =>
+                            new SyncPersonToChatCommand
+                            {
+                                PersonId = personId,
+                                ShouldEnsureChatAliasExists = true
+                            }
+                        )
                         .ToList();
 
                     // The next method call does the following:
                     //  1) Ensures this person has a chat-specific person alias in Rock;
-                    //  2) Ensures this person has a chat user in the external chat system.
-                    var createOrUpdateChatUserResults = await CreateOrUpdateChatUsersAsync( createOrUpdatePersonIds );
+                    //  2) Ensures this person has a chat user in the external chat system IF dictated by `RockToChatSyncConfig.ShouldEnsureChatUsersExist`.
+                    var createOrUpdateChatUserResults = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
 
                     // Just in case any people still don't have a chat user key, let's at least log them. This will
                     // probably never happen.
@@ -1254,16 +1274,20 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// Creates new or updates existing <see cref="ChatUser"/>s in the external chat system.
         /// </summary>
-        /// <param name="personIds">The identifiers of the <see cref="Person"/>s for which to create or update a
-        /// <see cref="ChatUser"/>.</param>
+        /// <param name="syncCommands">The list of commands for <see cref="ChatUser"/>s to create or update.</param>
         /// <returns>
         /// A task representing the asynchronous operation, containing the list of <see cref="CreateOrUpdateChatUserResult"/>s.
         /// </returns>
-        public async Task<List<CreateOrUpdateChatUserResult>> CreateOrUpdateChatUsersAsync( List<int> personIds )
+        public async Task<List<CreateOrUpdateChatUserResult>> CreateOrUpdateChatUsersAsync( List<SyncPersonToChatCommand> syncCommands )
         {
             var results = new List<CreateOrUpdateChatUserResult>();
 
-            if ( !IsChatEnabled || personIds?.Any() != true )
+            // Validate commands.
+            syncCommands = syncCommands
+                ?.Where( c => c?.PersonId > 0 )
+                .ToList();
+
+            if ( !IsChatEnabled || syncCommands?.Any() != true )
             {
                 return results;
             }
@@ -1274,8 +1298,8 @@ namespace Rock.Communication.Chat
             {
                 var chatConfiguration = GetChatConfiguration();
 
-                // Ensure each person has a chat-specific person alias record in Rock.
-                var rockChatUserPeople = GetOrCreateRockChatUserPeople( personIds, chatConfiguration );
+                // Ensure each person has a chat-specific person alias record in Rock IF instructed by their respective sync commands.
+                var rockChatUserPeople = GetOrCreateRockChatUserPeople( syncCommands, chatConfiguration );
 
                 if ( !RockToChatSyncConfig.ShouldEnsureChatUsersExist )
                 {
@@ -1506,22 +1530,28 @@ namespace Rock.Communication.Chat
         #region Rock Model CRUD
 
         /// <summary>
-        /// Gets existing or creates new chat-specific <see cref="PersonAlias"/> records within Rock, for each provided
-        /// <see cref="Person"/> identifier, and returns the alias's unique identifier along with additional supporting
-        /// data needed to add or update <see cref="ChatUser"/>s in the external chat system.
+        /// Gets existing or creates new chat-specific <see cref="PersonAlias"/> records within Rock, and returns the
+        /// alias's unique identifier along with additional supporting data needed to add or update <see cref="ChatUser"/>s
+        /// in the external chat system.
         /// </summary>
-        /// <param name="personIds">The list of <see cref="Person"/> identifiers for which to get or create chat user
-        /// people within Rock.</param>
+        /// <param name="syncCommands">The list of commands for <see cref="RockChatUserPerson"/>s to get or create.</param>
         /// <param name="chatConfiguration">The cached <see cref="ChatConfiguration"/> to prevent repeated reads from
         /// system settings.</param>
-        /// <returns>A list of <see cref="RockChatUserPerson"/>s with one entry for each <see cref="Person"/>.</returns>
-        private List<RockChatUserPerson> GetOrCreateRockChatUserPeople( List<int> personIds, ChatConfiguration chatConfiguration )
+        /// <returns>A list of <see cref="RockChatUserPerson"/>s.</returns>
+        /// <remarks>
+        /// For each provided <see cref="SyncPersonToChatCommand"/>, if a chat-specific <see cref="PersonAlias"/> record
+        /// doesn't already exist for the <see cref="Person"/> AND <see cref="SyncPersonToChatCommand.ShouldEnsureChatAliasExists"/>
+        /// is <see langword="false"/>, a <see cref="RockChatUserPerson"/> will NOT be returned for that <see cref="Person"/>.
+        /// </remarks>
+        private List<RockChatUserPerson> GetOrCreateRockChatUserPeople( List<SyncPersonToChatCommand> syncCommands, ChatConfiguration chatConfiguration )
         {
             // Start by getting the minimum data set needed to add or update chat users in the external chat system.
             var personQry = new PersonService( RockContext ).Queryable();
             var chatAliasQry = new PersonAliasService( RockContext )
                 .Queryable()
                 .Where( pa => pa.ForeignKey.StartsWith( ChatPersonAliasForeignKeyPrefix ) );
+
+            var personIds = syncCommands.Select( c => c.PersonId ).Distinct().ToList();
 
             if ( personIds.Count == 1 )
             {
@@ -1564,7 +1594,7 @@ namespace Rock.Communication.Chat
                 )
                 .Select( gm => gm.PersonId );
 
-            var chatUserPeople = personQry
+            var rockChatUserPeople = personQry
                 .GroupJoin(
                     chatAliasQry,
                     p => p.Id,
@@ -1602,36 +1632,60 @@ namespace Rock.Communication.Chat
                 } )
                 .ToList();
 
-            // If any people don't already have a chat alias, add them in bulk.
-            var peopleMissingChatAlias = chatUserPeople.Where( p => !p.ChatAliasGuid.HasValue );
-            var chatAliasesToSave = new List<PersonAlias>();
-            foreach ( var chatUserPerson in peopleMissingChatAlias )
+            // If any people don't already have a chat alias, add them in bulk IF instructed by their respective sync commands.
+            var newChatAliasesToSave = new List<PersonAlias>();
+
+            // Iterate backwards for ease-of-removal for those people who will not be synced further.
+            for ( var i = rockChatUserPeople.Count - 1; i >= 0; i-- )
             {
+                var rockChatUserPerson = rockChatUserPeople[i];
+                if ( rockChatUserPerson.ChatAliasGuid.HasValue )
+                {
+                    // This person already has a chat alias; move on.
+                    continue;
+                }
+
+                // Find this person's sync command.
+                var syncCommand = syncCommands.FirstOrDefault( c => c.PersonId == rockChatUserPerson.PersonId );
+                if ( syncCommand?.ShouldEnsureChatAliasExists != true )
+                {
+                    // This person didn't already have a chat alias, and we're not going to add one.
+                    // Remove them from the results and move on.
+                    rockChatUserPeople.RemoveAt( i );
+                    continue;
+                }
+
                 var guid = Guid.NewGuid();
                 var chatAlias = new PersonAlias
                 {
-                    PersonId = chatUserPerson.PersonId,
+                    PersonId = rockChatUserPerson.PersonId,
                     Guid = guid,
                     ForeignKey = GetChatPersonAliasForeignKey( guid )
                 };
 
-                chatAliasesToSave.Add( chatAlias );
-                chatUserPerson.ChatAliasGuid = guid;
-                chatUserPerson.AlreadyExistedInRock = false;
+                newChatAliasesToSave.Add( chatAlias );
+                rockChatUserPerson.ChatAliasGuid = guid;
+                rockChatUserPerson.AlreadyExistedInRock = false;
             }
 
-            if ( chatAliasesToSave.Any() )
+            // If we don't have any people to sync further, return early.
+            if ( !rockChatUserPeople.Any() )
             {
-                RockContext.BulkInsert( chatAliasesToSave );
+                return rockChatUserPeople;
+            }
+
+            if ( newChatAliasesToSave.Any() )
+            {
+                RockContext.BulkInsert( newChatAliasesToSave );
             }
 
             var peopleNeedingBadges = RockToChatSyncConfig.ShouldEnsureChatUsersExist
-                ? chatUserPeople                                                    // Sync badges for ALL people.
-                : chatUserPeople.Where( p => !p.AlreadyExistedInRock ).ToList();    // Sync badges for NEW people.
+                ? rockChatUserPeople                                                    // Sync badges for ALL people.
+                : rockChatUserPeople.Where( p => !p.AlreadyExistedInRock ).ToList();    // Sync badges for NEW people.
 
             if ( !peopleNeedingBadges.Any() )
             {
-                return chatUserPeople;
+                return rockChatUserPeople;
             }
 
             // Build the badge rosters.
@@ -1688,7 +1742,7 @@ namespace Rock.Communication.Chat
                 }
             } );
 
-            return chatUserPeople;
+            return rockChatUserPeople;
         }
 
         /// <summary>
