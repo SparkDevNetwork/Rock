@@ -731,7 +731,7 @@
 
     // #region Filter Values
 
-    const messageFilterSelection = ref<string>(preferences.getValue(PreferenceKey.SelectedMessageFilter) ?? CommunicationMessageFilter.ShowUnreadReplies.toString());
+    const messageFilterSelection = ref<string>(preferences.getValue(PreferenceKey.SelectedMessageFilter) || CommunicationMessageFilter.ShowAllMessages.toString());
     const personFilterSelection = ref<ListItemBag | undefined>();
     const isPersonFilterToggled = ref<boolean>(false);
     const systemPhoneNumbers = ref<ListItemBag[]>(box.systemPhoneNumbers ?? []);

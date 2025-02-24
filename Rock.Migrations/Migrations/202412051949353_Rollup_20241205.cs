@@ -36,7 +36,7 @@ namespace Rock.Migrations
             //CreateIndex("dbo.AnalyticsFactFinancialTransaction", "AccountId");
             //CreateIndex("dbo.AnalyticsSourceFinancialTransaction", "AccountId");
 
-            SwapBlocksUp();
+            //SwapBlocksUp();
             CleanupNoteApprovalStatusUp();
             UpdateCategorizedFieldTypeNameUp();
             UpdateAdaptiveMessageListPageUp();
