@@ -45,7 +45,7 @@
                     width="20%" />
 
         <LabelColumn name="categories"
-                     title="Category"
+                     title="Categories"
                      field="categories"
                      :filter="pickExistingValueFilter"
                      visiblePriority="sm" />
