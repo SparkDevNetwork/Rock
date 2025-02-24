@@ -373,7 +373,7 @@ namespace Rock.Blocks.Lms
                 return new LearningCourse
                 {
                     LearningProgram = program,
-                    LearningProgramId = program.Id,
+                    LearningProgramId = program?.Id ?? 0,
                     Id = 0,
                     Guid = Guid.Empty,
                     IsActive = true
