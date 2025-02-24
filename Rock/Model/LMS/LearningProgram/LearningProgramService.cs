@@ -160,10 +160,9 @@ namespace Rock.Model
             {
                 // If we should include completion status then get those values first and return the program bag queryable.
                 var personCompletions = new LearningProgramCompletionService( ( RockContext ) Context )
-                .Queryable()
-                .AsNoTracking()
-                .Include( c => c.PersonAlias )
-                .Where( c => c.PersonAlias.PersonId == includeCompletionsForPersonId ) ?? default;
+                    .Queryable()
+                    .Where( lpc => lpc.PersonAlias.PersonId == includeCompletionsForPersonId )
+                    .OrderByDescending( lpc => lpc.StartDate );
 
                 programs = baseQuery
                     .Select( p => new PublicLearningProgramBag

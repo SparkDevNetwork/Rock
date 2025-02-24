@@ -73,13 +73,13 @@ namespace Rock.Blocks.Lms
         DefaultIntegerValue = 5,
         Order = 3 )]
 
-    [CustomDropdownListField(
+    [BooleanField(
         "Show Grades",
         Key = AttributeKey.ShowGrades,
-        Description = "Select 'Show' to show grades on the class overview page; 'Hide' to not show any grades.",
-        ListSource = "Show,Hide",
+        Description = "Determines if grades will be shown on the class overview page.",
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         IsRequired = true,
-        DefaultValue = "Show",
+        DefaultBooleanValue = true,
         Order = 4 )]
 
     #endregion
@@ -131,7 +131,7 @@ namespace Rock.Blocks.Lms
         /// Determines whether the ShowGrades attribute is configured to show grades.
         /// </summary>
         /// <returns><c>true</c> if grades should be shown; otherwise <c>false</c></returns>
-        bool AreGradesShown => GetAttributeValue( AttributeKey.ShowGrades ) == "Show";
+        bool AreGradesShown => GetAttributeValue( AttributeKey.ShowGrades ).AsBoolean();
 
         /// <summary>
         /// The Lava template to use for the header.
