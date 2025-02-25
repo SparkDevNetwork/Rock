@@ -24,6 +24,7 @@ using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.UI.WebControls.Expressions;
 
 using Rock.Data;
 using Rock.Model;
@@ -64,18 +65,19 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override string GetClientFormatSelection( Type entityType )
         {
+            // Broken
             return @"
 function() {
-    let result = 'Has Completed the ''' + $('.js-activity', $content).find(':selected').text()  + ''' Activity';
+    let result = 'Has Completed the \'' + $('.js-activity', $content).find(':selected').text()  + '\' Activity';
 
     var dateRangeText = $('.js-slidingdaterange-text-value', $content).val();
-    if(dateRangeText) {
-        result +=  ' in the Date Range: ''' + dateRangeText + '''';
+    if (dateRangeText) {
+        result +=  ' in the Date Range: \'' + dateRangeText + '\'';
     }
 
     var points = $('.js-points', $content).val();
     var comparisonType = $('.js-comparison-type', $content).find(':selected').text();
-    if (points >= 0 && comparisonType) {
+    if (points != '' && points >= 0 && comparisonType) {
         result += ' with Points ' + comparisonType + ' ' + points;
     }
 
@@ -90,9 +92,9 @@ function() {
             string s = "Has Completed Activity";
 
             var selectionConfig = SelectionConfig.Parse( selection );
-            if ( selectionConfig != null && selectionConfig.LearningActivityId.HasValue )
+            if ( selectionConfig != null && selectionConfig.LearningActivityGuid.HasValue )
             {
-                var activity = new LearningActivityService( new RockContext() ).Get( selectionConfig.LearningActivityId.Value );
+                var activity = new LearningActivityService( new RockContext() ).Get( selectionConfig.LearningActivityGuid.Value );
                 var dateRangeString = string.Empty;
                 if ( selectionConfig.SlidingDateRangeDelimitedValues.IsNotNullOrWhiteSpace() )
                 {
@@ -104,9 +106,9 @@ function() {
                 }
 
                 var comparisonType = selectionConfig.PointsComparisonType.ConvertToEnumOrNull<ComparisonType>();
-                var pointsString = comparisonType != null && selectionConfig.Points.HasValue ?
-                    $"with Points {comparisonType} {selectionConfig.Points}" :
-                    string.Empty;
+                var pointsString = comparisonType != null && selectionConfig.Points.HasValue
+                    ? $"with Points {comparisonType.ToString().SplitCase()} {selectionConfig.Points}"
+                    : string.Empty;
 
                 s = string.Format(
                     "Has Completed the '{0}' Activity {1} {2}",
@@ -121,42 +123,47 @@ function() {
         /// <inheritdoc/>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            var ddlProgram = new RockDropDownList();
-            ddlProgram.ID = filterControl.GetChildControlInstanceName( "ddlProgram" );
+            // Create the program drop down.
+            var ddlProgram = new RockDropDownList
+            {
+                ID = filterControl.GetChildControlInstanceName( "ddlProgram" ),
+                Label = "Program",
+                Required = true,
+                AutoPostBack = true
+            };
+
             ddlProgram.AddCssClass( "js-program" );
-            ddlProgram.Label = "Program";
-            ddlProgram.DataTextField = "Name";
-            ddlProgram.DataValueField = "Id";
-            ddlProgram.DataSource = new LearningProgramService( new RockContext() ).Queryable().AsNoTracking()
-                .Where( p => p.IsActive )
-                .Select( p => new
-                {
-                    p.Id,
-                    p.Name
-                } )
-                .ToList()
-                .OrderBy( a => a.Name );
-            ddlProgram.DataBind();
-            ddlProgram.AutoPostBack = true;
-            ddlProgram.SelectedIndexChanged += ProgramSelection_Changed;
+            ddlProgram.SelectedIndexChanged += Program_SelectedIndexChanged;
             filterControl.Controls.Add( ddlProgram );
+            HasCompletedCourseFilter.SetProgramItems( ddlProgram );
 
-            var ddlCourse = new RockDropDownList();
-            ddlCourse.ID = filterControl.GetChildControlInstanceName( "ddlCourse" );
+            // Create the course drop down.
+            var ddlCourse = new RockDropDownList
+            {
+                ID = filterControl.GetChildControlInstanceName( "ddlCourse" ),
+                Label = "Course",
+                Required = true,
+                AutoPostBack = true
+            };
+
             ddlCourse.AddCssClass( "js-course" );
-            ddlCourse.Label = "Course";
-            ddlCourse.AutoPostBack = true;
-            ddlCourse.SelectedIndexChanged += CourseSelection_Changed;
+            ddlCourse.SelectedIndexChanged += Course_SelectedIndexChanged;
             filterControl.Controls.Add( ddlCourse );
+            HasCompletedCourseFilter.SetCourseItems( ddlProgram, ddlCourse );
 
-            var ddlActivity = new RockDropDownList();
-            ddlActivity.ID = filterControl.GetChildControlInstanceName( "ddlActivity" );
+            // Create the activity drop down.
+            var ddlActivity = new RockDropDownList
+            {
+                ID = filterControl.GetChildControlInstanceName( "ddlActivity" ),
+                Label = "Activity",
+                Required = true
+            };
+
             ddlActivity.AddCssClass( "js-activity" );
-            ddlActivity.Label = "Activity";
             filterControl.Controls.Add( ddlActivity );
-            SetCourseItems( filterControl );
-            SetActivityItems( filterControl );
+            SetActivityItems( ddlCourse, ddlActivity );
 
+            // Create the points input.
             var lblPoints = new Label();
             lblPoints.Text = " Points ";
             filterControl.Controls.Add( lblPoints );
@@ -169,6 +176,7 @@ function() {
 
             var ComparisonTypes =
                ComparisonType.EqualTo |
+               ComparisonType.NotEqualTo |
                ComparisonType.LessThan |
                ComparisonType.LessThanOrEqualTo |
                ComparisonType.GreaterThan |
@@ -276,16 +284,12 @@ function() {
 
             if ( controls.Count() >= 6 )
             {
-                var ddlProgram = controls[0] as RockDropDownList;
-                var ddlCourse = controls[1] as RockDropDownList;
                 var ddlActivity = controls[2] as RockDropDownList;
                 var ddlPointsComparisonType = controls[3] as DropDownList;
                 var nbPoints = controls[4] as NumberBox;
                 var slidingDateRangePicker = controls[6] as SlidingDateRangePicker;
 
-                selectionConfig.LearningProgramId = ddlProgram.SelectedValueAsInt();
-                selectionConfig.LearningCourseId = ddlCourse.SelectedValueAsInt();
-                selectionConfig.LearningActivityId = ddlActivity.SelectedValueAsInt();
+                selectionConfig.LearningActivityGuid = ddlActivity.SelectedValueAsGuid();
                 selectionConfig.SlidingDateRangeDelimitedValues = slidingDateRangePicker.DelimitedValues;
                 selectionConfig.PointsComparisonType = ddlPointsComparisonType.SelectedValue;
                 selectionConfig.Points = nbPoints.IntegerValue;
@@ -297,7 +301,7 @@ function() {
         /// <inheritdoc/>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection ) ?? new SelectionConfig();
 
             var ddlProgram = controls[0] as RockDropDownList;
             var ddlCourse = controls[1] as RockDropDownList;
@@ -306,44 +310,53 @@ function() {
             var nbPoints = controls[4] as NumberBox;
             var slidingDateRangePicker = controls[6] as SlidingDateRangePicker;
 
-            ddlProgram.SetValue( selectionConfig.LearningProgramId );
-            ddlCourse.SetValue( selectionConfig.LearningCourseId );
+            var upstreamGuids = new LearningActivityService( new RockContext() )
+                .Queryable()
+                .Where( la => la.Guid == selectionConfig.LearningActivityGuid )
+                .Select( la => new
+                {
+                    CourseGuid = la.LearningClass.LearningCourse.Guid,
+                    ProgramGuid = la.LearningClass.LearningCourse.LearningProgram.Guid
+                } )
+                .FirstOrDefault();
 
-            // If there's a course selection ensure the activity list is populated
-            // before trying to set the dropdown value to the selection.
-            var selectedCourseId = ddlCourse.SelectedValueAsInt().ToIntSafe();
-            if ( selectedCourseId > 0 )
-            {
-                SetActivityItems( ddlActivity, selectedCourseId );
-            }
+            ddlProgram.SetValue( upstreamGuids?.ProgramGuid );
 
-            ddlActivity.SetValue( selectionConfig.LearningActivityId );
+            HasCompletedCourseFilter.SetCourseItems( ddlProgram, ddlCourse );
+            ddlCourse.SetValue( upstreamGuids?.CourseGuid );
+
+            SetActivityItems( ddlCourse, ddlActivity );
+            ddlActivity.SetValue( selectionConfig.LearningActivityGuid );
             ddlPointsComparisonType.SelectedValue = selectionConfig.PointsComparisonType;
 
-            if ( selectionConfig.Points.HasValue )
-            {
-                nbPoints.IntegerValue = selectionConfig.Points;
-            }
-
+            nbPoints.IntegerValue = selectionConfig.Points;
             slidingDateRangePicker.DelimitedValues = selectionConfig.SlidingDateRangeDelimitedValues;
         }
 
         /// <inheritdoc/>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
-
+            var selectionConfig = SelectionConfig.Parse( selection ) ?? new SelectionConfig();
+            var selectedActivityGuid = selectionConfig.LearningActivityGuid;
             var comparisonType = selectionConfig
                 .PointsComparisonType
                 .ConvertToEnumOrNull<ComparisonType>();
-
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
-            var activityId = selectionConfig.LearningActivityId.ToIntSafe();
             var rockContext = serviceInstance.Context as RockContext;
 
-            var completionQuery = new LearningActivityCompletionService( rockContext ).Queryable()
-                .Where( c => c.LearningActivityId == activityId
-                    && c.CompletedDateTime.HasValue );
+            var completionQuery = new LearningActivityCompletionService( rockContext ).Queryable();
+
+            if ( selectedActivityGuid.HasValue )
+            {
+                completionQuery = completionQuery
+                    .Where( c => c.LearningActivity.Guid == selectedActivityGuid.Value
+                        && c.CompletedDateTime.HasValue );
+            }
+            else
+            {
+                // Make sure we get no results if not properly configured.
+                completionQuery = completionQuery.Where( _ => false );
+            }
 
             if ( dateRange.Start.HasValue )
             {
@@ -357,26 +370,16 @@ function() {
                 completionQuery = completionQuery.Where( c => c.CompletedDateTime <= endDate );
             }
 
-            if ( selectionConfig.Points.HasValue && comparisonType != null )
+            // Build the custom expression for comparing the value if we have
+            // both a comparison type and a value.
+            if ( selectionConfig.Points.HasValue && comparisonType.HasValue )
             {
-                switch ( comparisonType )
-                {
-                    case ComparisonType.EqualTo:
-                        completionQuery = completionQuery.Where( c => c.PointsEarned == selectionConfig.Points );
-                        break;
-                    case ComparisonType.LessThan:
-                        completionQuery = completionQuery.Where( c => c.PointsEarned < selectionConfig.Points );
-                        break;
-                    case ComparisonType.LessThanOrEqualTo:
-                        completionQuery = completionQuery.Where( c => c.PointsEarned <= selectionConfig.Points );
-                        break;
-                    case ComparisonType.GreaterThan:
-                        completionQuery = completionQuery.Where( c => c.PointsEarned > selectionConfig.Points );
-                        break;
-                    case ComparisonType.GreaterThanOrEqualTo:
-                        completionQuery = completionQuery.Where( c => c.PointsEarned >= selectionConfig.Points );
-                        break;
-                }
+                var valueExpression = Expression.Constant( selectionConfig.Points.Value );
+                var completionParameterExpression = Expression.Parameter( typeof( LearningActivityCompletion ), "lac" );
+                var propertyExpression = Expression.Property( completionParameterExpression, nameof( LearningActivityCompletion.PointsEarned ) );
+                var comparisonExpression = ComparisonHelper.ValueComparisonExpression( comparisonType.Value, propertyExpression, valueExpression );
+
+                completionQuery = completionQuery.Where( completionParameterExpression, comparisonExpression );
             }
 
             // Create the query that will be used for extracting the Person.
@@ -389,79 +392,49 @@ function() {
 
         #region Private members
 
-        private void CourseSelection_Changed( object sender, EventArgs e )
+        private void Course_SelectedIndexChanged( object sender, EventArgs e )
         {
-            FilterField filterField = ( sender as Control ).FirstParentControlOfType<FilterField>();
+            var filterField = ( sender as Control ).FirstParentControlOfType<FilterField>();
+            var ddlCourse = filterField.ControlsOfTypeRecursive<DropDownList>().FirstOrDefault( a => a.HasCssClass( "js-course" ) );
+            var ddlActivity = filterField.ControlsOfTypeRecursive<DropDownList>().FirstOrDefault( a => a.HasCssClass( "js-activity" ) );
 
-            SetActivityItems( filterField );
+            SetActivityItems( ddlCourse, ddlActivity );
         }
 
-        private void ProgramSelection_Changed( object sender, EventArgs e )
+        private void Program_SelectedIndexChanged( object sender, EventArgs e )
         {
-            FilterField filterField = ( sender as Control ).FirstParentControlOfType<FilterField>();
+            var filterField = ( sender as Control ).FirstParentControlOfType<FilterField>();
+            var ddlProgram = filterField.ControlsOfTypeRecursive<DropDownList>().FirstOrDefault( a => a.HasCssClass( "js-program" ) );
+            var ddlCourse = filterField.ControlsOfTypeRecursive<DropDownList>().FirstOrDefault( a => a.HasCssClass( "js-course" ) );
 
-            SetCourseItems( filterField );
+            HasCompletedCourseFilter.SetCourseItems( ddlProgram, ddlCourse );
         }
 
-        private void SetActivityItems( FilterField filterField )
-        {
-            DropDownList ddlCourse = filterField.ControlsOfTypeRecursive<DropDownList>().FirstOrDefault( a => a.HasCssClass( "js-course" ) );
-            DropDownList ddlActivity = filterField.ControlsOfTypeRecursive<DropDownList>().FirstOrDefault( a => a.HasCssClass( "js-activity" ) );
-
-            SetActivityItems( ddlActivity, ddlCourse.SelectedValue.ToIntSafe() );
-        }
-
-        private void SetActivityItems( DropDownList ddlActivity, int courseId )
+        private void SetActivityItems( DropDownList ddlCourse, DropDownList ddlActivity )
         {
             ddlActivity.Items.Clear();
             ddlActivity.Items.Insert( 0, new ListItem() );
 
+            var selectedCourseGuid = ddlCourse.SelectedValueAsGuid();
+
             // If there's no course selected hide the activity dropdown and wait for a selection.
-            if ( courseId > 0 )
+            if ( selectedCourseGuid.HasValue )
             {
-                var activityItems = new LearningActivityService( new RockContext() ).Queryable()
-                .AsNoTracking()
-                .Include( a => a.LearningClass )
-                .Where( a => a.LearningClass.LearningCourseId == courseId )
-                .Select( a => new { a.Name, a.Id } )
-                .ToList()
-                .OrderBy( a => a.Name )
-                .Select( a => new ListItem( a.Name, a.Id.ToString() ) )
-                .ToArray();
+                var activities = new LearningActivityService( new RockContext() )
+                    .Queryable()
+                    .Where( la => la.LearningClass.LearningCourse.Guid == selectedCourseGuid )
+                    .OrderBy( la => la.Order )
+                    .Select( la => new
+                    {
+                        la.Guid,
+                        la.Name
+                    } );
 
-                ddlActivity.Items.AddRange( activityItems );
+                foreach ( var activity in activities )
+                {
+                    ddlActivity.Items.Add( new ListItem( activity.Name, activity.Guid.ToString() ) );
+                }
             }
-
-            ddlActivity.Visible = ddlActivity.Items.Count > 1;
-        }
-
-        private void SetCourseItems( FilterField filterField )
-        {
-            DropDownList ddlProgram = filterField.ControlsOfTypeRecursive<DropDownList>().FirstOrDefault( a => a.HasCssClass( "js-program" ) );
-            DropDownList ddlCourse = filterField.ControlsOfTypeRecursive<DropDownList>().FirstOrDefault( a => a.HasCssClass( "js-course" ) );
-
-            ddlCourse.Items.Clear();
-            ddlCourse.Items.Insert( 0, new ListItem() );
-
-            var selectedProgramId = ddlProgram.SelectedValue.ToIntSafe();
-
-            // If there's a program selected filter to courses for that program.
-            if ( selectedProgramId > 0 )
-            {
-                var courseItems = new LearningCourseService( new RockContext() ).Queryable()
-                .AsNoTracking()
-                .Include( c => c.LearningProgram )
-                .Where( c => c.IsActive && c.LearningProgramId == selectedProgramId )
-                .Select( c => new { c.Name, c.Id } )
-                .ToList()
-                .OrderBy( a => a.Name )
-                .Select( c => new ListItem( c.Name, c.Id.ToString() ) )
-                .ToArray();
-
-                ddlCourse.Items.AddRange( courseItems );
-            }
-
-            ddlCourse.Visible = ddlCourse.Items.Count > 1;
         }
 
         #endregion
@@ -472,35 +445,12 @@ function() {
         protected class SelectionConfig
         {
             /// <summary>
-            /// Initializes a new instance of the <see cref="SelectionConfig"/> class.
-            /// </summary>
-            public SelectionConfig()
-            {
-            }
-
-            /// <summary>
-            /// Gets or sets the learning program identifier to filter to.
+            /// Gets or sets the learning activity unique identifier to filter to.
             /// </summary>
             /// <value>
-            /// The learning program identifiers.
+            /// The learning unique activity identifier.
             /// </value>
-            public int? LearningProgramId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the learning course identifier to filter to.
-            /// </summary>
-            /// <value>
-            /// The learning course identifiers.
-            /// </value>
-            public int? LearningCourseId { get; set; }
-
-            /// <summary>
-            /// Gets or sets the learning activity identifier to filter to.
-            /// </summary>
-            /// <value>
-            /// The learning activity identifiers.
-            /// </value>
-            public int? LearningActivityId { get; set; }
+            public Guid? LearningActivityGuid { get; set; }
 
             /// <summary>
             /// Gets or sets the points comparison type.
