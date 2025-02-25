@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Cms
                 Server.ScriptTimeout = databaseTimeout + 5;
             }
 
-            cpCategories.EntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSONALIZATION_SEGMENT_CATEGORY.AsGuid() ).Value;
+            cpCategories.EntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.PERSONALIZATION_SEGMENT.AsGuid() ).Value;
         }
 
         /// <summary>
