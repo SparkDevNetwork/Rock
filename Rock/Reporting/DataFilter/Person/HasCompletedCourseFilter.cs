@@ -112,7 +112,7 @@ namespace Rock.Reporting.DataFilter.Person
             ddlProgram.AddCssClass( "js-program" );
             ddlProgram.SelectedIndexChanged += Program_SelectedIndexChanged;
             filterControl.Controls.Add( ddlProgram );
-            SetProgramItems( ddlProgram );
+            HasCompletedProgramFilter.SetProgramItems( ddlProgram );
 
             // Create the course drop down.
             var ddlCourse = new RockDropDownList
@@ -158,38 +158,10 @@ namespace Rock.Reporting.DataFilter.Person
         private void Program_SelectedIndexChanged( object sender, EventArgs e )
         {
             var filterField = ( sender as Control ).FirstParentControlOfType<FilterField>();
-
-            SetCourseItems( filterField );
-        }
-
-        private static void SetCourseItems( FilterField filterField )
-        {
             var ddlProgram = filterField.ControlsOfTypeRecursive<DropDownList>().FirstOrDefault( a => a.HasCssClass( "js-program" ) );
             var ddlCourse = filterField.ControlsOfTypeRecursive<DropDownList>().FirstOrDefault( a => a.HasCssClass( "js-course" ) );
 
             SetCourseItems( ddlProgram, ddlCourse );
-        }
-
-        internal static void SetProgramItems( DropDownList ddlProgram )
-        {
-            // Only include active and tracked programs (non-tracked programs won't have LearningProgramCompletion records).
-            var programs = new LearningProgramService( new RockContext() )
-                .Queryable()
-                .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
-                .OrderBy( lp => lp.Name )
-                .Select( lp => new
-                {
-                    lp.Guid,
-                    lp.Name
-                } );
-
-            ddlProgram.Items.Clear();
-            ddlProgram.Items.Insert( 0, new ListItem() );
-
-            foreach ( var program in programs )
-            {
-                ddlProgram.Items.Add( new ListItem( program.Name, program.Guid.ToString() ) );
-            }
         }
 
         internal static void SetCourseItems( DropDownList ddlProgram, DropDownList ddlCourse )
@@ -307,7 +279,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             ddlProgram.SetValue( programGuid );
 
-            SetCourseItems( filterField );
+            SetCourseItems( ddlProgram, ddlCourse );
             ddlCourse.SetValue( selectionConfig.LearningCourseGuid );
 
             slidingDateRangePicker.DelimitedValues = selectionConfig.SlidingDateRangeDelimitedValues;
@@ -330,8 +302,30 @@ namespace Rock.Reporting.DataFilter.Person
             var selectionConfig = SelectionConfig.Parse( selection );
             var selectedCourseGuid = selectionConfig.LearningCourseGuid;
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
+            var completionStatuses = selectionConfig.LearningCompletionStatuses;
             var rockContext = serviceInstance.Context as RockContext;
 
+            var participantQuery = GetFilterQuery( rockContext, selectedCourseGuid, dateRange, completionStatuses );
+
+            // Create the query that will be used for extracting the Person.
+            var personQuery = new PersonService( rockContext )
+                .Queryable()
+                .Where( p => participantQuery.Any( lp => lp.PersonId == p.Id ) );
+
+            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personQuery, parameterExpression, "p" );
+        }
+
+        /// <summary>
+        /// Gets the query with the settings applied. This method allows us to
+        /// ensure we use the same logic in the Data Filter and the Data Select.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="selectedCourseGuid">The unique identifier of the course.</param>
+        /// <param name="dateRange">The date range to limit results to.</param>
+        /// <param name="completionStatuses">The optional completion statuses that must be met.</param>
+        /// <returns>A queryable that matches the parameters.</returns>
+        internal static IQueryable<LearningParticipant> GetFilterQuery( RockContext rockContext, Guid? selectedCourseGuid, DateRange dateRange, List<LearningCompletionStatus> completionStatuses )
+        {
             var participantQuery = new LearningParticipantService( rockContext ).Queryable();
 
             if ( selectedCourseGuid.HasValue )
@@ -361,16 +355,11 @@ namespace Rock.Reporting.DataFilter.Person
             }
 
             // Filter to the selected statuses or to all available options (if nothing is selected).
-            var filterToStatuses = selectionConfig.LearningCompletionStatuses.Any() ?
-                selectionConfig.LearningCompletionStatuses :
-                CompletionStatusesWithCompletedDateValue;
+            var filterToStatuses = completionStatuses != null && completionStatuses.Any()
+                ? completionStatuses
+                : CompletionStatusesWithCompletedDateValue;
 
-            participantQuery = participantQuery.Where( c => filterToStatuses.Contains( c.LearningCompletionStatus ) );
-
-            // Create the query that will be used for extracting the Person.
-            var personQuery = new PersonService( rockContext ).Queryable().Where( p => participantQuery.Any( c => c.PersonId == p.Id ) );
-
-            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personQuery, parameterExpression, "p" );
+            return participantQuery.Where( c => filterToStatuses.Contains( c.LearningCompletionStatus ) );
         }
 
         #endregion
@@ -382,7 +371,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// Because the LearningCompletionDateTime filter only includes statuses that would set a value for LearningCompletionDateTime.
         /// Choosing all (available) has the same effect has choosing none. The results will be filtered to only those that are available.
         /// </remarks>
-        private readonly List<LearningCompletionStatus> CompletionStatusesWithCompletedDateValue = new List<LearningCompletionStatus> { LearningCompletionStatus.Pass, LearningCompletionStatus.Fail };
+        internal static readonly List<LearningCompletionStatus> CompletionStatusesWithCompletedDateValue = new List<LearningCompletionStatus> { LearningCompletionStatus.Pass, LearningCompletionStatus.Fail };
 
         /// <summary>
         /// Get and set the filter settings from DataViewFilter.Selection.

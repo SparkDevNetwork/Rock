@@ -16,10 +16,8 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -97,19 +95,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             ddlProgram.AddCssClass( "js-program" );
             filterControl.Controls.Add( ddlProgram );
-
-            // Only include active and tracked programs (non-tracked programs won't have LearningProgramCompletion records).
-            var programs = new LearningProgramService( new RockContext() ).Queryable().AsNoTracking()
-                .Where( p => p.IsActive && p.IsCompletionStatusTracked )
-                .ToList()
-                .OrderBy( a => a.Name );
-
-            ddlProgram.Items.Clear();
-            ddlProgram.Items.Insert( 0, new ListItem() );
-            foreach ( var program in programs )
-            {
-                ddlProgram.Items.Add( new ListItem( program.Name, program.Guid.ToString() ) );
-            }
+            SetProgramItems( ddlProgram );
 
             var slidingDateRangePicker = new SlidingDateRangePicker
             {
@@ -120,6 +106,28 @@ namespace Rock.Reporting.DataFilter.Person
             filterControl.Controls.Add( slidingDateRangePicker );
 
             return new Control[2] { ddlProgram, slidingDateRangePicker };
+        }
+
+        internal static void SetProgramItems( DropDownList ddlProgram )
+        {
+            // Only include active and tracked programs (non-tracked programs won't have LearningProgramCompletion records).
+            var programs = new LearningProgramService( new RockContext() )
+                .Queryable()
+                .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
+                .OrderBy( lp => lp.Name )
+                .Select( lp => new
+                {
+                    lp.Guid,
+                    lp.Name
+                } );
+
+            ddlProgram.Items.Clear();
+            ddlProgram.Items.Insert( 0, new ListItem() );
+
+            foreach ( var program in programs )
+            {
+                ddlProgram.Items.Add( new ListItem( program.Name, program.Guid.ToString() ) );
+            }
         }
 
         /// <inheritdoc/>
@@ -188,6 +196,26 @@ namespace Rock.Reporting.DataFilter.Person
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
             var rockContext = serviceInstance.Context as RockContext;
 
+            var completionQuery = GetFilterQuery( rockContext, selectedProgramGuid, dateRange );
+
+            // Create the query that will be used for extracting the Person.
+            var personQuery = new PersonService( rockContext )
+                .Queryable()
+                .Where( p => completionQuery.Any( lpc => lpc.PersonAlias.PersonId == p.Id ) );
+
+            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personQuery, parameterExpression, "p" );
+        }
+
+        /// <summary>
+        /// Gets the query with the settings applied. This method allows us to
+        /// ensure we use the same logic in the Data Filter and the Data Select.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="selectedProgramGuid">The unique identifier of the program.</param>
+        /// <param name="dateRange">The date range to limit results to.</param>
+        /// <returns>A queryable that matches the parameters.</returns>
+        internal static IQueryable<LearningProgramCompletion> GetFilterQuery( RockContext rockContext, Guid? selectedProgramGuid, DateRange dateRange )
+        {
             var completionQuery = new LearningProgramCompletionService( rockContext ).Queryable();
 
             if ( selectedProgramGuid.HasValue )
@@ -215,10 +243,7 @@ namespace Rock.Reporting.DataFilter.Person
                 completionQuery = completionQuery.Where( c => c.EndDate <= endDate );
             }
 
-            // Create the query that will be used for extracting the Person.
-            var personQuery = new PersonService( rockContext ).Queryable().Where( p => completionQuery.Any( c => c.PersonAlias.PersonId == p.Id ) );
-
-            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personQuery, parameterExpression, "p" );
+            return completionQuery;
         }
 
         #endregion

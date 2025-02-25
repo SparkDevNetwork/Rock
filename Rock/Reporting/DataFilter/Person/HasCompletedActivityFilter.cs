@@ -135,7 +135,7 @@ function() {
             ddlProgram.AddCssClass( "js-program" );
             ddlProgram.SelectedIndexChanged += Program_SelectedIndexChanged;
             filterControl.Controls.Add( ddlProgram );
-            HasCompletedCourseFilter.SetProgramItems( ddlProgram );
+            HasCompletedProgramFilter.SetProgramItems( ddlProgram );
 
             // Create the course drop down.
             var ddlCourse = new RockDropDownList
