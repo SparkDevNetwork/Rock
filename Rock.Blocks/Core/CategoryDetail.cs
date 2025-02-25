@@ -409,6 +409,13 @@ namespace Rock.Blocks.Core
             {
                 // Create a new entity.
                 entity = new Category();
+
+                var entityTypeGuid = GetAttributeValue( AttributeKey.EntityType ).AsGuidOrNull();
+                if ( entityTypeGuid.HasValue )
+                {
+                    entity.EntityTypeId = EntityTypeCache.Get( entityTypeGuid.Value ).Id;
+                }
+
                 entityService.Add( entity );
             }
 
