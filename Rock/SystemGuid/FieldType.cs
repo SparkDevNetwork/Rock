@@ -27,6 +27,11 @@ namespace Rock.SystemGuid
         public const string ACHIEVEMENT_TYPE = "593132CF-BA5D-462F-97F6-94DCC0BFFE6F";
 
         /// <summary>
+        /// Adaptive Message field type
+        /// </summary>
+        public const string ADAPTIVE_MESSAGE = "55CC533A-99D2-418F-B93E-73EA098ABDAE";
+
+        /// <summary>
         /// Address field type
         /// </summary>
         public const string ADDRESS = "0A495222-23B7-41D3-82C8-D484CDB75D17";

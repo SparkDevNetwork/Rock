@@ -1283,6 +1283,7 @@
     <Compile Include="Field\PersistedValues.cs" />
     <Compile Include="Field\ReferencedEntity.cs" />
     <Compile Include="Field\ReferencedProperty.cs" />
+    <Compile Include="Field\Types\AdaptiveMessageFieldType.cs" />
     <Compile Include="Field\Types\AIProviderFieldType.cs" />
     <Compile Include="Field\Types\ColorSelectorFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />

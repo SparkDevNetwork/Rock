@@ -402,23 +402,62 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                var clientService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var ccService = new CategoryClientService( rockContext, GetPerson( rockContext ) );
+                var amcService = new AdaptiveMessageCategoryService( rockContext );
                 var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
-
-                var items = clientService.GetCategorizedTreeItems( new CategoryItemTreeOptions
-                {
-                    ParentGuid = options.ParentValue.AsGuidOrNull(),
-                    GetCategorizedItems = true,
-                    EntityTypeGuid = EntityTypeCache.Get<Rock.Model.AdaptiveMessageCategory>().Guid,
-                    IncludeUnnamedEntityItems = true,
-                    IncludeCategoriesWithoutChildren = false,
-                    DefaultIconCssClass = "fa fa-list-ol",
-                    LazyLoad = false,
-                    SecurityGrant = grant
-                } );
+                var items = GetAdaptiveMessageChildren( options.ParentValue.AsGuidOrNull(), ccService, amcService, grant );
 
                 return Ok( items );
             }
+        }
+
+        private List<TreeItemBag> GetAdaptiveMessageChildren( Guid? parent, CategoryClientService ccService, AdaptiveMessageCategoryService amcService, SecurityGrant grant )
+        {
+            var items = ccService.GetCategorizedTreeItems( new CategoryItemTreeOptions
+            {
+                ParentGuid = parent,
+                GetCategorizedItems = true,
+                EntityTypeGuid = EntityTypeCache.Get<Rock.Model.AdaptiveMessageCategory>().Guid,
+                IncludeUnnamedEntityItems = true,
+                IncludeCategoriesWithoutChildren = false,
+                DefaultIconCssClass = "fa fa-list-ol",
+                LazyLoad = true,
+                SecurityGrant = grant
+            } );
+
+            var messages = new List<TreeItemBag>();
+
+            // Not a folder, so is actually an AdaptiveMessage, except it was loaded as an
+            // AdaptiveMessageCategory so we need to get the Guid of the actual AdaptiveMessage
+            foreach ( var item in items )
+            {
+                if ( !item.IsFolder )
+                {
+                    item.Type = "Item";
+                    // Load the AdaptiveMessageCategory.
+                    var category = amcService.Get( item.Value.AsGuid() );
+                    if ( category != null )
+                    {
+                        // Swap the Guid to the AdaptiveMessage Guid
+                        item.Value = category.AdaptiveMessage.Guid.ToString();
+                    }
+                }
+                else
+                {
+                    item.Type = "Category";
+                }
+
+                // Get Children
+                if ( item.HasChildren )
+                {
+                    item.Children = new List<TreeItemBag>();
+                    item.Children.AddRange( GetAdaptiveMessageChildren( item.Value.AsGuid(), ccService, amcService, grant ) );
+                }
+
+                messages.Add( item );
+            }
+
+            return messages;
         }
 
         #endregion
