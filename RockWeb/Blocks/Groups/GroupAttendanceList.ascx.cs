@@ -293,6 +293,7 @@ namespace RockWeb.Blocks.Groups
             var qryParams = PageParameters()?.AsEnumerable()
                 .ToDictionary( ( kv ) => kv.Key, ( kv ) => kv.Value.ToStringSafe() );
             qryParams.AddOrReplace( "GroupId", _group.Id.ToString() );
+            qryParams.AddOrReplace( "ReturnUrl", Request.RawUrl );
 
             int? id = e.RowKeyValues["Id"].ToString().AsIntegerOrNull();
             if ( id.HasValue )
@@ -338,6 +339,7 @@ namespace RockWeb.Blocks.Groups
             var qryParams = PageParameters()?.AsEnumerable()
                 .ToDictionary( ( kv ) => kv.Key, ( kv ) => kv.Value.ToStringSafe() );
             qryParams.AddOrReplace( "GroupId", _group.Id.ToString() );
+            qryParams.AddOrReplace( "ReturnUrl", Request.RawUrl );
 
             if ( ddlSchedule.Visible && ddlSchedule.SelectedValue != "0" )
             {
