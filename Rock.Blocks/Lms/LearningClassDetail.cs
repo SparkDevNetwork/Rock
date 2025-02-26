@@ -606,7 +606,7 @@ namespace Rock.Blocks.Lms
 
             var entity = entityKey.Length > 0 ? new Service<LearningClass>( RockContext ).GetSelect( entityKey, p => new { className = p.Name, courseName = p.LearningCourse.Name } ) : null;
 
-            if ( entity.className.IsNullOrWhiteSpace() )
+            if ( entity == null || entity.className.IsNullOrWhiteSpace() )
             {
                 return null;
             }
