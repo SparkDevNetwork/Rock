@@ -433,7 +433,8 @@
 
     const multipleChoicePointsEarned = computed((): number => {
         const availableMultipleChoicePoints = activityBag.value.points * (multipleChoiceWeight.value / 100);
-        return multipleChoiceGradePercent.value * availableMultipleChoicePoints;
+
+        return Math.round(multipleChoiceGradePercent.value * availableMultipleChoicePoints * 100) / 100;
     });
 
     const multipleChoicePointsPossible = computed((): number => {
