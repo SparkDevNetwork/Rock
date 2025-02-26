@@ -231,7 +231,7 @@ namespace Rock.Lms
                 var availablePoints = pointsPossible * sectionWeight;
                 var percentCorrect = correctMultipleChoiceItems / multipleChoiceItemCount;
                 var pointsEarned = availablePoints * percentCorrect;
-                return (int)pointsEarned;
+                return ( int ) Math.Round( pointsEarned );
             }
             catch ( Exception ex )
             {
