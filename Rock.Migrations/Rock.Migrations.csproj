@@ -216,6 +216,10 @@
     <Compile Include="Migrations\202502242059540_SMSConversationsSwap.designer.cs">
       <DependentUpon>202502242059540_SMSConversationsSwap.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202502261953147_UpdateLmsBlockSettingFieldTypes.cs" />
+    <Compile Include="Migrations\202502261953147_UpdateLmsBlockSettingFieldTypes.Designer.cs">
+      <DependentUpon>202502261953147_UpdateLmsBlockSettingFieldTypes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2599,6 +2603,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202502242059540_SMSConversationsSwap.resx">
       <DependentUpon>202502242059540_SMSConversationsSwap.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202502261953147_UpdateLmsBlockSettingFieldTypes.resx">
+      <DependentUpon>202502261953147_UpdateLmsBlockSettingFieldTypes.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
