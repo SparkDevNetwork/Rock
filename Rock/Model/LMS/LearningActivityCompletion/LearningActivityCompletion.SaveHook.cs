@@ -174,9 +174,8 @@ namespace Rock.Model
                     .GetStudentLearningPlan( Entity.StudentId )
                     .Select( a => new
                     {
-                        // Convert to decimal for proper precision when calculating grade percent.
-                        Possible = ( decimal ) a.LearningActivity.Points,
-                        Earned = ( decimal ) a.PointsEarned,
+                        Possible = a.LearningActivity.Points,
+                        Earned = a.PointsEarned,
 
                         // For determining overall class completion and calculating grade based on (facilitator) completed activities.
                         IsStudentOrFacilitatorCompleted = a.IsStudentCompleted || a.IsFacilitatorCompleted,
@@ -197,7 +196,8 @@ namespace Rock.Model
                         // grade the activity before it can be considered complete.
                         // Therefore; we are always evaluating grades until the class is considered over.
                         ClassEndDate = a.LearningActivity.LearningClass.LearningSemester.EndDate,
-                    } );
+                    } )
+                    .ToList();
 
                 var anyCompletionRecord = completionDetails.FirstOrDefault();
                 var participant = anyCompletionRecord.Student;
@@ -227,10 +227,14 @@ namespace Rock.Model
 
                 var gradingSystemId = completionDetails.FirstOrDefault().GradingSystemId;
 
-                var gradedActivities = completionDetails.Where( a => a.IsStudentOrFacilitatorCompleted && !a.RequiresGrading ).ToList();
+                var gradedActivities = completionDetails
+                    .Where( a => a.IsStudentOrFacilitatorCompleted
+                        && !a.RequiresGrading
+                        && a.Earned.HasValue )
+                    .ToList();
                 var possiblePoints = gradedActivities.Sum( a => a.Possible );
-                var earnedPoints = gradedActivities.Sum( a => a.Earned );
-                var gradePercent = possiblePoints > 0 ? earnedPoints / possiblePoints * 100 : 0;
+                var earnedPoints = gradedActivities.Sum( a => a.Earned.Value );
+                var gradePercent = possiblePoints > 0 ? earnedPoints / ( decimal ) possiblePoints * 100 : 0;
 
                 var gradeScaleEarned = new LearningGradingSystemScaleService( RockContext ).GetEarnedScale( gradingSystemId, gradePercent );
                 var currentGradePassFailStatus = gradeScaleEarned != null && gradeScaleEarned.IsPassing ? Enums.Lms.LearningCompletionStatus.Pass : Enums.Lms.LearningCompletionStatus.Fail;
