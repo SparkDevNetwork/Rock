@@ -81,6 +81,13 @@ namespace Rock.Blocks.Lms
         IsRequired = false,
         Order = 5 )]
 
+    [BooleanField( "Show Course Name in Breadcrumb",
+        Description = "If enabled, the breadcrumb will display the course name before the class name.",
+        Key =  AttributeKey.ShowCourseNameInBreadcrumb,
+        DefaultBooleanValue = false,
+        IsRequired = false,
+        Order = 5)]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "08b8da88-be2e-4237-883d-b9a2db5f6260" )]
@@ -97,6 +104,7 @@ namespace Rock.Blocks.Lms
             public const string ContentPageDetailPage = "ContentPageDetailPage";
             public const string ParticipantDetailPage = "ParticipantDetailPage";
             public const string ParentPage = "ParentPage";
+            public const string ShowCourseNameInBreadcrumb = "ShowCourseNameInBreadcrumb";
         }
 
         private static class PageParameterKey
@@ -596,9 +604,9 @@ namespace Rock.Blocks.Lms
             var programId = pageReference.GetPageParameter( PageParameterKey.LearningProgramId ) ?? "";
             var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningClassId ) ?? "";
 
-            var entityName = entityKey.Length > 0 ? new Service<LearningClass>( RockContext ).GetSelect( entityKey, p => p.Name ) : null;
+            var entity = entityKey.Length > 0 ? new Service<LearningClass>( RockContext ).GetSelect( entityKey, p => new { className = p.Name, courseName = p.LearningCourse.Name } ) : null;
 
-            if ( entityName.IsNullOrWhiteSpace() )
+            if ( entity.className.IsNullOrWhiteSpace() )
             {
                 return null;
             }
@@ -608,7 +616,10 @@ namespace Rock.Blocks.Lms
             var paramsToInclude = pageReference.Parameters.Where( kv => !excludedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
 
             var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
-            var breadCrumb = new BreadCrumbLink( entityName, breadCrumbPageRef );
+
+            // Vary the 'class name' breadcrumb based on the block setting.
+            var showCourseNameInBreadcrumb = GetAttributeValue( AttributeKey.ShowCourseNameInBreadcrumb ).AsBoolean();
+            var breadCrumb = ( showCourseNameInBreadcrumb ) ? new BreadCrumbLink( $"{entity.courseName} > {entity.className}", breadCrumbPageRef ) : new BreadCrumbLink( entity.className, breadCrumbPageRef );
 
             return new BreadCrumbResult
             {
