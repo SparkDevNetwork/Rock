@@ -224,32 +224,46 @@
                         </template>
                     </CustomSelect>
                     <div class="workspace-main-content">
-                        <div class="workspace-main-content-header">
-                            <h3 class="workspace-main-content-title">
-                                {{ viewingCompletionBag.activityBag?.name ?? "" }}
-                            </h3>
-                            <div class="activity-time">
-                                {{ getActivityTimeText(viewingCompletionBag) }}
+                        <div v-if="showCompletedScreen"
+                             class="course-completed-content">
+                            <div>
+                                <i class="fa fa-check-circle fa-5x text-success"></i>
                             </div>
-                        </div>
 
-                        <div class="facilitator-comments-container" v-if="viewingCompletionBag.facilitatorComment">
-                            <NotificationBox alertType="info">
-                                <div class="facilitator-comment-label">
-                                    Facilitator Comment:
-                                </div>
-                                <div class="facilitator-comment-text">
-                                    {{ viewingCompletionBag.facilitatorComment }}
-                                </div>
-                            </NotificationBox>
+                            <h2>Congratulations {{ currentPersonNickName }}!</h2>
+                            <p>You've successfully completed {{ config.courseName }}.</p>
 
                         </div>
-                        <activityTypeComponent
-                                               v-model:activityBag="viewingCompletionBag.activityBag"
-                                               v-model:completionBag="viewingCompletionBag"
-                                               :screenToShow="screenToShow"
-                                               @closed="onClosed"
-                                               @completed="onCompleted" />
+
+                        <template v-else>
+                            <div class="workspace-main-content-header">
+                                <h3 class="workspace-main-content-title">
+                                    {{ viewingCompletionBag.activityBag?.name ?? "" }}
+                                </h3>
+                                <div class="activity-time">
+                                    {{ getActivityTimeText(viewingCompletionBag) }}
+                                </div>
+                            </div>
+
+                            <div class="facilitator-comments-container" v-if="viewingCompletionBag.facilitatorComment">
+                                <NotificationBox alertType="info">
+                                    <div class="facilitator-comment-label">
+                                        Facilitator Comment:
+                                    </div>
+                                    <div class="facilitator-comment-text">
+                                        {{ viewingCompletionBag.facilitatorComment }}
+                                    </div>
+                                </NotificationBox>
+
+                            </div>
+
+                            <activityTypeComponent v-else
+                                                   v-model:activityBag="viewingCompletionBag.activityBag"
+                                                   v-model:completionBag="viewingCompletionBag"
+                                                   :screenToShow="screenToShow"
+                                                   @closed="onClosed"
+                                                   @completed="onCompleted" />
+                        </template>
                     </div>
 
                 </template>
@@ -276,9 +290,11 @@
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const store = useStore();
     onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
@@ -325,6 +341,7 @@
     const contentTabs = ref((config.contentPages ?? []).filter(c => (c.content ?? "").length > 0));
 
     const activityTypeComponent = ref<Component | null>(null);
+    const showCompletedScreen = ref(false);
 
     // #endregion
 
@@ -401,6 +418,10 @@
             .concat(contentTabs.value.map(t => t.title ?? "")
                 .filter(t => t.length > 0))
     );
+
+    const currentPersonNickName = computed((): string => {
+        return store.state.currentPerson?.nickName ?? "";
+    });
 
     // #endregion
 
@@ -564,6 +585,9 @@
 
         if (nextAvailableActivity) {
             viewingCompletionBag.value = nextAvailableActivity;
+        }
+        else {
+            showCompletedScreen.value = true;
         }
     }
 
