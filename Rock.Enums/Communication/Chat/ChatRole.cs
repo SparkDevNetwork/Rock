@@ -40,6 +40,6 @@ namespace Rock.Enums.Communication.Chat
         /// Represents a rock_admin role in the external chat system.
         /// </summary>
         [Description( "rock_admin" )]
-        Administrator = 3
+        Administrator = 2
     }
 }
