@@ -233,7 +233,7 @@ namespace Rock.Blocks.Finance
             var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( RockContext );
 
             var transactionTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
-            var savedAccount = financialPersonSavedAccountService.CreateAccountFromToken( MyWellGateway, options, RequestContext.CurrentPerson, transactionTypeId, out var errorMessage );
+            var savedAccount = financialPersonSavedAccountService.CreateAccountFromToken( MyWellGateway, options, RequestContext.CurrentPerson, transactionTypeId, this.PageCache?.Layout?.Site?.SiteType ?? SiteType.Web, out var errorMessage );
 
             if ( savedAccount == null )
             {
