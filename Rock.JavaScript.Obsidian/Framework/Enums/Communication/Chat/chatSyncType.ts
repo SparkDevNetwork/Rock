@@ -21,26 +21,31 @@
 // </copyright>
 //
 
-/** The role of a chat individual, to be synchronized with the external chat system. */
-export const ChatRole = {
-    /** Represents a rock_user role in the external chat system. */
-    User: 0,
+/** The types of chat synchronization operations that can be performed. */
+export const ChatSyncType = {
+    /** Skip, as no changes are needed. */
+    Skip: 0,
 
-    /** Represents a rock_moderator role in the external chat system. */
-    Moderator: 1,
+    /** Create a new record. */
+    Create: 1,
 
-    /** Represents a rock_admin role in the external chat system. */
-    Administrator: 2
+    /** Update an existing record. */
+    Update: 2,
+
+    /** Delete an existing record. */
+    Delete: 3
 } as const;
 
-/** The role of a chat individual, to be synchronized with the external chat system. */
-export const ChatRoleDescription: Record<number, string> = {
-    0: "rock_user",
+/** The types of chat synchronization operations that can be performed. */
+export const ChatSyncTypeDescription: Record<number, string> = {
+    0: "Skip",
 
-    1: "rock_moderator",
+    1: "Create",
 
-    2: "rock_admin"
+    2: "Update",
+
+    3: "Delete"
 };
 
-/** The role of a chat individual, to be synchronized with the external chat system. */
-export type ChatRole = typeof ChatRole[keyof typeof ChatRole];
+/** The types of chat synchronization operations that can be performed. */
+export type ChatSyncType = typeof ChatSyncType[keyof typeof ChatSyncType];
