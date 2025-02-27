@@ -224,6 +224,10 @@
     <Compile Include="Migrations\202502270302319_AddDefaultChatGroupTypeRoles.Designer.cs">
       <DependentUpon>202502270302319_AddDefaultChatGroupTypeRoles.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202502272125461_UpdateLMSClassPages.cs" />
+    <Compile Include="Migrations\202502272125461_UpdateLMSClassPages.Designer.cs">
+      <DependentUpon>202502272125461_UpdateLMSClassPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2613,6 +2617,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202502270302319_AddDefaultChatGroupTypeRoles.resx">
       <DependentUpon>202502270302319_AddDefaultChatGroupTypeRoles.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202502272125461_UpdateLMSClassPages.resx">
+      <DependentUpon>202502272125461_UpdateLMSClassPages.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
