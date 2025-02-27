@@ -135,6 +135,32 @@ namespace Rock.Model
             return Queryable().Where( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) && t.Name == name );
         }
 
+        /// <summary>
+        /// Gets a queryable collection of <see cref="Group"/>s that are chat-enabled.
+        /// </summary>
+        /// <param name="shouldTrack">Whether entity framework should track these <see cref="Group"/>s.</param>
+        /// <returns>A queryable collection of <see cref="Group"/>s that are chat-enabled.</returns>
+        public IQueryable<Group> GetChatEnabled( bool shouldTrack = false )
+        {
+            var qry = Queryable().Where( g =>
+                g.GroupType.IsChatAllowed
+                && (
+                    g.GroupType.IsChatEnabledForAllGroups
+                    || (
+                        g.IsChatEnabledOverride.HasValue
+                        && g.IsChatEnabledOverride.Value
+                    )
+                )
+            );
+
+            if ( !shouldTrack )
+            {
+                qry = qry.AsNoTracking();
+            }
+
+            return qry;
+        }
+
         #region Geospatial Queries
 
         /// <summary>

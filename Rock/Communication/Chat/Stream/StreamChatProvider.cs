@@ -456,7 +456,7 @@ namespace Rock.Communication.Chat
 
         /// <inheritdoc/>
         /// <exception cref="AggregateException">If any roles fail to be created.</exception>
-        public async Task EnsureAppRolesExistAsync()
+        public async Task<bool> EnsureAppRolesExistAsync()
         {
             var operationName = nameof( EnsureAppRolesExistAsync ).SplitCase();
 
@@ -466,6 +466,7 @@ namespace Rock.Communication.Chat
             );
 
             var existingRoles = listRolesResponse?.Roles ?? new List<CustomRole>();
+            var existingRequiredRoles = new List<string>();
 
             // Don't let individual failures cause all to fail.
             var exceptions = new List<Exception>();
@@ -473,14 +474,24 @@ namespace Rock.Communication.Chat
             foreach ( var requiredRole in ChatHelper.RequiredAppRoles )
             {
                 // The Stream client will throw an exception if the role already exists, so we'll do our best to avoid this.
-                if ( !existingRoles.Any( r => r.Name == requiredRole ) )
+                var existingRole = existingRoles.FirstOrDefault( r => r.Name == requiredRole );
+                if ( existingRole != null )
+                {
+                    existingRequiredRoles.Add( requiredRole );
+                }
+                else
                 {
                     try
                     {
-                        await RetryAsync(
+                        var roleResponse = await RetryAsync(
                             async () => await PermissionClient.CreateRoleAsync( requiredRole ),
                             operationName
                         );
+
+                        if ( roleResponse?.Role?.Name == requiredRole )
+                        {
+                            existingRequiredRoles.Add( requiredRole );
+                        }
                     }
                     catch ( Exception ex )
                     {
@@ -493,10 +504,13 @@ namespace Rock.Communication.Chat
             {
                 throw new AggregateException( $"{LogMessagePrefix} {operationName} failed.", exceptions );
             }
+
+            // Even though no exceptions were thrown, let's verify that all required roles actually exist.
+            return ChatHelper.RequiredAppRoles.All( r => existingRequiredRoles.Contains( r ) );
         }
 
         /// <inheritdoc/>
-        public async Task EnsureAppGrantsExistAsync()
+        public async Task<bool> EnsureAppGrantsExistAsync()
         {
             var operationName = nameof( EnsureAppGrantsExistAsync ).SplitCase();
 
@@ -566,6 +580,9 @@ namespace Rock.Communication.Chat
                     operationName
                 );
             }
+
+            // Assume if we got this far - and an exception wasn't thrown - all app grants exist.
+            return true;
         }
 
         #endregion Roles & Permission Grants
@@ -997,7 +1014,6 @@ namespace Rock.Communication.Chat
             // We'll get and delete these channels in batches of 30, as the query max of 30 is the limiting factor.
             // https://getstream.io/chat/docs/dotnet-csharp/query_channels/#query-options
             var pageSize = 30;
-            var offset = 0;
             var channelsRetrievedCount = 0;
 
             // Don't let individual batch failures cause all to fail.
@@ -1006,7 +1022,6 @@ namespace Rock.Communication.Chat
             do
             {
                 var queryChannelsOptions = new QueryChannelsOptions { MemberLimit = 0, MessageLimit = 0 }
-                    .WithOffset( offset )
                     .WithLimit( pageSize )
                     .WithFilter(
                         new Dictionary<string, object>
@@ -1057,10 +1072,6 @@ namespace Rock.Communication.Chat
                     // Don't get stuck in an infinite loop, but try at least once more to see if we can get past this
                     // failed batch.
                     channelsRetrievedCount = pageSize;
-                }
-                finally
-                {
-                    offset += channelsRetrievedCount;
                 }
             }
             while ( channelsRetrievedCount == pageSize );
@@ -1442,7 +1453,7 @@ namespace Rock.Communication.Chat
         #region Chat Users
 
         /// <inheritdoc/>
-        public async Task EnsureSystemUserExistsAsync()
+        public async Task<bool> EnsureSystemUserExistsAsync()
         {
             var retries = 0;
             var maxRetries = 5;
@@ -1451,7 +1462,11 @@ namespace Rock.Communication.Chat
             bool shouldRetry;
 
             var operationName = nameof( EnsureSystemUserExistsAsync ).SplitCase();
-            var request = TryConvertToStreamUserRequest( ChatHelper.GetChatSystemUser() );
+
+            var chatSystemUser = ChatHelper.GetChatSystemUser();
+            var request = TryConvertToStreamUserRequest( chatSystemUser );
+
+            var systemUserExists = false;
 
             do
             {
@@ -1459,10 +1474,15 @@ namespace Rock.Communication.Chat
 
                 try
                 {
-                    await RetryAsync(
+                    var upsertResponse = await RetryAsync(
                         async () => await UserClient.UpsertAsync( request ),
                         operationName
                     );
+
+                    systemUserExists = upsertResponse
+                        ?.Users
+                        ?.Values
+                        ?.Any( u => u?.Id == chatSystemUser.Key ) == true;
                 }
                 catch ( StreamChatException ex ) when ( ex.ErrorCode == 4 )
                 {
@@ -1484,6 +1504,8 @@ namespace Rock.Communication.Chat
                 }
             }
             while ( shouldRetry );
+
+            return systemUserExists;
         }
 
         /// <inheritdoc/>
@@ -2020,6 +2042,8 @@ namespace Rock.Communication.Chat
                 return null;
             }
 
+            var badges = user.GetDataOrDefault( UserDataKey.Badges, new List<ChatBadge>() ) ?? new List<ChatBadge>();
+
             return new ChatUser
             {
                 Key = user.Id,
@@ -2028,7 +2052,7 @@ namespace Rock.Communication.Chat
                 IsAdmin = user.Role.Equals( ChatRole.Administrator.GetDescription() ),
                 IsProfileVisible = user.GetDataOrDefault( UserDataKey.IsProfileVisible, false ),
                 IsOpenDirectMessageAllowed = user.GetDataOrDefault( UserDataKey.IsOpenDirectMessageAllowed, false ),
-                Badges = user.GetDataOrDefault( UserDataKey.Badges, new List<ChatBadge>() )
+                Badges = badges
             };
         }
 

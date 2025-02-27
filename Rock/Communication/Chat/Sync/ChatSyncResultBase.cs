@@ -14,27 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
-
-using Rock.Communication.Chat.DTO;
-using Rock.Model;
 
 namespace Rock.Communication.Chat.Sync
 {
     /// <summary>
-    /// Represents the current <see cref="DTO.ChatBadge"/> <see cref="Person"/> roster for a given <see cref="ChatUser"/>
-    /// synchronization run.
+    /// A base class that represents common result values for a chat synchronization operation.
     /// </summary>
-    internal class ChatBadgeRoster
+    internal abstract class ChatSyncResultBase
     {
         /// <summary>
-        /// Gets or sets the <see cref="DTO.ChatBadge"/> to be assigned.
+        /// Gets or sets the exception - if any - that occurred during the synchronization operation.
         /// </summary>
-        public ChatBadge ChatBadge { get; set; }
+        public Exception Exception { get; set; }
 
         /// <summary>
-        /// Gets or sets the identifiers of the <see cref="Person"/>s to who this <see cref="ChatBadge"/> should be assigned.
+        /// Gets a value indicating whether an exception occurred during the synchronization operation.
         /// </summary>
-        public HashSet<int> PersonIds { get; set; }
+        public bool HasException => Exception != null;
+
+        /// <summary>
+        /// Gets the inner sync results (e.g. the results of groups' members being synced).
+        /// </summary>
+        public List<ChatSyncResultBase> InnerResults { get; } = new List<ChatSyncResultBase>();
     }
 }

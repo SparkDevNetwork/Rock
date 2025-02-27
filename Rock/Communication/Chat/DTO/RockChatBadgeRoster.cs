@@ -14,29 +14,26 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Communication.Chat.DTO;
+using System.Collections.Generic;
+
 using Rock.Model;
 
-namespace Rock.Communication.Chat.Sync
+namespace Rock.Communication.Chat.DTO
 {
     /// <summary>
-    /// Represents the result of creating or updating a <see cref="ChatUser"/> within the external chat system.
+    /// Represents the current <see cref="DTO.ChatBadge"/> <see cref="Person"/> roster for a given <see cref="ChatUser"/>
+    /// synchronization run.
     /// </summary>
-    internal class CreateOrUpdateChatUserResult
+    internal class RockChatBadgeRoster
     {
         /// <summary>
-        /// Gets or sets the identifier of the <see cref="Person"/> that was created or updated.
+        /// Gets or sets the <see cref="DTO.ChatBadge"/> to be assigned.
         /// </summary>
-        public int PersonId { get; set; }
+        public ChatBadge ChatBadge { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="ChatUser.Key"/> that represents this person in the external chat system.
+        /// Gets or sets the identifiers of the <see cref="Person"/>s to who this <see cref="ChatBadge"/> should be assigned.
         /// </summary>
-        public string ChatUserKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets whether this <see cref="ChatUser"/> belongs to the `rock_admin` role in the external chat system.
-        /// </summary>
-        public bool IsAdmin { get; set; }
+        public HashSet<int> PersonIds { get; set; }
     }
 }

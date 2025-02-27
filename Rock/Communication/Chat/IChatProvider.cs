@@ -53,14 +53,20 @@ namespace Rock.Communication.Chat
         /// Ensures that all required, app-scoped roles exist in the external chat system. Creates any missing roles if
         /// necessary.
         /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        Task EnsureAppRolesExistAsync();
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see langword="bool"/> value indicating whether
+        /// the app roles exist in the external chat system.
+        /// </returns>
+        Task<bool> EnsureAppRolesExistAsync();
 
         /// <summary>
         /// Ensures that all required, app-scoped permission grants exist in the external chat system.
         /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        Task EnsureAppGrantsExistAsync();
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see langword="bool"/> value indicating whether
+        /// the app app-scoped permission grants exist in the external chat system.
+        /// </returns>
+        Task<bool> EnsureAppGrantsExistAsync();
 
         #endregion Roles & Permission Grants
 
@@ -231,8 +237,11 @@ namespace Rock.Communication.Chat
         /// Ensures that the system user - responsible for performing synchronization tasks - exists in the external
         /// chat system. Creates the user if necessary.
         /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        Task EnsureSystemUserExistsAsync();
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see langword="bool"/> value indicating whether
+        /// the system user exists in the external chat system.
+        /// </returns>
+        Task<bool> EnsureSystemUserExistsAsync();
 
         /// <summary>
         /// Gets a list of <see cref="ChatUser"/>s from the external chat system that match the provided keys.

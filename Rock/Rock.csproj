@@ -721,10 +721,14 @@
     <Compile Include="Communication\Chat\DTO\RockChatUserPerson.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatUserPersonKey.cs" />
     <Compile Include="Communication\Chat\Exceptions\ChatChannelNotFoundException.cs" />
-    <Compile Include="Communication\Chat\Sync\ChatBadgeRoster.cs" />
+    <Compile Include="Communication\Chat\DTO\RockChatBadgeRoster.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatSyncBooleanResult.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatSyncCreateOrUpdateUsersResult.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatSyncCrudResult.cs" />
     <Compile Include="Communication\Chat\Sync\RockToChatSyncConfig.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatSyncResultBase.cs" />
     <Compile Include="Communication\Chat\Sync\SyncGroupMemberToChatCommand.cs" />
-    <Compile Include="Communication\Chat\Sync\CreateOrUpdateChatUserResult.cs" />
+    <Compile Include="Communication\Chat\Sync\ChatSyncCreateOrUpdateUserResult.cs" />
     <Compile Include="Communication\Chat\Sync\SyncChannelMembersToChatCommand.cs" />
     <Compile Include="Communication\Chat\Sync\SyncPersonToChatCommand.cs" />
     <Compile Include="Core\AttributeDisplaySettings.cs" />
@@ -1303,6 +1307,7 @@
     <Compile Include="Financial\IScheduledNumberOfPaymentsGateway.cs" />
     <Compile Include="Financial\ISettlementGateway.cs" />
     <Compile Include="Jobs\CalculatePeerNetwork.cs" />
+    <Compile Include="Jobs\ChatSync.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17AddAndUpdatePeerNetworkIndexes.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdateHistoryTableEntityTypeIdIndexPostMigration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdatePersonPrimaryAliasGuid.cs" />
