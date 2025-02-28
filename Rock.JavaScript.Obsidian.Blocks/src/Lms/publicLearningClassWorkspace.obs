@@ -616,7 +616,7 @@
         if (nextAvailableActivity) {
             viewingCompletionBag.value = nextAvailableActivity;
         }
-        else {
+        else if (activities.value.every(a => a.completedDate)) {
             showCompletedScreen.value = true;
         }
     }
