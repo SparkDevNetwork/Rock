@@ -69,7 +69,7 @@
                     </div>
                 </div>
                 <div class="assessment-items-container" v-dragSource="dragOptions" v-dragTarget="dragOptions">
-                    <div class="well well-sm assessment-item-container" v-for="(item, index) in items">
+                    <div class="well well-sm assessment-item-container" v-for="(item, index) in items" :key="item.uniqueId">
                         <div class="assessment-item assessment-item-reorder-section">
                             <i class="fa fa-bars reorder-handle" :style="reorderIconStyle"></i>
 
