@@ -115,7 +115,7 @@ namespace Rock.Blocks.Cms
             {
                 SiteOptions = Web.Cache.SiteCache
                     .All()
-                    .Where( site => site.EnabledForShortening )
+                    .Where( site => site.EnabledForShortening && site.SiteType == SiteType.Web )
                     .OrderBy( site => site.Name )
                     .Select( site => new ListItemBag
                     {
