@@ -90,7 +90,7 @@
 
     const question = ref(props.modelValue.question ?? "");
     const helpText = ref(props.modelValue.helpText ?? "");
-    const answers = ref(props.modelValue.answers ?? []);
+    const answers = ref(props.modelValue.answers ?? ["", "", ""]);
     const response = ref(props.modelValue.response ?? "");
     const correctAnswer = ref(props.modelValue.correctAnswer ?? "");
     const isCorrect = computed(() => response.value === correctAnswer.value);
