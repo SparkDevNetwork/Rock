@@ -566,6 +566,11 @@ namespace Rock.Jobs
         {
             if ( activity.AvailabilityCriteria == AvailabilityCriteria.AfterPreviousCompleted )
             {
+                if ( previousActivity == null )
+                {
+                    return false;
+                }
+
                 var previousCompletion = completionsForClass
                     .Where( lac => lac.StudentId == student.Id
                         && lac.LearningActivityId == previousActivity.Id )
