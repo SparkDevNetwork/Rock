@@ -244,7 +244,7 @@
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { AssessmentItem, AssessmentItemType } from "./assessmentLearningActivity.partial";
-    import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder, DragOperation } from "@Obsidian/Directives/dragDrop";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
     import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
     import { newGuid } from "@Obsidian/Utility/guid";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
@@ -328,15 +328,10 @@
     }
 
     // Add drag reorder functionality, updating the order on successful drop.
-    const dragOptions = useDragReorder(items);
-    dragOptions.dragDrop = (operation: DragOperation) => {
-        const sourceIndex = Number(operation.sourceIndex);
-        const targetIndex = Number(operation.targetIndex);
-
-        // Swap the order of the source and target.
-        items.value[sourceIndex].order = targetIndex;
-        items.value[targetIndex].order = sourceIndex;
-    };
+    const dragOptions = useDragReorder(items, () => {
+        // Update the order of the items based on the current order.
+        items.value.forEach((item, index) => item.order = index);
+    });
 
     const typeNamesWithSummaryScreen = [AssessmentItemType.MultipleChoice, AssessmentItemType.ShortAnswer];
 
@@ -428,19 +423,6 @@
 
                 return i;
             }));
-    }
-
-    /**
-     * If the validity of the current sum of weights is out of sync
-     * force all (weight) controls to update.
-     * */
-    function handleMultiFieldWeightValidity(): void {
-        const isCurrentlyValid = sumOfAllWeights.value === 100;
-
-        if (isCurrentlyValid !== areWeightsValid.value) {
-            multiFieldWeightStateKey.value = newGuid();
-            areWeightsValid.value = isCurrentlyValid;
-        }
     }
 
     function onCompleted(): void {
@@ -605,12 +587,6 @@
 
     /** Gets the combined value of all weights. */
     const sumOfAllWeights = computed(() => allWeights.value?.reduce((prev, cur) => (prev ?? 0) + (cur ?? 0)) ?? 0);
-
-    /**
-     * Tracks the previous state of the weights validity to ensure all necessary
-     * controls have their validity updated as needed.
-     */
-    const areWeightsValid = ref(sumOfAllWeights.value === 100);
 
     /** The error classes to apply to the weight number box. */
     const weightErrorClasses = computed((): string[] => {
