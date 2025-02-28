@@ -51,6 +51,10 @@
                     {{ row.campusStatus }}
                 </div>
             </template>
+
+            <template #skeleton>
+                <div class="skeleton skeleton-text skeleton-rounded" />
+            </template>
         </Column>
 
         <BooleanColumn name="isActive"
