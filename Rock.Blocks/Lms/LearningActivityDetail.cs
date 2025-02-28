@@ -107,6 +107,7 @@ namespace Rock.Blocks.Lms
             {
                 Name = component.Value.Value.Name,
                 ComponentUrl = component.Value.Value.ComponentUrl,
+                ComponentConfiguration = component.Value.Value.GetActivityConfiguration( null, new Dictionary<string, string>(), PresentedFor.Configuration, RockContext, RequestContext ),
                 HighlightColor = component.Value.Value.HighlightColor,
                 IconCssClass = component.Value.Value.IconCssClass,
                 IdKey = component.Value.Value.EntityType.IdKey,
@@ -238,23 +239,6 @@ namespace Rock.Blocks.Lms
                 IsFacilitator = isClassFacilitator
             };
 
-            var activityComponentBag = new LearningActivityComponentBag();
-            if ( entity.ActivityComponentId > 0 )
-            {
-                var componentEntityType = EntityTypeCache.Get( entity.ActivityComponentId );
-                var activityComponent = LearningActivityContainer.GetComponent( componentEntityType.Name );
-
-                activityComponentBag = new LearningActivityComponentBag
-                {
-                    ComponentUrl = activityComponent?.ComponentUrl,
-                    Guid = activityComponent?.EntityType.Guid.ToString(),
-                    HighlightColor = activityComponent?.HighlightColor,
-                    IconCssClass = activityComponent?.IconCssClass,
-                    IdKey = activityComponent?.EntityType.IdKey,
-                    Name = activityComponent?.Name,
-                };
-            }
-
             var classId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId );
             var isFirstClassActivity = !learningActivityService.Queryable().Any( a => a.LearningClassId == classId );
             var isNew = entity.Id == 0;
@@ -271,8 +255,6 @@ namespace Rock.Blocks.Lms
             return new LearningActivityBag
             {
                 IdKey = entity.IdKey,
-                ActivityComponent = activityComponentBag,
-                ActivityComponentSettingsJson = entity.ActivityComponentSettingsJson,
                 AssignTo = entity.AssignTo,
                 AvailabilityCriteria = availabilityCriteria,
                 AvailableDateCalculated = entity.AvailableDateCalculated,
@@ -306,13 +288,13 @@ namespace Rock.Blocks.Lms
         private LearningActivity GetDefaultEntity()
         {
             /*
-	            12/12/2024 - JC
+                12/12/2024 - JC
 
-	            We must load the parent LearningClass for new records.
+                We must load the parent LearningClass for new records.
                 When the authorization is checked the LearningClass (the ParentAuthority)
                 will be responsible for approving/denying access (see LearningActvity.IsAuthorized).
 
-	            Reason: ParentAuthority (LearningClass) will be checked for authorization.
+                Reason: ParentAuthority (LearningClass) will be checked for authorization.
             */
             var learningClass = new LearningClassService( RockContext ).Get(
                 PageParameter( PageParameterKey.LearningClassId ),
@@ -354,6 +336,26 @@ namespace Rock.Blocks.Lms
 
             var bag = GetCommonEntityBag( entity );
 
+            if ( entity.ActivityComponentId > 0 )
+            {
+                var componentEntityType = EntityTypeCache.Get( entity.ActivityComponentId );
+                var activityComponent = LearningActivityContainer.GetComponent( componentEntityType.Name );
+                var componentData = entity.ActivityComponentSettingsJson.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+                bag.ActivityComponent = new LearningActivityComponentBag
+                {
+                    ComponentUrl = activityComponent.ComponentUrl,
+                    ComponentConfiguration = activityComponent.GetActivityConfiguration( entity, componentData, PresentedFor.Configuration, RockContext, RequestContext ),
+                    Guid = activityComponent.EntityType.Guid.ToString(),
+                    HighlightColor = activityComponent.HighlightColor,
+                    IconCssClass = activityComponent.IconCssClass,
+                    IdKey = activityComponent.EntityType.IdKey,
+                    Name = activityComponent.Name,
+                };
+
+                bag.ComponentSettings = activityComponent.GetComponentSettings( entity, componentData, RockContext, RequestContext );
+            }
+
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
@@ -380,9 +382,6 @@ namespace Rock.Blocks.Lms
                     if ( componentEntityTypeId.HasValue )
                         entity.ActivityComponentId = componentEntityTypeId.Value;
                 } );
-
-            box.IfValidProperty( nameof( box.Bag.ActivityComponentSettingsJson ),
-                () => entity.ActivityComponentSettingsJson = box.Bag.ActivityComponentSettingsJson );
 
             box.IfValidProperty( nameof( box.Bag.AssignTo ),
                 () => entity.AssignTo = box.Bag.AssignTo );
@@ -435,6 +434,18 @@ namespace Rock.Blocks.Lms
 
                     entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
+
+            // Update this last in case the component needs to access any of the
+            // updated entity property values.
+            box.IfValidProperty( nameof( box.Bag.ComponentSettings ), () =>
+            {
+                var entityType = EntityTypeCache.Get( entity.ActivityComponentId );
+                var component = LearningActivityContainer.GetComponent( entityType.Name );
+                var componentData = component.GetComponentSettings( entity, box.Bag.ComponentSettings, RockContext, RequestContext )
+                    ?? new Dictionary<string, string>();
+
+                entity.ActivityComponentSettingsJson = componentData.ToJson();
+            } );
 
             return true;
         }

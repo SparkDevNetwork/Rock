@@ -1,6 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel v-if="screenToShow !== ComponentScreen.Completion" :title="panelTitle" :hasFullscreen="false" :class="containerClasses">
+    <Panel v-if="screenToShow !== ComponentScreen.Completion"
+           :title="panelTitle"
+           :hasFullscreen="false"
+           :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
             <div class="assessment-term-section">
                 <TextBox v-model="assessmentTerm"
@@ -75,13 +78,13 @@
                             </button>
                         </div>
                         <div class="assessment-item assessment-item-type-section">
-                            <DropDownList v-model="item.typeName" :disabled="disabled" :items="itemTypes" label="Type" :show-blank-item="false" />
+                            <DropDownList :modelValue="item.type?.toString() ?? ''" @update:modelValue="onItemTypeChanged(item, $event)" :disabled="disabled" :items="itemTypes" label="Type" :show-blank-item="false" />
                         </div>
                         <div class="assessment-item assessment-item-configuration-section">
-                            <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="items[index]" :disabled="disabled" :screenToShow="screenToShow" rules="required" />
-                            <AssessmentItemSection v-if="item.typeName === 'Section'" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
+                            <AssessmentItemMultipleChoice v-if="item.type === AssessmentItemType.MultipleChoice" v-model="items[index]" :disabled="disabled" :screenToShow="screenToShow" rules="required" />
+                            <AssessmentItemSection v-if="item.type === AssessmentItemType.Section" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
                             <AssessmentItemShortAnswer
-                                                       v-if="item.typeName === 'Short Answer'"
+                                                       v-if="item.type === AssessmentItemType.ShortAnswer"
                                                        :allAssessmentWeightsSumTo100="weightsSumTo100"
                                                        :weightsValidationKey="multiFieldWeightStateKey"
                                                        v-model="items[index]"
@@ -127,7 +130,7 @@
             </div>
 
             <div class="assessment-items-container" v-for="(item, index) of completedItems">
-                <div class="well well-sm assessment-item-container-scoring" v-if="item.typeName === 'Short Answer'">
+                <div class="well well-sm assessment-item-container-scoring" v-if="item.type === AssessmentItemType.ShortAnswer">
                     <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" :hasBeenGraded="hasBeenGraded" />
                 </div>
             </div>
@@ -138,9 +141,9 @@
                 <h4 class="summary-title">Assessment Summary</h4>
                 <div class="summary-sub-title">Below is a review of how {{ assignee?.name ?? defaultAssigneeDescription }} completed this {{ assessmentTerm }}.</div>
                 <div class="assessment-item" v-for="(item, index) in completedItems">
-                    <div class="well well-sm assessment-item-container" v-if="typeNamesWithSummaryScreen.includes(item.typeName)">
-                        <AssessmentItemMultipleChoice v-if="item.typeName === 'Multiple Choice'" v-model="completedItems[index]" :screenToShow="screenToShow" />
-                        <AssessmentItemShortAnswer v-if="item.typeName === 'Short Answer'" v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" :hasBeenGraded="hasBeenGraded" />
+                    <div class="well well-sm assessment-item-container" v-if="typeNamesWithSummaryScreen.includes(item.type)">
+                        <AssessmentItemMultipleChoice v-if="item.type === AssessmentItemType.MultipleChoice" v-model="completedItems[index]" :screenToShow="screenToShow" />
+                        <AssessmentItemShortAnswer v-if="item.type === AssessmentItemType.ShortAnswer" v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" :hasBeenGraded="hasBeenGraded" />
                     </div>
                 </div>
             </div>
@@ -154,20 +157,19 @@
 
     <div class="assessment-content" v-if="screenToShow === ComponentScreen.Completion">
         <fieldset v-if="isStudentAssignedAndIncomplete">
-
-            <StructuredContentEditor :disabled="true" v-model="header" />
+            <div v-if="header" v-html="header"></div>
 
             <div class="assessment-item-container assessment-items-section">
                 <div class="assessment-item" v-for="(item, index) in completedItems">
-                    <template v-if="item.typeName === 'Multiple Choice'">
+                    <template v-if="item.type === AssessmentItemType.MultipleChoice">
                         <AssessmentItemMultipleChoice v-model="completedItems[index]" :screenToShow="screenToShow" />
                     </template>
 
-                    <template v-if="item.typeName === 'Section'">
+                    <template v-if="item.type === AssessmentItemType.Section">
                         <AssessmentItemSection v-model="completedItems[index]" :screenToShow="screenToShow" />
                     </template>
 
-                    <template v-if="item.typeName === 'Short Answer'">
+                    <template v-if="item.type === AssessmentItemType.ShortAnswer">
                         <AssessmentItemShortAnswer v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
                     </template>
                 </div>
@@ -181,6 +183,7 @@
                 <RockButton :btnType="BtnType.Primary" @click="onCompleted" :autoDisable="true" :disabled="unansweredQuestions || completeClicked">Complete</RockButton>
             </div>
         </fieldset>
+
         <div class="assessment-content" v-if="isStudentAssignedAndCompleted">
             <div class="student-completion-summary-header">
                 <h2> {{ activityBag.activityComponent?.name }} </h2>
@@ -241,13 +244,29 @@
     import AssessmentItemSection from "./assessmentItemSection.obs";
     import AssessmentItemShortAnswer from "./assessmentItemShortAnswer.obs";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
-    import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
-    import { AssessmentActivityCompletion, AssessmentActivityConfiguration, AssessmentActivityDefaults, AssessmentItem, AssessmentItemType, MultipleChoiceItem, ShortAnswerItem } from "./assessmentLearningActivity.partial";
+    import { AssessmentItem, AssessmentItemType } from "./assessmentLearningActivity.partial";
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder, DragOperation } from "@Obsidian/Directives/dragDrop";
     import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
     import { newGuid } from "@Obsidian/Utility/guid";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+
+    const enum SettingKey {
+        AssessmentTerm = "assessmentTerm",
+        Header = "header",
+        Items = "items",
+        MultipleChoiceWeight = "multipleChoiceWeight",
+        ShowMissedQuestionsOnResults = "showMissedQuestionsOnResults",
+        ShowResultsOnCompletion = "showResultsOnCompletion",
+    }
+
+    const enum CompletionKey {
+        CompletedItems = "completedItems",
+        MultipleChoiceWeight = "multipleChoiceWeight",
+    }
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -285,26 +304,26 @@
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
-        assessmentTerm,
         assignee,
         assignTo,
-        completedItems,
         containerClasses,
         defaultAssigneeDescription,
         hasBeenGraded,
-        header,
-        items,
-        multipleChoiceWeight,
-        multipleChoiceWeightAtCompletion,
         panelTitle,
-        showMissedQuestionsOnResults,
-        showResultsOnCompletion,
-    } = useLearningComponent<AssessmentActivityConfiguration, AssessmentActivityCompletion>(
+    } = useLearningComponent(
         activityBag,
         completionBag,
-        screenToShow,
-        new AssessmentActivityDefaults()
+        screenToShow
     );
+
+    const assessmentTerm = ref("");
+    const header = ref("");
+    const items = ref<(AssessmentItem)[]>([]);
+    const multipleChoiceWeight = ref(0);
+    const showMissedQuestionsOnResults = ref(false);
+    const showResultsOnCompletion = ref(false);
+    const completedItems = ref<(AssessmentItem)[]>([]);
+    const multipleChoiceWeightAtCompletion = ref(0);
 
     // If there are assessment items, sort them based on order.
     if (items?.value) {
@@ -322,20 +341,64 @@
         items.value[targetIndex].order = sourceIndex;
     };
 
-    const typeNamesWithSummaryScreen = ref([AssessmentItemType.MultipleChoice.toString(), AssessmentItemType.ShortAnswer.toString()]);
+    const typeNamesWithSummaryScreen = [AssessmentItemType.MultipleChoice, AssessmentItemType.ShortAnswer];
 
     // Create the item types for use by the drop down.
-    const itemTypes: ListItemBag[] = [];
-    for (const key in AssessmentItemType) {
-        itemTypes.push({
-            text: AssessmentItemType[key],
-            value: AssessmentItemType[key]
-        });
-    }
+    const itemTypes: ListItemBag[] = [
+        {
+            value: AssessmentItemType.MultipleChoice.toString(),
+            text: "Multiple Choice"
+        },
+        {
+            value: AssessmentItemType.Section.toString(),
+            text: "Section"
+        },
+        {
+            value: AssessmentItemType.ShortAnswer.toString(),
+            text: "Short Answer"
+        }
+    ];
 
     // #endregion
 
     // #region Functions
+
+    function parseSafe<T>(json: string | null | undefined): T | undefined {
+        if (!json) {
+            return undefined;
+        }
+
+        try {
+            return JSON.parse(json) as T;
+        }
+        catch {
+            return undefined;
+        }
+    }
+
+    function updateLocalValues(): void {
+        if (props.screenToShow === ComponentScreen.Configuration) {
+            assessmentTerm.value = props.activityBag.componentSettings?.[SettingKey.AssessmentTerm] ?? "Test";
+            header.value = props.activityBag.componentSettings?.[SettingKey.Header] ?? "";
+            updateRefValue(items, parseSafe<AssessmentItem[]>(props.activityBag.componentSettings?.[SettingKey.Items]) ?? []);
+            multipleChoiceWeight.value = toNumberOrNull(props.activityBag.componentSettings?.[SettingKey.MultipleChoiceWeight]) ?? 100;
+            showMissedQuestionsOnResults.value = asBooleanOrNull(props.activityBag.componentSettings?.[SettingKey.ShowMissedQuestionsOnResults]) ?? false;
+            showResultsOnCompletion.value = asBooleanOrNull(props.activityBag.componentSettings?.[SettingKey.ShowResultsOnCompletion]) ?? false;
+        }
+        else {
+            assessmentTerm.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.AssessmentTerm] ?? "Test";
+            header.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Header] ?? "";
+            updateRefValue(items, parseSafe<AssessmentItem[]>(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Items]) ?? []);
+            multipleChoiceWeight.value = toNumberOrNull(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.MultipleChoiceWeight]) ?? 100;
+            showMissedQuestionsOnResults.value = asBooleanOrNull(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.ShowMissedQuestionsOnResults]) ?? false;
+            showResultsOnCompletion.value = asBooleanOrNull(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.ShowResultsOnCompletion]) ?? false;
+
+            updateRefValue(completedItems, parseSafe<AssessmentItem[]>(props.completionBag?.completionValues?.[CompletionKey.CompletedItems]) ?? []);
+            multipleChoiceWeightAtCompletion.value = toNumberOrNull(props.completionBag?.completionValues?.[CompletionKey.MultipleChoiceWeight]) ?? 0;
+
+            studentComment.value = props.completionBag?.studentComment ?? "";
+        }
+    }
 
     /** Adds an empty default item to the configuration. */
     function addAssessmentItem(toIndex: number): void {
@@ -347,7 +410,11 @@
         const lastIndex = items.value?.length ?? 0;
         const order = toIndex < 0 ? 0 : toIndex > lastIndex ? lastIndex : 0;
 
-        items.value.push(new MultipleChoiceItem(order));
+        items.value.push({
+            type: AssessmentItemType.MultipleChoice,
+            order: order,
+            uniqueId: newGuid()
+        });
     }
 
     /**
@@ -401,6 +468,17 @@
 
     // #endregion
 
+    // #region Event Handlers
+
+    function onItemTypeChanged(item: AssessmentItem, value: string | string[]): void {
+        if (typeof value === "string") {
+            item.type = Number(value) as AssessmentItemType;
+        }
+    }
+
+    // #endregion
+
+
     // #region Computed Values
 
     const isStudentAssignedAndCompleted = computed(() =>
@@ -412,11 +490,11 @@
     );
 
     const shortAnswerItems = computed(() =>
-        (completedItems.value ?? []).filter(i => i.typeName === AssessmentItemType.ShortAnswer) as ShortAnswerItem[]
+        completedItems.value.filter(i => i.type === AssessmentItemType.ShortAnswer)
     );
 
     const multipleChoiceItems = computed(() =>
-        (completedItems.value ?? []).filter(i => i.typeName === AssessmentItemType.MultipleChoice) as MultipleChoiceItem[]
+        completedItems.value.filter(i => i.type === AssessmentItemType.MultipleChoice)
     );
 
     const correctMultipleChoiceItems = computed(() => multipleChoiceItems.value.filter(i => i.response === i.correctAnswer));
@@ -449,7 +527,15 @@
         // Each short answer score * weight * points possible
         // Points possible is the total activity points possible * the individual question weight.
         const earnedShortAnswerPoints = shortAnswerItems.value
-            .map(i => Number(i.pointsPossible) > 0 ? (i.pointsEarned / Number(i.pointsPossible)) * (i.questionWeight / 100) * activityBag.value.points : 0)
+            .map(i => {
+                const pointsPossible = i.pointsPossible ?? 0;
+                const pointsEarned = i.pointsEarned ?? 0;
+                const questionWeight = i.questionWeight ?? 0;
+
+                return pointsPossible > 0
+                    ? (pointsEarned / Number(i.pointsPossible)) * (questionWeight / 100) * activityBag.value.points
+                    : 0;
+            })
             .reduce((prev, cur) => cur + prev, 0);
 
         return Math.round((multipleChoicePointsEarned.value + earnedShortAnswerPoints));
@@ -486,8 +572,8 @@
     );
 
     const allWeights = computed(() =>
-        items?.value.filter(i => i.typeName === AssessmentItemType.ShortAnswer)
-            .map(i => (i as ShortAnswerItem).questionWeight)
+        items.value.filter(i => i.type === AssessmentItemType.ShortAnswer)
+            .map(i => i.questionWeight)
             .concat(multipleChoiceWeight.value)
     );
 
@@ -514,14 +600,14 @@
         };
     });
 
-    const assessmentItemTypesRequiringResponse = [AssessmentItemType.MultipleChoice.toString(), AssessmentItemType.ShortAnswer.toString()];
+    const assessmentItemTypesRequiringResponse = [AssessmentItemType.MultipleChoice, AssessmentItemType.ShortAnswer];
     /** Determines whether the there are any items without a response. */
     const unansweredQuestions = computed(() =>
-        (completedItems.value ?? []).some(i => assessmentItemTypesRequiringResponse.includes(i.typeName) && (i.response ?? "").length === 0)
+        (completedItems.value ?? []).some(i => assessmentItemTypesRequiringResponse.includes(i.type) && (i.response ?? "").length === 0)
     );
 
     /** Gets the combined value of all weights. */
-    const sumOfAllWeights = computed(() => allWeights.value?.reduce((prev, cur) => prev + cur) ?? 0);
+    const sumOfAllWeights = computed(() => allWeights.value?.reduce((prev, cur) => (prev ?? 0) + (cur ?? 0)) ?? 0);
 
     /**
      * Tracks the previous state of the weights validity to ensure all necessary
@@ -533,21 +619,20 @@
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
-        const updatedActivityBag = {
-            ...toValue(activityBag)
-        } as LearningActivityBag;
+        const newValues = {
+            ...props.activityBag.componentSettings
+        };
 
-        updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
-            items: toValue(items),
-            assessmentTerm: toValue(assessmentTerm),
-            header: toValue(header),
-            multipleChoiceWeight: toValue(multipleChoiceWeight),
-            showMissedQuestionsOnResults: toValue(showMissedQuestionsOnResults),
-            showResultsOnCompletion: toValue(showResultsOnCompletion)
-        }) ?? "{}";
+        newValues[SettingKey.AssessmentTerm] = assessmentTerm.value;
+        newValues[SettingKey.Header] = header.value;
+        newValues[SettingKey.Items] = JSON.stringify(items.value);
+        newValues[SettingKey.MultipleChoiceWeight] = multipleChoiceWeight.value.toString();
+        newValues[SettingKey.ShowMissedQuestionsOnResults] = asTrueOrFalseString(showMissedQuestionsOnResults.value);
+        newValues[SettingKey.ShowResultsOnCompletion] = asTrueOrFalseString(showResultsOnCompletion.value);
 
-        emits("update:activityBag", updatedActivityBag);
-    }, 500);
+        emits("activitySettingsChanged", newValues);
+    });
+
     watch([
         assessmentTerm,
         header,
@@ -564,24 +649,28 @@
     }, { deep: true });
 
     /** Watch for modified component completion. */
-    watch([completedItems, studentComment, totalPointsEarned], () => {
-        const updatedCompletionBag = {
-            ...toValue(completionBag)
-        } as LearningActivityCompletionBag;
+    watch([completedItems, multipleChoiceWeight, totalPointsEarned], () => {
+        const newValues = {
+            ...props.completionBag?.completionValues
+        };
 
-        updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
-            completedItems: toValue(completedItems.value),
-            multipleChoiceWeight: toValue(multipleChoiceWeight.value)
-        }) ?? "{}";
+        newValues[CompletionKey.CompletedItems] = JSON.stringify(completedItems.value);
+        newValues[CompletionKey.MultipleChoiceWeight] = multipleChoiceWeight.value.toString();
 
-        updatedCompletionBag.studentComment = studentComment.value;
-
-        if (screenToShow.value === ComponentScreen.Scoring) {
-            updatedCompletionBag.pointsEarned = totalPointsEarned.value;
-        }
-
-        emits("update:completionBag", updatedCompletionBag);
+        emits("completionValuesChanged", newValues, {
+            pointsEarned: totalPointsEarned.value
+        });
     }, { deep: true });
+
+    watch(studentComment, () => {
+        emits("commentChanged", studentComment.value);
+    });
+
+    watch(() => [props.activityBag, props.completionBag], () => {
+        updateLocalValues();
+    });
+
+    updateLocalValues();
 
     // If the individual hasn't completed the assessment ensure we are using
     // the latest configuration; otherwise use the assessment that was saved
@@ -596,5 +685,4 @@
             multipleChoiceWeight.value = multipleChoiceWeightAtCompletion.value;
         }
     }
-
 </script>

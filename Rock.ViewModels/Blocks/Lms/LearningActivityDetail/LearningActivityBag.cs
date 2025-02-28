@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 
 using Rock.Enums.Lms;
 using Rock.ViewModels.Blocks.Lms.LearningActivityComponent;
@@ -34,9 +35,9 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityDetail
         public LearningActivityComponentBag ActivityComponent { get; set; }
 
         /// <summary>
-        /// Gets or sets the json config for the activity component before completion.
+        /// The configured settings for the learning component.
         /// </summary>
-        public string ActivityComponentSettingsJson { get; set; }
+        public Dictionary<string, string> ComponentSettings { get; set; }
 
         /// <summary>
         /// The participant type assigned to complete this activity.

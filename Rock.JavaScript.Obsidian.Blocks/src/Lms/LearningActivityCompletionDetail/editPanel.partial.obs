@@ -42,6 +42,7 @@
                                    v-model:activityBag="activityBag"
                                    v-model:completionBag="completionBag"
                                    :screenToShow="screenToShow"
+                                   @completionValuesChanged="onCompletionValuesChanged"
                                    @completed="onFacilitatorCompleted" />
         </div>
 
@@ -69,12 +70,11 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
-    import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
+    import { CompletionExtraValues, ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
     import { LearningActivityCompletionDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
-    import { deepEqual } from "@Obsidian/Utility/util";
     import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
@@ -110,7 +110,7 @@
     const isFacilitatorCompleted = propertyRef(completionBag.value.isFacilitatorCompleted ?? false, "IsFacilitatorCompleted");
     const facilitatorComment = propertyRef(completionBag.value.facilitatorComment ?? "", "FacilitatorComments");
     const pointsEarned = propertyRef(completionBag.value.pointsEarned, "PointsEarned");
-    const completionJson = propertyRef(completionBag.value.activityComponentCompletionJson, "ActivityComponentCompletionJson");
+    const completionValues = propertyRef(completionBag.value.completionValues ?? {}, "ActivityComponentCompletionJson");
     const wasCompletedOnTime = propertyRef(completionBag.value.wasCompletedOnTime ?? true, "WasCompletedOnTime");
 
     const isAssignedToFacilitatorAndUngraded =
@@ -129,7 +129,7 @@
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [
-        completionJson
+        completionValues
         , dueDate
         , isFacilitatorCompleted
         , facilitatorComment
@@ -170,11 +170,24 @@
         }
     }
 
+    function onCompletionValuesChanged(newValues: Record<string, string>, extra?: CompletionExtraValues): void {
+        completionValues.value = newValues;
+
+        if (extra) {
+            if (extra.pointsEarned !== undefined) {
+                pointsEarned.value = extra.pointsEarned;
+            }
+
+            // Binary file cannot be changed by facilitator so we don't check
+            // for it in the extra values.
+        }
+    }
+
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(completionJson, props.modelValue.bag?.activityComponentCompletionJson ?? "");
+        updateRefValue(completionValues, props.modelValue.bag?.completionValues ?? {});
         updateRefValue(isFacilitatorCompleted, props.modelValue.bag?.isFacilitatorCompleted ?? false);
         updateRefValue(facilitatorComment, props.modelValue.bag?.facilitatorComment ?? "");
         updateRefValue(pointsEarned, props.modelValue.bag?.pointsEarned ?? 0);
@@ -188,7 +201,7 @@
             bag: { ...props.modelValue.bag } as LearningActivityCompletionBag
         };
 
-        setPropertiesBoxValue(newValue, "activityComponentCompletionJson", completionJson.value);
+        setPropertiesBoxValue(newValue, "completionValues", completionValues.value);
         setPropertiesBoxValue(newValue, "isFacilitatorCompleted", isFacilitatorCompleted.value);
         setPropertiesBoxValue(newValue, "facilitatorComment", facilitatorComment.value);
         setPropertiesBoxValue(newValue, "pointsEarned", pointsEarned.value);
@@ -198,14 +211,7 @@
     });
 
     watch(completionBag, () => {
-        if (!deepEqual(completionBag.value.activityComponentCompletionJson, completionJson.value, true)) {
-            completionJson.value = completionBag.value.activityComponentCompletionJson;
-        }
-
-        // Allow the component to update the points earned for the activity completion.
-        if (completionBag.value.pointsEarned !== pointsEarned.value) {
-            pointsEarned.value = completionBag.value.pointsEarned;
-        }
+        updateRefValue(completionValues, completionBag.value.completionValues ?? {});
     });
 
     const componentUrl = activityBag.value.activityComponent?.componentUrl ?? "";

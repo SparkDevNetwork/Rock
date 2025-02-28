@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Lms;
 using Rock.Model;
 using Rock.Security;
@@ -194,8 +195,19 @@ namespace Rock.Blocks.Lms
 
             var componentEntityType = EntityTypeCache.Get( activityComponentId );
             var activityComponent = LearningActivityContainer.GetComponent( componentEntityType.Name );
+            var componentData = entity.LearningActivity.ActivityComponentSettingsJson.FromJsonOrNull<Dictionary<string, string>>()
+                ?? new Dictionary<string, string>();
 
-            var activityComponentBag = GetLearningActivityComponentBag( activityComponent );
+            var activityComponentBag = new LearningActivityComponentBag
+            {
+                Name = activityComponent?.Name,
+                ComponentUrl = activityComponent?.ComponentUrl,
+                ComponentConfiguration = activityComponent.GetActivityConfiguration( entity.LearningActivity, componentData, PresentedFor.Facilitator, RockContext, RequestContext ),
+                HighlightColor = activityComponent?.HighlightColor,
+                IconCssClass = activityComponent?.IconCssClass,
+                IdKey = activityComponent?.EntityType.IdKey,
+                Guid = activityComponent?.EntityType.Guid.ToString()
+            };
 
             var binaryFile = entity.BinaryFileId > 0 ?
                 new BinaryFileService( RockContext ).GetNoTracking( entity.BinaryFileId.Value ) :
@@ -255,10 +267,13 @@ namespace Rock.Blocks.Lms
             {
                 var gradedByPersonData = new PersonAliasService( RockContext )
                     .GetSelect( entity.GradedByPersonAliasId.Value,
-                     p => new {p.Person.NickName,
-                    p.Person.LastName,
-                    p.Person.SuffixValueId,
-                    p.Person.Guid});
+                     p => new
+                     {
+                         p.Person.NickName,
+                         p.Person.LastName,
+                         p.Person.SuffixValueId,
+                         p.Person.Guid
+                     } );
 
                 if ( gradedByPersonData != null )
                 {
@@ -295,7 +310,6 @@ namespace Rock.Blocks.Lms
             var activityBag = new LearningActivityBag
             {
                 ActivityComponent = activityComponentBag,
-                ActivityComponentSettingsJson = entity.LearningActivity.ActivityComponentSettingsJson,
                 AssignTo = entity.LearningActivity.AssignTo,
                 CurrentPerson = currentPersonBag,
                 Description = entity.LearningActivity.Description,
@@ -306,11 +320,14 @@ namespace Rock.Blocks.Lms
                 Points = entity.LearningActivity.Points
             };
 
+            var completionData = entity.ActivityComponentCompletionJson.FromJsonOrNull<Dictionary<string, string>>()
+                ?? new Dictionary<string, string>();
+
             return new LearningActivityCompletionBag
             {
                 IdKey = entity.IdKey,
                 ActivityBag = activityBag,
-                ActivityComponentCompletionJson = entity.ActivityComponentCompletionJson,
+                CompletionValues = activityComponent.GetCompletionValues( entity, completionData, componentData, PresentedFor.Facilitator, RockContext, RequestContext ),
                 BinaryFile = binaryFile?.ToListItemBag(),
                 BinaryFileSecurityGrant = binaryFileSecurityGrant,
                 CompletedDate = entity.CompletedDateTime,
@@ -328,19 +345,6 @@ namespace Rock.Blocks.Lms
                 Student = studentBag,
                 StudentComment = entity.StudentComment,
                 WasCompletedOnTime = entity.WasCompletedOnTime
-            };
-        }
-
-        private LearningActivityComponentBag GetLearningActivityComponentBag( LearningActivityComponent activityComponent )
-        {
-            return new LearningActivityComponentBag
-            {
-                Name = activityComponent?.Name,
-                ComponentUrl = activityComponent?.ComponentUrl,
-                HighlightColor = activityComponent?.HighlightColor,
-                IconCssClass = activityComponent?.IconCssClass,
-                IdKey = activityComponent?.EntityType.IdKey,
-                Guid = activityComponent?.EntityType.Guid.ToString()
             };
         }
 
@@ -378,9 +382,6 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Bag.ActivityComponentCompletionJson ),
-                () => entity.ActivityComponentCompletionJson = box.Bag.ActivityComponentCompletionJson );
-
             box.IfValidProperty( nameof( box.Bag.FacilitatorComment ),
                 () => entity.FacilitatorComment = box.Bag.FacilitatorComment );
 
@@ -410,6 +411,21 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.WasCompletedOnTime ),
                 () => entity.WasCompletedOnTime = box.Bag.WasCompletedOnTime );
 
+            box.IfValidProperty( nameof( box.Bag.CompletionValues ), () =>
+            {
+                var activityComponent = LearningActivityContainer.Instance.Components.Values
+                    .FirstOrDefault( c => c.Value.EntityType.Id == entity.LearningActivity.ActivityComponentId )
+                    .Value;
+
+                var componentData = entity.LearningActivity.ActivityComponentSettingsJson.FromJsonOrNull<Dictionary<string, string>>()
+                    ?? new Dictionary<string, string>();
+
+                var completionData = activityComponent.GetCompletionData( entity, box.Bag.CompletionValues, componentData, PresentedFor.Facilitator, RockContext, RequestContext )
+                    ?? new Dictionary<string, string>();
+
+                entity.ActivityComponentCompletionJson = completionData.ToJson();
+            } );
+
             return true;
         }
 
@@ -417,7 +433,7 @@ namespace Rock.Blocks.Lms
         protected override LearningActivityCompletion GetInitialEntity()
         {
             var completionId = PageParameter( PageParameterKey.LearningActivityCompletionId );
-            
+
             if ( completionId.IsNotNullOrWhiteSpace() && completionId != "0" )
             {
                 return new LearningActivityCompletionService( RockContext )
@@ -461,7 +477,7 @@ namespace Rock.Blocks.Lms
             int.TryParse( activityIdParam, out var activityId );
             int.TryParse( participantIdParam, out var participantId );
 
-            if (activityId == 0 && activityIdParam.Length > 0)
+            if ( activityId == 0 && activityIdParam.Length > 0 )
             {
                 activityId = IdHasher.Instance.GetId( activityIdParam ).ToIntSafe();
             }

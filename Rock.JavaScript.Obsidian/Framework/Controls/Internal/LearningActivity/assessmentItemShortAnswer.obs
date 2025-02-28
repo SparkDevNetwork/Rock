@@ -18,7 +18,6 @@
                 </div>
                 <div class="configuration-field-question-weight">
                     <NumberBox v-model="questionWeight"
-                               :key="weightsValidationKey"
                                :disabled="disabled"
                                :minimumValue="0"
                                label="Question Weight"
@@ -101,7 +100,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import { ComponentScreen } from "./learningActivity";
-    import { AssessmentItem, ShortAnswerItem, WeightsValidationFunction } from "./assessmentLearningActivity.partial";
+    import { AssessmentItem, WeightsValidationFunction } from "./assessmentLearningActivity.partial";
     import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
@@ -118,7 +117,7 @@
 
         /** The assessment item's configuration. */
         modelValue: {
-            type: Object as PropType<ShortAnswerItem | AssessmentItem>,
+            type: Object as PropType<AssessmentItem>,
             required: true
         },
 
@@ -143,20 +142,19 @@
     });
 
     const emit = defineEmits<{
-        (event: "update:modelValue", value: ShortAnswerItem): void,
+        (event: "update:modelValue", value: AssessmentItem): void,
         (event: "update:weightsValidationKey", value: string): void
     }>();
 
     const defaultAnswerBoxRows = 3;
-    const internalModelValue = ref(props.modelValue as ShortAnswerItem);
 
-    const question = ref(internalModelValue.value.question ?? "");
-    const helpText = ref(internalModelValue.value.helpText ?? "");
-    const questionWeight = ref(internalModelValue.value.questionWeight);
-    const answerBoxRows = ref(internalModelValue.value.answerBoxRows ?? defaultAnswerBoxRows);
-    const maxCharacterCount = ref(internalModelValue.value.maxCharacterCount ?? 0);
-    const response = ref(internalModelValue.value.response ?? "");
-    const pointsEarned = ref<number | null>(props.hasBeenGraded ? internalModelValue.value.pointsEarned : null);
+    const question = ref(props.modelValue.question ?? "");
+    const helpText = ref(props.modelValue.helpText ?? "");
+    const questionWeight = ref(props.modelValue.questionWeight ?? 0);
+    const answerBoxRows = ref(props.modelValue.answerBoxRows ?? defaultAnswerBoxRows);
+    const maxCharacterCount = ref(props.modelValue.maxCharacterCount ?? 0);
+    const response = ref(props.modelValue.response ?? "");
+    const pointsEarned = ref<number | null>(props.hasBeenGraded ? (props.modelValue.pointsEarned ?? null) : null);
 
     const pointsPossible = computed((): number => {
         if (props.screenToShow === ComponentScreen.Configuration) {
@@ -166,7 +164,7 @@
         // If the completion record contains pointsPossible values then use those;
         // otherwise calculate based on current total activity points and question weight.
         // This logic is to maintain the state of the response based on configuration at a point-in-time.
-        return internalModelValue.value.pointsPossible ?? (props.totalActivityPoints * questionWeight.value / 100);
+        return props.modelValue.pointsPossible ?? (props.totalActivityPoints * questionWeight.value / 100);
     });
 
     const configurationWeightHelpText = `
@@ -177,6 +175,7 @@
 
     function emitNewModel(): void {
         const newModelValue = {
+            ...props.modelValue,
             answerBoxRows: toValue(answerBoxRows),
             helpText: toValue(helpText),
             maxCharacterCount: toValue(maxCharacterCount),
@@ -184,10 +183,8 @@
             pointsPossible: toValue(pointsPossible),
             question: toValue(question),
             questionWeight: toValue(questionWeight),
-            response: response.value,
-            typeName: internalModelValue.value.typeName,
-            uniqueId: internalModelValue.value.uniqueId
-        } as ShortAnswerItem;
+            response: response.value
+        };
 
         emit("update:modelValue", newModelValue);
     }

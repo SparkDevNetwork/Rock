@@ -240,17 +240,14 @@ namespace Rock.Blocks.Lms
             foreach ( var activity in activities )
             {
                 var activityComponent = components.FirstOrDefault( c => c.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId ).Value;
-
-                // If the student hasn't yet completed then scrub the component config of any information not permissible for the student to view (e.g. correct answers).
-                var configurationToSend =
-                    activity.IsStudentCompleted ?
-                    activity.LearningActivity.ActivityComponentSettingsJson :
-                    activityComponent.StudentScrubbedConfiguration( activity.LearningActivity.ActivityComponentSettingsJson );
+                var componentData = activity.LearningActivity.ActivityComponentSettingsJson.FromJsonOrNull<Dictionary<string, string>>()
+                    ?? new Dictionary<string, string>();
 
                 var activityComponentBag = new LearningActivityComponentBag
                 {
                     Name = activityComponent?.Name,
                     ComponentUrl = activityComponent?.ComponentUrl,
+                    ComponentConfiguration = activityComponent.GetActivityConfiguration( activity.LearningActivity, componentData, PresentedFor.Student, RockContext, RequestContext ),
                     HighlightColor = activityComponent?.HighlightColor,
                     IconCssClass = activityComponent?.IconCssClass,
                     IdKey = activityComponent?.EntityType.IdKey,
@@ -273,7 +270,6 @@ namespace Rock.Blocks.Lms
                 var activityBag = new LearningActivityBag
                 {
                     ActivityComponent = activityComponentBag,
-                    ActivityComponentSettingsJson = configurationToSend,
                     AssignTo = activity.LearningActivity.AssignTo,
                     AvailableDateCalculated = activity.AvailableDateTime,
                     AvailabilityCriteria = activity.LearningActivity.AvailabilityCriteria,
@@ -316,11 +312,14 @@ namespace Rock.Blocks.Lms
                 var grade = activity.GetGrade( scales );
                 var hasPassingGrade = grade?.IsPassing ?? false;
 
+                var completionData = activity.ActivityComponentCompletionJson.FromJsonOrNull<Dictionary<string, string>>()
+                    ?? new Dictionary<string, string>();
+
                 var activityCompletion = new LearningActivityCompletionBag
                 {
                     IdKey = activity.IdKey,
                     ActivityBag = activityBag,
-                    ActivityComponentCompletionJson = activity.ActivityComponentCompletionJson,
+                    CompletionValues = activityComponent.GetCompletionValues( activity, completionData, componentData, PresentedFor.Student, RockContext, RequestContext ),
                     AvailableDate = availableDate,
                     BinaryFile = binaryFile,
                     CompletedDate = activity.CompletedDateTime,
@@ -632,24 +631,6 @@ namespace Rock.Blocks.Lms
             activity.BinaryFileId = activityCompletionBag.BinaryFile.GetEntityId<BinaryFile>( RockContext );
             activity.StudentComment = activityCompletionBag.StudentComment;
 
-            var activityComponent = LearningActivityContainer.Instance.Components.Values
-                .FirstOrDefault( c => c.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId )
-                .Value;
-
-            // Only allow student updating completion and points if this hasn't yet been graded by a facilitator.
-            if ( !activity.GradedByPersonAliasId.HasValue )
-            {
-                activity.ActivityComponentCompletionJson = activityComponent.GetCompletionJsonToPersist(
-                    activityCompletionBag.ActivityComponentCompletionJson,
-                    activity.LearningActivity.ActivityComponentSettingsJson );
-
-                activity.PointsEarned = activityComponent.CalculatePointsEarned(
-                    activity.LearningActivity.ActivityComponentSettingsJson,
-                    activityCompletionBag.ActivityComponentCompletionJson,
-                    activity.LearningActivity.Points
-                );
-            }
-
             // It's important that the WasCompletedOnTime is set before the
             // IsStudentCompleted bool. Activity.IsLate property uses this bit.
             if ( !activity.CompletedDateTime.HasValue )
@@ -675,8 +656,41 @@ namespace Rock.Blocks.Lms
                 }
             }
 
+            var activityComponent = LearningActivityContainer.Instance.Components.Values
+                .FirstOrDefault( c => c.Value.EntityType.Id == activity.LearningActivity.ActivityComponentId )
+                .Value;
+
+            var componentData = activity.LearningActivity.ActivityComponentSettingsJson.FromJsonOrNull<Dictionary<string, string>>()
+                ?? new Dictionary<string, string>();
+            Dictionary<string, string> completionData = null;
+
+            // Only allow student updating completion and points if this hasn't yet been graded by a facilitator.
+            if ( !activity.GradedByPersonAliasId.HasValue )
+            {
+                completionData = activityComponent.GetCompletionData( activity,
+                    activityCompletionBag.CompletionValues,
+                    componentData,
+                    PresentedFor.Student,
+                    RockContext,
+                    RequestContext )
+                    ?? new Dictionary<string, string>();
+
+                activity.ActivityComponentCompletionJson = completionData.ToJson();
+
+                activity.PointsEarned = activityComponent.CalculatePointsEarned( activity,
+                    completionData,
+                    componentData,
+                    activity.LearningActivity.Points,
+                    RockContext,
+                    RequestContext );
+            }
+
+            completionData = completionData
+                ?? activity.ActivityComponentCompletionJson.FromJsonOrNull<Dictionary<string, string>>()
+                ?? new Dictionary<string, string>();
+
             // Let the Activity component decide if it needs to be graded.
-            activity.RequiresGrading = activityComponent.RequiresGrading( activity );
+            activity.RequiresGrading = activityComponent.RequiresGrading( activity, completionData, componentData, RockContext, RequestContext );
             activityCompletionBag.RequiresScoring = activity.RequiresGrading;
 
             if ( isNew )
@@ -702,13 +716,13 @@ namespace Rock.Blocks.Lms
                 activityCompletionBag.GradeColor = grade.HighlightColor;
             }
 
-            // Return the raw component settings so a grade can be computed (if applicable).
-            activityCompletionBag.ActivityBag.ActivityComponentSettingsJson = activity.LearningActivity.ActivityComponentSettingsJson;
-
-            // Include the updated activity completion in the response.
-            // if the activity checks the completion JSON for historical configuration
-            // we'll want to ensure it's provided.
-            activityCompletionBag.ActivityComponentCompletionJson = activity.ActivityComponentCompletionJson;
+            // Update the bag so the student can see the results.
+            activityCompletionBag.CompletionValues = activityComponent.GetCompletionValues( activity,
+                completionData,
+                componentData,
+                PresentedFor.Student,
+                RockContext,
+                RequestContext );
 
             return ActionOk( activityCompletionBag );
         }

@@ -18,7 +18,7 @@
 
         <div v-if="screenToShow === ComponentScreen.Scoring">
             <div class="scoring-section">
-                <StructuredContentEditor v-model="rubric" disabled />
+                <div v-if="rubric" v-html="rubric"></div>
 
                 <NumberBox v-model="pointsEarned"
                            label="Score"
@@ -46,7 +46,7 @@
 
     <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
         <div class="instructions-section">
-            <StructuredContentEditor label="Instructions" v-model="instructions" :disabled="true" />
+            <div v-if="instructions" v-html="instructions"></div>
         </div>
 
         <div class="footer-button-section">
@@ -60,8 +60,9 @@
         </div>
     </div>
 </template>
+
 <script setup lang="ts">
-    import { computed, ref, toValue, watch, } from "vue";
+    import { computed, ref, watch, } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
@@ -70,10 +71,19 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
-    import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
-    import { PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion, PointAssessmentActivityDefaults } from "./pointAssessmentLearningActivity.partial";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const enum SettingKey {
+        Instructions = "instructions",
+        Rubric = "rubric",
+        AcknowledgedButtonText = "acknowledgedButtonText"
+    }
+
+    const enum CompletionKey {
+        PointsAvailableAtCompletion = "pointsAvailableAtCompletion"
+    }
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -88,22 +98,18 @@
 
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
-        acknowledgedButtonText,
         assignee,
         containerClasses,
         defaultAssigneeDescription,
         hasBeenGraded,
-        instructions,
         isCompleted,
-        pointsPossibleAtCompletion,
-        rubric,
         panelTitle
-    } = useLearningComponent<PointAssessmentActivityConfiguration, PointAssessmentActivityCompletion>(
-        activityBag,
-        completionBag,
-        screenToShow,
-        new PointAssessmentActivityDefaults()
-    );
+    } = useLearningComponent(activityBag, completionBag, screenToShow);
+
+    const instructions = ref("");
+    const rubric = ref("");
+    const acknowledgedButtonText = ref("");
+    const pointsPossibleAtCompletion = ref<number>();
 
     const disabled = ref(props.disabled ?? false);
     const completeClicked = ref(false);
@@ -124,31 +130,26 @@
             : acknowledgedButtonText?.value ?? "Acknowledged";
     });
 
-    /** Watch for modified component settings. */
-    const debouncedActivityBagEmits = debounce(() => {
-        const updatedActivityBag = {
-            ...toValue(activityBag)
-        } as LearningActivityBag;
+    // #endregion
 
-        updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
-            acknowledgedButtonText: acknowledgedButtonText.value,
-            instructions: instructions.value,
-            rubric: rubric.value
-        }) ?? "{}";
+    // #region Functions
 
-        emits("update:activityBag", updatedActivityBag);
-    });
+    function updateLocalValues(): void {
+        if (props.screenToShow === ComponentScreen.Configuration) {
+            instructions.value = props.activityBag.componentSettings?.[SettingKey.Instructions] ?? "";
+            rubric.value = props.activityBag.componentSettings?.[SettingKey.Rubric] ?? "";
+            acknowledgedButtonText.value = props.activityBag.componentSettings?.[SettingKey.AcknowledgedButtonText] ?? "Acknowledged";
+        }
+        else {
+            instructions.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Instructions] ?? "";
+            rubric.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Rubric] ?? "";
+            acknowledgedButtonText.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.AcknowledgedButtonText] ?? "Acknowledged";
 
-    /** Watch for modified component completion. */
-    const debouncedCompletionBagEmits = debounce(() => {
-        const updatedCompletionBag = {
-            ...toValue(completionBag)
-        } as LearningActivityCompletionBag;
+            pointsPossibleAtCompletion.value = toNumberOrNull(props.completionBag?.completionValues?.[CompletionKey.PointsAvailableAtCompletion]) ?? undefined;
+        }
+    }
 
-        updatedCompletionBag.pointsEarned = pointsEarned.value;
-
-        emits("update:completionBag", updatedCompletionBag);
-    });
+    // #endregion
 
     // #region Event Handlers
 
@@ -163,11 +164,36 @@
 
     // #endregion
 
-    watch([activityBag.value.points, instructions, rubric, acknowledgedButtonText], () => {
+    /** Watch for modified component settings. */
+    const debouncedActivityBagEmits = debounce(() => {
+        const newValues = {
+            ...props.activityBag.componentSettings
+        };
+
+        newValues[SettingKey.Instructions] = instructions.value;
+        newValues[SettingKey.Rubric] = rubric.value;
+        newValues[SettingKey.AcknowledgedButtonText] = acknowledgedButtonText.value;
+
+        emits("activitySettingsChanged", newValues);
+    });
+
+    watch([instructions, rubric, acknowledgedButtonText], () => {
         debouncedActivityBagEmits();
     }, { deep: true });
 
     watch([pointsEarned], () => {
-        debouncedCompletionBagEmits();
+        const newValues = {
+            ...props.completionBag?.completionValues
+        };
+
+        emits("completionValuesChanged", newValues, {
+            pointsEarned: pointsEarned.value ?? undefined
+        });
     }, { deep: true });
+
+    watch(() => [props.activityBag, props.completionBag], () => {
+        updateLocalValues();
+    });
+
+    updateLocalValues();
 </script>

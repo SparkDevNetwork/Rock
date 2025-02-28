@@ -18,7 +18,14 @@
 
         <div class="row">
             <div class="col-md-6">
-                <DropDownList v-model="activityComponentValue" :grouped="false" :items="activityComponentListItems" rules="required" label="Activity Type" :multiple="false" :showBlankItem="true" />
+                <DropDownList v-model="activityComponentValue"
+                              :grouped="false"
+                              :items="activityComponentListItems"
+                              rules="required"
+                              label="Activity Type"
+                              :multiple="false"
+                              :showBlankItem="true"
+                              :disabled="!!activityBag.idKey" />
             </div>
             <div class="col-md-6">
                 <RadioButtonList v-model="assignTo"
@@ -107,7 +114,9 @@
         </div>
 
         <!-- Pass the configuration and completion json values to the component. -->
-        <activityTypeComponent v-model:activityBag="activityBag" :screenToShow="ComponentScreen.Configuration" />
+        <activityTypeComponent :activityBag="activityBag"
+                               :screenToShow="ComponentScreen.Configuration"
+                               @activitySettingsChanged="onActivitySettingsChanged" />
 
         <!-- Advanced Settings -->
         <Panel title="Advanced Settings" :hasCollapse="true">
@@ -172,7 +181,7 @@
     // #region Values
 
     // Keep track of the configuration if the user switches activity type components.
-    const typeConfigMap = new Map<string, string>();
+    const typeConfigMap = new Map<string, Record<string, string>>();
 
     const assignTos = ref<ListItemBag[]>(enumToListItemBag(AssignToDescription ?? []));
     const activityComponentListItems = ref<ListItemBag[]>(props.options?.activityTypeListItems ?? []);
@@ -195,7 +204,7 @@
     const dueDateOffset = propertyRef(activityBag.value?.dueDateOffset, "DueDateOffset");
     const sendNotificationCommunication = propertyRef(activityBag.value?.sendNotificationCommunication ?? false, "SendNotificationCommunication");
     const completionWorkflowType = propertyRef(activityBag.value?.completionWorkflowType ?? {}, "CompletionWorkflowType");
-    const activityComponentSettingsJson = propertyRef(activityBag.value?.activityComponentSettingsJson ?? "", "ActivityComponentSettingsJson");
+    const componentSettings = propertyRef(activityBag.value?.componentSettings ?? {}, "ActivityComponentSettingsJson");
     const activityComponent = propertyRef(activityBag.value?.activityComponent ?? {} as LearningActivityComponentBag, "ActivityComponent");
 
     const points = propertyRef(isNew ? 10 : activityBag.value?.points ?? 10, "Points");
@@ -221,7 +230,7 @@
         , sendNotificationCommunication
         , completionWorkflowType
         , activityComponent
-        , activityComponentSettingsJson
+        , componentSettings
         , points
     ];
 
@@ -232,6 +241,10 @@
     // #endregion
 
     // #region Event Handlers
+
+    function onActivitySettingsChanged(value: Record<string, string>): void {
+        componentSettings.value = value;
+    }
 
     // #endregion
 
@@ -249,18 +262,17 @@
     // This will prevent users from losing their configuration when switching activity types.
     // We also need an empty configuration in order to instantiate the defaults in useLearningComponent.
     watch(activityComponentValue, (newValue, oldValue) => {
-        const configLength = activityBag.value?.activityComponentSettingsJson?.length ?? 0;
-        if (oldValue != null && oldValue.length > 0 && configLength > 0) {
+        if (oldValue != null && oldValue.length > 0) {
             // Set the old configuraton and map it to the activity type.
-            typeConfigMap.set(oldValue, activityComponentSettingsJson.value);
+            typeConfigMap.set(oldValue, componentSettings.value);
         }
 
         // Look for a configuration for the new activity type if there was a previous one.
         // Otherwise clear it out so the default constructor can be used to
         // properly generate the refs in the dynamic component.
-        const newConfiguration = typeConfigMap.has(newValue) ? typeConfigMap.get(newValue) ?? "" : "";
-        activityComponentSettingsJson.value = newConfiguration;
-        activityBag.value.activityComponentSettingsJson = newConfiguration;
+        const newConfiguration = typeConfigMap.has(newValue) ? typeConfigMap.get(newValue) ?? {} : {};
+        componentSettings.value = newConfiguration;
+        activityBag.value.componentSettings = newConfiguration;
     });
 
     // Watch for parental changes in our model value and update all our values.
@@ -281,7 +293,7 @@
         updateRefValue(sendNotificationCommunication, props.modelValue.bag?.sendNotificationCommunication ?? false);
         updateRefValue(completionWorkflowType, props.modelValue.bag?.completionWorkflowType ?? {});
         updateRefValue(activityComponent, props.modelValue.bag?.activityComponent ?? {});
-        updateRefValue(activityComponentSettingsJson, props.modelValue.bag?.activityComponentSettingsJson ?? "{}");
+        updateRefValue(componentSettings, props.modelValue.bag?.componentSettings ?? {});
         updateRefValue(points, props.modelValue.bag?.points ?? 0);
     });
 
@@ -308,14 +320,13 @@
         setPropertiesBoxValue(newValue, "sendNotificationCommunication", sendNotificationCommunication.value);
         setPropertiesBoxValue(newValue, "completionWorkflowType", completionWorkflowType.value);
         setPropertiesBoxValue(newValue, "activityComponent", activityComponent.value);
-        setPropertiesBoxValue(newValue, "activityComponentSettingsJson", activityComponentSettingsJson.value);
+        setPropertiesBoxValue(newValue, "componentSettings", componentSettings.value);
         setPropertiesBoxValue(newValue, "points", points.value);
 
         emit("update:modelValue", newValue);
     });
 
     watch(activityBag, () => {
-        activityComponentSettingsJson.value = activityBag.value?.activityComponentSettingsJson ?? "";
+        componentSettings.value = activityBag.value?.componentSettings ?? {};
     });
-
 </script>

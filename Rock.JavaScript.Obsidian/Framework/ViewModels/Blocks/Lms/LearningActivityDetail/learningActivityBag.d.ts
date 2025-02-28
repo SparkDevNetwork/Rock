@@ -35,9 +35,6 @@ export type LearningActivityBag = {
     /** Gets or sets the learning activity component for the activity. */
     activityComponent?: LearningActivityComponentBag | null;
 
-    /** Gets or sets the json config for the activity component before completion. */
-    activityComponentSettingsJson?: string | null;
-
     /** The participant type assigned to complete this activity. */
     assignTo: AssignTo;
 
@@ -79,6 +76,9 @@ export type LearningActivityBag = {
 
     /** Gets or sets the workflow type that's triggered when the activity is completed. */
     completionWorkflowType?: ListItemBag | null;
+
+    /** The configured settings for the learning component. */
+    componentSettings?: Record<string, string> | null;
 
     /** Gets or sets the currently logged in person. */
     currentPerson?: LearningActivityParticipantBag | null;
