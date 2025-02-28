@@ -64,4 +64,4 @@ export type AssessmentItem = {
  *
  * @returns An error message if the sum of weights is not 100, or true if the sum is 100.
  */
-export type WeightsValidationFunction = () => string | boolean;
+export type WeightsValidationFunction = () => string | true;

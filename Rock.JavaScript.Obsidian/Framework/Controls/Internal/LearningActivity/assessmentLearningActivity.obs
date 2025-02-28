@@ -30,15 +30,13 @@
                     </div>
                 </TransitionVerticalCollapse>
                 <div class="minor-fields-section">
-                    <div class="additional-settings-section">
+                    <div class="additional-settings-section"
+                         :class="weightErrorClasses">
                         <NumberBox v-model="multipleChoiceWeight"
-                                   :key="multiFieldWeightStateKey"
                                    :decimalCount="0"
                                    :disabled="disabled"
                                    :min="0"
                                    label="Multiple Choice Weight"
-                                   :rules="weightsSumTo100"
-                                   :help="multipleChoiceWeightHelpText"
                                    inputGroupClasses="input-width-md">
                             <template #inputGroupAppend>
                                 <span class="input-group-addon">%</span>
@@ -86,7 +84,7 @@
                             <AssessmentItemShortAnswer
                                                        v-if="item.type === AssessmentItemType.ShortAnswer"
                                                        :allAssessmentWeightsSumTo100="weightsSumTo100"
-                                                       :weightsValidationKey="multiFieldWeightStateKey"
+                                                       v-model:weightsValidationKey="multiFieldWeightStateKey"
                                                        v-model="items[index]"
                                                        :disabled="disabled"
                                                        :screenToShow="screenToShow"
@@ -253,6 +251,7 @@
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
     import { updateRefValue } from "@Obsidian/Utility/component";
+    import { useFormState } from "@Obsidian/Utility/form";
 
     const enum SettingKey {
         AssessmentTerm = "assessmentTerm",
@@ -268,6 +267,8 @@
         MultipleChoiceWeight = "multipleChoiceWeight",
     }
 
+    const formState = useFormState();
+
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
     const emits = defineEmits({ ...learningActivityEmits });
@@ -280,12 +281,8 @@
      * re-check validity.
      */
     const multiFieldWeightStateKey = ref("");
-
-    const multipleChoiceWeightHelpText = `
-        Enter the percentage weight for the multiple choice section of the test.
-        This value will determine how much the multiple choice questions will contribute to the overall score of the test.
-        For example, if you set this to 40% then 40% of the individual's total test score will be based on their performance in the multiple choice section.
-        Ensure that the combined weights of all sections add up to 100%.`;
+    const hasWeightError = ref(false);
+    const validationId = newGuid();
 
     const showGradingHelpText = ref(false);
 
@@ -319,7 +316,7 @@
     const assessmentTerm = ref("");
     const header = ref("");
     const items = ref<(AssessmentItem)[]>([]);
-    const multipleChoiceWeight = ref(0);
+    const multipleChoiceWeight = ref<number | null>(0);
     const showMissedQuestionsOnResults = ref(false);
     const showResultsOnCompletion = ref(false);
     const completedItems = ref<(AssessmentItem)[]>([]);
@@ -452,7 +449,7 @@
     }
 
     /** Validation rule for ensuring that all weights add up to 100 for the assessment item. */
-    function weightsSumTo100(): string | boolean {
+    function weightsSumTo100(): string | true {
         // If there are no weights configured return true.
         if (!Array.isArray(allWeights.value) || allWeights.value.length === 0) {
             return true;
@@ -510,13 +507,13 @@
     const gradePercent = computed(() => totalPointsEarned.value / activityBag.value.points * 100);
 
     const multipleChoicePointsEarned = computed((): number => {
-        const availableMultipleChoicePoints = activityBag.value.points * (multipleChoiceWeight.value / 100);
+        const availableMultipleChoicePoints = activityBag.value.points * ((multipleChoiceWeight.value ?? 0) / 100);
 
         return Math.round(multipleChoiceGradePercent.value * availableMultipleChoicePoints * 100) / 100;
     });
 
     const multipleChoicePointsPossible = computed((): number => {
-        return multipleChoiceWeight.value * activityBag.value.points / 100;
+        return (multipleChoiceWeight.value ?? 0) * activityBag.value.points / 100;
     });
 
     /**
@@ -615,7 +612,29 @@
      */
     const areWeightsValid = ref(sumOfAllWeights.value === 100);
 
+    /** The error classes to apply to the weight number box. */
+    const weightErrorClasses = computed((): string[] => {
+        if (!formState || formState.submitCount < 1) {
+            return [];
+        }
+
+        return hasWeightError.value ? ["has-error"] : [];
+    });
+
     // #endregion
+
+    function updateWeightErrorState(): void {
+        const error = weightsSumTo100();
+
+        if (error !== true) {
+            formState?.setError(validationId, "Multiple Choice Weight", error);
+            hasWeightError.value = true;
+        }
+        else {
+            formState?.setError(validationId, "Multiple Choice Weight", "");
+            hasWeightError.value = false;
+        }
+    }
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
@@ -626,7 +645,7 @@
         newValues[SettingKey.AssessmentTerm] = assessmentTerm.value;
         newValues[SettingKey.Header] = header.value;
         newValues[SettingKey.Items] = JSON.stringify(items.value);
-        newValues[SettingKey.MultipleChoiceWeight] = multipleChoiceWeight.value.toString();
+        newValues[SettingKey.MultipleChoiceWeight] = (multipleChoiceWeight.value ?? 0).toString();
         newValues[SettingKey.ShowMissedQuestionsOnResults] = asTrueOrFalseString(showMissedQuestionsOnResults.value);
         newValues[SettingKey.ShowResultsOnCompletion] = asTrueOrFalseString(showResultsOnCompletion.value);
 
@@ -643,7 +662,7 @@
         showResultsOnCompletion
     ], () => {
         if (screenToShow.value === ComponentScreen.Configuration) {
-            handleMultiFieldWeightValidity();
+            // handleMultiFieldWeightValidity();
             debouncedActivityBagEmits();
         }
     }, { deep: true });
@@ -655,12 +674,21 @@
         };
 
         newValues[CompletionKey.CompletedItems] = JSON.stringify(completedItems.value);
-        newValues[CompletionKey.MultipleChoiceWeight] = multipleChoiceWeight.value.toString();
+        newValues[CompletionKey.MultipleChoiceWeight] = (multipleChoiceWeight.value ?? 0).toString();
 
         emits("completionValuesChanged", newValues, {
             pointsEarned: totalPointsEarned.value
         });
     }, { deep: true });
+
+    watch(multipleChoiceWeight, () => {
+        multiFieldWeightStateKey.value = newGuid();
+        updateWeightErrorState();
+    });
+
+    watch(multiFieldWeightStateKey, () => {
+        updateWeightErrorState();
+    });
 
     watch(studentComment, () => {
         emits("commentChanged", studentComment.value);
