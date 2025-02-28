@@ -100,12 +100,14 @@
                 <SuccessScreen v-if="currentScreen === Screen.Success"
                                :configuration="configuration"
                                :session="currentSession"
+                               @done="onHome"
                                @updateActions="onUpdateActions($event, Screen.Success)"
                                @checkInFamily="onRegistrationCheckInFamily" />
 
                 <CheckoutSuccessScreen v-if="currentScreen === Screen.CheckoutSuccess"
                                        :configuration="configuration"
                                        :session="currentSession"
+                                       @done="onHome"
                                        @updateActions="onUpdateActions($event, Screen.CheckoutSuccess)" />
 
                 <template v-for="supervisorScreen in supervisorScreens">
