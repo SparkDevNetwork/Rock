@@ -21,12 +21,12 @@ import { Guid } from "@Obsidian/Types";
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import { useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
 import { ICancellationToken } from "@Obsidian/Utility/cancellation";
-import { scrollElementStartToTop } from "@Obsidian/Utility/dom";
-import {  toGuidOrNull } from "@Obsidian/Utility/guid";
+import { toGuidOrNull } from "@Obsidian/Utility/guid";
 import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationBag";
 import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
 import { CommunicationEntryWizardGetEmailPreviewHtmlBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardGetEmailPreviewHtmlBag";
 import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";
+import { CommunicationEntryWizardSaveCommunicationTemplateResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSaveCommunicationTemplateResponseBag";
 import { CommunicationEntryWizardSaveMetricsReminderRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSaveMetricsReminderRequestBag";
 import { CommunicationEntryWizardSaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSaveResponseBag";
 import { CommunicationEntryWizardSendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSendResponseBag";
@@ -145,18 +145,16 @@ export function useInvokeBlockActionHelper(): InvokeBlockActionHelper {
 
         send(bag: CommunicationEntryWizardCommunicationBag) {
             return invokeBlockAction<CommunicationEntryWizardSendResponseBag>("Send", { bag });
+        },
+
+        saveAsCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag) {
+            return invokeBlockAction<CommunicationEntryWizardSaveCommunicationTemplateResponseBag>("SaveAsCommunicationTemplate", { bag });
+        },
+
+        saveCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag) {
+            return invokeBlockAction<CommunicationEntryWizardSaveCommunicationTemplateResponseBag>("SaveCommunicationTemplate", { bag });
         }
     };
-}
-
-export function scrollToTopOfBlock(blockOrDescendentElement: Element): void {
-    const blockElement = blockOrDescendentElement.closest(".obsidian-block");
-
-    if (!blockElement) {
-        throw new Error("Unable to scroll to top of block. Block element not found.");
-    }
-
-    scrollElementStartToTop(blockOrDescendentElement);
 }
 
 export function get<T>(value: T): T {

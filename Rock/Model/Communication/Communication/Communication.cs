@@ -91,6 +91,15 @@ namespace Rock.Model
         public string Segments { get; set; }
 
         /// <summary>
+        /// Gets or sets the personalization segments that list is being filtered to.
+        /// </summary>
+        /// <value>
+        /// The comma-delimited list of <see cref="PersonalizationSegment"/> ids.
+        /// </value>
+        [DataMember]
+        public string PersonalizationSegments { get; set; }
+
+        /// <summary>
         /// Gets or sets if communication is targeted to people in all selected segments or any selected segments.
         /// </summary>
         /// <value>

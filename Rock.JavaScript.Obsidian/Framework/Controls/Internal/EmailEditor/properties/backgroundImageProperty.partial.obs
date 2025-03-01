@@ -8,8 +8,8 @@
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
     import ImageUploaderProperty from "./imageUploaderProperty.partial.obs";
+    import { createBackgroundImageProvider } from "../providers.partial";
     import { ValueProvider } from "../types.partial";
-    import { createBackgroundImageProvider } from "../utils.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({

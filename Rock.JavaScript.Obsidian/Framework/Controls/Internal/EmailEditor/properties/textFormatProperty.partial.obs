@@ -9,9 +9,11 @@
 
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
+    import { inlineStyleProvider, styleSheetProvider } from "../providers.partial";
     import TextFormatPicker from "../textFormatPicker.partial.obs";
     import { StyleSheetMode, ValueProvider } from "../types.partial";
-    import { inlineStyleProvider, stringConverter, styleSheetProvider } from "../utils.partial";
+    import { stringConverter } from "../utils.partial";
+    import { Enumerable } from "@Obsidian/Utility/linq";
 
     const props = defineProps({
         element: {
@@ -105,7 +107,26 @@
                 props.element,
                 "text-decoration",
                 stringConverter,
-                props.copyToElements
+                props.copyToElements,
+                {
+                    onStyleUpdated(style, newValue) {
+                        // MSO doesn't support text-decoration: none for anchor tags,
+                        // so also use border-bottom-width 0.
+                        if (props.element.tagName.toLowerCase() === "a") {
+                            if (newValue === "none") {
+                                style.setProperty("border-bottom-width", "0");
+
+                                // setting border-bottom-width can sometimes set the color to "initial"
+                                if (style.borderBottomColor === "initial") {
+                                    style.removeProperty("border-bottom-color");
+                                }
+                            }
+                            else if (style.borderBottomWidth === "0" || style.borderBottomWidth === "0px") {
+                                style.removeProperty("border-bottom-width");
+                            }
+                        }
+                    }
+                }
             );
         }
         else {
@@ -114,7 +135,27 @@
                 props.styleSheetMode.styleCssClass,
                 props.styleSheetMode.rulesetCssSelector,
                 "text-decoration",
-                stringConverter
+                stringConverter,
+                {
+                    onStyleUpdated(style, newValue) {
+                        // MSO doesn't support text-decoration: none for anchor tags,
+                        // so also use border-bottom-width 0.
+                        if (Enumerable.from(props.element.querySelectorAll(props.styleSheetMode!.rulesetCssSelector)).where((el) => el.tagName.toLowerCase() === "a").any()) {
+                            if (newValue === "none") {
+                                // No need for !important here because this will be converted to an inline style when sent.
+                                style.setProperty("border-bottom-width", "0");
+
+                                // setting border-bottom-width can sometimes set the color to "initial"
+                                if (style.borderBottomColor === "initial") {
+                                    style.removeProperty("border-bottom-color");
+                                }
+                            }
+                            else if (style.borderBottomWidth === "0" || style.borderBottomWidth === "0px") {
+                                style.removeProperty("border-bottom-width");
+                            }
+                        }
+                    }
+                }
             );
         }
     }

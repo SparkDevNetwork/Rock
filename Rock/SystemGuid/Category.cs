@@ -380,5 +380,14 @@ namespace Rock.SystemGuid
         public const string LAVA_SHORTCODE_AI = "125FB37E-5540-48A6-4A74-A49D1C1324F8";
 
         #endregion
+
+        #region Personalization Segment Categories
+
+        /// <summary>
+        /// Communications Personalization Segment Category Guid
+        /// </summary>
+        public const string PERSONALIZATION_SEGMENT_COMMUNICATIONS = "F80DADC1-AF83-4953-BDA6-6A9F046EA8E6";
+
+        #endregion
     }
 }

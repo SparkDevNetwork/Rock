@@ -23,8 +23,8 @@
 
 import { Guid } from "@Obsidian/Types";
 import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationBag";
-import { CommunicationEntryWizardCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateBag";
 import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
+import { CommunicationEntryWizardCommunicationTemplateListItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateListItemBag";
 import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -43,6 +43,9 @@ export type CommunicationEntryWizardInitializationBox = {
 
     /** Gets or sets the initial communication template detail. */
     communicationTemplateDetail?: CommunicationEntryWizardCommunicationTemplateDetailBag | null;
+
+    /** Gets or sets the communication topic values. */
+    communicationTopicValues?: ListItemBag[] | null;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that
@@ -81,6 +84,9 @@ export type CommunicationEntryWizardInitializationBox = {
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
+    /** Gets or sets the personalization segments. */
+    personalizationSegments?: ListItemBag[] | null;
+
     /** Gets or sets the applications that support push notifications. */
     pushApplications?: ListItemBag[] | null;
 
@@ -88,8 +94,6 @@ export type CommunicationEntryWizardInitializationBox = {
 
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
-
-    segmentDataViews?: ListItemBag[] | null;
 
     /** Gets or sets the SMS accepted MIME types. */
     smsAcceptedMimeTypes?: string[] | null;
@@ -103,7 +107,7 @@ export type CommunicationEntryWizardInitializationBox = {
     smsSupportedMimeTypes?: string[] | null;
 
     /** Gets or sets the communication templates. */
-    templates?: CommunicationEntryWizardCommunicationTemplateBag[] | null;
+    templates?: CommunicationEntryWizardCommunicationTemplateListItemBag[] | null;
 
     /** Gets or sets the video provider names. */
     videoProviderNames?: string[] | null;

@@ -100,11 +100,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// Gets or sets the segment criterion.
         /// </summary>
         public SegmentCriteria SegmentCriteria { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the segment data view unique identifiers.
+        /// Gets or sets the personalization segment identifiers that communication recipients must satisfy.
         /// </summary>
-        public List<Guid> SegmentDataViewGuids { get; set; }
+        public List<int> PersonalizationSegmentIds { get; set; }
 
         /// <summary>
         /// Gets or sets whether to exclude duplicate recipient addresses from receiving this communication.

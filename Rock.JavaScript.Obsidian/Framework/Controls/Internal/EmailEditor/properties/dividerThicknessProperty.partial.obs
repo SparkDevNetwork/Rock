@@ -9,8 +9,9 @@
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
     import NumberBoxProperty from "./numberBoxProperty.partial.obs";
+    import { inlineStyleProvider, styleSheetProvider } from "../providers.partial";
     import { StyleSheetMode, ValueProvider } from "../types.partial";
-    import { inlineStyleProvider, pixelConverter, styleSheetProvider } from "../utils.partial";
+    import { pixelConverter } from "../utils.partial";
     import { isNullish } from "@Obsidian/Utility/util";
 
     const props = defineProps({

@@ -16,6 +16,11 @@
 //
 
 export type GetHtmlRequest = {
-    onSuccess: (html: string) => void;
+    onSuccess: (response: GetHtmlResponse) => void;
     onError?: ((error: string) => void) | null | undefined;
+};
+
+export type GetHtmlResponse = {
+    html: string;
+    bodyWidth?: number | null | undefined;
 };

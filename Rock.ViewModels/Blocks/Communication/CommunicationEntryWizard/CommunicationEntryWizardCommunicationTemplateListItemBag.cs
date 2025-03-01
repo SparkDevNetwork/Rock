@@ -19,10 +19,15 @@ using System;
 namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
 {
     /// <summary>
-    /// Bag containing the communication template information needed for the Communication Entry Wizard block.
+    /// Bag containing the communication template list item information needed for the Communication Entry Wizard block.
     /// </summary>
-    public class CommunicationEntryWizardCommunicationTemplateBag
+    public class CommunicationEntryWizardCommunicationTemplateListItemBag
     {
+        /// <summary>
+        /// Gets or sets this template's unique identifier.
+        /// </summary>
+        public Guid Guid { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this template supports Email communications.
         /// </summary>
@@ -38,11 +43,6 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// </summary>
         public Guid? CategoryGuid { get; set; }
         
-        /// <summary>
-        /// Gets or sets this template's unique identifier.
-        /// </summary>
-        public Guid Guid { get; set; }
-
         /// <summary>
         /// Gets or sets this template's name.
         /// </summary>
@@ -62,9 +62,10 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// Gets or sets a value indicating whether this is a starter template.
         /// </summary>
         public bool IsStarter { get; set; }
+
         /// <summary>
-        /// 
+        /// The count of communications in which this communication template has been used.
         /// </summary>
-        public int CommunicationCount { get; internal set; }
+        public int CommunicationCount { get; set; }
     }
 }

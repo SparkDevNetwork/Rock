@@ -70,6 +70,7 @@
     border: 1px solid #ddd;
     transition: flex-basis 0.2s;
     cursor: pointer;
+    user-select: none;
 }
 
 .content {

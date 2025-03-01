@@ -97,10 +97,9 @@
                         </div>
                     </div>
 
-                    <div v-if="acceptButtonShellElement" class="row">
+                    <div v-if="acceptButtonWidthProvider" class="row">
                         <div class="col-sm-12">
-                            <ButtonWidthProperty :element="acceptButtonElement"
-                                                 :buttonShellElement="acceptButtonShellElement" />
+                            <ButtonWidthProperty :valueProvider="acceptButtonWidthProvider" />
                         </div>
                     </div>
                 </template>
@@ -156,10 +155,9 @@
                         </div>
                     </div>
 
-                    <div v-if="declineButtonShellElement" class="row">
+                    <div v-if="declineButtonWidthProvider" class="row">
                         <div class="col-sm-12">
-                            <ButtonWidthProperty :element="declineButtonElement"
-                                                 :buttonShellElement="declineButtonShellElement" />
+                            <ButtonWidthProperty :valueProvider="declineButtonWidthProvider" />
                         </div>
                     </div>
                 </template>
@@ -206,7 +204,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { computed, onMounted, onUnmounted, PropType, ref, watch } from "vue";
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
@@ -233,6 +231,8 @@
     import { EmailEditorAttendanceOccurrenceBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorAttendanceOccurrenceBag";
     import { EmailEditorRegisterRsvpRecipientsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorRegisterRsvpRecipientsOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { createButtonWidthValuesProvider } from "../providers.partial";
+    import { ButtonWidthValues, ValueProvider } from "../types.partial";
 
 
     const props = defineProps({
@@ -328,6 +328,9 @@
 
     const hiddenOccurrenceIdElement = ref<HTMLInputElement | undefined>();
     const selectedFutureOccurrenceDataOrEmptyString = ref<string>("");
+
+    const acceptButtonWidthProvider = ref<ValueProvider<ButtonWidthValues | null | undefined> | null | undefined>(acceptButtonShellElement.value ? createButtonWidthValuesProvider(acceptButtonShellElement.value) : null);
+    const declineButtonWidthProvider = ref<ValueProvider<ButtonWidthValues | null | undefined> | null | undefined>(declineButtonShellElement.value ? createButtonWidthValuesProvider(declineButtonShellElement.value) : null);
 
     // #endregion Values
 
@@ -549,6 +552,16 @@
         updateRsvpHrefs();
     });
 
+    watch(acceptButtonShellElement, (newElement) => {
+        acceptButtonWidthProvider.value?.dispose();
+        acceptButtonWidthProvider.value = newElement ? createButtonWidthValuesProvider(newElement) : null;
+    });
+
+    watch(declineButtonShellElement, (newElement) => {
+        declineButtonWidthProvider.value?.dispose();
+        declineButtonWidthProvider.value = newElement ? createButtonWidthValuesProvider(newElement) : null;
+    });
+
     // #endregion Watchers
 
     // #region Hooks
@@ -576,6 +589,11 @@
 
             updateRsvpHrefs();
         }
+    });
+
+    onUnmounted(() => {
+        acceptButtonWidthProvider.value?.dispose();
+        declineButtonWidthProvider.value?.dispose();
     });
 
     // #endregion Hooks

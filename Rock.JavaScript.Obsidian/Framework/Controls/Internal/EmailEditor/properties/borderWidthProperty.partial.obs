@@ -9,8 +9,8 @@
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
     import ShorthandNumberBoxProperty from "./shorthandNumberBoxProperty.partial.obs";
+    import { createBorderWidthProvider } from "../providers.partial";
     import { Shorthand, ShorthandValueProvider, StyleSheetMode } from "../types.partial";
-    import { createBorderWidthProvider } from "../utils.partial";
 
     const props = defineProps({
         element: {

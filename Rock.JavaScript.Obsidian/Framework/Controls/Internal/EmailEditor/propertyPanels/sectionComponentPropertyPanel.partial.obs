@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ComponentPropertyPanelBase :componentElement="componentElement"
+    <ComponentPropertyPanelBase v-bind="$attrs"
+                                :componentElement="componentElement"
                                 title="Layout"
                                 :isCloneDisabled="isCloneDisabled"
                                 :isSaveButtonShown="true"
@@ -231,6 +232,7 @@
                 tableElement.value.setAttribute("cellpadding", "0");
                 tableElement.value.setAttribute("cellspacing", "0");
                 tableElement.value.setAttribute("border", "0");
+                tableElement.value.setAttribute("role", "presentation");
                 tableElement.value.style.borderSpacing = "0";
                 tableElement.value.style.tableLayout = "fixed";
                 const tbodyElement = soleColumn.ownerDocument.createElement("tbody");

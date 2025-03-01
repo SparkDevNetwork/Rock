@@ -228,6 +228,10 @@
     <Compile Include="Migrations\202502272125461_UpdateLMSClassPages.Designer.cs">
       <DependentUpon>202502272125461_UpdateLMSClassPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments.cs" />
+    <Compile Include="Migrations\202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments.Designer.cs">
+      <DependentUpon>202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2621,6 +2625,9 @@
     <EmbeddedResource Include="Migrations\202502272125461_UpdateLMSClassPages.resx">
       <DependentUpon>202502272125461_UpdateLMSClassPages.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments.resx">
+      <DependentUpon>202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
     </EmbeddedResource>
@@ -4342,6 +4349,7 @@
     <None Include="Migrations\Version 16.0\Version 1.16.7\202410101546296_AddDefaultCheckInAdvertisement_Image.jpg">
       <DependentUpon>202410101546296_AddDefaultCheckInAdvertisement.cs</DependentUpon>
     </None>
+    <Content Include="Migrations\202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments_spCommunicationRecipientDetails.sql" />
     <Content Include="Migrations\202501152224140_ImprovePeerNetworkRelationshipTrends_spPeerNetwork_UpdateFollowing.sql" />
     <Content Include="Migrations\Version 16.0\Version 1.16.7\202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyticsQuery.sql" />
     <Content Include="Migrations\Version 16.0\Version 1.16.7\202410231736231_PledgeAnalyticsAndPledgeEntryEnhancements_spFinance_PledgeAnalyticsQueryWithMultipleAccountIds.sql" />

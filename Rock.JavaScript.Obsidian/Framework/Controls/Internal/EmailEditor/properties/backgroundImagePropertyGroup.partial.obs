@@ -23,8 +23,12 @@
     import BackgroundFitPropertyGroup, { } from "./backgroundFitPropertyGroup.partial.obs";
     import BackgroundImageProperty from "./backgroundImageProperty.partial.obs";
     import TogglablePropertyGroup from "./togglablePropertyGroup.partial.obs";
+    import {
+        createBackgroundFitProvider,
+        createBackgroundImageProvider,
+        createBackgroundSizeProvider
+    } from "../providers.partial";
     import { BackgroundFit, BackgroundSize, ValueProvider } from "../types.partial";
-    import { createBackgroundFitProvider, createBackgroundImageProvider, createBackgroundSizeProvider } from "../utils.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     type BackgroundImagePropertyGroupValueProvider = ValueProvider<boolean | null | undefined> & {

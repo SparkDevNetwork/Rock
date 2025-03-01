@@ -48,13 +48,13 @@
                                                  rules="required" />
                                     </div>
 
-                                    <div class="col-sm-5">
-                                        <DefinedValuePicker v-model="internalCommunicationTopicValue"
-                                                            :definedTypeGuid="DefinedType.CommunicationTopic"
-                                                            help="This internal field allows you to associate this communication with a defined communication topic or campaign."
-                                                            label="Topic"
-                                                            lazyMode="eager"
-                                                            :showBlankItem="true" />
+                                    <div v-if="communicationTopicValues.length"
+                                         class="col-sm-5">
+                                        <DropDownList v-model="communicationTopicValueGuidOrEmptyString"
+                                                      help="This internal field allows you to associate this communication with a defined communication topic or campaign."
+                                                      :items="communicationTopicValues"
+                                                      label="Topic"
+                                                      :showBlankItem="true" />
                                     </div>
                                 </div>
 
@@ -100,16 +100,17 @@
                                     </div>
                                 </div>
 
-                                <div class="row" v-if="selectedCommunicationListGuidOrManualOrEmptyString !== manualRecipientList && segmentDataViews.length">
+                                <div v-if="selectedCommunicationListGuidOrManualOrEmptyString !== manualRecipientList && personalizationSegments.length"
+                                     class="row">
                                     <div class="col-sm-5">
                                         <ConditionalWell class="segments-section">
-                                            <DropDownList v-model="internalSegmentDataViewGuids"
-                                                          :items="segmentDataViews"
+                                            <DropDownList v-model="personalizationSegmentIdsAsStrings"
+                                                          :items="personalizationSegments"
                                                           label="Select Segments"
                                                           :multiple="true" />
 
                                             <TransitionVerticalCollapse>
-                                                <div v-if="internalSegmentDataViewGuids.length > 1">
+                                                <div v-if="internalPersonalizationSegmentIds.length > 1">
                                                     <RadioButtonList v-model="segmentCriteriaAsString"
                                                                      :items="segmentCriteria"
                                                                      :horizontal="true"
@@ -346,7 +347,6 @@
     import { SendTimePreference } from "./types.partial";
     import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
-    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -360,11 +360,10 @@
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
     import { SegmentCriteria, SegmentCriteriaDescription } from "@Obsidian/Enums/Communication/segmentCriteria";
-    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { scrollElementStartToTop } from "@Obsidian/Utility/dom";
-    import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { areEqual, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { splitCase } from "@Obsidian/Utility/stringUtils";
     import { isNullish } from "@Obsidian/Utility/util";
@@ -398,6 +397,11 @@
 
         communicationTopicValue: {
             type: String as PropType<ListItemBag | null | undefined>,
+            required: true
+        },
+
+        communicationTopicValues: {
+            type: Object as PropType<ListItemBag[]>,
             required: true
         },
 
@@ -471,6 +475,16 @@
             required: true
         },
 
+        personalizationSegmentIds: {
+            type: Object as PropType<number[]>,
+            required: true
+        },
+
+        personalizationSegments: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
+        },
+
         personalPreferenceRecipientCount: {
             type: Number as PropType<number>,
             required: true
@@ -501,16 +515,6 @@
             required: true
         },
 
-        segmentDataViews: {
-            type: Object as PropType<ListItemBag[]>,
-            required: true
-        },
-
-        segmentDataViewGuids: {
-            type: Object as PropType<Guid[]>,
-            required: true
-        },
-
         simpleCommunicationPageUrl: {
             type: String as PropType<string | null | undefined>,
             required: true
@@ -538,9 +542,9 @@
         (e: "update:futureSendDateTime", value: string | null | undefined): void;
         (e: "update:individualRecipientPersonAliasGuids", value: string[] | null | undefined): void;
         (e: "update:isBulkCommunication", value: boolean): void;
+        (e: "update:personalizationSegmentIds", value: number[]): void;
         (e: "update:recipients", value: CommunicationEntryWizardRecipientBag[]): void;
         (e: "update:segmentCriteria", value: SegmentCriteria): void;
-        (e: "update:segmentDataViewGuids", value: Guid[]): void;
     }>();
 
     const segmentCriteria: ListItemBag[] = [
@@ -576,7 +580,7 @@
     const internalIndividualRecipientPersonAliasGuids = useVModelPassthrough(props, "individualRecipientPersonAliasGuids", emit);
     const internalIsBulkCommunication = useVModelPassthrough(props, "isBulkCommunication", emit);
     const internalRecipients = useVModelPassthrough(props, "recipients", emit);
-    const internalSegmentDataViewGuids = useVModelPassthrough(props, "segmentDataViewGuids", emit);
+    const internalPersonalizationSegmentIds = useVModelPassthrough(props, "personalizationSegmentIds", emit);
     const internalSegmentCriteria = useVModelPassthrough(props, "segmentCriteria", emit);
     const selectedSendTimePreference = ref<SendTimePreference>(internalFutureSendDateTime.value ? "later" : "now");
     const selectedCommunicationListGuidOrManualOrEmptyString = ref<string>(
@@ -619,6 +623,25 @@
         }
         else {
             return appendQueryParameters(props.simpleCommunicationPageUrl);
+        }
+    });
+
+    const communicationTopicValueGuidOrEmptyString = computed<Guid | "">({
+        get(): Guid | "" {
+            return internalCommunicationTopicValue.value?.value ?? "";
+        },
+
+        set(newValue: Guid): void {
+            internalCommunicationTopicValue.value = props.communicationTopicValues.find(v => areEqual(newValue, v.value));
+        }
+    });
+
+    const personalizationSegmentIdsAsStrings = computed<string[]>({
+        get(): string[] {
+            return internalPersonalizationSegmentIds.value.map(p => `${p}`);
+        },
+        set(newValue: string[]) {
+            internalPersonalizationSegmentIds.value = newValue.map(v => parseInt(v)).filter(v => !Number.isNaN(v));
         }
     });
 
@@ -724,6 +747,7 @@
     function onListGroupGuidUpdated(): void {
         if (selectedCommunicationListGuidOrManualOrEmptyString.value === manualRecipientList) {
             internalIndividualRecipientPersonAliasGuids.value = [];
+            internalPersonalizationSegmentIds.value = [];
             emit("update:communicationListGroupGuid", null);
         }
         else {

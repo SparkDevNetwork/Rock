@@ -139,7 +139,7 @@
         console.log(`"dragover" designer component type`);
 
         if (!isDraggingComponentType.value || !editorWindowElement.value) {
-            throw "Unable to handle 'dragover' event. The iframe is not initialized.";
+            throw new Error("Unable to handle 'dragover' event. The iframe is not initialized.");
         }
 
         // Preventing default here makes the element a valid drop target.

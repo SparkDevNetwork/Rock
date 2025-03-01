@@ -189,6 +189,16 @@ export function getWindow(el: Element): (Window & typeof globalThis) | null {
 }
 
 /**
+ * Determines whether the argument is an Element.
+ */
+export function isElement(el: unknown): el is Element {
+    // This handles context mismatch when checking iframe elements.
+    const elWindow = el?.["ownerDocument"]?.["defaultView"] as (Window & typeof globalThis);
+
+    return el instanceof Element || (!!elWindow && (el instanceof elWindow.Element));
+}
+
+/**
  * Determines whether the argument is an HTMLElement.
  */
 export function isHTMLElement(el: unknown): el is HTMLElement {
@@ -239,7 +249,8 @@ export function isTouchEvent(event: unknown): event is TouchEvent {
     // This handles context mismatch when checking iframe elements.
     const eventWindow = event?.["view"] as (Window & typeof globalThis);
 
-    return !!eventWindow && event instanceof eventWindow.TouchEvent;
+    // TouchEvent may not be supported in some browsers.
+    return !!eventWindow?.TouchEvent && event instanceof eventWindow.TouchEvent;
 }
 
 /**
@@ -247,8 +258,9 @@ export function isTouchEvent(event: unknown): event is TouchEvent {
  *
  * This is important for applying :empty styles.
  */
-export function removeWhiteSpaceFromElement(element: Element): void {
-    if (element.childNodes.length
+export function removeWhiteSpaceFromElement(element: Element, selector?: string): void {
+    if ((!selector || element.matches(selector))
+        && element.childNodes.length
         && Enumerable.from(element.childNodes).all(n => n.nodeType === Node.TEXT_NODE)
         && !element.textContent?.trim()
     ) {
@@ -257,14 +269,32 @@ export function removeWhiteSpaceFromElement(element: Element): void {
 }
 
 /**
- * Removes white space content from dropzones that have no elements.
+ * Removes white space content from an element and its children.
  *
  * This is important for applying :empty styles.
  */
-export function removeWhiteSpaceFromChildElements(element: Document | Element, selector: string): void {
+export function removeWhiteSpaceFromElementAndChildElements(element: Element, selector?: string): void {
+    removeWhiteSpaceFromChildElements(element, selector);
+    removeWhiteSpaceFromElement(element, selector);
+}
+
+/**
+ * Removes white space content from an element's children.
+ *
+ * This is important for applying :empty styles.
+ */
+export function removeWhiteSpaceFromChildElements(element: Document | Element, selector?: string): void {
     // Clear white space from elements matching the selector so :empty styles gets applied.
-    element.querySelectorAll(selector)
-        .forEach(el => {
-            removeWhiteSpaceFromElement(el);
-        });
+    if (selector) {
+        element.querySelectorAll(selector)
+            .forEach(el => {
+                removeWhiteSpaceFromElement(el, selector);
+            });
+    }
+    else {
+        Enumerable.from(element.children)
+            .forEach(el => {
+                removeWhiteSpaceFromElement(el, selector);
+            });
+    }
 }

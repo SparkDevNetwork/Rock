@@ -8,8 +8,9 @@
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
     import HorizontalAlignmentProperty from "./horizontalAlignmentProperty.partial.obs";
+    import { attributeProvider } from "../providers.partial";
     import { HorizontalAlignment, ValueProvider } from "../types.partial";
-    import { attributeProvider, horizontalAlignmentConverter } from "../utils.partial";
+    import { horizontalAlignmentConverter } from "../utils.partial";
 
     const props = defineProps({
         element: {

@@ -122,7 +122,10 @@
 
                 <div class="row">
                     <div class="col-sm-12">
-                        <HorizontalAlignmentTextAlignProperty :element="componentElement" />
+                        <HorizontalAlignmentTextAlignProperty :element="componentElement"
+                                                              :hooks="{
+                                                                  onSourceValueUpdated: onHorizontalAlignmentUpdated
+                                                              }" />
                     </div>
                 </div>
 
@@ -162,7 +165,8 @@
     import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
     import HorizontalAlignmentTextAlignProperty from "../properties/horizontalAlignmentTextAlignProperty.partial.obs";
     import MarginProperty from "../properties/marginProperty.partial.obs";
-    import { get, pixelConverter } from "../utils.partial";
+    import { HorizontalAlignment } from "../types.partial";
+    import { EmailContentCssClass, get, pixelConverter } from "../utils.partial";
     import AssetPicker from "@Obsidian/Controls/Internal/assetPicker.obs";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
@@ -290,6 +294,7 @@
     const imageSize = ref<ImageSize>(getImageOrAssetSizeFromComponent());
     const scaleImageWidth = ref<number>(getScaleWidthFromComponent());
     const isHighResEnabled = ref<boolean>(getIsHighResEnabledFromComponent());
+    const emailContentTd = ref<HTMLTableCellElement | null | undefined>(getEmailContentTdFromComponent());
 
     // #endregion
 
@@ -848,6 +853,17 @@
     // #region Functions
 
     /**
+     * Gets the table.email-content td from the component if set.
+     */
+    function getEmailContentTdFromComponent(): HTMLTableCellElement | null | undefined {
+        const td = props.componentElement.querySelector(`.${EmailContentCssClass} > tbody > tr > td, .${EmailContentCssClass} > tr > td`);
+
+        if (td) {
+            return td as HTMLTableCellElement;
+        }
+    }
+
+    /**
      * Gets the image from the component if set.
      */
     function getImageFromComponent(): ListItemBag | null | undefined {
@@ -1051,6 +1067,33 @@
         }
     }
 
+    function onHorizontalAlignmentUpdated(sourceValue: "" | HorizontalAlignment | null | undefined): void {
+        if (!emailContentTd.value) {
+            return;
+        }
+
+        // sourceValue is a `text-align` CSS property value.
+        // Convert it to a td `align` attribute value
+        // and set the td `align` attribute for email compatibility.
+        const conversions: Record<string, string> = {
+            "start": "left",
+            "left": "left",
+            "end": "right",
+            "right": "right",
+            "center": "center",
+            "justify": "center"
+        };
+
+        const alignValue = conversions[sourceValue ?? ""];
+
+        if (alignValue) {
+            emailContentTd.value.setAttribute("align", alignValue);
+        }
+        else {
+            emailContentTd.value.removeAttribute("align");
+        }
+    }
+
     let activeApplyCommand: Command = getActiveApplyCommand();
     let activeSetSizeCommand: Command = getActiveSetSizeCommand();
 
@@ -1191,6 +1234,7 @@
         imageSize.value = getImageOrAssetSizeFromComponent();
         scaleImageWidth.value = getScaleWidthFromComponent();
         isHighResEnabled.value = getIsHighResEnabledFromComponent();
+        emailContentTd.value = getEmailContentTdFromComponent();
 
         activeSetSizeCommand = getActiveSetSizeCommand();
         activeApplyCommand = getActiveApplyCommand();

@@ -1,0 +1,265 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase :componentElement="componentElement"
+                                title="Row"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion title="General Settings">
+                <RangeSliderProperty label="Body Width"
+                                     :min="480"
+                                     :max="900"
+                                     :showValueBar="true"
+                                     :valueProvider="bodyWidthProvider"
+                                     valueSuffix="px" />
+
+                <ColorPickerProperty label="Body Color"
+                                     :valueProvider="bodyColorProvider" />
+
+                <ColorPickerProperty label="Background Color"
+                                     :valueProvider="backgroundColorProvider" />
+            </Accordion>
+        </AccordionGroup>
+    </ComponentPropertyPanelBase>
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import ColorPickerProperty from "../properties/colorPickerProperty.partial.obs";
+    import RangeSliderProperty from "../properties/rangeSliderProperty.partial.obs";
+    import { attributeProvider, createDomWatcherProvider, inlineStyleProvider } from "../providers.partial";
+    import { ValueProvider } from "../types.partial";
+    import {
+        EmailRowCssClass,
+        numberToStringConverter,
+        pixelConverter,
+        stringConverter,
+        EmailRowContentCssClass
+    } from "../utils.partial";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { isHTMLElement } from "@Obsidian/Utility/dom";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+
+    const specificEmailRowToRowContentCssClassSelector = `.${EmailRowCssClass} > tbody > tr > td > .${EmailRowContentCssClass}, .${EmailRowCssClass} > tr > td > .${EmailRowContentCssClass}` as const;
+
+    // #region Computed Props
+
+    // #endregion Computed Props
+
+    // #region Values
+
+    const bodyColorProvider = ref<ValueProvider<string | null | undefined>>(getBodyColorProvider());
+    const backgroundColorProvider = ref<ValueProvider<string | null | undefined>>(getBackgroundColorProvider());
+    const bodyWidthProvider = ref<ValueProvider<number | null | undefined>>(getBodyWidthProvider());
+
+    // #endregion Values
+
+    // #region Computed Props
+
+    // #endregion Computed Props
+
+    // #region Functions
+
+    function getBodyColorProvider(): ValueProvider<string | null | undefined> {
+        const backgroundColorInlineStyleProvider = createDomWatcherProvider(
+            props.componentElement,
+            `:scope > ${specificEmailRowToRowContentCssClassSelector}`,
+            (el) => inlineStyleProvider(el as HTMLElement, "background-color", stringConverter, undefined, {
+                onSourceValueUpdated(value) {
+                    if (value) {
+                        if (isHTMLElement(el)) {
+                            el.setAttribute("data-body-color-component", "true");
+                        }
+                    }
+                    else {
+                        if (isHTMLElement(el)) {
+                            // `delete el.dataset["key"]` doesn't always work.
+                            // Using `el.removeAttribute("data-key")` instead.
+                            el.removeAttribute("data-body-color-component");
+                        }
+                    }
+                }
+            }),
+            undefined,
+            {
+                includeSelf: specificEmailRowToRowContentCssClassSelector
+            }
+        );
+
+        const bgcolorAttributeProvider = createDomWatcherProvider(
+            props.componentElement,
+            `:scope > ${specificEmailRowToRowContentCssClassSelector}`,
+            (el) => attributeProvider(el, "bgcolor", stringConverter, undefined),
+            backgroundColorInlineStyleProvider.value,
+            {
+                includeSelf: specificEmailRowToRowContentCssClassSelector
+            }
+        );
+
+        const value = ref<string | null | undefined>(backgroundColorInlineStyleProvider.value);
+
+        const watcher = watch(value, (newValue) => {
+            backgroundColorInlineStyleProvider.value = newValue;
+            bgcolorAttributeProvider.value = newValue;
+        });
+
+        return {
+            get value() {
+                return value.value;
+            },
+            set value(newValue) {
+                value.value = newValue;
+            },
+            dispose() {
+                watcher();
+                bgcolorAttributeProvider.dispose();
+                backgroundColorInlineStyleProvider.dispose();
+            }
+        };
+    }
+
+    function getBackgroundColorProvider(): ValueProvider<string | null | undefined> {
+        const backgroundColorInlineStyleProvider = createDomWatcherProvider(
+            props.componentElement,
+            `:scope > .${EmailRowCssClass}`,
+            (el) => inlineStyleProvider(el as HTMLElement, "background-color", stringConverter),
+            undefined,
+            {
+                includeSelf: EmailRowCssClass
+            }
+        );
+
+        const bgcolorAttributeProvider = createDomWatcherProvider(
+            props.componentElement,
+            `:scope > .${EmailRowCssClass}`,
+            (el) => attributeProvider(el, "bgcolor", stringConverter),
+            backgroundColorInlineStyleProvider.value,
+            {
+                includeSelf: EmailRowCssClass
+            }
+        );
+
+        const value = ref<string | null | undefined>(backgroundColorInlineStyleProvider.value);
+
+        const watcher = watch(value, (newValue) => {
+            backgroundColorInlineStyleProvider.value = newValue;
+            bgcolorAttributeProvider.value = newValue;
+        });
+
+        return {
+            get value() {
+                return value.value;
+            },
+            set value(newValue) {
+                value.value = newValue;
+            },
+            dispose() {
+                watcher();
+                bgcolorAttributeProvider.dispose();
+                backgroundColorInlineStyleProvider.dispose();
+            }
+        };
+    }
+
+    function getBodyWidthProvider(): ValueProvider<number | null | undefined> {
+        const maxWidthInlineStyleProvider = createDomWatcherProvider(
+            props.componentElement,
+            `:scope > ${specificEmailRowToRowContentCssClassSelector}`,
+            (el) => inlineStyleProvider(el as HTMLElement, "max-width", pixelConverter, undefined, {
+                onStyleUpdated(style, value) {
+                    if (!isNullish(value)) {
+                        // Ensure the inline width of the .email-row-content table is 100% when a max-width is defined.
+                        style.width = "100%";
+                    }
+
+                    if (isHTMLElement(el)) {
+                        if (value) {
+                            el.setAttribute("data-body-width-component", "true");
+                        }
+                        else {
+                            el.removeAttribute("data-body-width-component");
+                        }
+                    }
+                }
+            }),
+            undefined,
+            {
+                includeSelf: specificEmailRowToRowContentCssClassSelector
+            }
+        );
+
+        const widthAttributeProvider = createDomWatcherProvider(
+            props.componentElement,
+            `:scope > ${specificEmailRowToRowContentCssClassSelector}`,
+            (el) => attributeProvider(el, "width", numberToStringConverter),
+            maxWidthInlineStyleProvider.value,
+            {
+                includeSelf: specificEmailRowToRowContentCssClassSelector
+            }
+        );
+
+        const value = ref<number | null | undefined>(maxWidthInlineStyleProvider.value);
+
+        const watcher = watch(value, (newValue) => {
+            maxWidthInlineStyleProvider.value = newValue;
+            widthAttributeProvider.value = newValue;
+        });
+
+        return {
+            get value() {
+                return value.value;
+            },
+            set value(newValue) {
+                value.value = newValue;
+            },
+            dispose() {
+                watcher();
+                widthAttributeProvider.dispose();
+                maxWidthInlineStyleProvider.dispose();
+            }
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.componentElement, () => {
+        backgroundColorProvider.value.dispose();
+        backgroundColorProvider.value = getBackgroundColorProvider();
+
+        bodyColorProvider.value.dispose();
+        bodyColorProvider.value = getBodyColorProvider();
+
+        bodyWidthProvider.value.dispose();
+        bodyWidthProvider.value = getBodyWidthProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        backgroundColorProvider.value.dispose();
+        bodyColorProvider.value.dispose();
+        bodyWidthProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

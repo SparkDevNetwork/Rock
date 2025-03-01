@@ -171,6 +171,21 @@ namespace Rock.Blocks.Communication
                 .IsTrue( target => target?.Value.IsNotNullOrWhiteSpace() == true, out validationResult );
         }
 
+        /// <summary>
+        /// Validates that the target list item bag is not <see langword="null"/> and its value is not <see langword="null"/>, whitespace or an empty guid.
+        /// </summary>
+        /// <remarks>
+        /// If invalid, <paramref name="validationResult"/> is set to an unsuccessful result with the error message "(Friendly Name | Field) is required."
+        /// </remarks>
+        /// <param name="validationContext">The validation context.</param>
+        /// <param name="validationResult">Set to <see cref="ValidationResult.Success"/> if valid; otherwise a validation result with an error message.</param>
+        /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+        internal static bool ValueIsNotNullOrEmptyGuid( this IValidationContext<ListItemBag> validationContext, out ValidationResult validationResult )
+        {
+            return validationContext.WithDefaultErrorMessage( ( _, friendlyName ) => $"{friendlyName ?? "Field"} is required." )
+                .IsTrue( target => target?.Value.AsGuid().IsEmpty() == false, out validationResult );
+        }
+
         #endregion
 
         #region Collection (IEnumerable, List, Array) Validation Methods

@@ -1,75 +1,90 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div>
-        <TitleComponentPropertyPanel v-if="componentTypeName === 'title'"
-                                     :componentElement="componentElement"
-                                     @clone="$emit('clone')"
-                                     @complete="$emit('complete')"
-                                     @delete="$emit('delete')" />
+    <TitleComponentPropertyPanel v-if="componentTypeName === 'title'"
+                                 :componentElement="componentElement"
+                                 :hasScrollableBody="true"
+                                 @clone="$emit('clone')"
+                                 @complete="$emit('complete')"
+                                 @delete="$emit('delete')" />
 
-        <VideoComponentPropertyPanel v-else-if="componentTypeName === 'video'"
-                                     :componentElement="componentElement"
-                                     :videoProviderNames="videoProviderNames"
-                                     @clone="$emit('clone')"
-                                     @complete="$emit('complete')"
-                                     @delete="$emit('delete')" />
+    <VideoComponentPropertyPanel v-else-if="componentTypeName === 'video'"
+                                 :componentElement="componentElement"
+                                 :hasScrollableBody="true"
+                                 :videoProviderNames="videoProviderNames"
+                                 @clone="$emit('clone')"
+                                 @complete="$emit('complete')"
+                                 @delete="$emit('delete')" />
 
-        <ButtonComponentPropertyPanel v-else-if="componentTypeName === 'button'"
-                                      :componentElement="componentElement"
-                                      @clone="$emit('clone')"
-                                      @complete="$emit('complete')"
-                                      @delete="$emit('delete')" />
+    <ButtonComponentPropertyPanel v-else-if="componentTypeName === 'button'"
+                                  :componentElement="componentElement"
+                                  :hasScrollableBody="true"
+                                  @clone="$emit('clone')"
+                                  @complete="$emit('complete')"
+                                  @delete="$emit('delete')" />
 
-        <TextComponentPropertyPanel v-else-if="componentTypeName === 'text'"
-                                    :componentElement="componentElement"
-                                    :mergeFields="mergeFields"
-                                    @clone="$emit('clone')"
-                                    @complete="$emit('complete')"
-                                    @delete="$emit('delete')" />
+    <TextComponentPropertyPanel v-else-if="componentTypeName === 'text'"
+                                :componentElement="componentElement"
+                                :hasScrollableBody="true"
+                                :mergeFields="mergeFields"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')" />
 
-        <DividerComponentPropertyPanel v-else-if="componentTypeName === 'divider'"
-                                       :componentElement="componentElement"
-                                       @clone="$emit('clone')"
-                                       @complete="$emit('complete')"
-                                       @delete="$emit('delete')" />
+    <DividerComponentPropertyPanel v-else-if="componentTypeName === 'divider'"
+                                   :componentElement="componentElement"
+                                   :hasScrollableBody="true"
+                                   @clone="$emit('clone')"
+                                   @complete="$emit('complete')"
+                                   @delete="$emit('delete')" />
 
-        <AdaptiveMessageComponentPropertyPanel v-else-if="componentTypeName === 'message'"
-                                               :componentElement="componentElement"
-                                               @clone="$emit('clone')"
-                                               @complete="$emit('complete')"
-                                               @delete="$emit('delete')" />
+    <AdaptiveMessageComponentPropertyPanel v-else-if="componentTypeName === 'message'"
+                                           :componentElement="componentElement"
+                                           :hasScrollableBody="true"
+                                           @clone="$emit('clone')"
+                                           @complete="$emit('complete')"
+                                           @delete="$emit('delete')" />
 
-        <ImageComponentPropertyPanel v-else-if="componentTypeName === 'image'"
-                                     :componentElement="componentElement"
-                                     :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
-                                     @clone="$emit('clone')"
-                                     @complete="$emit('complete')"
-                                     @delete="$emit('delete')" />
+    <ImageComponentPropertyPanel v-else-if="componentTypeName === 'image'"
+                                 :componentElement="componentElement"
+                                 :hasScrollableBody="true"
+                                 :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
+                                 @clone="$emit('clone')"
+                                 @complete="$emit('complete')"
+                                 @delete="$emit('delete')" />
 
-        <CodeComponentPropertyPanel v-else-if="componentTypeName === 'code'"
-                                    :componentElement="componentElement"
-                                    :mergeFields="mergeFields"
-                                    @clone="$emit('clone')"
-                                    @complete="$emit('complete')"
-                                    @delete="$emit('delete')" />
+    <CodeComponentPropertyPanel v-else-if="componentTypeName === 'code'"
+                                :componentElement="componentElement"
+                                :hasScrollableBody="true"
+                                :mergeFields="mergeFields"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')" />
 
-        <RsvpComponentPropertyPanel v-else-if="componentTypeName === 'rsvp'"
-                                    :componentElement="componentElement"
-                                    :recipientPersonIds="recipientPersonIds"
-                                    @clone="$emit('clone')"
-                                    @complete="$emit('complete')"
-                                    @delete="$emit('delete')" />
+    <RsvpComponentPropertyPanel v-else-if="componentTypeName === 'rsvp'"
+                                :componentElement="componentElement"
+                                :hasScrollableBody="true"
+                                :recipientPersonIds="recipientPersonIds"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')" />
 
-        <SectionComponentPropertyPanel v-else-if="componentTypeName === 'section'"
-                                       :componentElement="componentElement"
-                                       :isCloneDisabled="isRootSectionComponent && !parentStructureDropzone"
-                                       @clone="$emit('clone')"
-                                       @complete="$emit('complete')"
-                                       @delete="$emit('delete')"
-                                       @emailSectionSaved="$emit('emailSectionSaved', $event)" />
+    <SectionComponentPropertyPanel v-else-if="componentTypeName === 'section'"
+                                   :componentElement="componentElement"
+                                   :hasScrollableBody="true"
+                                   :isCloneDisabled="isRootSectionComponent && !parentStructureDropzone"
+                                   @clone="$emit('clone')"
+                                   @complete="$emit('complete')"
+                                   @delete="$emit('delete')"
+                                   @emailSectionSaved="$emit('emailSectionSaved', $event)" />
 
-        <div v-else>Unknown component type: {{ componentTypeName }}.</div>
-    </div>
+    <RowComponentPropertyPanel v-else-if="componentTypeName === 'row'"
+                               :componentElement="componentElement"
+                               :hasScrollableBody="true"
+                               @clone="$emit('clone')"
+                               @complete="$emit('complete')"
+                               @delete="$emit('delete')" />
+
+    <div v-else>Unknown component type: {{ componentTypeName }}.</div>
 </template>
 
 <script setup lang="ts">
@@ -79,6 +94,7 @@
     import CodeComponentPropertyPanel from "./propertyPanels/codeComponentPropertyPanel.partial.obs";
     import DividerComponentPropertyPanel from "./propertyPanels/dividerComponentPropertyPanel.partial.obs";
     import ImageComponentPropertyPanel from "./propertyPanels/imageComponentPropertyPanel.partial.obs";
+    import RowComponentPropertyPanel from "./propertyPanels/rowComponentPropertyPanel.partial.obs";
     import RsvpComponentPropertyPanel from "./propertyPanels/rsvpComponentPropertyPanel.partial.obs";
     import SectionComponentPropertyPanel from "./propertyPanels/sectionComponentPropertyPanel.partial.obs";
     import TextComponentPropertyPanel from "./propertyPanels/textComponentPropertyPanel.partial.obs";

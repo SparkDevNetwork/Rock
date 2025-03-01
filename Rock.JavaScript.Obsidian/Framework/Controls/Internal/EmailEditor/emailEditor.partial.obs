@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="email-editor-wrapper">
+    <div class="email-editor-wrapper styled-scroll">
         <div class="email-editor">
             <SidePanel v-model:selectedComponentElement="selectedComponentElement"
                        v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
@@ -47,6 +47,7 @@
     display: flex;
     flex-grow: 1;
     background-color: var(--color-interface-softest);
+    overflow: hidden;
 }
 
 .email-designer-container {
@@ -86,6 +87,10 @@
         communicationTemplates: {
             type: Object as PropType<ListItemBag[] | null | undefined>,
             required: false
+        },
+
+        emailEditorCssClass: {
+            type: String as PropType<string | null | undefined>
         },
 
         getHtmlRequest: {

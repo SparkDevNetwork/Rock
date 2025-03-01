@@ -48,7 +48,7 @@
                     const nextElement = columnElement.nextElementSibling as HTMLElement;
                     if (nextElement?.classList.contains("spacer")) {
                         // Update gap.
-                        nextElement.setAttribute("width", gapPixels);
+                        nextElement.setAttribute("width", `${gap.value}`);
                         nextElement.style.width = gapPixels;
                         nextElement.style.minWidth = gapPixels;
                     }
@@ -62,20 +62,22 @@
                         spacerColumn.style.fontSize = "0";
                         spacerColumn.style.lineHeight = "0";
                         spacerColumn.style.padding = "0";
+                        spacerColumn.style.setProperty("mso-line-height-rule", "exactly");
                         spacerColumn.innerHTML = "&nbsp;";
+
                         columnElement.parentElement?.insertBefore(spacerColumn, nextElement);
                     }
                 }
             }
 
             // Exclude spacer widths from columns.
-            if (props.columnElements.length > 1) {
-                const minusPixels = `${gap.value * (props.columnElements.length - 1) / props.columnElements.length}px`;
+            // if (props.columnElements.length > 1) {
+            //     const minusPixels = `${gap.value * (props.columnElements.length - 1) / props.columnElements.length}px`;
 
-                for (const columnElement of props.columnElements) {
-                    columnElement.style.minWidth = `calc(${columnElement.getAttribute("width")} - ${minusPixels})`;
-                }
-            }
+            //     for (const columnElement of props.columnElements) {
+            //         columnElement.style.minWidth = `calc(${columnElement.getAttribute("width")} - ${minusPixels})`;
+            //     }
+            // }
         }
         else {
             // Remove spacer columns.

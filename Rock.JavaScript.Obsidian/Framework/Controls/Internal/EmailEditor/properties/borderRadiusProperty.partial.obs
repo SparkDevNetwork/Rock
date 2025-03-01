@@ -14,8 +14,9 @@
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
     import ShorthandNumberBoxProperty from "./shorthandNumberBoxProperty.partial.obs";
+    import { shorthandInlineStyleProvider, shorthandStyleSheetProvider } from "../providers.partial";
     import { ShorthandValueProvider, StyleSheetMode } from "../types.partial";
-    import { pixelConverter, shorthandInlineStyleProvider, shorthandStyleSheetProvider } from "../utils.partial";
+    import { pixelConverter } from "../utils.partial";
 
     const props = defineProps({
         element: {

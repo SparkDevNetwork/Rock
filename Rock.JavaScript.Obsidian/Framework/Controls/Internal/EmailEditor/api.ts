@@ -22,6 +22,7 @@ import { EmailSection } from "@Obsidian/SystemGuids/emailSection";
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import { post, uploadBinaryFile } from "@Obsidian/Utility/http";
 import { Enumerable } from "@Obsidian/Utility/linq";
+import { isPromise } from "@Obsidian/Utility/promiseUtils";
 import { EmailEditorDeleteEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorDeleteEmailSectionOptionsBag";
 import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
 import { EmailEditorGetEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorGetEmailSectionOptionsBag";
@@ -31,9 +32,23 @@ import { EmailEditorGetAttendanceOccurrenceOptionsBag } from "@Obsidian/ViewMode
 import { EmailEditorGetFutureAttendanceOccurrencesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorGetFutureAttendanceOccurrencesOptionsBag";
 import { EmailEditorCreateAttendanceOccurrenceOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorCreateAttendanceOccurrenceOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { Guid } from "@Obsidian/Types";
 
 type ElementBinaryFileInfo = {
     binaryFile: ListItemBag | null | undefined;
+};
+
+type CreateBinaryFileFromElementOptions = {
+    /** The source HTML element. */
+    element: HTMLElement;
+    /** The desired file name. */
+    fileName: string;
+    /** Optional file processor. */
+    fileProcessor?: (file: File) => Promise<File> | File;
+    /** Optional element width. */
+    elementWidth?: number;
+    /** The binary filetype guid. */
+    binaryFileTypeGuid: Guid;
 };
 
 /**
@@ -42,10 +57,7 @@ type ElementBinaryFileInfo = {
  * @param options `options.element` must exist in the DOM.
  */
 export async function createBinaryFileImageFromElement(
-    options: {
-        element: HTMLElement;
-        fileName: string;
-    }
+    options: CreateBinaryFileFromElementOptions
 ): Promise<ElementBinaryFileInfo> {
     // Convert the element to an image.
     const canvas = await html2canvas(options.element, {
@@ -53,7 +65,9 @@ export async function createBinaryFileImageFromElement(
         backgroundColor: null,
 
         // Turn on logging if needed but remember to turn it back off.
-        logging: false
+        logging: false,
+
+        windowWidth: options.elementWidth
     }) as HTMLCanvasElement;
 
     const blob = await new Promise<Blob | null>(resolve => {
@@ -65,12 +79,23 @@ export async function createBinaryFileImageFromElement(
 
     if (blob) {
         // Create the thumbnail file.
-        const file = new File([blob], options.fileName, { type: "image/png" });
+        let file = new File([blob], options.fileName, { type: "image/png" });
+
+        if (options.fileProcessor) {
+            const res = options.fileProcessor(file);
+
+            if (isPromise(res)) {
+                file = await res;
+            }
+            else {
+                file = res;
+            }
+        }
 
         // Upload the thumbnail file.
         binaryFile = await uploadBinaryFile(
             file,
-            BinaryFiletype.CommunicationImage,
+            options.binaryFileTypeGuid,
             {
                 isTemporary: true,
                 progress: () => { }
@@ -168,7 +193,8 @@ async function createEmailSectionAndThumbnail(document: Document, bag: Omit<Emai
             async tempElement => {
                 const { binaryFile: thumbnailBinaryFile } = await createBinaryFileImageFromElement({
                     element: tempElement,
-                    fileName: `${bag.name!.replace(" ", "_")}.png`
+                    fileName: `${bag.name!.replace(" ", "_")}.png`,
+                    binaryFileTypeGuid: BinaryFiletype.CommunicationImage
                 });
 
                 const result = await createEmailSection({
@@ -193,7 +219,7 @@ export async function createStarterSections(document: Document): Promise<HttpRes
         category: starterSectionsCategory,
         isSystem: true,
         name: "Starter Hero",
-        sourceMarkup: `<div class="component component-section selected" data-state="component" style="" data-email-section-guid="acae542b-51e3-4bb2-99b3-ff420a85d019"><table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; table-layout: fixed;" width="100%">
+        sourceMarkup: `<div class="component component-section selected" data-state="component" style="" data-email-section-guid="acae542b-51e3-4bb2-99b3-ff420a85d019"><table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0;" width="100%">
     <tbody>
         <tr>
             <td class="dropzone columns small-12 start last large-12" valign="top" width="100%" style="text-align: center; padding: 8px;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 1</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td>
@@ -208,7 +234,7 @@ export async function createStarterSections(document: Document): Promise<HttpRes
         category: starterSectionsCategory,
         isSystem: true,
         name: "Starter Standard Promo",
-        sourceMarkup: `<div class="component component-section selected" data-state="component" style="" data-email-section-guid="6cbe0906-9a9a-4b67-91af-fabd4936dec9"><table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; table-layout: fixed;" width="100%">
+        sourceMarkup: `<div class="component component-section selected" data-state="component" style="" data-email-section-guid="6cbe0906-9a9a-4b67-91af-fabd4936dec9"><table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0;" width="100%">
     <tbody>
         <tr>
             <td class="dropzone columns small-12 start large-6" valign="top" width="50%" style="text-align: center; padding: 8px; width: 50%;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 1</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td><td class="dropzone columns small-12 last large-6" valign="top" width="50%" style="padding: 8px; width: 50%; text-align: center;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 2</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td>
@@ -223,7 +249,7 @@ export async function createStarterSections(document: Document): Promise<HttpRes
         category: starterSectionsCategory,
         isSystem: true,
         name: "Starter 3-Column Promo",
-        sourceMarkup: `<div><div class="component component-section selected" data-state="component" style="" data-email-section-guid="63c1ebf8-0398-4039-9fba-a99886ed7106"><table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; table-layout: fixed;" width="100%">
+        sourceMarkup: `<div><div class="component component-section selected" data-state="component" style="" data-email-section-guid="63c1ebf8-0398-4039-9fba-a99886ed7106"><table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0;" width="100%">
     <tbody>
         <tr>
             <td class="dropzone columns small-12 start large-4" valign="top" width="33.33333333333333%" style="text-align: center; padding: 8px; width: 33.3333%;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 1</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td><td class="dropzone columns small-12 large-4" valign="top" width="33.33333333333333%" style="padding: 8px; width: 33.3333%; text-align: center;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 2</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td><td class="dropzone columns small-12 last large-4" valign="top" width="33.33333333333333%" style="width: 33.3333%; text-align: center; padding: 8px;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 3</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td>

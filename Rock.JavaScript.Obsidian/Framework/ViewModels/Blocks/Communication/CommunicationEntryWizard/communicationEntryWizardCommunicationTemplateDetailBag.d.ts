@@ -31,8 +31,14 @@ export type CommunicationEntryWizardCommunicationTemplateDetailBag = {
     /** Gets or sets the BCC emails. */
     bccEmails?: string | null;
 
+    /** Gets or sets the Category. */
+    category?: ListItemBag | null;
+
     /** Gets or sets the CC emails. */
     ccEmails?: string | null;
+
+    /** Gets or sets the description. */
+    description?: string | null;
 
     /** Gets or sets the email attachment binary files. */
     emailAttachmentBinaryFiles?: ListItemBag[] | null;
@@ -46,11 +52,20 @@ export type CommunicationEntryWizardCommunicationTemplateDetailBag = {
     /** Gets or sets the communication template unique identifier. */
     guid: Guid;
 
+    /** Gets or sets the image file for the Template Preview Image. */
+    imageFile?: ListItemBag | null;
+
+    /** Gets or sets a value indicating whether this is a starter template. */
+    isStarter: boolean;
+
     /** Gets or sets a value indicating whether this communication template can be used with the Communication Entry Wizard block. */
     isWizardSupported: boolean;
 
     /** Gets or sets the email message. */
     message?: string | null;
+
+    /** Gets or sets the name of the Communication Template. */
+    name?: string | null;
 
     /** Gets or sets the push data. */
     pushData?: CommunicationEntryWizardPushNotificationOptionsBag | null;

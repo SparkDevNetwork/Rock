@@ -3,7 +3,8 @@
     <div class="email-editor-step">
         <Panel :hasFullscreen="true"
                :headerSecondaryActions="[{
-                   title: 'TBD', type: 'default'
+                   title: 'Save As Template', type: 'default',
+                   handler: onSaveAsTemplate
                }]"
                panelBodyCssClass="panel-body-wizard"
                type="block">
@@ -113,25 +114,17 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    padding: 0;
 }
 
 .panel-body-contents {
     flex: 1;
-    overflow-x: hidden;
-    overflow-y: auto;
-}
-
-.panel-body-wizard {
-    position: relative;
+    overflow: hidden;
 }
 
 :deep(.panel-sub-header) {
     background-color: var(--color-interface-softer);
     border-color: var(--color-interface-soft);
-}
-
-:deep(.panel-body-wizard) {
-    padding: 0;
 }
 
 :deep(.panel-body .actions:last-of-type) {
@@ -191,6 +184,7 @@
     import { BlockActionCallbacks } from "./types.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import { GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -273,6 +267,7 @@
         (e: "previousStep"): void;
         (e: "sendTestCommunication", value: string, callbacks: BlockActionCallbacks): void;
         (e: "saveCommunication", value: BlockActionCallbacks): void;
+        (e: "saveAsTemplate", value: GetHtmlResponse): void;
         (e: "update:message", value: string): void;
         (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
         (e: "update:testEmailAddress", value: string): void;
@@ -311,6 +306,14 @@
 
     // #region Event Handlers
 
+    function onSaveAsTemplate(): void {
+        getHtmlRequest.value = {
+            onSuccess(response: GetHtmlResponse): void {
+                emit("saveAsTemplate", response);
+            }
+        };
+    }
+
     function onSendTestCommunication(): void {
         if (isSendingTest.value) {
             return;
@@ -319,7 +322,7 @@
         isSendingTest.value = true;
 
         getHtmlRequest.value = {
-            onSuccess(html: string): void {
+            onSuccess({ html }): void {
                 emit("sendTestCommunication", html, {
                     onSuccess() {
                         isSendingTest.value = false;
@@ -338,7 +341,7 @@
     function onPreviousClicked(): void {
         // Update the message before moving to the previous step.
         getHtmlRequest.value = {
-            onSuccess(html: string): void {
+            onSuccess({ html }): void {
                 emit("update:message", html);
                 emit("previousStep");
             }
@@ -348,7 +351,7 @@
     function onNextClicked(): void {
         // Update the message before moving to the previous step.
         getHtmlRequest.value = {
-            onSuccess(html: string): void {
+            onSuccess({ html }): void {
                 emit("update:message", html);
                 emit("nextStep");
             }
@@ -365,7 +368,7 @@
         selectedComponentElement.value = null;
 
         getHtmlRequest.value = {
-            onSuccess(html: string): void {
+            onSuccess({ html }): void {
                 emit("update:message", html);
 
                 emit("saveCommunication", {
@@ -389,7 +392,7 @@
         isPreviewLoading.value = true;
 
         getHtmlRequest.value = {
-            async onSuccess(html: string): Promise<void> {
+            async onSuccess({ html }): Promise<void> {
                 emit("update:message", html);
 
                 if (props.previewHtmlProcessor) {

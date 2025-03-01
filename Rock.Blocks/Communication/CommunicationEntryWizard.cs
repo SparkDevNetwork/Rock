@@ -43,6 +43,8 @@ using Rock.Communication.Transport;
 using Rock.ViewModels.Rest.Controls;
 using Rock.Security.SecurityGrantRules;
 using System.Text.RegularExpressions;
+using System.Data;
+using System.Data.SqlClient;
 
 namespace Rock.Blocks.Communication
 {
@@ -143,6 +145,14 @@ namespace Rock.Blocks.Communication
         IsRequired = false,
         Order = 13 )]
 
+    [CategoryField( "Personalization Segment Category",
+        Key = AttributeKey.PersonalizationSegmentCategory,
+        Description = "Choose a category of Personalization Segments to be displayed.",
+        EntityType = typeof ( PersonalizationSegment ),
+        DefaultValue = SystemGuid.Category.PERSONALIZATION_SEGMENT_COMMUNICATIONS,
+        IsRequired = true,
+        Order = 14 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "26917C58-C8A2-4BF5-98CB-378A02761CD7" )]
@@ -169,6 +179,7 @@ namespace Rock.Blocks.Communication
             public const string DefaultAsBulk = "DefaultAsBulk";
             public const string EnablePersonParameter = "EnablePersonParameter";
             public const string DisableAddingIndividualsToRecipientLists = "DisableAddingIndividualsToRecipientLists";
+            public const string PersonalizationSegmentCategory = "PersonalizationSegmentCategory";
         }
 
         #endregion Attribute Keys
@@ -206,6 +217,15 @@ namespace Rock.Blocks.Communication
 
         #endregion Page Parameter Keys
 
+        #region Person Preference Keys
+
+        private static class PersonPreferenceKey
+        {
+            public const string CommunicationTemplateGuid = "CommunicationTemplateGuid";
+        }
+
+        #endregion Person Preference Keys
+
         #region Properties
 
         private List<Guid> AllowedSmsNumbersAttributeValue => GetAttributeValue( AttributeKey.AllowedSMSNumbers ).SplitDelimitedValues( true ).AsGuidList();
@@ -220,7 +240,9 @@ namespace Rock.Blocks.Communication
         
         private int MaxSmsImageWidth => GetAttributeValue( AttributeKey.MaxSMSImageWidth ).AsIntegerOrNull() ?? 600;
         
-        private bool ShowDuplicatePreventionOptionAttributeValue => GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
+        private bool ShowDuplicatePreventionOption => GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
+
+        private Guid PersonalizationSegmentCategoryGuid => GetAttributeValue( AttributeKey.PersonalizationSegmentCategory ).AsGuid();
 
         private string SimpleCommunicationPageUrl => this.GetLinkedPageUrl( AttributeKey.SimpleCommunicationPage );
 
@@ -323,19 +345,20 @@ namespace Rock.Blocks.Communication
 
                 box.Communication = communicationBag;
                 box.CommunicationTemplateDetail = communicationTemplateDetailBag;
+                box.CommunicationTopicValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COMMUNICATION_TOPIC ).DefinedValues.ToListItemBagList();
                 box.HasDetailBlockOnCurrentPage = this.PageCache.Blocks.Any( a => a.BlockType.Guid == SystemGuid.BlockType.COMMUNICATION_DETAIL.AsGuid() );
                 box.ImageComponentBinaryFileTypeGuid = this.ImageBinaryFileTypeGuid;
                 box.IsAddingIndividualsToRecipientListsDisabled = this.DisableAddingIndividualsToRecipientLists;
-                box.IsDuplicatePreventionOptionShown = this.ShowDuplicatePreventionOptionAttributeValue;
+                box.IsDuplicatePreventionOptionShown = this.ShowDuplicatePreventionOption;
                 box.IsUsingRockMobilePushTransport = GetIsUsingRockMobilePushTransport( mediumBags );
                 box.MaxSmsImageWidth = this.MaxSmsImageWidth;
                 box.Mediums = mediumBags;
                 box.MergeFields = GetCommunicationMergeFields( communication );
                 box.NavigationUrls = GetBoxNavigationUrls();
+                box.PersonalizationSegments = GetPersonalizationSegments( this.RockContext );
                 box.PushApplications = GetPushApplications( this.RockContext, mediumBags );
-                box.Recipients = GetRecipientBags( this.RockContext, communicationBag, communication );
+                box.Recipients = GetRecipientBags( this.RockContext, communicationBag );
                 box.SecurityGrantToken = GetSecurityGrantToken();
-                box.SegmentDataViews = GetCommunicationSegmentDataViewBags( this.RockContext, communicationBag?.CommunicationListGroupGuid, currentPerson );
                 box.SmsFromNumbers = GetSmsFromNumberBags( currentPerson );
                 // The Twilio transport was used by the old block to validate SMS attachments.
                 box.SmsAcceptedMimeTypes = Twilio.AcceptedMimeTypes.ToList();
@@ -508,9 +531,7 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
-            var communication = new CommunicationService( this.RockContext ).Get( bag.CommunicationGuid );
-
-            var recipientBags = GetRecipientBags( this.RockContext, bag, communication );
+            var recipientBags = GetRecipientBags( this.RockContext, bag );
 
             return ActionOk( recipientBags );
         }
@@ -637,10 +658,335 @@ namespace Rock.Blocks.Communication
                 PreviewHtml = previewHtml
             } );
         }
+        
+        /// <summary>
+        /// Saves an existing communication template with some overwritten fields.
+        /// </summary>
+        [BlockAction( "SaveCommunicationTemplate" )]
+        public BlockActionResult SaveCommunicationTemplate( CommunicationEntryWizardCommunicationTemplateDetailBag bag )
+        {
+            // Validate request.
+            if ( !bag.Validate( "Communication Template" ).IsNotNull( out var validationResult )
+                || !bag.Message.Validate( "Message" ).IsNotNullOrWhiteSpace( out validationResult )
+                || !bag.ImageFile.Validate( "Preview Image" ).ValueIsNotNullOrEmptyGuid( out validationResult ) )
+            {
+                return ActionBadRequest( validationResult.ErrorMessage );
+            }
+
+            // Validate entities.
+            var currentPerson = GetCurrentPerson();
+            var communicationTemplateService = new CommunicationTemplateService( this.RockContext );
+
+            var existingCommunicationTemplate = communicationTemplateService.Get( bag.Guid );
+
+            if ( existingCommunicationTemplate == null )
+            {
+                return ActionBadRequest( "Existing communication template was not found." );
+            }
+            else if ( !existingCommunicationTemplate.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return ActionBadRequest( "You don't have edit access to the existing communication template." );
+            }
+
+            var imageFile = new BinaryFileService( this.RockContext ).Get( bag.ImageFile.Value.AsGuid() );
+
+            if ( imageFile == null )
+            {
+                return ActionBadRequest( "Preview image is required." );
+            }
+            else if ( !imageFile.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return ActionBadRequest( "You don't have edit access to this preview image." );
+            }
+
+            // Now overwrite with specific values from the request.
+            existingCommunicationTemplate.ImageFile = imageFile;
+            existingCommunicationTemplate.ImageFileId = imageFile.Id;
+            existingCommunicationTemplate.Message = bag.Message;
+
+            if ( !existingCommunicationTemplate.IsValid )
+            {
+                var errorMessage = "The communication template is invalid.";
+
+                if ( existingCommunicationTemplate.ValidationResults?.Any() == true )
+                {
+                    errorMessage = string.Join( " ", existingCommunicationTemplate.ValidationResults.Select( vr => vr.ErrorMessage ) );
+                }
+
+                return ActionBadRequest( errorMessage );
+            }
+
+            // Make sure the image is no longer a temporary binary file.
+            imageFile.IsTemporary = false;
+
+            // Save the communication template.
+            this.RockContext.SaveChanges();
+
+            // Create the response.
+            // The client will receive both the detail and list item information.
+            var communicationTemplateInfo = GetCommunicationTemplateInfoList(
+                this.RockContext,
+                ( query ) =>
+                {
+                    return query.Where( g => g.Guid == existingCommunicationTemplate.Guid )
+                        .Take( 1 );
+                } )
+                .FirstOrDefault();
+
+            var communicationTemplateListItemBag = ConvertToTemplateBag( communicationTemplateInfo );
+            var communicationTemplateDetailBag = GetCommunicationTemplateDetailBag( communicationTemplateInfo );            
+
+            return ActionOk( new CommunicationEntryWizardSaveCommunicationTemplateResponseBag
+            {
+                CommunicationTemplateDetail = communicationTemplateDetailBag,
+                CommunicationTemplateListItem = communicationTemplateListItemBag
+            } );
+        }
+
+        /// <summary>
+        /// Saves an existing communication template as a new entity with some overwritten fields.
+        /// </summary>
+        [BlockAction( "SaveAsCommunicationTemplate" )]
+        public BlockActionResult SaveAsCommunicationTemplate( CommunicationEntryWizardCommunicationTemplateDetailBag bag )
+        {
+            // Validate request.
+            if ( !bag.Validate( "Communication Template" ).IsNotNull( out var validationResult )
+                || !bag.Message.Validate( "Message" ).IsNotNullOrWhiteSpace( out validationResult )
+                || !bag.Category.Validate( "Category" ).ValueIsNotNullOrEmptyGuid( out validationResult )
+                || !bag.ImageFile.Validate( "Preview Image" ).ValueIsNotNullOrEmptyGuid( out validationResult ) )
+            {
+                return ActionBadRequest( validationResult.ErrorMessage );
+            }
+
+            // Validate entities.
+            var currentPerson = GetCurrentPerson();
+            var communicationTemplateService = new CommunicationTemplateService( this.RockContext );
+
+            var existingCommunicationTemplate = communicationTemplateService.Get( bag.Guid );
+
+            if ( existingCommunicationTemplate == null )
+            {
+                return ActionBadRequest( "Existing communication template was not found." );
+            }
+            else if ( !existingCommunicationTemplate.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                return ActionBadRequest( "You don't have view access to the existing communication template." );
+            }
+
+            var category = new CategoryService( this.RockContext ).Get( bag.Category.Value.AsGuid() );
+
+            if ( category == null )
+            {
+                return ActionBadRequest( "Category is required." );
+            }
+            else if ( !category.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return ActionBadRequest( "You don't have edit access to this category." );
+            }
+
+            var imageFile = new BinaryFileService( this.RockContext ).Get( bag.ImageFile.Value.AsGuid() );
+
+            if ( imageFile == null )
+            {
+                return ActionBadRequest( "Preview image is required." );
+            }
+            else if ( !imageFile.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                return ActionBadRequest( "You don't have edit access to this preview image." );
+            }
+
+            // Create the new communication.
+            var communicationTemplate = existingCommunicationTemplate.CloneWithoutIdentity();
+
+            // Now overwrite with specific values from the request.
+            communicationTemplate.IsSystem = false;
+            communicationTemplate.Name = bag.Name;
+            communicationTemplate.Description = bag.Description;
+            communicationTemplate.Message = bag.Message;
+            communicationTemplate.ImageFile = imageFile;
+            communicationTemplate.ImageFileId = imageFile.Id;
+            communicationTemplate.Category = category;
+            communicationTemplate.CategoryId = category.Id;
+            communicationTemplate.IsStarter = bag.IsStarter;
+
+            if ( !communicationTemplate.IsValid )
+            {
+                var errorMessage = "The communication template is invalid.";
+
+                if ( communicationTemplate.ValidationResults?.Any() == true )
+                {
+                    errorMessage = string.Join( " ", communicationTemplate.ValidationResults.Select( vr => vr.ErrorMessage ) );
+                }
+
+                return ActionBadRequest( errorMessage );
+            }
+
+            // Make sure the image is no longer a temporary binary file.
+            imageFile.IsTemporary = false;
+
+            // Save the communication template.
+            communicationTemplateService.Add( communicationTemplate );
+            this.RockContext.SaveChanges();
+            
+            // Create the response.
+            // The client will receive both the detail and list item information.
+            var communicationTemplateInfo = GetCommunicationTemplateInfoList(
+                this.RockContext,
+                ( query ) =>
+                {
+                    return query.Where( g => g.Guid == communicationTemplate.Guid )
+                        .Take( 1 );
+                } )
+                .FirstOrDefault();
+
+            var communicationTemplateListItemBag = ConvertToTemplateBag( communicationTemplateInfo );
+            var communicationTemplateDetailBag = GetCommunicationTemplateDetailBag( communicationTemplateInfo );            
+
+            return ActionOk( new CommunicationEntryWizardSaveCommunicationTemplateResponseBag
+            {
+                CommunicationTemplateDetail = communicationTemplateDetailBag,
+                CommunicationTemplateListItem = communicationTemplateListItemBag
+            } );
+        }
 
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Gets the personalization segments for the segments dropdown.
+        /// </summary>
+        private List<ListItemBag> GetPersonalizationSegments( RockContext rockContext )
+        {
+            var personalizationSegmentCategory = this.PersonalizationSegmentCategoryGuid;
+
+            return new PersonalizationSegmentService( rockContext )
+                        .Queryable().AsNoTracking()
+                        .Where( p => p.Categories.Any( c => c.Guid == personalizationSegmentCategory ) )
+                        .Select( p => new ListItemBag
+                        {
+                            Value = p.Id.ToString(),
+                            Text = p.Name
+                        } )
+                        .ToList();
+        }
+
+        /// <summary>
+        /// Gets the communication recipient details for a communication.
+        /// </summary>
+        private List<CommunicationEntryWizardRecipientInfo> GetCommunicationRecipientDetailsForCommunication( RockContext rockContext, int communicationId, SegmentCriteria segmentCriteria, List<int> personalizationSegmentIds )
+        {
+            return GetCommunicationRecipientDetails( rockContext, communicationId, 2, segmentCriteria == SegmentCriteria.All ? 2 : 1, string.Join( ",", personalizationSegmentIds ) );
+        }
+
+        /// <summary>
+        /// Gets the communication recipient details for a communication list.
+        /// </summary>
+        /// <returns></returns>
+        private List<CommunicationEntryWizardRecipientInfo> GetCommunicationRecipientDetailsForList( RockContext rockContext, int communicationListGroupId, SegmentCriteria segmentCriteria, List<int> personalizationSegmentIds )
+        {
+            return GetCommunicationRecipientDetails( rockContext, communicationListGroupId, 1, segmentCriteria == SegmentCriteria.All ? 2 : 1, personalizationSegmentIds == null ? null : string.Join( ",", personalizationSegmentIds ) );
+        }
+
+        class CommunicationEntryWizardRecipientInfo
+        {
+            /// <summary>
+            /// Gets or sets the <see cref="Person" /> id.
+            /// </summary>
+            public int Id { get; set; }
+
+            public string NickName { get; set; }
+
+            public string LastName { get; set; }
+
+            public int? PhotoId { get; set; }
+
+            public bool IsEmailEnabled { get; set; }
+
+            public string Email { get; set; }
+
+            public bool IsEmailActive { get; set; }
+
+            public string EmailNote { get; set; }
+
+            public int? ConnectionStatusValueId { get; set; }
+
+            public CommunicationType CommunicationPreference { get; set; }
+
+            public bool IsSmsEnabled { get; set; }
+
+            public string MobilePhoneNumber { get; set; }
+
+            public bool IsMessagingEnabled { get; set; }
+
+            public bool IsMessagingOptedOut { get; set; }
+
+            public bool IsPushEnabled { get; set; }
+
+            public string DeviceRegistrationId { get; set; }
+
+            public bool NotificationsEnabled { get; set; }
+
+            public int? SuffixValueId { get; set; }
+
+            public EmailPreference EmailPreference { get; set; }
+
+            /// <summary>
+            /// Gets or sets the record type <see cref="DefinedValue"/> id.
+            /// </summary>
+            /// <remarks>
+            /// Needed for nameless person check.
+            /// </remarks>
+            public int? RecordTypeValueId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the <see cref="PersonAlias"/> unique identifier.
+            /// </summary>
+            public Guid PersonAliasGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the <see cref="PersonAlias"/> identifier.
+            /// </summary>
+            public int PersonAliasId { get; set; }
+
+            /// <summary>
+            /// Gets or sets a value indicating whether bulk email is allowed for this recipient.
+            /// </summary>
+            public bool IsBulkEmailEnabled { get; set; }
+
+            public AgeClassification AgeClassification { get; set; }
+
+            public int? Age { get; set; }
+
+            public Gender Gender { get; set; }
+        }
+
+        /// <summary>
+        /// Gets the giving analytics transaction data.
+        /// </summary>
+        /// <param name="start">The start.</param>
+        /// <param name="end">The end.</param>
+        /// <param name="accountIds">The account ids.</param>
+        /// <param name="currencyTypeIds">The currency type ids.</param>
+        /// <param name="sourceTypeIds">The source type ids.</param>
+        /// <param name="transactionTypeIds">The transaction type ids.</param>
+        /// <returns></returns>
+        private List<CommunicationEntryWizardRecipientInfo> GetCommunicationRecipientDetails( RockContext rockContext, int listId, int listType, int matchType, string personalizationSegmentIds )
+        {
+            personalizationSegmentIds = personalizationSegmentIds ?? string.Empty;
+
+            return rockContext.Database
+                .SqlQuery<CommunicationEntryWizardRecipientInfo>(
+                    $"EXEC [dbo].[spCommunicationRecipientDetails] @{nameof( listId )}, @{nameof( listType )}, @{nameof( matchType )}, @{nameof( personalizationSegmentIds )}",
+                    new SqlParameter( nameof( listId ), listId ),
+                    new SqlParameter( nameof( listType ), listType ),
+                    new SqlParameter( nameof( matchType ), matchType ),
+                    new SqlParameter( nameof( personalizationSegmentIds ), personalizationSegmentIds )
+                    {
+                        Size = Math.Max( 1, personalizationSegmentIds.Length )
+                    }
+                ).ToList();
+        }
 
         /// <summary>
         /// Gets the number of recipients that need to be exceeded to automatically consider the email a bulk email.
@@ -739,30 +1085,35 @@ namespace Rock.Blocks.Communication
         /// </returns>
         private CommunicationEntryWizardCommunicationTemplateDetailBag GetCommunicationTemplateDetailBag( Model.Communication communication, List<CommunicationEntryWizardTemplateInfo> communicationTemplateInfoList, Person currentPerson )
         {
+            CommunicationEntryWizardTemplateInfo communicationTemplateInfo = null;
+
             // If a communication template key was passed in and this is a new communication, set that as the selected template.
             var communicationTemplateKey = this.CommunicationTemplateOrTemplateGuidPageParameter;
 
             if ( ( communication == null || communication.Id == 0 ) && communicationTemplateKey.IsNotNullOrWhiteSpace() )
             {
-                var communicationTemplateInfo = communicationTemplateInfoList.FirstOrDefault( d => EntityHasKey( d.CommunicationTemplate, communicationTemplateKey ) );
-
-                // NOTE: Only set the selected template if the user has auth for this template
-                // and the template supports the Email Wizard
-                if ( communicationTemplateInfo?.CommunicationTemplate != null
-                    && communicationTemplateInfo.CommunicationTemplate.IsAuthorized( Authorization.VIEW, currentPerson )
-                    && communicationTemplateInfo.CommunicationTemplate.SupportsEmailWizard() )
-                {
-                    return GetCommunicationTemplateDetailBag( communicationTemplateInfo );
-                }
-                else
-                {
-                    return null;
-                }
+                communicationTemplateInfo = communicationTemplateInfoList.FirstOrDefault( d => EntityHasKey( d.CommunicationTemplate, communicationTemplateKey ) );
             }
             else if ( communication?.CommunicationTemplateId.HasValue == true )
             {
-                var communicationTemplateInfo = communicationTemplateInfoList.FirstOrDefault( d => d.CommunicationTemplate.Id == communication.CommunicationTemplateId.Value );
+                communicationTemplateInfo = communicationTemplateInfoList.FirstOrDefault( d => d.CommunicationTemplate.Id == communication.CommunicationTemplateId.Value );
+            }
+            else
+            {
+                var communicationTemplateGuidPersonPreference = GetBlockPersonPreferences().GetValue( PersonPreferenceKey.CommunicationTemplateGuid ).AsGuidOrNull();
 
+                if ( communicationTemplateGuidPersonPreference.HasValue )
+                {
+                    communicationTemplateInfo = communicationTemplateInfoList.FirstOrDefault( d => d.CommunicationTemplate.Guid == communicationTemplateGuidPersonPreference );
+                }
+            }
+            
+            // NOTE: Only set the selected template if the user has auth for this template
+            // and the template supports the Email Wizard
+            if ( communicationTemplateInfo?.CommunicationTemplate != null
+                && communicationTemplateInfo.CommunicationTemplate.IsAuthorized( Authorization.VIEW, currentPerson )
+                && communicationTemplateInfo.CommunicationTemplate.SupportsEmailWizard() )
+            {
                 return GetCommunicationTemplateDetailBag( communicationTemplateInfo );
             }
             else
@@ -789,6 +1140,11 @@ namespace Rock.Blocks.Communication
             {
                 Guid = communicationTemplateInfo.CommunicationTemplate.Guid,
                 IsWizardSupported = communicationTemplateInfo.CommunicationTemplate.SupportsEmailWizard(),
+                Name = communicationTemplateInfo.CommunicationTemplate.Name,
+                ImageFile = communicationTemplateInfo.ImageFile,
+                Category = communicationTemplateInfo.Category,
+                IsStarter = communicationTemplateInfo.CommunicationTemplate.IsStarter,
+                Description = communicationTemplateInfo.CommunicationTemplate.Description,
 
                 // Email fields
                 FromEmail = communicationTemplateInfo.CommunicationTemplate.FromEmail?.ResolveMergeFields( mergeFields ),
@@ -814,7 +1170,7 @@ namespace Rock.Blocks.Communication
                 PushOpenMessageJson = communicationTemplateInfo.CommunicationTemplate.PushOpenMessageJson,
                 PushOpenAction = communicationTemplateInfo.CommunicationTemplate.PushOpenAction.HasValue
                     ? ConvertPushOpenAction( communicationTemplateInfo.CommunicationTemplate.PushOpenAction.Value )
-                    : default
+                    : default,
             };
         }
 
@@ -964,15 +1320,15 @@ namespace Rock.Blocks.Communication
                                     p => new
                                     {
                                         // Get the primary person alias guid.
-                                        Guid = p.Aliases.Where( x => x.AliasPersonId == x.PersonId ).Select( pa => pa.Guid ).FirstOrDefault()
+                                        Guid = p.PrimaryAliasGuid
                                     } )
                                 .FirstOrDefault();
 
-                            if ( person?.Guid != null )
+                            if ( person?.Guid.HasValue == true )
                             {
-                                if ( !individualRecipientPersonAliasGuids.Contains( person.Guid ) )
+                                if ( !individualRecipientPersonAliasGuids.Contains( person.Guid.Value ) )
                                 {
-                                    individualRecipientPersonAliasGuids.Add( person.Guid );
+                                    individualRecipientPersonAliasGuids.Add( person.Guid.Value );
                                 }
                             }
                         }
@@ -1054,14 +1410,6 @@ namespace Rock.Blocks.Communication
                 IndividualRecipientPersonAliasGuids = GetIndividualRecipientPersonAliasGuids( communication ),
                 IsBulkCommunication = GetIsBulkCommunication( communication ),
                 Message = communication.Message,
-                ReplyToEmail = communication.ReplyToEmail,
-                SegmentCriteria = communication.SegmentCriteria,
-                SegmentDataViewGuids = communication.Segments.SplitDelimitedValues().AsGuidList(),
-                SmsAttachmentBinaryFiles = communication.GetAttachments( CommunicationType.SMS ).ToListItemBagList(),
-                SmsFromSystemPhoneNumberGuid = GetSmsFromSystemPhoneNumberGuid( communication ),
-                SmsMessage = communication.SMSMessage,
-                Status = communication.Status,
-                Subject = communication.Subject,
                 PushData = GetPushData( communication ),
                 PushImageBinaryFileGuid = GetPushImageBinaryFileGuid( communication ),
                 PushMessage = communication.PushMessage,
@@ -1069,6 +1417,14 @@ namespace Rock.Blocks.Communication
                 PushOpenMessage = communication.PushOpenMessage,
                 PushOpenMessageJson = communication.PushOpenMessageJson,
                 PushTitle = communication.PushTitle,
+                ReplyToEmail = communication.ReplyToEmail,
+                SegmentCriteria = communication.SegmentCriteria,
+                PersonalizationSegmentIds = communication.PersonalizationSegments.SplitDelimitedValues().AsIntegerList(),
+                SmsAttachmentBinaryFiles = communication.GetAttachments( CommunicationType.SMS ).ToListItemBagList(),
+                SmsFromSystemPhoneNumberGuid = GetSmsFromSystemPhoneNumberGuid( communication ),
+                SmsMessage = communication.SMSMessage,
+                Status = communication.Status,
+                Subject = communication.Subject,
                 TestEmailAddress = currentPerson.Email,
                 TestSmsPhoneNumber = currentPerson.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() )?.Number
             };
@@ -1222,7 +1578,8 @@ namespace Rock.Blocks.Communication
                     {
                         CommunicationTemplate = communicationTemplate,
                         CommunicationCount = communications.Count(),
-                        CategoryGuid = communicationTemplate.Category.Guid,
+                        Category = !communicationTemplate.CategoryId.HasValue ? null : new ListItemBag { Value = communicationTemplate.Category.Guid.ToString(), Text = communicationTemplate.Category.Name },
+                        ImageFile = !communicationTemplate.ImageFileId.HasValue ? null : new ListItemBag { Value = communicationTemplate.ImageFile.Guid.ToString(), Text = communicationTemplate.ImageFile.FileName },
                         PushImageBinaryFileGuid = communicationTemplate.PushImageBinaryFile.Guid,
                         SmsFromSystemPhoneNumberGuid = communicationTemplate.SmsFromSystemPhoneNumber.Guid
                     }
@@ -1243,40 +1600,53 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
-        /// Converts a list of <see cref="CommunicationEntryWizardTemplateInfo"/> objects into a list of <see cref="CommunicationEntryWizardCommunicationTemplateBag"/> objects.
+        /// Converts a list of <see cref="CommunicationEntryWizardTemplateInfo"/> objects into a list of <see cref="CommunicationEntryWizardCommunicationTemplateListItemBag"/> objects.
         /// </summary>
         /// <param name="communicationTemplateInfoList">A collection of communication template information objects to convert.</param>
-        /// <returns>A list of <see cref="CommunicationEntryWizardCommunicationTemplateBag"/> objects representing the available communication templates.</returns>
-        private List<CommunicationEntryWizardCommunicationTemplateBag> ConvertToTemplateBags(
+        /// <returns>A list of <see cref="CommunicationEntryWizardCommunicationTemplateListItemBag"/> objects representing the available communication templates.</returns>
+        private List<CommunicationEntryWizardCommunicationTemplateListItemBag> ConvertToTemplateBags(
             IEnumerable<CommunicationEntryWizardTemplateInfo> communicationTemplateInfoList )
         {
-            var bags = new List<CommunicationEntryWizardCommunicationTemplateBag>();
+            var bags = new List<CommunicationEntryWizardCommunicationTemplateListItemBag>();
 
             if ( communicationTemplateInfoList != null )
             {
                 foreach ( var communicationTemplateInfo in communicationTemplateInfoList )
                 {
-                    var bag = new CommunicationEntryWizardCommunicationTemplateBag
-                    {
-                        CategoryGuid = communicationTemplateInfo.CategoryGuid,
-                        IsEmailSupported = communicationTemplateInfo.CommunicationTemplate.SupportsEmailWizard(),
-                        IsSmsSupported = communicationTemplateInfo.CommunicationTemplate.HasSMSTemplate()
-                            || communicationTemplateInfo.CommunicationTemplate.Guid == SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid(),
-                        Name = communicationTemplateInfo.CommunicationTemplate.Name,
-                        Description = communicationTemplateInfo.CommunicationTemplate.Description,
-                        ImageUrl = communicationTemplateInfo.CommunicationTemplate.ImageFileId.HasValue
-                            ? FileUrlHelper.GetImageUrl( communicationTemplateInfo.CommunicationTemplate.ImageFileId )
-                            : null,
-                        Guid = communicationTemplateInfo.CommunicationTemplate.Guid,
-                        IsStarter = communicationTemplateInfo.CommunicationTemplate.IsStarter,
-                        CommunicationCount = communicationTemplateInfo.CommunicationCount,
-                    };
-
-                    bags.Add( bag );
+                    bags.Add( ConvertToTemplateBag( communicationTemplateInfo ) );
                 }
             }
 
             return bags;
+        }
+        
+        /// <summary>
+        /// Converts a <see cref="CommunicationEntryWizardTemplateInfo"/> into a <see cref="CommunicationEntryWizardCommunicationTemplateListItemBag"/>.
+        /// </summary>
+        /// <param name="communicationTemplateInfo">The communication template information to convert.</param>
+        private CommunicationEntryWizardCommunicationTemplateListItemBag ConvertToTemplateBag(
+            CommunicationEntryWizardTemplateInfo communicationTemplateInfo )
+        {
+            if ( communicationTemplateInfo == null )
+            {
+                return null;
+            }
+
+            return new CommunicationEntryWizardCommunicationTemplateListItemBag
+            {
+                CategoryGuid = communicationTemplateInfo.Category?.Value.AsGuidOrNull(),
+                IsEmailSupported = communicationTemplateInfo.CommunicationTemplate.SupportsEmailWizard(),
+                IsSmsSupported = communicationTemplateInfo.CommunicationTemplate.HasSMSTemplate()
+                    || communicationTemplateInfo.CommunicationTemplate.Guid == SystemGuid.Communication.COMMUNICATION_TEMPLATE_BLANK.AsGuid(),
+                Name = communicationTemplateInfo.CommunicationTemplate.Name,
+                Description = communicationTemplateInfo.CommunicationTemplate.Description,
+                ImageUrl = communicationTemplateInfo.CommunicationTemplate.ImageFileId.HasValue
+                    ? FileUrlHelper.GetImageUrl( communicationTemplateInfo.CommunicationTemplate.ImageFileId )
+                    : null,
+                Guid = communicationTemplateInfo.CommunicationTemplate.Guid,
+                IsStarter = communicationTemplateInfo.CommunicationTemplate.IsStarter,
+                CommunicationCount = communicationTemplateInfo.CommunicationCount,
+            };
         }
 
         /// <summary>
@@ -1290,33 +1660,68 @@ namespace Rock.Blocks.Communication
         /// <returns>A list of <see cref="CommunicationEntryWizardRecipientBag"/> objects representing the recipients.</returns>
         private List<CommunicationEntryWizardRecipientBag> GetRecipientBags(
             RockContext rockContext,
-            CommunicationEntryWizardCommunicationBag bag,
-            Model.Communication communication )
+            CommunicationEntryWizardCommunicationBag bag )
         {
-            var segmentDataViewGuids = communication?.Segments?.SplitDelimitedValues().AsGuidList() ?? new List<Guid>();
-
-            if ( bag.Status == CommunicationStatus.Transient
-                 && bag.CommunicationId.HasValue
-                 && bag.CommunicationId.Value > 0
-                 && bag.CommunicationListGroupGuid == communication?.ListGroup?.Guid
-                 && bag.SegmentCriteria == communication?.SegmentCriteria
-                 && bag.SegmentDataViewGuids.All( s => segmentDataViewGuids.Contains( s ) )
-                 && segmentDataViewGuids.All( s => bag.SegmentDataViewGuids?.Contains( s ) == true ) )
-            {
-                return GetRecipientBagsFromCommunication( rockContext, bag.CommunicationId.Value );
-            }
-            else if ( bag.IndividualRecipientPersonAliasGuids?.Any() == true )
+            // If the communication is new and persisted without communication list or segment modifications,
+            // then retrieve the current recipients for the communication.
+            if ( bag.IndividualRecipientPersonAliasGuids?.Any() == true )
             {
                 return GetRecipientBagsFromPersonAliases( rockContext, bag.IndividualRecipientPersonAliasGuids );
             }
+            // ... Or if individual recipients have been specified, then retrieve the individual recipients.
             else if ( bag.CommunicationListGroupGuid.HasValue )
             {
-                return GetRecipientBagsFromListGroup( rockContext, bag.CommunicationListGroupGuid.Value, bag.SegmentCriteria, bag.SegmentDataViewGuids );
-            }    
+                var communicationListGroupId = bag.CommunicationListGroupGuid.HasValue ? GroupCache.GetId( bag.CommunicationListGroupGuid.Value ) : null;
+
+                if ( communicationListGroupId.HasValue )
+                {
+                    var recipients = GetCommunicationRecipientDetailsForList(
+                        rockContext,
+                        communicationListGroupId.Value,
+                        bag.SegmentCriteria,
+                        bag.PersonalizationSegmentIds );
+
+                    return ConvertRecipientInfoListToBagList( recipients );
+                }
+                else
+                { 
+                    return new List<CommunicationEntryWizardRecipientBag>();
+                }
+            }
             else
-            {
+            { 
                 return new List<CommunicationEntryWizardRecipientBag>();
             }
+        }
+
+        private static List<CommunicationEntryWizardRecipientBag> ConvertRecipientInfoListToBagList( List<CommunicationEntryWizardRecipientInfo> info )
+        {
+            return info.Select( i => new CommunicationEntryWizardRecipientBag
+            {
+                Email = i.Email,
+                EmailPreference = i.EmailPreference.ToString(),
+                IsBulkEmailAllowed = i.IsBulkEmailEnabled,
+                IsEmailActive = i.IsEmailActive,
+                IsEmailAllowed = i.IsEmailEnabled,
+                IsNameless = Person.IsNameless( i.RecordTypeValueId ),
+                IsPushAllowed = i.IsPushEnabled,
+                IsSmsAllowed = i.IsSmsEnabled,
+                Name = Person.FormatFullName( i.NickName, i.LastName, i.SuffixValueId, i.RecordTypeValueId ),
+                PersonAliasGuid = i.PersonAliasGuid,
+                PersonId = i.Id,
+                PhotoUrl = Person.GetPersonPhotoUrl(
+                                    // Initials
+                                    $"{i.NickName.Truncate( 1, false )}{i.LastName.Truncate( 1, false )}",
+                                    i.PhotoId,
+                                    i.Age,
+                                    i.Gender,
+                                    i.RecordTypeValueId,
+                                    i.AgeClassification,
+                                    // Size
+                                    24 ),
+                SmsNumber = i.MobilePhoneNumber,
+
+            } ).ToList();
         }
 
         /// <summary>
@@ -1393,12 +1798,9 @@ namespace Rock.Blocks.Communication
                     segmentDataViewGuids
                 )
                 .AsNoTracking()
+                .Where( gm => gm.Person.PrimaryAliasId.HasValue )
                 // Select the primary PersonAlias for each GroupMember.
-                .Select( gm => gm.Person.Aliases
-                    .Where( a => a.AliasPersonId == a.PersonId )
-                    .Select( a => a.Id )
-                    .FirstOrDefault()
-                )
+                .Select( gm => gm.Person.PrimaryAliasId.Value )
                 // Materialize early.
                 .ToList();
 
@@ -1507,7 +1909,6 @@ namespace Rock.Blocks.Communication
                     Email = personAlias.Person.Email,
                     EmailPreference = personAlias.Person.EmailPreference.ToString(),
                     IsBulkEmailAllowed = personAlias.Person.CanReceiveEmail( isBulk: true ),
-                    IsDeceased = personAlias.Person.IsDeceased,
                     IsEmailActive = personAlias.Person.IsEmailActive,
                     IsEmailAllowed = personAlias.Person.CanReceiveEmail( isBulk: false ),
                     IsNameless = personAlias.Person.IsNameless(),
@@ -1587,7 +1988,11 @@ namespace Rock.Blocks.Communication
                 communication = new Model.Communication
                 {
                     Status = CommunicationStatus.Transient,
-                    SenderPersonAliasId = currentPerson.PrimaryAliasId
+                    CreatedByPersonAlias = currentPerson.PrimaryAlias,
+                    CreatedByPersonAliasId = currentPerson.PrimaryAliasId,
+                    SenderPersonAlias = currentPerson.PrimaryAlias,
+                    SenderPersonAliasId = currentPerson.PrimaryAliasId,
+                    CommunicationType = CommunicationType.Email
                 };
             }
 
@@ -2441,7 +2846,7 @@ namespace Rock.Blocks.Communication
             if ( bag.IndividualRecipientPersonAliasGuids?.Any() != true && bag.CommunicationListGroupGuid.HasValue )
             {
                 communicationInfo.CommunicationListGroupGuid = bag.CommunicationListGroupGuid.Value;
-                communicationInfo.CommunicationGroupSegmentDataViewGuids = bag.SegmentDataViewGuids;
+                communicationInfo.PersonalizationSegmentIds = bag.PersonalizationSegmentIds;
                 communicationInfo.CommunicationGroupSegmentCriteria = bag.SegmentCriteria;
             }            
 
@@ -2581,19 +2986,31 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private List<PersonAlias> GetUpdatedCommunicationRecipients( RockContext rockContext, CommunicationEntryWizardCommunicationBag bag )
         {
-            if (bag.IndividualRecipientPersonAliasGuids?.Any() == true)
+            if ( bag.IndividualRecipientPersonAliasGuids?.Any() == true )
             {
                 return new PersonAliasService( rockContext )
                     .GetByGuids( bag.IndividualRecipientPersonAliasGuids )
                     .Include( pa => pa.Person )
                     .ToList();
             }
+            else
+            {
+                var listId = bag.CommunicationListGroupGuid.HasValue ? GroupCache.GetId( bag.CommunicationListGroupGuid.Value ) : null;
 
-            return GetCommunicationGroupMemberQuery( rockContext, bag.CommunicationListGroupGuid, bag.SegmentCriteria, bag.SegmentDataViewGuids )
-                // Get the primary person alias for each group member.
-                .Select( gm => gm.Person.Aliases.Where( pa => pa.AliasPersonId == gm.Person.Id ).FirstOrDefault() )
-                .Include( pa => pa.Person )
-                .ToList();
+                if ( listId.HasValue )
+                {
+                    var recipients = GetCommunicationRecipientDetailsForList( rockContext, listId.Value, bag.SegmentCriteria, bag.PersonalizationSegmentIds );
+
+                    return new PersonAliasService( rockContext )
+                        .GetByIds( recipients.Select( r => r.PersonAliasId ).ToList() )
+                        .Include( p => p.Person )
+                        .ToList();
+                }
+                else
+                {
+                    return new List<PersonAlias>();
+                }
+            }
         }
 
         #endregion Methods
@@ -2630,9 +3047,9 @@ namespace Rock.Blocks.Communication
             public int CommunicationCount { get; set; }
 
             /// <summary>
-            /// Gets or sets the category GUID associated with this template, if any.
+            /// Gets or sets the image file associated with this template, if any.
             /// </summary>
-            public Guid? CategoryGuid { get; set; }
+            public ListItemBag ImageFile { get; set; }
 
             /// <summary>
             /// Gets or sets the system phone number GUID used for SMS communication, if applicable.
@@ -2643,22 +3060,12 @@ namespace Rock.Blocks.Communication
             /// Gets or sets the binary file GUID of the push notification image, if applicable.
             /// </summary>
             public Guid? PushImageBinaryFileGuid { get; set; }
-        }
-
-        /// <summary>
-        /// Represents recipient information for the Communication Entry Wizard, including person details and recipient metadata.
-        /// </summary>
-        private class CommunicationEntryWizardRecipientInfo
-        {
-            /// <summary>
-            /// Gets or sets the person associated with this recipient entry.
-            /// </summary>
-            public Person Person { get; set; }
+            
 
             /// <summary>
-            /// Gets or sets the recipient details, including communication preferences and contact information.
+            /// Gets or sets the category GUID associated with this template, if any.
             /// </summary>
-            public CommunicationEntryWizardRecipientBag Recipient { get; set; }
+            public ListItemBag Category { get; set; }
         }
 
         #endregion Helper Types
@@ -2742,7 +3149,7 @@ namespace Rock.Blocks.Communication
 
                 communication.ExcludeDuplicateRecipientAddress = settings.ExcludeDuplicateRecipientAddress;
 
-                communication.Segments = settings.CommunicationGroupSegmentDataViewGuids?.AsDelimited( "," );
+                communication.Segments = null;
                 communication.SegmentCriteria = settings.CommunicationGroupSegmentCriteria;
 
                 if ( settings.CommunicationTemplateGuid.HasValue && !settings.CommunicationTemplateGuid.Value.IsEmpty() )
@@ -2752,6 +3159,7 @@ namespace Rock.Blocks.Communication
                         communication.CommunicationTemplate = new CommunicationTemplateService( rockContext ).Get( settings.CommunicationTemplateGuid.Value );
                         communication.CommunicationTemplateId = communication.CommunicationTemplate?.Id;
                     }
+                    communication.PersonalizationSegments = settings.PersonalizationSegmentIds?.AsDelimited( "," );
                 }
                 else
                 {
@@ -3155,9 +3563,9 @@ namespace Rock.Blocks.Communication
                 public bool ExcludeDuplicateRecipientAddress { get; set; }
 
                 /// <summary>
-                /// Gets or sets the list of segment data view GUIDs used for filtering communication recipients.
+                /// Gets or sets the list of personalization segment ids used for filtering communication recipients.
                 /// </summary>
-                public List<Guid> CommunicationGroupSegmentDataViewGuids { get; set; }
+                public List<int> PersonalizationSegmentIds { get; set; }
 
                 /// <summary>
                 /// Gets or sets the criteria for segmenting the communication group.

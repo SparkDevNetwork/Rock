@@ -19,8 +19,9 @@
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
     import CheckBoxListProperty from "./checkBoxListProperty.partial.obs";
+    import { createBackgroundFitProvider } from "../providers.partial";
     import { BackgroundFit, ValueProvider } from "../types.partial";
-    import { createBackgroundFitProvider, get } from "../utils.partial";
+    import { get } from "../utils.partial";
 
     const props = defineProps({
         element: {

@@ -86,16 +86,14 @@
 
                                 <div class="row">
                                     <div class="col-xs-12">
-                                        <div v-show="openAction === OpenAction.LinkToUrl"
-                                             class="well">
+                                        <ConditionalWell v-show="openAction === OpenAction.LinkToUrl">
                                             <UrlLinkBox v-model="linkToPageUrl"
                                                         :disabled="isSaving || isSendingTest"
                                                         label="URL"
                                                         @update:modelValue="onUrlUpdated" />
-                                        </div>
+                                        </ConditionalWell>
 
-                                        <div v-show="openAction === OpenAction.SpecificPage"
-                                             class="well">
+                                        <ConditionalWell v-show="openAction === OpenAction.SpecificPage">
                                             <PagePicker v-model="mobilePage"
                                                         :disabled="isSaving || isSendingTest"
                                                         label="Mobile Page"
@@ -108,14 +106,13 @@
                                                           keyPlaceholder="Key"
                                                           valuePlaceholder="Value"
                                                           @update:modelValue="onMobilePageQueryStringItemsUpdated" />
-                                        </div>
+                                        </ConditionalWell>
 
-                                        <div v-show="openAction === OpenAction.ShowDetails"
-                                             class="well">
+                                        <ConditionalWell v-show="openAction === OpenAction.ShowDetails">
                                             <StructuredContentEditor v-model="internalPushOpenMessageJson"
                                                                      :disabled="isSaving || isSendingTest"
                                                                      label="Additional Information" />
-                                        </div>
+                                        </ConditionalWell>
                                     </div>
                                 </div>
                             </RockForm>
@@ -213,6 +210,7 @@
     import PushNotificationPreview from "./pushNotificationMobilePreview.partial.obs";
     import { BlockActionCallbacks } from "./types.partial";
     import { useBreakpointHelper } from "./utils.partial";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import KeyValueList from "@Obsidian/Controls/keyValueList.obs";

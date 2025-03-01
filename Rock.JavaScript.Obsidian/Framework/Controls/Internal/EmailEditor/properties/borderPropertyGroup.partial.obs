@@ -26,8 +26,17 @@
     import BorderStyleProperty from "./borderStyleProperty.partial.obs";
     import BorderWidthProperty from "./borderWidthProperty.partial.obs";
     import TogglablePropertyGroup from "./togglablePropertyGroup.partial.obs";
-    import { Shorthand, ShorthandValueProvider, StyleSheetMode, ValueProvider } from "../types.partial";
-    import { createBorderColorProvider, createBorderStyleProvider, createBorderWidthProvider } from "../utils.partial";
+    import {
+        createBorderColorProvider,
+        createBorderStyleProvider,
+        createBorderWidthProvider
+    } from "../providers.partial";
+    import {
+        Shorthand,
+        ShorthandValueProvider,
+        StyleSheetMode,
+        ValueProvider
+    } from "../types.partial";
     import { isNullish } from "@Obsidian/Utility/util";
 
     type BorderPropertyGroupValueProvider = ValueProvider<boolean | null | undefined> & {

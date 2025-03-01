@@ -95,6 +95,11 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    padding: 0;
+}
+
+:deep(.panel-body-wizard .actions) {
+    margin: 0;
 }
 
 .panel-body-contents {
@@ -103,7 +108,9 @@
     flex-direction: column;
     overflow-x: hidden;
     overflow-y: auto;
+    padding: var(--panel-body-padding);
 }
+
 
 .category-picker-container {
     min-width: 225px;
@@ -133,7 +140,7 @@
 
 
 <script setup lang="ts">
-    import { computed, nextTick, PropType, ref } from "vue";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
     import CommunicationTemplateGrid from "./communicationTemplateGrid.partial.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -157,6 +164,11 @@
             required: true
         },
 
+        communicationTemplateDetail: {
+            type: Object as PropType<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>,
+            required: true
+        },
+
         communicationTemplateGuid: {
             type: String as PropType<string | null | undefined>,
             required: true
@@ -177,11 +189,6 @@
             required: true
         },
 
-        pendingCommunicationTemplate: {
-            type: Object as PropType<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>,
-            required: true
-        },
-
         title: {
             type: String as PropType<string>,
             required: true
@@ -197,7 +204,6 @@
         (e: "nextStep"): void;
         (e: "previousStep"): void;
         (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
-        (e: "selectCommunicationTemplate", value: CommunicationEntryWizardCommunicationTemplateDetailBag): void;
     }>();
 
     // #region Values
@@ -305,6 +311,22 @@
         }
     }
 
+    function moveNext(): void {
+        if (!props.isFetchingCommunicationTemplate) {
+            emit("nextStep");
+        }
+        else {
+            const watchOnce = watch(() => props.isFetchingCommunicationTemplate, (newValue) => {
+                if (!newValue) {
+                    emit("nextStep");
+
+                    // Cancel the watcher once it runs once.
+                    watchOnce();
+                }
+            });
+        }
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -325,16 +347,7 @@
         }
         else {
             isErrorMessageShown.value = false;
-
-            // If a new communication template was selected,
-            // then update the communication before moving to the next step.
-            if (props.pendingCommunicationTemplate) {
-                emit("selectCommunicationTemplate", props.pendingCommunicationTemplate);
-            }
-
-            nextTick(() => {
-                emit("nextStep");
-            });
+            moveNext();
         }
     }
 

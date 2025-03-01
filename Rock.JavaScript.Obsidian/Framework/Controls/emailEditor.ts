@@ -29,7 +29,7 @@ import {
     getFutureAttendanceOccurrences,
     createAttendanceOccurrence
 } from "./Internal/EmailEditor/api";
-import { GetHtmlRequest } from "./Internal/EmailEditor/types";
+import { GetHtmlRequest, GetHtmlResponse } from "./Internal/EmailEditor/types";
 
 export default EmailEditor;
 
@@ -49,5 +49,6 @@ export {
     getFutureAttendanceOccurrences,
     createAttendanceOccurrence,
 
-    GetHtmlRequest
+    GetHtmlRequest,
+    GetHtmlResponse
 };

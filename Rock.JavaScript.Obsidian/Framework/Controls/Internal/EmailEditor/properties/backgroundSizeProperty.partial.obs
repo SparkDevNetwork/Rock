@@ -24,8 +24,9 @@
 <script setup lang="ts">
     import { onMounted, PropType, ref, watch } from "vue";
     import DropDownListProperty from "./dropDownListProperty.partial.obs";
+    import { createBackgroundSizeProvider } from "../providers.partial";
     import { BackgroundSize, ValueProvider } from "../types.partial";
-    import { createBackgroundSizeProvider, get } from "../utils.partial";
+    import { get } from "../utils.partial";
 
     const props = defineProps({
         element: {
