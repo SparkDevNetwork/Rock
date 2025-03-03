@@ -34,6 +34,9 @@ namespace Rock.Migrations
 
             AddColumn("dbo.Communication", "PersonalizationSegments", c => c.String( nullable: true ));
 
+            // Add the Personalization Segment EntityType.
+            RockMigrationHelper.UpdateEntityType( "Rock.Model.PersonalizationSegment", "Personalization Segment", "Rock.Model.PersonalizationSegment, Rock, Version=17.0.38.0, Culture=neutral, PublicKeyToken=null", true, true, SystemGuid.EntityType.PERSONALIZATION_SEGMENT );
+    
             RockMigrationHelper.UpdateCategory( SystemGuid.EntityType.PERSONALIZATION_SEGMENT, "Communications", string.Empty, string.Empty, SystemGuid.Category.PERSONALIZATION_SEGMENT_COMMUNICATIONS );
 
             // Add Blank (Preview) template.
