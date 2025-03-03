@@ -129,16 +129,12 @@ namespace Rock.Rest.Controllers
 
                 using( var chatHelper = new ChatHelper() )
                 {
-                    var chatToken = await chatHelper.GetChatUserTokenAsync( person.Id );
-                    var chatUserKey = chatHelper.GetRockChatUserPersonKeys( new List<int>
-                    {
-                        person.Id
-                    } ).FirstOrDefault()?.ChatUserKey;
+                    var chatAuth = await chatHelper.GetChatUserAuthenticationAsync( person.Id );
 
                     launchPacket.ChatPerson = new ChatPersonBag
                     {
-                        Token = chatToken,
-                        UserId = chatUserKey
+                        Token = chatAuth.Token,
+                        UserId = chatAuth.ChatUserKey
                     };
                 }
 
