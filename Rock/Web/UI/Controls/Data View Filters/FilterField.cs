@@ -895,6 +895,14 @@ namespace Rock.Web.UI.Controls
         {
             FilterEntityTypeName = ( ( DropDownList ) sender ).SelectedValue;
 
+            // If this is an Obsidian control then we need to set the selection
+            // so it has a chance to prepare initial values.
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
+            if ( component != null && UseObsidian && component.ObsidianFileUrl != null )
+            {
+                SetSelection( string.Empty );
+            }
+
             if ( SelectionChanged != null )
             {
                 SelectionChanged( this, e );

@@ -51,6 +51,20 @@ namespace RockWeb.Blocks.Crm
         }
         #endregion Attribute Keys
 
+        #region PageParameterKeys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string SignalTypeId = "SignalTypeId";
+            public const string ReturnUrl = "ReturnUrl";
+            public const string AutoEdit = "autoEdit";
+        }
+
+        #endregion PageParameterKey
+
         #region Base Control Methods
 
         /// <summary>
@@ -115,7 +129,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPersonSignalType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "SignalTypeId", e.RowKeyId );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.AddOrReplace( PageParameterKey.SignalTypeId, e.RowKeyId.ToString() );
+            queryParams.AddOrReplace( PageParameterKey.AutoEdit, "true" );
+            queryParams.AddOrReplace( PageParameterKey.ReturnUrl, Request.RawUrl );
+            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
         }
 
         /// <summary>

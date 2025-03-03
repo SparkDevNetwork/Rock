@@ -236,4 +236,8 @@
         groupMemberScheduleTemplateEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
+
+    if (isAutoEditMode.value) {
+        onEdit();
+    }
 </script>

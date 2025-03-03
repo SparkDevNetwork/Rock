@@ -134,8 +134,7 @@ namespace Rock.Lava.Blocks
                 }
 
                 var rockContext = new RockContext();
-                var adaptiveMessageAdaptationService = new AdaptiveMessageAdaptationService( rockContext );
-                var isTrackViews = parms.GetValueOrNull( ParameterTrackviews ).AsBoolean();
+                var isTrackViews = parms.GetValueOrNull( ParameterTrackviews ).AsBooleanOrNull();
                 var person = context.GetMergeField( "Person" ) as Model.Person;
                 if ( person == null )
                 {
@@ -149,7 +148,6 @@ namespace Rock.Lava.Blocks
 
                 var currentDate = RockDateTime.Now;
 
-                var personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPersonFromContextCookie( context, System.Web.HttpContext.Current, person );
                 List<AdaptiveMessageCache> adaptiveMessages = new List<AdaptiveMessageCache>();
                 if ( commandMode == CommandMode.Message )
                 {
@@ -164,15 +162,66 @@ namespace Rock.Lava.Blocks
                 }
 
                 var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.ADAPTIVE_MESSAGES.AsGuid() );
-                IQueryable<Interaction> interactionQry = null;
+                Dictionary<int, int> interactionCounts = null;
+                int? personAliasId = null;
 
                 if ( person != null && person.PrimaryAliasId.HasValue )
                 {
-                    interactionQry = new InteractionService( rockContext )
-                        .Queryable()
-                        .Where( a => a.InteractionComponent.InteractionChannelId == interactionChannelId &&
-                                    a.EntityId.HasValue &&
-                                    a.PersonAliasId == person.PrimaryAliasId.Value );
+                    personAliasId = person.PrimaryAliasId.Value;
+
+                    // Retrieves a list of adaptation Ids that have a View Saturation Count from our selected messages found in the Adaptive Message Cache.
+                    var validAdaptationIds = adaptiveMessages
+                        .SelectMany( m => m.Adaptations )
+                        .Where( a => a.ViewSaturationCount.HasValue )
+                        .Select( a => a.Id )
+                        .ToList();
+
+                    if ( validAdaptationIds.Any() )
+                    {
+                        // Retrieves interactions filtered by channel, entity existence, and person alias.
+                        var interactionQry = new InteractionService( rockContext )
+                            .Queryable()
+                            .Where( i => i.InteractionComponent.InteractionChannelId == interactionChannelId &&
+                                        i.EntityId.HasValue &&
+                                        i.PersonAliasId == personAliasId );
+
+                        // Retrieves adaptations where ViewSaturationCount is set.
+                        var adaptationsQry = new AdaptiveMessageAdaptationService( rockContext )
+                            .Queryable()
+                            .Where( a => a.ViewSaturationCount.HasValue );
+
+                        // Joins interactions with adaptations, filters by saturation rules, groups by adaptation, and counts interactions.
+                        interactionCounts = interactionQry
+                            .Join(
+                                adaptationsQry,
+                                i => i.EntityId,
+                                a => a.Id,
+                                ( i, a ) => new
+                                {
+                                    AdaptationId = a.Id,
+                                    i.InteractionDateTime,
+                                    SaturationDays = a.ViewSaturationInDays
+                                }
+                            )
+                            .Where( joined => !joined.SaturationDays.HasValue ||
+                                            joined.InteractionDateTime >= DbFunctions.AddDays( currentDate, -joined.SaturationDays.Value ) )
+                            .GroupBy( joined => joined.AdaptationId )
+                            .Select( g => new { AdaptationId = g.Key, InteractionCount = g.Count() } )
+                            .ToDictionary( g => g.AdaptationId, g => g.InteractionCount );
+                    }
+                }
+
+                // Check if any adaptation has SegmentIds before retrieving the person's segment list.
+                bool requiresSegments = adaptiveMessages
+                    .Any( m => m.Adaptations.Any( a => a.SegmentIds.Any() ) );
+
+                List<int> personSegmentIdList = new List<int>();
+
+                // Only retrieve segments if at least one adaptation has SegmentIds.
+                if ( requiresSegments )
+                {
+                    personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPersonFromContextCookie(
+                        context, System.Web.HttpContext.Current, person );
                 }
 
                 var adaptationQry = adaptiveMessages
@@ -182,7 +231,9 @@ namespace Rock.Lava.Blocks
                         Adaptations = m.Adaptations
                             .Where( a => IsCurrentlyActive( a.IsActive, a.StartDate, a.EndDate ) &&
                                         ( !a.SegmentIds.Any() || a.SegmentIds.Any( b => personSegmentIdList.Contains( b ) ) ) &&
-                                        ( interactionQry == null || !IsSaturated( a, interactionQry ) ) )
+                                        ( !a.ViewSaturationCount.HasValue ||
+                                          !interactionCounts.ContainsKey( a.Id ) || // If the adaptation is not found in interactionCounts, then it has a count of 0 and should be shown.
+                                          interactionCounts[a.Id] < a.ViewSaturationCount.Value ) )
                             .OrderBy( a => a.Order )
                             .ThenBy( a => a.Name )
                             .Take( adaptationPerMessage.Value )
@@ -197,22 +248,27 @@ namespace Rock.Lava.Blocks
 
                 AddLavaMergeFieldsToContext( context, adaptationQry.ToList(), person );
 
-                if ( isTrackViews && adaptationQry.Any() )
+                // Tracks interactions if explicitly enabled (set to true) or if tracking is undefined (set to null) and the given adaptation has a value for View Saturation Count.
+                if ( isTrackViews == true || isTrackViews == null )
                 {
                     foreach ( var adaptation in adaptationQry )
                     {
-                        var info = new InteractionTransactionInfo
+                        if ( isTrackViews == true || adaptation.ViewSaturationCount.HasValue )
                         {
-                            InteractionChannelId = interactionChannelId.Value,
-                            ComponentEntityId = adaptation.AdaptiveMessage.Id,
-                            ComponentName = adaptation.AdaptiveMessage.Name,
-                            InteractionOperation = "Viewed",
-                            InteractionSummary = adaptation.Name,
-                            InteractionEntityId = adaptation.Id,
-                        };
+                            var info = new InteractionTransactionInfo
+                            {
+                                InteractionChannelId = interactionChannelId.Value,
+                                ComponentEntityId = adaptation.AdaptiveMessage.Id,
+                                ComponentName = adaptation.AdaptiveMessage.Name,
+                                InteractionOperation = "Viewed",
+                                InteractionSummary = adaptation.Name,
+                                InteractionEntityId = adaptation.Id,
+                                PersonAliasId = personAliasId
+                            };
 
-                        var interactionTransaction = new InteractionTransaction( info );
-                        interactionTransaction.Enqueue();
+                            var interactionTransaction = new InteractionTransaction( info );
+                            interactionTransaction.Enqueue();
+                        }
                     }
                 }
             }
@@ -297,7 +353,7 @@ namespace Rock.Lava.Blocks
         private void AddLavaMergeFieldsToContext( ILavaRenderContext context, List<AdaptiveMessageAdaptationCache> adaptations, Person person )
         {
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-            mergeFields.Add( "Person", person ); 
+            mergeFields.Add( "Person", person );
 
             var resolvedAdaptations = adaptations.Select( a => new AdaptiveMessageAdaptation
             {
@@ -343,33 +399,6 @@ namespace Rock.Lava.Blocks
                    ( startDate == null || startDate <= RockDateTime.Now ) &&
                    ( endDate == null || endDate >= RockDateTime.Now );
         }
-
-        private bool IsSaturated( AdaptiveMessageAdaptationCache adaptation, IQueryable<Interaction> interactionQry )
-        {
-            var currentDate = RockDateTime.Now;
-
-            if ( !adaptation.ViewSaturationCount.HasValue )
-            {
-                return false;
-            }
-
-            int saturationCount = adaptation.ViewSaturationCount.Value;
-            DateTime? startDate = null;
-
-            if ( adaptation.ViewSaturationInDays.HasValue )
-            {
-                int saturationDays = adaptation.ViewSaturationInDays.Value;
-                startDate = currentDate.AddDays( -saturationDays );
-            }
-
-            int interactionCount = interactionQry
-                .Where( i => i.EntityId == adaptation.Id && ( !startDate.HasValue || i.InteractionDateTime >= startDate ) )
-                .Count();
-
-            return interactionCount >= saturationCount;
-        }
-
-
 
         #region ILavaSecured
 

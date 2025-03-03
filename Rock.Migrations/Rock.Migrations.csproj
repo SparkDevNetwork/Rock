@@ -232,6 +232,10 @@
     <Compile Include="Migrations\202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments.Designer.cs">
       <DependentUpon>202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202503031736334_CreateIndex_GroupMemberGroupIdGroupRoleIdGroupMemberStatus.cs" />
+    <Compile Include="Migrations\202503031736334_CreateIndex_GroupMemberGroupIdGroupRoleIdGroupMemberStatus.Designer.cs">
+      <DependentUpon>202503031736334_CreateIndex_GroupMemberGroupIdGroupRoleIdGroupMemberStatus.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs" />
     <Compile Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.Designer.cs">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
@@ -2627,6 +2631,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments.resx">
       <DependentUpon>202503011520245_AddNewCommunicationPreviewPageAndPersonalizationSegments.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202503031736334_CreateIndex_GroupMemberGroupIdGroupRoleIdGroupMemberStatus.resx">
+      <DependentUpon>202503031736334_CreateIndex_GroupMemberGroupIdGroupRoleIdGroupMemberStatus.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 16.0\Version 1.16.7\202411131526017_AddIsConcurrentCheckInPreventedToGroupType.resx">
       <DependentUpon>202411131526017_AddIsConcurrentCheckInPreventedToGroupType.cs</DependentUpon>
