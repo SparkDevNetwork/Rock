@@ -1827,7 +1827,9 @@ namespace Rock.Communication.Chat
         /// <see cref="RockChatUserPersonKey"/>s.</param>
         /// <returns>A list of <see cref="RockChatUserPersonKey"/>s with one entry for each <see cref="Person"/> who
         /// already has a chat-specific <see cref="PersonAlias"/> record.</returns>
-        private List<RockChatUserPersonKey> GetRockChatUserPersonKeys( List<int> personIds )
+        ///
+        /// BC TODO: Talk to Jason about this method, needed to make it public.
+        public List<RockChatUserPersonKey> GetRockChatUserPersonKeys( List<int> personIds )
         {
             var personQry = new PersonService( RockContext )
                 .Queryable()
