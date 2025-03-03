@@ -103,6 +103,8 @@ export const Category = {
     PersonAttributesSocial: "DD8F467D-B83C-444F-B04C-C681167046A1",
     /** The Personal Merge Template Category guid */
     PersonalMergeTemplate: "A9F2F544-660B-4176-ACAD-88898416A66E",
+    /** Communications Personalization Segment Category Guid */
+    PersonalizationSegmentCommunications: "F80DADC1-AF83-4953-BDA6-6A9F046EA8E6",
     /** The category for defined types for PowerBI */
     PowerbiDefinedType: "FF0B8B72-C1A3-BB99-4D51-78BC670ADB9C",
     /** The registration attribute category that indicates Registration Attributes that should be prompted for at the end of the registration process. */

@@ -33,6 +33,7 @@ namespace Rock.Migrations
             DeleteDuplicatePrayerRequestEntryBlockUp();
             ChopBlocksUp();
             UpdatePrayerAutomationAttributeDescriptionUp();
+            CleanupMigrationHistory();
         }
         
         /// <summary>
@@ -221,5 +222,16 @@ namespace Rock.Migrations
         }
 
         #endregion
+
+        /// <summary>
+        /// Cleanups the migration history records except the last one.
+        /// </summary>
+        private void CleanupMigrationHistory()
+        {
+            Sql( @"
+UPDATE [dbo].[__MigrationHistory]
+SET [Model] = 0x
+WHERE MigrationId < (SELECT TOP 1 MigrationId FROM __MigrationHistory ORDER BY MigrationId DESC)" );
+        }
     }
 }
