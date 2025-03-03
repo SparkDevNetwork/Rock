@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Administration
         private static class PageParameterKey
         {
             public const string BinaryFileTypeId = "BinaryFileTypeId";
-            public const string ReturnUrl = "ReturnUrl";
+            public const string ReturnUrl = "returnUrl";
             public const string AutoEdit = "autoEdit";
         }
 

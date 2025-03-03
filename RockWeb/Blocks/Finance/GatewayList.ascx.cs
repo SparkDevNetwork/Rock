@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Finance
             var parms = new Dictionary<string, string>();
             parms.Add( "GatewayId", e.RowKeyValue.ToString() );
             parms.Add( "autoEdit", "true" );
-            parms.Add( "ReturnUrl", Request.RawUrl );
+            parms.Add( "returnUrl", Request.RawUrl );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 

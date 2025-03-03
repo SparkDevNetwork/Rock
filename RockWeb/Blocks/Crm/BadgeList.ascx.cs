@@ -57,7 +57,7 @@ namespace RockWeb.Blocks.Crm
         private static class PageParameterKey
         {
             public const string BadgeId = "BadgeId";
-            public const string ReturnUrl = "ReturnUrl";
+            public const string ReturnUrl = "returnUrl";
             public const string AutoEdit = "autoEdit";
         }
 

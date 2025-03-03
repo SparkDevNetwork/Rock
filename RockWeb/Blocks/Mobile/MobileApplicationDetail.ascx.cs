@@ -1417,7 +1417,7 @@ namespace RockWeb.Blocks.Mobile
                 { "SiteId", hfSiteId.Value },
                 { "LayoutId", e.RowKeyId.ToString() },
                 { "autoEdit", "true" },
-                { "ReturnUrl", Request.RawUrl }
+                { "returnUrl", Request.RawUrl }
             } );
         }
 

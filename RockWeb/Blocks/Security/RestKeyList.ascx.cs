@@ -150,7 +150,7 @@ namespace RockWeb.Blocks.Security
             var restUserId = e.RowKeyId;
             parms.Add( "RestUserId", restUserId.ToString() );
             parms.Add( "autoEdit", "true" );
-            parms.Add( "ReturnUrl", Request.RawUrl );
+            parms.Add( "returnUrl", Request.RawUrl );
             NavigateToLinkedPage( "DetailPage", parms );
         }
 

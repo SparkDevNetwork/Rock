@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Cms
         private static class PageParameterKey
         {
             public const string PersistedDatasetId = "PersistedDatasetId";
-            public const string ReturnUrl = "ReturnUrl";
+            public const string ReturnUrl = "returnUrl";
             public const string AutoEdit = "autoEdit";
         }
 

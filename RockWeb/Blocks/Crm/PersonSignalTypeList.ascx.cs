@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Crm
         private static class PageParameterKey
         {
             public const string SignalTypeId = "SignalTypeId";
-            public const string ReturnUrl = "ReturnUrl";
+            public const string ReturnUrl = "returnUrl";
             public const string AutoEdit = "autoEdit";
         }
 

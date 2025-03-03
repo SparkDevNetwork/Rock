@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.WorkFlow
         private static class PageParameterKey
         {
             public const string WorkflowTriggerId = "WorkflowTriggerId";
-            public const string ReturnUrl = "ReturnUrl";
+            public const string ReturnUrl = "returnUrl";
             public const string AutoEdit = "autoEdit";
         }
 
