@@ -269,7 +269,7 @@ namespace Rock.Rest.v2
                     FamilyId = options.FamilyId,
                     PossibleSchedules = session.GetAllPossibleScheduleBags(),
                     People = session.GetAttendeeBags(),
-                    CurrentlyCheckedInAttendances = session.GetCurrentAttendanceBags()
+                    CurrentlyCheckedInAttendances = session.GetCurrentAttendanceBags( areas, kiosk, null )
                 } );
             }
             catch ( CheckInMessageException ex )

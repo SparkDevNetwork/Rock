@@ -23,6 +23,7 @@ using Rock.Data;
 using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.Observability;
+using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 
@@ -401,8 +402,11 @@ namespace Rock.CheckIn.v2
         /// <see cref="Attendee.RecentAttendances"/> property has
         /// been populated for each attendee.
         /// </summary>
+        /// <param name="possibleAreas">The possible areas that are to be considered when generating the opportunities.</param>
+        /// <param name="kiosk">The optional kiosk to use.</param>
+        /// <param name="locations">The list of locations to use.</param>
         /// <returns>A list of attendance bags.</returns>
-        public List<AttendanceBag> GetCurrentAttendanceBags()
+        public List<AttendanceBag> GetCurrentAttendanceBags( IReadOnlyCollection<GroupTypeCache> possibleAreas, DeviceCache kiosk, IReadOnlyCollection<NamedLocationCache> locations )
         {
             using ( var activity = ObservabilityHelper.StartActivity( "Get Current Attendance Bags" ) )
             {
@@ -410,6 +414,11 @@ namespace Rock.CheckIn.v2
 
                 var checkedInAttendances = new List<AttendanceBag>();
                 var today = RockDateTime.Today;
+
+                if ( locations == null && kiosk != null )
+                {
+                    locations = kiosk.GetAllLocations().ToList();
+                }
 
                 foreach ( var attendee in Attendees )
                 {
@@ -440,6 +449,28 @@ namespace Rock.CheckIn.v2
                         if ( !schedule.WasScheduleOrCheckInActiveForCheckOut( now ) )
                         {
                             continue;
+                        }
+
+                        // If we have areas to filter by then check if this
+                        // attendance record fits the criteria.
+                        if ( possibleAreas != null )
+                        {
+                            var areaId = IdHasher.Instance.GetId( attendance.GroupTypeId );
+
+                            if ( !possibleAreas.Any( a => a.Id == areaId ) )
+                            {
+                                continue;
+                            }
+                        }
+
+                        // If we have locations to filter by then check if
+                        // this attendance record fits the criteria.
+                        if ( locations != null )
+                        {
+                            if ( !locations.Any( l => l.Id == location.Id ) )
+                            {
+                                continue;
+                            }
                         }
 
                         var attendanceBag = Director.ConversionProvider.GetAttendanceBag( attendance, attendee );
