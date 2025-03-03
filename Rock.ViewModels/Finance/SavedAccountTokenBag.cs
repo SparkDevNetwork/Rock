@@ -1,4 +1,6 @@
-﻿namespace Rock.ViewModels.Finance
+﻿using System.Collections.Generic;
+
+namespace Rock.ViewModels.Finance
 {
     /// <summary>
     /// A bag used to add a saved account using a payment method token.
@@ -54,5 +56,10 @@
         /// The country.
         /// </value>
         public string Country { get; set; }
+
+        /// <summary>
+        /// Gets or sets additional parameters for the payment info.
+        /// </summary>
+        public Dictionary<string, string> AdditionalParameters { get; set; }
     }
 }

@@ -244,10 +244,10 @@ namespace Rock.Model
         /// <param name="person">The person for whom the account is being created.</param>
         /// <param name="authorizationTransactionTypeId">The authorization transaction type ID.</param>
         /// <param name="errorMessage">The error message, if any.</param>
-        /// <param name="siteType">The site type.</param>
+        /// <param name="additionalParameters">The additional parameters for the request.</param>
         /// <remarks>For credit card, this uses <see cref="IGatewayComponent.Authorize(FinancialGateway, PaymentInfo, out string)"/> to authorize the card before saving.</remarks>
         /// <returns>A <see cref="FinancialPersonSavedAccount"/> object or null if an error occurs.</returns>
-        internal FinancialPersonSavedAccount CreateAccountFromToken( FinancialGateway gateway, SavedAccountTokenBag options, Person person, int? authorizationTransactionTypeId, SiteType siteType, out string errorMessage )
+        internal FinancialPersonSavedAccount CreateAccountFromToken( FinancialGateway gateway, SavedAccountTokenBag options, Person person, int? authorizationTransactionTypeId, Dictionary<string, string> additionalParameters, out string errorMessage )
         {
             var currencyTypeValue = DefinedValueCache.Get( options.CurrencyTypeValueId, false );
 
@@ -262,11 +262,11 @@ namespace Rock.Model
 
             if ( isCreditCard )
             {
-                return CreateCreditCardAccountFromToken( gateway, options, person, authorizationTransactionTypeId, siteType, out errorMessage );
+                return CreateCreditCardAccountFromToken( gateway, options, person, authorizationTransactionTypeId, additionalParameters, out errorMessage );
             }
             else if ( isAch )
             {
-                return CreateAchAccountFromToken( gateway, options, person, authorizationTransactionTypeId, siteType, out errorMessage );
+                return CreateAchAccountFromToken( gateway, options, person, authorizationTransactionTypeId, additionalParameters, out errorMessage );
             }
 
             errorMessage = "Only ACH and Credit Card currency types are supported.";
@@ -281,9 +281,9 @@ namespace Rock.Model
         /// <param name="person">The person for whom the account is being created.</param>
         /// <param name="authorizationTransactionTypeId">The authorization transaction type ID.</param>
         /// <param name="errorMessage">The error message, if any.</param>
-        /// <param name="siteType">The site type.</param>
+        /// <param name="additionalParameters">The additional parameters for the request.</param>
         /// <returns>A <see cref="FinancialPersonSavedAccount"/> object or null if an error occurs.</returns>
-        internal FinancialPersonSavedAccount CreateCreditCardAccountFromToken( FinancialGateway gateway, SavedAccountTokenBag options, Person person, int? authorizationTransactionTypeId, SiteType siteType, out string errorMessage )
+        internal FinancialPersonSavedAccount CreateCreditCardAccountFromToken( FinancialGateway gateway, SavedAccountTokenBag options, Person person, int? authorizationTransactionTypeId, Dictionary<string, string> additionalParameters, out string errorMessage )
         {
             if ( !( gateway.GetGatewayComponent() is IHostedGatewayComponent gatewayComponent ) )
             {
@@ -305,14 +305,9 @@ namespace Rock.Model
                 Street2 = string.Empty,
                 City = string.Empty,
                 State = string.Empty,
-                TransactionTypeValueId = authorizationTransactionTypeId
+                TransactionTypeValueId = authorizationTransactionTypeId,
+                AdditionalParameters = additionalParameters
             };
-
-            if( siteType == SiteType.Mobile )
-            {
-                paymentInfo.AdditionalParameters = paymentInfo.AdditionalParameters ?? new Dictionary<string, string>();
-                paymentInfo.AdditionalParameters.Add( "RockMobile", true.ToString() );
-            }
 
             var customerToken = gatewayComponent.CreateCustomerAccount( gateway, paymentInfo, out errorMessage );
             if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )
@@ -373,10 +368,10 @@ namespace Rock.Model
         /// <param name="options">The token bag containing saved account details.</param>
         /// <param name="person">The person for whom the account is being created.</param>
         /// <param name="authorizationTransactionTypeId">The authorization transaction type ID.</param>
+        /// <param name="additionalParameters">The additional parameters for the request.</param>
         /// <param name="errorMessage">The error message, if any.</param>
-        /// <param name="siteType">The site type.</param>
         /// <returns>A <see cref="FinancialPersonSavedAccount"/> object or null if an error occurs.</returns>
-        internal FinancialPersonSavedAccount CreateAchAccountFromToken( FinancialGateway gateway, SavedAccountTokenBag options, Person person, int? authorizationTransactionTypeId, SiteType siteType, out string errorMessage )
+        internal FinancialPersonSavedAccount CreateAchAccountFromToken( FinancialGateway gateway, SavedAccountTokenBag options, Person person, int? authorizationTransactionTypeId, Dictionary<string, string> additionalParameters, out string errorMessage )
         {
             if ( !( gateway.GetGatewayComponent() is IHostedGatewayComponent hostedGatewayComponent ) )
             {
@@ -408,14 +403,9 @@ namespace Rock.Model
                 City = options.City,
                 State = options.State,
                 PostalCode = options.PostalCode,
-                Country = options.Country
+                Country = options.Country,
+                AdditionalParameters = additionalParameters
             };
-
-            if ( siteType == SiteType.Mobile )
-            {
-                paymentInfo.AdditionalParameters = paymentInfo.AdditionalParameters ?? new Dictionary<string, string>();
-                paymentInfo.AdditionalParameters.Add( "RockMobile", true.ToString() );
-            }
 
             var customerToken = hostedGatewayComponent.CreateCustomerAccount( gateway, paymentInfo, out errorMessage );
             if ( errorMessage.IsNotNullOrWhiteSpace() || customerToken.IsNullOrWhiteSpace() )

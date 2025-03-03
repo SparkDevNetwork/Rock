@@ -1515,7 +1515,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( RockContext );
 
-            var savedAccount = financialPersonSavedAccountService.CreateAccountFromToken( MyWellGateway, options, RequestContext.CurrentPerson, TransactionType.Id, PageCache?.Layout?.Site?.SiteType ?? SiteType.Web, out var errorMessage );
+            var savedAccount = financialPersonSavedAccountService.CreateAccountFromToken( MyWellGateway, options, RequestContext.CurrentPerson, TransactionType.Id, options.AdditionalParameters, out var errorMessage );
 
             if ( savedAccount == null )
             {
