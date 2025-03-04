@@ -3314,6 +3314,69 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Data Filter
+
+        /// <summary>
+        /// Gets the formatted string that describes the data filter from the
+        /// selection values.
+        /// </summary>
+        /// <param name="options">The options that describe the filter and selection.</param>
+        /// <returns>A string of text.</returns>
+        [HttpPost]
+        [Route( "DataFilterFormatSelection" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( string ) )]
+        [Rock.SystemGuid.RestActionGuid( "149fcd94-cd27-4017-9d4b-a1bc39e2d575" )]
+        public IActionResult DataFilterFormatSelection( [FromBody] Dictionary<string, string> options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var grant = SecurityGrant.FromToken( options.GetValueOrNull( "securityGrantToken" ) );
+                var entityTypeGuid = options["entityTypeGuid"].AsGuidOrNull();
+                var filterGuid = options["filterTypeGuid"].AsGuidOrNull();
+                var componentData = options["componentData"].FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+                if ( !filterGuid.HasValue || !entityTypeGuid.HasValue )
+                {
+                    return BadRequest( "Invalid request." );
+                }
+
+                var filterEntityType = EntityTypeCache.Get( filterGuid.Value, rockContext );
+                var entityType = EntityTypeCache.Get( entityTypeGuid.Value, rockContext );
+
+                if ( filterEntityType == null )
+                {
+                    return BadRequest( "Invalid request." );
+                }
+
+                // We have to check access on the EntityType record because the
+                // component is not an IEntity so it will not work.
+                if ( !grant.IsAccessGranted( filterEntityType, Security.Authorization.VIEW ) )
+                {
+                    return BadRequest( "Security grant token is not valid." );
+                }
+
+                var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType.Name );
+
+                if ( filterComponent == null )
+                {
+                    return BadRequest( "Invalid request." );
+                }
+
+                if ( !filterComponent.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return BadRequest( "Not authorized to access this filter." );
+                }
+
+                var selection = filterComponent.GetSelectionFromObsidianComponentData( entityType.GetEntityType(), componentData, rockContext, RockRequestContext );
+
+                return Ok( filterComponent.FormatSelection( entityType.GetEntityType(), selection ) );
+            }
+        }
+
+        #endregion
+
         #region Data View Picker
 
         /// <summary>
