@@ -15,23 +15,19 @@
         <template #tabpane="{ item }">
             <template v-if="item === selectedTab">
                 <div class="row">
-                    <div v-show="hasCategories" class="col-lg-4 col-md-5 col-sm-12 p-3">
+                    <div class="col-lg-4 col-md-5 col-sm-12 p-3">
                         <CategoryTree v-model="selectedCategory"
-                                      v-model:hasCategories="hasCategories"
                                       :entityTypeGuid="EntityType.Snippet"
                                       :enableDeselect="true"
                                       height="250px" />
                     </div>
-                    <div class="col-sm-12 overflow-visible scrollbar-thin overflow-y-auto p-3" :class="hasCategories ? 'col-lg-8 col-md-7' : ''" style="height: 250px;">
-                        <div class="btn-grid-container" v-if="filteredSnippetBags.length > 0">
+                    <div class="col-lg-8 col-md-7 col-sm-12 overflow-visible scrollbar-thin overflow-y-auto p-3" style="height: 250px;">
+                        <div class="btn-grid-container">
                             <RockButton v-for="snippetBag in filteredSnippetBags"
                                         @click="selectedSnippet = snippetBag.snippet?.value ?? ''"
                                         :class="['text-truncate', { 'selected-snippet-btn': snippetBag.snippet?.value === selectedSnippet }]">
                                 {{ snippetBag.snippet?.text }}
                             </RockButton>
-                        </div>
-                        <div v-else class="d-flex flex-column justify-content-center h-100 text-muted text-semibold text-center">
-                            <span>No Snippets Configured</span>
                         </div>
                     </div>
                 </div>
@@ -124,8 +120,6 @@
     const selectedCategory = ref<ListItemBag>();
     const selectedTab = ref<string>();
     const selectedSnippet = ref<string>("");
-
-    const hasCategories = ref(true);
 
     const errorMessage = computed(() => props.errorMessage);
     const filteredSnippetBags = computed(() => {

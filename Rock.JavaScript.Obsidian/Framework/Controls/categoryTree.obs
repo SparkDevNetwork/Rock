@@ -43,7 +43,7 @@
 </style>
 
 <script setup lang="ts">
-    import { type PropType, ref, watch, watchEffect } from "vue";
+    import { type PropType, ref, watch } from "vue";
     import TreeList from "./treeList.obs";
     import { CategoryTreeItemProvider } from "@Obsidian/Utility/treeItemProviders";
     import { forceToArray } from "@Obsidian/Utility/arrayUtils";
@@ -83,15 +83,6 @@
             type: Array as PropType<TreeItemBag[]>
         },
 
-        /**
-         * V-model to give the parent component an indication of whether or not any categories have
-         * been loaded/exist.
-         */
-        hasCategories: {
-            type: Boolean,
-            default: false
-        },
-
         disableFolderSelection: {
             type: Boolean as PropType<boolean>,
             default: false
@@ -124,8 +115,7 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: ListItemBag | ListItemBag[] | null): void,
-        (e: "update:hasCategories", value: boolean): void,
-        (e: "valueSelected"): void
+        (_e: "valueSelected"): void
     }>();
 
     /**
@@ -231,9 +221,6 @@
         flatItems.value = flatten(newItems ?? [], i => i.children ?? []);
     };
 
-    watchEffect(() => {
-        emit("update:hasCategories", flatItems.value.length > 0);
-    });
 
     // Keep security token up to date, but don't need refetch data
     watch(securityGrantToken, () => {
