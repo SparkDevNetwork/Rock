@@ -3328,22 +3328,20 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponseType( HttpStatusCode.OK, Type = typeof( string ) )]
         [Rock.SystemGuid.RestActionGuid( "149fcd94-cd27-4017-9d4b-a1bc39e2d575" )]
-        public IActionResult DataFilterFormatSelection( [FromBody] Dictionary<string, string> options )
+        public IActionResult DataFilterFormatSelection( [FromBody] DataFilterFormatSelectionOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
-                var grant = SecurityGrant.FromToken( options.GetValueOrNull( "securityGrantToken" ) );
-                var entityTypeGuid = options["entityTypeGuid"].AsGuidOrNull();
-                var filterGuid = options["filterTypeGuid"].AsGuidOrNull();
-                var componentData = options["componentData"].FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+                var componentData = options.ComponentData.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
 
-                if ( !filterGuid.HasValue || !entityTypeGuid.HasValue )
+                if ( options.EntityTypeGuid == Guid.Empty || options.FilterTypeGuid == Guid.Empty )
                 {
                     return BadRequest( "Invalid request." );
                 }
 
-                var filterEntityType = EntityTypeCache.Get( filterGuid.Value, rockContext );
-                var entityType = EntityTypeCache.Get( entityTypeGuid.Value, rockContext );
+                var filterEntityType = EntityTypeCache.Get( options.FilterTypeGuid, rockContext );
+                var entityType = EntityTypeCache.Get( options.EntityTypeGuid, rockContext );
 
                 if ( filterEntityType == null )
                 {
