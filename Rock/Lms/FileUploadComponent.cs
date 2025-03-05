@@ -14,10 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
+using Rock.Attribute;
+using Rock.Cms.StructuredContent;
+using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Lms
 {
@@ -28,34 +34,93 @@ namespace Rock.Lms
     [Export( typeof( LearningActivityComponent ) )]
     [ExportMetadata( "ComponentName", "File Upload" )]
 
+    [RockInternal( "17.0" )]
     [Rock.SystemGuid.EntityTypeGuid( "deb298fe-383b-46bd-a974-afd92c09843a" )]
     public class FileUploadComponent : LearningActivityComponent
     {
-        /// <summary>
-        /// Gets the Highlight color for the component.
-        /// </summary>
+        #region Keys
+
+        private static class SettingKey
+        {
+            public const string Instructions = "instructions";
+
+            public const string Rubric = "rubric";
+
+            public const string ShowRubricOnScoring = "showRubricOnScoring";
+
+            public const string ShowRubricOnUpload = "showRubricOnUpload";
+        }
+
+        private static class CompletionKey
+        {
+            public const string BinaryFile = "binaryFile";
+
+            public const string PointsAvailableAtCompletion = "pointsAvailableAtCompletion";
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <inheritdoc/>
         public override string HighlightColor => "#d8f9e5";
 
-        /// <summary>
-        /// Gets the icon CSS class for the component.
-        /// </summary>
+        /// <inheritdoc/>
         public override string IconCssClass => "fa fa-file-alt";
 
-        /// <summary>
-        /// Gets the name of the component.
-        /// </summary>
+        /// <inheritdoc/>
         public override string Name => "File Upload";
 
         /// <inheritdoc/>
         public override string ComponentUrl => @"/Obsidian/Controls/Internal/LearningActivity/fileUploadLearningActivity.obs";
 
-        /// <summary>
-        /// The <see cref="FileUploadComponent"/> always requires completed activities to be graded.
-        /// </summary>
-        /// <returns><c>true</c> if the completion record has not been graded; otherwise <c>false</c>.</returns>
-        public override bool RequiresGrading( LearningActivityCompletion completion )
+        #endregion
+
+        #region Methods
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetActivityConfiguration( LearningClassActivity activity, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        {
+            if ( presentation == PresentedFor.Configuration )
+            {
+                return new Dictionary<string, string>();
+            }
+            else
+            {
+                var instructions = componentData.GetValueOrNull( SettingKey.Instructions );
+                var rubric = componentData.GetValueOrNull( SettingKey.Rubric );
+
+                var instructionsHtml = instructions.IsNotNullOrWhiteSpace()
+                    ? new StructuredContentHelper( instructions ).Render()
+                    : string.Empty;
+
+                var rubricHtml = instructions.IsNotNullOrWhiteSpace()
+                    ? new StructuredContentHelper( rubric ).Render()
+                    : string.Empty;
+
+                return new Dictionary<string, string>
+                {
+                    [SettingKey.Instructions] = instructionsHtml,
+                    [SettingKey.Rubric] = rubricHtml,
+                    [SettingKey.ShowRubricOnScoring] = componentData.GetValueOrNull( SettingKey.ShowRubricOnScoring ),
+                    [SettingKey.ShowRubricOnUpload] = componentData.GetValueOrNull( SettingKey.ShowRubricOnUpload )
+                };
+            }
+        }
+
+        /// <inheritdoc/>
+        public override bool RequiresGrading( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
         {
             return !completion.GradedByPersonAliasId.HasValue;
         }
+
+        /// <inheritdoc/>
+        public override int? CalculatePointsEarned( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, int pointsPossible, RockContext rockContext, RockRequestContext requestContext )
+        {
+            // Points are not auto-awarded for file uploads.
+            return null;
+        }
+
+        #endregion
     }
 }

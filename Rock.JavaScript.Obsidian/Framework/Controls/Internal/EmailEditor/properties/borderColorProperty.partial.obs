@@ -8,8 +8,8 @@
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
     import ShorthandColorPickerProperty from "./shorthandColorPickerProperty.partial.obs";
+    import { createBorderColorProvider } from "../providers.partial";
     import { Shorthand, ShorthandValueProvider, StyleSheetMode } from "../types.partial";
-    import { createBorderColorProvider } from "../utils.partial";
 
     const props = defineProps({
         element: {

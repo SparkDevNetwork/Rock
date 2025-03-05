@@ -1364,6 +1364,10 @@ $(document).ready(function() {
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             filterField.Expanded = true;
             filterField.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
+
+            // This is required for Obsidian filters so they can initialize any
+            // data that must be sent from C# to Obsidian.
+            filterField.SetSelection( string.Empty );
         }
 
         /// <summary>

@@ -44,10 +44,9 @@
                     </div>
                 </div>
 
-                <div class="row">
+                <div v-if="buttonWidthValuesProvider" class="row">
                     <div class="col-sm-12">
-                        <ButtonWidthProperty :buttonShellElement="buttonShellElement"
-                                             :element="buttonElement" />
+                        <ButtonWidthProperty :valueProvider="buttonWidthValuesProvider" />
                     </div>
                 </div>
 
@@ -82,7 +81,7 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { onUnmounted, PropType, ref, watch } from "vue";
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
@@ -95,6 +94,8 @@
     import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
     import PaddingProperty from "../properties/paddingProperty.partial.obs";
     import TextContentProperty from "../properties/textContentProperty.partial.obs";
+    import { ButtonWidthValues, ValueProvider } from "../types.partial";
+    import { createButtonWidthValuesProvider } from "../providers.partial";
 
     const props = defineProps({
         componentElement: {
@@ -115,6 +116,7 @@
     const buttonShellElement = ref<HTMLElement | null | undefined>(buttonInnerWrapElement.value?.querySelector(".button-shell") as HTMLElement);
     const buttonContentElement = ref<HTMLElement | null | undefined>(buttonShellElement.value?.querySelector(".button-content") as HTMLElement);
     const buttonElement = ref<HTMLElement | null | undefined>(buttonContentElement.value?.querySelector(".button-link") as HTMLElement);
+    const buttonWidthValuesProvider = ref<ValueProvider<ButtonWidthValues | null | undefined> | null | undefined>(buttonShellElement.value ? createButtonWidthValuesProvider(buttonShellElement.value) : null);
 
     // #endregion
 
@@ -139,7 +141,18 @@
         buttonShellElement.value = buttonInnerWrapElement.value?.querySelector(".button-shell") as HTMLElement;
         buttonContentElement.value = buttonShellElement.value?.querySelector(".button-content") as HTMLElement;
         buttonElement.value = buttonContentElement.value?.querySelector(".button-link") as HTMLElement;
+
+        buttonWidthValuesProvider.value?.dispose();
+        buttonWidthValuesProvider.value = buttonShellElement.value ? createButtonWidthValuesProvider(buttonShellElement.value) : null;
     });
 
     // #endregion
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        buttonWidthValuesProvider.value?.dispose();
+    });
+
+    // #endregion Hooks
 </script>

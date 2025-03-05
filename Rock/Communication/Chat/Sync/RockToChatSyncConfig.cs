@@ -44,6 +44,6 @@ namespace Rock.Communication.Chat.Sync
         /// that a matching <see cref="ChatUser"/> already exists, at the risk of encountering API errors later in the
         /// sync process.
         /// </remarks>
-        public bool ShouldEnsureChatUsersExist { get; set; }
+        public bool ShouldEnsureChatUsersExist { get; set; } = true;
     }
 }

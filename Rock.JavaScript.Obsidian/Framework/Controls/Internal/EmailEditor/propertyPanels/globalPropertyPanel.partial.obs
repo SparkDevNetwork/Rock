@@ -12,16 +12,11 @@
                                      :min="480"
                                      :max="900"
                                      :showValueBar="true"
-                                     :valueProvider="applyDefaultValueToProvider(bodyWidthProvider, DefaultBodyWidth)"
+                                     :valueProvider="getGlobalBodyWidthProvider(document)"
                                      valueSuffix="px" />
 
-                <BackgroundColorProperty :element="document.body"
-                                         label="Body Color"
-                                         :valueProvider="bodyColorProvider"
-                                         :styleSheetMode="{
-                                             styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: `.${RockBodyInnerContainerCssClass}`
-                                         }" />
+                <ColorPickerProperty label="Body Color"
+                                     :valueProvider="getGlobalBodyBackgroundColorProvider(document)" />
 
                 <DropDownListProperty label="Body Alignment"
                                       :items="[
@@ -39,35 +34,34 @@
                                           }
                                       ]"
                                       :showBlankItem="false"
-                                      :valueProvider="applyDefaultValueToProvider(bodyAlignmentProvider, DefaultBodyAlignment)" />
+                                      :valueProvider="getGlobalBodyAlignmentProvider(document)" />
 
                 <BorderPropertyGroup :element="document.body"
                                      :styleSheetMode="{
                                          styleCssClass: RockStylesCssClass,
-                                         rulesetCssSelector: `.${RockBodyInnerContainerCssClass}`
+                                         rulesetCssSelector: GlobalStylesCssSelectors.bodyBorderStyling
                                      }" />
 
-                <MarginProperty :element="document.body"
-                                :styleSheetMode="{
-                                    styleCssClass: RockStylesCssClass,
-                                    rulesetCssSelector: `.${RockBodyInnerContainerCssClass}`
-                                }" />
+                <PaddingProperty :element="document.body"
+                                 label="Margin"
+                                 :styleSheetMode="{
+                                     styleCssClass: RockStylesCssClass,
+                                     rulesetCssSelector: GlobalStylesCssSelectors.bodyMargin
+                                 }" />
 
                 <PaddingProperty :element="document.body"
                                  :styleSheetMode="{
                                      styleCssClass: RockStylesCssClass,
-                                     rulesetCssSelector: `.${RockBodyInnerContainerCssClass}`
+                                     rulesetCssSelector: GlobalStylesCssSelectors.bodyPadding
                                  }" />
             </Accordion>
 
             <Accordion title="Background Settings">
-                <BackgroundColorProperty :element="document.body"
-                                         :styleSheetMode="{
-                                             styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: 'html'
-                                         }" />
 
-                <BackgroundImagePropertyGroup :element="document.body" />
+                <ColorPickerProperty label="Background Color"
+                                     :valueProvider="getGlobalBackgroundColorProvider(document)" />
+
+                <BackgroundImagePropertyGroup :element="document.body.querySelector(`.${EmailWrapperCssClass}`)!" />
             </Accordion>
 
             <Accordion title="Text Styling" removeBottomPadding removeTopPadding>
@@ -77,7 +71,7 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: 'body'
+                                               rulesetCssSelector: GlobalStylesCssSelectors.globalTextStyling
                                            }" />
                     </Accordion>
 
@@ -86,25 +80,25 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: '.component-title h1'
+                                               rulesetCssSelector: GlobalStylesCssSelectors.heading1TextStyling
                                            }" />
 
                         <MarginProperty :element="document.body"
                                         :styleSheetMode="{
                                             styleCssClass: RockStylesCssClass,
-                                            rulesetCssSelector: '.component-title h1'
+                                            rulesetCssSelector: GlobalStylesCssSelectors.heading1Margin
                                         }" />
 
                         <PaddingProperty :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: '.component-title h1'
+                                             rulesetCssSelector: GlobalStylesCssSelectors.heading1Padding
                                          }" />
 
                         <BorderPropertyGroup :element="document.body"
                                              :styleSheetMode="{
                                                  styleCssClass: RockStylesCssClass,
-                                                 rulesetCssSelector: '.component-title h1'
+                                                 rulesetCssSelector: GlobalStylesCssSelectors.heading1BorderStyling
                                              }" />
                     </Accordion>
 
@@ -113,25 +107,25 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: '.component-title h2'
+                                               rulesetCssSelector: GlobalStylesCssSelectors.heading2TextStyling
                                            }" />
 
                         <MarginProperty :element="document.body"
                                         :styleSheetMode="{
                                             styleCssClass: RockStylesCssClass,
-                                            rulesetCssSelector: '.component-title h2'
+                                            rulesetCssSelector: GlobalStylesCssSelectors.heading2Margin
                                         }" />
 
                         <PaddingProperty :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: '.component-title h2'
+                                             rulesetCssSelector: GlobalStylesCssSelectors.heading2Padding
                                          }" />
 
                         <BorderPropertyGroup :element="document.body"
                                              :styleSheetMode="{
                                                  styleCssClass: RockStylesCssClass,
-                                                 rulesetCssSelector: '.component-title h2'
+                                                 rulesetCssSelector: GlobalStylesCssSelectors.heading2BorderStyling
                                              }" />
                     </Accordion>
 
@@ -140,25 +134,25 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: '.component-title h3'
+                                               rulesetCssSelector: GlobalStylesCssSelectors.heading3TextStyling
                                            }" />
 
                         <MarginProperty :element="document.body"
                                         :styleSheetMode="{
                                             styleCssClass: RockStylesCssClass,
-                                            rulesetCssSelector: '.component-title h3'
+                                            rulesetCssSelector: GlobalStylesCssSelectors.heading3Margin
                                         }" />
 
                         <PaddingProperty :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: '.component-title h3'
+                                             rulesetCssSelector: GlobalStylesCssSelectors.heading3Padding
                                          }" />
 
                         <BorderPropertyGroup :element="document.body"
                                              :styleSheetMode="{
                                                  styleCssClass: RockStylesCssClass,
-                                                 rulesetCssSelector: '.component-title h3'
+                                                 rulesetCssSelector: GlobalStylesCssSelectors.heading3BorderStyling
                                              }" />
                     </Accordion>
 
@@ -167,7 +161,7 @@
                         <FontPropertyGroup :element="document.body"
                                            :styleSheetMode="{
                                                styleCssClass: RockStylesCssClass,
-                                               rulesetCssSelector: '.component-text'
+                                               rulesetCssSelector: GlobalStylesCssSelectors.paragraphTextStyling
                                            }"
                                            :visibilityOptions="{
                                                isJustifyTextHidden: true
@@ -176,7 +170,7 @@
                         <MarginProperty :element="document.body"
                                         :styleSheetMode="{
                                             styleCssClass: RockStylesCssClass,
-                                            rulesetCssSelector: '.component-text'
+                                            rulesetCssSelector: GlobalStylesCssSelectors.paragraphMargin
                                         }" />
                     </Accordion>
                 </AccordionGroup>
@@ -186,14 +180,13 @@
                 <BackgroundColorProperty :element="document.body"
                                          :styleSheetMode="{
                                              styleCssClass: RockStylesCssClass,
-                                             rulesetCssSelector: '.component-button .button-link'
+                                             rulesetCssSelector: GlobalStylesCssSelectors.buttonBackgroundColor
                                          }" />
-
 
                 <FontPropertyGroup :element="document.body"
                                    :styleSheetMode="{
                                        styleCssClass: RockStylesCssClass,
-                                       rulesetCssSelector: '.component-button .button-link'
+                                       rulesetCssSelector: GlobalStylesCssSelectors.buttonTextStyling
                                    }"
                                    :visibilityOptions="{
                                        isJustifyTextHidden: true
@@ -203,27 +196,31 @@
                                      label="Button Border"
                                      :styleSheetMode="{
                                          styleCssClass: RockStylesCssClass,
-                                         rulesetCssSelector: '.component-button .button-link'
+                                         rulesetCssSelector: GlobalStylesCssSelectors.buttonBorderStyling
                                      }" />
 
                 <BorderRadiusProperty :element="document.body"
                                       label="Corner Radius"
                                       :styleSheetMode="{
                                           styleCssClass: RockStylesCssClass,
-                                          rulesetCssSelector: '.component-button .button-content, .component-button .button-link'
+                                          rulesetCssSelector: GlobalStylesCssSelectors.buttonCornerRadius
                                       }" />
+
+                <ButtonWidthProperty v-if="getGlobalButtonWidthValuesProvider(document)"
+                                     :showBlankItem="false"
+                                     :valueProvider="getGlobalButtonWidthValuesProvider(document)!" />
 
                 <PaddingProperty :element="document.body"
                                  label="Margin"
                                  :styleSheetMode="{
                                      styleCssClass: RockStylesCssClass,
-                                     rulesetCssSelector: '.component-button .button-innerwrap'
+                                     rulesetCssSelector: GlobalStylesCssSelectors.buttonMargin
                                  }" />
 
                 <PaddingProperty :element="document.body"
                                  :styleSheetMode="{
                                      styleCssClass: RockStylesCssClass,
-                                     rulesetCssSelector: '.component-button .button-link'
+                                     rulesetCssSelector: GlobalStylesCssSelectors.buttonPadding
                                  }" />
             </Accordion>
 
@@ -234,7 +231,7 @@
                                               label="Style"
                                               :styleSheetMode="{
                                                   styleCssClass: RockStylesCssClass,
-                                                  rulesetCssSelector: '.component-divider hr'
+                                                  rulesetCssSelector: GlobalStylesCssSelectors.dividerStyle
                                               }" />
                     </div>
 
@@ -243,7 +240,7 @@
                                                   label="Thickness"
                                                   :styleSheetMode="{
                                                       styleCssClass: RockStylesCssClass,
-                                                      rulesetCssSelector: '.component-divider hr'
+                                                      rulesetCssSelector: GlobalStylesCssSelectors.dividerThickness
                                                   }" />
                     </div>
                 </div>
@@ -254,7 +251,7 @@
                                               label="Color"
                                               :styleSheetMode="{
                                                   styleCssClass: RockStylesCssClass,
-                                                  rulesetCssSelector: '.component-divider hr'
+                                                  rulesetCssSelector: GlobalStylesCssSelectors.dividerColor
                                               }" />
                     </div>
                 </div>
@@ -265,7 +262,7 @@
                                :max="100"
                                :styleSheetMode="{
                                    styleCssClass: RockStylesCssClass,
-                                   rulesetCssSelector: '.component-divider hr'
+                                   rulesetCssSelector: GlobalStylesCssSelectors.dividerWidth
                                }"
                                valueType="percentage" />
 
@@ -273,14 +270,14 @@
                                                    label="Horizontal Alignment"
                                                    :styleSheetMode="{
                                                        styleCssClass: RockStylesCssClass,
-                                                       rulesetCssSelector: '.component-divider hr'
+                                                       rulesetCssSelector: GlobalStylesCssSelectors.dividerHorizontalAlignment
                                                    }" />
 
                 <MarginProperty :element="document.body"
                                 label="Padding"
                                 :styleSheetMode="{
                                     styleCssClass: RockStylesCssClass,
-                                    rulesetCssSelector: '.component-divider hr'
+                                    rulesetCssSelector: GlobalStylesCssSelectors.dividerPadding
                                 }" />
             </Accordion>
         </AccordionGroup>
@@ -288,7 +285,7 @@
 </template>
 
 <script setup lang="ts">
-    import { onUnmounted, PropType, ref, watch } from "vue";
+    import { PropType } from "vue";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
     import FlatPanel from "../flatPanel.partial.obs";
@@ -296,6 +293,8 @@
     import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
     import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
     import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
+    import ButtonWidthProperty from "../properties/buttonWidthProperty.partial.obs";
+    import ColorPickerProperty from "../properties/colorPickerProperty.partial.obs";
     import CommunicationTemplateProperty from "../properties/communicationTemplateProperty.partial.obs";
     import DividerColorProperty from "../properties/dividerColorProperty.partial.obs";
     import DividerStyleProperty from "../properties/dividerStyleProperty.partial.obs";
@@ -306,16 +305,17 @@
     import MarginProperty from "../properties/marginProperty.partial.obs";
     import PaddingProperty from "../properties/paddingProperty.partial.obs";
     import RangeSliderProperty from "../properties/rangeSliderProperty.partial.obs";
-    import { ValueProvider } from "../types.partial";
     import {
-        applyDefaultValueToProvider,
-        contentAlignmentProvider,
-        DefaultBodyAlignment,
-        DefaultBodyWidth,
-        createBodyBackgroundColorProvider,
-        RockStylesCssClass,
-        RockBodyInnerContainerCssClass,
-        createBodyWidthProvider
+        getGlobalBodyAlignmentProvider,
+        getGlobalBodyBackgroundColorProvider,
+        getGlobalBodyWidthProvider,
+        getGlobalBackgroundColorProvider,
+        getGlobalButtonWidthValuesProvider
+    } from "../providers.partial";
+    import {
+        EmailWrapperCssClass,
+        GlobalStylesCssSelectors,
+        RockStylesCssClass
     } from "../utils.partial";
     import WidthProperty from "../properties/widthProperty.partial.obs";
     import { Guid } from "@Obsidian/Types";
@@ -348,50 +348,6 @@
     // #region Values
 
     const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
-    const bodyWidthProvider = ref<ValueProvider<number | null | undefined>>(internalCreateBodyWidthProvider());
-    const bodyAlignmentProvider = ref<ValueProvider<string | null | undefined>>(createBodyAlignmentProvider());
-    const bodyColorProvider = ref<ValueProvider<string | null | undefined>>(createBodyColorProvider());
 
     // #endregion Values
-
-    // #region Functions
-
-    function internalCreateBodyWidthProvider(): ValueProvider<number | null | undefined> {
-        return createBodyWidthProvider(props.document.body as HTMLBodyElement);
-    }
-
-    function createBodyAlignmentProvider(): ValueProvider<string | null | undefined> {
-        return contentAlignmentProvider(props.document.body);
-    }
-
-    function createBodyColorProvider(): ValueProvider<string | null | undefined> {
-        return createBodyBackgroundColorProvider(props.document.body as HTMLBodyElement);
-    }
-
-    // #endregion Functions
-
-    // #region Watchers
-
-    watch(() => props.document, () => {
-        bodyWidthProvider.value.dispose();
-        bodyWidthProvider.value = internalCreateBodyWidthProvider();
-
-        bodyAlignmentProvider.value.dispose();
-        bodyAlignmentProvider.value = createBodyAlignmentProvider();
-
-        bodyColorProvider.value.dispose();
-        bodyColorProvider.value = createBodyColorProvider();
-    });
-
-    // #endregion Watchers
-
-    // #region Hooks
-
-    onUnmounted(() => {
-        bodyWidthProvider.value.dispose();
-        bodyAlignmentProvider.value.dispose();
-        bodyColorProvider.value.dispose();
-    });
-
-    // #endregion Hooks
 </script>

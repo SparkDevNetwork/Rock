@@ -81,13 +81,13 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.ProgramCategories,
         Order = 3 )]
 
-    [CustomDropdownListField(
+    [BooleanField(
         "Show Completion Status",
         Key = AttributeKey.ShowCompletionStatus,
         Description = "Determines if the individual's completion status should be shown.",
-        ListSource = "Show,Hide",
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         IsRequired = true,
-        DefaultValue = "Show",
+        DefaultBooleanValue = true,
         Order = 4 )]
 
     [BooleanField(
@@ -225,7 +225,7 @@ namespace Rock.Blocks.Lms
                                 <h4 class=""m-0""><span class=""label label-success"">Completed</span></h4>
                             </div>
                             
-                            {% elseif program.CompletionStatus == 'Pending' %}
+                        {% elseif program.CompletionStatus == 'Pending' %}
                             <div class=""d-flex align-items-center"">
                                 <h4 class=""m-0""><span class=""label label-warning"">Enrolled</span></h4>
                             </div>
@@ -268,7 +268,6 @@ namespace Rock.Blocks.Lms
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( PublicLearningProgramListBlockBox box )
         {
-            box.ProgramsHtml = GetInitialHtmlContent();
         }
 
         /// <summary>
@@ -299,7 +298,7 @@ namespace Rock.Blocks.Lms
 
         private bool ShowCompletionStatus()
         {
-            return GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";
+            return GetAttributeValue( AttributeKey.ShowCompletionStatus ).AsBoolean();
         }
 
         private List<Rock.Model.LearningProgramService.PublicLearningProgramBag> GetPrograms()

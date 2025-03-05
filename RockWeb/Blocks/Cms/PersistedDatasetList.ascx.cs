@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
@@ -78,6 +79,8 @@ namespace RockWeb.Blocks.Cms
         private static class PageParameterKey
         {
             public const string PersistedDatasetId = "PersistedDatasetId";
+            public const string ReturnUrl = "returnUrl";
+            public const string AutoEdit = "autoEdit";
         }
 
         #endregion PageParameterKey
@@ -163,7 +166,11 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.PersistedDatasetId, e.RowKeyId );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.AddOrReplace( PageParameterKey.PersistedDatasetId, e.RowKeyId.ToString() );
+            queryParams.AddOrReplace( PageParameterKey.AutoEdit, "true" );
+            queryParams.AddOrReplace( PageParameterKey.ReturnUrl, Request.RawUrl );
+            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
         }
 
         /// <summary>

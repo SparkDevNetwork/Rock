@@ -18,35 +18,274 @@
 import {
     inject,
     InjectionKey,
-    ref,
     Ref,
-    watch
 } from "vue";
 import {
     AccordionManager,
-    BackgroundSize,
-    BackgroundFit,
-    EditorComponentTypeName,
+    BorderStyle,
     CssStyleDeclarationKebabKey,
     ContentAreaElements,
-    BorderStyle,
+    DomWatcher,
+    EditorComponentTypeName,
     HorizontalAlignment,
-    ShorthandValueProvider,
-    ValueConverter,
-    ValueProvider,
-    ValueProviderHooks,
-    StyleSheetMode,
-    ShorthandStyleValueProviderHooks,
-    StyleValueProviderHooks
+    StyleSheetElements,
+    ValueConverter
 } from "./types.partial";
-import { isNotNullish, isNullish } from "@Obsidian/Utility/util";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { isHTMLElement } from "@Obsidian/Utility/dom";
-import { toGuidOrNull, newGuid } from "@Obsidian/Utility/guid";
+import { isDocument, isElement, isHTMLElement } from "@Obsidian/Utility/dom";
+import { newGuid } from "@Obsidian/Utility/guid";
 import { Enumerable } from "@Obsidian/Utility/linq";
 import { splitCase, toTitleCase } from "@Obsidian/Utility/stringUtils";
+import { isNullish } from "@Obsidian/Utility/util";
+
+// #region Constants
 
 export const AccordionGroupInjectionKey: InjectionKey<AccordionManager> = Symbol("accordion-group");
+
+export const EmptyDropzoneSvgPixelWidth = 103;
+export const DefaultBodyWidth = 600;
+export const DefaultBodyAlignment = "center";
+export const DefaultBodyColor = "#ffffff";
+export const DefaultEmailBackgroundColor = "#e7e7e7";
+
+export const RockStylesCssClass = "rock-styles" as const;
+
+/**
+ * The outermost wrapper for the entire email.
+ * - **Purpose:** Defines the full email structure.
+ * - **Usage:** Apply global styles (e.g., background color).
+ * - **Best Practice:** There should be exactly **one** `.email-wrapper` per email.
+ */
+export const EmailWrapperCssClass = "email-wrapper" as const;
+
+/**
+ * Represents a **full-width row** within the email.
+ * - **Purpose:** Defines sections with independent background styling.
+ * - **Usage:** Can be repeated to create multiple sections.
+ * - **Best Practice:** Each `.email-row` should contain exactly **one** `.email-row-content`.
+ */
+export const EmailRowCssClass = "email-row" as const;
+
+/**
+ * The **content container inside a row**, which constrains the width.
+ * - **Purpose:** Centers content and limits its width (e.g., `600px`).
+ * - **Usage:** Nested inside `.email-row` to maintain content alignment.
+ * - **Best Practice:** Wrap all email components within `.email-row-content`.
+ */
+export const EmailRowContentCssClass = "email-row-content" as const;
+
+/**
+ * A wrapper for **individual content components** (e.g., text, buttons, images).
+ * - **Purpose:** Ensures each component is properly structured within an email.
+ * - **Usage:** Each `div.component-<type>` should wrap exactly **one** `.email-content` table.
+ * - **Best Practice:** Apply this class to all modular email components.
+ */
+export const EmailContentCssClass = "email-content" as const;
+
+/**
+ * Add a temporary (runtime) CSS class with this prefix to any element that should be stripped out when the HTML is retrieved via getProcessedHtml().
+ */
+export const RockRuntimeClassCssClassPrefix = "rock-runtime-class" as const;
+
+/**
+ * Add this CSS class to any temporary (runtime) element that should be stripped out when the HTML is retrieved via getProcessedHtml().
+ */
+export const RockRuntimeElementCssClass = "rock-runtime-element" as const;
+
+/**
+ * Add this CSS class to any element that should be editable inline when selected in the email designer.
+ */
+export const RockCssClassContentEditable = `rock-content-editable` as const;
+
+/**
+ * Add this CSS class to any temporary element that wraps other elements, and should be unwrapped when the HTML is retrieved via getProcessedHtml().
+ *
+ * The wrapped elements will be placed in the DOM in place of the wrapper.
+ */
+export const RockRuntimeWrapperElementCssClass = "rock-runtime-wrapper-element" as const;
+
+export const SmallEmptyClass = `${RockRuntimeClassCssClassPrefix}-small` as const;
+
+export const GlobalStylesCssSelectors = {
+    backgroundColor: `.${EmailWrapperCssClass}`,
+
+    bodyWidth: `.${EmailRowContentCssClass}`,
+    bodyColor: `.${EmailRowContentCssClass}`,
+    bodyPadding: `.${EmailRowContentCssClass} > tbody > tr > td, .${EmailRowContentCssClass} > tr > td`,
+    bodyAlignment: `.${EmailRowCssClass} > tbody > tr > td, .${EmailRowCssClass} > tr > td`,
+    bodyBorderStyling: `.${EmailRowContentCssClass}`,
+    bodyMargin: `.${EmailWrapperCssClass} > tbody > tr > td, .${EmailWrapperCssClass} > tr > td`,
+
+    globalTextStyling: `body, .${EmailWrapperCssClass} > tbody > tr > td, .${EmailWrapperCssClass} > tr > td`,
+
+    heading1TextStyling: `.component-title h1`,
+    heading1Margin: `.component-title h1`,
+    heading1Padding: `.component-title h1`,
+    heading1BorderStyling: `.component-title h1`,
+
+    heading2TextStyling: `.component-title h2`,
+    heading2Margin: `.component-title h2`,
+    heading2Padding: `.component-title h2`,
+    heading2BorderStyling: `.component-title h2`,
+
+    heading3TextStyling: `.component-title h3`,
+    heading3Margin: `.component-title h3`,
+    heading3Padding: `.component-title h3`,
+    heading3BorderStyling: `.component-title h3`,
+
+    paragraphTextStyling: `.component-text`,
+    paragraphMargin: `.component-text`,
+
+    buttonBackgroundColor: `.component-button .button-link`,
+    buttonTextStyling: `.component-button .button-link`,
+    buttonCornerRadius: `.component-button .button-content, .component-button .button-link`,
+    buttonPadding: `.component-button .button-link`,
+    buttonMargin: `.component-button .button-innerwrap`,
+    buttonBorderStyling: `.component-button .button-link`,
+    buttonWidthValuesShell: `.component-button .button-shell, .component-rsvp .rsvp-button-shell`,
+    buttonWidthValuesButton: `.component-button .button-link, .component-rsvp .rsvp-accept-link, .component-rsvp .rsvp-decline-link`,
+
+    dividerStyle: `.component-divider hr`,
+    dividerThickness: `.component-divider hr`,
+    dividerColor: `.component-divider hr`,
+    dividerWidth: `.component-divider hr`,
+    dividerHorizontalAlignment: `.component-divider hr`,
+    dividerPadding: `.component-divider hr`,
+} as const;
+
+// #endregion Constants
+
+// #region Converters
+
+export const numberToStringConverter: ValueConverter<number | null | undefined, string | null> = {
+    toTarget(source: number | null | undefined): string | null {
+        return isNullish(source) ? null : `${source}`;
+    },
+
+    toSource(target: string | null): number | null | undefined {
+        if (isNullish(target)) {
+            return target;
+        }
+        else if (!target) {
+            return null;
+        }
+        else if (target === "0") {
+            return 0;
+        }
+        else {
+            try {
+                const result = parseInt(target);
+
+                if (isNaN(result)) {
+                    return undefined;
+                }
+                else {
+                    return result;
+                }
+            }
+            catch {
+                return undefined;
+            }
+        }
+    }
+};
+
+export const stringConverter: ValueConverter<string | null | undefined, string | null> = {
+    toTarget(source: string | null | undefined): string | null {
+        return source || null;
+    },
+
+    toSource(target: string | null): string | null | undefined {
+        return target || null;
+    }
+};
+
+export const pixelConverter: ValueConverter<number | null | undefined, string | null> = {
+    toTarget(source: number | null | undefined): string | null {
+        return isNullish(source) ? null : `${source}px`;
+    },
+
+    toSource(target: string | null): number | null | undefined {
+        if (isNullish(target)) {
+            return target;
+        }
+        else if (!target) {
+            return null;
+        }
+        else if (target === "0") {
+            return 0;
+        }
+        else if (target.endsWith("px")) {
+            return parseInt(target);
+        }
+        else {
+            try {
+                const result = parseInt(target);
+
+                if (isNaN(result)) {
+                    return undefined;
+                }
+                else {
+                    return result;
+                }
+            }
+            catch {
+                return undefined;
+            }
+        }
+    }
+};
+
+export const percentageConverter: ValueConverter<number | null | undefined, string | null> = {
+    toTarget(source: number | null | undefined): string | null {
+        return isNullish(source) ? null : `${source}%`;
+    },
+
+    toSource(target: string | null): number | null | undefined {
+        if (isNullish(target)) {
+            return target;
+        }
+        else if (!target) {
+            return null;
+        }
+        else if (!target || target === "0") {
+            return 0;
+        }
+        else if (target.endsWith("%")) {
+            return parseInt(target);
+        }
+        else {
+            try {
+                return parseInt(target);
+            }
+            catch {
+                return undefined;
+            }
+        }
+    }
+};
+
+export const borderStyleConverter: ValueConverter<BorderStyle | null | undefined, string | null> = {
+    toTarget(source: BorderStyle | null | undefined): string | null {
+        return stringConverter.toTarget(source);
+    },
+
+    toSource(target: string | null): BorderStyle | null | undefined {
+        return stringConverter.toSource(target) as BorderStyle | null | undefined;
+    }
+};
+
+export const horizontalAlignmentConverter: ValueConverter<HorizontalAlignment | "" | null | undefined, string | null> = {
+    toTarget: function (source: HorizontalAlignment | "" | null | undefined): string | null {
+        return stringConverter.toTarget(source);
+    },
+    toSource: function (target: string | null): HorizontalAlignment | "" | null | undefined {
+        return stringConverter.toSource(target) as HorizontalAlignment | "" | null | undefined;
+    }
+};
+
+// #endregion Converters
+
+// #region Functions
 
 /** Uses an accordion group if one is set up. */
 export function useAccordionGroup(isExpanded: Ref<boolean>): void {
@@ -55,8 +294,8 @@ export function useAccordionGroup(isExpanded: Ref<boolean>): void {
     group?.register(accordionKey, isExpanded);
 }
 
-export function getComponentTypeName(element: HTMLElement): EditorComponentTypeName {
-    const classList = [...element.classList];
+export function getComponentTypeName(componentElement: HTMLElement): EditorComponentTypeName {
+    const classList = [...componentElement.classList];
 
     const map: Record<string, EditorComponentTypeName> = {
         "component-button": "button",
@@ -68,7 +307,8 @@ export function getComponentTypeName(element: HTMLElement): EditorComponentTypeN
         "component-section": "section",
         "component-text": "text",
         "component-title": "title",
-        "component-video": "video"
+        "component-video": "video",
+        "component-row": "row"
     };
 
     for (const key in map) {
@@ -153,6 +393,12 @@ export function getComponentIconHtml(componentTypeName: EditorComponentTypeName)
     <div style="flex-basis: 25%; background-color: var(--color-interface-soft)"></div>
     <div style="flex-basis: 25%; background-color: var(--color-interface-soft)"></div>
 </div>`;
+        case "row":
+            return `
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 40px; display: block;">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M48 32H464C490.5 32 512 53.5 512 80V432C512 458.5 490.5 480 464 480H48C21.5 480 0 458.5 0 432V80C0 53.5 21.5 32 48 32ZM464 81H49V431H464V81Z" style="fill: var(--color-interface-strong)"></path>
+    <path d="M49 187H464V326H49V187Z" style="fill: var(--color-interface-soft)"></path>
+</svg>`;
         default:
             console.warn(`Unable to retrieve the icon for the unknown component type: '${componentTypeName}'. Returning the default icon.`);
             return createIconElement("fa fa-question");
@@ -190,33 +436,13 @@ export function getComponentTitle(componentTypeName: EditorComponentTypeName): s
             return "3";
         case "four-column-section":
             return "4";
+        case "row":
+            return "Row";
         default:
             console.warn(`Unable to retrieve the title for the unknown component type, '${componentTypeName}'. Returning the default icon.`);
             return toTitleCase(splitCase(componentTypeName).replace("-", " "));
     }
 }
-
-/**
- * Add a temporary (runtime) CSS class with this prefix to any element that should be stripped out when the HTML is retrieved via getProcessedHtml().
- */
-export const RockRuntimeClassCssClassPrefix = "rock-runtime-class" as const;
-
-/**
- * Add this CSS class to any temporary (runtime) element that should be stripped out when the HTML is retrieved via getProcessedHtml().
- */
-export const RockRuntimeElementCssClass = "rock-runtime-element" as const;
-
-/**
- * Add this CSS class to any element that should be editable inline when selected in the email designer.
- */
-export const RockCssClassContentEditable = `rock-content-editable` as const;
-
-/**
- * Add this CSS class to any temporary element that wraps other elements, and should be unwrapped when the HTML is retrieved via getProcessedHtml().
- *
- * The wrapped elements will be placed in the DOM in place of the wrapper.
- */
-export const RockRuntimeWrapperElementCssClass = "rock-runtime-wrapper-element" as const;
 
 export function createComponentElementPlaceholder(document: Document): HTMLElement {
     const container = document.createElement("div");
@@ -239,11 +465,192 @@ export function createComponentElementPlaceholder(document: Document): HTMLEleme
     return container;
 }
 
+/**
+ * Creates an `.email-content` table element with provided inner content.
+ * Allows customization of the `<td>` cell styles (e.g., padding for sections).
+ *
+ * @param contentHtml Inner HTML string to place inside the `<td>` cell.
+ * @returns A table element with `.email-content` structure.
+ */
+export function createEmailContentTable(contentHtml: string | Enumerable<Element>): HTMLTableElement {
+    const contentTable = document.createElement("table");
+    contentTable.classList.add(EmailContentCssClass);
+    contentTable.setAttribute("border", "0");
+    contentTable.setAttribute("cellpadding", "0");
+    contentTable.setAttribute("cellspacing", "0");
+    contentTable.setAttribute("width", "100%");
+    contentTable.setAttribute("role", "presentation");
+
+    const contentBody = document.createElement("tbody");
+    const contentRow = document.createElement("tr");
+    const contentCell = document.createElement("td");
+
+    if (typeof contentHtml === "string") {
+        contentCell.innerHTML = contentHtml;
+    }
+    else {
+        contentHtml.forEach(el => {
+            contentCell.appendChild(el);
+        });
+    }
+
+    contentRow.appendChild(contentCell);
+    contentBody.appendChild(contentRow);
+    contentTable.appendChild(contentBody);
+
+    return contentTable;
+}
+
+/**
+ * Creates `.email-row`, `.email-row-content`, and `.email-content` table elements with provided inner content.
+ * Allows customization of the `<td>` cell styles (e.g., padding for sections).
+ *
+ * @param contentHtml Inner HTML string to place inside the `<td>` cell.
+ * @param cellStyle Optional inline styles to apply to the `<td>` (e.g., padding).
+ * @returns A table element with `.email-content` structure.
+ */
+export function createEmailRowTable<T extends Element>(contentHtml: string | Enumerable<T>): HTMLTableElement {
+    // Create `.email-row` (full width row)
+    const rowTable = document.createElement("table");
+    rowTable.classList.add(EmailRowCssClass);
+    rowTable.setAttribute("border", "0");
+    rowTable.setAttribute("cellpadding", "0");
+    rowTable.setAttribute("cellspacing", "0");
+    rowTable.setAttribute("width", "100%");
+    rowTable.setAttribute("role", "presentation");
+
+    const rowTbody = document.createElement("tbody");
+    const rowTr = document.createElement("tr");
+    const rowTd = document.createElement("td");
+    rowTd.setAttribute("align", "center");
+
+    // Create `.email-row-content` (600px constrained content area)
+    const rowContentTable = document.createElement("table");
+    rowContentTable.classList.add(EmailRowContentCssClass);
+    rowContentTable.setAttribute("border", "0");
+    rowContentTable.setAttribute("cellpadding", "0");
+    rowContentTable.setAttribute("cellspacing", "0");
+    rowContentTable.setAttribute("width", `${DefaultBodyWidth}`);
+    rowContentTable.setAttribute("role", "presentation");
+
+    const rowContentTbody = document.createElement("tbody");
+    const rowContentTr = document.createElement("tr");
+    const rowContentTd = document.createElement("td");
+
+    if (typeof contentHtml === "string") {
+        rowContentTd.innerHTML = contentHtml;
+    }
+    else {
+        contentHtml.forEach((el) => {
+            rowContentTd.appendChild(el);
+        });
+    }
+
+    // Build `.email-row-content` structure
+    rowContentTr.appendChild(rowContentTd);
+    rowContentTbody.appendChild(rowContentTr);
+    rowContentTable.appendChild(rowContentTbody);
+
+    // Build `.email-row` structure
+    rowTd.appendChild(rowContentTable);
+    rowTr.appendChild(rowTd);
+    rowTbody.appendChild(rowTr);
+    rowTable.appendChild(rowTbody);
+
+    return rowTable;
+}
+
+/**
+ * Ensures the document body is wrapped in an `.email-wrapper` table.
+ * Moves existing body contents into the wrapper if not present and also adds `.email-row` and `.email-row-content` tables.
+ *
+ * @param document The HTML document to normalize.
+ */
+export function ensureBodyWrapsEmailWrapper(document: Document): HTMLTableElement {
+    const existingWrapper = document.querySelector(`table.${EmailWrapperCssClass}`) as HTMLTableElement;
+
+    if (existingWrapper) {
+        console.info("Email wrapper table already exists. Skipping.");
+        return existingWrapper;
+    }
+
+    // Create `.email-wrapper` table structure
+    const wrapperTable = document.createElement("table");
+    wrapperTable.classList.add(EmailWrapperCssClass);
+    wrapperTable.setAttribute("border", "0");
+    wrapperTable.setAttribute("cellpadding", "0");
+    wrapperTable.setAttribute("cellspacing", "0");
+    wrapperTable.setAttribute("width", "100%");
+    wrapperTable.setAttribute("role", "presentation");
+    wrapperTable.style.minWidth = "100%";
+    wrapperTable.style.height = "100%"; // Forces full-height behavior
+
+    const wrapperTbody = document.createElement("tbody");
+    const wrapperRow = document.createElement("tr");
+    const wrapperCell = document.createElement("td");
+    wrapperCell.setAttribute("align", "center");
+    wrapperCell.setAttribute("valign", "top"); // Prevent content from being squashed
+    wrapperCell.style.height = "100%"; // Ensures row stretches
+
+    // Create `.email-row` (full width row)
+
+    // Build `.email-wrapper` structure
+    Enumerable
+        .from([...document.body.children])
+        .forEach((el) => {
+            wrapperCell.appendChild(el);
+        });
+    wrapperRow.appendChild(wrapperCell);
+    wrapperTbody.appendChild(wrapperRow);
+    wrapperTable.appendChild(wrapperTbody);
+
+    // Append the table back to the body
+    document.body.appendChild(wrapperTable);
+
+    return wrapperTable;
+}
+
+export function ensureComponentWrapsContentTableRecursive(root: Document | Element): void {
+    if (!isDocument(root) && root.matches(".component:not(.component-row)")) {
+        ensureComponentWrapsContentTable(root);
+    }
+
+    Enumerable
+        .from(root.querySelectorAll(":scope .component:not(.component-row)"))
+        .forEach(childComponent => {
+            ensureComponentWrapsContentTable(childComponent);
+        });
+}
+
+export function ensureComponentWrapsContentTable(componentElement: Element): HTMLTableElement {
+    if (!componentElement.classList.contains("component")) {
+        throw new Error("Element is not a valid component element.");
+    }
+
+    // It's safe to assume HTMLTableElement here because of the selector.
+    const existingEmailContentTable = componentElement.querySelector(`:scope > table.${EmailContentCssClass}`) as HTMLTableElement;
+
+    if (existingEmailContentTable) {
+        return existingEmailContentTable;
+    }
+
+    const emailContentTable = createEmailContentTable(Enumerable.from(componentElement.children));
+
+    componentElement.appendChild(emailContentTable);
+
+    // TODO Need custom handlers to move component-specific styles to the correct table elements.
+
+    return emailContentTable;
+}
+
 export function createComponentElement(document: Document, componentTypeName: EditorComponentTypeName): HTMLElement {
     const componentTypeCssClass = `component-${componentTypeName.endsWith("-section") ? "section" : componentTypeName}`;
     const componentElement = document.createElement("div");
     componentElement.classList.add("component", componentTypeCssClass);
     componentElement.dataset.state = "component";
+
+    // Inner HTML for the specific component.
+    let componentInnerHtml = "";
 
     // Notes:
     //  - Inline styles defined here will be at the component level instead of the global level.
@@ -253,24 +660,26 @@ export function createComponentElement(document: Document, componentTypeName: Ed
     //  - Global style defaults are maintained in the emailIFrame.partial.obs file.
     switch (componentTypeName) {
         case "title":
-            componentElement.innerHTML = `<h1 class="${RockCssClassContentEditable}">Title</h1>`;
+            componentInnerHtml = `<h1 class="${RockCssClassContentEditable}">Title</h1>`;
             break;
+
         case "video":
-            componentElement.innerHTML = `<a href=""><img src="/Assets/Images/video-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></a>`;
+            componentInnerHtml = `<a href=""><img src="/Assets/Images/video-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></a>`;
             break;
+
         case "button":
             componentElement.classList.add("v2");
 
             // The styles and attributes here will default each button to have a "Fit To Text" width (see buttonWidthProperty.partial.obs for details).
-            componentElement.innerHTML = `<table class="button-outerwrap" border="0" cellpadding="0" cellspacing="0" width="100%" style="min-width: 100%;">
+            componentInnerHtml = `<table class="button-outerwrap" border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="min-width: 100%;">
                 <tbody>
                     <tr>
                         <td class="button-innerwrap" align="center" valign="top">
-                            <table class="button-shell" border="0" cellpadding="0" cellspacing="0" style="max-width: 100%; table-layout: auto;">
+                            <table class="button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation">
                                 <tbody>
                                     <tr>
                                         <td class="button-content" align="center" valign="middle">
-                                            <a class="button-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" target="_blank" title="Click Me" style="display: inline-block;">Click Me</a>
+                                            <a class="button-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Click Me">Click Me</a>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -281,54 +690,49 @@ export function createComponentElement(document: Document, componentTypeName: Ed
             </table>`;
             break;
         case "text":
-            // Default component styles.
-            componentElement.style.paddingTop = "4px";
-            componentElement.style.paddingBottom = "4px";
-
-            componentElement.classList.add(RockCssClassContentEditable);
-            componentElement.innerHTML = `<p>Let's see what you have to say!</p>`;
+            componentInnerHtml = `<p class="${RockCssClassContentEditable}">Let's see what you have to say!</p>`;
             break;
         case "divider":
-            componentElement.innerHTML = `<hr />`;
+            componentInnerHtml = `<hr />`;
             break;
         case "message":
             componentElement.classList.add(RockCssClassContentEditable);
-            componentElement.innerText = "Message";
+            componentInnerHtml = "Message";
             break;
         case "image":
             // Image component needs a line-height of 0 to remove extra space under image.
             componentElement.style.lineHeight = "0";
-            componentElement.innerHTML = `<img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;">`;
+            componentInnerHtml = `<img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;">`;
             break;
         case "code":
             componentElement.classList.add(RockCssClassContentEditable);
-            componentElement.innerHTML = `Add your code here...`;
+            componentInnerHtml = `Add your code here...`;
             break;
         case "rsvp":
-            componentElement.innerHTML = `<table class="rsvp-outerwrap" border="0" cellpadding="0" cellspacing="0" width="100%" style="min-width: 100%;">
+            componentInnerHtml = `<table class="rsvp-outerwrap" border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="min-width: 100%;">
                 <tbody>
                     <tr>
                         <td class="rsvp-innerwrap" align="center" valign="top" style="padding: 0;">
-                            <table border="0" cellpadding="0" cellspacing="0">
+                            <table border="0" cellpadding="0" cellspacing="0" role="presentation">
                                 <tbody>
                                     <tr>
                                         <td>
-                                            <table class="accept-button-shell" border="0" cellpadding="0" cellspacing="0" style="background-color: #16C98D; border-collapse: separate !important; border-radius: 3px; display: inline-table;">
+                                            <table class="accept-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #16C98D; border-collapse: separate; border-radius: 3px; display: inline-table;">
                                                 <tbody>
                                                     <tr>
                                                         <td class="rsvp-accept-content" align="center" valign="middle">
-                                                            <a class="rsvp-accept-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" target="_blank" title="Accept" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none;">Accept</a>
+                                                            <a class="rsvp-accept-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Accept" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Accept</a>
                                                         </td>
                                                     </tr>
                                                 </tbody>
                                             </table>
                                         </td>
                                         <td style="padding-left: 10px;">
-                                            <table class="decline-button-shell" border="0" cellpadding="0" cellspacing="0" style="background-color: #D4442E; border-collapse: separate !important; border-radius: 3px; display: inline-table;">
+                                            <table class="decline-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #D4442E; border-collapse: separate; border-radius: 3px; display: inline-table;">
                                                 <tbody>
                                                     <tr>
                                                         <td class="rsvp-decline-content" align="center" valign="middle">
-                                                            <a class="rsvp-decline-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" target="_blank" title="Decline" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none;">Decline</a>
+                                                            <a class="rsvp-decline-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Decline" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Decline</a>
                                                         </td>
                                                     </tr>
                                                 </tbody>
@@ -344,97 +748,91 @@ export function createComponentElement(document: Document, componentTypeName: Ed
             <input type="hidden" class="rsvp-group-id">
             <input type="hidden" class="rsvp-occurrence-value">`;
             break;
+
+        // Section Components
         case "section":
-            // Default component styles.
-            componentElement.style.padding = "16px";
-
-            componentElement.innerHTML = `<div class="dropzone"></div>`;
-            break;
         case "one-column-section":
-            // Default component styles.
-            componentElement.style.padding = "16px";
-
-            componentElement.innerHTML = `<table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; table-layout: fixed;" width="100%">
-            <tbody>
-                <tr>
-                    <td class="dropzone columns small-12 start last large-12" valign="top" width="100%"></td>
-                </tr>
-            </tbody>
-        </table>`;
-            break;
-        case "right-sidebar-section":
-            // Default component styles.
-            componentElement.style.padding = "16px";
-
-            componentElement.innerHTML = `<table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; table-layout: fixed;" width="100%">
-            <tbody>
-                <tr>
-                    <td class="dropzone columns small-12 start large-8" valign="top" width="66.66666666666666%"></td>
-                    <td class="dropzone columns small-12 last large-4" valign="top" width="33.33333333333333%"></td>
-                </tr>
-            </tbody>
-        </table>`;
-            break;
-        case "left-sidebar-section":
-            // Default component styles.
-            componentElement.style.padding = "16px";
-
-            componentElement.innerHTML = `<table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; table-layout: fixed;" width="100%">
-                <tbody>
-                    <tr>
-                        <td class="dropzone columns small-12 start large-4" valign="top" width="33.33333333333333%"></td>
-                        <td class="dropzone columns small-12 last large-8" valign="top" width="66.66666666666666%"></td>
-                    </tr>
-                </tbody>
-            </table>`;
-            break;
         case "two-column-section":
-            // Default component styles.
-            componentElement.style.padding = "16px";
-
-            componentElement.innerHTML = `<table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; table-layout: fixed;" width="100%">
-                <tbody>
-                    <tr>
-                        <td class="dropzone columns small-12 start large-6" valign="top" width="50%"></td>
-                        <td class="dropzone columns small-12 last large-6" valign="top" width="50%"></td>
-                    </tr>
-                </tbody>
-            </table>`;
-            break;
         case "three-column-section":
-            // Default component styles.
-            componentElement.style.padding = "16px";
-
-            componentElement.innerHTML = `<table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; table-layout: fixed;" width="100%">
-                <tbody>
-                    <tr>
-                        <td class="dropzone columns small-12 start large-4" valign="top" width="33.33333333333333%"></td>
-                        <td class="dropzone columns small-12 large-4" valign="top" width="33.33333333333333%"></td>
-                        <td class="dropzone columns small-12 last large-4" valign="top" width="33.33333333333333%"></td>
-                    </tr>
-                </tbody>
-            </table>`;
-            break;
         case "four-column-section":
-            // Default component styles.
-            componentElement.style.padding = "16px";
-
-            componentElement.innerHTML = `<table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; table-layout: fixed;" width="100%">
-                <tbody>
+        case "right-sidebar-section":
+        case "left-sidebar-section":
+            componentInnerHtml = `
+                <table class="row" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 100%;">
                     <tr>
-                        <td class="dropzone columns small-12 start large-3" valign="top" width="25%"></td>
-                        <td class="dropzone columns small-12 large-3" valign="top" width="25%"></td>
-                        <td class="dropzone columns small-12 large-3" valign="top" width="25%"></td>
-                        <td class="dropzone columns small-12 last large-3" valign="top" width="25%"></td>
+                        ${getSectionColumns(componentTypeName)}
                     </tr>
-                </tbody>
-            </table>`;
+                </table>`;
+            break;
+        case "row":
+            componentInnerHtml = `<div class="dropzone"></div>`;
             break;
         default:
             throw new Error(`Unknown typeName: ${componentTypeName}`);
     }
 
+    // Fill cell with inner content
+    const contentTable = createEmailContentTable(componentInnerHtml);
+
+    if (componentTypeName !== "row") {
+        componentElement.appendChild(contentTable);
+    }
+    else {
+        const rowTable = createEmailRowTable(Enumerable.from([contentTable]));
+
+        componentElement.appendChild(rowTable);
+    }
+
     return componentElement;
+}
+
+function getSectionColumns(componentTypeName: EditorComponentTypeName): string {
+    switch (componentTypeName) {
+        case "one-column-section":
+            return `<td class="dropzone columns small-12 start last large-12" valign="top" width="100%"></td>`;
+        case "right-sidebar-section":
+            return `<td class="dropzone columns small-12 start large-8" valign="top" width="66.666666%"></td>
+                    <td class="dropzone columns small-12 last large-4" valign="top" width="33.333333%"></td>`;
+        case "left-sidebar-section":
+            return `<td class="dropzone columns small-12 start large-4" valign="top" width="33.333333%"></td>
+                    <td class="dropzone columns small-12 last large-8" valign="top" width="66.666666%"></td>`;
+        case "two-column-section":
+            return `<td class="dropzone columns small-12 start large-6" valign="top" width="50%"></td>
+                    <td class="dropzone columns small-12 last large-6" valign="top" width="50%"></td>`;
+        case "three-column-section":
+            return `<td class="dropzone columns small-12 start large-4" valign="top" width="33.333333%"></td>
+                    <td class="dropzone columns small-12 large-4" valign="top" width="33.333333%"></td>
+                    <td class="dropzone columns small-12 last large-4" valign="top" width="33.333333%"></td>`;
+        case "four-column-section":
+            return `<td class="dropzone columns small-12 start large-3" valign="top" width="25%"></td>
+                    <td class="dropzone columns small-12 large-3" valign="top" width="25%"></td>
+                    <td class="dropzone columns small-12 large-3" valign="top" width="25%"></td>
+                    <td class="dropzone columns small-12 last large-3" valign="top" width="25%"></td>`;
+        default:
+            return `<div class="dropzone"></div>`;
+    }
+}
+
+export function getComponentHostSelector(componentTypeName: EditorComponentTypeName): string {
+    switch (componentTypeName) {
+        case "row": return ".structure-dropzone";
+        case "section": return ".dropzone, .structure-dropzone";
+        case "one-column-section": return ".dropzone, .structure-dropzone";
+        case "two-column-section": return ".dropzone, .structure-dropzone";
+        case "three-column-section": return ".dropzone, .structure-dropzone";
+        case "four-column-section": return ".dropzone, .structure-dropzone";
+        case "left-sidebar-section": return ".dropzone, .structure-dropzone";
+        case "right-sidebar-section": return ".dropzone, .structure-dropzone";
+        case "button": return ".dropzone";
+        case "code": return ".dropzone";
+        case "divider": return ".dropzone";
+        case "image": return ".dropzone";
+        case "message": return ".dropzone";
+        case "rsvp": return ".dropzone";
+        case "text": return ".dropzone";
+        case "title": return ".dropzone";
+        case "video": return ".dropzone";
+    }
 }
 
 export function get<T>(value: T): T {
@@ -468,13 +866,28 @@ export function createCssRuleset(selector: string, declarations: Record<string, 
  */
 export function findDescendantContentAreaElements(element: HTMLElement): Partial<ContentAreaElements> {
     const searchResult: Partial<ContentAreaElements> = {};
-    const outerTableCssClassesToIgnore = ["button-outerwrap"] as const;
-    searchResult.outerTable = [...element.querySelectorAll(":scope > table")]
-        .filter(table =>
-            !outerTableCssClassesToIgnore.some(ignoreCssClass => table.classList.contains(ignoreCssClass)) && // Exclude tables with classes
-            !outerTableCssClassesToIgnore.some(ignoreCssClass => table.closest(`table.${ignoreCssClass}`))    // Exclude tables nested within a table with classes
-        )[0] as HTMLElement // Get the first result
-        ?? undefined;
+    function filterTableMatches(element: Element): boolean {
+        const outerTableCssClassesToIgnore = ["button-outerwrap", "header", "spacer"] as const;
+
+        return !outerTableCssClassesToIgnore.some(ignoreCssClass => element.classList.contains(ignoreCssClass))  // Exclude tables with classes
+            && !outerTableCssClassesToIgnore.some(ignoreCssClass => element.closest(`table.${ignoreCssClass}`));    // Exclude tables nested within a table with classes
+    }
+
+    // First look for new, and legacy outer table elements that have the .container CSS class.
+    searchResult.outerTable = Enumerable
+        .from(element.querySelectorAll(":scope table.container"))
+        .where(filterTableMatches)
+        .ofType(isHTMLElement)
+        .firstOrDefault();
+
+    // Look for any table that is a direct descendant of the root element.
+    if (!searchResult.outerTable) {
+        searchResult.outerTable = Enumerable
+            .from(element.querySelectorAll(":scope > table"))
+            .where(filterTableMatches)
+            .ofType(isHTMLElement)
+            .firstOrDefault();
+    }
 
     if (searchResult.outerTable) {
         searchResult.outerTableBody = searchResult.outerTable.querySelector(":scope > tbody") as HTMLElement ?? undefined;
@@ -484,7 +897,7 @@ export function findDescendantContentAreaElements(element: HTMLElement): Partial
             searchResult.outerTableTd = searchResult.outerTableTr.querySelector("td, th") as HTMLElement ?? undefined;
 
             if (searchResult.outerTableTd) {
-                const innerTableCssClassesToIgnore = ["header"] as const;
+                const innerTableCssClassesToIgnore = ["header", "spacer"] as const;
                 searchResult.innerTable = [...searchResult.outerTableTd.querySelectorAll("table")]
                     .filter(table =>
                         !innerTableCssClassesToIgnore.some(ignoreCssClass => table.classList.contains(ignoreCssClass)) && // Exclude tables with classes
@@ -530,6 +943,7 @@ export function addContentAreaElementsIfMissing(
         tableElements.outerTable.setAttribute("width", "100%");
         tableElements.outerTable.setAttribute("cellpadding", "0");
         tableElements.outerTable.setAttribute("cellspacing", "0");
+        tableElements.outerTable.setAttribute("role", "presentation");
         tableElements.outerTable.style.width = "100%";
         tableElements.outerTable.style.tableLayout = "fixed";
         tableElements.outerTable.style.borderSpacing = "0";
@@ -565,6 +979,7 @@ export function addContentAreaElementsIfMissing(
         tableElements.innerTable.setAttribute("width", "100%");
         tableElements.innerTable.setAttribute("cellpadding", "0");
         tableElements.innerTable.setAttribute("cellspacing", "0");
+        tableElements.innerTable.setAttribute("role", "presentation");
         tableElements.innerTable.style.width = "100%";
         tableElements.innerTable.style.borderSpacing = "0";
         tableElements.innerTable.style.tableLayout = "fixed";
@@ -793,478 +1208,11 @@ export function copyShorthandInlineStyles(
     });
 }
 
-export const stringConverter: ValueConverter<string | null | undefined, string | null> = {
-    toTarget(source: string | null | undefined): string | null {
-        return source || null;
-    },
-
-    toSource(target: string | null): string | null | undefined {
-        return target || null;
-    }
-};
-
-export const pixelConverter: ValueConverter<number | null | undefined, string | null> = {
-    toTarget(source: number | null | undefined): string | null {
-        return isNullish(source) ? null : `${source}px`;
-    },
-
-    toSource(target: string | null): number | null | undefined {
-        if (isNullish(target)) {
-            return target;
-        }
-        else if (!target) {
-            return null;
-        }
-        else if (target === "0") {
-            return 0;
-        }
-        else if (target.endsWith("px")) {
-            return parseInt(target);
-        }
-        else {
-            try {
-                const result = parseInt(target);
-
-                if (isNaN(result)) {
-                    return undefined;
-                }
-                else {
-                    return result;
-                }
-            }
-            catch {
-                return undefined;
-            }
-        }
-    }
-};
-
-export const percentageConverter: ValueConverter<number | null | undefined, string | null> = {
-    toTarget(source: number | null | undefined): string | null {
-        return isNullish(source) ? null : `${source}%`;
-    },
-
-    toSource(target: string | null): number | null | undefined {
-        if (isNullish(target)) {
-            return target;
-        }
-        else if (!target) {
-            return null;
-        }
-        else if (!target || target === "0") {
-            return 0;
-        }
-        else if (target.endsWith("%")) {
-            return parseInt(target);
-        }
-        else {
-            try {
-                return parseInt(target);
-            }
-            catch {
-                return undefined;
-            }
-        }
-    }
-};
-
-export const integerConverter: ValueConverter<number | null | undefined, string | null> = {
-    toTarget(source: number | null | undefined): string | null {
-        return isNullish(source) ? null : `${source}`;
-    },
-
-    toSource(target: string | null): number | null | undefined {
-        if (isNullish(target)) {
-            return target;
-        }
-        else if (!target) {
-            return null;
-        }
-        else if (target === "0") {
-            return 0;
-        }
-        else {
-            try {
-                const intValue = parseInt(target);
-
-                if (`${intValue}` === target) {
-                    return intValue;
-                }
-                else {
-                    return undefined;
-                }
-            }
-            catch {
-                return undefined;
-            }
-        }
-    }
-};
-
-export function inlineStyleProvider<T>(
-    element: HTMLElement,
-    property: CssStyleDeclarationKebabKey,
-    converter: ValueConverter<T, string | null>,
-    copyToElements?: HTMLElement[] | null | undefined,
-    hooks?: StyleValueProviderHooks<T, string | null> | null | undefined
-): ValueProvider<T> {
-    const initialTargetValue = element.style.getPropertyValue(property);
-
-    hooks?.onTargetValueUpdated?.(initialTargetValue);
-
-    const value = ref<T>(
-        converter.toSource(initialTargetValue) as T
-    );
-    hooks?.onSourceValueUpdated?.(value.value as T);
-
-    const targetElements = [element, ...(copyToElements ?? [])];
-
-    const watcher = watch(value, (newValue) => {
-        hooks?.onSourceValueUpdated?.(newValue as T);
-
-        const targetValue = converter.toTarget(newValue as T);
-
-        if (targetValue != null) {
-            targetElements.forEach(element => {
-                element.style.setProperty(property, targetValue);
-                hooks?.onStyleUpdated?.(element.style, targetValue);
-            });
-        }
-        else {
-            targetElements.forEach(element => {
-                element.style.removeProperty(property);
-                hooks?.onStyleUpdated?.(element.style, targetValue);
-            });
-        }
-
-        hooks?.onTargetValueUpdated?.(targetValue);
-    });
-
-    return {
-        get value() {
-            return value.value as T;
-        },
-        set value(newValue: T) {
-            (value as Ref<T>).value = newValue;
-        },
-        dispose: () => {
-            watcher();
-        }
-    };
-}
-
-export function shorthandInlineStyleProvider<T>(
-    element: HTMLElement,
-    shorthandProperty: CssStyleDeclarationKebabKey,
-    longhandProperties: Record<"top" | "right" | "bottom" | "left", CssStyleDeclarationKebabKey>,
-    converter: ValueConverter<T, string | null>,
-    copyToElements?: HTMLElement[] | null | undefined,
-    hooks?: ShorthandStyleValueProviderHooks<T, string | null> | null | undefined
-): ShorthandValueProvider<T> {
-    let isDisposed: boolean = false;
-    const targetElements = [element, ...(copyToElements ?? [])];
-    const initialTargetValue = {
-        shorthand: element.style.getPropertyValue(shorthandProperty),
-        top: element.style.getPropertyValue(longhandProperties.top),
-        bottom: element.style.getPropertyValue(longhandProperties.bottom),
-        left: element.style.getPropertyValue(longhandProperties.left),
-        right: element.style.getPropertyValue(longhandProperties.right)
-    };
-
-    hooks?.onTargetValueUpdated?.(initialTargetValue);
-
-    const shorthandValue = ref<T>(
-        converter.toSource(initialTargetValue.shorthand) as T
-    );
-    const topValue = ref<T>(
-        converter.toSource(initialTargetValue.top) as T
-    );
-    const rightValue = ref<T>(
-        converter.toSource(initialTargetValue.right) as T
-    );
-    const bottomValue = ref<T>(
-        converter.toSource(initialTargetValue.bottom) as T
-    );
-    const leftValue = ref<T>(
-        converter.toSource(initialTargetValue.left) as T
-    );
-
-    hooks?.onSourceValueUpdated?.({
-        shorthand: shorthandValue.value as T,
-        top: topValue.value as T,
-        bottom: bottomValue.value as T,
-        left: leftValue.value as T,
-        right: rightValue.value as T,
-    });
-
-    const topRightBottomLeftWatcher = watch(
-        [topValue, rightValue, bottomValue, leftValue],
-        ([newTop, newRight, newBottom, newLeft]) => {
-            const targetTop = converter.toTarget(newTop as T);
-            const targetBottom = converter.toTarget(newBottom as T);
-            const targetLeft = converter.toTarget(newLeft as T);
-            const targetRight = converter.toTarget(newRight as T);
-
-            if ([targetTop, targetBottom, targetLeft, targetRight].every((val) => val === null)) {
-                targetElements.forEach(element => {
-                    element.style.removeProperty(shorthandProperty);
-
-                    hooks?.onStyleUpdated?.(element.style, {
-                        shorthand: null,
-                        top: null,
-                        bottom: null,
-                        left: null,
-                        right: null,
-                    });
-                });
-
-                hooks?.onTargetValueUpdated?.({
-                    shorthand: null,
-                    top: null,
-                    bottom: null,
-                    left: null,
-                    right: null,
-                });
-            }
-        });
-
-    const topWatcher = watch(topValue, (newValue) => {
-        hooks?.onSourceValueUpdated?.({
-            top: newValue as T
-        });
-
-        const targetValue = converter.toTarget(newValue as T);
-
-        if (isNullish(targetValue)) {
-            targetElements.forEach(element => {
-                element.style.removeProperty(longhandProperties.top);
-
-                hooks?.onStyleUpdated?.(element.style, {
-                    top: targetValue
-                });
-            });
-        }
-        else {
-            targetElements.forEach(element => {
-                element.style.setProperty(longhandProperties.top, targetValue);
-
-                hooks?.onStyleUpdated?.(element.style, {
-                    top: targetValue
-                });
-            });
-        }
-
-        hooks?.onTargetValueUpdated?.({
-            top: targetValue
-        });
-    });
-
-    const bottomWatcher = watch(bottomValue, (newValue) => {
-        hooks?.onSourceValueUpdated?.({
-            bottom: newValue as T
-        });
-
-        const targetValue = converter.toTarget(newValue as T);
-
-        if (isNullish(targetValue)) {
-            targetElements.forEach(element => {
-                element.style.removeProperty(longhandProperties.bottom);
-
-                hooks?.onStyleUpdated?.(element.style, {
-                    bottom: targetValue
-                });
-            });
-        }
-        else {
-            targetElements.forEach(element => {
-                element.style.setProperty(longhandProperties.bottom, targetValue);
-
-                hooks?.onStyleUpdated?.(element.style, {
-                    bottom: targetValue
-                });
-            });
-        }
-
-        hooks?.onTargetValueUpdated?.({
-            bottom: targetValue
-        });
-    });
-
-    const leftWatcher = watch(leftValue, (newValue) => {
-        hooks?.onSourceValueUpdated?.({
-            left: newValue as T
-        });
-
-        const targetValue = converter.toTarget(newValue as T);
-
-        if (isNullish(targetValue)) {
-            targetElements.forEach(element => {
-                element.style.removeProperty(longhandProperties.left);
-
-                hooks?.onStyleUpdated?.(element.style, {
-                    left: targetValue
-                });
-            });
-        }
-        else {
-            targetElements.forEach(element => {
-                element.style.setProperty(longhandProperties.left, targetValue);
-
-                hooks?.onStyleUpdated?.(element.style, {
-                    left: targetValue
-                });
-            });
-        }
-
-        hooks?.onTargetValueUpdated?.({
-            left: targetValue
-        });
-    });
-
-    const rightWatcher = watch(rightValue, (newValue) => {
-        hooks?.onSourceValueUpdated?.({
-            right: newValue as T
-        });
-
-        const targetValue = converter.toTarget(newValue as T);
-
-        if (isNullish(targetValue)) {
-            targetElements.forEach(element => {
-                element.style.removeProperty(longhandProperties.right);
-
-                hooks?.onStyleUpdated?.(element.style, {
-                    right: targetValue
-                });
-            });
-        }
-        else {
-            targetElements.forEach(element => {
-                element.style.setProperty(longhandProperties.right, targetValue);
-
-                hooks?.onStyleUpdated?.(element.style, {
-                    right: targetValue
-                });
-            });
-        }
-
-        hooks?.onTargetValueUpdated?.({
-            right: targetValue
-        });
-    });
-
-    const shorthandWatcher = watch(shorthandValue, (newValue) => {
-        hooks?.onSourceValueUpdated?.({
-            shorthand: newValue as T,
-        });
-
-        const targetValue = converter.toTarget(newValue as T);
-
-        if (targetValue === null) {
-            const sourceValue = converter.toSource(targetValue);
-            (topValue as Ref<T>).value = sourceValue;
-            (rightValue as Ref<T>).value = sourceValue;
-            (bottomValue as Ref<T>).value = sourceValue;
-            (leftValue as Ref<T>).value = sourceValue;
-
-            targetElements.forEach(element => {
-                // Remove all properties when the shorthand property is cleared.
-                element.style.removeProperty(shorthandProperty);
-                element.style.removeProperty(longhandProperties.top);
-                element.style.removeProperty(longhandProperties.bottom);
-                element.style.removeProperty(longhandProperties.left);
-                element.style.removeProperty(longhandProperties.right);
-
-                hooks?.onStyleUpdated?.(element.style, {
-                    shorthand: targetValue,
-                    top: targetValue,
-                    bottom: targetValue,
-                    left: targetValue,
-                    right: targetValue
-                });
-
-                hooks?.onTargetValueUpdated?.({
-                    shorthand: targetValue,
-                    top: targetValue,
-                    bottom: targetValue,
-                    left: targetValue,
-                    right: targetValue,
-                });
-            });
-        }
-        else {
-            targetElements.forEach(element => {
-                element.style.setProperty(shorthandProperty, targetValue);
-
-                hooks?.onStyleUpdated?.(element.style, {
-                    shorthand: targetValue
-                });
-            });
-
-            hooks?.onTargetValueUpdated?.({
-                shorthand: targetValue
-            });
-        }
-    });
-
-    return {
-        get shorthandValue() {
-            return shorthandValue.value as T;
-        },
-        set shorthandValue(newValue: T) {
-            (shorthandValue as Ref<T>).value = newValue;
-        },
-        get topValue() {
-            return topValue.value as T;
-        },
-        set topValue(newValue: T) {
-            (topValue as Ref<T>).value = newValue;
-        },
-        get rightValue() {
-            return rightValue.value as T;
-        },
-        set rightValue(newValue: T) {
-            (rightValue as Ref<T>).value = newValue;
-        },
-        get bottomValue() {
-            return bottomValue.value as T;
-        },
-        set bottomValue(newValue: T) {
-            (bottomValue as Ref<T>).value = newValue;
-        },
-        get leftValue() {
-            return leftValue.value as T;
-        },
-        set leftValue(newValue: T) {
-            (leftValue as Ref<T>).value = newValue;
-        },
-        get isDisposed(): boolean {
-            return isDisposed;
-        },
-        dispose: () => {
-            topRightBottomLeftWatcher();
-            topWatcher();
-            bottomWatcher();
-            leftWatcher();
-            rightWatcher();
-            shorthandWatcher();
-            isDisposed = true;
-        },
-    };
-}
-
-type StyleSheetElements = {
-    elementWindow: Window & typeof globalThis;
-    elementDocument: Document;
-    styleSheet: CSSStyleSheet;
-    styleElement: HTMLStyleElement;
-    ruleset?: CSSStyleRule | undefined;
-};
-
 /**
  * Finds the first CSS style sheet where the <style class> matches the `styleCssClass`
  * and the ruleset selector matches the `cssRulesetSelectors`.
  */
-function findElements(element: Element, styleCssClass: string, rulesetCssSelector: string): StyleSheetElements | undefined {
+export function findElements(element: Element, styleCssClass: string, rulesetCssSelector: string): StyleSheetElements | undefined {
     const elementDocument = element.ownerDocument;
     const elementWindow = elementDocument.defaultView;
 
@@ -1308,7 +1256,7 @@ function findElements(element: Element, styleCssClass: string, rulesetCssSelecto
     }
 }
 
-function createElements(element: Element, styleCssClass: string): StyleSheetElements | undefined {
+export function createElements(element: Element, styleCssClass: string): StyleSheetElements | undefined {
     const elementDocument = element.ownerDocument;
     const elementWindow = elementDocument.defaultView;
 
@@ -1316,7 +1264,9 @@ function createElements(element: Element, styleCssClass: string): StyleSheetElem
         // Add the stylesheet since it's missing.
         const styleElement = elementDocument.createElement("style") as HTMLStyleElement;
         styleElement.classList.add(styleCssClass);
-        element.append(styleElement);
+
+        // Add it as the first element.
+        element.insertBefore(styleElement, element.firstChild);
 
         return {
             elementDocument,
@@ -1327,7 +1277,7 @@ function createElements(element: Element, styleCssClass: string): StyleSheetElem
     }
 }
 
-function addRuleset(elements: StyleSheetElements, rulesetCssSelector: string): CSSStyleRule {
+export function addRuleset(elements: StyleSheetElements, rulesetCssSelector: string): CSSStyleRule {
     if (elements.ruleset) {
         // Skip if the ruleset is already created.
         return elements.ruleset;
@@ -1342,7 +1292,7 @@ function addRuleset(elements: StyleSheetElements, rulesetCssSelector: string): C
     return ruleset;
 }
 
-function updateStyleElementTextContent(elements: StyleSheetElements): void {
+export function updateStyleElementTextContent(elements: StyleSheetElements): void {
     const { styleElement, styleSheet } = elements;
 
     // The previous ruleset change only affects the style in memory.
@@ -1352,1150 +1302,95 @@ function updateStyleElementTextContent(elements: StyleSheetElements): void {
         .aggregate((rules, rule, i) => i !== 0 ? `${rules}\n${rule}` : rule, "");
 }
 
+export function createDomWatcher(
+    root: Document | Element,
+    selector: string,
+    { includeSelf }: { includeSelf?: string | boolean; } = {}
+): DomWatcher {
+    const foundElements = new Set<Element>();
+    let onFoundCallbacks: ((element: Element) => void)[] = [];
+    let onRemovedCallbacks: ((element: Element) => void)[] = [];
+
+    function updateMatches(): void {
+        const newMatches = new Set(root.querySelectorAll(selector));
+
+        // Handle newly found elements
+        newMatches.forEach((el) => {
+            if (!foundElements.has(el)) {
+                foundElements.add(el);
+                onFoundCallbacks.forEach((cb) => cb(el));
+            }
+        });
+
+        // Handle removed elements
+        foundElements.forEach((el) => {
+            if (!newMatches.has(el)) {
+                foundElements.delete(el);
+                onRemovedCallbacks.forEach((cb) => cb(el));
+            }
+        });
+    }
+
+    const observer = new MutationObserver((mutations) => {
+        let shouldRevalidate = false;
+
+        mutations.forEach((mutation) => {
+            if (mutation.type === "childList") {
+                shouldRevalidate = true; // Always revalidate for added/removed nodes
+            }
+
+            if (mutation.type === "attributes") {
+                const attrName = mutation.attributeName || "";
+                if (attrName === "class" || attrName.startsWith("data-")) {
+                    shouldRevalidate = true; // Only revalidate for relevant attributes
+                }
+            }
+        });
+
+        if (shouldRevalidate) {
+            updateMatches();
+        }
+    });
+
+    observer.observe(root, {
+        childList: true,
+        subtree: true,
+        attributes: true
+    });
+
+    if (includeSelf) {
+        if (isElement(root) && root.matches(typeof includeSelf === "boolean" ? selector : includeSelf)) {
+            foundElements.add(root);
+        }
+    }
+
+    // Initial match check
+    updateMatches();
+
+    return {
+        get foundElements() {
+            return Enumerable.from(foundElements);
+        },
+
+        onElementFound(callback: (element: Element) => void): void {
+            onFoundCallbacks.push(callback);
+            foundElements.forEach(callback);
+        },
+
+        onElementRemoved(callback: (element: Element) => void): void {
+            onRemovedCallbacks.push(callback);
+        },
+
+        dispose(): void {
+            observer.disconnect();
+            foundElements.clear();
+            onFoundCallbacks = [];
+            onRemovedCallbacks = [];
+        }
+    };
+}
+
 /**
- * Creates a ValueProvider for a stylesheet pixel value.
- *
- * @param element The element that owns the stylesheet.
- * @param styleCssClass The CSS class of the stylesheet.
- * @param rulesetCssSelector The CSS selectors of the ruleset.
- * @param property The CSS property to manage.
- * @returns
- */
-export function styleSheetProvider<T>(
-    element: Element,
-    styleCssClass: string,
-    rulesetCssSelector: string,
-    property: CssStyleDeclarationKebabKey,
-    converter: ValueConverter<T, string | null>,
-    hooks?: StyleValueProviderHooks<T, string | null> | null | undefined
-): ValueProvider<T> {
-    const initialElements = findElements(element, styleCssClass, rulesetCssSelector);
-    const initialTargetValue = initialElements?.ruleset?.style.getPropertyValue(property) ?? null;
-
-    hooks?.onTargetValueUpdated?.(initialTargetValue);
-
-    const value = ref<T>(
-        converter.toSource(initialTargetValue) as T
-    );
-
-    hooks?.onSourceValueUpdated?.(value.value as T);
-
-    // Update the stylesheet whenever the value changes.
-    const watcher = watch(value, (newValue) => {
-        hooks?.onSourceValueUpdated?.(newValue as T);
-
-        let elements = findElements(element, styleCssClass, rulesetCssSelector);
-
-        if (!elements && !isNullish(newValue)) {
-            // Only create missing elements if there is a value to be set.
-            // This accounts for cases where multiple sets of elements
-            // can be created on initialization.
-            elements = createElements(element, styleCssClass);
-        }
-
-        if (elements) {
-            const ruleset = elements.ruleset ?? addRuleset(elements, rulesetCssSelector);
-            const targetValue = converter.toTarget(newValue as T);
-
-            if (isNullish(targetValue)) {
-                ruleset.style.removeProperty(property);
-            }
-            else {
-                ruleset.style.setProperty(property, targetValue);
-            }
-
-            hooks?.onStyleUpdated?.(ruleset.style, targetValue);
-            hooks?.onTargetValueUpdated?.(targetValue);
-
-            updateStyleElementTextContent(elements);
-        }
-    });
-
-    return {
-        get value() {
-            return value.value as T;
-        },
-        set value(newValue: T) {
-            (value as Ref<T>).value = newValue;
-        },
-        dispose: () => {
-            watcher();
-        }
-    };
-}
-
-/**
- * Creates a ShorthandValueProvider for a stylesheet pixel value.
- *
- * @param element The element that owns the stylesheet.
- * @param styleCssClass The CSS class of the stylesheet.
- * @param rulesetCssSelector The CSS selectors of the ruleset.
- * @param shorthandProperty The shorthand property to manage.
- * @param longhandProperties The longhand properties that make up the shorthand property.
- * @param converter The converter to use for converting values to and from CSS properties.
- * @returns A ShorthandValueProvider for managing the shorthand and longhand properties.
- */
-export function shorthandStyleSheetProvider<T extends number | string | boolean | null | undefined>(
-    element: Element,
-    styleCssClass: string,
-    rulesetCssSelector: string,
-    shorthandProperty: CssStyleDeclarationKebabKey,
-    longhandProperties: Record<"top" | "right" | "bottom" | "left", CssStyleDeclarationKebabKey>,
-    converter: ValueConverter<T, string | null>,
-    hooks?: ShorthandStyleValueProviderHooks<T, string | null> | null | undefined
-): ShorthandValueProvider<T> {
-    let isDisposed: boolean = false;
-    const initialElements = findElements(element, styleCssClass, rulesetCssSelector);
-    const initialTargetValues = {
-        shorthand: initialElements?.ruleset?.style.getPropertyValue(shorthandProperty) ?? null,
-        top: initialElements?.ruleset?.style.getPropertyValue(longhandProperties.top) ?? null,
-        bottom: initialElements?.ruleset?.style.getPropertyValue(longhandProperties.bottom) ?? null,
-        right: initialElements?.ruleset?.style.getPropertyValue(longhandProperties.right) ?? null,
-        left: initialElements?.ruleset?.style.getPropertyValue(longhandProperties.left) ?? null
-    };
-
-    hooks?.onTargetValueUpdated?.(initialTargetValues);
-
-    const shorthandValue = ref<T>(
-        converter.toSource(initialTargetValues.shorthand)
-    );
-    const topValue = ref<T>(
-        converter.toSource(initialTargetValues.top)
-    );
-    const rightValue = ref<T>(
-        converter.toSource(initialTargetValues.right)
-    );
-    const bottomValue = ref<T>(
-        converter.toSource(initialTargetValues.bottom)
-    );
-    const leftValue = ref<T>(
-        converter.toSource(initialTargetValues.left)
-    );
-
-    hooks?.onSourceValueUpdated?.({
-        shorthand: shorthandValue.value as T,
-        top: topValue.value as T,
-        bottom: bottomValue.value as T,
-        left: leftValue.value as T,
-        right: rightValue.value as T,
-    });
-
-    const topRightBottomLeftWatcher = watch(
-        [topValue, rightValue, bottomValue, leftValue],
-        ([newTop, newRight, newBottom, newLeft]) => {
-            if ([newTop, newRight, newBottom, newLeft].every((val) => isNullish(val))) {
-                const elements = findElements(element, styleCssClass, rulesetCssSelector);
-
-                if (elements?.ruleset) {
-                    const { ruleset } = elements;
-
-                    ruleset.style.removeProperty(shorthandProperty);
-
-                    hooks?.onStyleUpdated?.(ruleset.style, {
-                        shorthand: null
-                    });
-
-                    hooks?.onTargetValueUpdated?.({
-                        shorthand: null
-                    });
-
-                    updateStyleElementTextContent(elements);
-                }
-            }
-        });
-
-    const topWatcher = watch(topValue, (newValue) => {
-        hooks?.onSourceValueUpdated?.({
-            top: newValue as T
-        });
-
-        let elements = findElements(element, styleCssClass, rulesetCssSelector);
-
-        if (!elements && !isNullish(newValue)) {
-            // Only create missing elements if there is a value to be set.
-            // This accounts for cases where multiple sets of elements
-            // can be created on initialization.
-            elements = createElements(element, styleCssClass);
-        }
-
-        if (elements) {
-            const ruleset = elements.ruleset ?? addRuleset(elements, rulesetCssSelector);
-
-            const targetValue = converter.toTarget(newValue as T);
-
-            if (isNullish(targetValue)) {
-                ruleset.style.removeProperty(longhandProperties.top);
-            }
-            else {
-                ruleset.style.setProperty(longhandProperties.top, targetValue);
-            }
-
-            hooks?.onStyleUpdated?.(ruleset.style, {
-                top: targetValue
-            });
-
-            hooks?.onTargetValueUpdated?.({
-                top: targetValue
-            });
-
-            updateStyleElementTextContent(elements);
-        }
-    });
-
-    const bottomWatcher = watch(bottomValue, (newValue) => {
-        hooks?.onSourceValueUpdated?.({
-            bottom: newValue as T
-        });
-
-        let elements = findElements(element, styleCssClass, rulesetCssSelector);
-
-        if (!elements && !isNullish(newValue)) {
-            // Only create missing elements if there is a value to be set.
-            // This accounts for cases where multiple sets of elements
-            // can be created on initialization.
-            elements = createElements(element, styleCssClass);
-        }
-
-        if (elements) {
-            const ruleset = elements.ruleset ?? addRuleset(elements, rulesetCssSelector);
-            const targetValue = converter.toTarget(newValue as T);
-
-            if (isNullish(targetValue)) {
-                ruleset.style.removeProperty(longhandProperties.bottom);
-            }
-            else {
-                ruleset.style.setProperty(longhandProperties.bottom, targetValue);
-            }
-
-            hooks?.onStyleUpdated?.(ruleset.style, {
-                bottom: targetValue
-            });
-
-            hooks?.onTargetValueUpdated?.({
-                bottom: targetValue
-            });
-
-            updateStyleElementTextContent(elements);
-        }
-    });
-
-    const leftWatcher = watch(leftValue, (newValue) => {
-        hooks?.onSourceValueUpdated?.({
-            left: newValue as T
-        });
-
-        let elements = findElements(element, styleCssClass, rulesetCssSelector);
-
-        if (!elements && !isNullish(newValue)) {
-            // Only create missing elements if there is a value to be set.
-            // This accounts for cases where multiple sets of elements
-            // can be created on initialization.
-            elements = createElements(element, styleCssClass);
-        }
-
-        if (elements) {
-            const ruleset = elements.ruleset ?? addRuleset(elements, rulesetCssSelector);
-            const targetValue = converter.toTarget(newValue as T);
-
-            if (isNullish(targetValue)) {
-                ruleset.style.removeProperty(longhandProperties.left);
-            }
-            else {
-                ruleset.style.setProperty(longhandProperties.left, targetValue);
-            }
-
-            hooks?.onStyleUpdated?.(ruleset.style, {
-                left: targetValue
-            });
-
-            hooks?.onTargetValueUpdated?.({
-                left: targetValue
-            });
-
-            updateStyleElementTextContent(elements);
-        }
-    });
-
-    const rightWatcher = watch(rightValue, (newValue) => {
-        hooks?.onSourceValueUpdated?.({
-            right: newValue as T
-        });
-
-        let elements = findElements(element, styleCssClass, rulesetCssSelector);
-
-        if (!elements && !isNullish(newValue)) {
-            // Only create missing elements if there is a value to be set.
-            // This accounts for cases where multiple sets of elements
-            // can be created on initialization.
-            elements = createElements(element, styleCssClass);
-        }
-
-        if (elements) {
-            const ruleset = elements.ruleset ?? addRuleset(elements, rulesetCssSelector);
-            const targetValue = converter.toTarget(newValue as T);
-
-            if (isNullish(targetValue)) {
-                ruleset.style.removeProperty(longhandProperties.right);
-            }
-            else {
-                ruleset.style.setProperty(longhandProperties.right, targetValue);
-            }
-
-            hooks?.onStyleUpdated?.(ruleset.style, {
-                right: targetValue
-            });
-
-            hooks?.onTargetValueUpdated?.({
-                right: targetValue
-            });
-
-            updateStyleElementTextContent(elements);
-        }
-    });
-
-    const shorthandWatcher = watch(shorthandValue, (newValue) => {
-        hooks?.onSourceValueUpdated?.({
-            shorthand: newValue as T
-        });
-
-        let elements = findElements(element, styleCssClass, rulesetCssSelector);
-
-        if (!elements && !isNullish(newValue)) {
-            // Only create missing elements if there is a value to be set.
-            // This accounts for cases where multiple sets of elements
-            // can be created on initialization.
-            elements = createElements(element, styleCssClass);
-        }
-
-        if (elements) {
-            const ruleset = elements.ruleset ?? addRuleset(elements, rulesetCssSelector);
-            const targetValue = converter.toTarget(newValue as T);
-
-            if (isNullish(targetValue)) {
-                (topValue as Ref<T>).value = null as T;
-                (rightValue as Ref<T>).value = null as T;
-                (bottomValue as Ref<T>).value = null as T;
-                (leftValue as Ref<T>).value = null as T;
-
-                // Remove all properties when the shorthand property is cleared.
-                ruleset.style.removeProperty(shorthandProperty);
-                ruleset.style.removeProperty(longhandProperties.top);
-                ruleset.style.removeProperty(longhandProperties.bottom);
-                ruleset.style.removeProperty(longhandProperties.left);
-                ruleset.style.removeProperty(longhandProperties.right);
-
-                hooks?.onStyleUpdated?.(ruleset.style, {
-                    shorthand: targetValue,
-                    top: targetValue,
-                    bottom: targetValue,
-                    left: targetValue,
-                    right: targetValue
-                });
-            }
-            else {
-                ruleset.style.setProperty(shorthandProperty, targetValue);
-
-                hooks?.onStyleUpdated?.(ruleset.style, {
-                    shorthand: targetValue
-                });
-            }
-
-            hooks?.onTargetValueUpdated?.({
-                shorthand: targetValue
-            });
-
-            updateStyleElementTextContent(elements);
-        }
-    });
-
-    return {
-        get shorthandValue() {
-            return shorthandValue.value as T;
-        },
-        set shorthandValue(newValue: T) {
-            (shorthandValue as Ref<T>).value = newValue;
-        },
-        get topValue() {
-            return topValue.value as T;
-        },
-        set topValue(newValue: T) {
-            (topValue as Ref<T>).value = newValue;
-        },
-        get rightValue() {
-            return rightValue.value as T;
-        },
-        set rightValue(newValue: T) {
-            (rightValue as Ref<T>).value = newValue;
-        },
-        get bottomValue() {
-            return bottomValue.value as T;
-        },
-        set bottomValue(newValue: T) {
-            (bottomValue as Ref<T>).value = newValue;
-        },
-        get leftValue() {
-            return leftValue.value as T;
-        },
-        set leftValue(newValue: T) {
-            (leftValue as Ref<T>).value = newValue;
-        },
-        get isDisposed(): boolean {
-            return isDisposed;
-        },
-        dispose: () => {
-            topRightBottomLeftWatcher();
-            topWatcher();
-            bottomWatcher();
-            leftWatcher();
-            rightWatcher();
-            shorthandWatcher();
-            isDisposed = true;
-        },
-    };
-}
-
-export function attributeProvider<T>(
-    element: Element,
-    attribute: string,
-    converter: ValueConverter<T, string | null>,
-    copyToElements?: Element[],
-    hooks?: ValueProviderHooks<T, string | null>
-): ValueProvider<T> {
-    const targetElements = [element, ...(copyToElements ?? [])];
-
-    const initialTargetValue = element.getAttribute(attribute);
-
-    hooks?.onTargetValueUpdated?.(initialTargetValue);
-
-    const value = ref<T | null | undefined>(
-        converter.toSource(initialTargetValue)
-    );
-
-    hooks?.onSourceValueUpdated?.(value.value as T);
-
-    const watcher = watch(value, (newValue) => {
-        hooks?.onSourceValueUpdated?.(newValue as T);
-
-        const targetValue = converter.toTarget(newValue as T);
-
-        if (isNullish(targetValue)) {
-            targetElements.forEach(element => {
-                element.removeAttribute(attribute);
-            });
-        }
-        else {
-            targetElements.forEach(element => {
-                element.setAttribute(attribute, targetValue);
-            });
-        }
-
-        hooks?.onTargetValueUpdated?.(targetValue);
-    });
-
-    return {
-        get value(): T {
-            return (value as Ref<T>).value;
-        },
-        set value(newValue: T) {
-            (value as Ref<T>).value = newValue;
-        },
-        dispose() {
-            watcher();
-        }
-    };
-}
-
-export const borderStyleConverter: ValueConverter<BorderStyle | null | undefined, string | null> = {
-    toTarget(source: BorderStyle | null | undefined): string | null {
-        return stringConverter.toTarget(source);
-    },
-
-    toSource(target: string | null): BorderStyle | null | undefined {
-        return stringConverter.toSource(target) as BorderStyle | null | undefined;
-    }
-};
-
-export const horizontalAlignmentConverter: ValueConverter<HorizontalAlignment | "" | null | undefined, string | null> = {
-    toTarget: function (source: HorizontalAlignment | "" | null | undefined): string | null {
-        return stringConverter.toTarget(source);
-    },
-    toSource: function (target: string | null): HorizontalAlignment | "" | null | undefined {
-        return stringConverter.toSource(target) as HorizontalAlignment | "" | null | undefined;
-    }
-};
-
-export function createBorderStyleProvider(
-    element: HTMLElement,
-    copyToElements?: HTMLElement[] | null | undefined,
-    styleSheetMode?: StyleSheetMode | null | undefined,
-    hooks?: ShorthandStyleValueProviderHooks<BorderStyle | null | undefined, string | null> | null | undefined
-): ShorthandValueProvider<string | null | undefined> {
-    if (!styleSheetMode) {
-        return shorthandInlineStyleProvider(
-            element,
-            "border-style",
-            {
-                top: "border-top-style",
-                bottom: "border-bottom-style",
-                right: "border-right-style",
-                left: "border-left-style"
-            },
-            borderStyleConverter,
-            copyToElements,
-            hooks
-        );
-    }
-    else {
-        return shorthandStyleSheetProvider(
-            element,
-            styleSheetMode.styleCssClass,
-            styleSheetMode.rulesetCssSelector,
-            "border-style",
-            {
-                top: "border-top-style",
-                bottom: "border-bottom-style",
-                right: "border-right-style",
-                left: "border-left-style"
-            },
-            borderStyleConverter,
-            hooks
-        );
-    }
-}
-
-export function createBorderWidthProvider(
-    element: HTMLElement,
-    copyToElements?: HTMLElement[] | null | undefined,
-    styleSheetMode?: StyleSheetMode | null | undefined,
-    hooks?: ShorthandStyleValueProviderHooks<number | null | undefined, string | null> | null | undefined
-): ShorthandValueProvider<number | null | undefined> {
-    if (!styleSheetMode) {
-        return shorthandInlineStyleProvider(
-            element,
-            "border-width",
-            {
-                top: "border-top-width",
-                bottom: "border-bottom-width",
-                right: "border-right-width",
-                left: "border-left-width"
-            },
-            pixelConverter,
-            copyToElements,
-            hooks
-        );
-    }
-    else {
-        return shorthandStyleSheetProvider(
-            element,
-            styleSheetMode.styleCssClass,
-            styleSheetMode.rulesetCssSelector,
-            "border-width",
-            {
-                top: "border-top-width",
-                bottom: "border-bottom-width",
-                right: "border-right-width",
-                left: "border-left-width"
-            },
-            pixelConverter,
-            hooks
-        );
-    }
-}
-
-export function createBorderColorProvider(
-    element: HTMLElement,
-    copyToElements?: HTMLElement[] | null | undefined,
-    styleSheetMode?: StyleSheetMode | null | undefined,
-    hooks?: ShorthandStyleValueProviderHooks<string | null | undefined, string | null> | null | undefined
-): ShorthandValueProvider<string | null | undefined> {
-    if (!styleSheetMode) {
-        return shorthandInlineStyleProvider(
-            element,
-            "border-color",
-            {
-                top: "border-top-color",
-                bottom: "border-bottom-color",
-                right: "border-right-color",
-                left: "border-left-color"
-            },
-            borderStyleConverter,
-            copyToElements,
-            hooks
-        );
-    }
-    else {
-        return shorthandStyleSheetProvider(
-            element,
-            styleSheetMode.styleCssClass,
-            styleSheetMode.rulesetCssSelector,
-            "border-color",
-            {
-                top: "border-top-color",
-                bottom: "border-bottom-color",
-                right: "border-right-color",
-                left: "border-left-color"
-            },
-            borderStyleConverter,
-            hooks
-        );
-    }
-}
-
-export function createBackgroundImageProvider(
-    element: HTMLElement,
-    copyToElements: HTMLElement[] | null | undefined
-): ValueProvider<ListItemBag | null | undefined> {
-    const targetElements = [element, ...(copyToElements ?? [])];
-    const value = ref<ListItemBag | null | undefined>(getValue(element));
-
-    function getValue(element: HTMLElement): ListItemBag | null | undefined {
-        const backgroundImageGuid = toGuidOrNull(element.dataset["backgroundImageGuid"]);
-
-        if (backgroundImageGuid) {
-            return {
-                value: backgroundImageGuid,
-                text: element.dataset["backgroundImageFileName"]
-            };
-        }
-        else {
-            return null;
-        }
-    }
-
-    const watcher = watch(value, (newValue) => {
-        const fileGuid = toGuidOrNull(newValue?.value);
-
-        if (fileGuid) {
-            const fileName = newValue?.text;
-            const backgroundImageValue = `url('/GetImage.ashx?guid=${fileGuid}')`;
-
-            targetElements.forEach(element => {
-                element.style.backgroundImage = backgroundImageValue;
-            });
-
-            // These hold data that cannot be easily retrieved from style properties.
-            element.dataset["backgroundImageGuid"] = fileGuid ?? "";
-            element.dataset["backgroundImageFileName"] = fileName ?? "";
-        }
-        else {
-            targetElements.forEach(element => {
-                element.style.backgroundImage = "";
-            });
-
-            delete element.dataset["backgroundImageGuid"];
-            delete element.dataset["backgroundImageFileName"];
-        }
-    });
-
-    const provider = {
-        get value(): ListItemBag | null | undefined {
-            return value.value;
-        },
-        set value(newValue: ListItemBag | null | undefined) {
-            value.value = newValue;
-        },
-        dispose() {
-            watcher();
-        }
-    };
-
-    return provider;
-}
-
-export function createBackgroundSizeProvider(
-    element: HTMLElement,
-    copyToElements?: HTMLElement[] | null | undefined
-): ValueProvider<BackgroundSize | null | undefined> {
-    type CSSStyleDeclarationBackground = {
-        backgroundColor: string;
-        backgroundImage: string;
-        backgroundPosition: string;
-        backgroundSize: string;
-        backgroundRepeat: string;
-        backgroundAttachment: string;
-        backgroundClip: string;
-        backgroundOrigin: string;
-    };
-
-    const backgroundSizeFitWidth = "100% auto" as const;
-    const backgroundSizeFitHeight = "auto 100%" as const;
-    const backgroundSizeOriginal = "auto" as const;
-
-    const targetElements = [element, ...(copyToElements ?? [])];
-
-    // Chromium browsers have an issue with `background-size: <percentage> auto;`
-    // when set with `element.style.backgroundSize = "100% auto;"` and `element.style.setProperty("background-size", "100% auto;").
-    // Only the "100%" value is stored...
-    // We will work around this by updating the entire `style` attribute instead of
-    // the individual style properties.
-
-    if (!getCurrentElementValue()) {
-        // Default to "fit-width".
-        setBackgroundSize(backgroundSizeFitWidth);
-    }
-
-    const value = ref<BackgroundSize | null | undefined>(getCurrentElementValue());
-
-    function parseBackgroundShorthand(backgroundString: string): CSSStyleDeclarationBackground[] {
-        // Define default values for each sub-property
-        const defaultValues: CSSStyleDeclarationBackground = {
-            backgroundColor: "",
-            backgroundImage: "",
-            backgroundPosition: "",
-            backgroundSize: "",
-            backgroundRepeat: "",
-            backgroundAttachment: "",
-            backgroundClip: "",
-            backgroundOrigin: ""
-        };
-
-        // Split the layers by commas
-        const layers = backgroundString.split(/\s*,\s*/);
-
-        // Parse each layer
-        const parsedLayers = layers.map(layer => parseLayer(layer.trim(), defaultValues));
-
-        return parsedLayers;
-    }
-
-    function parseLayer(layerString: string, defaultValues: CSSStyleDeclarationBackground): CSSStyleDeclarationBackground {
-        const result: CSSStyleDeclarationBackground = {
-            ...defaultValues
-        };
-
-        let backgroundClipHandled: boolean = false;
-
-        // Split the layer into tokens
-        const tokens = layerString.split(/\s+/);
-        let positionAndSizeHandled = false;
-
-        for (let i = 0; i < tokens.length; i++) {
-            const token = tokens[i];
-
-            if (isColor(token)) {
-                result.backgroundColor = token;
-            }
-            else if (isUrl(token) || isGradient(token) || token === "none") {
-                result.backgroundImage = token;
-            }
-            else if (isRepeatValue(token)) {
-                result.backgroundRepeat = token;
-            }
-            else if (isAttachmentValue(token)) {
-                result.backgroundAttachment = token;
-            }
-            else if (isBoxValue(token)) {
-                if (!backgroundClipHandled) {
-                    result.backgroundClip = token;
-                    // Default to same value
-                    result.backgroundOrigin = token;
-                    backgroundClipHandled = true;
-                }
-                else {
-                    result.backgroundOrigin = token;
-                }
-            }
-            else if (token.includes("/")) {
-                const [position, size] = token.split("/");
-                result.backgroundPosition = position.trim();
-                result.backgroundSize = size.trim();
-                positionAndSizeHandled = true;
-            }
-            else if (!positionAndSizeHandled) {
-                result.backgroundPosition = token;
-                if (i + 1 < tokens.length && tokens[i + 1] === "/") {
-                    result.backgroundSize = tokens[i + 2];
-                    // Skip position, "/", and size
-                    i += 2;
-                    positionAndSizeHandled = true;
-                }
-            }
-        }
-
-        return result;
-    }
-
-    // Helper functions
-    function isColor(value: string): boolean {
-        return /^(#(?:[0-9a-fA-F]{3}){1,2}|rgba?\(.*?\)|transparent|[a-z]+)$/.test(value);
-    }
-
-    function isUrl(value: string): boolean {
-        return /^url\((.*?)\)$/.test(value);
-    }
-
-    function isGradient(value: string): boolean {
-        return /^(linear-gradient|radial-gradient|conic-gradient)\(.*?\)$/.test(value);
-    }
-
-    function isRepeatValue(value: string): boolean {
-        return /^(repeat|no-repeat|repeat-x|repeat-y|space|round)$/.test(value);
-    }
-
-    function isAttachmentValue(value: string): boolean {
-        return /^(scroll|fixed|local)$/.test(value);
-    }
-
-    function isBoxValue(value: string): boolean {
-        return /^(border-box|padding-box|content-box)$/.test(value);
-    }
-
-    function getCurrentElementValue(): BackgroundSize | null | undefined {
-        const backgroundSize = getCurrentElementStyleBackgroundSize();
-        if (backgroundSize === backgroundSizeFitWidth) {
-            return "fit-width";
-        }
-        else if (backgroundSize === backgroundSizeFitHeight) {
-            return "fit-height";
-        }
-        else if (backgroundSize === backgroundSizeOriginal) {
-            return "original";
-        }
-        else {
-            return null;
-        }
-    }
-
-    function setBackgroundSize(backgroundSize: string): void {
-        // Use the removeProperty to figure out how to remove the current value.
-        targetElements.forEach(element => {
-            element.style.removeProperty("background-size");
-
-            const styleDeclarationsString = element.getAttribute("style");
-            if (styleDeclarationsString) {
-                const suffix = styleDeclarationsString.endsWith(";") ? " " : "; ";
-                element.setAttribute("style", `${styleDeclarationsString}${suffix}background-size: ${backgroundSize};`);
-            }
-            else {
-                element.setAttribute("style", `background-size: ${backgroundSize};`);
-            }
-        });
-    }
-
-    function getCurrentElementStyleBackgroundSize(): string {
-        const styleDeclarationsString = element.getAttribute("style");
-
-        if (styleDeclarationsString) {
-            type PropertyAndValue = {
-                property: string;
-                value: string;
-            };
-
-            const properties = Enumerable
-                .from(styleDeclarationsString.split(";"))
-                .select((propertyString): PropertyAndValue | null => {
-                    propertyString = propertyString.trim();
-                    const firstColonIndex = propertyString.indexOf(":");
-
-                    if (firstColonIndex !== -1 && (firstColonIndex + 1) < propertyString.length) {
-                        return {
-                            property: propertyString.substring(0, firstColonIndex),
-                            value: propertyString.substring(firstColonIndex + 1).trimStart()
-                        };
-                    }
-                    else {
-                        return null;
-                    }
-                })
-                .where(property => property?.property === "background" || property?.property === "background-size")
-                .ofType(isNotNullish)
-                .toList();
-
-            const backgroundSize = properties.lastOrUndefined(property => property.property === "background-size");
-            if (backgroundSize?.value) {
-                return backgroundSize.value;
-            }
-
-            // Try to harvest the background size from the background shorthand property.
-            const background = properties.lastOrUndefined(property => property.property === "background");
-            if (background?.value) {
-                // Parse the background.
-                const backgroundStyles = parseBackgroundShorthand(background.value);
-                return Enumerable.from(backgroundStyles)
-                    .where(style => !!style.backgroundSize)
-                    .lastOrDefault()?.backgroundSize ?? "";
-            }
-        }
-
-        return "";
-    }
-
-    const watcher = watch(value, (newValue) => {
-        if (newValue === "fit-width") {
-            setBackgroundSize(backgroundSizeFitWidth);
-        }
-        else if (newValue === "fit-height") {
-            setBackgroundSize(backgroundSizeFitHeight);
-        }
-        else if (newValue === "original") {
-            setBackgroundSize(backgroundSizeOriginal);
-        }
-        else {
-            targetElements.forEach(element => {
-                element.style.removeProperty("background-size");
-            });
-        }
-    });
-
-    const provider = {
-        get value(): BackgroundSize | null | undefined {
-            return value.value;
-        },
-        set value(newValue: BackgroundSize | null | undefined) {
-            value.value = newValue;
-        },
-        dispose() {
-            watcher();
-        }
-    };
-
-    return provider;
-}
-
-export function createBackgroundFitProvider(
-    element: HTMLElement,
-    copyToElements?: HTMLElement[] | null | undefined
-): ValueProvider<BackgroundFit[] | null | undefined> {
-    const targetElements = [element, ...(copyToElements ?? [])];
-
-    const value = ref<BackgroundFit[] | null | undefined>(getValue(element));
-
-    function getValue(element: HTMLElement): BackgroundFit[] | null | undefined {
-        const backgroundRepeat = element.style.backgroundRepeat;
-        const backgroundPosition = element.style.backgroundPosition;
-
-        const properties: BackgroundFit[] = [];
-
-        if (backgroundRepeat === "repeat") {
-            properties.push("repeat");
-        }
-
-        if (backgroundPosition === "center center") {
-            properties.push("center");
-        }
-
-        if (!properties.length) {
-            const hasStyleProperty = !!backgroundRepeat || !!backgroundPosition;
-
-            if (hasStyleProperty) {
-                // Return an empty array if there is an unrecognized style property
-                // so that the property control can display a clear button.
-                return [];
-            }
-            else {
-                return null;
-            }
-        }
-        else {
-            return properties;
-        }
-    }
-
-    const watcher = watch(value, (newValue, oldValue) => {
-        if (newValue) {
-            if (newValue.includes("repeat")) {
-                targetElements.forEach(element => {
-                    element.style.backgroundRepeat = "repeat";
-                });
-            }
-            else if (oldValue?.includes("repeat")) {
-                // The old value was "repeat-repeat" and the user deselected it,
-                // so change the style explicitly to "no-repeat".
-                targetElements.forEach(element => {
-                    element.style.backgroundRepeat = "no-repeat";
-                });
-            }
-
-            if (newValue.includes("center")) {
-                targetElements.forEach(element => {
-                    element.style.backgroundPosition = "top center";
-                });
-            }
-            else if (oldValue?.includes("center")) {
-                // The old value was "center" and the user deselected it,
-                // so change the style explicitly to "top left".
-                targetElements.forEach(element => {
-                    element.style.backgroundPosition = "top left";
-                });
-            }
-        }
-        else {
-            // The value was set to null so remove all styles.
-            // This can happen when a clear button is clicked.
-            targetElements.forEach(element => {
-                element.style.removeProperty("background-repeat");
-                element.style.removeProperty("background-position");
-            });
-        }
-    });
-
-    const provider = {
-        get value(): BackgroundFit[] | null | undefined {
-            return value.value;
-        },
-        set value(newValue: BackgroundFit[] | null | undefined) {
-            value.value = newValue;
-        },
-        dispose() {
-            watcher();
-        }
-    };
-
-    return provider;
-}
-
-export function createContentWidthProvider(
-    element: HTMLElement,
-    converter: ValueConverter<number | null | undefined, string | null>
-): ValueProvider<number | null | undefined> {
-    // Set the numeric value from the element OR from the input CSS styles.
-    const {
-        innerTable: initialInnerTable
-    } = findDescendantContentAreaElements(element);
-    const value = ref<number | null | undefined>(findContentWidth(initialInnerTable));
-
-    function findContentWidth(innerTableElement: HTMLElement | undefined): number | null | undefined {
-        const width = innerTableElement?.getAttribute("width") ?? null;
-        return pixelConverter.toSource(width)
-            ?? percentageConverter.toSource(width)
-            ?? integerConverter.toSource(width);
-    }
-
-    const watcher = watch(value, (newValue) => {
-        if (isNullish(newValue)) {
-            const { innerTable } = findDescendantContentAreaElements(element);
-
-            if (innerTable) {
-                // The table `width` attribute provides a fallback width that many email clients respect.
-                innerTable.setAttribute("width", "100%");
-
-                // Restrict the content to the selected number of pixels maximum.
-                innerTable.style.maxWidth = "";
-
-                // `width: 100%` ensures responsive scaling on smaller screens.
-                innerTable.style.width = "100%";
-            }
-        }
-        else {
-            // Update the inline width style of the table data.
-            const { innerTable } = addContentAreaElementsIfMissing(element);
-
-            // The table `width` attribute provides a fallback width that many email clients respect.
-            innerTable.setAttribute("width", `${newValue}`);
-
-            // Restrict the content to the selected number of pixels maximum.
-            innerTable.style.maxWidth = `${converter.toTarget(newValue)}`;
-
-            // `width: 100%` ensures responsive scaling on smaller screens.
-            innerTable.style.width = "100%";
-        }
-    });
-
-    return {
-        get value(): number | null | undefined {
-            return value.value;
-        },
-        set value(newValue: number | null | undefined) {
-            value.value = newValue;
-        },
-        dispose() {
-            watcher();
-        }
-    };
-}
-
-export const RockStylesCssClass = "rock-styles" as const;
-export const RockBodyInnerContainerCssClass = "rock-body-inner-container" as const;
-export const RockBodyOuterContainerCssClass = "rock-body-outer-container" as const;
-
-export function createBodyWidthProvider(
-    body: HTMLBodyElement
-): ValueProvider<number | null | undefined> {
-
-    const { innerTable } = addContentAreaElementsIfMissing(body, {
-        innerTableCssClass: RockBodyInnerContainerCssClass,
-        outerTableCssClass: RockBodyOuterContainerCssClass
-    });
-
-    // `width: 100%` ensures responsive scaling on smaller screens.
-    innerTable.style.width = "100%";
-
-    const innerTableWidthAttributeProvider = attributeProvider(innerTable, "width", stringConverter);
-    const innerTableWidthStyleSheetProvider = styleSheetProvider(
-        body,
-        RockStylesCssClass,
-        `.${RockBodyInnerContainerCssClass}`,
-        "max-width",
-        pixelConverter);
-
-    const value = ref<number | null | undefined>(innerTableWidthStyleSheetProvider.value);
-
-    const watcher = watch(value, (newValue) => {
-        if (isNullish(newValue)) {
-            innerTableWidthAttributeProvider.value = "100%";
-            innerTableWidthStyleSheetProvider.value = null;
-        }
-        else {
-            innerTableWidthAttributeProvider.value = `${newValue}`;
-            innerTableWidthStyleSheetProvider.value = newValue;
-        }
-    });
-
-    return {
-        get value(): number | null | undefined {
-            return value.value;
-        },
-        set value(newValue: number | null | undefined) {
-            value.value = newValue;
-        },
-        dispose() {
-            watcher();
-            innerTableWidthAttributeProvider.dispose();
-            innerTableWidthStyleSheetProvider.dispose();
-        }
-    };
-}
-
-export function contentAlignmentProvider(
-    element: HTMLElement
-): ValueProvider<string | null | undefined> {
-    // Set the numeric value from the element OR from the input CSS styles.
-
-    const {
-        outerTableTd: initialOuterTableTd
-    } = findDescendantContentAreaElements(element);
-    const value = ref<string | null | undefined>(findContentAlignment(initialOuterTableTd));
-
-    function findContentAlignment(outerTableTd: HTMLElement | undefined): string | null | undefined {
-        return outerTableTd?.getAttribute("align");
-    }
-
-    const watcher = watch(value, (newValue) => {
-        if (isNullish(newValue)) {
-            const { outerTableTd } = findDescendantContentAreaElements(element);
-
-            if (outerTableTd) {
-                outerTableTd.removeAttribute("align");
-            }
-        }
-        else {
-            const { outerTableTd } = addContentAreaElementsIfMissing(element);
-            outerTableTd.setAttribute("align", newValue);
-        }
-    });
-
-    return {
-        get value(): string | null | undefined {
-            return value.value;
-        },
-        set value(newValue: string | null | undefined) {
-            value.value = newValue;
-        },
-        dispose() {
-            watcher();
-        }
-    };
-}/**
      * Removes temporary wrapper elements from an element's or document's children.
      *
      * This will place the wrapped elements in place of their associated wrappers,
@@ -2555,9 +1450,6 @@ export function removeTemporaryAttributes(element: Document | Element): void {
         });
 }
 
-export const EmptyDropzoneSvgPixelWidth = 103;
-export const SmallEmptyClass = `${RockRuntimeClassCssClassPrefix}-small` as const;
-
 export function checkDropzoneSize(rect: DOMRectReadOnly, element: HTMLElement): void {
     if (rect.width < EmptyDropzoneSvgPixelWidth) {
         element.classList.add(SmallEmptyClass);
@@ -2567,52 +1459,4 @@ export function checkDropzoneSize(rect: DOMRectReadOnly, element: HTMLElement): 
     }
 }
 
-export function applyDefaultValueToProvider<T>(
-    valueProvider: ValueProvider<T>,
-    defaultValue: T
-): ValueProvider<T> {
-    if (defaultValue !== undefined && isNullish(valueProvider.value)) {
-        valueProvider.value = defaultValue;
-    }
-
-    return valueProvider;
-}
-
-export const DefaultBodyWidth = 600;
-export const DefaultBodyAlignment = "center";
-
-export function createBodyBackgroundColorProvider(
-    body: HTMLBodyElement
-): ValueProvider<string | null | undefined> {
-    // Set the value from the element OR from the input CSS styles.
-    addContentAreaElementsIfMissing(body, {
-        innerTableCssClass: RockBodyInnerContainerCssClass,
-        outerTableCssClass: RockBodyOuterContainerCssClass
-    });
-
-    const backgroundColorStyleSheetProvider = styleSheetProvider(
-        body,
-        RockStylesCssClass,
-        `.${RockBodyInnerContainerCssClass}`,
-        "background-color",
-        stringConverter);
-
-    const value = ref<string | null | undefined>(backgroundColorStyleSheetProvider.value);
-
-    const watcher = watch(value, (newValue) => {
-        backgroundColorStyleSheetProvider.value = newValue;
-    });
-
-    return {
-        get value(): string | null | undefined {
-            return value.value;
-        },
-        set value(newValue: string | null | undefined) {
-            value.value = newValue;
-        },
-        dispose() {
-            watcher();
-            backgroundColorStyleSheetProvider.dispose();
-        }
-    };
-}
+// #endregion Functions

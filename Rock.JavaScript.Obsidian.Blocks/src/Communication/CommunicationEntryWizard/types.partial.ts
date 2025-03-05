@@ -15,76 +15,20 @@
 // </copyright>
 //
 
-import { Ref } from "vue";
 import { Guid } from "@Obsidian/Types";
 import { HttpResult } from "@Obsidian/Types/Utility/http";
 import { CommunicationEntryWizardSaveMetricsReminderRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSaveMetricsReminderRequestBag";
 import { ICancellationToken } from "@Obsidian/Utility/cancellation";
 import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationBag";
 import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
+import { CommunicationEntryWizardSaveCommunicationTemplateResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSaveCommunicationTemplateResponseBag";
 import { CommunicationEntryWizardGetEmailPreviewHtmlBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardGetEmailPreviewHtmlBag";
 import { CommunicationEntryWizardRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardRecipientBag";
 import { CommunicationEntryWizardSaveResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSaveResponseBag";
 import { CommunicationEntryWizardSendResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardSendResponseBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export type GetProcessedHtmlOptions = {
-    isPreview?: boolean;
-};
-
 export type SendTimePreference = "now" | "later";
-
-export type MenuItem = {
-    title: string;
-    value: string;
-    iconCssClass: string;
-};
-
-export type EditorComponentTypeName =
-    "video"
-    | "button"
-    | "text"
-    | "divider"
-    | "message"
-    | "image"
-    | "code"
-    | "rsvp"
-    | "section"
-    | "one-column-section"   // this is a special component type
-    | "two-column-section"   // this is a special component type
-    | "three-column-section" // this is a special component type
-    | "four-column-section"   // this is a special component type
-    | "right-sidebar-section"   // this is a special component type
-    | "left-sidebar-section" // this is a special component type
-    | "title";
-
-export type ComponentTypeDragStartMessage = {
-    type: "COMPONENT_TYPE_DRAG_START";
-    componentTypeName: EditorComponentTypeName;
-    customHtml?: string | null | undefined;
-};
-
-export type ComponentTypeDragLeaveMessage = {
-    type: "COMPONENT_TYPE_DRAG_LEAVE";
-};
-
-export type ComponentTypeDragDropMessage = {
-    type: "COMPONENT_TYPE_DRAG_DROP";
-};
-
-export type ComponentTypeDragEndMessage = {
-    type: "COMPONENT_TYPE_DRAG_END";
-};
-
-export type ComponentTypeDragOverMessage = {
-    type: "COMPONENT_TYPE_DRAG_OVER";
-    clientX: number;
-    clientY: number;
-};
-
-export type AccordionManager = {
-    register(key: string, isExpanded: Ref<boolean>): void;
-};
 
 export type Breakpoint = "xs" | "sm" | "md" | "lg" | "xl" | "unknown";
 
@@ -141,4 +85,6 @@ export type InvokeBlockActionHelper = {
         connectionId: string | null;
         communicationGuid: Guid;
     }): Promise<HttpResult<void>>;
+    saveAsCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag): Promise<HttpResult<CommunicationEntryWizardSaveCommunicationTemplateResponseBag>>;
+    saveCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag): Promise<HttpResult<CommunicationEntryWizardSaveCommunicationTemplateResponseBag>>;
 };

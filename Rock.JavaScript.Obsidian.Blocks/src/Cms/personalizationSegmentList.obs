@@ -45,7 +45,7 @@
                     width="20%" />
 
         <LabelColumn name="categories"
-                     title="Category"
+                     title="Categories"
                      field="categories"
                      :filter="pickExistingValueFilter"
                      visiblePriority="sm" />
@@ -74,11 +74,11 @@
             </template>
         </TextColumn>
 
-        <TextColumn name="timeToUpdateDurationMilliseconds"
-                    title="Time To Update (ms)"
-                    field="timeToUpdateDurationMilliseconds"
-                    :filter="numberValueFilter"
-                    visiblePriority="lg" />
+        <NumberColumn name="timeToUpdateDurationMilliseconds"
+                      title="Time To Update (ms)"
+                      field="timeToUpdateDurationMilliseconds"
+                      :filter="numberValueFilter"
+                      visiblePriority="lg" />
 
         <BooleanColumn name="isActive"
                        title="Active"
@@ -99,7 +99,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, numberValueFilter, TextColumn, textValueFilter, DeleteColumn, ButtonColumn, pickExistingValueFilter, booleanValueFilter, LabelColumn } from "@Obsidian/Controls/grid";
+    import Grid, { BooleanColumn, numberValueFilter, NumberColumn, TextColumn, textValueFilter, DeleteColumn, ButtonColumn, pickExistingValueFilter, booleanValueFilter, LabelColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PersonalizationSegmentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PersonalizationSegmentList/personalizationSegmentListOptionsBag";

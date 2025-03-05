@@ -26,6 +26,7 @@ using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Common.Mobile;
 using Rock.Common.Mobile.Enums;
+using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.DownhillCss;
 using Rock.Mobile.JsonFields;
@@ -771,6 +772,8 @@ namespace Rock.Mobile
 
                 package.Campuses.Add( mobileCampus );
             }
+
+            package.ChatPublicApiKey = ChatHelper.GetChatConfiguration()?.ApiKey;
 
             return package;
         }

@@ -168,7 +168,7 @@ namespace Rock.Blocks.Communication
 
         protected CommunicationMessageFilter SelectedMessageFilter => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.SelectedMessageFilter )
-            .ConvertToEnum<CommunicationMessageFilter>( CommunicationMessageFilter.ShowUnreadReplies );
+            .ConvertToEnum<CommunicationMessageFilter>( CommunicationMessageFilter.ShowAllMessages );
 
         #endregion
 

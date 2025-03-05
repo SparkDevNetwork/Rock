@@ -20,22 +20,10 @@
 
         <div class="row">
             <div class="col-md-3">
-                <NumberBox :minimumValue="0" v-model="viewSaturationCount" label="View Saturation Count" help="The number of times a person should view the message before it's deemed to have been saturated." />
+                <DatePicker v-model="startDate" label="Start Date" help="The date when this adaptation becomes eligible to be shown." />
             </div>
             <div class="col-md-3">
-                <NumberBox :minimumValue="0" v-model="viewSaturationInDays" label="View Saturation Date Range" help="Specify the number of days to be taken into consideration for the saturation calculation of views. Views outside this range will not be considered.">
-                    <template #inputGroupAppend>
-                        <span class="input-group-addon">days</span>
-                    </template>
-                </NumberBox>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-3">
-                <DatePicker v-model="startDate" label="Start Date" />
-            </div>
-            <div class="col-md-3">
-                <DatePicker v-model="endDate" label="End Date" />
+                <DatePicker v-model="endDate" label="End Date" help="The date when this adaptation stops being shown." />
             </div>
         </div>
         <div class="row">
@@ -47,6 +35,18 @@
                               label="Segments"
                               help="The segments that an individual needs to be in order for this message adaptation to be considered relevant. Leave blank for all individuals to be considered relevant."
                               :items="segmentOptions" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <NumberBox :minimumValue="0" v-model="viewSaturationCount" label="View Saturation Count" help="The number of times a person should view the message before it's deemed to have been saturated." />
+            </div>
+            <div class="col-md-3">
+                <NumberBox :minimumValue="0" v-model="viewSaturationInDays" label="View Saturation Date Range" help="Specify the number of days to be taken into consideration for the saturation calculation of views. Views outside this range will not be considered.">
+                    <template #inputGroupAppend>
+                        <span class="input-group-addon">days</span>
+                    </template>
+                </NumberBox>
             </div>
         </div>
         <SectionHeader class="margin-t-lg" title="Message Content"
@@ -63,16 +63,17 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { AdaptiveMessageAdaptationBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationBag";
     import { AdaptiveMessageAdaptationDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/AdaptiveMessageAdaptationDetail/adaptiveMessageAdaptationDetailOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<AdaptiveMessageAdaptationBag>,
+            type: Object as PropType<ValidPropertiesBox<AdaptiveMessageAdaptationBag>>,
             required: true
         },
 
@@ -83,22 +84,22 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: AdaptiveMessageAdaptationBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<AdaptiveMessageAdaptationBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const startDate = propertyRef(props.modelValue.startDate ?? "", "StartDate");
-    const endDate = propertyRef(props.modelValue.endDate ?? "", "EndDate");
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const viewSaturationCount = propertyRef(props.modelValue.viewSaturationCount ?? null, "ViewSaturationCount");
-    const viewSaturationInDays = propertyRef(props.modelValue.viewSaturationInDays ?? null, "ViewSaturationInDays");
-    const segments = propertyRef(props.modelValue.segments ?? [], "Segments");
+    const startDate = propertyRef(props.modelValue?.bag?.startDate ?? "", "StartDate");
+    const endDate = propertyRef(props.modelValue?.bag?.endDate ?? "", "EndDate");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const viewSaturationCount = propertyRef(props.modelValue?.bag?.viewSaturationCount ?? null, "ViewSaturationCount");
+    const viewSaturationInDays = propertyRef(props.modelValue?.bag?.viewSaturationInDays ?? null, "ViewSaturationInDays");
+    const segments = propertyRef(props.modelValue?.bag?.segments ?? [], "Segments");
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, isActive, name, segments, viewSaturationCount, viewSaturationInDays, startDate, endDate];
@@ -123,33 +124,33 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(viewSaturationCount, props.modelValue.viewSaturationCount ?? null);
-        updateRefValue(viewSaturationInDays, props.modelValue.viewSaturationInDays ?? null);
-        updateRefValue(segments, props.modelValue.segments ?? []);
-        updateRefValue(startDate, props.modelValue.startDate ?? "");
-        updateRefValue(endDate, props.modelValue.endDate ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(viewSaturationCount, props.modelValue?.bag?.viewSaturationCount ?? null);
+        updateRefValue(viewSaturationInDays, props.modelValue?.bag?.viewSaturationInDays ?? null);
+        updateRefValue(segments, props.modelValue?.bag?.segments ?? []);
+        updateRefValue(startDate, props.modelValue?.bag?.startDate ?? "");
+        updateRefValue(endDate, props.modelValue?.bag?.endDate ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
-        const newValue: AdaptiveMessageAdaptationBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            viewSaturationInDays: viewSaturationInDays.value,
-            viewSaturationCount: viewSaturationCount.value,
-            isActive: isActive.value,
-            name: name.value,
-            segments: segments.value,
-            startDate: startDate.value,
-            endDate: endDate.value
+        const newValue: ValidPropertiesBox<AdaptiveMessageAdaptationBag> = {
+            bag: { ...props.modelValue.bag } as AdaptiveMessageAdaptationBag
         };
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "viewSaturationInDays", viewSaturationInDays.value);
+        setPropertiesBoxValue(newValue, "viewSaturationCount", viewSaturationCount.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "segments", segments.value);
+        setPropertiesBoxValue(newValue, "startDate", startDate.value);
+        setPropertiesBoxValue(newValue, "endDate", endDate.value);
 
         emit("update:modelValue", newValue);
     });

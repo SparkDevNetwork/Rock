@@ -238,7 +238,7 @@ namespace Rock.Blocks.Cms
 
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "ContentItemId", "((Key))" ),
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["ContentItemId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } ),
                 [NavigationUrlKey.NewItemPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string>
                 {
                     ["ContentItemId"] = "((Key))",

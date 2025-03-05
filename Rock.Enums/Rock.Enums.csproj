@@ -108,6 +108,7 @@
     <Compile Include="Cms\ThemeIconSet.cs" />
     <Compile Include="CodeGenerateRestEndpoint.cs" />
     <Compile Include="Communication\Chat\ChatRole.cs" />
+    <Compile Include="Communication\Chat\ChatSyncType.cs" />
     <Compile Include="Communication\CommunicationMessageFilter.cs" />
     <Compile Include="Communication\CommunicationRecipientStatus.cs" />
     <Compile Include="Communication\CommunicationStatus.cs" />
@@ -219,6 +220,7 @@
     <Compile Include="Lms\DueDateChangeType.cs" />
     <Compile Include="Lms\DueDateCriteria.cs" />
     <Compile Include="Lms\LearningCompletionStatus.cs" />
+    <Compile Include="Lms\PresentedFor.cs" />
     <Compile Include="Lms\RequirementType.cs" />
     <Compile Include="Mobile\MobileNavigationActionType.cs" />
     <Compile Include="Net\CookieSameSiteMode.cs" />

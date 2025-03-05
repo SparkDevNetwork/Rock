@@ -126,5 +126,30 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// Gets or sets a value indicating whether this communication template can be used with the Communication Entry Wizard block.
         /// </summary>
         public bool IsWizardSupported { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the name of the Communication Template.
+        /// </summary>
+        public string Name { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the image file for the Template Preview Image.
+        /// </summary>
+        public ListItemBag ImageFile { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Category.
+        /// </summary>
+        public ListItemBag Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this is a starter template.
+        /// </summary>
+        public bool IsStarter { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description.
+        /// </summary>
+        public string Description { get; set; }
     }
 }

@@ -213,7 +213,6 @@ export function parseSlidingDateRangeString(value: string): SlidingDateRange | n
  * @returns A string that formats the sliding date range.
  */
 export function slidingDateRangeToString(value: SlidingDateRange): string {
-
     switch (value.rangeType) {
         case RangeType.Current:
             return `Current||${getTextForValue(value.timeUnit?.toString() ?? "", timeUnitOptions)}||`;
@@ -222,7 +221,7 @@ export function slidingDateRangeToString(value: SlidingDateRange): string {
             return `DateRange|||${value.lowerDate ?? ""}|${value.upperDate ?? ""}`;
 
         default:
-            return `${getTextForValue(value.rangeType.toString(), rangeTypeOptions)}|${value.timeValue ?? ""}|${getTextForValue(value.timeUnit?.toString() ?? "", timeUnitOptions)}||`;
+            return `${getTextForValue(value.rangeType.toString(), rangeTypeOptions) || "All"}|${value.timeValue ?? ""}|${getTextForValue(value.timeUnit?.toString() ?? "", timeUnitOptions)}||`;
     }
 }
 

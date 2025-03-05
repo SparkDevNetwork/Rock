@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -24,6 +25,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,7 +38,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on signals" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Has Signal Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "5DC0EEB7-2B9E-4828-883B-0E7090C992AA")]
+    [Rock.SystemGuid.EntityTypeGuid( "5DC0EEB7-2B9E-4828-883B-0E7090C992AA" )]
     public class HasSignalFilter : DataFilterComponent
     {
         #region Properties
@@ -60,6 +63,33 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/hasSignalFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var signalTypeOptions = SignalTypeCache.All()
+                .Select( st => new ListItemBag { Value = st.Id.ToString(), Text = st.Name } )
+                .ToList();
+
+            return new Dictionary<string, string>
+            {
+                ["signalType"] = selection,
+                ["signalTypeOptions"] = signalTypeOptions.ToCamelCaseJson( false, true )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrDefault( "signalType", "" );
         }
 
         #endregion
@@ -128,6 +158,8 @@ function() {
 
             return result;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -208,6 +240,8 @@ function() {
             }
         }
 
+#endif
+
         /// <summary>
         /// Gets the expression.
         /// </summary>
@@ -226,7 +260,7 @@ function() {
                 var signalQry = new PersonSignalService( ( RockContext ) serviceInstance.Context ).Queryable();
 
                 if ( signalTypeId != 0 )
-                { 
+                {
                     signalQry = signalQry.Where( x => x.SignalTypeId == signalTypeId );
                 }
 

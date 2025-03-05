@@ -23,12 +23,15 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Lava;
+using Rock.Logging;
 using Rock.Model;
 
 namespace Rock.Jobs
@@ -37,9 +40,7 @@ namespace Rock.Jobs
     /// Send Learning Activity Notifications
     /// </summary>
     [DisplayName( "Send Learning Notifications" )]
-    [Description( @"This job will send any unsent class announcements as well as an available activity digest emails for all their newly available activities within a learning program.
-        The class announcements SystemCommunication is configured by the job setting and contains the Person and Announcement merge fields.
-        The Available Activity Notification is configured by the learning program and contains ActivityCount and Courses (a list of CourseInfo) merge fields." )]
+    [Description( "This job will send any unsent class announcements as well as an available activity digest emails for all their newly available activities within a learning program. The class announcements SystemCommunication is configured by the job setting and contains the Person and Announcement merge fields. The Available Activity Notification is configured by the learning program and contains ActivityCount and Courses (a list of CourseInfo) merge fields." )]
 
     #region Job Attributes
 
@@ -64,14 +65,8 @@ namespace Rock.Jobs
 
         #endregion
 
-        private SystemCommunicationService _systemCommunicationService;
-        private LearningActivityService _learningActivityService;
-        private LearningActivityCompletionService _learningActivityCompletionService;
-        private LearningClassAnnouncementService _learningClassAnnouncementService;
-        private LearningParticipantService _learningParticipantService;
-
-        private IList<string> _warnings;
-        private IList<string> _errors;
+        private List<string> _warnings;
+        private List<string> _errors;
         private int _distinctClassAnnouncementsSent;
         private int _distinctAnnouncementMessagesSent;
         private int _notificationsSent;
@@ -92,33 +87,42 @@ namespace Rock.Jobs
         {
             try
             {
-                var jobStartTime = RockDateTime.Now;
                 InitializeResultsCounters();
 
                 using ( var rockContext = new RockContext() )
                 {
-                    InitializeServices( rockContext );
-
                     SendActivityNotifications( rockContext );
+                }
 
-                    SendAnnouncements();
-
+                using ( var rockContext = new RockContext() )
+                {
+                    SendAnnouncements( rockContext );
                 }
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex, HttpContext.Current );
-                throw;
+                ExceptionLogService.LogException( ex );
+                _errors.Add( ex.Message );
             }
 
             SetJobResultSummary();
+
+            // If we had any warnings or errors then make the job complete
+            // with a warning state so it stands out for review.
+            if ( _warnings.Any() || _errors.Any() )
+            {
+                throw new RockJobWarningException();
+            }
         }
 
         /// <summary>
         /// Sends the pending learning class announcements.
         /// </summary>
-        private void SendAnnouncements()
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        private void SendAnnouncements( RockContext rockContext )
         {
+            var learningClassAnnouncementService = new LearningClassAnnouncementService( rockContext );
+
             var announcementsSystemCommunicationGuid = this.GetAttributeValue( AttributeKey.SystemCommunication ).AsGuidOrNull();
             if ( announcementsSystemCommunicationGuid == null )
             {
@@ -127,7 +131,8 @@ namespace Rock.Jobs
             }
 
             // Make sure the selected system communication exists.
-            SystemCommunication announcementsSystemCommunication = _systemCommunicationService.GetNoTracking( announcementsSystemCommunicationGuid.Value );
+            var announcementsSystemCommunication = new SystemCommunicationService( rockContext )
+                .GetNoTracking( announcementsSystemCommunicationGuid.Value );
 
             if ( announcementsSystemCommunication == null )
             {
@@ -138,12 +143,14 @@ namespace Rock.Jobs
             // Get the pending announcements and the potential recipients for those announcements.
             // Get as no tracking because we may be converting the Announcement.Description from a JSON object
             // to an HTML value (for emails). We don't want that change to be saved to the database.
-            var pendingAnnouncements = _learningClassAnnouncementService.GetUnsentAnnouncements().AsNoTracking();
+            var pendingAnnouncements = learningClassAnnouncementService
+                .GetUnsentAnnouncements()
+                .AsNoTracking();
             var uniqueClassIds = pendingAnnouncements
                 .Select( a => a.LearningClassId )
                 .Distinct()
                 .ToList();
-            var potentialRecipients = _learningParticipantService
+            var potentialRecipients = new LearningParticipantService( rockContext )
                 .GetStudentsForClasses( uniqueClassIds )
                 .Include( a => a.Person )
                 .ToList();
@@ -209,98 +216,138 @@ namespace Rock.Jobs
                 // the LearningClassAnnouncement.CommunicationSent property.
                 if ( wasSuccessfullySent )
                 {
-                    _learningClassAnnouncementService.UpdateCommunicationSentProperty( new List<int> { announcement.Id } );
+                    learningClassAnnouncementService.UpdateCommunicationSentProperty( new List<int> { announcement.Id } );
                 }
             }
 
             // Get a count of distinct announcements sent.
-            _distinctClassAnnouncementsSent = pendingAnnouncements.Select( a => a.Id ).Distinct().Count();            
+            _distinctClassAnnouncementsSent = pendingAnnouncements.Select( a => a.Id ).Distinct().Count();
         }
 
         /// <summary>
         /// Sends the pending learning activity notifications and updates the
-        /// LearningActivityCompletion records to indicate the SystemCommunicationId
+        /// <see cref="LearningClassActivityCompletion"/> records to indicate the SystemCommunicationId
         /// that was used to notify the individual.
         /// </summary>
         /// <param name="rockContext">The <see cref="RockContext"/> to use for data access.</param>
         private void SendActivityNotifications( RockContext rockContext )
         {
-            var courseDataByPerson = GetPersonActivitiesByCourse();
+            var programs = new LearningProgramService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Include( lp => lp.SystemCommunication )
+                .Where( lp => lp.IsActive )
+                .ToList();
 
-            if ( !courseDataByPerson.Any() )
+            foreach ( var program in programs )
             {
-                Result = "No notifications to send";
-            }
-            else
-            {
-                // Get the distinct SystemCommunicationIds before querying the database.
-                var distinctSystemCommunicationIds = courseDataByPerson
-                    .Select( pc => pc.ProgramSystemCommunicationId )
-                    .Distinct()
-                    .ToList();
+                var personPrograms = GetActivityNotificationsForProgram( program, rockContext );
 
-                // Get the SystemCommunications we'll be using and create a Dictionary for lookup.
-                var activityAvailableCommunications = _systemCommunicationService
-                    .GetByIds( distinctSystemCommunicationIds )
-                    .ToDictionary( s => s.Id, s => s );
-
-                var successulPersonNotifications = SendNotifications( activityAvailableCommunications, courseDataByPerson );
-
-                foreach ( var personActivitiesNotified in successulPersonNotifications )
+                foreach ( var studentProgram in personPrograms )
                 {
-                    AddOrUpdateCompletionRecords( personActivitiesNotified, activityAvailableCommunications );
-                }
+                    try
+                    {
+                        var communicationId = SendNotificationForPerson( program.SystemCommunication, studentProgram );
 
-                rockContext.SaveChanges();
+                        if ( communicationId.HasValue )
+                        {
+                            using ( var updateRockContext = new RockContext() )
+                            {
+                                AddOrUpdateCompletionRecords( studentProgram, communicationId.Value, updateRockContext );
+                            }
+                        }
+                    }
+                    catch ( Exception ex )
+                    {
+                        _errors.Add( $"Error sending notifications for {studentProgram.Person.FullName}: {ex.Message}" );
+                    }
+                }
             }
         }
 
         /// <summary>
-        /// Adds any <see cref="LearningActivity"/> records for which notifications were sent.
-        /// If there are any existing <see cref="LearningActivityCompletion"/> records their
+        /// Adds any <see cref="LearningClassActivity"/> records for which notifications were sent.
+        /// If there are any existing <see cref="LearningClassActivityCompletion"/> records their
         /// NotificationCommunicationId property will be set to <c>true</c>.
         /// </summary>
         /// <param name="personActivitiesByCourse">The list of activities grouped by course for this person.</param>
-        /// <param name="systemCommunications">The Dictionary of the <see cref="SystemCommunication"/> for all programs with notifications to send.</param>
-        private void AddOrUpdateCompletionRecords( PersonProgramActivitiesByCourseInfo personActivitiesByCourse, Dictionary<int, SystemCommunication> systemCommunications )
+        /// <param name="communicationId">The identifier of the communication that was sent to the person for this program.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        private static void AddOrUpdateCompletionRecords( PersonProgramActivitiesByCourseInfo personActivitiesByCourse, int communicationId, RockContext rockContext )
         {
-            // Get a list of all activities for simpler querying.
-            var activities = personActivitiesByCourse.Courses.SelectMany( c => c.Activities );
+            var learningClassActivityCompletionService = new LearningClassActivityCompletionService( rockContext );
 
-            // The participant will differ across classes.
-            var participantIds = personActivitiesByCourse.Courses.Select( a => a.LearningParticipantId ).Distinct().ToList();
-            var participants = _learningParticipantService.GetByIds( participantIds );
+            // Get a list of all activities for simpler querying.
+            var activityInfos = personActivitiesByCourse.Courses.SelectMany( c => c.Activities );
 
             // Get the list of all ActivityIds that were referenced in the person's email.
-            var activityIdsToAdd = activities
-                .Where( a => a.LearningActivityCompletionId.ToIntSafe() == 0 )
-                .Select( a => a.LearningActivityId )
+            var activityIdsToAdd = activityInfos
+                .Where( a => !a.LearningClassActivityCompletionId.HasValue )
+                .Select( a => a.LearningClassActivityId )
                 .ToList();
 
-            foreach ( var systemCommunicationId in systemCommunications.Keys )
-            {
-                // Now get the distinct LearningActivityCompletion records to update the SystemCommunicationId.
-                var completionIds = activities
-                    .Where( a => a.LearningActivityCompletionId.HasValue && a.LearningActivityCompletionId > 0 && a.SystemCommunicationId == systemCommunicationId )
-                    .Select( a => a.LearningActivityCompletionId.ToIntSafe() )
-                    .Distinct()
-                    .ToList();
+            // Now get the distinct completion records to update.
+            var completionIdsToUpdate = activityInfos
+                .Where( a => a.LearningClassActivityCompletionId.HasValue )
+                .Select( a => a.LearningClassActivityCompletionId.Value )
+                .Distinct()
+                .ToList();
 
-                _learningActivityCompletionService.UpdateNotificationCommunicationIdProperty( completionIds, systemCommunicationId );
+            // Update existing records.
+            var existingCompletions = learningClassActivityCompletionService
+                .GetByIds( completionIdsToUpdate )
+                .ToList();
+
+            foreach ( var existingCompletion in existingCompletions )
+            {
+                existingCompletion.SentNotificationCommunicationId = communicationId;
             }
 
-            // Get the activity data and transform it into the completion records for the student.
-            var activityCompletionsToAdd = _learningActivityService
-               .GetByIds( activityIdsToAdd )
-               .ToList()
-               .OrderBy( a => a.Order )
-               .ThenBy( a => a.Id )
-               .Select( a => LearningActivityCompletionService.GetNew(
-                   a,
-                   participants.FirstOrDefault( p => p.LearningClassId == a.LearningClassId ) ) );
+            // Load all the activities. These must be loaded with tracking
+            // because the call to LearningClassActivityCompletionService.GetNew() below
+            // adds a reference to the activity and if it isn't tracked then EF
+            // thinks it needs to be created which causes a conflict.
+            var activities = new LearningClassActivityService( rockContext )
+                .Queryable()
+                .Where( la => activityIdsToAdd.Contains( la.Id ) )
+                .ToList();
 
-            // Add the new LearningActivityCompletion records to the context.
-            _learningActivityCompletionService.AddRange( activityCompletionsToAdd );
+            // Get the distinct class identifiers that we need to load participants for.
+            var learningClassIds = activities
+                .Select( a => a.LearningClassId )
+                .Distinct()
+                .ToList();
+
+            // The participant will differ across classes so we need to load
+            // all related participant records that will be needed. These must
+            // beloaded with tracking because the call to
+            // LearningClassActivityCompletionService.GetNew() below adds a reference
+            // to the activity and if it isn't tracked then EF thinks it needs to
+            // be created which causes a conflict.
+            var participants = new LearningParticipantService( rockContext )
+                .Queryable()
+                .Where( lp => lp.PersonId == personActivitiesByCourse.Person.Id
+                    && learningClassIds.Contains( lp.LearningClassId ) )
+                .ToList();
+
+            // Get the activity data and transform it into the completion
+            // records for the student.
+            var activityCompletionsToAdd = activities
+               .Select( a =>
+               {
+                   var participant = participants.FirstOrDefault( p => p.LearningClassId == a.LearningClassId );
+                   var activity = LearningClassActivityCompletionService.GetNew( a, participant );
+
+                   activity.SentNotificationCommunicationId = communicationId;
+
+                   return activity;
+               } )
+               .ToList();
+
+            // Add the new completion records to the context.
+            learningClassActivityCompletionService.AddRange( activityCompletionsToAdd );
+
+            rockContext.SaveChanges();
         }
 
         /// <summary>
@@ -316,288 +363,318 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Initializes the services.
+        /// Get all the activity notifications for a single program. These are
+        /// grouped by course and then by person.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        private void InitializeServices( RockContext rockContext )
+        /// <param name="program">The program to generate notifications for.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A collection of <see cref="PersonProgramActivitiesByCourseInfo"/> objects.</returns>
+        private static List<PersonProgramActivitiesByCourseInfo> GetActivityNotificationsForProgram( LearningProgram program, RockContext rockContext )
         {
-            _systemCommunicationService = new SystemCommunicationService( rockContext );
-            _learningActivityService = new LearningActivityService( rockContext );
-            _learningClassAnnouncementService = new LearningClassAnnouncementService( rockContext );
-            _learningParticipantService = new LearningParticipantService( rockContext );
-            _learningActivityCompletionService = new LearningActivityCompletionService( rockContext );
-        }
+            var studentRoleGuid = SystemGuid.GroupRole.GROUPROLE_LMS_CLASS_STUDENT.AsGuid();
 
-        /// <summary>
-        /// Get a list of courses with their respective activities grouped by person and program.
-        /// </summary>
-        /// <returns>A <c>List&lt;PersonProgramActivitiesByCourseInfo&gt;</c> containing the courses and activities with pending notifications grouped by person and program.</returns>
-        private List<PersonProgramActivitiesByCourseInfo> GetPersonActivitiesByCourse()
-        {
-            var now = RockDateTime.Now;
-
-            // Get all the activities - because some may require student specific
-            // availability criteria calculations we can't determine exclusions
-            // until we also have the student data.
-            var activities = _learningActivityService.Queryable()
+            var courses = new LearningCourseService( rockContext )
+                .Queryable()
                 .AsNoTracking()
-                .Include( a => a.LearningClass )
-                .Include( a => a.LearningClass.LearningSemester )
-                // Either always available semesters (no end date) or end date is in the future.
-                .Where( a =>
-                        !a.LearningClass.LearningSemester.EndDate.HasValue
-                        || a.LearningClass.LearningSemester.EndDate >= now )
-                // Either always available semesters (no start date) or start date is in the past.
-                .Where( a =>
-                        !a.LearningClass.LearningSemester.StartDate.HasValue
-                        || a.LearningClass.LearningSemester.StartDate <= now )
-                // Is configured to send a communication.
-                .Where( a => a.SendNotificationCommunication )
-                // Don't send notifications for Always available.
-                .Where( a => a.AvailabilityCriteria != AvailabilityCriteria.AlwaysAvailable )
-                // Is assigned to a student
-                .Where( a => a.AssignTo == AssignTo.Student )
-                .Select( a => new
-                {
-                    a.LearningClassId,
-                    ActivityId = a.Id,
-                    a.DueDateCriteria,
-                    a.DueDateDefault,
-                    a.DueDateOffset,
-                    a.AvailabilityCriteria,
-                    a.AvailableDateDefault,
-                    a.AvailableDateOffset,
-                    a.Order,
-                    ActivityName = a.Name
-                } )
+                .Where( lc => lc.LearningProgramId == program.Id )
                 .ToList();
 
-            // Get the distinct LearningClassIds - we'll use these to filter our student list.
-            var classIds = activities.Select( a => a.LearningClassId ).ToList().Distinct();
+            var classes = GetActiveClassesForProgram( program.Id, rockContext );
 
-            // Get the students and join them to the class activities.
-            // Filter out any activities that aren't available
-            // or have already been notified.
-            var studentActivities = _learningParticipantService.Queryable()
-                .AsNoTracking()
-                .Include( s => s.Person )
-                .Include( s => s.LearningClass )
-                .Include( s => s.LearningClass.LearningCourse )
-                .Include( s => s.LearningClass.LearningCourse.LearningProgram )
-                .Include( s => s.LearningActivities )
-                .AreStudents()
-                .Where( s => classIds.Contains( s.LearningClassId ) )
-                .Select( s => new
-                {
-                    s.Person.Email,
-                    PersonNickName = s.Person.NickName,
-                    PersonLastName = s.Person.LastName,
-                    PersonSuffixValueId = s.Person.SuffixValueId,
-                    s.PersonId,
-                    LearningParticipantId = s.Id,
-                    ProgramName = s.LearningClass.LearningCourse.LearningProgram.Name,
-                    ProgramSystemCommunicationId = s.LearningClass.LearningCourse.LearningProgram.SystemCommunicationId,
-                    SemesterStartDate = s.LearningClass.LearningSemester.StartDate,
-                    EnrollmentDate = s.CreatedDateTime,
-                    s.LearningClass.LearningCourse.CourseCode,
-                    s.LearningClass.LearningCourseId,
-                    CourseName = s.LearningClass.LearningCourse.Name,
-                    s.LearningClassId,
-                    CompletionLookups = s.LearningActivities
-                        .Select( lac => new { LearningActivityCompletionId = lac.Id, lac.LearningActivityId } )
-                        .ToList(),
-                    IsCompletedOrAlreadyNotifiedActivityIds = s.LearningActivities
-                        .Where( lac =>
-                            lac.IsStudentCompleted
-                            || lac.NotificationCommunicationId.HasValue )
-                        .Select( lac => lac.LearningActivityId )
-                        .ToList()
-                } )
-                .ToList()
-                .Join(
-                    activities,
-                    s => s.LearningClassId,
-                    a => a.LearningClassId,
-                    ( s, a ) => new { Student = s, ClassActivity = a }
-                )
-                // Get activities grouped by Participant and Course data.
-                .GroupBy( s => new
-                {
-                    // Group By Person properties
-                    s.Student.Email,
-                    s.Student.PersonNickName,
-                    s.Student.PersonLastName,
-                    s.Student.PersonSuffixValueId,
-                    s.Student.PersonId,
-                    s.Student.ProgramName,
-                    s.Student.ProgramSystemCommunicationId,
-                }, s => new
-                {
-                    // with values for course and activities data.
-                    s.Student.LearningParticipantId,
-                    s.Student.SemesterStartDate,
-                    s.Student.EnrollmentDate,
-                    s.Student.CourseCode,
-                    s.Student.LearningCourseId,
-                    s.Student.CourseName,
-                    s.ClassActivity.ActivityId,
-                    // If the student has an activity completion record then get it's Id for later updates.
-                    s.Student.CompletionLookups.FirstOrDefault( l => l.LearningActivityId == s.ClassActivity.ActivityId )?.LearningActivityCompletionId,
-                    IsCompletedOrAlreadyNotified = s.Student.IsCompletedOrAlreadyNotifiedActivityIds.Any( id => id == s.ClassActivity.ActivityId ),
-                    DueDate = LearningActivity.CalculateDueDate(
-                        s.ClassActivity.DueDateCriteria,
-                        s.ClassActivity.DueDateDefault,
-                        s.ClassActivity.DueDateOffset,
-                        s.Student.SemesterStartDate,
-                        s.Student.EnrollmentDate
-                    ),
-                    AvailableDateTime = LearningActivity.CalculateAvailableDate(
-                        s.ClassActivity.AvailabilityCriteria,
-                        s.ClassActivity.AvailableDateDefault,
-                        s.ClassActivity.AvailableDateOffset,
-                        s.Student.SemesterStartDate,
-                        s.Student.EnrollmentDate
-                    ),
-                    s.ClassActivity.Order,
-                    s.ClassActivity.ActivityName
-                } )
-                .ToList()
-                .Where( s => s.Key.Email.IsNotNullOrWhiteSpace() )
-                // Convert the grouped data to the POCO for simpler comprehension.
-                .Select( row => new PersonProgramActivitiesByCourseInfo
-                {
-                    Email = row.Key.Email,
-                    PersonId = row.Key.PersonId,
-                    // Include the properties necessary to get the FullName (NickName, LastName and SuffixValueId).
-                    PersonNickName = row.Key.PersonNickName,
-                    PersonLastName = row.Key.PersonLastName,
-                    PersonSuffixValueId = row.Key.PersonSuffixValueId,
-                    ProgramName = row.Key.ProgramName,
-                    ProgramSystemCommunicationId = row.Key.ProgramSystemCommunicationId,
-                    Courses = row.GroupBy( groupingKey => new
-                    {
-                        groupingKey.CourseCode,
-                        groupingKey.LearningCourseId,
-                        groupingKey.CourseName
-                    }, groupingValue => new
-                    {
-                        groupingValue.ActivityId,
-                        groupingValue.LearningParticipantId,
-                        groupingValue.AvailableDateTime,
-                        groupingValue.ActivityName,
-                        groupingValue.DueDate,
-                        groupingValue.LearningActivityCompletionId,
-                        groupingValue.IsCompletedOrAlreadyNotified,
-                        groupingValue.Order
-                    } )
-                    .Select( groupedResult => new ActivitiesByCourseInfo
-                    {
-                        CourseCode = groupedResult.Key.CourseCode,
-                        CourseId = groupedResult.Key.LearningCourseId,
-                        CourseName = groupedResult.Key.CourseName,
-                        // While technically possible to have multiple LearningParticipantIds per course;
-                        // this is unlikely since it means the same person would be enrolled in 2 classes
-                        // for the same course. Still we should handle for it by taking the MAX LearningParticipantId.
-                        LearningParticipantId = groupedResult.Max( r => r.LearningParticipantId ),
-                        // Apply the date and/or completion logic here
-                        // to remove any activities that the student has completed.
-                        ActivityCount = groupedResult.Count( a =>
-                            !a.IsCompletedOrAlreadyNotified
-                            && ( !a.AvailableDateTime.HasValue || a.AvailableDateTime <= now ) ),
-                        Activities = groupedResult.Where( a =>
-                            !a.IsCompletedOrAlreadyNotified
-                            && ( !a.AvailableDateTime.HasValue || a.AvailableDateTime <= now ) )
-                        .Select( a => new ActivityInfo
-                        {
-                            ActivityName = a.ActivityName,
-                            AvailableDate = a.AvailableDateTime,
-                            DueDate = a.DueDate,
-                            LearningActivityCompletionId = a.LearningActivityCompletionId,
-                            LearningActivityId = a.ActivityId,
-                            Order = a.Order,
-                            SystemCommunicationId = row.Key.ProgramSystemCommunicationId
-                        } ).ToList()
-                    } ).ToList()
-                } )
-                .ToList();
+            // Use a lookup for these so that the sub-methods can add new records
+            // and also add new activities to existing records across classes.
+            var studentProgramLookup = new Dictionary<int, PersonProgramActivitiesByCourseInfo>();
 
-            // Because we applied some filters to the activities
-            // we need to look back and remove any course groupings
-            // that don't contain any activities.
-            // Reason: Prevent empty emails/email sections from being sent.
-            return studentActivities.Where( s => s.Courses.Any( c => c.ActivityCount > 0 ) ).ToList();
-        }
-
-        /// <summary>
-        /// Sends the digest emails for each person and their course activities.
-        /// </summary>
-        /// <param name="systemCommunications">The system communication.</param>
-        /// <param name="personsActivitiesByCourse">The list of persons and their activities to notify.</param>
-        /// <returns>The list of PersonProgramActivitiesByCourseInfo that were successfully notified.</returns>
-        private List<PersonProgramActivitiesByCourseInfo> SendNotifications( Dictionary<int, SystemCommunication> systemCommunications, List<PersonProgramActivitiesByCourseInfo> personsActivitiesByCourse )
-        {
-            var successfullySentNotifications = new List<PersonProgramActivitiesByCourseInfo>();
-            foreach ( var personActivitiesByCourse in personsActivitiesByCourse )
+            foreach ( var learningClass in classes )
             {
-                if ( SendNotificationForPerson( systemCommunications, personActivitiesByCourse ) )
+                // Load all the active students in this class who have an e-mail.
+                var students = new LearningParticipantService( rockContext )
+                    .Queryable()
+                    .Include( lp => lp.Person )
+                    .AsNoTracking()
+                    .Where( lp => lp.LearningClassId == learningClass.Id
+                        && lp.GroupMemberStatus == GroupMemberStatus.Active
+                        && lp.GroupRole.Guid == studentRoleGuid
+                        && !string.IsNullOrEmpty( lp.Person.Email ) );
+
+                // Load all activities for this class.
+                var activities = new LearningClassActivityService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( la => la.LearningClassId == learningClass.Id )
+                    .OrderBy( la => la.Order )
+                    .ThenBy( la => la.Id )
+                    .ToList();
+
+                // Load all existing completion records for students in this class.
+                var completions = new LearningClassActivityCompletionService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( lac => lac.LearningClassActivity.LearningClassId == learningClass.Id )
+                    .ToList();
+
+                // Loop over each student and build up the notifications that
+                // should be sent to them.
+                foreach ( var student in students )
                 {
-                    successfullySentNotifications.Add( personActivitiesByCourse );
+                    PopulateStudentProgramNotifications( program, learningClass, activities, student, completions, studentProgramLookup );
                 }
             }
 
-            return successfullySentNotifications;
+            return studentProgramLookup.Values.ToList();
+        }
+
+        /// <summary>
+        /// Generate all the notification details for the activities in the
+        /// specified class for the student. This will update
+        /// <paramref name="studentLookup"/> with the new information.
+        /// </summary>
+        /// <param name="program">The program that is being processed.</param>
+        /// <param name="learningClass">The class that is being processed.</param>
+        /// <param name="activities">All the activities for the class, including any non-active ones.</param>
+        /// <param name="student">The student that we are going to generate notifications for.</param>
+        /// <param name="completionsForClass">All activity completions for all students in this class.</param>
+        /// <param name="studentLookup">The lookup dictionary that contains the student program notification details.</param>
+        private static void PopulateStudentProgramNotifications( LearningProgram program, LearningClass learningClass, List<LearningClassActivity> activities, LearningParticipant student, List<LearningClassActivityCompletion> completionsForClass, Dictionary<int, PersonProgramActivitiesByCourseInfo> studentLookup )
+        {
+            var activityNotifications = GetActivityNotificationsForStudent( learningClass, activities, student, completionsForClass );
+
+            if ( !activityNotifications.Any() )
+            {
+                return;
+            }
+
+            // Look up an existing person program record if we have
+            // already queued some notifications from another class,
+            // otherwise create a new record.
+            if ( !studentLookup.TryGetValue( student.PersonId, out var studentProgram ) )
+            {
+                studentProgram = new PersonProgramActivitiesByCourseInfo
+                {
+                    Person = student.Person,
+                    ProgramSystemCommunicationId = program.SystemCommunicationId,
+                    Courses = new List<ActivitiesByCourseInfo>()
+                };
+
+                studentLookup.Add( student.PersonId, studentProgram );
+            }
+
+            // If we had any activities that the student should be notified
+            // about then add this course (class) to their record.
+            studentProgram.Courses.Add( new ActivitiesByCourseInfo
+            {
+                Activities = activityNotifications,
+                ActivityCount = activityNotifications.Count,
+                CourseCode = learningClass.LearningCourse.CourseCode,
+                CourseId = learningClass.LearningCourseId,
+                CourseName = learningClass.LearningCourse.Name,
+                LearningParticipantId = student.Id,
+                ProgramName = program.Name
+            } );
+        }
+
+        /// <summary>
+        /// Gets all the active classes for the program. This filters out classes
+        /// that have been marked inactive as well as classes that have not
+        /// started yet or already ended.
+        /// </summary>
+        /// <param name="programId">The identifier of the program to load classes for.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A collection of <see cref="LearningClass"/> objects for the program.</returns>
+        private static List<LearningClass> GetActiveClassesForProgram( int programId, RockContext rockContext )
+        {
+            var now = RockDateTime.Now;
+
+            return new LearningClassService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( lc => lc.IsActive
+                    && lc.LearningCourse.IsActive
+                    && lc.LearningCourse.LearningProgramId == programId )
+                // Either always available semesters (no end date) or end date is in the future.
+                .Where( lc => !lc.LearningSemester.EndDate.HasValue
+                    || lc.LearningSemester.EndDate >= now )
+                // Either always available semesters (no start date) or start date is in the past.
+                .Where( lc => !lc.LearningSemester.StartDate.HasValue
+                    || lc.LearningSemester.StartDate <= now )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Gets the activity notification details for a single student in the class.
+        /// </summary>
+        /// <param name="learningClass">The class that is being processed.</param>
+        /// <param name="activities">All activities, including inactive ones, for the class.</param>
+        /// <param name="student">The student that is being processed.</param>
+        /// <param name="completionsForClass">All existing completions for all students in this class.</param>
+        /// <returns>A collection of <see cref="ActivityInfo"/> objects that represent the notifications to be sent.</returns>
+        private static List<ActivityInfo> GetActivityNotificationsForStudent( LearningClass learningClass, List<LearningClassActivity> activities, LearningParticipant student, List<LearningClassActivityCompletion> completionsForClass )
+        {
+            var activitiesToSend = new List<ActivityInfo>();
+
+            for ( int i = 0; i < activities.Count; i++ )
+            {
+                var activity = activities[i];
+                var previousActivity = i > 0 ? activities[i - 1] : null;
+
+                if ( !activity.SendNotificationCommunication )
+                {
+                    continue;
+                }
+
+                if ( !IsActivityAvailable( learningClass, activity, previousActivity, student, completionsForClass ) )
+                {
+                    continue;
+                }
+
+                // Make sure we haven't already sent a communication out for
+                // this activity.
+                var alreadyNotified = completionsForClass.Any( lac => lac.StudentId == student.Id
+                    && lac.LearningClassActivityId == activity.Id
+                    && lac.SentNotificationCommunicationId.HasValue );
+
+                if ( alreadyNotified )
+                {
+                    continue;
+                }
+
+                activitiesToSend.Add( new ActivityInfo
+                {
+                    LearningClassActivityId = activity.Id,
+                    LearningClassActivityCompletionId = null,
+                    ActivityName = activity.Name,
+                    AvailableDate = null,
+                    DueDate = activity.DueDateCalculated,
+                    Order = activity.Order
+                } );
+            }
+
+            return activitiesToSend;
+        }
+
+        /// <summary>
+        /// Determines if this activity is available yet based on the
+        /// <see cref="LearningClassActivity.AvailabilityCriteria"/> value.
+        /// </summary>
+        /// <param name="learningClass">The class this activity belongs to.</param>
+        /// <param name="activity">The activity being processed.</param>
+        /// <param name="previousActivity">The activity that is configured to be prior to this activity or <c>null</c> if this is the first activity.</param>
+        /// <param name="student">The student being processed.</param>
+        /// <param name="completionsForClass">All existing completions for all students in this class.</param>
+        /// <returns><c>true</c> if this activity is available and should be notified; otherwise <c>false</c>.</returns>
+        private static bool IsActivityAvailable( LearningClass learningClass, LearningClassActivity activity, LearningClassActivity previousActivity, LearningParticipant student, List<LearningClassActivityCompletion> completionsForClass )
+        {
+            if ( activity.AvailabilityCriteria == AvailabilityCriteria.AfterPreviousCompleted )
+            {
+                if ( previousActivity == null )
+                {
+                    return false;
+                }
+
+                var previousCompletion = completionsForClass
+                    .Where( lac => lac.StudentId == student.Id
+                        && lac.LearningClassActivityId == previousActivity.Id )
+                    .FirstOrDefault();
+
+                if ( previousCompletion == null || !previousCompletion.CompletedDateTime.HasValue )
+                {
+                    return false;
+                }
+            }
+            else if ( IsDateCriteria( activity.AvailabilityCriteria ) )
+            {
+                var date = LearningClassActivity.CalculateAvailableDate( activity.AvailabilityCriteria,
+                    activity.AvailableDateDefault,
+                    activity.AvailableDateOffset,
+                    learningClass.LearningSemester?.StartDate,
+                    student.CreatedDateTime );
+
+                if ( date.HasValue && date.Value > RockDateTime.Now )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines if this criteria represents a date-based check.
+        /// </summary>
+        /// <param name="criteria">The criteria enum value.</param>
+        /// <returns><c>true</c> if the activity should be checked with <see cref="LearningClassActivity.CalculateAvailableDate"/>; otherwise <c>false</c>.</returns>
+        private static bool IsDateCriteria( AvailabilityCriteria criteria )
+        {
+            return criteria == AvailabilityCriteria.ClassStartOffset
+                || criteria == AvailabilityCriteria.EnrollmentOffset
+                || criteria == AvailabilityCriteria.SpecificDate;
         }
 
         /// <summary>
         /// Sends the digest email for the specified person.
         /// </summary>
-        /// <param name="systemCommunications">The Dictionary of all system communications that are being sent for.</param>
+        /// <param name="systemCommunication">The details of the communication to be sent.</param>
         /// <param name="personProgramActivitiesByCourse">The person and their activities to notify.</param>
         /// <returns><c>true</c> if the email was successfully sent; otherwise <c>false</c>.</returns>
-        private bool SendNotificationForPerson( Dictionary<int, SystemCommunication> systemCommunications, PersonProgramActivitiesByCourseInfo personProgramActivitiesByCourse )
+        private int? SendNotificationForPerson( SystemCommunication systemCommunication, PersonProgramActivitiesByCourseInfo personProgramActivitiesByCourse )
         {
-            var person = new Person
-            {
-                Id = personProgramActivitiesByCourse.PersonId,
-                NickName = personProgramActivitiesByCourse.PersonNickName,
-                LastName = personProgramActivitiesByCourse.PersonLastName,
-                SuffixValueId = personProgramActivitiesByCourse.PersonSuffixValueId,
-                Email = personProgramActivitiesByCourse.Email
-            };
-
-            if ( !systemCommunications.TryGetValue( personProgramActivitiesByCourse.ProgramSystemCommunicationId, out var systemCommunication ) )
-            {
-                _errors.Add( $"Unable to get the LearningProgram's SystemCommunication for Activity Notifications. SystemCommunicationId: {personProgramActivitiesByCourse.ProgramSystemCommunicationId}" );
-            }
-
             try
             {
                 // Add the merge objects to support this notification.
-                var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, person );
-                mergeObjects.AddOrReplace( "ActivityCount", personProgramActivitiesByCourse.Courses.Sum( c => c.ActivityCount ) );
-                mergeObjects.AddOrReplace( "Courses", personProgramActivitiesByCourse.Courses );
+                var mergeFields = LavaHelper.GetCommonMergeFields( null );
+                mergeFields.AddOrReplace( "ActivityCount", personProgramActivitiesByCourse.Courses.Sum( c => c.ActivityCount ) );
+                mergeFields.AddOrReplace( "Courses", personProgramActivitiesByCourse.Courses );
 
-                var sendResult = CommunicationHelper.SendMessage( person, ( int ) CommunicationType.Email, systemCommunication, mergeObjects );
+                var communicationId = SendCommunication( personProgramActivitiesByCourse.Person, systemCommunication, mergeFields );
 
-                foreach ( var errorMessage in sendResult.Errors )
+                if ( communicationId.HasValue )
                 {
-                    _errors.Add( errorMessage );
+                    _notificationsSent++;
                 }
 
-                foreach ( var warningMessage in sendResult.Warnings )
-                {
-                    _warnings.Add( warningMessage );
-                }
-
-                _notificationsSent += sendResult.MessagesSent;
+                return communicationId;
             }
-            catch( Exception ex )
+            catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, HttpContext.Current );
-                _errors.Add( $"Unable to send Learning Activity Available Notifications to {person.FullName}. '{ex.Message}'" );
+                _errors.Add( $"Unable to send Learning Activity Available Notifications to {personProgramActivitiesByCourse.Person.FullName}. '{ex.Message}'" );
             }
 
-            return false;
+            return null;
+        }
+
+        /// <summary>
+        /// Send a single communication to the person.
+        /// </summary>
+        /// <param name="person">The person that will receive the communication.</param>
+        /// <param name="systemCommunication">The <see cref="SystemCommunication"/> that provides the content.</param>
+        /// <param name="mergeFields">The merge fields used to prepare the content.</param>
+        /// <returns>The identifier of the <see cref="Communication"/> that was sent.</returns>
+        private int? SendCommunication( Person person, SystemCommunication systemCommunication, Dictionary<string, object> mergeFields )
+        {
+            var logger = RockLogger.LoggerFactory.CreateLogger<CommunicationHelper>();
+            var createMessageResults = CommunicationHelper.CreateEmailMessage( person, mergeFields, systemCommunication, logger );
+
+            if ( createMessageResults.Message == null )
+            {
+                _warnings.AddRange( createMessageResults.Warnings );
+                return null;
+            }
+
+            if ( !( createMessageResults.Message is RockEmailMessage message ) )
+            {
+                return null;
+            }
+
+            message.CreateCommunicationRecordImmediately = true;
+
+            if ( !message.Send( out var errorMessages ) )
+            {
+                _errors.AddRange( errorMessages );
+                return null;
+            }
+
+            return message.LastCommunicationId;
         }
 
         /// <summary>
@@ -609,15 +686,9 @@ namespace Rock.Jobs
             jobSummaryBuilder.AppendLine( "Summary:" );
             jobSummaryBuilder.AppendLine();
 
-            if ( _notificationsSent > 0 )
-            {
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {_notificationsSent} {"notification".PluralizeIf( _notificationsSent != 1 )} sent" );
-            }
+            jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {_notificationsSent} {"notification".PluralizeIf( _notificationsSent != 1 )} sent" );
 
-            if ( _distinctAnnouncementMessagesSent > 0 )
-            {
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {_distinctClassAnnouncementsSent} {"announcement".PluralizeIf( _distinctClassAnnouncementsSent != 1 )} sent to {_distinctAnnouncementMessagesSent} {"individual".PluralizeIf( _distinctAnnouncementMessagesSent != 1 )}" );
-            }
+            jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {_distinctClassAnnouncementsSent} {"announcement".PluralizeIf( _distinctClassAnnouncementsSent != 1 )} sent to {_distinctAnnouncementMessagesSent} {"individual".PluralizeIf( _distinctAnnouncementMessagesSent != 1 )}" );
 
             foreach ( var warning in _warnings )
             {
@@ -635,37 +706,9 @@ namespace Rock.Jobs
         /// <summary>
         /// A POCO for a Person and all the courses with available activities requiring notification.
         /// </summary>
-        private class PersonProgramActivitiesByCourseInfo : LavaDataDictionary
+        private class PersonProgramActivitiesByCourseInfo
         {
-            /// <summary>
-            /// The email address of the <see cref="Person" />.
-            /// </summary>
-            public string Email { get; set; }
-
-            /// <summary>
-            /// The identifier of the <see cref="Person"/>.
-            /// </summary>
-            public int PersonId { get; set; }
-
-            /// <summary>
-            /// The nickname of the <see cref="Person"/>.
-            /// </summary>
-            public string PersonNickName { get; set; }
-
-            /// <summary>
-            /// The last name of the <see cref="Person"/>.
-            /// </summary>
-            public string PersonLastName { get; set; }
-
-            /// <summary>
-            /// The suffixValuId for the <see cref="Person"/>.
-            /// </summary>
-            public int? PersonSuffixValueId { get; set; }
-
-            /// <summary>
-            /// The learning program name of the activity.
-            /// </summary>
-            public string ProgramName { get; set; }
+            public Person Person { get; set; }
 
             /// <summary>
             /// The SystemCommunicationId for Activity Available Notifications for the <see cref="LearningProgram"/>.
@@ -681,8 +724,13 @@ namespace Rock.Jobs
         /// <summary>
         /// A POCO for a course with all of its related activities.
         /// </summary>
-        private class ActivitiesByCourseInfo : LavaDataDictionary
+        private class ActivitiesByCourseInfo : LavaDataObject
         {
+            /// <summary>
+            /// The learning program name of the activity.
+            /// </summary>
+            public string ProgramName { get; set; }
+
             /// <summary>
             /// The activities in the course.
             /// </summary>
@@ -717,20 +765,20 @@ namespace Rock.Jobs
         /// <summary>
         /// A POCO for an individual activity.
         /// </summary>
-        private class ActivityInfo : LavaDataDictionary
+        private class ActivityInfo : LavaDataObject
         {
             /// <summary>
-            /// The Id of the <see cref="LearningActivity"/> the notification is for.
+            /// The Id of the <see cref="LearningClassActivity"/> the notification is for.
             /// </summary>
-            public int LearningActivityId { get; set; }
+            public int LearningClassActivityId { get; set; }
 
             /// <summary>
-            /// The Id of the <see cref="LearningActivityCompletion"/> the notification is for (if any yet).
+            /// The Id of the <see cref="LearningClassActivityCompletion"/> the notification is for (if any yet).
             /// </summary>
             /// <remarks>
             /// This is used by the job to mark notifications that have been sent.
             /// </remarks>
-            public int? LearningActivityCompletionId { get; set; }
+            public int? LearningClassActivityCompletionId { get; set; }
 
             /// <summary>
             /// The name of the assigned activity.
@@ -751,11 +799,6 @@ namespace Rock.Jobs
             /// The order of the activity.
             /// </summary>
             public int Order { get; set; }
-
-            /// <summary>
-            /// The SystemCommunicationId that was used to send the learning notification.
-            /// </summary>
-            public int SystemCommunicationId { get; set; }
         }
     }
 }

@@ -1,7 +1,7 @@
 <template>
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" :value="value" :displayAsRaw="true">
 
-        <EmailEditor :html="value"
+        <EmailEditor class="gallery-email-editor" :html="value"
                      :disabled="disabled"
                      :getHtmlRequest="getHtmlRequest"
                      :mergeFields="mergeFields"
@@ -27,6 +27,12 @@
 
     </GalleryAndResult>
 </template>
+
+<style scoped>
+.gallery-email-editor {
+    height: 600px;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
@@ -70,7 +76,7 @@
 
     function onGetHtmlClicked(): void {
         getHtmlRequest.value = {
-            onSuccess(html: string): void {
+            onSuccess({ html }): void {
                 value.value = html;
             },
             onError(error: string): void {

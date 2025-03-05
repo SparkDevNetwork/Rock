@@ -13,8 +13,9 @@
 <script setup lang="ts">
     import { computed, onUnmounted, PropType, ref, watch } from "vue";
     import RangeSliderProperty from "./rangeSliderProperty.partial.obs";
+    import { inlineStyleProvider, styleSheetProvider } from "../providers.partial";
     import { StyleSheetMode, ValueProvider } from "../types.partial";
-    import { inlineStyleProvider, percentageConverter, pixelConverter, styleSheetProvider } from "../utils.partial";
+    import { percentageConverter, pixelConverter } from "../utils.partial";
 
     const props = defineProps({
         element: {

@@ -81,6 +81,9 @@ namespace Rock.Blocks.Communication.Chat
                 return ActionBadRequest();
             }
 
+            var oldConfig = GetCurrentChatConfigurationBag();
+            var shouldReinitialize = oldConfig.ApiKey != bag.ApiKey || oldConfig.ApiSecret != bag.ApiSecret;
+
             SaveChatConfigurationToSystemSettings( bag );
 
             // Perform an app settings and group type sync to the external chat system in a background task, as it could
@@ -90,13 +93,20 @@ namespace Rock.Blocks.Communication.Chat
                 using ( var rockContext = new RockContext() )
                 using ( var chatHelper = new ChatHelper( rockContext ) )
                 {
-                    await chatHelper.EnsureChatProviderAppIsSetupAsync();
+                    if ( shouldReinitialize )
+                    {
+                        chatHelper.InitializeChatProvider();
+                    }
+
+                    await chatHelper.EnsureChatProviderAppIsSetUpAsync();
 
                     // We'll only sync chat-enabled group types as a part of this configuration save, as there is no
                     // good way to warn the individual of any previously-synced channel types that might become deleted
                     // as a result of synching no-longer-chat-enabled group types here. We'll let the job clean those
                     // up later.
-                    var chatEnabledGroupTypes = new GroupTypeService( rockContext ).GetChatEnabledGroupTypes();
+                    var chatEnabledGroupTypes = new GroupTypeService( rockContext )
+                        .GetChatEnabledGroupTypes()
+                        .ToList();
 
                     await chatHelper.SyncGroupTypesToChatProviderAsync( chatEnabledGroupTypes );
                 }

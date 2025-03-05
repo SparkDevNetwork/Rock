@@ -316,14 +316,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of chat-enabled group types.
+        /// Gets the chat-enabled group types.
         /// </summary>
-        /// <returns>A list of chat-enabled group types.</returns>
-        public List<GroupType> GetChatEnabledGroupTypes()
+        /// <returns>The chat-enabled group types.</returns>
+        public IQueryable<GroupType> GetChatEnabledGroupTypes()
         {
-            return Queryable()
-                .Where( gt => gt.IsChatAllowed )
-                .ToList();
+            return Queryable().Where( gt => gt.IsChatAllowed );
         }
 
         #region Private Methods

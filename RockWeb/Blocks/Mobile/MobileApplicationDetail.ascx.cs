@@ -1415,7 +1415,9 @@ namespace RockWeb.Blocks.Mobile
             NavigateToLinkedPage( AttributeKey.LayoutDetail, new Dictionary<string, string>
             {
                 { "SiteId", hfSiteId.Value },
-                { "LayoutId", e.RowKeyId.ToString() }
+                { "LayoutId", e.RowKeyId.ToString() },
+                { "autoEdit", "true" },
+                { "returnUrl", Request.RawUrl }
             } );
         }
 

@@ -242,7 +242,6 @@
 .grid-column-heading {
     display: flex;
     font-weight: 500;
-    border-bottom: 1px solid var(--theme-light);
     color: var(--theme-dark);
 }
 
@@ -253,6 +252,8 @@
     align-items: center;
     font-size: 14px;
     padding: var(--table-cell-padding-y) var(--table-cell-padding-x);
+    min-width: 120px;
+    border-bottom: 1px solid var(--theme-light);
 }
 
 .grid-bordered .grid-column-header {
@@ -261,7 +262,6 @@
 
 .grid-column-header.sortable {
     cursor: pointer;
-    min-width: 120px;
 }
 
 .grid-column-header.sortable:hover {
@@ -381,7 +381,6 @@
 .grid-row {
     display: flex;
     background-color: #fff;
-    border-bottom: 1px solid var(--theme-light);
     transition: background-color 70ms cubic-bezier(0, 0, .38, .9);
 }
 
@@ -407,6 +406,7 @@
     text-overflow: ellipsis;
     overflow: hidden;
     min-width: 120px;
+    border-bottom: 1px solid var(--theme-light);
 }
 
 .grid-cell.grid-columnreorder {

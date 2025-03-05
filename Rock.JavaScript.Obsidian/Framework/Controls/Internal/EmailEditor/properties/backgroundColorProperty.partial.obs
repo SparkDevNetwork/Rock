@@ -8,8 +8,9 @@
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
     import ColorPickerProperty from "./colorPickerProperty.partial.obs";
+    import { inlineStyleProvider, styleSheetProvider } from "../providers.partial";
     import { StyleSheetMode, ValueProvider, ValueProviderHooks } from "../types.partial";
-    import { inlineStyleProvider, styleSheetProvider, stringConverter } from "../utils.partial";
+    import { stringConverter } from "../utils.partial";
 
     const props = defineProps({
         element: {

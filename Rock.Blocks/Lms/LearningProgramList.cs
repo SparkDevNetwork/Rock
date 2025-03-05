@@ -192,11 +192,11 @@ namespace Rock.Blocks.Lms
         {
             var disablePredicatableIds = PageCache.Layout.Site.DisablePredictableIds;
             var programId = new LearningProgramService( RockContext ).GetSelect( key, p => p.Id, !disablePredicatableIds );
-            var entityService = new LearningActivityService( RockContext );
+            var entityService = new LearningClassActivityService( RockContext );
 
             var hasCompletions = entityService.Queryable()
                 .Where( c => c.LearningClass.LearningCourse.LearningProgramId == programId )
-                .Any( c => c.LearningActivityCompletions.Any() );
+                .Any( c => c.LearningClassActivityCompletions.Any() );
 
             return ActionOk( hasCompletions );
         }

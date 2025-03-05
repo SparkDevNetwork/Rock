@@ -35,7 +35,7 @@
                         </div>
 
                         <TransitionVerticalCollapse>
-                            <div v-if="areMoreOptionsShown" class="well">
+                            <ConditionalWell v-if="areMoreOptionsShown">
                                 <div class="row">
                                     <div class="col-sm-4">
                                         <EmailBox v-model="internalReplyToEmail"
@@ -63,7 +63,7 @@
                                     </div>
                                 </div>
                                 <p class="text-muted note">Note: Because Rock personalizes emails, CC and BCC recipients will receive one email per recipient.</p>
-                            </div>
+                            </ConditionalWell>
                         </TransitionVerticalCollapse>
 
                         <div class="row">
@@ -140,6 +140,7 @@
 
 <script setup lang="ts">
     import { nextTick, onMounted, onUnmounted, PropType, ref, watch } from "vue";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import Panel from "@Obsidian/Controls/panel.obs";

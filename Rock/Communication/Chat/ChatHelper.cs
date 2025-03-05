@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -87,7 +86,7 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// The prefix to use for a chat-specific <see cref="PersonAlias"/> foreign key.
         /// </summary>
-        private const string ChatPersonAliasForeignKeyPrefix = "core-chat:";
+        public const string ChatPersonAliasForeignKeyPrefix = "core-chat:";
 
         #endregion Fields
 
@@ -142,16 +141,15 @@ namespace Rock.Communication.Chat
 
         #region Con/Destructors
 
-#pragma warning disable CS1574 // XML comment has cref attribute that could not be resolved
         /// <summary>
         /// Initializes a new instance of the <see cref="ChatHelper"/> class.
         /// </summary>
         /// <param name="rockContext">The optional <see cref="Rock.Data.RockContext"/> that should be used to initialize
         /// services and save any database changes made within this chat helper. If a context is not provided, a new
         /// one will be created and disposed of within this chat helper. If a context IS provided, it will NOT be
-        /// disposed of within this chat helper, but <see cref="DbContext.SaveChanges()"/> will be called as needed.</param>
+        /// disposed of within this chat helper, but its underlying <see cref="System.Data.Entity.DbContext.SaveChanges()"/>
+        /// will be called as needed.</param>
         public ChatHelper( RockContext rockContext = null )
-#pragma warning restore CS1574 // XML comment has cref attribute that could not be resolved
         {
             Logger = RockLogger.LoggerFactory.CreateLogger( typeof( ChatHelper ).FullName );
 
@@ -166,6 +164,8 @@ namespace Rock.Communication.Chat
             }
 
             ChatProvider = RockApp.Current.GetChatProvider();
+
+            InitializeChatProvider();
         }
 
         /// <inheritdoc/>
@@ -183,7 +183,7 @@ namespace Rock.Communication.Chat
 
         #region Public Methods
 
-        #region Static Configuration & Keys
+        #region Configuration & Keys
 
         /// <summary>
         /// Gets the current chat configuration from system settings.
@@ -321,45 +321,73 @@ namespace Rock.Communication.Chat
             };
         }
 
-        #endregion Static Configuration & Keys
+        /// <summary>
+        /// Initializes (or reinitializes) the <see cref="IChatProvider"/> instance managed by this chat helper.
+        /// </summary>
+        public void InitializeChatProvider()
+        {
+            ChatProvider.Initialize();
+        }
+
+        #endregion Configuration & Keys
 
         #region Authentication
 
         /// <summary>
-        /// Gets a chat user token for the <see cref="Person"/> to use when authenticating with the chat provider.
+        /// Gets a <see cref="ChatUserAuthentication"/> for the <see cref="Person"/> to use when authenticating with the
+        /// chat provider.
         /// </summary>
-        /// <param name="personId">The identifier of the <see cref="Person"/> for whom to get a token.</param>
+        /// <param name="personId">The identifier of the <see cref="Person"/> for whom to get a <see cref="ChatUserAuthentication"/>.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the token or <see langword="null"/> if unable to
-        /// get a token.
+        /// A task representing the asynchronous operation, containing the <see cref="ChatUserAuthentication"/> or
+        /// <see langword="null"/> if unable to find the <see cref="ChatUser"/> or get a token.
         /// </returns>
-        public async Task<string> GetChatUserTokenAsync( int personId )
+        public async Task<ChatUserAuthentication> GetChatUserAuthenticationAsync( int personId )
         {
-            string token = null;
+            ChatUserAuthentication auth = null;
 
             if ( personId < 1 )
             {
-                return token;
+                return auth;
             }
 
             try
             {
-                var results = await CreateOrUpdateChatUsersAsync( new List<int> { personId } );
+                var syncCommand = new SyncPersonToChatCommand
+                {
+                    PersonId = personId,
+                    ShouldEnsureChatAliasExists = true
+                };
 
-                var chatUserResult = results?.FirstOrDefault( r => r?.ChatUserKey.IsNotNullOrWhiteSpace() == true );
+                var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( new List<SyncPersonToChatCommand> { syncCommand } );
+
+                var chatUserResult = createOrUpdateChatUsersResult
+                    ?.UserResults
+                    .FirstOrDefault( r => r?.ChatUserKey.IsNotNullOrWhiteSpace() == true );
+
                 if ( chatUserResult == null )
                 {
-                    return token;
+                    return auth;
                 }
 
-                token = await ChatProvider.GetChatUserTokenAsync( chatUserResult.ChatUserKey );
+                var token = await ChatProvider.GetChatUserTokenAsync( chatUserResult.ChatUserKey );
+                if ( token.IsNullOrWhiteSpace() )
+                {
+                    return auth;
+                }
+
+                auth = new ChatUserAuthentication
+                {
+                    Token = token,
+                    ChatUserKey = chatUserResult.ChatUserKey
+                };
             }
             catch ( Exception ex )
             {
-                LogError( ex, nameof( GetChatUserTokenAsync ) );
+                LogError( ex, nameof( GetChatUserAuthenticationAsync ) );
             }
 
-            return token;
+            return auth;
         }
 
         #endregion Authentication
@@ -369,26 +397,36 @@ namespace Rock.Communication.Chat
         /// <summary>
         /// Ensures app-level roles, permission grants and other settings are in place within the external chat system.
         /// </summary>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task EnsureChatProviderAppIsSetupAsync()
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncBooleanResult"/>.
+        /// </returns>
+        public async Task<ChatSyncBooleanResult> EnsureChatProviderAppIsSetUpAsync()
         {
+            var result = new ChatSyncBooleanResult();
+
             if ( !IsChatEnabled )
             {
-                return;
+                return result;
             }
 
             SetChatProviderDefaultValueEnforcers();
 
             try
             {
-                await ChatProvider.EnsureSystemUserExistsAsync();
-                await ChatProvider.EnsureAppRolesExistAsync();
-                await ChatProvider.EnsureAppGrantsExistAsync();
+                var appRolesExist = await ChatProvider.EnsureAppRolesExistAsync();
+                var appGrantsExist = await ChatProvider.EnsureAppGrantsExistAsync();
+                var systemUserExists = await ChatProvider.EnsureSystemUserExistsAsync();
+
+                result.WasSuccessful = appRolesExist && appGrantsExist && systemUserExists;
             }
             catch ( Exception ex )
             {
-                LogError( ex, nameof( EnsureChatProviderAppIsSetupAsync ) );
+                result.Exception = ex;
+
+                LogError( ex, nameof( EnsureChatProviderAppIsSetUpAsync ) );
             }
+
+            return result;
         }
 
         /// <summary>
@@ -396,8 +434,7 @@ namespace Rock.Communication.Chat
         /// </summary>
         /// <param name="groupTypes">The <see cref="GroupType"/>s to synchronize.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of identifiers for <see cref="GroupType"/>s
-        /// that were successfully synchronized.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
         /// <remarks>
         /// <para>
@@ -410,13 +447,13 @@ namespace Rock.Communication.Chat
         /// related <see cref="ChatChannel"/>s, <see cref="ChatChannelMember"/>s and messages in the external chat system!
         /// </para>
         /// </remarks>
-        public async Task<List<int>> SyncGroupTypesToChatProviderAsync( List<GroupType> groupTypes )
+        public async Task<ChatSyncCrudResult> SyncGroupTypesToChatProviderAsync( List<GroupType> groupTypes )
         {
-            var results = new List<int>();
+            var result = new ChatSyncCrudResult();
 
             if ( !IsChatEnabled || groupTypes?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             SetChatProviderDefaultValueEnforcers();
@@ -433,11 +470,26 @@ namespace Rock.Communication.Chat
                 // A mapping dictionary and local function to add a group type to the outgoing results collection only
                 // AFTER we know it's been successfully synced with the external chat system.
                 var groupTypeIdByChannelTypeKeys = new Dictionary<string, int>();
-                void AddGroupTypeToResults( string channelTypeKey )
+                void AddGroupTypeToResult( string channelTypeKey, ChatSyncType chatSyncType )
                 {
                     if ( groupTypeIdByChannelTypeKeys.TryGetValue( channelTypeKey, out var groupTypeId ) )
                     {
-                        results.Add( groupTypeId );
+                        var groupTypeIdString = groupTypeId.ToString();
+                        switch ( chatSyncType )
+                        {
+                            case ChatSyncType.Skip:
+                                result.Skipped.Add( groupTypeIdString );
+                                break;
+                            case ChatSyncType.Create:
+                                result.Created.Add( groupTypeIdString );
+                                break;
+                            case ChatSyncType.Update:
+                                result.Updated.Add( groupTypeIdString );
+                                break;
+                            case ChatSyncType.Delete:
+                                result.Deleted.Add( groupTypeIdString );
+                                break;
+                        }
                     }
                 }
 
@@ -536,7 +588,7 @@ namespace Rock.Communication.Chat
                             else
                             {
                                 // Add it to the results as an already-up-to-date group type.
-                                AddGroupTypeToResults( channelType.Key );
+                                AddGroupTypeToResult( channelType.Key, ChatSyncType.Skip );
                             }
                         }
                         else
@@ -556,27 +608,29 @@ namespace Rock.Communication.Chat
                 if ( channelTypesToDelete.Any() )
                 {
                     var deletedKeys = await ChatProvider.DeleteChatChannelTypesAsync( channelTypesToDelete );
-                    deletedKeys?.ForEach( k => AddGroupTypeToResults( k ) );
+                    deletedKeys?.ForEach( k => AddGroupTypeToResult( k, ChatSyncType.Delete ) );
                 }
 
                 if ( channelTypesToCreate.Any() )
                 {
                     var createdChannelTypes = await ChatProvider.CreateChatChannelTypesAsync( channelTypesToCreate );
-                    createdChannelTypes?.ForEach( ct => AddGroupTypeToResults( ct?.Key ) );
+                    createdChannelTypes?.ForEach( ct => AddGroupTypeToResult( ct?.Key, ChatSyncType.Create ) );
                 }
 
                 if ( channelTypesToUpdate.Any() )
                 {
                     var updatedChannelTypes = await ChatProvider.UpdateChatChannelTypesAsync( channelTypesToUpdate );
-                    updatedChannelTypes?.ForEach( ct => AddGroupTypeToResults( ct?.Key ) );
+                    updatedChannelTypes?.ForEach( ct => AddGroupTypeToResult( ct?.Key, ChatSyncType.Update ) );
                 }
             }
             catch ( Exception ex )
             {
+                result.Exception = ex;
+
                 LogError( ex, nameof( SyncGroupTypesToChatProviderAsync ) );
             }
 
-            return results;
+            return result;
         }
 
         /// <summary>
@@ -587,8 +641,7 @@ namespace Rock.Communication.Chat
         /// <see cref="Group"/> identifiers already synced will be internally created and managed when needed, to prevent
         /// <see cref="StackOverflowException"/>s with recursive calls.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of identifiers for <see cref="Group"/>s
-        /// that were successfully synchronized.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
         /// <remarks>
         /// <para>
@@ -601,16 +654,16 @@ namespace Rock.Communication.Chat
         /// <see cref="ChatChannelMember"/>s and messages in the external chat system!
         /// </para>
         /// </remarks>
-        public async Task<List<int>> SyncGroupsToChatProviderAsync( List<Group> groups, HashSet<int> alreadySyncedGroupIds = null )
+        public async Task<ChatSyncCrudResult> SyncGroupsToChatProviderAsync( List<Group> groups, HashSet<int> alreadySyncedGroupIds = null )
         {
-            var results = new List<int>();
+            var result = new ChatSyncCrudResult();
 
             // Only sync valid, already-saved groups.
             groups = groups?.Where( g => g?.Id > 0 && g.GroupTypeId > 0 ).ToList();
 
             if ( !IsChatEnabled || groups?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             SetChatProviderDefaultValueEnforcers();
@@ -630,12 +683,27 @@ namespace Rock.Communication.Chat
 
                 // A mapping dictionary and local function to add a group to the outgoing results collection only AFTER
                 // we know it's been successfully synced with the external chat system.
-                var groupIdByChannelKeys = new Dictionary<string, int>();
-                void AddGroupToResults( string channelKey )
+                var groupIdByQueryableKeys = new Dictionary<string, int>();
+                void AddGroupToResult( string queryableKey, ChatSyncType chatSyncType )
                 {
-                    if ( groupIdByChannelKeys.TryGetValue( channelKey, out var groupId ) )
+                    if ( groupIdByQueryableKeys.TryGetValue( queryableKey, out var groupId ) )
                     {
-                        results.Add( groupId );
+                        var groupIdString = groupId.ToString();
+                        switch ( chatSyncType )
+                        {
+                            case ChatSyncType.Skip:
+                                result.Skipped.Add( groupIdString );
+                                break;
+                            case ChatSyncType.Create:
+                                result.Created.Add( groupIdString );
+                                break;
+                            case ChatSyncType.Update:
+                                result.Updated.Add( groupIdString );
+                                break;
+                            case ChatSyncType.Delete:
+                                result.Deleted.Add( groupIdString );
+                                break;
+                        }
                     }
                 }
 
@@ -647,7 +715,7 @@ namespace Rock.Communication.Chat
                         continue;
                     }
 
-                    groupIdByChannelKeys.Add( channel.Key, group.Id );
+                    groupIdByQueryableKeys.Add( channel.QueryableKey, group.Id );
 
                     // Does it already exist in the external chat system?
                     var existingChannel = existingChannels?.FirstOrDefault( c => c.QueryableKey == channel.QueryableKey );
@@ -668,7 +736,7 @@ namespace Rock.Communication.Chat
                             else
                             {
                                 // Add it to the results as an already-up-to-date group.
-                                AddGroupToResults( channel.Key );
+                                AddGroupToResult( channel.QueryableKey, ChatSyncType.Skip );
                             }
                         }
                         else
@@ -687,37 +755,41 @@ namespace Rock.Communication.Chat
                 if ( channelsToDelete.Any() )
                 {
                     var deletedKeys = await ChatProvider.DeleteChatChannelsAsync( channelsToDelete );
-                    deletedKeys?.ForEach( k => AddGroupToResults( k ) );
+                    deletedKeys?.ForEach( queryableKey => AddGroupToResult( queryableKey, ChatSyncType.Delete ) );
                 }
 
                 if ( channelsToCreate.Any() )
                 {
                     var createdChannels = await ChatProvider.CreateChatChannelsAsync( channelsToCreate );
-                    createdChannels?.ForEach( async c =>
+
+                    foreach ( var channel in createdChannels ?? Enumerable.Empty<ChatChannel>() )
                     {
-                        AddGroupToResults( c?.Key );
+                        AddGroupToResult( channel.QueryableKey, ChatSyncType.Create );
 
                         // For each newly-added channel, try to sync its members.
-                        var groupId = GetGroupId( c?.Key );
+                        var groupId = GetGroupId( channel.Key );
                         if ( groupId.HasValue )
                         {
-                            await SyncGroupMembersToChatProviderAsync( groupId.Value, alreadySyncedGroupIds );
+                            var membersResult = await SyncGroupMembersToChatProviderAsync( groupId.Value, alreadySyncedGroupIds );
+                            result.InnerResults.Add( membersResult );
                         }
-                    } );
+                    }
                 }
 
                 if ( channelsToUpdate.Any() )
                 {
                     var updatedChannels = await ChatProvider.UpdateChatChannelsAsync( channelsToUpdate );
-                    updatedChannels?.ForEach( c => AddGroupToResults( c?.Key ) );
+                    updatedChannels?.ForEach( c => AddGroupToResult( c?.QueryableKey, ChatSyncType.Update ) );
                 }
             }
             catch ( Exception ex )
             {
+                result.Exception = ex;
+
                 LogError( ex, nameof( SyncGroupsToChatProviderAsync ) );
             }
 
-            return results;
+            return result;
         }
 
         /// <summary>
@@ -729,8 +801,7 @@ namespace Rock.Communication.Chat
         /// <see cref="Group"/> identifiers already synced will be internally created and managed when needed, to prevent
         /// <see cref="StackOverflowException"/>s with recursive calls.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="RockChatChannelMember"/>s,
-        /// one for each <see cref="Group"/> and <see cref="Person"/> combination that was synced.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
         /// <remarks>
         /// This one-way synchronization will result in <see cref="ChatUser"/>s being added or updated, as well as
@@ -738,17 +809,20 @@ namespace Rock.Communication.Chat
         /// NOT result in any changes being made to Rock <see cref="GroupMember"/>s, <see cref="Person"/>s or
         /// <see cref="PersonAlias"/>es.
         /// </remarks>
-        public async Task<List<RockChatChannelMember>> SyncGroupMembersToChatProviderAsync( int groupId, HashSet<int> alreadySyncedGroupIds = null )
+        public async Task<ChatSyncCrudResult> SyncGroupMembersToChatProviderAsync( int groupId, HashSet<int> alreadySyncedGroupIds = null )
         {
             if ( groupId <= 0 )
             {
-                return new List<RockChatChannelMember>();
+                return new ChatSyncCrudResult();
             }
 
             // Get the sync commands for this group's members.
             var syncCommands = new GroupMemberService( RockContext )
                 .Queryable()
-                .Where( gm => gm.GroupId == groupId )
+                .Where( gm =>
+                    gm.GroupId == groupId
+                    && !gm.Person.IsDeceased
+                )
                 .Select( gm => new SyncGroupMemberToChatCommand
                 {
                     GroupId = gm.GroupId,
@@ -768,8 +842,7 @@ namespace Rock.Communication.Chat
         /// <see cref="Group"/> identifiers already synced will be internally created and managed when needed, to prevent
         /// <see cref="StackOverflowException"/>s with recursive calls.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="RockChatChannelMember"/>s,
-        /// one for each <see cref="Group"/> and <see cref="Person"/> combination that was synced.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCrudResult"/>.
         /// </returns>
         /// <remarks>
         /// This one-way synchronization will result in <see cref="ChatUser"/>s being added or updated, as well as
@@ -777,9 +850,9 @@ namespace Rock.Communication.Chat
         /// NOT result in any changes being made to Rock <see cref="GroupMember"/>s, <see cref="Person"/>s or
         /// <see cref="PersonAlias"/>es.
         /// </remarks>
-        public async Task<List<RockChatChannelMember>> SyncGroupMembersToChatProviderAsync( List<SyncGroupMemberToChatCommand> syncCommands, HashSet<int> alreadySyncedGroupIds = null )
+        public async Task<ChatSyncCrudResult> SyncGroupMembersToChatProviderAsync( List<SyncGroupMemberToChatCommand> syncCommands, HashSet<int> alreadySyncedGroupIds = null )
         {
-            var results = new List<RockChatChannelMember>();
+            var result = new ChatSyncCrudResult();
 
             // Validate commands.
             syncCommands = syncCommands
@@ -788,10 +861,13 @@ namespace Rock.Communication.Chat
 
             if ( !IsChatEnabled || syncCommands?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             SetChatProviderDefaultValueEnforcers();
+
+            // Keep track of this setting in case we override and need to set it back.
+            var shouldEnsureChatUsersExist = RockToChatSyncConfig.ShouldEnsureChatUsersExist;
 
             try
             {
@@ -801,74 +877,70 @@ namespace Rock.Communication.Chat
                 #region APP - Chat Administrators
 
                 // First, we'll handle any members being added to or removed from the "APP - Chat Administrators" Rock
-                // group. These members don't need to be added to a chat channel, but instead only need to have their
-                // chat user records created or updated accordingly, within the external chat system.
+                // security role group. These members usually don't need to be added to a chat channel, but instead only
+                // need to have their chat user records created or updated accordingly, within the external chat system.
                 var chatAdminsGroupGuid = Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid();
-                var chatAdminsCommands = new List<SyncGroupMemberToChatCommand>();
+                var chatAminsGroup = GroupCache.Get( chatAdminsGroupGuid );
 
-                // Iterate backwards for ease-of-removal from the original collection; this way, we can prevent repeated
-                // comparison when filtering for "delete" and "create or update" commands below.
-                for ( var i = syncCommands.Count - 1; i >= 0; i-- )
+                // However.. someone COULD enable chat for the "Security Role" group type, in which case we'll simply
+                // perform a full (chat channel, down) sync of these members, which will effectively add or remove them
+                // to/from the global `rock_admin` role in the external chat system.
+                if ( chatAminsGroup?.GetIsChatEnabled() == true )
                 {
-                    var syncCommand = syncCommands[i];
-                    var groupGuid = GroupCache.Get( syncCommand.GroupId )?.Guid;
-
-                    if ( groupGuid.HasValue && groupGuid.Value.Equals( chatAdminsGroupGuid ) )
+                    if ( syncCommands.Any( c => c.GroupId == chatAminsGroup.Id ) )
                     {
-                        chatAdminsCommands.Add( syncCommand );
-                        syncCommands.Remove( syncCommand );
+                        // Since at least one sync command is for the chat administrators group, we'll enforce a "full"
+                        // sync for this entire operation, as we want to ensure global `rock_admin` roles are toggled
+                        // immediately in the external chat system.
+                        RockToChatSyncConfig.ShouldEnsureChatUsersExist = true;
                     }
                 }
-
-                if ( chatAdminsCommands.Any() )
+                else if ( chatAminsGroup != null )
                 {
-                    var chatAdminsPersonIds = chatAdminsCommands
-                        .GroupBy( c => c.PersonId )
-                        .Select( g => g.Key )
-                        .Distinct()
-                        .ToList();
-
-                    try
+                    // Iterate backwards for ease-of-removal from the original collection; this way, we can prevent repeated
+                    // comparison when filtering for "delete" and "create or update" commands below.
+                    var chatAdminsCommands = new List<SyncGroupMemberToChatCommand>();
+                    for ( var i = syncCommands.Count - 1; i >= 0; i-- )
                     {
-                        // We'll ALWAYS enforce a "full" sync of chat users when working with this particular group, as
-                        // we want to ensure global `rock_admin` roles are toggled immediately in the external chat system.
-                        var shouldEnsureChatUsersExist = RockToChatSyncConfig.ShouldEnsureChatUsersExist;
-                        RockToChatSyncConfig.ShouldEnsureChatUsersExist = true;
-
-                        // The next method call does the following:
-                        //  1) Ensures this person has a chat-specific person alias in Rock;
-                        //  2) Ensures this person has a chat user in the external chat system.
-                        var createOrUpdateChatUserResults = await CreateOrUpdateChatUsersAsync( chatAdminsPersonIds );
-
-                        // Be sure to set this value back to whatever it was.
-                        RockToChatSyncConfig.ShouldEnsureChatUsersExist = shouldEnsureChatUsersExist;
-
-                        chatAdminsCommands.ForEach( c =>
+                        var syncCommand = syncCommands[i];
+                        if ( syncCommand.GroupId == chatAminsGroup.Id )
                         {
-                            var chatUserResult = createOrUpdateChatUserResults
-                                .FirstOrDefault( r => r.PersonId == c.PersonId );
-
-                            if ( chatUserResult != null && !results.Any( r => r.GroupId == c.GroupId && r.PersonId == r.PersonId ) )
-                            {
-                                var wasDemoted = !chatUserResult.IsAdmin;
-                                results.Add(
-                                    // We're kind of abusing this DTO for this purpose, but it will provide a way to
-                                    // convey to the caller how many people we added and removed to the `rock_admin`
-                                    // global role within the external chat system.
-                                    new RockChatChannelMember
-                                    {
-                                        GroupId = c.GroupId,
-                                        PersonId = c.PersonId,
-                                        ChatRole = wasDemoted ? ChatRole.User : ChatRole.Administrator,
-                                        ShouldDelete = wasDemoted
-                                    }
-                                );
-                            }
-                        } );
+                            chatAdminsCommands.Add( syncCommand );
+                            syncCommands.RemoveAt( i );
+                        }
                     }
-                    catch ( Exception ex )
+
+                    if ( chatAdminsCommands.Any() )
                     {
-                        perChannelExceptions.Add( ex );
+                        var syncPersonToChatCommands = chatAdminsCommands
+                            .GroupBy( c => c.PersonId )
+                            .Select( g => g.Key )
+                            .Distinct()
+                            .Select( personId =>
+                                new SyncPersonToChatCommand
+                                {
+                                    PersonId = personId,
+                                    ShouldEnsureChatAliasExists = true
+                                }
+                            )
+                            .ToList();
+
+                        try
+                        {
+                            // Enforce a "full" sync of chat users when working with this particular group.
+                            RockToChatSyncConfig.ShouldEnsureChatUsersExist = true;
+
+                            // The next method call does the following:
+                            //  1) Ensures this person has a chat-specific person alias in Rock;
+                            //  2) Ensures this person has a chat user in the external chat system IF dictated by `RockToChatSyncConfig.ShouldEnsureChatUsersExist`.
+                            var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
+
+                            result.InnerResults.Add( createOrUpdateChatUsersResult );
+                        }
+                        catch ( Exception ex )
+                        {
+                            perChannelExceptions.Add( ex );
+                        }
                     }
                 }
 
@@ -917,11 +989,26 @@ namespace Rock.Communication.Chat
                     }
                 }
 
-                void AddMemberToResults( string chatChannelKey, string chatUserKey )
+                void AddMemberToResult( string chatChannelKey, string chatUserKey, ChatSyncType chatSyncType )
                 {
                     if ( memberByChannelMemberKeys.TryGetValue( $"{chatChannelKey}|{chatUserKey}", out var member ) )
                     {
-                        results.Add( member );
+                        var memberId = $"{member.GroupId}|{member.PersonId}";
+                        switch ( chatSyncType )
+                        {
+                            case ChatSyncType.Skip:
+                                result.Skipped.Add( memberId );
+                                break;
+                            case ChatSyncType.Create:
+                                result.Created.Add( memberId );
+                                break;
+                            case ChatSyncType.Update:
+                                result.Updated.Add( memberId );
+                                break;
+                            case ChatSyncType.Delete:
+                                result.Deleted.Add( memberId );
+                                break;
+                        }
                     }
                 }
 
@@ -1010,21 +1097,30 @@ namespace Rock.Communication.Chat
                 {
                     // Chat channel members require chat users. We'll start by ensuring a user exists in the external
                     // chat system for each member.
-                    var createOrUpdatePersonIds = createOrUpdateMembers
+                    var syncPersonToChatCommands = createOrUpdateMembers
                         .GroupBy( c => c.PersonId )
                         .Select( g => g.Key )
                         .Distinct()
+                        .Select( personId =>
+                            new SyncPersonToChatCommand
+                            {
+                                PersonId = personId,
+                                ShouldEnsureChatAliasExists = true
+                            }
+                        )
                         .ToList();
 
                     // The next method call does the following:
                     //  1) Ensures this person has a chat-specific person alias in Rock;
-                    //  2) Ensures this person has a chat user in the external chat system.
-                    var createOrUpdateChatUserResults = await CreateOrUpdateChatUsersAsync( createOrUpdatePersonIds );
+                    //  2) Ensures this person has a chat user in the external chat system IF dictated by `RockToChatSyncConfig.ShouldEnsureChatUsersExist`.
+                    var createOrUpdateChatUsersResult = await CreateOrUpdateChatUsersAsync( syncPersonToChatCommands );
+
+                    result.InnerResults.Add( createOrUpdateChatUsersResult );
 
                     // Just in case any people still don't have a chat user key, let's at least log them. This will
                     // probably never happen.
                     var membersWithoutChatUserKeys = createOrUpdateMembers
-                        .Where( c => !createOrUpdateChatUserResults.Any( r => r.PersonId == c.PersonId ) )
+                        .Where( c => !createOrUpdateChatUsersResult.UserResults.Any( r => r.PersonId == c.PersonId ) )
                         .ToList();
 
                     if ( membersWithoutChatUserKeys.Any() )
@@ -1044,7 +1140,8 @@ namespace Rock.Communication.Chat
                     // Organize members by channel.
                     foreach ( var member in createOrUpdateMembers )
                     {
-                        var chatUserKey = createOrUpdateChatUserResults
+                        var chatUserKey = createOrUpdateChatUsersResult
+                            .UserResults
                             .First( r => r.PersonId == member.PersonId )
                             .ChatUserKey;
 
@@ -1125,7 +1222,7 @@ namespace Rock.Communication.Chat
                                 else
                                 {
                                     // Add them to the results as an already up-to-date member.
-                                    AddMemberToResults( command.ChatChannelKey, chatChannelMember.ChatUserKey );
+                                    AddMemberToResult( command.ChatChannelKey, chatChannelMember.ChatUserKey, ChatSyncType.Skip );
                                 }
                             }
                             else
@@ -1152,7 +1249,7 @@ namespace Rock.Communication.Chat
                                 membersToDelete
                             );
 
-                            deletedKeys?.ForEach( k => AddMemberToResults( command.ChatChannelKey, k ) );
+                            deletedKeys?.ForEach( k => AddMemberToResult( command.ChatChannelKey, k, ChatSyncType.Delete ) );
                         }
 
                         if ( membersToCreate.Any() )
@@ -1163,7 +1260,7 @@ namespace Rock.Communication.Chat
                                 membersToCreate
                             );
 
-                            createdMembers?.ForEach( m => AddMemberToResults( command.ChatChannelKey, m.ChatUserKey ) );
+                            createdMembers?.ForEach( m => AddMemberToResult( command.ChatChannelKey, m.ChatUserKey, ChatSyncType.Create ) );
                         }
 
                         if ( membersToUpdate.Any() )
@@ -1174,11 +1271,13 @@ namespace Rock.Communication.Chat
                                 membersToUpdate
                             );
 
-                            updatedMembers?.ForEach( m => AddMemberToResults( command.ChatChannelKey, m.ChatUserKey ) );
+                            updatedMembers?.ForEach( m => AddMemberToResult( command.ChatChannelKey, m.ChatUserKey, ChatSyncType.Update ) );
                         }
                     }
                     catch ( Exception channelEx )
                     {
+                        // If this failure was due to the channel not existing in the external chat system, we'll try to
+                        // create it and then re-attempt to sync all of its members.
                         Group group = null;
                         if ( channelEx is ChatChannelNotFoundException chatChannelNotFoundException )
                         {
@@ -1200,6 +1299,8 @@ namespace Rock.Communication.Chat
 
                         if ( group != null )
                         {
+                            // This inner try/catch allows us to ensure that even if this last attempt to sync this
+                            // group fails, it still won't cause other groups within this sync attempt to fail.
                             try
                             {
                                 await SyncGroupsToChatProviderAsync(
@@ -1226,27 +1327,36 @@ namespace Rock.Communication.Chat
             }
             catch ( Exception ex )
             {
+                result.Exception = ex;
+
                 LogError( ex, nameof( SyncGroupMembersToChatProviderAsync ) );
             }
 
-            return results;
+            // Set this back to whatever it was, in case we overrode it above.
+            RockToChatSyncConfig.ShouldEnsureChatUsersExist = shouldEnsureChatUsersExist;
+
+            return result;
         }
 
         /// <summary>
         /// Creates new or updates existing <see cref="ChatUser"/>s in the external chat system.
         /// </summary>
-        /// <param name="personIds">The identifiers of the <see cref="Person"/>s for which to create or update a
-        /// <see cref="ChatUser"/>.</param>
+        /// <param name="syncCommands">The list of commands for <see cref="ChatUser"/>s to create or update.</param>
         /// <returns>
-        /// A task representing the asynchronous operation, containing the list of <see cref="CreateOrUpdateChatUserResult"/>s.
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncCreateOrUpdateUsersResult"/>.
         /// </returns>
-        public async Task<List<CreateOrUpdateChatUserResult>> CreateOrUpdateChatUsersAsync( List<int> personIds )
+        public async Task<ChatSyncCreateOrUpdateUsersResult> CreateOrUpdateChatUsersAsync( List<SyncPersonToChatCommand> syncCommands )
         {
-            var results = new List<CreateOrUpdateChatUserResult>();
+            var result = new ChatSyncCreateOrUpdateUsersResult();
 
-            if ( !IsChatEnabled || personIds?.Any() != true )
+            // Validate commands.
+            syncCommands = syncCommands
+                ?.Where( c => c?.PersonId > 0 )
+                .ToList();
+
+            if ( !IsChatEnabled || syncCommands?.Any() != true )
             {
-                return results;
+                return result;
             }
 
             SetChatProviderDefaultValueEnforcers();
@@ -1255,16 +1365,16 @@ namespace Rock.Communication.Chat
             {
                 var chatConfiguration = GetChatConfiguration();
 
-                // Ensure each person has a chat-specific person alias record in Rock.
-                var rockChatUserPeople = GetOrCreateRockChatUserPeople( personIds, chatConfiguration );
+                // Ensure each person has a chat-specific person alias record in Rock IF instructed by their respective sync commands.
+                var rockChatUserPeople = GetOrCreateRockChatUserPeople( syncCommands, chatConfiguration );
 
                 if ( !RockToChatSyncConfig.ShouldEnsureChatUsersExist )
                 {
-                    results.AddRange(
+                    result.UserResults.AddRange(
                         rockChatUserPeople
                             .Where( p => p.AlreadyExistedInRock )
                             .Select( p =>
-                                new CreateOrUpdateChatUserResult
+                                new ChatSyncCreateOrUpdateUserResult
                                 {
                                     ChatUserKey = p.ChatUserKey,
                                     PersonId = p.PersonId,
@@ -1282,7 +1392,7 @@ namespace Rock.Communication.Chat
                 // Do we have any people to sync all the way to the chat provider?
                 if ( !rockChatUserPeople.Any() )
                 {
-                    return results;
+                    return result;
                 }
 
                 // Get the existing chat users.
@@ -1299,7 +1409,7 @@ namespace Rock.Communication.Chat
 
                 // A local function to add users to the outgoing results collection only AFTER we know they've been
                 // successfully created or updated within the external chat system.
-                void AddChatUserToResults( ChatUser chatUser )
+                void AddChatUserToResults( ChatUser chatUser, ChatSyncType chatSyncType )
                 {
                     var chatUserPerson = rockChatUserPeople.FirstOrDefault( p => p.ChatUserKey == chatUser.Key );
                     if ( chatUserPerson == null )
@@ -1308,12 +1418,13 @@ namespace Rock.Communication.Chat
                         return;
                     }
 
-                    results.Add(
-                        new CreateOrUpdateChatUserResult
+                    result.UserResults.Add(
+                        new ChatSyncCreateOrUpdateUserResult
                         {
                             ChatUserKey = chatUser.Key,
                             PersonId = chatUserPerson.PersonId,
-                            IsAdmin = chatUser.IsAdmin
+                            IsAdmin = chatUser.IsAdmin,
+                            SyncTypePerformed = chatSyncType
                         }
                     );
                 }
@@ -1369,7 +1480,7 @@ namespace Rock.Communication.Chat
                         else
                         {
                             // Add them to the results as an already-up-to-date user.
-                            AddChatUserToResults( chatUser );
+                            AddChatUserToResults( chatUser, ChatSyncType.Skip );
                         }
                     }
                     else
@@ -1382,21 +1493,23 @@ namespace Rock.Communication.Chat
                 if ( usersToCreate.Any() )
                 {
                     var createdUsers = await ChatProvider.CreateChatUsersAsync( usersToCreate );
-                    createdUsers?.ForEach( u => AddChatUserToResults( u ) );
+                    createdUsers?.ForEach( u => AddChatUserToResults( u, ChatSyncType.Create ) );
                 }
 
                 if ( usersToUpdate.Any() )
                 {
                     var updatedUsers = await ChatProvider.UpdateChatUsersAsync( usersToUpdate );
-                    updatedUsers?.ForEach( u => AddChatUserToResults( u ) );
+                    updatedUsers?.ForEach( u => AddChatUserToResults( u, ChatSyncType.Update ) );
                 }
             }
             catch ( Exception ex )
             {
+                result.Exception = ex;
+
                 LogError( ex, nameof( CreateOrUpdateChatUsersAsync ) );
             }
 
-            return results;
+            return result;
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -1487,22 +1600,31 @@ namespace Rock.Communication.Chat
         #region Rock Model CRUD
 
         /// <summary>
-        /// Gets existing or creates new chat-specific <see cref="PersonAlias"/> records within Rock, for each provided
-        /// <see cref="Person"/> identifier, and returns the alias's unique identifier along with additional supporting
-        /// data needed to add or update <see cref="ChatUser"/>s in the external chat system.
+        /// Gets existing or creates new chat-specific <see cref="PersonAlias"/> records within Rock, and returns the
+        /// alias's unique identifier along with additional supporting data needed to add or update <see cref="ChatUser"/>s
+        /// in the external chat system.
         /// </summary>
-        /// <param name="personIds">The list of <see cref="Person"/> identifiers for which to get or create chat user
-        /// people within Rock.</param>
+        /// <param name="syncCommands">The list of commands for <see cref="RockChatUserPerson"/>s to get or create.</param>
         /// <param name="chatConfiguration">The cached <see cref="ChatConfiguration"/> to prevent repeated reads from
         /// system settings.</param>
-        /// <returns>A list of <see cref="RockChatUserPerson"/>s with one entry for each <see cref="Person"/>.</returns>
-        private List<RockChatUserPerson> GetOrCreateRockChatUserPeople( List<int> personIds, ChatConfiguration chatConfiguration )
+        /// <returns>A list of <see cref="RockChatUserPerson"/>s.</returns>
+        /// <remarks>
+        /// For each provided <see cref="SyncPersonToChatCommand"/>, if a chat-specific <see cref="PersonAlias"/> record
+        /// doesn't already exist for the <see cref="Person"/> AND <see cref="SyncPersonToChatCommand.ShouldEnsureChatAliasExists"/>
+        /// is <see langword="false"/>, a <see cref="RockChatUserPerson"/> will NOT be returned for that <see cref="Person"/>.
+        /// </remarks>
+        private List<RockChatUserPerson> GetOrCreateRockChatUserPeople( List<SyncPersonToChatCommand> syncCommands, ChatConfiguration chatConfiguration )
         {
             // Start by getting the minimum data set needed to add or update chat users in the external chat system.
-            var personQry = new PersonService( RockContext ).Queryable();
+            var personQry = new PersonService( RockContext )
+                .Queryable()
+                .Where( p => !p.IsDeceased );
+
             var chatAliasQry = new PersonAliasService( RockContext )
                 .Queryable()
                 .Where( pa => pa.ForeignKey.StartsWith( ChatPersonAliasForeignKeyPrefix ) );
+
+            var personIds = syncCommands.Select( c => c.PersonId ).Distinct().ToList();
 
             if ( personIds.Count == 1 )
             {
@@ -1542,10 +1664,11 @@ namespace Rock.Communication.Chat
                 .Where( gm =>
                     gm.Group.Guid.Equals( chatAdminGroupGuid )
                     && gm.GroupMemberStatus == GroupMemberStatus.Active
+                    && !gm.Person.IsDeceased
                 )
                 .Select( gm => gm.PersonId );
 
-            var chatUserPeople = personQry
+            var rockChatUserPeople = personQry
                 .GroupJoin(
                     chatAliasQry,
                     p => p.Id,
@@ -1579,45 +1702,70 @@ namespace Rock.Communication.Chat
                     ChatAliasGuid = p.ChatAliases?.Any() == true
                         ? p.ChatAliases.OrderBy( a => a.Id ).First().Guid // Get the earliest chat alias in the case of multiple.
                         : ( Guid? ) null,
-                    IsChatAdministrator = p.IsChatAdmin
+                    IsChatAdministrator = p.IsChatAdmin,
+                    Badges = new List<ChatBadge>()
                 } )
                 .ToList();
 
-            // If any people don't already have a chat alias, add them in bulk.
-            var peopleMissingChatAlias = chatUserPeople.Where( p => !p.ChatAliasGuid.HasValue );
-            var chatAliasesToSave = new List<PersonAlias>();
-            foreach ( var chatUserPerson in peopleMissingChatAlias )
+            // If any people don't already have a chat alias, add them in bulk IF instructed by their respective sync commands.
+            var newChatAliasesToSave = new List<PersonAlias>();
+
+            // Iterate backwards for ease-of-removal for those people who will not be synced further.
+            for ( var i = rockChatUserPeople.Count - 1; i >= 0; i-- )
             {
+                var rockChatUserPerson = rockChatUserPeople[i];
+                if ( rockChatUserPerson.ChatAliasGuid.HasValue )
+                {
+                    // This person already has a chat alias; move on.
+                    continue;
+                }
+
+                // Find this person's sync command.
+                var syncCommand = syncCommands.FirstOrDefault( c => c.PersonId == rockChatUserPerson.PersonId );
+                if ( syncCommand?.ShouldEnsureChatAliasExists != true )
+                {
+                    // This person didn't already have a chat alias, and we're not going to add one.
+                    // Remove them from the results and move on.
+                    rockChatUserPeople.RemoveAt( i );
+                    continue;
+                }
+
                 var guid = Guid.NewGuid();
                 var chatAlias = new PersonAlias
                 {
-                    PersonId = chatUserPerson.PersonId,
+                    PersonId = rockChatUserPerson.PersonId,
                     Guid = guid,
                     ForeignKey = GetChatPersonAliasForeignKey( guid )
                 };
 
-                chatAliasesToSave.Add( chatAlias );
-                chatUserPerson.ChatAliasGuid = guid;
-                chatUserPerson.AlreadyExistedInRock = false;
+                newChatAliasesToSave.Add( chatAlias );
+                rockChatUserPerson.ChatAliasGuid = guid;
+                rockChatUserPerson.AlreadyExistedInRock = false;
             }
 
-            if ( chatAliasesToSave.Any() )
+            // If we don't have any people to sync further, return early.
+            if ( !rockChatUserPeople.Any() )
             {
-                RockContext.BulkInsert( chatAliasesToSave );
+                return rockChatUserPeople;
+            }
+
+            if ( newChatAliasesToSave.Any() )
+            {
+                RockContext.BulkInsert( newChatAliasesToSave );
             }
 
             var peopleNeedingBadges = RockToChatSyncConfig.ShouldEnsureChatUsersExist
-                ? chatUserPeople                                                    // Sync badges for ALL people.
-                : chatUserPeople.Where( p => !p.AlreadyExistedInRock ).ToList();    // Sync badges for NEW people.
+                ? rockChatUserPeople                                                    // Sync badges for ALL people.
+                : rockChatUserPeople.Where( p => !p.AlreadyExistedInRock ).ToList();    // Sync badges for NEW people.
 
             if ( !peopleNeedingBadges.Any() )
             {
-                return chatUserPeople;
+                return rockChatUserPeople;
             }
 
             // Build the badge rosters.
             var anyBadges = false;
-            var badgeRosters = new List<ChatBadgeRoster>();
+            var badgeRosters = new List<RockChatBadgeRoster>();
             if ( chatConfiguration.ChatBadgeDataViewGuids?.Any() == true )
             {
                 foreach ( var dataViewGuid in chatConfiguration.ChatBadgeDataViewGuids )
@@ -1638,7 +1786,7 @@ namespace Rock.Communication.Chat
                     }
 
                     badgeRosters.Add(
-                        new ChatBadgeRoster
+                        new RockChatBadgeRoster
                         {
                             ChatBadge = new ChatBadge
                             {
@@ -1658,7 +1806,7 @@ namespace Rock.Communication.Chat
             {
                 if ( !anyBadges )
                 {
-                    p.Badges = null;
+                    p.Badges = new List<ChatBadge>();
                 }
                 else
                 {
@@ -1669,7 +1817,7 @@ namespace Rock.Communication.Chat
                 }
             } );
 
-            return chatUserPeople;
+            return rockChatUserPeople;
         }
 
         /// <summary>
@@ -1679,9 +1827,14 @@ namespace Rock.Communication.Chat
         /// <see cref="RockChatUserPersonKey"/>s.</param>
         /// <returns>A list of <see cref="RockChatUserPersonKey"/>s with one entry for each <see cref="Person"/> who
         /// already has a chat-specific <see cref="PersonAlias"/> record.</returns>
-        private List<RockChatUserPersonKey> GetRockChatUserPersonKeys( List<int> personIds )
+        ///
+        /// BC TODO: Talk to Jason about this method, needed to make it public.
+        public List<RockChatUserPersonKey> GetRockChatUserPersonKeys( List<int> personIds )
         {
-            var personQry = new PersonService( RockContext ).Queryable();
+            var personQry = new PersonService( RockContext )
+                .Queryable()
+                .Where( p => !p.IsDeceased );
+
             var chatAliasQry = new PersonAliasService( RockContext )
                 .Queryable()
                 .Where( pa => pa.ForeignKey.StartsWith( ChatPersonAliasForeignKeyPrefix ) );
@@ -1778,7 +1931,9 @@ namespace Rock.Communication.Chat
              */
 
             var groupMemberService = new GroupMemberService( RockContext );
-            var groupMemberQry = groupMemberService.Queryable(); // Note that we're EXCLUDING archived members.
+            var groupMemberQry = groupMemberService
+                .Queryable() // Note that we're EXCLUDING archived members.
+                .Where( gm => !gm.Person.IsDeceased );
 
             // Get the distinct group IDs represented within the commands.
             var groupIds = commands.Select( c => c.GroupId ).Distinct().ToList();

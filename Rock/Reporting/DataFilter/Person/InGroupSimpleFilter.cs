@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -35,7 +37,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they are in the specified group or groups" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Group(s) Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "CDD4C1E7-A7CF-44BE-8DC0-0BFAA1641292")]
+    [Rock.SystemGuid.EntityTypeGuid( "CDD4C1E7-A7CF-44BE-8DC0-0BFAA1641292" )]
     public class InGroupSimpleFilter : DataFilterComponent
     {
         #region Properties
@@ -60,6 +62,61 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/inGroupSimpleFilter.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+
+            List<ListItemBag> groups = new List<ListItemBag>();
+
+            if ( selectionValues.Length > 0 )
+            {
+                var groupGuids = selectionValues[0]
+                    .SplitDelimitedValues()
+                    .AsGuidList();
+
+                if ( groupGuids.Any() )
+                {
+                    groups = new GroupService( rockContext )
+                        .GetByGuids( groupGuids )
+                        .Select( g => new ListItemBag
+                        {
+                            Value = g.Guid.ToString(),
+                            Text = g.Name
+                        } )
+                        .ToList();
+                }
+            }
+
+            return new Dictionary<string, string>
+            {
+                ["groups"] = groups.ToCamelCaseJson( false, false )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groups = "";
+
+            if ( data.TryGetValue( "groups", out var groupsJson ) )
+            {
+                groups = groupsJson.FromJsonOrNull<List<ListItemBag>>()
+                    ?.Select( g => g.Value )
+                    .JoinStrings( "," )
+                    ?? string.Empty;
+            }
+
+            return groups;
         }
 
         #endregion
@@ -135,6 +192,8 @@ namespace Rock.Reporting.DataFilter.Person
 
             return result;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -213,6 +272,8 @@ namespace Rock.Reporting.DataFilter.Person
             }
 
         }
+
+#endif
 
         /// <summary>
         /// Gets the expression.

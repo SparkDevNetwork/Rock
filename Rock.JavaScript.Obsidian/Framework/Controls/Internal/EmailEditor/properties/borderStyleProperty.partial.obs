@@ -9,8 +9,9 @@
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
     import ShorthandDropDownListProperty from "./shorthandDropDownListProperty.partial.obs";
+    import { createBorderStyleProvider } from "../providers.partial";
     import { BorderStyle, Shorthand, ShorthandValueProvider, StyleSheetMode } from "../types.partial";
-    import { createBorderStyleProvider, get } from "../utils.partial";
+    import { get } from "../utils.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({

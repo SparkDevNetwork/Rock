@@ -13,48 +13,48 @@
                              v-model:futureSendDateTime="futureSendDateTime"
                              v-model:individualRecipientPersonAliasGuids="individualRecipientPersonAliasGuids"
                              v-model:isBulkCommunication="isBulkCommunication"
+                             v-model:personalizationSegmentIds="personalizationSegmentIds"
                              v-model:recipients="recipients"
                              v-model:segmentCriteria="segmentCriteria"
-                             v-model:segmentDataViewGuids="segmentDataViewGuids"
                              :allowedMediums="allowedMediums"
                              :communicationId="communicationId"
                              :communicationListGroups="config.communicationListGroups ?? []"
+                             :communicationTopicValues="config.communicationTopicValues ?? []"
                              :emailRecipientCount="emailRecipients.length"
                              :isAddingIndividualsToRecipientListsDisabled="config.isAddingIndividualsToRecipientListsDisabled"
-                             :isDeletingIndividualsToRecipientListsDisabled="!!communicationListGroupGuid"
                              :isBulkCommunicationForced="isBulkCommunicationForced"
+                             :isDeletingIndividualsToRecipientListsDisabled="!!communicationListGroupGuid"
                              :isDuplicatePreventionOptionShown="config.isDuplicatePreventionOptionShown"
                              :isFetchingRecipients="isFetchingRecipients"
                              :isIncompatibleCommunicationTemplateNotificationShown="isIncompatibleCommunicationTemplateNotificationShown"
                              :isUseSimpleEditorButtonShown="isUseSimpleEditorButtonShown"
                              :nextStepTitle="nextStep"
+                             :personalizationSegments="config.personalizationSegments ?? []"
                              :personalPreferenceRecipientCount="personalPreferenceRecipients.length"
                              :pushNotificationRecipientCount="pushNotificationRecipients.length"
                              :recipientCount="selectedMediumRecipients.length"
                              :recipientsLabel="selectedMediumRecipientsLabel"
-                             :segmentDataViews="segmentDataViews"
                              :smsRecipientCount="smsRecipients.length"
                              :simpleCommunicationPageUrl="config.navigationUrls?.['SimpleCommunicationPage']"
                              :title="step"
                              @update:communicationListGroupGuid="onCommunicationListGroupGuidUpdated"
                              @update:segmentCriteria="debouncedUpdateRecipients"
-                             @update:segmentDataViewGuids="debouncedUpdateRecipients"
+                             @update:personalizationSegmentIds="debouncedUpdateRecipients"
                              @nextStep="onNextStepClicked"
                              @recipientListModified="wasRecipientListModifiedOnce = true" />
 
             <ChooseTemplateStep v-else-if="step === 'Choose Template'"
-                                :communicationTemplateGuid="communicationTemplateGuid"
+                                v-model:communicationTemplateGuid="communicationTemplateGuid"
                                 :allowedMediums="allowedMediums"
-                                :communicationTemplates="config.templates ?? []"
+                                :communicationTemplateDetail="communicationTemplateDetail"
+                                :communicationTemplates="communicationTemplates"
                                 :communicationType="communicationType"
                                 :isFetchingCommunicationTemplate="isFetchingCommunicationTemplate"
                                 :nextStepTitle="nextStep"
-                                :pendingCommunicationTemplate="pendingCommunicationTemplate"
                                 :title="step"
-                                @nextStep="onNextStepClicked"
+                                @nextStep="onChooseTemplateNextClicked"
                                 @previousStep="onPreviousStepClicked"
-                                @selectCommunicationTemplate="onCommunicationTemplateSelected"
-                                @update:communicationTemplateGuid="onPendingCommunicationTemplateGuidUpdated" />
+                                @update:communicationTemplateGuid="onCommunicationTemplateGuidUpdated" />
 
             <EmailSettingsStep v-else-if="step === 'Email Settings'"
                                v-model:bccEmails="bccEmails"
@@ -88,7 +88,8 @@
                              @nextStep="onNextStepClicked"
                              @previousStep="onPreviousStepClicked"
                              @saveCommunication="onSaveCommunication"
-                             @sendTestCommunication="onSendTestEmail" />
+                             @sendTestCommunication="onSendTestEmail"
+                             @saveAsTemplate="onSaveAsTemplate" />
 
             <SmsEditorStep v-else-if="step === 'SMS Editor'"
                            v-model:message="smsMessage"
@@ -145,7 +146,7 @@
                               :pushTitle="pushTitle"
                               :recipientsLabel="selectedMediumRecipientsLabel"
                               :replyToEmail="replyToEmail"
-                              :segmentNames="segmentNames"
+                              :segmentNames="personalizationSegmentNames"
                               :smsAttachmentLinks="smsAttachmentLinks"
                               :smsAttachmentNames="smsAttachmentNames"
                               :smsFromNumberName="smsFromNumberName"
@@ -176,6 +177,13 @@
                        :finalMessageAlertType="finalMessageAlertType"
                        :hasDetailBlockOnCurrentPage="hasDetailBlockOnCurrentPage"
                        @viewCommunication="onViewCommunication" />
+
+            <SaveCommunicationTemplateModal v-if="saveAsCommunicationTemplateDetail"
+                                            v-model="isSaveCommunicationTemplateModalShown"
+                                            :communicationTemplate="saveAsCommunicationTemplateDetail"
+                                            :bodyWidth="saveAsCommunicationTemplateBodyWidth"
+                                            @save="onOverwriteExistingCommunicationTemplate"
+                                            @saveAs="onSaveAsNewCommunicationTemplate" />
         </BreakpointObserver>
     </div>
 </template>
@@ -189,12 +197,14 @@
     import EmailSettingsStep from "./CommunicationEntryWizard/emailSettingsStep.partial.obs";
     import PushNotificationEditorStep from "./CommunicationEntryWizard/pushNotificationEditorStep.partial.obs";
     import SavedStep from "./CommunicationEntryWizard/savedStep.partial.obs";
+    import SaveCommunicationTemplateModal from "./CommunicationEntryWizard/saveCommunicationTemplateModal.partial.obs";
     import SendingStep from "./CommunicationEntryWizard/sendingStep.partial.obs";
     import SentStep from "./CommunicationEntryWizard/sentStep.partial.obs";
     import SmsEditorStep from "./CommunicationEntryWizard/smsEditorStep.partial.obs";
     import { BinaryFileAttachment, BlockActionCallbacks } from "./CommunicationEntryWizard/types.partial";
     import { useInvokeBlockActionHelper, usePersonPreferencesHelper } from "./CommunicationEntryWizard/utils.partial";
     import WizardStartStep from "./CommunicationEntryWizard/wizardStartStep.partial.obs";
+    import { GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
     import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
     import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/pushOpenAction";
     import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
@@ -209,6 +219,7 @@
     import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
     import { debounceAsync, isNullish } from "@Obsidian/Utility/util";
     import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationBag";
+    import { CommunicationEntryWizardCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateBag";
     import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
     import { CommunicationEntryWizardInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardInitializationBox";
     import { CommunicationEntryWizardPushNotificationOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardPushNotificationOptionsBag";
@@ -219,8 +230,6 @@
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { CancellationTokenNone, CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
 
-    // TODO JMH Put this error message somewhere: This template isn't compatible with the Email Wizard. If you continue, the main content will be replaced when a compatible template is selected. To keep your content, choose 'Use Simple Editor' instead.
-    // TODO JMH 👆 it should be shown when config.showTemplateCompatibilityWarning === true.
     const config = useConfigurationValues<CommunicationEntryWizardInitializationBox>();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
     provideSecurityGrant(securityGrant);
@@ -310,20 +319,23 @@
 
     // UI state.
     const recipients = ref<CommunicationEntryWizardRecipientBag[]>(config.recipients ?? []);
-    const segmentDataViews = ref<ListItemBag[]>(config.segmentDataViews ?? []);
     const isFetchingRecipients = ref<boolean>(false);
     const communicationEntryWizardElement = ref<HTMLElement | undefined>();
     const sendingProgressMessage = ref<string>("");
     const sendingCompletionPercentage = ref<number>(0);
     const isFetchingCommunicationTemplate = ref<boolean>(false);
-    const pendingCommunicationTemplate = ref<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>();
     const communicationTemplateDetail = ref<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>(config.communicationTemplateDetail);
+    const saveAsCommunicationTemplateDetail = ref<CommunicationEntryWizardCommunicationTemplateDetailBag | null | undefined>(config.communicationTemplateDetail);
+    const saveAsCommunicationTemplateBodyWidth = ref<number | null | undefined>();
     const hasDetailBlockOnCurrentPage = ref<boolean>(config.hasDetailBlockOnCurrentPage);
     const finalMessage = ref<string>("");
     const finalMessageAlertType = ref<AlertType>(AlertType.Default);
     const wasNextButtonClickedOnce = ref<boolean>(false);
     const wasRecipientListModifiedOnce = ref<boolean>(false);
     const reviewAndConfirmNextAction = ref<"send" | "save">("send");
+    const wasCommunicationTemplateChanged = ref<boolean>(false);
+    const isSaveCommunicationTemplateModalShown = ref<boolean>(false);
+    const communicationTemplates = ref<CommunicationEntryWizardCommunicationTemplateBag[]>(config.templates ?? []);
 
     // Communication state.
     const bccEmails = ref<string>(config.communication?.bccEmails ?? "");
@@ -344,6 +356,7 @@
     const individualRecipientPersonAliasGuids = ref<Guid[] | null | undefined>(config.communication?.individualRecipientPersonAliasGuids);
     const isBulkCommunication = ref<boolean>(config.communication?.isBulkCommunication ?? false);
     const message = ref<string>(config.communication?.message ?? "");
+    const personalizationSegmentIds = ref<number[]>(config.communication?.personalizationSegmentIds ?? []);
     const pushData = ref<CommunicationEntryWizardPushNotificationOptionsBag | null | undefined>(config.communication?.pushData);
     const pushImageBinaryFileGuid = ref<Guid | null | undefined>(config.communication?.pushImageBinaryFileGuid);
     const pushMessage = ref<string>(config.communication?.pushMessage ?? "");
@@ -353,7 +366,6 @@
     const pushTitle = ref<string>(config.communication?.pushTitle ?? "");
     const replyToEmail = ref<string>(config.communication?.replyToEmail ?? "");
     const segmentCriteria = ref<SegmentCriteria>(config.communication?.segmentCriteria ?? SegmentCriteria.All);
-    const segmentDataViewGuids = ref<Guid[]>(config.communication?.segmentDataViewGuids ?? []);
     const smsAttachmentBinaryFiles = ref<ListItemBag[] | null | undefined>(config.communication?.smsAttachmentBinaryFiles);
     const smsFromSystemPhoneNumberGuid = ref<Guid | null | undefined>(config.communication?.smsFromSystemPhoneNumberGuid);
     const smsMessage = ref<string>(config.communication?.smsMessage ?? "");
@@ -416,11 +428,11 @@
     });
 
     const communicationTemplateListItems = computed<ListItemBag[]>(() => {
-        if (!config.templates) {
+        if (!communicationTemplates.value) {
             return [];
         }
         else {
-            return config.templates.map(t => ({
+            return communicationTemplates.value.map(t => ({
                 text: t.name,
                 value: t.guid
             }));
@@ -472,15 +484,16 @@
         }
     });
 
-    const segmentNames = computed<string[] | null | undefined>(() => {
-        if (segmentDataViewGuids.value.length) {
+    const personalizationSegmentNames = computed<string[] | null | undefined>(() => {
+        if (personalizationSegmentIds.value.length) {
             const names: string[] = [];
 
-            for (const segmentDataViewGuid of segmentDataViewGuids.value) {
-                const segmentDataView = segmentDataViews.value.find(c => areEqual(c.value, segmentDataViewGuid));
+            const personalizationSegments = config.personalizationSegments ?? [];
+            for (const personalizationSegmentId of personalizationSegmentIds.value) {
+                const personalizationSegment = personalizationSegments.find(c => c.value === `${personalizationSegmentId}`);
 
-                if (segmentDataView?.text) {
-                    names.push(segmentDataView.text);
+                if (personalizationSegment?.text) {
+                    names.push(personalizationSegment.text);
                 }
             }
 
@@ -671,8 +684,8 @@
             futureSendDateTime: futureSendDateTime.value,
             individualRecipientPersonAliasGuids: individualRecipientPersonAliasGuids.value,
             isBulkCommunication: isBulkCommunication.value,
+            personalizationSegmentIds: personalizationSegmentIds.value,
             segmentCriteria: segmentCriteria.value,
-            segmentDataViewGuids: segmentDataViewGuids.value,
             status: status.value,
 
             // Email medium fields.
@@ -717,8 +730,8 @@
         futureSendDateTime.value = bag.futureSendDateTime;
         individualRecipientPersonAliasGuids.value = bag.individualRecipientPersonAliasGuids;
         isBulkCommunication.value = bag.isBulkCommunication ?? false;
+        personalizationSegmentIds.value = personalizationSegmentIds.value ?? [];
         segmentCriteria.value = bag.segmentCriteria ?? SegmentCriteria.All;
-        segmentDataViewGuids.value = bag.segmentDataViewGuids ?? [];
         status.value = bag.status ?? CommunicationStatus.Transient;
 
         // Email fields.
@@ -779,6 +792,50 @@
 
     // #region Event Handlers
 
+    async function onOverwriteExistingCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag, blockActionCallbacks: BlockActionCallbacks): Promise<void> {
+        const result = await invokeBlockAction.saveCommunicationTemplate(bag);
+
+        if (result.isSuccess && result.data?.communicationTemplateDetail && result.data?.communicationTemplateListItem) {
+            // Use the new template going forward.
+            const newGuid = result.data.communicationTemplateDetail.guid;
+            communicationTemplateDetail.value = result.data.communicationTemplateDetail;
+            communicationTemplateGuid.value = newGuid;
+
+            // Add the template to our collection of selectable templates.
+            communicationTemplates.value = [
+                ...communicationTemplates.value.filter(ct => !areEqual(ct.guid, newGuid)),
+                result.data.communicationTemplateListItem
+            ];
+
+            blockActionCallbacks.onSuccess();
+        }
+        else {
+            blockActionCallbacks.onError(result.errorMessage ?? "An error occurred while saving.");
+        }
+    }
+
+    async function onSaveAsNewCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag, blockActionCallbacks: BlockActionCallbacks): Promise<void> {
+        const result = await invokeBlockAction.saveAsCommunicationTemplate(bag);
+
+        if (result.isSuccess && result.data?.communicationTemplateDetail && result.data?.communicationTemplateListItem) {
+            blockActionCallbacks.onSuccess();
+
+            // Use the new template going forward.
+            const newGuid = result.data.communicationTemplateDetail.guid;
+            communicationTemplateDetail.value = result.data.communicationTemplateDetail;
+            communicationTemplateGuid.value = newGuid;
+
+            // Add the template to our collection of selectable templates.
+            communicationTemplates.value = [
+                ...communicationTemplates.value.filter(ct => !areEqual(ct.guid, newGuid)),
+                result.data.communicationTemplateListItem
+            ];
+        }
+        else {
+            blockActionCallbacks.onError(result.errorMessage ?? "An error occurred while saving.");
+        }
+    }
+
     function onNextStepClicked(): void {
         wasNextButtonClickedOnce.value = true;
         moveToNextStep();
@@ -794,18 +851,7 @@
         // Reset tracking for communication list changes.
         wasRecipientListModifiedOnce.value = false;
 
-        const getRecipients = updateRecipients();
-        const getDataSegmentViews = invokeBlockAction.getSegmentDataViews(communicationListGroupGuid.value);
-
-        const [_result, segmentDataViewsResult] = await Promise.all([getRecipients, getDataSegmentViews]);
-
-        if (segmentDataViewsResult?.isSuccess) {
-            segmentDataViews.value = segmentDataViewsResult.data ?? [];
-        }
-        else {
-            segmentDataViews.value = [];
-            console.error(segmentDataViewsResult?.errorMessage ?? "Unable to get segment data views.");
-        }
+        await updateRecipients();
     }
 
     const debouncedGetRecipients = debounceAsync(
@@ -837,6 +883,19 @@
             recipients.value = [];
             console.error(result?.errorMessage ?? "Unable to get recipient count.");
         }
+    }
+
+    function onSaveAsTemplate({ html, bodyWidth }: GetHtmlResponse): void {
+        if (!communicationTemplateDetail.value) {
+            throw new Error("The source template is required.");
+        }
+
+        saveAsCommunicationTemplateBodyWidth.value = bodyWidth;
+        saveAsCommunicationTemplateDetail.value = {
+            ...communicationTemplateDetail.value,
+            message: html
+        };
+        isSaveCommunicationTemplateModalShown.value = true;
     }
 
     async function onSendTestEmail(message: string, callbacks: BlockActionCallbacks): Promise<void> {
@@ -929,8 +988,13 @@
         }
     }
 
-    async function onPendingCommunicationTemplateGuidUpdated(value: Guid | null | undefined): Promise<void> {
+    async function onCommunicationTemplateGuidUpdated(value: Guid | null | undefined): Promise<void> {
         try {
+            wasCommunicationTemplateChanged.value = true;
+
+            // Clear the current pending template if there is one.
+            communicationTemplateDetail.value = null;
+
             if (value) {
                 isFetchingCommunicationTemplate.value = true;
 
@@ -940,7 +1004,7 @@
                     console.error(result?.errorMessage ?? "unable to select communication template");
                 }
 
-                pendingCommunicationTemplate.value = result?.data;
+                communicationTemplateDetail.value = result?.data;
             }
         }
         finally {
@@ -999,16 +1063,27 @@
         pushTitle.value = bag.pushTitle ?? "";
     }
 
-    async function onCommunicationTemplateSelected(bag: CommunicationEntryWizardCommunicationTemplateDetailBag): Promise<void> {
-        populateFromCommunicationTemplateDetail(bag);
+    async function onChooseTemplateNextClicked(): Promise<void> {
+        try {
+            if (communicationTemplateDetail.value) {
+                if (wasCommunicationTemplateChanged.value) {
+                    populateFromCommunicationTemplateDetail(communicationTemplateDetail.value);
+                }
 
-        communicationTemplateGuid.value = bag.guid;
+                communicationTemplateGuid.value = communicationTemplateDetail.value.guid;
 
-        // Clear the pending communication template.
-        pendingCommunicationTemplate.value = null;
+                // Update the block person preferences.
+                await personPreferencesHelper.setCommuncationTemplateGuid(communicationTemplateDetail.value.guid);
 
-        // Update the block person preferences.
-        await personPreferencesHelper.setCommuncationTemplateGuid(bag.guid);
+                onNextStepClicked();
+            }
+            else {
+                console.warn("A communication template was not selected or hasn't finished loading.");
+            }
+        }
+        finally {
+            wasCommunicationTemplateChanged.value = false;
+        }
     }
 
     async function onSendCommunication(callbacks: BlockActionCallbacks): Promise<void> {
@@ -1138,7 +1213,7 @@
 
     // On initialization, if the communication is new, then copy fields from the template.
     onMounted(async () => {
-        if (!communicationId.value) {
+        if (!communicationId.value || !communicationTemplateGuid.value) {
             if (communicationTemplateDetail.value) {
                 populateFromCommunicationTemplateDetail(communicationTemplateDetail.value);
             }

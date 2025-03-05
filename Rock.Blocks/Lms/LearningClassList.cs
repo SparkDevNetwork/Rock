@@ -50,31 +50,31 @@ namespace Rock.Blocks.Lms
 
     #region Block Attributes
 
-    [CustomDropdownListField(
+    [BooleanField(
         "Show Location Column",
         Key = AttributeKey.ShowLocationColumn,
-        Description = "Select 'Show' to show the 'Location'.",
-        ListSource = ShowHideListSource,
+        Description = "Determines if the Location column should be visible.",
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         IsRequired = true,
-        DefaultValue = "No",
+        DefaultBooleanValue = false,
         Order = 1 )]
 
-    [CustomDropdownListField(
+    [BooleanField(
         "Show Schedule Column",
         Key = AttributeKey.ShowScheduleColumn,
-        Description = "Select 'Show' to show the 'Schedule' column.",
-        ListSource = ShowHideListSource,
+        Description = "Determines if the Schedule column should be visible.",
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         IsRequired = true,
-        DefaultValue = "No",
+        DefaultBooleanValue = false,
         Order = 2 )]
 
-    [CustomDropdownListField(
+    [BooleanField(
         "Show Semester Column",
         Key = AttributeKey.ShowSemesterColumn,
-        Description = "Select 'Show' to show the 'Semester' column when the configuration is 'Academic Calendar'.",
-        ListSource = ShowHideListSource,
+        Description = "Determines if the Semester column should be visible when the configuration is 'Academic Calendar'.",
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         IsRequired = true,
-        DefaultValue = "No",
+        DefaultBooleanValue = false,
         Order = 3 )]
 
     [LinkedPage( "Detail Page",
@@ -214,7 +214,7 @@ namespace Rock.Blocks.Lms
                 .Include( c => c.LearningCourse.LearningProgram )
                 .Include( c => c.LearningSemester )
                 .Include( c => c.LearningParticipants )
-                .Include( c => c.LearningParticipants.Select( p => p.LearningActivities ));
+                .Include( c => c.LearningParticipants.Select( p => p.LearningClassActivityCompletions ));
 
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
             if ( programId > 0 )
@@ -376,7 +376,7 @@ namespace Rock.Blocks.Lms
                 .Queryable()
                 .Any( p =>
                     p.LearningClassId == classId
-                    && p.LearningActivities.Any() );
+                    && p.LearningClassActivityCompletions.Any() );
 
             return ActionOk( hasCompletions );
         }

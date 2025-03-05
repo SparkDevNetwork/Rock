@@ -53,13 +53,13 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.DetailPage,
         Order = 2 )]
 
-    [CustomDropdownListField(
+    [BooleanField(
         "Show Completion Status",
         Key = AttributeKey.ShowCompletionStatus,
         Description = "Determines if the individual's completion status should be shown.",
-        ListSource = "Show,Hide",
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         IsRequired = true,
-        DefaultValue = "Show",
+        DefaultBooleanValue = true,
         Order = 3 )]
 
     [BooleanField(
@@ -197,7 +197,7 @@ namespace Rock.Blocks.Lms
                 <div class=""card-footer bg-transparent d-flex justify-content-between"">
                     <a href=""{{ course.CourseDetailsLink }}"" class=""btn btn-default"">Learn More</a>
                     
-                    {% if ShowCompletionStatus %}
+                    {% if ShowCompletionStatus and course.IsEnrolled == true %}
                                             
                         {% if course.LearningCompletionStatus == 'Incomplete' %}
                             <div class=""d-flex align-items-center"">
@@ -237,20 +237,7 @@ namespace Rock.Blocks.Lms
         {
             var box = new PublicLearningCourseListBlockBox();
 
-            SetBoxInitialEntityState( box );
-
             return box;
-        }
-
-        /// <summary>
-        /// Sets the initial entity state of the box. Populates the Entity or
-        /// ErrorMessage properties depending on the entity and permissions.
-        /// </summary>
-        /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( PublicLearningCourseListBlockBox box )
-        {
-            box.CoursesHtml = GetInitialHtmlContent();
         }
 
         /// <summary>
@@ -294,7 +281,7 @@ namespace Rock.Blocks.Lms
 
         private bool ShowCompletionStatus()
         {
-            return GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";
+            return GetAttributeValue( AttributeKey.ShowCompletionStatus ).AsBoolean();
         }
 
         private List<Rock.Model.LearningCourseService.PublicLearningCourseBag> GetCourses( int programId, RockContext rockContext )

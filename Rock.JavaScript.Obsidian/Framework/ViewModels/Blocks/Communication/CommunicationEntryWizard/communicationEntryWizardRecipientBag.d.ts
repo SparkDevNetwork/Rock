@@ -34,9 +34,6 @@ export type CommunicationEntryWizardRecipientBag = {
     /** Gets or sets a value indicating whether bulk email is allowed for this recipient. */
     isBulkEmailAllowed: boolean;
 
-    /** Gets or sets a value indicating whether this recipient is deceased. */
-    isDeceased: boolean;
-
     /** Gets or sets a value indicating whether email is active for this recipient. */
     isEmailActive: boolean;
 

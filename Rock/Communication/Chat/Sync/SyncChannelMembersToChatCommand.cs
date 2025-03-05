@@ -27,16 +27,6 @@ namespace Rock.Communication.Chat.Sync
     /// </summary>
     internal class SyncChannelMembersToChatCommand
     {
-        /// <summary>
-        /// The backing field for the <see cref="UserKeysToDelete"/> property.
-        /// </summary>
-        private readonly List<string> _userKeysToDelete = new List<string>();
-
-        /// <summary>
-        /// The backing field for the <see cref="MembersToCreateOrUpdate"/> property.
-        /// </summary>
-        private readonly List<ChatChannelMember> _membersToCreateOrUpdate = new List<ChatChannelMember>();
-
         /// <inheritdoc cref="ChatChannelType.Key"/>
         public string ChatChannelTypeKey { get; set; }
 
@@ -47,13 +37,13 @@ namespace Rock.Communication.Chat.Sync
         /// Gets the list of <see cref="ChatUser.Key"/>s for <see cref="ChatChannelMember"/>s that should be deleted
         /// within the external chat system.
         /// </summary>
-        public List<string> UserKeysToDelete => _userKeysToDelete;
+        public List<string> UserKeysToDelete { get; } = new List<string>();
 
         /// <summary>
         /// Gets the list of <see cref="ChatChannelMember"/>s that should be created or updated within the external chat
         /// system.
         /// </summary>
-        public List<ChatChannelMember> MembersToCreateOrUpdate => _membersToCreateOrUpdate;
+        public List<ChatChannelMember> MembersToCreateOrUpdate { get; } = new List<ChatChannelMember>();
 
         /// <summary>
         /// Gets the list of distinct <see cref="ChatUser.Key"/>s represented within this command.

@@ -85,6 +85,9 @@ export type CommunicationEntryWizardCommunicationBag = {
     /** Gets or sets the email message. */
     message?: string | null;
 
+    /** Gets or sets the personalization segment identifiers that communication recipients must satisfy. */
+    personalizationSegmentIds?: number[] | null;
+
     /** Gets or sets the push data. */
     pushData?: CommunicationEntryWizardPushNotificationOptionsBag | null;
 
@@ -111,9 +114,6 @@ export type CommunicationEntryWizardCommunicationBag = {
 
     /** Gets or sets the segment criterion. */
     segmentCriteria: SegmentCriteria;
-
-    /** Gets or sets the segment data view unique identifiers. */
-    segmentDataViewGuids?: Guid[] | null;
 
     /** Gets or sets the SMS attachments. */
     smsAttachmentBinaryFiles?: ListItemBag[] | null;

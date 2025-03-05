@@ -39,7 +39,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of personalization segments." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the personalization segment details.",
@@ -113,7 +113,7 @@ namespace Rock.Blocks.Cms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "PersonalizationSegmentId", "((Key))" ),
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["PersonalizationSegmentId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } ),
                 [NavigationUrlKey.SegmentPage] = RequestContext.ResolveRockUrl( "~/admin/cms/personalization-segments/((guid))" ),
             };
         }

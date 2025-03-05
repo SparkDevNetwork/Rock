@@ -5,8 +5,7 @@
             {{ finalMessage }}
         </NotificationBox>
 
-        <div v-if="communicationType === CommunicationType.Email || (communicationType === CommunicationType.RecipientPreference && allowedMediums.includes(CommunicationType.Email))"
-             class="well">
+        <ConditionalWell v-if="communicationType === CommunicationType.Email || (communicationType === CommunicationType.RecipientPreference && allowedMediums.includes(CommunicationType.Email))">
             <template v-if="!isAnalyticsSaved">
                 <Switch v-model="isEmailAnalyticsEnabled"
                         help="Turn this on to receive an email with basic performance analytics. Note: analytics only available for email medium."
@@ -36,7 +35,7 @@
                 <RockButton btnType="link"
                             @click="onCancelEmailAnalytics">Cancel</RockButton>
             </template>
-        </div>
+        </ConditionalWell>
 
         <template #footerActions>
             <RockButton v-if="hasDetailBlockOnCurrentPage"
@@ -50,12 +49,13 @@
 <script setup lang="ts">
     import { PropType, ref } from "vue";
     import { BlockActionCallbacks } from "./types.partial";
-    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
+    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
 

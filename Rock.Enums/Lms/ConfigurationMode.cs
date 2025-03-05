@@ -22,13 +22,15 @@ namespace Rock.Enums.Lms
     public enum ConfigurationMode
     {
         /// <summary>
-        /// On-demand learning mode.
-        /// </summary>
-        OnDemandLearning = 0,
-
-        /// <summary>
         /// Academic calendar mode.
         /// </summary>
-        AcademicCalendar = 1
+        [EnumOrder( 1 )]
+        AcademicCalendar = 0,
+
+        /// <summary>
+        /// On-demand learning mode.
+        /// </summary>
+        [EnumOrder( 0 )]
+        OnDemandLearning = 1
     }
 }

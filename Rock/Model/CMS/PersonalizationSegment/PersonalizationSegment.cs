@@ -144,6 +144,22 @@ namespace Rock.Model
         private ICollection<Category> _categories;
 
         #endregion Navigation Properties
+
+        #region Methods
+        
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.Name;
+        }
+
+        #endregion Methods
     }
 
     #region Entity Configuration

@@ -27,6 +27,8 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.BulkExport;
+using Rock.Communication.Chat;
+using Rock.Communication.Chat.DTO;
 using Rock.Data;
 using Rock.Security;
 using Rock.SystemKey;
@@ -5175,6 +5177,30 @@ AND GroupTypeId = ${familyGroupType.Id}
                 recipientToInactivate.ModifiedByPersonAliasId = personPrimaryAliasId;
                 recipientToInactivate.ModifiedAuditValuesAlreadyUpdated = true;
             }
+        }
+
+        /// <summary>
+        /// Gets the distinct identifiers of non-deceased <see cref="Person"/> records that have at least one
+        /// chat-specific <see cref="PersonAlias"/> record.
+        /// </summary>
+        /// <returns>The <see cref="Person"/> identifiers of all non-deceased chat users.</returns>
+        public IQueryable<int> GetChatUserPersonIds()
+        {
+            var rockContext = this.Context as RockContext;
+
+            var chatAliasQry = new PersonAliasService( rockContext )
+                .Queryable()
+                .Where( pa => pa.ForeignKey.StartsWith( ChatHelper.ChatPersonAliasForeignKeyPrefix ) );
+
+            return Queryable()
+                .Where( p => !p.IsDeceased )
+                .Join(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, pa ) => p.Id
+                )
+                .Distinct();
         }
     }
 }

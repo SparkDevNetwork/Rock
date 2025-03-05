@@ -158,7 +158,7 @@
                                                 :isSquare="true"
                                                 title="Mark As Unread"
                                                 @click="toggleConversationReadStatus(selectedConversation)">
-                                        <i class="fa fa-eye-slash"></i>
+                                        <i class="fa fa-eye-slash fa-fw"></i>
                                     </RockButton>
                                     <RockButton v-else
                                                 :btnType="BtnType.Default"
@@ -166,20 +166,22 @@
                                                 :isSquare="true"
                                                 title="Mark As Read"
                                                 @click="toggleConversationReadStatus(selectedConversation)">
-                                        <i class="fa fa-eye"></i>
+                                        <i class="fa fa-eye fa-fw"></i>
                                     </RockButton>
                                 </template>
                                 <RockButton v-if="selectedConversation.isLinkToPersonVisible && canEditOrAdministrate"
                                             :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
+                                            title="Link to Person"
                                             @click="showLinkToPersonModal">
-                                    Link To Person
+                                    <i class="fa fa-link fa-fw"></i>
                                 </RockButton>
                                 <RockButton v-if="selectedConversation.isViewMergeRequestVisible"
                                             :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
+                                            title="View Merge Request"
                                             @click="viewMergeRequest">
-                                    View Merge Request
+                                    <i class="fa fa-users fa-fw"></i>
                                 </RockButton>
                             </div>
                         </div>
@@ -731,7 +733,7 @@
 
     // #region Filter Values
 
-    const messageFilterSelection = ref<string>(preferences.getValue(PreferenceKey.SelectedMessageFilter) ?? CommunicationMessageFilter.ShowUnreadReplies.toString());
+    const messageFilterSelection = ref<string>(preferences.getValue(PreferenceKey.SelectedMessageFilter) || CommunicationMessageFilter.ShowAllMessages.toString());
     const personFilterSelection = ref<ListItemBag | undefined>();
     const isPersonFilterToggled = ref<boolean>(false);
     const systemPhoneNumbers = ref<ListItemBag[]>(box.systemPhoneNumbers ?? []);

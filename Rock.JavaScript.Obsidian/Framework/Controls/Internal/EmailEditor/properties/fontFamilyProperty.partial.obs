@@ -10,8 +10,9 @@
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
     import DropDownListProperty from "./dropDownListProperty.partial.obs";
+    import { inlineStyleProvider, styleSheetProvider } from "../providers.partial";
     import { StyleSheetMode, ValueProvider } from "../types.partial";
-    import { inlineStyleProvider, stringConverter, styleSheetProvider } from "../utils.partial";
+    import { stringConverter } from "../utils.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({

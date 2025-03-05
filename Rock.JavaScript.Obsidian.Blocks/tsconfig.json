@@ -14,6 +14,7 @@
     { "path": "./src/Example" },
     { "path": "./src/Finance" },
     { "path": "./src/Group" },
+    { "path": "./src/Lms" },
     { "path": "./src/Mobile" },
     { "path": "./src/Prayer" },
     { "path": "./src/Reporting" },

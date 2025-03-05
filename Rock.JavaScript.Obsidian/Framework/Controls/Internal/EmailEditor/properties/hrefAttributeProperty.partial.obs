@@ -12,8 +12,9 @@
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
     import TextBoxProperty from "./textBoxProperty.partial.obs";
+    import { attributeProvider } from "../providers.partial";
     import { ValueProvider } from "../types.partial";
-    import { attributeProvider, stringConverter } from "../utils.partial";
+    import { stringConverter } from "../utils.partial";
 
     const props = defineProps({
         element: {

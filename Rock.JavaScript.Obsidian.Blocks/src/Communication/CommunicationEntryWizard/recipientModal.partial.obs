@@ -43,12 +43,8 @@
 
                 <Column :name="getRecipientKey('name')" :field="getRecipientKey('name')" title="Name" :filter="textValueFilter">
                     <template #format="{ row }">
-                        <div v-if="!(row as CommunicationEntryWizardRecipientBag).isDeceased">
+                        <div>
                             {{ (row as CommunicationEntryWizardRecipientBag).name }}
-                        </div>
-                        <div v-else class="text-muted">
-                            <div>{{ (row as CommunicationEntryWizardRecipientBag).name }}</div>
-                            <small class="font-weight-light">Deceased Won't Send</small>
                         </div>
                     </template>
                 </Column>
@@ -313,10 +309,7 @@
     }
 
     function getEmailTextCssClass(recipient: CommunicationEntryWizardRecipientBag): string {
-        if (recipient.isDeceased) {
-            return "text-muted";
-        }
-        else if (!recipient.isEmailAllowed) {
+        if (!recipient.isEmailAllowed) {
             return "text-danger";
         }
         else {
@@ -325,10 +318,7 @@
     }
 
     function getSmsTextCssClass(recipient: CommunicationEntryWizardRecipientBag): string {
-        if (recipient.isDeceased) {
-            return "text-muted";
-        }
-        else if (!recipient.isSmsAllowed) {
+        if (!recipient.isSmsAllowed) {
             return "text-danger";
         }
         else {
@@ -337,10 +327,7 @@
     }
 
     function getPushTextCssClass(recipient: CommunicationEntryWizardRecipientBag): string {
-        if (recipient.isDeceased) {
-            return "text-muted";
-        }
-        else if (!recipient.isPushAllowed) {
+        if (!recipient.isPushAllowed) {
             return "text-danger";
         }
         else {
@@ -355,10 +342,7 @@
             return recipient?.email || "No Email.";
         }
 
-        if (recipient.isDeceased) {
-            return "Deceased.";
-        }
-        else if (!recipient.email) {
+        if (!recipient.email) {
             return "No Email.";
         }
         else if (!recipient.isEmailActive) {
@@ -375,10 +359,7 @@
             return recipient?.smsNumber ? formatPhoneNumber(recipient.smsNumber) : "No SMS Number.";
         }
 
-        if (recipient.isDeceased) {
-            return "Deceased.";
-        }
-        else if (!recipient.smsNumber) {
+        if (!recipient.smsNumber) {
             return "No SMS Number.";
         }
         else {
@@ -392,12 +373,7 @@
             return "";
         }
 
-        if (recipient.isDeceased) {
-            return "Deceased.";
-        }
-        else {
-            return "No Push Device.";
-        }
+        return "No Push Device.";
     }
 
     function tryGetRegExp(pattern: string): RegExp | undefined {

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="flat-panel">
+    <div class="flat-panel" :class="{ 'scrollable': hasScrollableBody }">
         <div class="flat-panel-header">
             <slot name="preTitle">
                 <div></div>
@@ -13,7 +13,7 @@
             </slot>
         </div>
 
-        <div :class="hasPaddedBody ? 'flat-panel-body-padded' : 'flat-panel-body'">
+        <div class="flat-panel-body" :class="{ 'padded': hasPaddedBody, 'scrollable': hasScrollableBody }">
             <slot></slot>
         </div>
     </div>
@@ -23,6 +23,13 @@
 .flat-panel {
     border: none;
 }
+
+.flat-panel.scrollable {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 .flat-panel-header {
     display: flex;
     flex-direction: row;
@@ -36,8 +43,12 @@
     margin: 0;
 }
 
-.flat-panel-body-padded {
+.flat-panel-body.padded {
     padding: var(--spacing-medium);
+}
+
+.flat-panel-body.scrollable {
+    overflow-y: auto;
 }
 </style>
 
@@ -46,6 +57,11 @@
 
     defineProps({
         hasPaddedBody: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        hasScrollableBody: {
             type: Boolean as PropType<boolean>,
             default: false
         },

@@ -66,6 +66,7 @@
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps(dataViewFilterProps);
     const emit = defineEmits<{
@@ -89,30 +90,6 @@
     const groupMemberRoleItems = ref<ListItemBag[]>(safeParseJson(props.modelValue.groupMemberRoleItems) ?? []);
 
     const groupMemberStatusItems = enumToListItemBag(GroupMemberStatusDescription);
-
-    // #endregion
-
-    // #region Functions
-
-    /**
-     * Attempts to parse the JSON and returns undefined if it could not be parsed.
-     *
-     * @param value The JSON value to parse.
-     *
-     * @returns The object that represents the JSON or undefined.
-     */
-    function safeParseJson<T>(value: string | null | undefined): T | undefined {
-        if (!value) {
-            return undefined;
-        }
-
-        try {
-            return JSON.parse(value);
-        }
-        catch {
-            return undefined;
-        }
-    }
 
     // #endregion
 

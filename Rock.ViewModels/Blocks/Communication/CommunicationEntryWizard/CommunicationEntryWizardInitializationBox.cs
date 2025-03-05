@@ -39,7 +39,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// <summary>
         /// Gets or sets the communication templates.
         /// </summary>
-        public List<CommunicationEntryWizardCommunicationTemplateBag> Templates { get; set; }
+        public List<CommunicationEntryWizardCommunicationTemplateListItemBag> Templates { get; set; }
 
         /// <summary>
         /// Gets or sets whether the communication wizard block should be hidden.
@@ -53,11 +53,6 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// 
         /// </summary>
         public List<ListItemBag> CommunicationListGroups { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public List<ListItemBag> SegmentDataViews { get; set; }
 
         /// <summary>
         /// 
@@ -156,5 +151,15 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// Gets or sets a value determining whether this page has a communication detail block.
         /// </summary>
         public bool HasDetailBlockOnCurrentPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication topic values.
+        /// </summary>
+        public List<ListItemBag> CommunicationTopicValues { get; set; }
+
+        /// <summary>
+        /// Gets or sets the personalization segments.
+        /// </summary>
+        public List<ListItemBag> PersonalizationSegments { get; set; }
     }
 }

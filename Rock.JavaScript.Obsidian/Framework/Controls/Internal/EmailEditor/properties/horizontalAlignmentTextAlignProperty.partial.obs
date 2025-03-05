@@ -8,8 +8,9 @@
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
     import HorizontalAlignmentProperty from "./horizontalAlignmentProperty.partial.obs";
-    import { HorizontalAlignment, StyleSheetMode, ValueProvider } from "../types.partial";
-    import { horizontalAlignmentConverter, inlineStyleProvider, styleSheetProvider } from "../utils.partial";
+    import { inlineStyleProvider, styleSheetProvider } from "../providers.partial";
+    import { HorizontalAlignment, StyleSheetMode, StyleValueProviderHooks, ValueProvider } from "../types.partial";
+    import { horizontalAlignmentConverter } from "../utils.partial";
 
     const props = defineProps({
         element: {
@@ -36,6 +37,10 @@
         styleSheetMode: {
             type: Object as PropType<StyleSheetMode | undefined>,
             required: false
+        },
+
+        hooks: {
+            type: Object as PropType<StyleValueProviderHooks<HorizontalAlignment | "" | null | undefined, string | null> | null | undefined>
         }
     });
 
@@ -55,7 +60,8 @@
                 props.element,
                 "text-align",
                 horizontalAlignmentConverter,
-                props.copyToElements
+                props.copyToElements,
+                props.hooks
             );
         }
         else {
@@ -64,7 +70,8 @@
                 props.styleSheetMode.styleCssClass,
                 props.styleSheetMode.rulesetCssSelector,
                 "text-align",
-                horizontalAlignmentConverter
+                horizontalAlignmentConverter,
+                props.hooks
             );
         }
     }

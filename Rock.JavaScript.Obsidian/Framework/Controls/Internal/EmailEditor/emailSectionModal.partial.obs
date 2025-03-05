@@ -45,6 +45,7 @@
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -220,7 +221,8 @@
 
                 const thumbnailInfo = await createBinaryFileImageFromElement({
                     element: tempElement,
-                    fileName: getFileName(emailSectionName.value)
+                    fileName: getFileName(emailSectionName.value),
+                    binaryFileTypeGuid: BinaryFiletype.CommunicationImage
                 });
 
                 // Save the email section.
@@ -274,7 +276,8 @@
 
                 const thumbnailInfo = await createBinaryFileImageFromElement({
                     element: tempElement,
-                    fileName: getFileName(emailSectionName.value)
+                    fileName: getFileName(emailSectionName.value),
+                    binaryFileTypeGuid: BinaryFiletype.CommunicationImage
                 });
 
                 // Save the email section.

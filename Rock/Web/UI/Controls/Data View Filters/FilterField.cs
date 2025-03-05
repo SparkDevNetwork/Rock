@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Reporting;
 using Rock.Reporting.DataFilter;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -727,6 +728,46 @@ namespace Rock.Web.UI.Controls
                     clientFormatString =
                        string.Format( "if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) {{ var $article = $(this).parents('article').first(); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description').first().html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
                 }
+
+                if ( component?.ObsidianFileUrl != null )
+                {
+                    var entityTypeGuid = EntityTypeCache.Get( FilteredEntityTypeName )?.Guid;
+                    var filterType = EntityTypeCache.Get( FilterEntityTypeName );
+
+                    // This really shouldn't happen, but just in case something
+                    // goes horribly wrong lets make sure we at least show
+                    // something in the title bar.
+                    if ( !entityTypeGuid.HasValue || filterType == null )
+                    {
+                        clientFormatString = $@"if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) {{
+    var $article = $(this).parents('article').first();
+    var $content = $article.children('div.panel-body');
+    var $description = $article.find('div.filter-item-description').first();
+    $description.text('{FilterEntityTypeName}');
+}}".Replace( "\r\n", " " ).Replace( "\n", " " );
+                    }
+                    else
+                    {
+                        // We have to check access on the EntityType record because the
+                        // component is not an IEntity so it will not work.
+                        var securityGrantToken = new SecurityGrant()
+                            .AddRule( new EntitySecurityGrantRule( filterType.CachedEntityTypeId, filterType.Id ) )
+                            .ToToken();
+
+                        clientFormatString = $@"if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) {{
+    var $article = $(this).parents('article').first();
+    var $content = $article.children('div.panel-body');
+    var $description = $article.find('div.filter-item-description').first();
+    var $icon = $(this).find('.filter-view-state').children('i');
+    var data = $content.find('input[id$=\'_hfData\']').val();
+    var json = JSON.stringify({{ securityGrantToken: '{securityGrantToken}', entityTypeGuid: '{entityTypeGuid}', filterTypeGuid: '{filterType.Guid}', componentData: data }});
+
+    fetch('/api/v2/controls/DataFilterFormatSelection', {{ method: 'POST', body: json, headers: {{ 'Content-Type': 'application/json'}}}})
+        .then(res => {{ if (res.status === 200) {{ return res.json(); }} else {{ return '{FilterEntityTypeName}'; }} }})
+        .then(res => {{ if (!$icon.hasClass('fa-chevron-up')) {{ $description.text(res); }} }})
+}}".Replace( "\r\n", " " ).Replace( "\n", " " );
+                    }
+                }
             }
 
             if ( component == null || HasFilterError )
@@ -894,6 +935,14 @@ namespace Rock.Web.UI.Controls
         private void ddlFilterType_SelectedIndexChanged( object sender, EventArgs e )
         {
             FilterEntityTypeName = ( ( DropDownList ) sender ).SelectedValue;
+
+            // If this is an Obsidian control then we need to set the selection
+            // so it has a chance to prepare initial values.
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
+            if ( component != null && UseObsidian && component.ObsidianFileUrl != null )
+            {
+                SetSelection( string.Empty );
+            }
 
             if ( SelectionChanged != null )
             {

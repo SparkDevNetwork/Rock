@@ -29,6 +29,7 @@
 
                 <FlatPanel v-else
                            :hasPaddedBody="true"
+                           :hasScrollableBody="true"
                            title="Blocks">
                     <div class="side-panel-content-body">
                         <div>
@@ -72,6 +73,7 @@
 
             <template v-else-if="selectedSidePanelMenuItem === 'sections'">
                 <FlatPanel :hasPaddedBody="true"
+                           :hasScrollableBody="true"
                            title="Sections">
                     <CategoryPicker v-model="emailSectionFilterByCategory"
                                     blankValue="Select Category"
@@ -127,7 +129,8 @@
                 <GlobalPropertyPanel v-if="emailDocument"
                                      v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
                                      :document="emailDocument"
-                                     :communicationTemplates="communicationTemplates" />
+                                     :communicationTemplates="communicationTemplates"
+                                     :hasScrollableBody="true" />
             </template>
         </div>
     </div>
@@ -172,7 +175,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: var(--color-interface-stronger);
+    color: var(--color-interface-strong);
 }
 
 .side-panel-menu-item.selected {
@@ -424,7 +427,7 @@
         "button",
         "video",
         "divider",
-        "message",
+        "row",
         "rsvp",
         "code"
     );

@@ -40,14 +40,6 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this recipient is deceased.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this recipient is deceased; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsDeceased { get; set; }
-
-        /// <summary>
         /// Gets or sets the SMS number for this recipient.
         /// </summary>
         /// <value>
