@@ -385,6 +385,26 @@ export function replaceAll(str: string, search: string, replace: string): string
     return str.replace(new RegExp(search, "g"), replace);
 }
 
+/**
+ * Attempts to parse the JSON and returns undefined if it could not be parsed.
+ *
+ * @param value The JSON value to parse.
+ *
+ * @returns The object that represents the JSON or undefined.
+ */
+export function safeParseJson<T>(value: string | null | undefined): T | undefined {
+    if (!value) {
+        return undefined;
+    }
+
+    try {
+        return JSON.parse(value);
+    }
+    catch {
+        return undefined;
+    }
+}
+
 export default {
     asCommaAnd,
     containsHtmlTag,
@@ -402,5 +422,6 @@ export default {
     padRight,
     truncate,
     createHash,
-    replaceAll
+    replaceAll,
+    safeParseJson,
 };

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,9 +22,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Utility;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -38,7 +41,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Shows a summary of Groups in which a Person participates from a filtered subset of Groups defined by a Data View" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Group Participation" )]
-    [Rock.SystemGuid.EntityTypeGuid( "CC008C3C-AD0E-437D-A55F-274718679F4D")]
+    [Rock.SystemGuid.EntityTypeGuid( "CC008C3C-AD0E-437D-A55F-274718679F4D" )]
     public class GroupParticipationSelect : DataSelectComponent
     {
         #region Properties
@@ -110,6 +113,113 @@ namespace Rock.Reporting.DataSelect.Person
             get { return "Group Participation"; }
         }
 
+        /// <inheritdoc/>
+        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataSelects/Person/groupParticipationSelect.obs";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var result = new Dictionary<string, string>();
+            var settings = new GroupParticipationSelectSettings( selection );
+
+            if ( !settings.IsValid )
+            {
+                return result;
+            }
+
+            var listFormatOptions = new List<ListItemBag>
+            {
+                new ListItemBag
+                {
+                    Text = "Group List: Name And Role",
+                    Value = ListFormatSpecifier.GroupAndRole.ToString()
+                },
+                new ListItemBag
+                {
+                    Text = "Group List: Group Name",
+                    Value = ListFormatSpecifier.GroupOnly.ToString()
+                },
+                new ListItemBag
+                {
+                    Text = "Yes/No: Yes if any participation",
+                    Value = ListFormatSpecifier.YesNo.ToString()
+                },
+            };
+
+            result.Add( "listFormatOptions", listFormatOptions.ToCamelCaseJson( false, true ) );
+            result.Add( "listFormat", settings.ListFormat.ToString() );
+
+            var roleTypeOptions = new List<ListItemBag>
+            {
+                new ListItemBag
+                {
+                    Text = "Leader",
+                    Value = RoleTypeSpecifier.Leader.ToString()
+                },
+                new ListItemBag
+                {
+                    Text = "Member",
+                    Value = RoleTypeSpecifier.Member.ToString()
+                }
+            };
+
+            result.Add( "roleTypeOptions", roleTypeOptions.ToCamelCaseJson( false, true ) );
+            result.Add( "roleType", settings.RoleType.ToString() );
+
+            var groupMemberStatusOptions = new List<ListItemBag>
+            {
+                new ListItemBag
+                {
+                    Text = "Inactive",
+                    Value = GroupMemberStatus.Inactive.ToString()
+                },
+                new ListItemBag
+                {
+                    Text = "Active",
+                    Value = GroupMemberStatus.Active.ToString()
+                },
+                new ListItemBag
+                {
+                    Text = "Pending",
+                    Value = GroupMemberStatus.Pending.ToString()
+                },
+            };
+
+            result.Add( "groupMemberStatusOptions", groupMemberStatusOptions.ToCamelCaseJson( false, true ) );
+            result.Add( "groupMemberStatus", settings.MemberStatus.ToString() );
+
+            if ( settings.DataViewGuid.HasValue )
+            {
+                var dsService = new DataViewService( new RockContext() );
+                var dataView = dsService.Get( settings.DataViewGuid.Value );
+
+                if ( dataView != null )
+                {
+                    var dataViewBag = new ListItemBag { Text = dataView.Name, Value = dataView.Guid.ToString() };
+                    result.Add( "dataView", dataViewBag.ToCamelCaseJson( false, true ) );
+                }
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new GroupParticipationSelectSettings();
+
+            settings.MemberStatus = data.GetValueOrNull( "groupMemberStatus" )?.ConvertToEnumOrNull<GroupMemberStatus>();
+            settings.RoleType = data.GetValueOrNull( "roleType" )?.ConvertToEnumOrNull<RoleTypeSpecifier>();
+            settings.DataViewGuid = data.GetValueOrDefault( "dataView", "{}" ).FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+            settings.ListFormat = data.GetValueOrNull( "listFormat" )?.ConvertToEnumOrNull<ListFormatSpecifier>() ?? ListFormatSpecifier.GroupAndRole;
+
+            return settings.ToSelectionString();
+        }
+
         #endregion
 
         #region Methods
@@ -166,7 +276,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             var groupQuery = groupService.Queryable();
 
-            if (dataView != null)
+            if ( dataView != null )
             {
                 groupQuery = DataComponentSettingsHelper.FilterByDataView( groupQuery, dataView, groupService );
             }
@@ -211,7 +321,7 @@ namespace Rock.Reporting.DataSelect.Person
             // Set the Output Format of the field.
             Expression selectExpression;
 
-            if (settings.ListFormat == ListFormatSpecifier.YesNo)
+            if ( settings.ListFormat == ListFormatSpecifier.YesNo )
             {
                 // Define a Query to return True/False text indicating if the Person participates in any of the filtered Groups.
                 // Note that the text must be returned as an Enumerable to satisfy the expected output of this field.
@@ -225,7 +335,7 @@ namespace Rock.Reporting.DataSelect.Person
                 // Define a Query to return the collection of filtered Groups for each Person.
                 Expression<Func<Rock.Model.GroupMember, string>> outputExpression;
 
-                if (settings.ListFormat == ListFormatSpecifier.GroupOnly)
+                if ( settings.ListFormat == ListFormatSpecifier.GroupOnly )
                 {
                     outputExpression = ( ( m => m.Group.Name ) );
                 }
@@ -251,6 +361,8 @@ namespace Rock.Reporting.DataSelect.Person
         private const string _CtlDataView = "dvpDataView";
         private const string _CtlRoleType = "ddlRoleType";
         private const string _CtlGroupStatus = "ddlGroupStatus";
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -370,6 +482,8 @@ namespace Rock.Reporting.DataSelect.Person
             }
         }
 
+#endif
+
         #endregion
 
         #region Settings
@@ -420,10 +534,10 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 var settings = new List<string>();
 
-                settings.Add( ( (int)ListFormat ).ToString() );
+                settings.Add( ( ( int ) ListFormat ).ToString() );
                 settings.Add( DataViewGuid.ToStringSafe() );
-                settings.Add( RoleType == null ? string.Empty : ( (int)RoleType ).ToString() );
-                settings.Add( MemberStatus == null ? string.Empty : ( (int)MemberStatus ).ToString() );
+                settings.Add( RoleType == null ? string.Empty : ( ( int ) RoleType ).ToString() );
+                settings.Add( MemberStatus == null ? string.Empty : ( ( int ) MemberStatus ).ToString() );
 
                 return settings;
             }
