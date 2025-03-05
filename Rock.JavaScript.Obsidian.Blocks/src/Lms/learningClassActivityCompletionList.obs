@@ -6,7 +6,7 @@
           :class="visibleCssClass"
           keyField="key"
           title="Learning Plan Completion Status"
-          :entityTypeGuid="EntityType.LearningActivityCompletion"
+          :entityTypeGuid="EntityType.LearningClassActivityCompletion"
           :isCountMessageVisible="false"
           stickyHeader
           liveUpdates
