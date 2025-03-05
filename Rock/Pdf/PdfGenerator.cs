@@ -15,12 +15,15 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+
 using PuppeteerSharp;
-using PuppeteerSharp.BrowserData;
 using PuppeteerSharp.Media;
+
 using Rock.Observability;
 using Rock.SystemKey;
 using Rock.Utility;
@@ -74,9 +77,9 @@ namespace Rock.Pdf
 
             try
             {
-                var executablePath = browserFetcher.GetExecutablePath(_browserVersion);
+                var executablePath = browserFetcher.GetExecutablePath( _browserVersion );
                 var installingFlagFileName = Path.Combine( browserFetcher.CacheDir, ".installing" );
-                var localInstallExists = browserFetcher.GetInstalledBrowsers().Any(b => b.BuildId == _browserVersion);
+                var localInstallExists = browserFetcher.GetInstalledBrowsers().Any( b => b.BuildId == _browserVersion );
 
                 // If checking for an incomplete install, check if there is an orphaned ".installing" file. Also make sure that the chrome.exe exists
                 // (just in case files were deleted, but folders were not).
@@ -87,7 +90,7 @@ namespace Rock.Pdf
                     {
                         // Attempt to kill any chrome.exe processes that are running in our ChromeEngine directory so that we can remove it.
                         KillChromeProcesses();
-                        browserFetcher.Uninstall(_browserVersion);
+                        browserFetcher.Uninstall( _browserVersion );
                         localInstallExists = false;
                     }
                 }
@@ -104,7 +107,7 @@ namespace Rock.Pdf
                 }
 
                 File.WriteAllText( installingFlagFileName, "If this file exists, either the chrome engine is currently installing, or was interrupted before the install completed." );
-                AsyncHelper.RunSync(() => browserFetcher.DownloadAsync(_browserVersion));
+                AsyncHelper.RunSync( () => browserFetcher.DownloadAsync( _browserVersion ) );
                 File.Delete( installingFlagFileName );
 
                 if ( _lastProgressPercentage > 99 )
@@ -161,7 +164,7 @@ namespace Rock.Pdf
                 var browserFetcher = GetBrowserFetcher();
 
                 // Kill any chrome.exe's that got left running
-                var executablePath = browserFetcher.GetExecutablePath(_browserVersion);
+                var executablePath = browserFetcher.GetExecutablePath( _browserVersion );
                 var chromeProcesses = Process.GetProcessesByName( "chrome" );
                 foreach ( var process in chromeProcesses )
                 {
@@ -185,6 +188,24 @@ namespace Rock.Pdf
         }
 
         /// <summary>
+        /// The paper formats
+        /// </summary>
+        public static readonly Dictionary<string, PaperFormat> PaperFormats = new Dictionary<string, PaperFormat>( StringComparer.OrdinalIgnoreCase )
+        {
+            { "Letter", PaperFormat.Letter },
+            { "Legal", PaperFormat.Legal },
+            { "Tabloid", PaperFormat.Tabloid },
+            { "Ledger", PaperFormat.Ledger },
+            { "A0", PaperFormat.A0 },
+            { "A1", PaperFormat.A1 },
+            { "A2", PaperFormat.A2 },
+            { "A3", PaperFormat.A3 },
+            { "A4", PaperFormat.A4 },
+            { "A5", PaperFormat.A5 },
+            { "A6", PaperFormat.A6 }
+        };
+
+        /// <summary>
         /// Gets or sets CSS @media. Defaults to <see cref="MediaType.Screen"/>
         /// </summary>
         /// <value>The type of the PDF media.</value>
@@ -194,13 +215,38 @@ namespace Rock.Pdf
         /// Gets or sets the paper format (Letter, Legal, A4). Defaults to <see cref="PaperFormat.Letter"/>
         /// </summary>
         /// <value>The paper format.</value>
-        public PaperFormat PaperFormat { get; set; } = PaperFormat.Letter;
+        public PaperFormat PaperFormat { get; set; }
 
         /// <summary>
-        /// Gets or sets the margin options.
+        /// Gets or sets the margin options. Refers to using inches as the unit of measurement.
         /// </summary>
         /// <value>The margin options.</value>
         public MarginOptions MarginOptions { get; set; }
+
+        /// <summary>
+        /// Paper ranges to print, e.g., <c>1-5, 8, 11-13</c>. Defaults to the empty string, which means print all pages.
+        /// </summary>
+        public string PageRanges { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the width.
+        /// </summary>
+        public double? Width { get; set; } = 8.5;
+
+        /// <summary>
+        /// Gets or sets the height.
+        /// </summary>
+        public double? Height { get; set; } = 11;
+
+        /// <summary>
+        /// Display header and footer. Defaults to <c>false</c>.
+        /// </summary>
+        public bool DisplayHeaderFooter { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the header HTML. This value will override the default. To use the default leave blank/null.
+        /// </summary>
+        public string HeaderHtml { get; set; }
 
         /// <summary>
         /// Print background graphics. Defaults to true.
@@ -249,7 +295,7 @@ namespace Rock.Pdf
 
                 // should have already been installed, but just in case it hasn't, download it now.
                 EnsureChromeEngineInstalled( browserFetcher, false );
-                launchOptions.ExecutablePath = browserFetcher.GetExecutablePath(_browserVersion);
+                launchOptions.ExecutablePath = browserFetcher.GetExecutablePath( _browserVersion );
 
                 _puppeteerBrowser = Puppeteer.LaunchAsync( launchOptions ).Result;
             }
@@ -365,8 +411,26 @@ namespace Rock.Pdf
 
             var pdfOptions = new PdfOptions();
 
-            // Set page size
-            pdfOptions.Format = this.PaperFormat;
+            // Set page format (e.g A4, Legal, Letter)
+            if ( this.PaperFormat != null )
+            {
+                pdfOptions.Format = this.PaperFormat;
+            }
+            else
+            {
+                // Set Width
+                if ( this.Width != null )
+                {
+                    pdfOptions.Width = this.Width.ToString() + "in";
+                }
+
+                // Set Height
+                if ( this.Height != null )
+                {
+                    pdfOptions.Height = this.Height.ToString() + "in";
+                }
+            }
+
 
             // Set margins
             if ( this.MarginOptions != null )
@@ -377,23 +441,23 @@ namespace Rock.Pdf
             {
                 pdfOptions.MarginOptions = new MarginOptions
                 {
-                    Top = "10mm",
-                    Right = "10mm",
-                    Left = "10mm",
-                    Bottom = "15mm",
+                    Top = "1in",
+                    Right = "0.4in",
+                    Left = "0.4in",
+                    Bottom = "1in",
                 };
             }
 
             pdfOptions.PrintBackground = this.PrintBackground;
 
-            pdfOptions.DisplayHeaderFooter = true;
-
-            // set HeaderTemplate to something so that it doesn't end up using the default, which is Page Title and Date
-            pdfOptions.HeaderTemplate = "<!-- -->";
-
-            if( this.FooterHtml.IsNullOrWhiteSpace() )
+            pdfOptions.DisplayHeaderFooter = this.DisplayHeaderFooter;
+            if ( this.HeaderHtml.IsNotNullOrWhiteSpace() )
             {
+                pdfOptions.HeaderTemplate = this.HeaderHtml;
+            }
 
+            if ( this.FooterHtml.IsNullOrWhiteSpace() )
+            {
                 // Set footer template to show pageNumber/totalPages on the bottom right.
                 // See chromium source code at  https://source.chromium.org/chromium/chromium/src/+/main:components/printing/resources/print_header_footer_template_page.html
                 pdfOptions.FooterTemplate = @"
@@ -407,10 +471,16 @@ namespace Rock.Pdf
                 pdfOptions.FooterTemplate = this.FooterHtml;
             }
 
+            // Make Sure the margins doesn't push the document content out of bounds.
+            if ( !IsMarginWithinBounds( pdfOptions ) )
+            {
+                throw new PdfGeneratorException( "The provided margins exceed the document dimensions." );
+            }
+
             using ( var activity = ObservabilityHelper.StartActivity( "PDF: Generate From HTML" ) )
             {
                 activity?.AddTag( "rock.pdf.htmlsize", html.Length.ToString() );
-               
+
                 var pdfStreamTask = _puppeteerPage.PdfStreamAsync( pdfOptions );
 
                 // It should only take a couple of seconds to create a PDF, even if it a big file. If it takes more than 30 seconds,
@@ -425,6 +495,107 @@ namespace Rock.Pdf
                     return pdfStreamTask.Result;
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the specified margin (in inches) is within the bounds of the document dimensions.
+        /// </summary>
+        /// <param name="pdfOptions"></param>
+        /// <c>true</c> if the combined margins are within the document's width and height; otherwise, <c>false</c>.
+        private bool IsMarginWithinBounds( PdfOptions pdfOptions )
+        {
+            if ( pdfOptions == null )
+            {
+                throw new ArgumentException( "pdfOptions is null or empty", nameof( pdfOptions ) );
+            }
+
+            if ( pdfOptions.Height == null || pdfOptions.Width == null )
+            {
+                return true;
+            }
+
+            // Parse page dimensions
+            double height = ParseMeasurementToInches( pdfOptions.Height as string );
+            double width = ParseMeasurementToInches( pdfOptions.Width as string );
+
+            // Parse margin dimensions
+            var margin = pdfOptions.MarginOptions;
+            double marginLeft = ParseMeasurementToInches( margin.Left );
+            double marginRight = ParseMeasurementToInches( margin.Right );
+            double marginTop = ParseMeasurementToInches( margin.Top );
+            double marginBottom = ParseMeasurementToInches( margin.Bottom );
+
+            if ( ( marginLeft + marginRight ) > width )
+            {
+                return false;
+            }
+            if ( ( marginTop + marginBottom ) > height )
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Parses a measurement string and converts it to inches. A string representing a measurement.
+        /// </summary>
+        /// <param name="measure">
+        /// It should include a numeric value followed by an optional unit. 
+        /// Supported units are "in" (inches), "cm" (centimeters), "mm" (millimeters), "pt" (points), "pc" (picas), and "px" (pixels).
+        /// If no unit is provided, the value is assumed to be in inches. 
+        /// </param>
+        /// <returns>
+        /// The measurement converted to inches as a double.
+        /// </returns>
+        private double ParseMeasurementToInches( string measure )
+        {
+            if ( string.IsNullOrWhiteSpace( measure ) )
+            {
+                throw new ArgumentException( "Measurement is null or empty", nameof( measure ) );
+            }
+
+            measure = measure.Trim().ToLowerInvariant();
+            // default is inches
+            double factor = 1.0;
+
+            if ( measure.EndsWith( "in" ) )
+            {
+                measure = measure.Replace( "in", "" ).Trim();
+            }
+            else if ( measure.EndsWith( "cm" ) )
+            {
+                measure = measure.Replace( "cm", "" ).Trim();
+                factor = 1 / 2.54;
+            }
+            else if ( measure.EndsWith( "mm" ) )
+            {
+                measure = measure.Replace( "mm", "" ).Trim();
+                factor = 1 / 25.4;
+            }
+            else if ( measure.EndsWith( "pt" ) )
+            {
+                measure = measure.Replace( "pt", "" ).Trim();
+                factor = 1 / 72.0;
+            }
+            else if ( measure.EndsWith( "pc" ) )
+            {
+                measure = measure.Replace( "pc", "" ).Trim();
+                factor = 1 / 6.0;
+            }
+            else if ( measure.EndsWith( "px" ) )
+            {
+                measure = measure.Replace( "px", "" ).Trim();
+                factor = 1 / 96.0;
+            }
+
+            // Convert the value to a double and multiply by the conversion faction.
+            if ( double.TryParse( measure, NumberStyles.Any, CultureInfo.InvariantCulture, out double value ) )
+            {
+                return value * factor;
+            }
+
+            throw new FormatException( $"Invalid measurement format: {measure}" );
         }
 
         /// <summary>
