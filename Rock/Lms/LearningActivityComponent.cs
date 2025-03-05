@@ -101,13 +101,13 @@ namespace Rock.Lms
         /// UI options that would not make sense to be in the settings or
         /// completion data.
         /// </summary>
-        /// <param name="activity">The <see cref="LearningActivity"/> that will be displayed or <c>null</c> if this is a brand new activity.</param>
+        /// <param name="activity">The <see cref="LearningClassActivity"/> that will be displayed or <c>null</c> if this is a brand new activity.</param>
         /// <param name="componentData">If <paramref name="presentation"/> is <see cref="PresentedFor.Configuration"/> then this will be <c>null</c>; otherwise it will contain the component data previously returned by <c>GetComponentData</c>.</param>
         /// <param name="presentation">The target to which the component will be displayed.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <param name="requestContext">The context that describes the current network request.</param>
         /// <returns>A dictionary of additional configuraiton data to provide to the component.</returns>
-        public virtual Dictionary<string, string> GetActivityConfiguration( LearningActivity activity, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        public virtual Dictionary<string, string> GetActivityConfiguration( LearningClassActivity activity, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
         {
             return new Dictionary<string, string>();
         }
@@ -117,12 +117,12 @@ namespace Rock.Lms
         /// rendering for <see cref="PresentedFor.Configuration"/>. These
         /// are the values that can be edited and then sent back to be saved.
         /// </summary>
-        /// <param name="activity">The <see cref="LearningActivity"/> that will be displayed.</param>
+        /// <param name="activity">The <see cref="LearningClassActivity"/> that will be displayed.</param>
         /// <param name="componentData">The component data previously returned by <c>GetComponentData</c>.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <param name="requestContext">The context that describes the current network request.</param>
         /// <returns>A dictionary of settings that can be edited in the component.</returns>
-        public virtual Dictionary<string, string> GetComponentSettings( LearningActivity activity, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
+        public virtual Dictionary<string, string> GetComponentSettings( LearningClassActivity activity, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
         {
             return componentData;
         }
@@ -132,12 +132,12 @@ namespace Rock.Lms
         /// in the UI component. This will always be called in the context of
         /// a <see cref="PresentedFor.Configuration"/> save operation.
         /// </summary>
-        /// <param name="activity">The <see cref="LearningActivity"/> that is being updated.</param>
+        /// <param name="activity">The <see cref="LearningClassActivity"/> that is being updated.</param>
         /// <param name="componentSettings">The settings that were provided from the UI component.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <param name="requestContext">The context that describes the current network request.</param>
         /// <returns>A dictionary of raw component data values that will be stored in the database.</returns>
-        public virtual Dictionary<string, string> GetComponentData( LearningActivity activity, Dictionary<string, string> componentSettings, RockContext rockContext, RockRequestContext requestContext )
+        public virtual Dictionary<string, string> GetComponentData( LearningClassActivity activity, Dictionary<string, string> componentSettings, RockContext rockContext, RockRequestContext requestContext )
         {
             return componentSettings;
         }
@@ -147,14 +147,14 @@ namespace Rock.Lms
         /// component when displaying the completion for either the
         /// student or facilitator.
         /// </summary>
-        /// <param name="completion">The <see cref="LearningActivityCompletion"/> that will be displayed. This will never be <c>null</c> but may not be fully populated if it is a new completion.</param>
+        /// <param name="completion">The <see cref="LearningClassActivityCompletion"/> that will be displayed. This will never be <c>null</c> but may not be fully populated if it is a new completion.</param>
         /// <param name="completionData">The completion data previously returned by <c>GetCompletionData</c>.</param>
         /// <param name="componentData">The component data that was previously returned by <c>GetComponentData</c>.</param>
         /// <param name="presentation">The component will be displayed to either <see cref="PresentedFor.Facilitator"/> or <see cref="PresentedFor.Student"/>.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <param name="requestContext">The context that describes the current network request.</param>
         /// <returns>A dictionary of values that can be edited in the component.</returns>
-        public virtual Dictionary<string, string> GetCompletionValues( LearningActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        public virtual Dictionary<string, string> GetCompletionValues( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
         {
             return completionData;
         }
@@ -163,14 +163,14 @@ namespace Rock.Lms
         /// Gets the completion data from the completion values that were edited
         /// in the UI component.
         /// </summary>
-        /// <param name="completion">The <see cref="LearningActivityCompletion"/> that will be displayed. This will never be <c>null</c> but may not be fully populated if it is a new completion.</param>
+        /// <param name="completion">The <see cref="LearningClassActivityCompletion"/> that will be displayed. This will never be <c>null</c> but may not be fully populated if it is a new completion.</param>
         /// <param name="completionValues">The values that were provided from the UI component.</param>
         /// <param name="componentData">The component data that was previously returned by <c>GetComponentData</c>.</param>
         /// <param name="presentation">The component will be displayed to either <see cref="PresentedFor.Facilitator"/> or <see cref="PresentedFor.Student"/>.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <param name="requestContext">The context that describes the current network request.</param>
         /// <returns>A dictionary of raw completion data values that will be stored in the database.</returns>
-        public virtual Dictionary<string, string> GetCompletionData( LearningActivityCompletion completion, Dictionary<string, string> completionValues, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        public virtual Dictionary<string, string> GetCompletionData( LearningClassActivityCompletion completion, Dictionary<string, string> completionValues, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
         {
             return completionValues;
         }
@@ -180,14 +180,14 @@ namespace Rock.Lms
         /// completion data from the maximum points possible. This is used for
         /// automatic point assignment when completed by the student.
         /// </summary>
-        /// <param name="completion">The <see cref="LearningActivityCompletion"/> that points are being calculated for.</param>
+        /// <param name="completion">The <see cref="LearningClassActivityCompletion"/> that points are being calculated for.</param>
         /// <param name="completionData">The completion data previously returned by <c>GetCompletionData</c>.</param>
         /// <param name="componentData">The component data that was previously returned by <c>GetComponentData</c>.</param>
         /// <param name="pointsPossible">The maximum points possible for the activity./></param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <param name="requestContext">The context that describes the current network request, this may be <c>null</c>.</param>
         /// <returns>The actual points earned or <c>null</c> if no points should be assigned automatically.</returns>
-        public virtual int? CalculatePointsEarned( LearningActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, int pointsPossible, RockContext rockContext, RockRequestContext requestContext )
+        public virtual int? CalculatePointsEarned( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, int pointsPossible, RockContext rockContext, RockRequestContext requestContext )
         {
             return pointsPossible;
         }
@@ -196,13 +196,13 @@ namespace Rock.Lms
         /// Determines if the activity requires grading by a facilitator.
         /// Defaults to false allowing LearningActivityComponents to opt-in.
         /// </summary>
-        /// <param name="completion">The <see cref="LearningActivityCompletion"/> that points are being calculated for.</param>
+        /// <param name="completion">The <see cref="LearningClassActivityCompletion"/> that points are being calculated for.</param>
         /// <param name="completionData">The completion data previously returned by <c>GetCompletionData</c>.</param>
         /// <param name="componentData">The component data that was previously returned by <c>GetComponentData</c>.</param>
         /// <param name="rockContext">The context to use if access to the database is required.</param>
         /// <param name="requestContext">The context that describes the current network request, this may be <c>null</c>.</param>
         /// <returns><c>true</c> if the completion requires grading/scoring by a facilitator; otherwise <c>false</c>.</returns>
-        public virtual bool RequiresGrading( LearningActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
+        public virtual bool RequiresGrading( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
         {
             return false;
         }

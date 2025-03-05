@@ -59,9 +59,9 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<LearningActivityCompletion>( Context ).Queryable().Any( a => a.SentNotificationCommunicationId == item.Id ) )
+            if ( new Service<LearningClassActivityCompletion>( Context ).Queryable().Any( a => a.SentNotificationCommunicationId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Communication.FriendlyTypeName, LearningActivityCompletion.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Communication.FriendlyTypeName, LearningClassActivityCompletion.FriendlyTypeName );
                 return false;
             }
             return true;

@@ -17,18 +17,18 @@
 namespace Rock.Enums.Lms
 {
     /// <summary>
-    /// Determines the method for updating the due date of LearningActivityCompletion
-    /// records when the LearningActivity.DueDate is modified.
+    /// Determines the method for updating the due date of LearningClassActivityCompletion
+    /// records when the LearningClassActivity.DueDate is modified.
     /// </summary>
     public enum DueDateChangeType
     {
         /// <summary>
-        /// Update only LearningActivityCompletion records whose due date exactly matches the previous value.
+        /// Update only LearningClassActivityCompletion records whose due date exactly matches the previous value.
         /// </summary>
         UpdateMatching = 0,
 
         /// <summary>
-        /// Update all LearningActivityCompletion records to use the new due date.
+        /// Update all LearningClassActivityCompletion records to use the new due date.
         /// </summary>
         UpdateAll = 1
     }

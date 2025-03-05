@@ -14,7 +14,7 @@
             </div>
         </div>
 
-</fieldset>
+    </fieldset>
 </template>
 
 <script setup lang="ts">
@@ -27,8 +27,8 @@
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const props = defineProps({
-    modelValue: {
-    type: Object as PropType<LearningClassBag | null>,
+        modelValue: {
+            type: Object as PropType<LearningClassBag | null>,
             required: false
         },
 
@@ -105,17 +105,17 @@
         }
 
         const schedule = props.modelValue.schedule?.text ?? "";
-        let fieldText = props.modelValue.location?.text  ?? "";
+        let fieldText = props.modelValue.location?.namedLocation?.text ?? "";
         if (schedule.length > 0) {
             fieldText += (fieldText.length > 0 ? " - " : "") + schedule;
         }
 
-        if (fieldText.length > 0){
-            valueBuilder.addTextValue("Location / Schedule",  fieldText);
+        if (fieldText.length > 0) {
+            valueBuilder.addTextValue("Location / Schedule", fieldText);
         }
 
         const gradeText = props.modelValue.gradingSystem?.text ?? "";
-        if (gradeText.length > 0){
+        if (gradeText.length > 0) {
             valueBuilder.addTextValue("Grading System", gradeText);
         }
 

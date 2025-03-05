@@ -64,6 +64,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503042354103_AddLearningClassActivityEntity.cs" />
+    <Compile Include="Migrations\Version 17.0\Version 17.0\202503042354103_AddLearningClassActivityEntity.Designer.cs">
+      <DependentUpon>202503042354103_AddLearningClassActivityEntity.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202411211742013_AddAdaptiveMessageCategory.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202411211742013_AddAdaptiveMessageCategory.Designer.cs">
       <DependentUpon>202411211742013_AddAdaptiveMessageCategory.cs</DependentUpon>
@@ -2510,6 +2514,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503042354103_AddLearningClassActivityEntity.resx">
+      <DependentUpon>202503042354103_AddLearningClassActivityEntity.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202411211742013_AddAdaptiveMessageCategory.resx">
       <DependentUpon>202411211742013_AddAdaptiveMessageCategory.cs</DependentUpon>
     </EmbeddedResource>
