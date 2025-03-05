@@ -85,7 +85,7 @@ namespace Rock.Lms
         #region Methods
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetActivityConfiguration( LearningActivity activity, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        public override Dictionary<string, string> GetActivityConfiguration( LearningClassActivity activity, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
         {
             if ( presentation == PresentedFor.Configuration )
             {
@@ -124,7 +124,7 @@ namespace Rock.Lms
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetCompletionValues( LearningActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        public override Dictionary<string, string> GetCompletionValues( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
         {
             // Note: We don't strip the correct from students here because
             // they have already answered the questions. The answers are now
@@ -133,7 +133,7 @@ namespace Rock.Lms
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetCompletionData( LearningActivityCompletion completion, Dictionary<string, string> completionValues, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        public override Dictionary<string, string> GetCompletionData( LearningClassActivityCompletion completion, Dictionary<string, string> completionValues, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
         {
             var completionData = new Dictionary<string, string>( completionValues );
 
@@ -164,7 +164,7 @@ namespace Rock.Lms
         }
 
         /// <inheritdoc/>
-        public override int? CalculatePointsEarned( LearningActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, int pointsPossible, RockContext rockContext, RockRequestContext requestContext )
+        public override int? CalculatePointsEarned( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, int pointsPossible, RockContext rockContext, RockRequestContext requestContext )
         {
             var multipleChoiceSectionPoints = GetMultipleChoiceSectionPoints( componentData, completionData, pointsPossible );
             var shortAnswerSectionPoints = GetShortAnswerSectionPoints( componentData, completionData );
@@ -180,7 +180,7 @@ namespace Rock.Lms
         }
 
         /// <inheritdoc/>
-        public override bool RequiresGrading( LearningActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
+        public override bool RequiresGrading( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
         {
             if ( completion.GradedByPersonAliasId.HasValue )
             {

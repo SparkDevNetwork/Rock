@@ -191,7 +191,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import Grid, { Column, textValueFilter } from "@Obsidian/Controls/Grid";
+    import Grid, { Column, textValueFilter } from "@Obsidian/Controls/grid";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 

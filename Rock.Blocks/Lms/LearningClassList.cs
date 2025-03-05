@@ -214,7 +214,7 @@ namespace Rock.Blocks.Lms
                 .Include( c => c.LearningCourse.LearningProgram )
                 .Include( c => c.LearningSemester )
                 .Include( c => c.LearningParticipants )
-                .Include( c => c.LearningParticipants.Select( p => p.LearningActivities ));
+                .Include( c => c.LearningParticipants.Select( p => p.LearningClassActivityCompletions ));
 
             var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
             if ( programId > 0 )
@@ -376,7 +376,7 @@ namespace Rock.Blocks.Lms
                 .Queryable()
                 .Any( p =>
                     p.LearningClassId == classId
-                    && p.LearningActivities.Any() );
+                    && p.LearningClassActivityCompletions.Any() );
 
             return ActionOk( hasCompletions );
         }

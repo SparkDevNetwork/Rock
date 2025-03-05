@@ -81,7 +81,7 @@ namespace Rock.Lms
         #region Methods
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetActivityConfiguration( LearningActivity activity, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        public override Dictionary<string, string> GetActivityConfiguration( LearningClassActivity activity, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
         {
             if ( presentation == PresentedFor.Configuration )
             {

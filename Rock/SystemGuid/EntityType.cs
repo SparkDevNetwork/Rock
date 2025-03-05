@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -336,17 +336,22 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.LearningActivity"/>
         /// </summary>
-        public const string LEARNING_ACTIVITY = "E82F540C-F483-4D4A-898A-3AE7FF76F75A";
-
-        /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.LearningActivityCompletion"/>
-        /// </summary>
-        public const string LEARNING_ACTIVITY_COMPLETION = "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1";
+        public const string LEARNING_ACTIVITY = "98B98FA8-A92D-4E10-AA3E-B3082E61976F";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.LearningClass"/>
         /// </summary>
         public const string LEARNING_CLASS = "EB41E4E1-64B1-4AA1-8F66-F0DFD81557D9";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningClassActivity"/>
+        /// </summary>
+        public const string LEARNING_CLASS_ACTIVITY = "E82F540C-F483-4D4A-898A-3AE7FF76F75A";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LearningClassActivityCompletion"/>
+        /// </summary>
+        public const string LEARNING_CLASS_ACTIVITY_COMPLETION = "14D1295A-CE9E-4FCB-A63C-6DF04DB5E9B1";
 
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.LearningClassAnnouncement"/>

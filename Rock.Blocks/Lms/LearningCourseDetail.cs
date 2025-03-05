@@ -68,7 +68,7 @@ namespace Rock.Blocks.Lms
 
         private static class PageParameterKey
         {
-            public const string LearningActivityId = "LearningActivityId";
+            public const string LearningClassActivityId = "LearningClassActivityId";
             public const string LearningClassId = "LearningClassId";
             public const string LearningClassContentPageId = "LearningClassContentPageId";
             public const string LearningClassAnnouncementId = "LearningClassAnnouncementId";
@@ -423,7 +423,7 @@ namespace Rock.Blocks.Lms
         private Dictionary<string, string> GetBoxNavigationUrls( LearningCourseBag entity )
         {
             var queryParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey );
-            var activityParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningActivityId );
+            var activityParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningClassActivityId );
             var participantParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningParticipantId );
             var contentPageParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningClassContentPageId );
             var announcementParams = GetCurrentPageParams( entity.DefaultLearningClassIdKey, PageParameterKey.LearningClassAnnouncementId );

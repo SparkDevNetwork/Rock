@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Lava;
+using Rock.Lms;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -30,7 +31,7 @@ namespace Rock.Model
     {
         /// <summary>
         /// Deletes the <see cref="LearningProgram"/> for the specified <paramref name="programId"/>.
-        /// Includes deleting related data like <see cref="LearningActivity"/>,
+        /// Includes deleting related data like <see cref="LearningClassActivity"/>,
         /// <see cref="LearningClassAnnouncement"/>, <see cref="LearningClassContentPage"/>
         /// and <see cref="LearningParticipant"/> records.
         /// </summary>
@@ -43,7 +44,7 @@ namespace Rock.Model
                 var learningClassService = new LearningClassService( rockContext );
                 var classes = learningClassService
                     .Queryable()
-                    .Include( c => c.LearningActivities )
+                    .Include( c => c.LearningClassActivities )
                     .Include( c => c.LearningParticipants )
                     .Include( c => c.ContentPages )
                     .Include( c => c.Announcements )

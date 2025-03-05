@@ -131,9 +131,9 @@
     <Compile Include="Event\RegistrationInstanceActiveList.cs" />
     <Compile Include="Core\ScheduleCategoryExclusionList.cs" />
     <Compile Include="Core\ScheduledJobHistoryList.cs" />
-    <Compile Include="Lms\LearningActivityCompletionDetail.cs" />
-    <Compile Include="Lms\LearningActivityCompletionList.cs" />
-    <Compile Include="Lms\LearningActivityDetail.cs" />
+    <Compile Include="Lms\LearningClassActivityCompletionDetail.cs" />
+    <Compile Include="Lms\LearningClassActivityCompletionList.cs" />
+    <Compile Include="Lms\LearningClassActivityDetail.cs" />
     <Compile Include="Lms\LearningClassContentPageDetail.cs" />
     <Compile Include="Lms\LearningClassAnnouncementDetail.cs" />
     <Compile Include="Lms\LearningClassDetail.cs" />
