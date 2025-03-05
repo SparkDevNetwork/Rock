@@ -53,9 +53,9 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
-            if ( new Service<LearningActivity>( Context ).Queryable().Any( a => a.LearningClassId == item.Id ) )
+            if ( new Service<LearningClassActivity>( Context ).Queryable().Any( a => a.LearningClassId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningClass.FriendlyTypeName, LearningActivity.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", LearningClass.FriendlyTypeName, LearningClassActivity.FriendlyTypeName );
                 return false;
             }
 

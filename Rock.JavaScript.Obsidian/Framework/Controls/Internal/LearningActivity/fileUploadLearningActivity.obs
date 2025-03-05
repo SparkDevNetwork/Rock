@@ -108,7 +108,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
-    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
@@ -134,7 +134,7 @@
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = computed(() => props.activityBag);
-    const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningClassActivityCompletionBag);
     const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
     const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
     const studentComment = ref(completionBag.value.studentComment ?? "");

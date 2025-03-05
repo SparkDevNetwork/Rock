@@ -95,9 +95,9 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<LearningActivity>( Context ).Queryable().Any( a => a.CompletionWorkflowTypeId == item.Id ) )
+            if ( new Service<LearningClassActivity>( Context ).Queryable().Any( a => a.CompletionWorkflowTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, LearningActivity.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, LearningClassActivity.FriendlyTypeName );
                 return false;
             }
 

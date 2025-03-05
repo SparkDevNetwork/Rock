@@ -237,7 +237,7 @@ namespace Rock.Blocks.Lms
                 var classService = new LearningClassService( RockContext );
                 // Include related entities that should be deleted along with the class.
                 var classesForCourse = classService.Queryable()
-                    .Include( c => c.LearningActivities )
+                    .Include( c => c.LearningClassActivities )
                     .Include( c => c.LearningParticipants )
                     .Include( c => c.ContentPages )
                     .Include( c => c.Announcements )

@@ -1313,6 +1313,8 @@
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdatePersonPrimaryAliasGuid.cs" />
     <Compile Include="Jobs\UpdateProgramCompletions.cs" />
     <Compile Include="Lava\Shortcodes\SankeyDiagramShortcode.cs" />
+    <Compile Include="Lms\LearningClassActivityCompletionStatistics.cs" />
+    <Compile Include="Lms\LearningProgramKpis.cs" />
     <Compile Include="Model\CMS\AdaptiveMessageAdaptationSegment\AdaptiveMessageAdaptationSegment.Logic.cs" />
     <Compile Include="Model\CMS\ContentChannelItemAssociation\ContentChannelItemAssociation.Logic.cs" />
     <Compile Include="Model\CMS\ContentChannelItemSlug\ContentChannelItemSlug.Logic.cs" />
@@ -1320,6 +1322,7 @@
     <Compile Include="Model\CMS\MediaFolder\MediaFolder.Logic.cs" />
     <Compile Include="Model\CMS\PageRoute\PageRoute.Logic.cs" />
     <Compile Include="Model\CodeGenerated\EmailSectionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningActivityService.CodeGenerated.cs" />
     <Compile Include="Model\Communication\CommunicationAttachment\CommunicationAttachment.Logic.cs" />
     <Compile Include="Model\Communication\CommunicationResponseAttachment\CommunicationResponseAttachment.Logic.cs" />
     <Compile Include="Model\Communication\CommunicationTemplateAttachment\CommunicationTemplateAttachment.Logic.cs" />
@@ -1365,7 +1368,8 @@
     <Compile Include="Model\Group\GroupMemberScheduleTemplate\GroupMemberScheduleTemplate.Logic.cs" />
     <Compile Include="Model\Group\GroupScheduleExclusion\GroupScheduleExclusion.Logic.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSync.Logic.cs" />
-    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.SaveHook.cs" />
+    <Compile Include="Model\LMS\LearningActivity\LearningActivity.cs" />
+    <Compile Include="Model\LMS\LearningClassActivityCompletion\LearningClassActivityCompletion.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncement.Logic.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncementService.cs" />
     <Compile Include="Model\LMS\LearningClassContentPage\LearningClassContentPage.Logic.cs" />
@@ -1592,12 +1596,12 @@
     <Compile Include="Model\Group\GroupSync\GroupSyncResult.cs" />
     <Compile Include="Model\Group\GroupSync\GroupSyncService.cs" />
     <Compile Include="Model\Group\PeerNetwork\PeerNetwork.cs" />
-    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.cs" />
-    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletion.Logic.cs" />
-    <Compile Include="Model\LMS\LearningActivityCompletion\LearningActivityCompletionService.cs" />
-    <Compile Include="Model\LMS\LearningActivity\LearningActivity.cs" />
-    <Compile Include="Model\LMS\LearningActivity\LearningActivityService.cs" />
-    <Compile Include="Model\LMS\LearningActivity\LearningActivity.Logic.cs" />
+    <Compile Include="Model\LMS\LearningClassActivityCompletion\LearningClassActivityCompletion.cs" />
+    <Compile Include="Model\LMS\LearningClassActivityCompletion\LearningClassActivityCompletion.Logic.cs" />
+    <Compile Include="Model\LMS\LearningClassActivityCompletion\LearningClassActivityCompletionService.cs" />
+    <Compile Include="Model\LMS\LearningClassActivity\LearningClassActivity.cs" />
+    <Compile Include="Model\LMS\LearningClassActivity\LearningClassActivityService.cs" />
+    <Compile Include="Model\LMS\LearningClassActivity\LearningClassActivity.Logic.cs" />
     <Compile Include="Model\LMS\LearningClassContentPage\LearningClassContentPage.cs" />
     <Compile Include="Model\LMS\LearningClassAnnouncement\LearningClassAnnouncement.cs" />
     <Compile Include="Model\LMS\LearningClass\LearningClass.Logic.cs" />
@@ -1778,7 +1782,7 @@
     <Compile Include="Reporting\FieldFilterExpressionBuilder.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoAttendanceFilter.cs" />
     <Compile Include="Reporting\DataFilter\Group\SignUpOpportunityHasNoMembersFilter.cs" />
-    <Compile Include="Reporting\DataFilter\Person\HasCompletedActivityFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\HasCompletedClassActivityFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasCompletedCourseFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\HasCompletedProgramFilter.cs" />
     <Compile Include="Reporting\DataFilter\Person\GivingAlertsFilter.cs" />
@@ -3534,8 +3538,8 @@
     <Compile Include="Model\CodeGenerated\ContentChannelItemSlugService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\GroupSyncService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LavaShortcodeService.CodeGenerated.cs" />
-    <Compile Include="Model\CodeGenerated\LearningActivityCompletionService.CodeGenerated.cs" />
-    <Compile Include="Model\CodeGenerated\LearningActivityService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningClassActivityCompletionService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\LearningClassActivityService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LearningClassAnnouncementService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LearningClassContentPageService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LearningClassService.CodeGenerated.cs" />

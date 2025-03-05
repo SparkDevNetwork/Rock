@@ -17,8 +17,8 @@
 
 import { ComputedRef, MaybeRefOrGetter, PropType, Ref, computed, ref, toValue } from "vue";
 import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
-import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
-import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+import { LearningClassActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityDetail/learningClassActivityBag";
+import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
 import { AssignTo, AssignToDescription } from "@Obsidian/Enums/Lms/assignTo";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { isValidGuid } from "@Obsidian/Utility/guid";
@@ -44,13 +44,13 @@ export enum ComponentScreen {
 type LearningActivityComponentBaseProps = {
     /** The LearningActivityBag for saving any activity configuration data. */
     activityBag: {
-        type: PropType<LearningActivityBag>;
+        type: PropType<LearningClassActivityBag>;
         required: true;
     };
 
     /** The LearningActivityCompletionBag for saving any completion data. */
     completionBag: {
-        type: PropType<LearningActivityCompletionBag>;
+        type: PropType<LearningClassActivityCompletionBag>;
         required: false;
     };
 
@@ -131,12 +131,12 @@ type LearningActivityComponentBaseEmits = {
  */
 export const learningActivityProps: LearningActivityComponentBaseProps = {
     activityBag: {
-        type: Object as PropType<LearningActivityBag>,
+        type: Object as PropType<LearningClassActivityBag>,
         required: true,
     },
 
     completionBag: {
-        type: Object as PropType<LearningActivityCompletionBag>,
+        type: Object as PropType<LearningClassActivityCompletionBag>,
         required: false,
     },
 
@@ -220,7 +220,7 @@ export abstract class LearningComponentBaseDefaults<TConfig, TCompletion> {
  * Initializes the base functionality and properties common to all learning activity components.
  * And parses the component Settings and Completion JSON into the specified types.
  *
- * @param activityBag The LearningActivityBag for the activity.
+ * @param classActivityBag The LearningActivityBag for the activity.
  * @param completionBag The LearningActivityCompletionBag for the activty.
  * @param screenToShow The screen that should be shown to the current user.
  * @param defaults A class extending the LearningComponentBaseDefaults which initializes default values for the control.
@@ -230,15 +230,15 @@ export abstract class LearningComponentBaseDefaults<TConfig, TCompletion> {
  *  and completion objects.
  */
 export function useLearningComponent(
-    activityBag: MaybeRefOrGetter<LearningActivityBag>,
-    completionBag: MaybeRefOrGetter<LearningActivityCompletionBag>,
+    classActivityBag: MaybeRefOrGetter<LearningClassActivityBag>,
+    completionBag: MaybeRefOrGetter<LearningClassActivityCompletionBag>,
     screenToShow: MaybeRefOrGetter<ComponentScreen>
 ): LearningComponentBaseProps {
-    const assignTo = ref(toValue(activityBag)?.assignTo ?? AssignTo.Student);
-    const defaultAssigneeDescription = computed(() => `The ${AssignToDescription[toValue(activityBag)?.assignTo ?? AssignTo.Student]}`);
-    const currentPerson = computed(() => toValue(activityBag)?.currentPerson ?? {} as LearningActivityParticipantBag);
+    const assignTo = ref(toValue(classActivityBag)?.assignTo ?? AssignTo.Student);
+    const defaultAssigneeDescription = computed(() => `The ${AssignToDescription[toValue(classActivityBag)?.assignTo ?? AssignTo.Student]}`);
+    const currentPerson = computed(() => toValue(classActivityBag)?.currentPerson ?? {} as LearningActivityParticipantBag);
     const student = ref(toValue(completionBag)?.student ?? {} as LearningActivityParticipantBag);
-    const activityName = ref(toValue(activityBag)?.name ?? "");
+    const activityName = ref(toValue(classActivityBag)?.name ?? "");
 
     /**
      * If the assignee is the faciliator and the facilitator is currently viewing
@@ -273,7 +273,7 @@ export function useLearningComponent(
      * but can be overridden by the component implementation.
      */
     const panelTitle = computed(() => {
-        const activityName = toValue(activityBag).name ?? "";
+        const activityName = toValue(classActivityBag).name ?? "";
         switch (toValue(screenToShow)) {
             case ComponentScreen.Configuration:
                 return `Configure ${activityName}`;
@@ -303,7 +303,7 @@ export function useLearningComponent(
     /** The CSS classes for the containing panel. */
     const containerClasses = computed((): string[] => {
         const screenName = toValue(screenToShow);
-        const componentName = toValue(activityBag)?.activityComponent?.name ?? "";
+        const componentName = toValue(classActivityBag)?.activityComponent?.name ?? "";
         return [
             `lms-${screenName.toLowerCase()}-container`,
             `lms-${componentName.toLowerCase()}-container`

@@ -226,7 +226,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Sends the pending learning activity notifications and updates the
-        /// LearningActivityCompletion records to indicate the SystemCommunicationId
+        /// <see cref="LearningClassActivityCompletion"/> records to indicate the SystemCommunicationId
         /// that was used to notify the individual.
         /// </summary>
         /// <param name="rockContext">The <see cref="RockContext"/> to use for data access.</param>
@@ -266,8 +266,8 @@ namespace Rock.Jobs
         }
 
         /// <summary>
-        /// Adds any <see cref="LearningActivity"/> records for which notifications were sent.
-        /// If there are any existing <see cref="LearningActivityCompletion"/> records their
+        /// Adds any <see cref="LearningClassActivity"/> records for which notifications were sent.
+        /// If there are any existing <see cref="LearningClassActivityCompletion"/> records their
         /// NotificationCommunicationId property will be set to <c>true</c>.
         /// </summary>
         /// <param name="personActivitiesByCourse">The list of activities grouped by course for this person.</param>
@@ -275,26 +275,26 @@ namespace Rock.Jobs
         /// <param name="rockContext">The context to use when accessing the database.</param>
         private static void AddOrUpdateCompletionRecords( PersonProgramActivitiesByCourseInfo personActivitiesByCourse, int communicationId, RockContext rockContext )
         {
-            var learningActivityCompletionService = new LearningActivityCompletionService( rockContext );
+            var learningClassActivityCompletionService = new LearningClassActivityCompletionService( rockContext );
 
             // Get a list of all activities for simpler querying.
             var activityInfos = personActivitiesByCourse.Courses.SelectMany( c => c.Activities );
 
             // Get the list of all ActivityIds that were referenced in the person's email.
             var activityIdsToAdd = activityInfos
-                .Where( a => !a.LearningActivityCompletionId.HasValue )
-                .Select( a => a.LearningActivityId )
+                .Where( a => !a.LearningClassActivityCompletionId.HasValue )
+                .Select( a => a.LearningClassActivityId )
                 .ToList();
 
-            // Now get the distinct LearningActivityCompletion records to update.
+            // Now get the distinct completion records to update.
             var completionIdsToUpdate = activityInfos
-                .Where( a => a.LearningActivityCompletionId.HasValue )
-                .Select( a => a.LearningActivityCompletionId.Value )
+                .Where( a => a.LearningClassActivityCompletionId.HasValue )
+                .Select( a => a.LearningClassActivityCompletionId.Value )
                 .Distinct()
                 .ToList();
 
             // Update existing records.
-            var existingCompletions = learningActivityCompletionService
+            var existingCompletions = learningClassActivityCompletionService
                 .GetByIds( completionIdsToUpdate )
                 .ToList();
 
@@ -304,10 +304,10 @@ namespace Rock.Jobs
             }
 
             // Load all the activities. These must be loaded with tracking
-            // because the call to LearningActivityCompletionService.GetNew() below
+            // because the call to LearningClassActivityCompletionService.GetNew() below
             // adds a reference to the activity and if it isn't tracked then EF
             // thinks it needs to be created which causes a conflict.
-            var activities = new LearningActivityService( rockContext )
+            var activities = new LearningClassActivityService( rockContext )
                 .Queryable()
                 .Where( la => activityIdsToAdd.Contains( la.Id ) )
                 .ToList();
@@ -321,7 +321,7 @@ namespace Rock.Jobs
             // The participant will differ across classes so we need to load
             // all related participant records that will be needed. These must
             // beloaded with tracking because the call to
-            // LearningActivityCompletionService.GetNew() below adds a reference
+            // LearningClassActivityCompletionService.GetNew() below adds a reference
             // to the activity and if it isn't tracked then EF thinks it needs to
             // be created which causes a conflict.
             var participants = new LearningParticipantService( rockContext )
@@ -336,7 +336,7 @@ namespace Rock.Jobs
                .Select( a =>
                {
                    var participant = participants.FirstOrDefault( p => p.LearningClassId == a.LearningClassId );
-                   var activity = LearningActivityCompletionService.GetNew( a, participant );
+                   var activity = LearningClassActivityCompletionService.GetNew( a, participant );
 
                    activity.SentNotificationCommunicationId = communicationId;
 
@@ -344,8 +344,8 @@ namespace Rock.Jobs
                } )
                .ToList();
 
-            // Add the new LearningActivityCompletion records to the context.
-            learningActivityCompletionService.AddRange( activityCompletionsToAdd );
+            // Add the new completion records to the context.
+            learningClassActivityCompletionService.AddRange( activityCompletionsToAdd );
 
             rockContext.SaveChanges();
         }
@@ -398,7 +398,7 @@ namespace Rock.Jobs
                         && !string.IsNullOrEmpty( lp.Person.Email ) );
 
                 // Load all activities for this class.
-                var activities = new LearningActivityService( rockContext )
+                var activities = new LearningClassActivityService( rockContext )
                     .Queryable()
                     .AsNoTracking()
                     .Where( la => la.LearningClassId == learningClass.Id )
@@ -407,10 +407,10 @@ namespace Rock.Jobs
                     .ToList();
 
                 // Load all existing completion records for students in this class.
-                var completions = new LearningActivityCompletionService( rockContext )
+                var completions = new LearningClassActivityCompletionService( rockContext )
                     .Queryable()
                     .AsNoTracking()
-                    .Where( lac => lac.LearningActivity.LearningClassId == learningClass.Id )
+                    .Where( lac => lac.LearningClassActivity.LearningClassId == learningClass.Id )
                     .ToList();
 
                 // Loop over each student and build up the notifications that
@@ -435,7 +435,7 @@ namespace Rock.Jobs
         /// <param name="student">The student that we are going to generate notifications for.</param>
         /// <param name="completionsForClass">All activity completions for all students in this class.</param>
         /// <param name="studentLookup">The lookup dictionary that contains the student program notification details.</param>
-        private static void PopulateStudentProgramNotifications( LearningProgram program, LearningClass learningClass, List<LearningActivity> activities, LearningParticipant student, List<LearningActivityCompletion> completionsForClass, Dictionary<int, PersonProgramActivitiesByCourseInfo> studentLookup )
+        private static void PopulateStudentProgramNotifications( LearningProgram program, LearningClass learningClass, List<LearningClassActivity> activities, LearningParticipant student, List<LearningClassActivityCompletion> completionsForClass, Dictionary<int, PersonProgramActivitiesByCourseInfo> studentLookup )
         {
             var activityNotifications = GetActivityNotificationsForStudent( learningClass, activities, student, completionsForClass );
 
@@ -508,7 +508,7 @@ namespace Rock.Jobs
         /// <param name="student">The student that is being processed.</param>
         /// <param name="completionsForClass">All existing completions for all students in this class.</param>
         /// <returns>A collection of <see cref="ActivityInfo"/> objects that represent the notifications to be sent.</returns>
-        private static List<ActivityInfo> GetActivityNotificationsForStudent( LearningClass learningClass, List<LearningActivity> activities, LearningParticipant student, List<LearningActivityCompletion> completionsForClass )
+        private static List<ActivityInfo> GetActivityNotificationsForStudent( LearningClass learningClass, List<LearningClassActivity> activities, LearningParticipant student, List<LearningClassActivityCompletion> completionsForClass )
         {
             var activitiesToSend = new List<ActivityInfo>();
 
@@ -530,7 +530,7 @@ namespace Rock.Jobs
                 // Make sure we haven't already sent a communication out for
                 // this activity.
                 var alreadyNotified = completionsForClass.Any( lac => lac.StudentId == student.Id
-                    && lac.LearningActivityId == activity.Id
+                    && lac.LearningClassActivityId == activity.Id
                     && lac.SentNotificationCommunicationId.HasValue );
 
                 if ( alreadyNotified )
@@ -540,8 +540,8 @@ namespace Rock.Jobs
 
                 activitiesToSend.Add( new ActivityInfo
                 {
-                    LearningActivityId = activity.Id,
-                    LearningActivityCompletionId = null,
+                    LearningClassActivityId = activity.Id,
+                    LearningClassActivityCompletionId = null,
                     ActivityName = activity.Name,
                     AvailableDate = null,
                     DueDate = activity.DueDateCalculated,
@@ -554,7 +554,7 @@ namespace Rock.Jobs
 
         /// <summary>
         /// Determines if this activity is available yet based on the
-        /// <see cref="LearningActivity.AvailabilityCriteria"/> value.
+        /// <see cref="LearningClassActivity.AvailabilityCriteria"/> value.
         /// </summary>
         /// <param name="learningClass">The class this activity belongs to.</param>
         /// <param name="activity">The activity being processed.</param>
@@ -562,7 +562,7 @@ namespace Rock.Jobs
         /// <param name="student">The student being processed.</param>
         /// <param name="completionsForClass">All existing completions for all students in this class.</param>
         /// <returns><c>true</c> if this activity is available and should be notified; otherwise <c>false</c>.</returns>
-        private static bool IsActivityAvailable( LearningClass learningClass, LearningActivity activity, LearningActivity previousActivity, LearningParticipant student, List<LearningActivityCompletion> completionsForClass )
+        private static bool IsActivityAvailable( LearningClass learningClass, LearningClassActivity activity, LearningClassActivity previousActivity, LearningParticipant student, List<LearningClassActivityCompletion> completionsForClass )
         {
             if ( activity.AvailabilityCriteria == AvailabilityCriteria.AfterPreviousCompleted )
             {
@@ -573,7 +573,7 @@ namespace Rock.Jobs
 
                 var previousCompletion = completionsForClass
                     .Where( lac => lac.StudentId == student.Id
-                        && lac.LearningActivityId == previousActivity.Id )
+                        && lac.LearningClassActivityId == previousActivity.Id )
                     .FirstOrDefault();
 
                 if ( previousCompletion == null || !previousCompletion.CompletedDateTime.HasValue )
@@ -583,7 +583,7 @@ namespace Rock.Jobs
             }
             else if ( IsDateCriteria( activity.AvailabilityCriteria ) )
             {
-                var date = LearningActivity.CalculateAvailableDate( activity.AvailabilityCriteria,
+                var date = LearningClassActivity.CalculateAvailableDate( activity.AvailabilityCriteria,
                     activity.AvailableDateDefault,
                     activity.AvailableDateOffset,
                     learningClass.LearningSemester?.StartDate,
@@ -602,7 +602,7 @@ namespace Rock.Jobs
         /// Determines if this criteria represents a date-based check.
         /// </summary>
         /// <param name="criteria">The criteria enum value.</param>
-        /// <returns><c>true</c> if the activity should be checked with <see cref="LearningActivity.CalculateAvailableDate"/>; otherwise <c>false</c>.</returns>
+        /// <returns><c>true</c> if the activity should be checked with <see cref="LearningClassActivity.CalculateAvailableDate"/>; otherwise <c>false</c>.</returns>
         private static bool IsDateCriteria( AvailabilityCriteria criteria )
         {
             return criteria == AvailabilityCriteria.ClassStartOffset
@@ -768,17 +768,17 @@ namespace Rock.Jobs
         private class ActivityInfo : LavaDataObject
         {
             /// <summary>
-            /// The Id of the <see cref="LearningActivity"/> the notification is for.
+            /// The Id of the <see cref="LearningClassActivity"/> the notification is for.
             /// </summary>
-            public int LearningActivityId { get; set; }
+            public int LearningClassActivityId { get; set; }
 
             /// <summary>
-            /// The Id of the <see cref="LearningActivityCompletion"/> the notification is for (if any yet).
+            /// The Id of the <see cref="LearningClassActivityCompletion"/> the notification is for (if any yet).
             /// </summary>
             /// <remarks>
             /// This is used by the job to mark notifications that have been sent.
             /// </remarks>
-            public int? LearningActivityCompletionId { get; set; }
+            public int? LearningClassActivityCompletionId { get; set; }
 
             /// <summary>
             /// The name of the assigned activity.

@@ -3244,7 +3244,7 @@ WHERE [Guid] = '{GIVING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID}'
         private void AddLmsDataUp()
         {
             RockMigrationHelper.AddOrUpdateEntityType( "Rock.Model.LearningProgram", Rock.SystemGuid.EntityType.LEARNING_PROGRAM, true, false );
-            RockMigrationHelper.AddOrUpdateEntityType( "Rock.Model.LearningActivityCompletion", Rock.SystemGuid.EntityType.LEARNING_ACTIVITY_COMPLETION, true, false );
+            RockMigrationHelper.AddOrUpdateEntityType( "Rock.Model.LearningActivityCompletion", Rock.SystemGuid.EntityType.LEARNING_CLASS_ACTIVITY_COMPLETION, true, false );
             LmsEntityTypesPagesBlocksUp();
             AddSeedData();
             AddOrUpdateSendLearningActivityNotificationsJob();
@@ -3263,7 +3263,7 @@ WHERE [Guid] = '{GIVING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID}'
             LmsEntityTypesPagesBlocksDown();
 
             RemoveSeedData();
-            RockMigrationHelper.DeleteEntityType( Rock.SystemGuid.EntityType.LEARNING_ACTIVITY_COMPLETION );
+            RockMigrationHelper.DeleteEntityType( Rock.SystemGuid.EntityType.LEARNING_CLASS_ACTIVITY_COMPLETION );
         }
 
         /// <summary>
@@ -7322,7 +7322,7 @@ WHERE p.[Guid] IN (
         }
 
         /// <summary>
-        /// Adds a parent and child history category for <see cref="LearningActivityCompletion"/> changes.
+        /// Adds a parent and child history category for <see cref="LearningClassActivityCompletion"/> changes.
         /// </summary>
         private void AddHistoryCategories()
         {
@@ -7358,7 +7358,7 @@ WHERE NOT EXISTS (
         }
 
         /// <summary>
-        /// Removes the parent and child history categories for <see cref="LearningActivityCompletion"/> changes.
+        /// Removes the parent and child history categories for <see cref="LearningClassActivityCompletion"/> changes.
         /// </summary>
         private void RemoveHistoryCategories()
         {
