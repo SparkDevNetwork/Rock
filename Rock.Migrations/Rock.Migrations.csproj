@@ -64,6 +64,10 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Migrations\202503052051200_CodeGenerated_20250305.cs" />
+    <Compile Include="Migrations\202503052051200_CodeGenerated_20250305.designer.cs">
+      <DependentUpon>202503052051200_CodeGenerated_20250305.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503042354103_AddLearningClassActivityEntity.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.0\202503042354103_AddLearningClassActivityEntity.Designer.cs">
       <DependentUpon>202503042354103_AddLearningClassActivityEntity.cs</DependentUpon>
@@ -2514,6 +2518,9 @@
     <Compile Include="SqlServerTypes\Loader.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Migrations\202503052051200_CodeGenerated_20250305.resx">
+      <DependentUpon>202503052051200_CodeGenerated_20250305.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.0\202503042354103_AddLearningClassActivityEntity.resx">
       <DependentUpon>202503042354103_AddLearningClassActivityEntity.cs</DependentUpon>
     </EmbeddedResource>
