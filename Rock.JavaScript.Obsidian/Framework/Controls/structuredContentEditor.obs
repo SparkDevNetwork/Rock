@@ -1,13 +1,10 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span v-if="isDisabled" v-html="htmlContent"></span>
-    <span v-show="!isDisabled">
-        <RockFormField v-bind="fieldProps" :rules="internalRules" :formGroupClasses="`structure-content-editor ${fieldProps.formGroupClasses}`" #default="{ uniqueId, field }" name="sceContent" :modelValue="modelValue" >
-            <div class="control-wrapper">
-                <div class="structured-content-container" :id="uniqueId" ref="containerRef"></div>
-            </div>
-        </RockFormField>
-    </span>
+    <RockFormField v-bind="fieldProps" :rules="internalRules" :formGroupClasses="`structure-content-editor ${fieldProps.formGroupClasses}`" #default="{ uniqueId, field }" name="sceContent" :modelValue="modelValue">
+        <div class="control-wrapper">
+            <div class="structured-content-container" :id="uniqueId" ref="containerRef"></div>
+        </div>
+    </RockFormField>
 </template>
 
 <script setup lang="ts">
@@ -18,7 +15,7 @@
     import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
     import { debounce } from "@Obsidian/Utility/util";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
-    import { getStructuredContentAsHtml, getStructuredContentEditorConfiguration } from "@Obsidian/Utility/structuredContentEditor";
+    import { getStructuredContentEditorConfiguration } from "@Obsidian/Utility/structuredContentEditor";
     import { normalizeRules } from "@Obsidian/Utility/validationRules";
     import { StructuredContentEditorConfigurationBag } from "@Obsidian/ViewModels/Rest/Controls/structuredContentEditorConfigurationBag";
     import { areEqual, toGuidOrNull } from "@Obsidian/Utility/guid";
@@ -49,7 +46,6 @@
     // We'll await them in the onMounted handler.
     const editorjsPromise = loadJavaScriptAsync("/Scripts/Rock/UI/structuredcontenteditor/editor.js", () => !!editorJsWindow.Rock?.UI?.StructuredContentEditor?.EditorJS);
     const editorToolsPromise = loadJavaScriptAsync("/Scripts/Rock/UI/structuredcontenteditor/editor-tools.js", () => !!editorJsWindow.Rock?.UI?.StructuredContentEditor?.EditorTools);
-    const htmlContent = ref("");
 
     enum EditorJsLogLevel {
         Verbose = "VERBOSE",
@@ -95,7 +91,7 @@
     //#region Computed Values
 
     /** Determines if the control should be in a disabled state. */
-    const isDisabled = computed((): boolean =>  props.disabled);
+    const isDisabled = computed((): boolean => props.disabled);
 
     const containerId = computed<string>(() => containerRef.value?.id ?? "");
     const internalRules = computed<ValidationRule | ValidationRule[]>(() => {
@@ -141,16 +137,6 @@
     /** Executes the JS `eval` utility function *more safely* to convert a string to JS. */
     function saferEval(javaScriptValue: string): Record<string, unknown> {
         return eval?.(`"use strict";(${javaScriptValue})`);
-    }
-
-    /** Retrieves the structured content editor configuration from the server */
-    async function setReadonlyContent(): Promise<void> {
-        try {
-            htmlContent.value = await getStructuredContentAsHtml(editor.configuration.data) ?? "";
-        }
-        catch (e) {
-            console.error(e ?? "Unknown error while loading structured content html.");
-        }
     }
 
     /** Retrieves the structured content editor configuration from the server */
@@ -204,11 +190,8 @@
             data: JSON.parse(props.modelValue || "{}"),
             logLevel: EditorJsLogLevel.Error,
             readOnly: isDisabled.value,
-            onReady: function() {
+            onReady: function () {
                 new EditorDragDrop(editor);
-                if (isDisabled.value === true) {
-                    setReadonlyContent();
-                }
             },
             onChange: debounce(() => {
                 editor.save().then(function (savedData: unknown) {
@@ -240,10 +223,6 @@
     watch(() => props.disabled, async (newValue, oldValue) => {
         if (newValue === oldValue) {
             return;
-        }
-
-        if (newValue === true) {
-            setReadonlyContent();
         }
 
         toggleReadOnly();

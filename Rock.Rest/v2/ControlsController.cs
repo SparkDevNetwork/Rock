@@ -9404,23 +9404,6 @@ namespace Rock.Rest.v2
             } );
         }
 
-        /// <summary>
-        /// Gets the value of structured content as HTML.
-        /// </summary>
-        /// <param name="content">The raw content of the StructuredContentEditor.</param>
-        /// <returns>The structured content converted to HTML.</returns>
-        [HttpPost]
-        [Route( "StructuredContentAsHtml" )]
-        [Authenticate]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
-        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( string ) )]
-        [Rock.SystemGuid.RestActionGuid( "aec4bf60-bdcc-44e6-b7c5-8c019612deb6" )]
-        public IActionResult StructuredContentAsHtml( [FromBody] object content )
-        {
-            var contentAsHtml = new StructuredContentHelper( content.ToString() ).Render();
-            return Ok( contentAsHtml );
-        }
-
         #endregion
 
         #region Workflow Action Type Picker

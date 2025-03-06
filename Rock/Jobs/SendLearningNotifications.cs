@@ -161,6 +161,7 @@ namespace Rock.Jobs
                 switch ( announcement.CommunicationMode )
                 {
                     case CommunicationMode.Email:
+                        var mergeFields = LavaHelper.GetCommonMergeFields( null, null );
                         mediumType = ( int ) CommunicationType.Email;
 
                         // The StrucutredContent needs to be converted to HTML before sending.
@@ -188,8 +189,16 @@ namespace Rock.Jobs
                 foreach ( var recipient in recipients )
                 {
                     var mergeObjects = Rock.Lava.LavaHelper.GetCommonMergeFields( null, recipient.Person );
+
+                    // We have to make a copy of the announcement for each recipient
+                    // so that we can pre-resolve the description HTML with Lava for
+                    // the CurrentPerson.
+                    var recipientAnnouncement = rockContext.Set<LearningClassAnnouncement>().Create();
+                    recipientAnnouncement.CopyPropertiesFrom( announcement );
+                    recipientAnnouncement.Description = announcement.Description.ResolveMergeFields( mergeObjects );
+
                     mergeObjects.Add( "Person", recipient.Person );
-                    mergeObjects.Add( "Announcement", announcement );
+                    mergeObjects.Add( "Announcement", recipientAnnouncement );
 
                     var sendResult = CommunicationHelper.SendMessage( recipient.Person, mediumType, announcementsSystemCommunication, mergeObjects );
 

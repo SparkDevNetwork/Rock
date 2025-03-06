@@ -210,7 +210,8 @@ namespace Rock.Blocks.Lms
                 CourseCode = entity.CourseCode,
                 Credits = entity.Credits,
                 Description = entity.Description,
-                DescriptionAsHtml = entity.Description.IsNotNullOrWhiteSpace() ? new StructuredContentHelper( entity.Description ).Render() : string.Empty,
+                // Don't resolve the merge fields as this is being shown to an admin type person.
+                DescriptionAsHtml = new StructuredContentHelper( entity.Description ).Render(),
                 EnableAnnouncements = entity.EnableAnnouncements,
                 ImageBinaryFile = entity.ImageBinaryFile?.ToListItemBag(),
                 IsActive = entity.IsActive,
