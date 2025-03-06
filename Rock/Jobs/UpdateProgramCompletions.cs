@@ -138,7 +138,12 @@ namespace Rock.Jobs
                 .GroupBy( lc => lc.LearningProgramId )
                 .ToDictionary( grp => grp.Key, grp => grp.Select( g => g.Id ).ToList() );
 
-            return new JobState( activeParticipantsAndPrograms, activeCourseIdLookup );
+            // Load all the course equivalent records. This is a dictionary of
+            // courses and the list of other course ids that are considered
+            // equivalent - including recursive equivalents.
+            var courseEquivalentIdLookup = GetCourseEquivalentIds( rockContext );
+
+            return new JobState( activeParticipantsAndPrograms, activeCourseIdLookup, courseEquivalentIdLookup );
         }
 
         /// <summary>
@@ -214,7 +219,27 @@ namespace Rock.Jobs
                 .Select( p => p.LearningClass.LearningCourseId )
                 .ToList();
 
-            var hasPassedAllCourses = activeCourseIds.All( c => passedCourseIds.Contains( c ) );
+            var hasPassedAllCourses = activeCourseIds.All( courseId =>
+            {
+                if ( passedCourseIds.Contains( courseId ) )
+                {
+                    return true;
+                }
+
+                // Try and get the course identifiers that are considered equivalent
+                // to this course.
+                if ( state.CourseEquivalentIdLookup.TryGetValue( courseId, out var equivalentCourseIds ) )
+                {
+                    // If any of the equivalent courses have been passed then
+                    // courseId is also considered to be passed.
+                    if ( passedCourseIds.Any( passedCourseId => equivalentCourseIds.Contains( passedCourseId ) ) )
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            } );
 
             // If they have passed all courses then mark the record as completed.
             if ( hasPassedAllCourses )
@@ -327,6 +352,67 @@ namespace Rock.Jobs
             return rockContext;
         }
 
+        /// <summary>
+        /// Load all course equivalent records and create a lookup table
+        /// that represents the primary course identifier and then a list of
+        /// other courses that are considered equivalent to this course.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A dictionary whose key is a course identifier and value is a list of equivalent course identifiers.</returns>
+        private static Dictionary<int, List<int>> GetCourseEquivalentIds( RockContext rockContext )
+        {
+            var lookupTable = new Dictionary<int, List<int>>();
+
+            var courseEquivalents = new LearningCourseRequirementService( rockContext )
+                .Queryable()
+                .Where( lcr => lcr.RequirementType == RequirementType.Equivalent )
+                .Select( lcr => new
+                {
+                    PrimaryCourseId = lcr.LearningCourseId,
+                    EquivalentCourseId = lcr.RequiredLearningCourseId
+                } )
+                .ToList()
+                .Select( e => (e.PrimaryCourseId, e.EquivalentCourseId) )
+                .ToList();
+
+            foreach ( var courseId in courseEquivalents.Select( c => c.PrimaryCourseId ).Distinct() )
+            {
+                lookupTable.Add( courseId, GetRecursiveEquivalentCourseIds( courseEquivalents, courseId ) );
+            }
+
+            return lookupTable;
+        }
+
+        /// <summary>
+        /// Get all course identifiers that are considered equivalent to the
+        /// <paramref name="primaryCourseId"/>. This method is recursive and
+        /// will handle cases of A => B => C => D => A. If "A" is passed as
+        /// the <paramref name="primaryCourseId"/> then "B", "C", and "D" will
+        /// be returned.
+        /// </summary>
+        /// <param name="courseEquivalents"></param>
+        /// <param name="primaryCourseId"></param>
+        /// <param name="equivalentCourseIds"></param>
+        /// <returns></returns>
+        private static List<int> GetRecursiveEquivalentCourseIds( List<(int PrimaryCourseId, int EquivalentCourseId)> courseEquivalents, int primaryCourseId, List<int> equivalentCourseIds = null )
+        {
+            if ( equivalentCourseIds == null )
+            {
+                equivalentCourseIds = new List<int>();
+            }
+
+            foreach ( var id in courseEquivalents.Where( ce => ce.PrimaryCourseId == primaryCourseId ).Select( ce => ce.EquivalentCourseId ) )
+            {
+                if ( !equivalentCourseIds.Contains( id ) && id != primaryCourseId )
+                {
+                    equivalentCourseIds.Add( id );
+                    GetRecursiveEquivalentCourseIds( courseEquivalents, id, equivalentCourseIds );
+                }
+            }
+
+            return equivalentCourseIds;
+        }
+
         #region Support Classes
 
         private class ParticipantAndProgram
@@ -350,10 +436,13 @@ namespace Rock.Jobs
 
             public Dictionary<int, List<int>> ActiveCourseIdLookup { get; }
 
-            public JobState( List<ParticipantAndProgram> activeParticipantsAndPrograms, Dictionary<int, List<int>> activeCourseIdLookup )
+            public Dictionary<int, List<int>> CourseEquivalentIdLookup { get; }
+
+            public JobState( List<ParticipantAndProgram> activeParticipantsAndPrograms, Dictionary<int, List<int>> activeCourseIdLookup, Dictionary<int, List<int>> courseEquivalentIdLookup )
             {
                 ActiveParticipantsAndPrograms = activeParticipantsAndPrograms;
                 ActiveCourseIdLookup = activeCourseIdLookup;
+                CourseEquivalentIdLookup = courseEquivalentIdLookup;
             }
         }
 
