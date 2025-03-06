@@ -558,7 +558,7 @@ INSERT INTO [dbo].[Auth]
            ,[AllowOrDeny]
            ,[SpecialRole]
            ,[GroupId]
-           ,[Guid]
+           ,NEWID()
            ,[CreatedDateTime]
            ,[ModifiedDateTime]
            ,[CreatedByPersonAliasId]
