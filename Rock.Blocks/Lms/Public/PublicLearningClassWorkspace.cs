@@ -394,6 +394,7 @@ namespace Rock.Blocks.Lms
 
             // Get the student and current persons bags.
             var currentPerson = GetCurrentPerson();
+            var mergeFields = RequestContext.GetCommonMergeFields();
 
             var participantService = new LearningParticipantService( RockContext );
             var currentPersonIsEnrolled = participantService.GetParticipants( classId ).Any( s => s.PersonId == currentPerson.Id );
@@ -421,7 +422,9 @@ namespace Rock.Blocks.Lms
                 .ToList()
                 .Select( c => new LearningClassContentPageBag
                 {
-                    Content = new StructuredContentHelper( c.Content ).Render(),
+                    Content = new StructuredContentHelper( c.Content )
+                        .Render()
+                        .ResolveMergeFields( mergeFields ),
                     IdKey = IdHasher.Instance.GetHash( c.Id ),
                     LearningClassId = c.LearningClassId,
                     StartDateTime = c.StartDateTime,
@@ -489,7 +492,9 @@ namespace Rock.Blocks.Lms
                 {
                     CommunicationMode = a.CommunicationMode,
                     CommunicationSent = a.CommunicationSent,
-                    Description = new StructuredContentHelper( a.Description ).Render(),
+                    Description = new StructuredContentHelper( a.Description )
+                        .Render()
+                        .ResolveMergeFields( mergeFields ),
                     PublishDateTime = a.PublishDateTime,
                     Title = a.Title
                 } )

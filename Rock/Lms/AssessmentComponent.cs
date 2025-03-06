@@ -99,6 +99,13 @@ namespace Rock.Lms
                     ? new StructuredContentHelper( content ).Render()
                     : string.Empty;
 
+                if ( headerHtml.IsNotNullOrWhiteSpace() )
+                {
+                    var mergeFields = requestContext.GetCommonMergeFields();
+
+                    headerHtml = headerHtml.ResolveMergeFields( mergeFields );
+                }
+
                 var items = componentData.GetValueOrNull( SettingKey.Items ).FromJsonOrNull<List<AssessmentItem>>()
                     ?? new List<AssessmentItem>();
 

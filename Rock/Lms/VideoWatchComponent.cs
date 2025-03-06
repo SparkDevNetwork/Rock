@@ -91,13 +91,14 @@ namespace Rock.Lms
             {
                 var headerContent = componentData.GetValueOrNull( SettingKey.HeaderContent );
                 var footerContent = componentData.GetValueOrNull( SettingKey.FooterContent );
+                var mergeFields = requestContext.GetCommonMergeFields();
 
                 var headerContentHtml = headerContent.IsNotNullOrWhiteSpace()
-                    ? new StructuredContentHelper( headerContent ).Render()
+                    ? new StructuredContentHelper( headerContent ).Render().ResolveMergeFields( mergeFields )
                     : string.Empty;
 
                 var footerContentHtml = footerContent.IsNotNullOrWhiteSpace()
-                    ? new StructuredContentHelper( footerContent ).Render()
+                    ? new StructuredContentHelper( footerContent ).Render().ResolveMergeFields( mergeFields )
                     : string.Empty;
 
                 return new Dictionary<string, string>
