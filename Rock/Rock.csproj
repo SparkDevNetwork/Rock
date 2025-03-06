@@ -1379,6 +1379,7 @@
     <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScale.Logic.cs" />
     <Compile Include="Model\LMS\LearningGradingSystemScale\LearningGradingSystemScaleService.cs" />
     <Compile Include="Model\LMS\LearningParticipant\LearningParticipant.Logic.cs" />
+    <Compile Include="Model\LMS\LearningParticipant\LearningParticipant.SaveHook.cs" />
     <Compile Include="Model\LMS\LearningParticipant\LearningParticipantExtensionMethods.cs" />
     <Compile Include="Model\LMS\LearningProgramCompletion\LearningProgramCompletion.Logic.cs" />
     <Compile Include="Model\LMS\LearningSemester\LearningSemester.Logic.cs" />
