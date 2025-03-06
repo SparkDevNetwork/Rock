@@ -464,6 +464,7 @@ namespace Rock.Blocks.Lms
                 GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now );
 
             var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
+            var mergeFields = RequestContext.GetCommonMergeFields();
 
             // Get the course details or a default value.
             var course = learningCourseService.GetPublicCourseDetails(
@@ -477,11 +478,12 @@ namespace Rock.Blocks.Lms
                     ProgramInfo = new LearningProgramService.PublicLearningProgramBag(),
                 };
 
-            course.DescriptionAsHtml = new StructuredContentHelper( course.Description ?? string.Empty ).Render();
+            course.DescriptionAsHtml = new StructuredContentHelper( course.Description )
+                .Render()
+                .ResolveMergeFields( mergeFields );
 
             AddClassSpecificProperties( course );
 
-            var mergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
             mergeFields.Add( "CourseInfo", course );
             mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus );
 
