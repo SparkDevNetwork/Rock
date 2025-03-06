@@ -391,6 +391,7 @@ namespace RockWeb
                 UpdateSiteTypeFlagsOnBlockTypes();
 
                 Debug.WriteLine( string.Format( "[{0,5:#} seconds] Block Types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
+                Rock.Jobs.PostUpdateJobManager.IsBlockTypeCompilationFinished = true;
             } );
 
             BlockTypeCompilationThread.Start();

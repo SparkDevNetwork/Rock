@@ -1308,6 +1308,7 @@
     <Compile Include="Financial\ISettlementGateway.cs" />
     <Compile Include="Jobs\CalculatePeerNetwork.cs" />
     <Compile Include="Jobs\ChatSync.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostUpdateJobManager.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17AddAndUpdatePeerNetworkIndexes.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdateHistoryTableEntityTypeIdIndexPostMigration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdatePersonPrimaryAliasGuid.cs" />

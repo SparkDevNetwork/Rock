@@ -24,6 +24,8 @@ using Quartz;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.Cache;
+using antlr.debug;
+using System.Diagnostics;
 
 namespace Rock.Jobs
 {
@@ -68,6 +70,10 @@ namespace Rock.Jobs
         public override void Execute()
         {
             var setJobPulseDateTimeGlobalAttribute = GetAttributeValue( AttributeKey.SetJobPulseDateTimeGlobalAttribute ).AsBoolean();
+            if ( Rock.Jobs.PostUpdateJobManager.IsBlockTypeCompilationFinished )
+            {
+                Debug.WriteLine( string.Format( "Block Types Compiled Has Finished." ) );
+            }
 
             if ( setJobPulseDateTimeGlobalAttribute )
             {
