@@ -49,6 +49,7 @@ using Rock.Model;
 using Rock.Rest.Controllers;
 using Rock.Rest.Filters;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Storage;
 using Rock.Storage.AssetStorage;
 using Rock.Utility;
@@ -790,7 +791,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.VIEW ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.VIEW ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -870,7 +871,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.VIEW ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.VIEW ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -913,7 +914,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.VIEW ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.VIEW ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -972,7 +973,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.DELETE ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.DELETE ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1030,7 +1031,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.EDIT ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.EDIT ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1117,7 +1118,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.EDIT ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.EDIT ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1156,7 +1157,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.EDIT ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.EDIT ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1205,7 +1206,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.DELETE ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.DELETE ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1260,7 +1261,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.VIEW ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.VIEW ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1331,7 +1332,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.EDIT ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.EDIT ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1381,7 +1382,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.EDIT ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.EDIT ) ?? false ) )
             {
                 return Unauthorized();
             }
@@ -1457,7 +1458,7 @@ namespace Rock.Rest.v2
         {
             var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
 
-            if ( !( grant?.IsAccessGranted( null, Security.Authorization.VIEW ) ?? false ) )
+            if ( !( grant?.IsAccessGranted( AssetAndFileManagerSecurityGrantRule.AssetAndFileManagerAccess.Instance, Security.Authorization.VIEW ) ?? false ) )
             {
                 return Unauthorized();
             }

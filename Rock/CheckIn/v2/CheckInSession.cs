@@ -296,11 +296,6 @@ namespace Rock.CheckIn.v2
         /// <param name="attendee">The attendee whose opportunities will be filtered.</param>
         public void FilterPersonOpportunities( Attendee attendee )
         {
-            if ( IsOverrideEnabled )
-            {
-                return;
-            }
-
             using ( var activity = ObservabilityHelper.StartActivity( $"Filter Opportunities For {attendee.Person.NickName}" ) )
             {
                 activity?.AddTag( "rock.checkin.opportunity_filter_provider", OpportunityFilterProvider.GetType().FullName );
