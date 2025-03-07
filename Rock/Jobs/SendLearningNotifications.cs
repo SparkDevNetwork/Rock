@@ -537,10 +537,11 @@ namespace Rock.Jobs
                 }
 
                 // Make sure we haven't already sent a communication out for
-                // this activity.
+                // this activity. We also ignore activities that have already
+                // been completed.
                 var alreadyNotified = completionsForClass.Any( lac => lac.StudentId == student.Id
                     && lac.LearningClassActivityId == activity.Id
-                    && lac.SentNotificationCommunicationId.HasValue );
+                    && ( lac.SentNotificationCommunicationId.HasValue || lac.CompletedDateTime.HasValue ) );
 
                 if ( alreadyNotified )
                 {
