@@ -308,21 +308,15 @@
     const backButtonClicked = ref(false);
     const headerHtml = config.headerHtml ?? "";
     const screenToShow = ref(ComponentScreen.Completion);
+    const showCompletedScreen = ref(false);
 
     /** The promise source for the completed event handler.
      *  Ensures the onClosed event handler waits for the onCompleted. */
     let completedPromiseSource = new PromiseCompletionSource<void>();
 
-    const params = new URLSearchParams(window.location.search);
-    const selectedActivityIdKey = params.get("activity") ?? "";
-
     const activities = ref<LearningClassActivityCompletionBag[]>(config.activities ?? []);
 
-    const viewingCompletionBag = ref((
-        selectedActivityIdKey.length > 0 ?
-            activities.value?.find(a => a.learningClassActivityIdKey === selectedActivityIdKey && a.isAvailable) :
-            activities.value?.find(a => a.isAvailable)
-    ) ?? {} as LearningClassActivityCompletionBag);
+    const viewingCompletionBag = ref(getInitialActivitySelection());
 
     const announcements = ref(config.announcements ?? []);
     const isAcademicCalendarMode = ref(config.programConfigurationMode === ConfigurationMode.AcademicCalendar);
@@ -344,7 +338,6 @@
     const contentTabs = ref((config.contentPages ?? []).filter(c => (c.content ?? "").length > 0));
 
     const activityTypeComponent = ref<Component | null>(null);
-    const showCompletedScreen = ref(false);
 
     // #endregion
 
@@ -429,6 +422,49 @@
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets the initial activity selection based on the query string or the
+     * calculated activity based on various criteria.
+     *
+     * @returns The initial activity to be selected.
+     */
+    function getInitialActivitySelection(): LearningClassActivityCompletionBag {
+        const params = new URLSearchParams(window.location.search);
+
+        // First see if everything is completed, if so show the completed screen.
+        if (activities.value.every(a => a.completedDate)) {
+            showCompletedScreen.value = true;
+            return {} as LearningClassActivityCompletionBag;
+        }
+
+        // If they have a selected activity in the query string, use that.
+        if (params.get("activity")) {
+            const paramActivity = activities.value.find(a => a.learningClassActivityIdKey === params.get("activity") && a.isAvailable && !a.completedDate);
+
+            if (paramActivity) {
+                return paramActivity;
+            }
+        }
+
+        // Nothing from the query string, or it wasn't found, so look for the
+        // first available activity.
+        const nextActivity = activities.value.find(a => a.isAvailable && !a.completedDate);
+
+        if (nextActivity) {
+            return nextActivity;
+        }
+
+        // If there are no available activities, look for the last activity
+        // that was completed.
+        const lastCompletedActivity = [...activities.value].reverse().find(a => a.completedDate);
+
+        if (lastCompletedActivity) {
+            return lastCompletedActivity;
+        }
+
+        return {} as LearningClassActivityCompletionBag;
+    }
 
     /**
      * Gets css classes for the index position in an array: index-#, is-first, is-last.
@@ -727,6 +763,8 @@
             queryParams.set("activity", currentIdKey ?? "");
             history.pushState(null, "", "?" + queryParams.toString());
         }
+
+        showCompletedScreen.value = false;
     });
 
     // Handle any initial error conditions or the need to go into edit mode.
