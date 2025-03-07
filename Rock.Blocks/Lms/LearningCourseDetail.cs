@@ -97,10 +97,11 @@ namespace Rock.Blocks.Lms
 
             SetBoxInitialEntityState( box );
 
-            var entity = box.Entity;
-
-            box.NavigationUrls = GetBoxNavigationUrls( entity );
-            box.Options = GetBoxOptions( entity );
+            if ( box.Entity != null )
+            {
+                box.NavigationUrls = GetBoxNavigationUrls( box.Entity );
+                box.Options = GetBoxOptions( box.Entity );
+            }
 
             return box;
         }
@@ -375,8 +376,6 @@ namespace Rock.Blocks.Lms
                 {
                     LearningProgram = program,
                     LearningProgramId = program?.Id ?? 0,
-                    Id = 0,
-                    Guid = Guid.Empty,
                     IsActive = true
                 };
             }
@@ -483,7 +482,10 @@ namespace Rock.Blocks.Lms
             else
             {
                 // Create a new entity.
-                entity = new LearningCourse();
+                entity = new LearningCourse
+                {
+                    LearningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId )
+                };
                 entityService.Add( entity );
             }
 

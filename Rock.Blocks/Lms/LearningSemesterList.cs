@@ -76,9 +76,8 @@ namespace Rock.Blocks.Lms
             var box = new ListBlockBox<LearningSemesterListOptionsBag>();
             var builder = GetGridBuilder();
 
-            var isAddOrEditEnabled = GetIsAddOrEditEnabled();
-            box.IsAddEnabled = isAddOrEditEnabled;
-            box.IsDeleteEnabled = isAddOrEditEnabled;
+            box.IsAddEnabled = GetIsAddEnabled();
+            box.IsDeleteEnabled = true;
             box.ExpectedRowCount = 5;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -111,9 +110,14 @@ namespace Rock.Blocks.Lms
         /// Determines if the add button should be enabled in the grid.
         /// <summary>
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsAddOrEditEnabled()
+        private bool GetIsAddEnabled()
         {
-            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var entity = new LearningSemester
+            {
+                LearningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId )
+            };
+
+            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -136,25 +140,25 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningSemester> GetListQueryable( RockContext rockContext )
         {
-            var entity = new LearningProgramService( rockContext ).Get(
-                PageParameter( PageParameterKey.LearningProgramId ),
-                !this.PageCache.Layout.Site.DisablePredictableIds );
+            var learningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
 
-            // Return an empty list if no entity or the current person is not authorized to view the program.
-            if ( entity == null || !entity.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
-            {
-                return new List<LearningSemester>().AsQueryable();
-            }
-
-            return base.GetListQueryable( rockContext )
+            return new LearningSemesterService( rockContext ).Queryable()
                 .Include( a => a.LearningClasses )
-                .Where( a => a.LearningProgramId == entity.Id );
+                .Where( ls => ls.LearningProgramId == learningProgramId );
         }
 
         /// <inheritdoc/>
         protected override IQueryable<LearningSemester> GetOrderedListQueryable( IQueryable<LearningSemester> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( a => a.StartDate );
+        }
+
+        /// <inheritdoc/>
+        protected override List<LearningSemester> GetListItems( IQueryable<LearningSemester> queryable, RockContext rockContext )
+        {
+            return queryable.ToList()
+                .Where( ls => ls.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
         }
 
         /// <inheritdoc/>
