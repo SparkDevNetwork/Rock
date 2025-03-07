@@ -201,7 +201,7 @@ namespace Rock.Jobs
                                         // Check if there are any followed entities of this type 
                                         if ( entityList == null || !entityList.Any() )
                                         {
-                                            return;
+                                            continue;
                                         }
 
                                         // Get the active event types for this entity type
